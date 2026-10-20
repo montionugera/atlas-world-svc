@@ -53653,5 +53653,594 @@
       "unlock_requirement": "400x Extracted Red/Blue/Green Star Stones + 30x Keucereus Marks",
       "combat_tactical_role": "Doubles aerial Star Stone harvesting efficiency and grants instant Gracia Wharf recall."
     }
+  ],
+  "warehouse_freight_vaults": [
+    {
+      "vault_id": "vault-01-lantern-hollow",
+      "town_zone_id": "zone-town-lantern-hollow",
+      "town_name": "Lantern Hollow Village (Human Starter)",
+      "logistics_tier": "Starter_Iron_Gate_Vault",
+      "keeper_npc_name": "Warehouse Keeper Dorankus & Freightman Collette",
+      "vault_loc": "-83916:243318",
+      "private_clan_slot_cap": "120 Private Slots / 150 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-kilnwatch-bastion",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Account Freight Package Transfer (1,000 Adena / Slot to Any Town)",
+        "Apprentice Adventurer Cube & Wondrous Cubic Fragment Exchange",
+        "Proof of Catching a Fish \u2014 Private Warehouse Slot Expansion"
+      ]
+    },
+    {
+      "vault_id": "vault-02-porcelain-loom",
+      "town_zone_id": "zone-town-porcelain-loom",
+      "town_name": "Porcelain Loom Sanctuary (Lunar Starter)",
+      "logistics_tier": "Starter_Iron_Gate_Vault",
+      "keeper_npc_name": "Warehouse Keeper Julia & Freightman Rant",
+      "vault_loc": "46013:41011",
+      "private_clan_slot_cap": "120 Private Slots / 150 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-kilnwatch-bastion",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Account Freight Package Transfer (1,000 Adena / Slot)",
+        "Lunar Silk & Oriharukon Ore Safe-Custody Deposit",
+        "Proof of Catching a Fish \u2014 Private Warehouse Slot Expansion"
+      ]
+    },
+    {
+      "vault_id": "vault-03-draft-kiln-post",
+      "town_zone_id": "zone-town-draft-kiln-post",
+      "town_name": "Draft-Kiln Post (Ogre/Orc Starter)",
+      "logistics_tier": "Starter_Iron_Gate_Vault",
+      "keeper_npc_name": "Warehouse Keeper Grookin & Freightman Imantu",
+      "vault_loc": "-44578:-113396",
+      "private_clan_slot_cap": "120 Private Slots / 150 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-pinion-terminus",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Account Freight Package Transfer (1,000 Adena / Slot)",
+        "Ogre/Orc Totem & Coal/Charcoal Bulk Smelting Deposit",
+        "Hunting Helper Pet & Kookaburra Ticket Exchange"
+      ]
+    },
+    {
+      "vault_id": "vault-04-root-train-roundhouse",
+      "town_zone_id": "zone-town-root-train-roundhouse",
+      "town_name": "Root-Train Roundhouse (Dwarf Starter)",
+      "logistics_tier": "Starter_Iron_Gate_Vault",
+      "keeper_npc_name": "Iron Gate Chief Yasheni & Warehouse Keeper Airy",
+      "vault_loc": "115331:-178403",
+      "private_clan_slot_cap": "200 Dwarven Private Slots / 250 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-inductor-switchyard",
+      "freight_fee_per_slot_adena": 800,
+      "dimensional_broker_services": [
+        "Iron Gate Guild Preferential Freight Corridor (800 Adena / Slot)",
+        "Dwarven Recipe Book & Spoil Material Bulk Vaulting",
+        "Red Pipette Knife & Star Stone Extraction Freight"
+      ]
+    },
+    {
+      "vault_id": "vault-05-carillon-belfry",
+      "town_zone_id": "zone-town-carillon-belfry",
+      "town_name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+      "logistics_tier": "Starter_Iron_Gate_Vault",
+      "keeper_npc_name": "Warehouse Keeper Carlon & Freightman Haprock",
+      "vault_loc": "12640:16590",
+      "private_clan_slot_cap": "120 Private Slots / 150 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-kilnwatch-bastion",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Account Freight Package Transfer (1,000 Adena / Slot)",
+        "Abyssal Rune & Bone Powder Safe-Custody Vault",
+        "Wondrous Cubic Fragment Polish & Soul Crystal Custody"
+      ]
+    },
+    {
+      "vault_id": "vault-06-cinnamon-mill",
+      "town_zone_id": "zone-town-cinnamon-mill",
+      "town_name": "Cinnamon-Mill Haven (Furral Starter)",
+      "logistics_tier": "Starter_Iron_Gate_Vault",
+      "keeper_npc_name": "Warehouse Keeper Hoffa & Freightman Silva",
+      "vault_loc": "-117951:46583",
+      "private_clan_slot_cap": "120 Private Slots / 150 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-glaze-barge-quay",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Account Freight Package Transfer (1,000 Adena / Slot)",
+        "Furral Feather & Kamael Soul-Bolt Depot",
+        "Proof of Catching a Fish \u2014 Inventory & Vault Slot Expansion"
+      ]
+    },
+    {
+      "vault_id": "vault-07-kilnwatch-bastion",
+      "town_zone_id": "zone-town-kilnwatch-bastion",
+      "town_name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+      "logistics_tier": "Regional_Freight_Depot",
+      "keeper_npc_name": "Warehouse Chief Reed & Freightman Murphy",
+      "vault_loc": "-13942:123276",
+      "private_clan_slot_cap": "150 Private Slots / 200 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-inductor-switchyard",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "All-Race Convergence Freight Hub (Gludin/Elven/Dark-Elf \u2794 Dion \u2794 Giran)",
+        "Clan Blood Oath & Clan Reputation Material Vault",
+        "Dimensional Merchant \u2014 Hunting Helper Pet Necklace Exchange"
+      ]
+    },
+    {
+      "vault_id": "vault-08-glaze-barge-quay",
+      "town_zone_id": "zone-town-glaze-barge-quay",
+      "town_name": "Glaze-Barge Quay (River Trade & Raid Port)",
+      "logistics_tier": "Regional_Freight_Depot",
+      "keeper_npc_name": "Warehouse Chief Ranspo & Maritime Freightman Hakon",
+      "vault_loc": "-80933:151169",
+      "private_clan_slot_cap": "150 Private Slots / 200 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-inductor-switchyard",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Maritime Harbor Cargo & Pirate Isle Loot Custody",
+        "Dimensional Merchant \u2014 Neolithic Crystal C/B-Grade Upgrade",
+        "Fish Oil & Proof of Catching a Fish Bulk Expansion Counter"
+      ]
+    },
+    {
+      "vault_id": "vault-09-saffron-press",
+      "town_zone_id": "zone-town-saffron-press",
+      "town_name": "Saffron Press Village (Manor Agricultural Hub)",
+      "logistics_tier": "Regional_Freight_Depot",
+      "keeper_npc_name": "Warehouse Chief Natools & Caravan Freightman",
+      "vault_loc": "17676:169862",
+      "private_clan_slot_cap": "150 Private Slots / 200 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-kilnwatch-bastion",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Freeholds Manor Seed & Harvest Crop Safe-Custody",
+        "Account Freight Package Transfer & Caravan Insurance",
+        "Wondrous Cubic Fine Blue/Yellow Cube Fragment Exchange"
+      ]
+    },
+    {
+      "vault_id": "vault-10-pinion-terminus",
+      "town_zone_id": "zone-town-pinion-terminus",
+      "town_name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+      "logistics_tier": "Regional_Freight_Depot",
+      "keeper_npc_name": "Warehouse Chief Daisy & Steppe Freightman",
+      "vault_loc": "82685:148355",
+      "private_clan_slot_cap": "150 Private Slots / 200 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-starfall-haven",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Northern Steppe & Ice Merchant Cabin Supply Freight",
+        "Dimensional Merchant \u2014 White Weasel & Fairy Princess Pet Exchange",
+        "Scroll: Enchant Armor/Weapon Cube Fragment Polish"
+      ]
+    },
+    {
+      "vault_id": "vault-11-escapement-anvil",
+      "town_zone_id": "zone-town-escapement-anvil",
+      "town_name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+      "logistics_tier": "Regional_Freight_Depot",
+      "keeper_npc_name": "Warehouse Chief Croop & Ivory Freightman Cliff",
+      "vault_loc": "83394:52948",
+      "private_clan_slot_cap": "160 Private Slots / 210 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-torque-balance-citadel",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Oren Frontier & Cruma/Insolence Tower Spoil Depot",
+        "Dimensional Merchant \u2014 Neolithic Crystal B/A-Grade Upgrade",
+        "Clan Warehouse Sovereign Access & Audit Ledger"
+      ]
+    },
+    {
+      "vault_id": "vault-12-inductor-switchyard",
+      "town_zone_id": "zone-town-inductor-switchyard",
+      "town_name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+      "logistics_tier": "Capital_Dimensional_Broker",
+      "keeper_npc_name": "Iron Gate Chief Gesto, Freightman Parman & Dimensional Merchant",
+      "vault_loc": "147703:-55459",
+      "private_clan_slot_cap": "200 Private Slots / 250 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-torque-balance-citadel",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Giran Trade Capital \u2014 Central Continental Freight Clearinghouse",
+        "Dimensional Merchant \u2014 Neolithic Crystal A/S-Grade Masterwork Upgrade",
+        "Account-Wide Vitamin Item, Spirit Beast & Toy Knight Transfer"
+      ]
+    },
+    {
+      "vault_id": "vault-13-torque-balance-citadel",
+      "town_zone_id": "zone-town-torque-balance-citadel",
+      "town_name": "Town of Torque-Balance Citadel (Human Ancestral Expedition Hub)",
+      "logistics_tier": "Capital_Dimensional_Broker",
+      "keeper_npc_name": "Iron Gate Chief Lemper & Royal Dimensional Broker",
+      "vault_loc": "116712:-18666",
+      "private_clan_slot_cap": "200 Private Slots / 250 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-crown-beacon",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Imperial Aden Citadel \u2014 Castle Siege Supply & Crown Vault",
+        "Dimensional Merchant \u2014 S/S80 Neolithic Crystal Masterwork Conversion",
+        "Wondrous Cubic Rough/Fine Zigzag Enchant Scroll Exchange"
+      ]
+    },
+    {
+      "vault_id": "vault-14-starfall-haven",
+      "town_zone_id": "zone-town-starfall-haven",
+      "town_name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+      "logistics_tier": "Capital_Dimensional_Broker",
+      "keeper_npc_name": "Iron Gate Chief Hugin & Astral Dimensional Broker",
+      "vault_loc": "44121:-48173",
+      "private_clan_slot_cap": "200 Private Slots / 250 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-crown-beacon",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "Rune Grand Citadel \u2014 Pagan/Monastery & Gracia Airship Cargo Hub",
+        "Dimensional Merchant \u2014 S80/S84 Neolithic Crystal & Attribute Custody",
+        "Clan Sovereign Vault (+250 Slots) & Territory Badge Safe-Deposit"
+      ]
+    },
+    {
+      "vault_id": "vault-15-crown-beacon",
+      "town_zone_id": "zone-town-crown-beacon",
+      "town_name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+      "logistics_tier": "Capital_Dimensional_Broker",
+      "keeper_npc_name": "Iron Gate Grand Archon Klump & Sovereign Dimensional Broker",
+      "vault_loc": "148230:26520",
+      "private_clan_slot_cap": "240 Private Slots / 300 Clan Vault Slots (+64 Fish Expansion)",
+      "freight_corridor_partner_zone_id": "zone-town-inductor-switchyard",
+      "freight_fee_per_slot_adena": 1000,
+      "dimensional_broker_services": [
+        "High-Halo Sovereign Capital \u2014 World-Apex Inter-Continental Freight Terminal",
+        "Dimensional Merchant \u2014 S84 Vesper/Elegia Neolithic Masterwork Upgrade",
+        "Full Account Vitamin & Epic Boss Relic Vault Custody"
+      ]
+    }
+  ],
+  "atlas_master_telemetry_checkpoints": [
+    {
+      "checkpoint_id": "tour-cp-01-human-origin",
+      "step_order": 1,
+      "checkpoint_title": "Step 1: Human Origin \u2014 Lantern Hollow Spawn, Herb Fields & Lv.1\u201320 Class Trial",
+      "tour_category": "Race_Origin_To_Awakening",
+      "zone_id": "zone-town-lantern-hollow",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-83996:243622",
+      "target_zoom": 2.2,
+      "verified_dimensions_covered": [
+        "D1",
+        "D6",
+        "D9",
+        "D23",
+        "D38"
+      ],
+      "council_inspection_summary": "Verifies Human Spawn Shrine, Stage A\u2013B growth highway, Main/Job quest origin, and field herb sustainability."
+    },
+    {
+      "checkpoint_id": "tour-cp-02-lunar-origin",
+      "step_order": 2,
+      "checkpoint_title": "Step 2: Lunar Origin \u2014 Porcelain Loom Radial Moat, Companion Kennels & Dye Parlor",
+      "tour_category": "Race_Origin_To_Awakening",
+      "zone_id": "zone-town-porcelain-loom",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "45933:41329",
+      "target_zoom": 2.4,
+      "verified_dimensions_covered": [
+        "D1",
+        "D11",
+        "D15",
+        "D35",
+        "D36"
+      ],
+      "council_inspection_summary": "Verifies Lunar Spawn, Radial Moat Sanctuary archetype plate, Symbol Dye Parlor, and Pet/Strider Kennel."
+    },
+    {
+      "checkpoint_id": "tour-cp-03-ogre-orc-origin",
+      "step_order": 3,
+      "checkpoint_title": "Step 3: Ogre/Orc Origin \u2014 Draft-Kiln Flame Plateau, Cursed PK Sanctuary & Herb Grounds",
+      "tour_category": "Race_Origin_To_Awakening",
+      "zone_id": "zone-town-draft-kiln-post",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-44658:-113064",
+      "target_zoom": 2.4,
+      "verified_dimensions_covered": [
+        "D1",
+        "D7",
+        "D24",
+        "D33",
+        "D42"
+      ],
+      "council_inspection_summary": "Verifies Ogre/Orc Spawn, Field Tactical Blueprints, Party Farming Efficiency Heatmap, and Newbie Vitality Obelisk."
+    },
+    {
+      "checkpoint_id": "tour-cp-04-dwarf-origin",
+      "step_order": 4,
+      "checkpoint_title": "Step 4: Dwarf Origin \u2014 Root-Train Iron Gate Vault, Spoil Locator & Workshop Plaza",
+      "tour_category": "Race_Origin_To_Awakening",
+      "zone_id": "zone-town-root-train-roundhouse",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "115251:-178057",
+      "target_zoom": 2.6,
+      "verified_dimensions_covered": [
+        "D1",
+        "D14",
+        "D19",
+        "D39",
+        "D49"
+      ],
+      "council_inspection_summary": "Verifies Dwarf Spawn, 6-Grade Spoil/Refinement Locator, Dwarven Manufacture Workshop, and Iron Gate Freight Vault."
+    },
+    {
+      "checkpoint_id": "tour-cp-05-dark-lunar-origin",
+      "step_order": 5,
+      "checkpoint_title": "Step 5: Dark-Lunar Origin \u2014 Carillon Belfry, Seven-Seals Catacomb & Cursed Drop Zone",
+      "tour_category": "Race_Origin_To_Awakening",
+      "zone_id": "zone-town-carillon-belfry",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "12560:16950",
+      "target_zoom": 2.4,
+      "verified_dimensions_covered": [
+        "D1",
+        "D27",
+        "D31",
+        "D33",
+        "D44"
+      ],
+      "council_inspection_summary": "Verifies Dark-Lunar Spawn, Seven-Seals Dusk/Dawn Catacomb rotation, Soul Crystal Stage 1\u201310 resonance, and Kamaloka."
+    },
+    {
+      "checkpoint_id": "tour-cp-06-furral-origin",
+      "step_order": 6,
+      "checkpoint_title": "Step 6: Furral Origin \u2014 Cinnamon Mill Harbor, Maritime Ship Transit & Fishing Pier",
+      "tour_category": "Race_Origin_To_Awakening",
+      "zone_id": "zone-town-cinnamon-mill",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-118031:46957",
+      "target_zoom": 2.6,
+      "verified_dimensions_covered": [
+        "D1",
+        "D17",
+        "D30",
+        "D32",
+        "D48"
+      ],
+      "council_inspection_summary": "Verifies Furral Spawn, BFS Gatekeeper Route Calculator, Maritime Ship Transit corridor, and Fishing Guild Pier."
+    },
+    {
+      "checkpoint_id": "tour-cp-07-dion-convergence-hub",
+      "step_order": 7,
+      "checkpoint_title": "Step 7: Dion All-Race Convergence \u2014 1..12 Street Blueprint, Clan Academy & Manor Seed",
+      "tour_category": "Town_Blueprint_And_Economy",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-14022:123664",
+      "target_zoom": 5.2,
+      "verified_dimensions_covered": [
+        "D2",
+        "D10",
+        "D13",
+        "D28",
+        "D37"
+      ],
+      "council_inspection_summary": "Verifies Lv.10\u201320 All-Race Convergence Hub, #1..#12 Town Street Blueprint, Omni-Search, Manor Seeds, and Clan Academy."
+    },
+    {
+      "checkpoint_id": "tour-cp-08-giran-trade-metropolis",
+      "step_order": 8,
+      "checkpoint_title": "Step 8: Giran Trade Metropolis \u2014 Luxury Auction Hall, Agathion Gallery & Master Forge",
+      "tour_category": "Town_Blueprint_And_Economy",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147587:-55029",
+      "target_zoom": 5.2,
+      "verified_dimensions_covered": [
+        "D2",
+        "D10",
+        "D39",
+        "D43",
+        "D47",
+        "D48",
+        "D49"
+      ],
+      "council_inspection_summary": "Verifies Giran Metropolitan Auction Clan Hall, Luxury Shop Agathion Altar, Armor Set Masterwork Forge, and Freight Hub."
+    },
+    {
+      "checkpoint_id": "tour-cp-09-oren-ivory-frontier",
+      "step_order": 9,
+      "checkpoint_title": "Step 9: Oren Frontier & Ivory Sanctum \u2014 Schematic Grid, Avant-Garde & Territory Wards",
+      "tour_category": "Town_Blueprint_And_Economy",
+      "zone_id": "zone-town-escapement-anvil",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "83296:53378",
+      "target_zoom": 5.2,
+      "verified_dimensions_covered": [
+        "D8",
+        "D11",
+        "D25",
+        "D40",
+        "D45",
+        "D48"
+      ],
+      "council_inspection_summary": "Verifies Oren Schematic Grid Blueprint, Castle Siege Tax Domain, Territory Ward Relics, and Avant-Garde Transformations."
+    },
+    {
+      "checkpoint_id": "tour-cp-10-aden-imperial-citadel",
+      "step_order": 10,
+      "checkpoint_title": "Step 10: Imperial Aden Citadel \u2014 Olympiad Monument, 4-Slot Talisman & Contested Chateau",
+      "tour_category": "Town_Blueprint_And_Economy",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "116605:-18215",
+      "target_zoom": 5.2,
+      "verified_dimensions_covered": [
+        "D20",
+        "D22",
+        "D29",
+        "D47",
+        "D48"
+      ],
+      "council_inspection_summary": "Verifies Grand Olympiad Monument, Noblesse Shrine, 4-Slot Mithril Bracelet Talisman Vault, and PiP World Radar Mini-Map."
+    },
+    {
+      "checkpoint_id": "tour-cp-11-rune-astral-sanctuary",
+      "step_order": 11,
+      "checkpoint_title": "Step 11: Rune Grand Sanctuary \u2014 Airship Transit, Forgotten Scrolls & Vitality Stage-4",
+      "tour_category": "Town_Blueprint_And_Economy",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "44014:-47708",
+      "target_zoom": 5.2,
+      "verified_dimensions_covered": [
+        "D16",
+        "D30",
+        "D42",
+        "D45",
+        "D46"
+      ],
+      "council_inspection_summary": "Verifies Unified 63-Zone Directory, Gracia Brass Airship Dock, Lv.81\u201383 Forgotten Scrolls, and Elemental Crystal Quarries."
+    },
+    {
+      "checkpoint_id": "tour-cp-12-crown-beacon-sovereign",
+      "step_order": 12,
+      "checkpoint_title": "Step 12: High-Halo Crown Beacon \u2014 Sovereign Dynasty/Vesper Forge & 50D Telemetry",
+      "tour_category": "Town_Blueprint_And_Economy",
+      "zone_id": "zone-town-crown-beacon",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "148123:26999",
+      "target_zoom": 5.2,
+      "verified_dimensions_covered": [
+        "D5",
+        "D6",
+        "D43",
+        "D49",
+        "D50"
+      ],
+      "council_inspection_summary": "Verifies Sovereign Capital anti-clutter layout, Dynasty/Vesper Masterwork Forge, Dimensional Broker, and 50D Studio Inspector."
+    },
+    {
+      "checkpoint_id": "tour-cp-13-ant-nest-queen-larva",
+      "step_order": 13,
+      "checkpoint_title": "Step 13: Kiln Cellar (The Ant Nest B3) \u2014 Queen Ant Epic Ring & Underground Cutaway",
+      "tour_category": "Multi_Floor_Dungeon_Sanctum",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B3",
+      "loc": "75642:117026",
+      "target_zoom": 3.6,
+      "verified_dimensions_covered": [
+        "D3",
+        "D4",
+        "D12",
+        "D18",
+        "D41"
+      ],
+      "council_inspection_summary": "Verifies B1\u2013B3 Underground Cutaway Elevation, Clickable Chamber Inspector, and Ring of Queen Ant Epic Boss Jewelry."
+    },
+    {
+      "checkpoint_id": "tour-cp-14-cruma-tower-core",
+      "step_order": 14,
+      "checkpoint_title": "Step 14: Pendulum Shaft (Cruma Tower 3F) \u2014 Core Sanctum, C/B-Grade Spoils & Raid Radar",
+      "tour_category": "Multi_Floor_Dungeon_Sanctum",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "3F",
+      "loc": "85641:144413",
+      "target_zoom": 3.6,
+      "verified_dimensions_covered": [
+        "D3",
+        "D12",
+        "D14",
+        "D26",
+        "D41"
+      ],
+      "council_inspection_summary": "Verifies 1F\u20133F Vertical Tower Cutaway, Core MVP Apostle spawn, and 32-Boss World Respawn Radar."
+    },
+    {
+      "checkpoint_id": "tour-cp-15-sunken-hold-zaken",
+      "step_order": 15,
+      "checkpoint_title": "Step 15: Sunken Potter Hold (Devil's Isle B3) \u2014 Night Zaken Earring & Vampire Sealbook",
+      "tour_category": "Multi_Floor_Dungeon_Sanctum",
+      "zone_id": "zone-dungeon-sunken-potter-hold",
+      "dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "floor_id": "B3",
+      "loc": "-78150:149420",
+      "target_zoom": 3.6,
+      "verified_dimensions_covered": [
+        "D3",
+        "D21",
+        "D41",
+        "D44",
+        "D48"
+      ],
+      "council_inspection_summary": "Verifies Thalassa Sealed-God Apostle chain, Zaken's Earring (+Stun/Vampiric), Daytime Pailaka/Instance, and Zaken Morph."
+    },
+    {
+      "checkpoint_id": "tour-cp-16-insolence-baium-top",
+      "step_order": 16,
+      "checkpoint_title": "Step 16: Star-Heart Nave (Tower of Insolence 3F) \u2014 Baium Ring, Subclass & Anakim",
+      "tour_category": "Multi_Floor_Dungeon_Sanctum",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149459:28627",
+      "target_zoom": 3.8,
+      "verified_dimensions_covered": [
+        "D21",
+        "D29",
+        "D31",
+        "D41",
+        "D48"
+      ],
+      "council_inspection_summary": "Verifies Subclass Mimir's Elixir blood pipetting, Stage 12\u201313 Soul Crystal resonance, Ring of Baium, and Anakim Sealbook."
+    },
+    {
+      "checkpoint_id": "tour-cp-17-forge-gods-valakas",
+      "step_order": 17,
+      "checkpoint_title": "Step 17: Chronometer Foundry (Forge of the Gods 3F) \u2014 Valakas Necklace & Fire Crystal 300",
+      "tour_category": "Multi_Floor_Dungeon_Sanctum",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "85068:56634",
+      "target_zoom": 3.8,
+      "verified_dimensions_covered": [
+        "D18",
+        "D21",
+        "D34",
+        "D41",
+        "D46"
+      ],
+      "council_inspection_summary": "Verifies Four Sepulchers / Key-Gated Chapel entrance, Fire Crystal (150->300) sanctum, and Necklace of Valakas."
+    },
+    {
+      "checkpoint_id": "tour-cp-18-forbidden-catacomb-mammon",
+      "step_order": 18,
+      "checkpoint_title": "Step 18: Forbidden Path Catacomb (B3) \u2014 Blacksmith of Mammon, Rift & Ancient Tomes",
+      "tour_category": "Multi_Floor_Dungeon_Sanctum",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B3",
+      "loc": "18677:-63959",
+      "target_zoom": 3.8,
+      "verified_dimensions_covered": [
+        "D21",
+        "D27",
+        "D34",
+        "D45",
+        "D50"
+      ],
+      "council_inspection_summary": "Verifies Sealed-God Catacomb, Blacksmith/Merchant of Mammon rotation, Dimensional Rift portal, and Ancient Tome drops."
+    }
   ]
 }

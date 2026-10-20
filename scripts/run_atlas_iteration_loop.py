@@ -7726,6 +7726,525 @@ def _build_transformation_talisman_sanctums(atlas: dict[str, Any]) -> list[dict[
     return rows
 
 
+def _build_warehouse_freight_vaults(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 Town Iron Gate Warehouse, Clan Vault & Freight Logistics Hubs (6 Starter_Iron_Gate_Vault + 5 Regional_Freight_Depot + 4 Capital_Dimensional_Broker) (D49)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 6 Starter_Iron_Gate_Vault Towns
+        (
+            "vault-01-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Starter_Iron_Gate_Vault",
+            "Warehouse Keeper Dorankus & Freightman Collette",
+            "120 Private Slots / 150 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-kilnwatch-bastion",
+            1000,
+            [
+                "Account Freight Package Transfer (1,000 Adena / Slot to Any Town)",
+                "Apprentice Adventurer Cube & Wondrous Cubic Fragment Exchange",
+                "Proof of Catching a Fish — Private Warehouse Slot Expansion",
+            ],
+        ),
+        (
+            "vault-02-porcelain-loom",
+            "zone-town-porcelain-loom",
+            "Starter_Iron_Gate_Vault",
+            "Warehouse Keeper Julia & Freightman Rant",
+            "120 Private Slots / 150 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-kilnwatch-bastion",
+            1000,
+            [
+                "Account Freight Package Transfer (1,000 Adena / Slot)",
+                "Lunar Silk & Oriharukon Ore Safe-Custody Deposit",
+                "Proof of Catching a Fish — Private Warehouse Slot Expansion",
+            ],
+        ),
+        (
+            "vault-03-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Starter_Iron_Gate_Vault",
+            "Warehouse Keeper Grookin & Freightman Imantu",
+            "120 Private Slots / 150 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-pinion-terminus",
+            1000,
+            [
+                "Account Freight Package Transfer (1,000 Adena / Slot)",
+                "Ogre/Orc Totem & Coal/Charcoal Bulk Smelting Deposit",
+                "Hunting Helper Pet & Kookaburra Ticket Exchange",
+            ],
+        ),
+        (
+            "vault-04-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Starter_Iron_Gate_Vault",
+            "Iron Gate Chief Yasheni & Warehouse Keeper Airy",
+            "200 Dwarven Private Slots / 250 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-inductor-switchyard",
+            800,
+            [
+                "Iron Gate Guild Preferential Freight Corridor (800 Adena / Slot)",
+                "Dwarven Recipe Book & Spoil Material Bulk Vaulting",
+                "Red Pipette Knife & Star Stone Extraction Freight",
+            ],
+        ),
+        (
+            "vault-05-carillon-belfry",
+            "zone-town-carillon-belfry",
+            "Starter_Iron_Gate_Vault",
+            "Warehouse Keeper Carlon & Freightman Haprock",
+            "120 Private Slots / 150 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-kilnwatch-bastion",
+            1000,
+            [
+                "Account Freight Package Transfer (1,000 Adena / Slot)",
+                "Abyssal Rune & Bone Powder Safe-Custody Vault",
+                "Wondrous Cubic Fragment Polish & Soul Crystal Custody",
+            ],
+        ),
+        (
+            "vault-06-cinnamon-mill",
+            "zone-town-cinnamon-mill",
+            "Starter_Iron_Gate_Vault",
+            "Warehouse Keeper Hoffa & Freightman Silva",
+            "120 Private Slots / 150 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-glaze-barge-quay",
+            1000,
+            [
+                "Account Freight Package Transfer (1,000 Adena / Slot)",
+                "Furral Feather & Kamael Soul-Bolt Depot",
+                "Proof of Catching a Fish — Inventory & Vault Slot Expansion",
+            ],
+        ),
+        # 5 Regional_Freight_Depot Towns
+        (
+            "vault-07-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Regional_Freight_Depot",
+            "Warehouse Chief Reed & Freightman Murphy",
+            "150 Private Slots / 200 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-inductor-switchyard",
+            1000,
+            [
+                "All-Race Convergence Freight Hub (Gludin/Elven/Dark-Elf ➔ Dion ➔ Giran)",
+                "Clan Blood Oath & Clan Reputation Material Vault",
+                "Dimensional Merchant — Hunting Helper Pet Necklace Exchange",
+            ],
+        ),
+        (
+            "vault-08-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Regional_Freight_Depot",
+            "Warehouse Chief Ranspo & Maritime Freightman Hakon",
+            "150 Private Slots / 200 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-inductor-switchyard",
+            1000,
+            [
+                "Maritime Harbor Cargo & Pirate Isle Loot Custody",
+                "Dimensional Merchant — Neolithic Crystal C/B-Grade Upgrade",
+                "Fish Oil & Proof of Catching a Fish Bulk Expansion Counter",
+            ],
+        ),
+        (
+            "vault-09-saffron-press",
+            "zone-town-saffron-press",
+            "Regional_Freight_Depot",
+            "Warehouse Chief Natools & Caravan Freightman",
+            "150 Private Slots / 200 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-kilnwatch-bastion",
+            1000,
+            [
+                "Freeholds Manor Seed & Harvest Crop Safe-Custody",
+                "Account Freight Package Transfer & Caravan Insurance",
+                "Wondrous Cubic Fine Blue/Yellow Cube Fragment Exchange",
+            ],
+        ),
+        (
+            "vault-10-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Regional_Freight_Depot",
+            "Warehouse Chief Daisy & Steppe Freightman",
+            "150 Private Slots / 200 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-starfall-haven",
+            1000,
+            [
+                "Northern Steppe & Ice Merchant Cabin Supply Freight",
+                "Dimensional Merchant — White Weasel & Fairy Princess Pet Exchange",
+                "Scroll: Enchant Armor/Weapon Cube Fragment Polish",
+            ],
+        ),
+        (
+            "vault-11-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Regional_Freight_Depot",
+            "Warehouse Chief Croop & Ivory Freightman Cliff",
+            "160 Private Slots / 210 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-torque-balance-citadel",
+            1000,
+            [
+                "Oren Frontier & Cruma/Insolence Tower Spoil Depot",
+                "Dimensional Merchant — Neolithic Crystal B/A-Grade Upgrade",
+                "Clan Warehouse Sovereign Access & Audit Ledger",
+            ],
+        ),
+        # 4 Capital_Dimensional_Broker Towns
+        (
+            "vault-12-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Capital_Dimensional_Broker",
+            "Iron Gate Chief Gesto, Freightman Parman & Dimensional Merchant",
+            "200 Private Slots / 250 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-torque-balance-citadel",
+            1000,
+            [
+                "Giran Trade Capital — Central Continental Freight Clearinghouse",
+                "Dimensional Merchant — Neolithic Crystal A/S-Grade Masterwork Upgrade",
+                "Account-Wide Vitamin Item, Spirit Beast & Toy Knight Transfer",
+            ],
+        ),
+        (
+            "vault-13-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Capital_Dimensional_Broker",
+            "Iron Gate Chief Lemper & Royal Dimensional Broker",
+            "200 Private Slots / 250 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-crown-beacon",
+            1000,
+            [
+                "Imperial Aden Citadel — Castle Siege Supply & Crown Vault",
+                "Dimensional Merchant — S/S80 Neolithic Crystal Masterwork Conversion",
+                "Wondrous Cubic Rough/Fine Zigzag Enchant Scroll Exchange",
+            ],
+        ),
+        (
+            "vault-14-starfall-haven",
+            "zone-town-starfall-haven",
+            "Capital_Dimensional_Broker",
+            "Iron Gate Chief Hugin & Astral Dimensional Broker",
+            "200 Private Slots / 250 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-crown-beacon",
+            1000,
+            [
+                "Rune Grand Citadel — Pagan/Monastery & Gracia Airship Cargo Hub",
+                "Dimensional Merchant — S80/S84 Neolithic Crystal & Attribute Custody",
+                "Clan Sovereign Vault (+250 Slots) & Territory Badge Safe-Deposit",
+            ],
+        ),
+        (
+            "vault-15-crown-beacon",
+            "zone-town-crown-beacon",
+            "Capital_Dimensional_Broker",
+            "Iron Gate Grand Archon Klump & Sovereign Dimensional Broker",
+            "240 Private Slots / 300 Clan Vault Slots (+64 Fish Expansion)",
+            "zone-town-inductor-switchyard",
+            1000,
+            [
+                "High-Halo Sovereign Capital — World-Apex Inter-Continental Freight Terminal",
+                "Dimensional Merchant — S84 Vesper/Elegia Neolithic Masterwork Upgrade",
+                "Full Account Vitamin & Epic Boss Relic Vault Custody",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        vid,
+        tzid,
+        ltier,
+        knpc,
+        scap,
+        pzid,
+        ffee,
+        bserv,
+    ) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(tzid) or {}
+        tname = str(t_obj.get("name", tzid))
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        vloc = _fmt_loc(bx + 195 + idx * 9, by - 175 - idx * 7)
+        rows.append(
+            {
+                "vault_id": vid,
+                "town_zone_id": tzid,
+                "town_name": tname,
+                "logistics_tier": ltier,
+                "keeper_npc_name": knpc,
+                "vault_loc": vloc,
+                "private_clan_slot_cap": scap,
+                "freight_corridor_partner_zone_id": pzid,
+                "freight_fee_per_slot_adena": ffee,
+                "dimensional_broker_services": bserv,
+            }
+        )
+    return rows
+
+
+def _build_atlas_master_telemetry_checkpoints(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 18 Master Cartographic Tour & 50-Dimension Studio Checkpoints (6 Race_Origin_To_Awakening + 6 Town_Blueprint_And_Economy + 6 Multi_Floor_Dungeon_Sanctum covering D1–D50) (D50)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones: list[dict[str, Any]] = []
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            all_zones.extend(e for e in entries if isinstance(e, dict))
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if z.get("zone_id")}
+    specs = [
+        # 6 Race_Origin_To_Awakening Checkpoints (Steps 1..6)
+        (
+            "tour-cp-01-human-origin",
+            1,
+            "Step 1: Human Origin — Lantern Hollow Spawn, Herb Fields & Lv.1–20 Class Trial",
+            "Race_Origin_To_Awakening",
+            "zone-town-lantern-hollow",
+            "",
+            "",
+            2.2,
+            ["D1", "D6", "D9", "D23", "D38"],
+            "Verifies Human Spawn Shrine, Stage A–B growth highway, Main/Job quest origin, and field herb sustainability.",
+        ),
+        (
+            "tour-cp-02-lunar-origin",
+            2,
+            "Step 2: Lunar Origin — Porcelain Loom Radial Moat, Companion Kennels & Dye Parlor",
+            "Race_Origin_To_Awakening",
+            "zone-town-porcelain-loom",
+            "",
+            "",
+            2.4,
+            ["D1", "D11", "D15", "D35", "D36"],
+            "Verifies Lunar Spawn, Radial Moat Sanctuary archetype plate, Symbol Dye Parlor, and Pet/Strider Kennel.",
+        ),
+        (
+            "tour-cp-03-ogre-orc-origin",
+            3,
+            "Step 3: Ogre/Orc Origin — Draft-Kiln Flame Plateau, Cursed PK Sanctuary & Herb Grounds",
+            "Race_Origin_To_Awakening",
+            "zone-town-draft-kiln-post",
+            "",
+            "",
+            2.4,
+            ["D1", "D7", "D24", "D33", "D42"],
+            "Verifies Ogre/Orc Spawn, Field Tactical Blueprints, Party Farming Efficiency Heatmap, and Newbie Vitality Obelisk.",
+        ),
+        (
+            "tour-cp-04-dwarf-origin",
+            4,
+            "Step 4: Dwarf Origin — Root-Train Iron Gate Vault, Spoil Locator & Workshop Plaza",
+            "Race_Origin_To_Awakening",
+            "zone-town-root-train-roundhouse",
+            "",
+            "",
+            2.6,
+            ["D1", "D14", "D19", "D39", "D49"],
+            "Verifies Dwarf Spawn, 6-Grade Spoil/Refinement Locator, Dwarven Manufacture Workshop, and Iron Gate Freight Vault.",
+        ),
+        (
+            "tour-cp-05-dark-lunar-origin",
+            5,
+            "Step 5: Dark-Lunar Origin — Carillon Belfry, Seven-Seals Catacomb & Cursed Drop Zone",
+            "Race_Origin_To_Awakening",
+            "zone-town-carillon-belfry",
+            "",
+            "",
+            2.4,
+            ["D1", "D27", "D31", "D33", "D44"],
+            "Verifies Dark-Lunar Spawn, Seven-Seals Dusk/Dawn Catacomb rotation, Soul Crystal Stage 1–10 resonance, and Kamaloka.",
+        ),
+        (
+            "tour-cp-06-furral-origin",
+            6,
+            "Step 6: Furral Origin — Cinnamon Mill Harbor, Maritime Ship Transit & Fishing Pier",
+            "Race_Origin_To_Awakening",
+            "zone-town-cinnamon-mill",
+            "",
+            "",
+            2.6,
+            ["D1", "D17", "D30", "D32", "D48"],
+            "Verifies Furral Spawn, BFS Gatekeeper Route Calculator, Maritime Ship Transit corridor, and Fishing Guild Pier.",
+        ),
+        # 6 Town_Blueprint_And_Economy Checkpoints (Steps 7..12)
+        (
+            "tour-cp-07-dion-convergence-hub",
+            7,
+            "Step 7: Dion All-Race Convergence — 1..12 Street Blueprint, Clan Academy & Manor Seed",
+            "Town_Blueprint_And_Economy",
+            "zone-town-kilnwatch-bastion",
+            "",
+            "",
+            5.2,
+            ["D2", "D10", "D13", "D28", "D37"],
+            "Verifies Lv.10–20 All-Race Convergence Hub, #1..#12 Town Street Blueprint, Omni-Search, Manor Seeds, and Clan Academy.",
+        ),
+        (
+            "tour-cp-08-giran-trade-metropolis",
+            8,
+            "Step 8: Giran Trade Metropolis — Luxury Auction Hall, Agathion Gallery & Master Forge",
+            "Town_Blueprint_And_Economy",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            5.2,
+            ["D2", "D10", "D39", "D43", "D47", "D48", "D49"],
+            "Verifies Giran Metropolitan Auction Clan Hall, Luxury Shop Agathion Altar, Armor Set Masterwork Forge, and Freight Hub.",
+        ),
+        (
+            "tour-cp-09-oren-ivory-frontier",
+            9,
+            "Step 9: Oren Frontier & Ivory Sanctum — Schematic Grid, Avant-Garde & Territory Wards",
+            "Town_Blueprint_And_Economy",
+            "zone-town-escapement-anvil",
+            "",
+            "",
+            5.2,
+            ["D8", "D11", "D25", "D40", "D45", "D48"],
+            "Verifies Oren Schematic Grid Blueprint, Castle Siege Tax Domain, Territory Ward Relics, and Avant-Garde Transformations.",
+        ),
+        (
+            "tour-cp-10-aden-imperial-citadel",
+            10,
+            "Step 10: Imperial Aden Citadel — Olympiad Monument, 4-Slot Talisman & Contested Chateau",
+            "Town_Blueprint_And_Economy",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            5.2,
+            ["D20", "D22", "D29", "D47", "D48"],
+            "Verifies Grand Olympiad Monument, Noblesse Shrine, 4-Slot Mithril Bracelet Talisman Vault, and PiP World Radar Mini-Map.",
+        ),
+        (
+            "tour-cp-11-rune-astral-sanctuary",
+            11,
+            "Step 11: Rune Grand Sanctuary — Airship Transit, Forgotten Scrolls & Vitality Stage-4",
+            "Town_Blueprint_And_Economy",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            5.2,
+            ["D16", "D30", "D42", "D45", "D46"],
+            "Verifies Unified 63-Zone Directory, Gracia Brass Airship Dock, Lv.81–83 Forgotten Scrolls, and Elemental Crystal Quarries.",
+        ),
+        (
+            "tour-cp-12-crown-beacon-sovereign",
+            12,
+            "Step 12: High-Halo Crown Beacon — Sovereign Dynasty/Vesper Forge & 50D Telemetry",
+            "Town_Blueprint_And_Economy",
+            "zone-town-crown-beacon",
+            "",
+            "",
+            5.2,
+            ["D5", "D6", "D43", "D49", "D50"],
+            "Verifies Sovereign Capital anti-clutter layout, Dynasty/Vesper Masterwork Forge, Dimensional Broker, and 50D Studio Inspector.",
+        ),
+        # 6 Multi_Floor_Dungeon_Sanctum Checkpoints (Steps 13..18)
+        (
+            "tour-cp-13-ant-nest-queen-larva",
+            13,
+            "Step 13: Kiln Cellar (The Ant Nest B3) — Queen Ant Epic Ring & Underground Cutaway",
+            "Multi_Floor_Dungeon_Sanctum",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            3.6,
+            ["D3", "D4", "D12", "D18", "D41"],
+            "Verifies B1–B3 Underground Cutaway Elevation, Clickable Chamber Inspector, and Ring of Queen Ant Epic Boss Jewelry.",
+        ),
+        (
+            "tour-cp-14-cruma-tower-core",
+            14,
+            "Step 14: Pendulum Shaft (Cruma Tower 3F) — Core Sanctum, C/B-Grade Spoils & Raid Radar",
+            "Multi_Floor_Dungeon_Sanctum",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            3.6,
+            ["D3", "D12", "D14", "D26", "D41"],
+            "Verifies 1F–3F Vertical Tower Cutaway, Core MVP Apostle spawn, and 32-Boss World Respawn Radar.",
+        ),
+        (
+            "tour-cp-15-sunken-hold-zaken",
+            15,
+            "Step 15: Sunken Potter Hold (Devil's Isle B3) — Night Zaken Earring & Vampire Sealbook",
+            "Multi_Floor_Dungeon_Sanctum",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B3",
+            3.6,
+            ["D3", "D21", "D41", "D44", "D48"],
+            "Verifies Thalassa Sealed-God Apostle chain, Zaken's Earring (+Stun/Vampiric), Daytime Pailaka/Instance, and Zaken Morph.",
+        ),
+        (
+            "tour-cp-16-insolence-baium-top",
+            16,
+            "Step 16: Star-Heart Nave (Tower of Insolence 3F) — Baium Ring, Subclass & Anakim",
+            "Multi_Floor_Dungeon_Sanctum",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            3.8,
+            ["D21", "D29", "D31", "D41", "D48"],
+            "Verifies Subclass Mimir's Elixir blood pipetting, Stage 12–13 Soul Crystal resonance, Ring of Baium, and Anakim Sealbook.",
+        ),
+        (
+            "tour-cp-17-forge-gods-valakas",
+            17,
+            "Step 17: Chronometer Foundry (Forge of the Gods 3F) — Valakas Necklace & Fire Crystal 300",
+            "Multi_Floor_Dungeon_Sanctum",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            3.8,
+            ["D18", "D21", "D34", "D41", "D46"],
+            "Verifies Four Sepulchers / Key-Gated Chapel entrance, Fire Crystal (150->300) sanctum, and Necklace of Valakas.",
+        ),
+        (
+            "tour-cp-18-forbidden-catacomb-mammon",
+            18,
+            "Step 18: Forbidden Path Catacomb (B3) — Blacksmith of Mammon, Rift & Ancient Tomes",
+            "Multi_Floor_Dungeon_Sanctum",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            3.8,
+            ["D21", "D27", "D34", "D45", "D50"],
+            "Verifies Sealed-God Catacomb, Blacksmith/Merchant of Mammon rotation, Dimensional Rift portal, and Ancient Tome drops.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        cid,
+        sorder,
+        ctitle,
+        tcat,
+        zid,
+        did,
+        fid,
+        tzoom,
+        vdims,
+        csum,
+    ) in specs:
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx + 115 + sorder * 9, by + 115 + sorder * 7)
+        rows.append(
+            {
+                "checkpoint_id": cid,
+                "step_order": sorder,
+                "checkpoint_title": ctitle,
+                "tour_category": tcat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "target_zoom": tzoom,
+                "verified_dimensions_covered": vdims,
+                "council_inspection_summary": csum,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -8800,6 +9319,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("transformation_talisman_sanctums") or []) < 15:
         atlas["transformation_talisman_sanctums"] = _build_transformation_talisman_sanctums(atlas)
         actions.append("populated_15_transformation_talisman_sanctums")
+
+    # 33. Ensure all 15 Town Iron Gate Warehouse, Clan Vault & Freight Logistics Hubs exist in `warehouse_freight_vaults` (D49)
+    if len(atlas.get("warehouse_freight_vaults") or []) < 15:
+        atlas["warehouse_freight_vaults"] = _build_warehouse_freight_vaults(atlas)
+        actions.append("populated_15_warehouse_freight_vaults")
+
+    # 34. Ensure all 18 Master Cartographic Tour & 50-Dimension Studio Checkpoints exist in `atlas_master_telemetry_checkpoints` (D50)
+    if len(atlas.get("atlas_master_telemetry_checkpoints") or []) < 18:
+        atlas["atlas_master_telemetry_checkpoints"] = _build_atlas_master_telemetry_checkpoints(atlas)
+        actions.append("populated_18_atlas_master_telemetry_checkpoints")
 
     return {"actions": actions}
 
@@ -11213,15 +11742,162 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d48_ratio * 80.0, 1)
     )
 
+    # D49: Interactive 15-Town Iron Gate Warehouse, Clan Vault & Freight Logistics Network (`warehouse_freight_vaults` - 15/15 Town Hubs = 6 Starter_Iron_Gate_Vault + 5 Regional_Freight_Depot + 4 Capital_Dimensional_Broker)
+    expected_logistics_tiers = {
+        "Starter_Iron_Gate_Vault",
+        "Regional_Freight_Depot",
+        "Capital_Dimensional_Broker",
+    }
+    vault_rows = atlas.get("warehouse_freight_vaults") or []
+    valid_warehouse_vaults = 0
+    starter_vault_count = 0
+    regional_depot_count = 0
+    capital_broker_count = 0
+    seen_vault_ids: set[str] = set()
+    seen_vault_towns: set[str] = set()
+    seen_logistics_tiers: set[str] = set()
+    for vr in vault_rows:
+        if not isinstance(vr, dict):
+            continue
+        vid = str(vr.get("vault_id") or "")
+        tzid = str(vr.get("town_zone_id") or "")
+        pzid = str(vr.get("freight_corridor_partner_zone_id") or "")
+        ltier = str(vr.get("logistics_tier") or "")
+        bserv = vr.get("dimensional_broker_services") or []
+        ffee = vr.get("freight_fee_per_slot_adena")
+        if (
+            vid
+            and vid not in seen_vault_ids
+            and tzid in town_zone_id_set
+            and tzid not in seen_vault_towns
+            and pzid in town_zone_id_set
+            and vr.get("town_name")
+            and ltier in expected_logistics_tiers
+            and vr.get("keeper_npc_name")
+            and ":" in str(vr.get("vault_loc", ""))
+            and vr.get("private_clan_slot_cap")
+            and isinstance(ffee, int)
+            and ffee >= 1
+            and isinstance(bserv, list)
+            and len(bserv) >= 2
+        ):
+            valid_warehouse_vaults += 1
+            seen_vault_ids.add(vid)
+            seen_vault_towns.add(tzid)
+            seen_logistics_tiers.add(ltier)
+            if ltier == "Starter_Iron_Gate_Vault":
+                starter_vault_count += 1
+            elif ltier == "Regional_Freight_Depot":
+                regional_depot_count += 1
+            elif ltier == "Capital_Dimensional_Broker":
+                capital_broker_count += 1
+
+    has_d49_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_WAREHOUSE_MODE",
+            "setAtlasWarehouseMode",
+            "renderAtlasWarehouseBarHtml",
+            "studioWarehouseFreightOverlay",
+        )
+    )
+    d49_ratio = valid_warehouse_vaults / 15.0
+    d49_full_coverage = (
+        starter_vault_count == 6
+        and regional_depot_count == 5
+        and capital_broker_count == 4
+        and seen_logistics_tiers == expected_logistics_tiers
+    )
+    d49_score = (
+        round(min(100.0, d49_ratio * 100.0), 1)
+        if (has_d49_ui and d49_full_coverage)
+        else round(d49_ratio * 80.0, 1)
+    )
+
+    # D50: Interactive 18-Checkpoint Master Cartographic Tour & 50-Dimension Studio Inspector (`atlas_master_telemetry_checkpoints` - 18/18 Checkpoints = 6 Race_Origin_To_Awakening + 6 Town_Blueprint_And_Economy + 6 Multi_Floor_Dungeon_Sanctum)
+    expected_tour_categories = {
+        "Race_Origin_To_Awakening",
+        "Town_Blueprint_And_Economy",
+        "Multi_Floor_Dungeon_Sanctum",
+    }
+    checkpoint_rows = atlas.get("atlas_master_telemetry_checkpoints") or []
+    valid_tour_checkpoints = 0
+    race_origin_cp_count = 0
+    town_blueprint_cp_count = 0
+    dungeon_sanctum_cp_count = 0
+    seen_checkpoint_ids: set[str] = set()
+    seen_step_orders: set[int] = set()
+    seen_tour_categories: set[str] = set()
+    for cp in checkpoint_rows:
+        if not isinstance(cp, dict):
+            continue
+        cid = str(cp.get("checkpoint_id") or "")
+        sorder = cp.get("step_order")
+        tcat = str(cp.get("tour_category") or "")
+        zid = str(cp.get("zone_id") or "")
+        tzoom = cp.get("target_zoom")
+        vdims = cp.get("verified_dimensions_covered") or []
+        if (
+            cid
+            and cid not in seen_checkpoint_ids
+            and isinstance(sorder, int)
+            and 1 <= sorder <= 18
+            and sorder not in seen_step_orders
+            and cp.get("checkpoint_title")
+            and tcat in expected_tour_categories
+            and zid in zone_ids_set
+            and isinstance(cp.get("dungeon_id"), str)
+            and isinstance(cp.get("floor_id"), str)
+            and ":" in str(cp.get("loc", ""))
+            and isinstance(tzoom, (int, float))
+            and float(tzoom) >= 1.0
+            and isinstance(vdims, list)
+            and len(vdims) >= 2
+            and cp.get("council_inspection_summary")
+        ):
+            valid_tour_checkpoints += 1
+            seen_checkpoint_ids.add(cid)
+            seen_step_orders.add(sorder)
+            seen_tour_categories.add(tcat)
+            if tcat == "Race_Origin_To_Awakening":
+                race_origin_cp_count += 1
+            elif tcat == "Town_Blueprint_And_Economy":
+                town_blueprint_cp_count += 1
+            elif tcat == "Multi_Floor_Dungeon_Sanctum":
+                dungeon_sanctum_cp_count += 1
+
+    has_d50_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_MASTER_TOUR_MODE",
+            "setAtlasMasterTourMode",
+            "renderAtlasMasterTourBarHtml",
+            "studioMasterTourOverlay",
+        )
+    )
+    d50_ratio = valid_tour_checkpoints / 18.0
+    d50_full_coverage = (
+        race_origin_cp_count == 6
+        and town_blueprint_cp_count == 6
+        and dungeon_sanctum_cp_count == 6
+        and seen_tour_categories == expected_tour_categories
+        and seen_step_orders == set(range(1, 19))
+    )
+    d50_score = (
+        round(min(100.0, d50_ratio * 100.0), 1)
+        if (has_d50_ui and d50_full_coverage)
+        else round(d50_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 30.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 32.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 32.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 42.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 31.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 38.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 32.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 34.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 34.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 44.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 33.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 40.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -11274,8 +11950,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d46_score
             + d47_score
             + d48_score
+            + d49_score
+            + d50_score
         )
-        / 48.0,
+        / 50.0,
         1,
     )
 
@@ -11645,6 +12323,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "relic_categories": sorted(seen_relic_categories),
                 "ui_wired": has_d48_ui,
             },
+            "D49_warehouse_clan_vault_and_freight_network": {
+                "score": d49_score,
+                "verified": valid_warehouse_vaults,
+                "target": 15,
+                "starter_iron_gate_vaults": starter_vault_count,
+                "regional_freight_depots": regional_depot_count,
+                "capital_dimensional_brokers": capital_broker_count,
+                "logistics_tiers": sorted(seen_logistics_tiers),
+                "ui_wired": has_d49_ui,
+            },
+            "D50_master_cartographic_tour_and_50d_inspector": {
+                "score": d50_score,
+                "verified": valid_tour_checkpoints,
+                "target": 18,
+                "race_origin_checkpoints": race_origin_cp_count,
+                "town_blueprint_checkpoints": town_blueprint_cp_count,
+                "dungeon_sanctum_checkpoints": dungeon_sanctum_cp_count,
+                "tour_categories": sorted(seen_tour_categories),
+                "ui_wired": has_d50_ui,
+            },
         },
     }
 
@@ -11737,6 +12435,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D46 (14 Elemental Quarries) : {dims['D46_elemental_stone_crystal_and_caravan_quarries']['score']}/100 ({dims['D46_elemental_stone_crystal_and_caravan_quarries']['verified']}/{dims['D46_elemental_stone_crystal_and_caravan_quarries']['target']} attribute quarries)")
         print(f"  D47 (16 Clan Hall Estates)  : {dims['D47_clan_hall_auction_and_siege_estates']['score']}/100 ({dims['D47_clan_hall_auction_and_siege_estates']['verified']}/{dims['D47_clan_hall_auction_and_siege_estates']['target']} clan hall estates)")
         print(f"  D48 (15 Trans/Talismans)    : {dims['D48_transformation_sealbook_and_talisman_sanctums']['score']}/100 ({dims['D48_transformation_sealbook_and_talisman_sanctums']['verified']}/{dims['D48_transformation_sealbook_and_talisman_sanctums']['target']} relic sanctums)")
+        print(f"  D49 (15 Warehouse/Freight)  : {dims['D49_warehouse_clan_vault_and_freight_network']['score']}/100 ({dims['D49_warehouse_clan_vault_and_freight_network']['verified']}/{dims['D49_warehouse_clan_vault_and_freight_network']['target']} warehouse vaults)")
+        print(f"  D50 (18 Master Tour 50D)    : {dims['D50_master_cartographic_tour_and_50d_inspector']['score']}/100 ({dims['D50_master_cartographic_tour_and_50d_inspector']['verified']}/{dims['D50_master_cartographic_tour_and_50d_inspector']['target']} tour checkpoints)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

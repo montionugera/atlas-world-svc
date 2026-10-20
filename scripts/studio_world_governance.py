@@ -688,6 +688,8 @@ def validate_world_governance(
                 "elementalStoneCaravanQuarriesCount": len(t_doc.get("elemental_stone_caravan_quarries") or []),
                 "clanHallAuctionEstatesCount": len(t_doc.get("clan_hall_auction_estates") or []),
                 "transformationTalismanSanctumsCount": len(t_doc.get("transformation_talisman_sanctums") or []),
+                "warehouseFreightVaultsCount": len(t_doc.get("warehouse_freight_vaults") or []),
+                "atlasMasterTelemetryCheckpointsCount": len(t_doc.get("atlas_master_telemetry_checkpoints") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1170,6 +1172,48 @@ def validate_world_governance(
                 if wn_vzid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: territory_ward_supply_nodes '{wn_id}' references unknown linked_vassal_zone_id '{wn_vzid}'"
+                    )
+
+            # Validate 15 Town Iron Gate Warehouse, Clan Vault & Freight Logistics Hubs (D49)
+            wh_vaults = t_doc.get("warehouse_freight_vaults") or []
+            if wh_vaults and len(wh_vaults) != 15:
+                errors.append(
+                    f"GOV-10 violation: warehouse_freight_vaults must have 15 vaults, got {len(wh_vaults)}"
+                )
+            for wv_item in wh_vaults:
+                if not isinstance(wv_item, dict):
+                    continue
+                wv_id = str(wv_item.get("vault_id", ""))
+                wv_tzid = str(wv_item.get("town_zone_id", ""))
+                wv_pzid = str(wv_item.get("freight_corridor_partner_zone_id", ""))
+                if wv_tzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: warehouse_freight_vaults '{wv_id}' references unknown town_zone_id '{wv_tzid}'"
+                    )
+                if wv_pzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: warehouse_freight_vaults '{wv_id}' references unknown freight_corridor_partner_zone_id '{wv_pzid}'"
+                    )
+
+            # Validate 18 Master Cartographic Tour & 50-Dimension Studio Checkpoints (D50)
+            tour_checkpoints = t_doc.get("atlas_master_telemetry_checkpoints") or []
+            if tour_checkpoints and len(tour_checkpoints) != 18:
+                errors.append(
+                    f"GOV-10 violation: atlas_master_telemetry_checkpoints must have 18 checkpoints, got {len(tour_checkpoints)}"
+                )
+            for tc_item in tour_checkpoints:
+                if not isinstance(tc_item, dict):
+                    continue
+                tc_id = str(tc_item.get("checkpoint_id", ""))
+                tc_zid = str(tc_item.get("zone_id", ""))
+                tc_did = str(tc_item.get("dungeon_id", ""))
+                if tc_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: atlas_master_telemetry_checkpoints '{tc_id}' references unknown zone_id '{tc_zid}'"
+                    )
+                if tc_did and tc_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: atlas_master_telemetry_checkpoints '{tc_id}' references unknown dungeon_id '{tc_did}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

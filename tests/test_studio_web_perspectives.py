@@ -1755,7 +1755,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 48)
+        self.assertGreaterEqual(len(audit["dimensions"]), 48)
 
         d47 = audit["dimensions"]["D47_clan_hall_auction_and_siege_estates"]
         self.assertEqual(d47["score"], 100.0)
@@ -1814,10 +1814,99 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas48DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 48)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 48)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 48)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 48)
         self.assertIn("48-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave23_warehouse_freight_vaults_and_atlas_master_telemetry_checkpoints(self) -> None:
+        """Wave 23 (D49–D50, 50-Dimension Milestone): 15 Town Warehouse/Freight Vaults & 18 Master Cartographic Tour Checkpoints."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["warehouseFreightVaultsCount"], 15)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["atlasMasterTelemetryCheckpointsCount"], 18)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_WAREHOUSE_MODE",
+            "setAtlasWarehouseMode(",
+            "renderAtlasWarehouseBarHtml(",
+            "studioWarehouseFreightOverlay",
+            "ATLAS_MASTER_TOUR_MODE",
+            "setAtlasMasterTourMode(",
+            "renderAtlasMasterTourBarHtml(",
+            "studioMasterTourOverlay",
+            "50-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 23 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 50)
+
+        d49 = audit["dimensions"]["D49_warehouse_clan_vault_and_freight_network"]
+        self.assertEqual(d49["score"], 100.0)
+        self.assertEqual(d49["verified"], 15)
+        self.assertEqual(d49["target"], 15)
+        self.assertEqual(d49["starter_iron_gate_vaults"], 6)
+        self.assertEqual(d49["regional_freight_depots"], 5)
+        self.assertEqual(d49["capital_dimensional_brokers"], 4)
+        self.assertEqual(
+            set(d49["logistics_tiers"]),
+            {
+                "Starter_Iron_Gate_Vault",
+                "Regional_Freight_Depot",
+                "Capital_Dimensional_Broker",
+            },
+        )
+        self.assertTrue(d49["ui_wired"])
+
+        d50 = audit["dimensions"]["D50_master_cartographic_tour_and_50d_inspector"]
+        self.assertEqual(d50["score"], 100.0)
+        self.assertEqual(d50["verified"], 18)
+        self.assertEqual(d50["target"], 18)
+        self.assertEqual(d50["race_origin_checkpoints"], 6)
+        self.assertEqual(d50["town_blueprint_checkpoints"], 6)
+        self.assertEqual(d50["dungeon_sanctum_checkpoints"], 6)
+        self.assertEqual(
+            set(d50["tour_categories"]),
+            {
+                "Race_Origin_To_Awakening",
+                "Town_Blueprint_And_Economy",
+                "Multi_Floor_Dungeon_Sanctum",
+            },
+        )
+        self.assertTrue(d50["ui_wired"])
+
+        vaults = atlas["warehouse_freight_vaults"]
+        self.assertEqual(len(vaults), 15)
+        self.assertEqual(sum(1 for v in vaults if v["logistics_tier"] == "Starter_Iron_Gate_Vault"), 6)
+        self.assertEqual(sum(1 for v in vaults if v["logistics_tier"] == "Regional_Freight_Depot"), 5)
+        self.assertEqual(sum(1 for v in vaults if v["logistics_tier"] == "Capital_Dimensional_Broker"), 4)
+        for v in vaults:
+            self.assertGreaterEqual(len(v["dimensional_broker_services"]), 2)
+
+        checkpoints = atlas["atlas_master_telemetry_checkpoints"]
+        self.assertEqual(len(checkpoints), 18)
+        self.assertEqual(sum(1 for cp in checkpoints if cp["tour_category"] == "Race_Origin_To_Awakening"), 6)
+        self.assertEqual(sum(1 for cp in checkpoints if cp["tour_category"] == "Town_Blueprint_And_Economy"), 6)
+        self.assertEqual(sum(1 for cp in checkpoints if cp["tour_category"] == "Multi_Floor_Dungeon_Sanctum"), 6)
+        for cp in checkpoints:
+            self.assertGreaterEqual(len(cp["verified_dimensions_covered"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas50DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 50)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 50)
+        self.assertIn("50-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

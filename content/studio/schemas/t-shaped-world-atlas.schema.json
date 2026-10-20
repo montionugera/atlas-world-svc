@@ -203,6 +203,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/transformationTalismanSanctumSpec" }
     },
+    "warehouse_freight_vaults": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/warehouseFreightVaultSpec" }
+    },
+    "atlas_master_telemetry_checkpoints": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": { "$ref": "#/$defs/atlasMasterTelemetryCheckpointSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2798,6 +2810,86 @@
         },
         "unlock_requirement": { "type": "string" },
         "combat_tactical_role": { "type": "string" }
+      }
+    },
+    "warehouseFreightVaultSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vault_id",
+        "town_zone_id",
+        "town_name",
+        "logistics_tier",
+        "keeper_npc_name",
+        "vault_loc",
+        "private_clan_slot_cap",
+        "freight_corridor_partner_zone_id",
+        "freight_fee_per_slot_adena",
+        "dimensional_broker_services"
+      ],
+      "properties": {
+        "vault_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "logistics_tier": {
+          "type": "string",
+          "enum": [
+            "Starter_Iron_Gate_Vault",
+            "Regional_Freight_Depot",
+            "Capital_Dimensional_Broker"
+          ]
+        },
+        "keeper_npc_name": { "type": "string" },
+        "vault_loc": { "type": "string" },
+        "private_clan_slot_cap": { "type": "string" },
+        "freight_corridor_partner_zone_id": { "type": "string" },
+        "freight_fee_per_slot_adena": { "type": "integer", "minimum": 1 },
+        "dimensional_broker_services": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "atlasMasterTelemetryCheckpointSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkpoint_id",
+        "step_order",
+        "checkpoint_title",
+        "tour_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "target_zoom",
+        "verified_dimensions_covered",
+        "council_inspection_summary"
+      ],
+      "properties": {
+        "checkpoint_id": { "type": "string" },
+        "step_order": { "type": "integer", "minimum": 1, "maximum": 18 },
+        "checkpoint_title": { "type": "string" },
+        "tour_category": {
+          "type": "string",
+          "enum": [
+            "Race_Origin_To_Awakening",
+            "Town_Blueprint_And_Economy",
+            "Multi_Floor_Dungeon_Sanctum"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "target_zoom": { "type": "number", "minimum": 1.0 },
+        "verified_dimensions_covered": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "council_inspection_summary": { "type": "string" }
       }
     }
   }

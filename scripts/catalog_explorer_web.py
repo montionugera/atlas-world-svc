@@ -88,15 +88,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas44DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas46DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas48DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas50DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 22)),
+        "wave": int(iter_state.get("wave", 23)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"50-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"48-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"46-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"44-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -112,7 +114,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D48 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 Verified"
         ),
     }
     return merged
@@ -4374,7 +4376,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D48 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4441,6 +4443,8 @@ let ATLAS_SKILL_SCROLL_MODE = 'All';
 let ATLAS_ELEMENTAL_QUARRY_MODE = 'All';
 let ATLAS_CLAN_HALL_MODE = 'All';
 let ATLAS_TRANSFORMATION_MODE = 'All';
+let ATLAS_WAREHOUSE_MODE = 'All';
+let ATLAS_MASTER_TOUR_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4479,6 +4483,8 @@ const ATLAS_STATE_STORE = {
   elementalQuarryMode: 'All',              // D46: Active 14-Node Elemental Stone/Crystal & Caravan Quarry Selector ('Off' | 'All' | 'Elemental_Stone_Quarry_150' | 'Elemental_Crystal_Sanctum_300' | 'Caravan_Trust_Oasis')
   clanHallMode: 'All',                     // D47: Active 16-Estate Clan Hall Auction & Siege Chateau Selector ('Off' | 'All' | 'Town_Luxury_Auction_Hall' | 'Contested_Siege_Chateau')
   transformationMode: 'All',               // D48: Active 15-Sanctum Transformation, Talisman & Agathion Selector ('Off' | 'All' | 'Avant_Garde_Transformation_Sanctum' | 'Epaulette_Talisman_Vault' | 'Agathion_Bracelet_Altar')
+  warehouseMode: 'All',                    // D49: Active 15-Town Warehouse, Clan Vault & Freight Selector ('Off' | 'All' | 'Starter_Iron_Gate_Vault' | 'Regional_Freight_Depot' | 'Capital_Dimensional_Broker')
+  masterTourMode: 'All',                   // D50: Active 18-Checkpoint 50D Master Cartographic Tour Selector ('Off' | 'All' | 'Race_Origin_To_Awakening' | 'Town_Blueprint_And_Economy' | 'Multi_Floor_Dungeon_Sanctum')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4497,6 +4503,20 @@ function setAtlasClanHallMode(modeId) {
 function setAtlasTransformationMode(modeId) {
   ATLAS_TRANSFORMATION_MODE = String(modeId || 'All');
   ATLAS_STATE_STORE.transformationMode = ATLAS_TRANSFORMATION_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasWarehouseMode(modeId) {
+  ATLAS_WAREHOUSE_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.warehouseMode = ATLAS_WAREHOUSE_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasMasterTourMode(modeId) {
+  ATLAS_MASTER_TOUR_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.masterTourMode = ATLAS_MASTER_TOUR_MODE;
   writeUrlState(false);
   render();
 }
@@ -9045,6 +9065,187 @@ function renderAtlasTransformationBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasWarehouseBarHtml(tatlas) {
+  const vaults = (tatlas && tatlas.warehouse_freight_vaults) || [];
+  if (!vaults.length) return '';
+
+  const curMode = ATLAS_WAREHOUSE_MODE || ATLAS_STATE_STORE.warehouseMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '📦 All 15 Vaults' },
+    { id: 'Starter_Iron_Gate_Vault', label: '🏦 6 Starter Iron Gate Vaults' },
+    { id: 'Regional_Freight_Depot', label: '🚚 5 Regional Freight Depots' },
+    { id: 'Capital_Dimensional_Broker', label: '💎 4 Capital Dimensional Brokers' }
+  ];
+
+  const filteredVaults = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? vaults : vaults.filter(v => v.logistics_tier === curMode));
+
+  const featuredVaults = curMode === 'All'
+    ? [
+        ...vaults.filter(v => v.logistics_tier === 'Starter_Iron_Gate_Vault').slice(0, 1),
+        ...vaults.filter(v => v.logistics_tier === 'Regional_Freight_Depot').slice(0, 1),
+        ...vaults.filter(v => v.logistics_tier === 'Capital_Dimensional_Broker').slice(0, 2)
+      ]
+    : filteredVaults.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasWarehouseBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1e160c;border:1px solid rgba(251,146,60,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fed7aa">📦 15-TOWN IRON GATE WAREHOUSE, CLAN VAULT &amp; FREIGHT LOGISTICS NETWORK (D49 · 15 VAULTS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasWarehouseMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(251,146,60,0.45)'};background:${isAct ? '#c2410c' : '#090d14'};color:${isAct ? '#ffffff' : '#ffedd5'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 STARTER IRON GATE VAULTS + 5 REGIONAL FREIGHT DEPOTS + 4 CAPITAL DIMENSIONAL BROKERS
+        </span>
+      </div>
+
+      ${featuredVaults.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredVaults.map(v => {
+            const isStarter = v.logistics_tier === 'Starter_Iron_Gate_Vault';
+            const isRegional = v.logistics_tier === 'Regional_Freight_Depot';
+            const catCol = isStarter ? '#fbbf24' : (isRegional ? '#fb923c' : '#38bdf8');
+            const catIcon = isStarter ? '🏦' : (isRegional ? '🚚' : '💎');
+            const zObj = byZid[v.town_zone_id] || {};
+            const pObj = byZid[v.freight_corridor_partner_zone_id] || {};
+            const jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || String(v.town_zone_id || '').replace('zone-', ''))}', '${escapeHtml(v.vault_loc)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(v.town_name.slice(0, 32))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${v.freight_fee_per_slot_adena}a/slot</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fed7aa;margin-top:1px">
+                    📦 ${escapeHtml(v.private_clan_slot_cap.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#bae6fd;margin-top:1px">
+                    🚚 Freight ➔ ${escapeHtml((pObj.name || v.freight_corridor_partner_zone_id).slice(0, 26))} · ${escapeHtml(((v.dimensional_broker_services && v.dimensional_broker_services[0]) || '').slice(0, 28))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#431407;color:#ffedd5;font-size:8px;font-weight:800;cursor:pointer">
+                    📦 Town Warehouse #6 (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasMasterTourBarHtml(tatlas) {
+  const checkpoints = (tatlas && tatlas.atlas_master_telemetry_checkpoints) || [];
+  if (!checkpoints.length) return '';
+
+  const curMode = ATLAS_MASTER_TOUR_MODE || ATLAS_STATE_STORE.masterTourMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🧭 All 18 Checkpoints' },
+    { id: 'Race_Origin_To_Awakening', label: '🧬 6 Race Origin Checkpoints' },
+    { id: 'Town_Blueprint_And_Economy', label: '🏛️ 6 Town Blueprint Checkpoints' },
+    { id: 'Multi_Floor_Dungeon_Sanctum', label: '🕳️ 6 Multi-Floor Dungeon Sanctum Checkpoints' }
+  ];
+
+  const filteredCheckpoints = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? checkpoints : checkpoints.filter(cp => cp.tour_category === curMode));
+
+  const featuredCheckpoints = curMode === 'All'
+    ? [
+        ...checkpoints.filter(cp => cp.tour_category === 'Race_Origin_To_Awakening').slice(0, 1),
+        ...checkpoints.filter(cp => cp.tour_category === 'Town_Blueprint_And_Economy').slice(0, 2),
+        ...checkpoints.filter(cp => cp.tour_category === 'Multi_Floor_Dungeon_Sanctum').slice(0, 1)
+      ]
+    : filteredCheckpoints.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasMasterTourBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0c1e17;border:1px solid rgba(52,211,153,0.6)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#6ee7b7">🧭 18-CHECKPOINT 50-DIMENSION MASTER CARTOGRAPHIC TOUR &amp; STUDIO INSPECTOR (D50 · D1–D50 VERIFIED):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasMasterTourMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(52,211,153,0.45)'};background:${isAct ? '#059669' : '#090d14'};color:${isAct ? '#ffffff' : '#d1fae5'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 RACE ORIGINS (STEPS 1–6) + 6 TOWN BLUEPRINTS (STEPS 7–12) + 6 DUNGEON SANCTUMS (STEPS 13–18)
+        </span>
+      </div>
+
+      ${featuredCheckpoints.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredCheckpoints.map(cp => {
+            const isOrigin = cp.tour_category === 'Race_Origin_To_Awakening';
+            const isTown = cp.tour_category === 'Town_Blueprint_And_Economy';
+            const catCol = isOrigin ? '#34d399' : (isTown ? '#facc15' : '#c084fc');
+            const catIcon = isOrigin ? '🧬' : (isTown ? '🏛️' : '🕳️');
+            const zObj = byZid[cp.zone_id] || {};
+            const zidStr = String(cp.zone_id || '');
+            let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(cp.loc)}')`;
+            if (cp.dungeon_id) {
+              jumpJs = `openDungeonSubMap('${escapeHtml(cp.dungeon_id)}', '${escapeHtml(cp.floor_id || '3F')}')`;
+            } else if (zidStr.startsWith('zone-town-')) {
+              jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(cp.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(cp.checkpoint_title.slice(0, 36))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">#${cp.step_order} (${cp.target_zoom}×)</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#6ee7b7;margin-top:1px">
+                    ✅ Dimensions: ${escapeHtml((cp.verified_dimensions_covered || []).join(' · '))}
+                  </div>
+                  <div style="font-size:8px;color:#cbd5e1;margin-top:1px">
+                    🔍 ${escapeHtml(cp.council_inspection_summary.slice(0, 56))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#064e3b;color:#d1fae5;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cp.dungeon_id ? `🕳️ Inspect Floor (${escapeHtml(cp.floor_id || '3F')})` : `🧭 Jump to Checkpoint #${cp.step_order} (${cp.target_zoom}×)`}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -9197,6 +9398,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasElementalQuarryBarHtml(tatlas)}
       ${renderAtlasClanHallBarHtml(tatlas)}
       ${renderAtlasTransformationBarHtml(tatlas)}
+      ${renderAtlasWarehouseBarHtml(tatlas)}
+      ${renderAtlasMasterTourBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -11940,6 +12143,73 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D49: Interactive 15-Town Iron Gate Warehouse, Clan Vault & Freight Logistics Overlay (`studioWarehouseFreightOverlay`)
+  const warehouseRows = (tatlas && tatlas.warehouse_freight_vaults) || [];
+  const curWarehouseMode = ATLAS_WAREHOUSE_MODE || ATLAS_STATE_STORE.warehouseMode || 'All';
+  const activeWarehouses = curWarehouseMode === 'Off'
+    ? []
+    : (curWarehouseMode === 'All'
+      ? warehouseRows
+      : warehouseRows.filter(v => v.logistics_tier === curWarehouseMode));
+  const warehouseFreightOverlaySvg = `
+    <g id="studioWarehouseFreightOverlay">
+      ${activeWarehouses.map(v => {
+        const vc = clampWorldLocCoord(v.vault_loc || '-84120:243500');
+        const zObj = allZonesById[v.town_zone_id] || {};
+        const pObj = allZonesById[v.freight_corridor_partner_zone_id] || {};
+        const pc = clampWorldLocCoord(pObj.loc_coord || v.vault_loc || '-84120:243500');
+        const isStarter = v.logistics_tier === 'Starter_Iron_Gate_Vault';
+        const isRegional = v.logistics_tier === 'Regional_Freight_Depot';
+        const colHex = isStarter ? '#fbbf24' : (isRegional ? '#fb923c' : '#38bdf8');
+        const iconTxt = isStarter ? '🏦' : (isRegional ? '🚚' : '💎');
+        const jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || String(v.town_zone_id || '').replace('zone-', ''))}', '${escapeHtml(v.vault_loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <line x1="${vc.svgX}" y1="${vc.svgY}" x2="${pc.svgX}" y2="${pc.svgY}" stroke="${colHex}" stroke-width="1.4" stroke-dasharray="3 3" opacity="0.55"/>
+            <circle cx="${vc.svgX}" cy="${vc.svgY}" r="10.8" fill="rgba(194,65,12,0.38)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${vc.svgX}" y="${vc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D50: Interactive 18-Checkpoint Master Cartographic Tour & 50-Dimension Studio Inspector Overlay (`studioMasterTourOverlay`)
+  const masterTourRows = (tatlas && tatlas.atlas_master_telemetry_checkpoints) || [];
+  const curMasterTourMode = ATLAS_MASTER_TOUR_MODE || ATLAS_STATE_STORE.masterTourMode || 'All';
+  const activeMasterTourCps = curMasterTourMode === 'Off'
+    ? []
+    : (curMasterTourMode === 'All'
+      ? masterTourRows
+      : masterTourRows.filter(cp => cp.tour_category === curMasterTourMode));
+  const masterTourOverlaySvg = `
+    <g id="studioMasterTourOverlay">
+      ${activeMasterTourCps.map((cp, idx) => {
+        const cc = clampWorldLocCoord(cp.loc || '-84120:243500');
+        const nextCp = activeMasterTourCps[idx + 1];
+        const nc = nextCp ? clampWorldLocCoord(nextCp.loc || '-84120:243500') : null;
+        const zObj = allZonesById[cp.zone_id] || {};
+        const zidStr = String(cp.zone_id || '');
+        const isOrigin = cp.tour_category === 'Race_Origin_To_Awakening';
+        const isTown = cp.tour_category === 'Town_Blueprint_And_Economy';
+        const colHex = isOrigin ? '#34d399' : (isTown ? '#facc15' : '#c084fc');
+        let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(cp.loc)}')`;
+        if (cp.dungeon_id) {
+          jumpJs = `openDungeonSubMap('${escapeHtml(cp.dungeon_id)}', '${escapeHtml(cp.floor_id || '3F')}')`;
+        } else if (zidStr.startsWith('zone-town-')) {
+          jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(cp.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            ${nc ? `<line x1="${cc.svgX}" y1="${cc.svgY}" x2="${nc.svgX}" y2="${nc.svgY}" stroke="#34d399" stroke-width="1.3" stroke-dasharray="2 3" opacity="0.5"/>` : ''}
+            <circle cx="${cc.svgX}" cy="${cc.svgY}" r="10.2" fill="rgba(5,150,105,0.45)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${cc.svgX}" y="${cc.svgY + 3.2}" text-anchor="middle" font-size="8" font-weight="900" fill="#ffffff">#${cp.step_order}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -11968,6 +12238,8 @@ function renderDedicatedWorldAtlas() {
     ${elementalQuarryOverlaySvg}
     ${clanHallAuctionOverlaySvg}
     ${transformationTalismanOverlaySvg}
+    ${warehouseFreightOverlaySvg}
+    ${masterTourOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
