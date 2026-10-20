@@ -8245,6 +8245,430 @@ def _build_atlas_master_telemetry_checkpoints(atlas: dict[str, Any]) -> list[dic
     return rows
 
 
+def _build_festival_of_darkness_oracles(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 Town Festival of Darkness & Oracle of Dawn/Dusk Party Altar Hubs (5 Oracle_of_Dawn_Sanctuary + 5 Oracle_of_Dusk_Sanctuary + 5 High_Bracket_Blood_Offering_Altar) (D51)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 5 Oracle_of_Dawn_Sanctuary Towns
+        (
+            "oracle-01-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Oracle_of_Dawn_Sanctuary",
+            "Priest of Dawn Raymond & Festival Guide",
+            "Under Lv.32",
+            "3,000 Blue / 1,800 Green / 900 Red Seal Stones",
+            1250,
+            "1,850,000 Ancient Adena Dawn Cabal Pool",
+            "18-Minute Party Survival · Sacrifice 1 Member to Festival Witch for +35% Monster Density & 2× Blood Offerings",
+        ),
+        (
+            "oracle-02-porcelain-loom",
+            "zone-town-porcelain-loom",
+            "Oracle_of_Dawn_Sanctuary",
+            "Priest of Dawn Franz & Lunar Oracle Guide",
+            "Under Lv.32",
+            "3,000 Blue / 1,800 Green / 900 Red Seal Stones",
+            1350,
+            "1,950,000 Ancient Adena Dawn Cabal Pool",
+            "18-Minute Party Survival · Lunar Moat Altar — Witch Sacrifice Spawns Chest of Darkness (+50 Blood Offerings)",
+        ),
+        (
+            "oracle-03-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Oracle_of_Dawn_Sanctuary",
+            "Priest of Dawnugin & Iron Gate Oracle Steward",
+            "Under Lv.43",
+            "4,500 Blue / 2,700 Green / 1,350 Red Seal Stones",
+            1800,
+            "2,600,000 Ancient Adena Dawn Cabal Pool",
+            "18-Minute Party Survival · Dwarven Spoil-Boosted Festival Mobs + 2× Blood Offering Chests",
+        ),
+        (
+            "oracle-04-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Oracle_of_Dawn_Sanctuary",
+            "High Priest of Dawn Maximilian & Festival Arbiter",
+            "Under Lv.43",
+            "4,500 Blue / 2,700 Green / 1,350 Red Seal Stones",
+            2100,
+            "3,200,000 Ancient Adena Dawn Cabal Pool",
+            "18-Minute All-Race Convergence Festival · Up to 3 Witch Sacrifices for Wave-3 Archon Spawn",
+        ),
+        (
+            "oracle-05-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Oracle_of_Dawn_Sanctuary",
+            "Priest of Dawn Iason & Maritime Oracle Guide",
+            "Under Lv.54",
+            "6,000 Blue / 3,600 Green / 1,800 Red Seal Stones",
+            2650,
+            "4,100,000 Ancient Adena Dawn Cabal Pool",
+            "18-Minute Harbor Sanctuary Festival · AOE Polearm Wave Escalation + High-Score Cabal Registration",
+        ),
+        # 5 Oracle_of_Dusk_Sanctuary Towns
+        (
+            "oracle-06-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Oracle_of_Dusk_Sanctuary",
+            "Priestess of Dusk Rukina & Twilight Guide",
+            "Under Lv.32",
+            "3,000 Blue / 1,800 Green / 900 Red Seal Stones",
+            1400,
+            "2,050,000 Ancient Adena Dusk Revolution Pool",
+            "18-Minute Twilight Arena · Ogre/Orc Frenzy Buff Allowed + Witch Blood Sacrifice Escalation",
+        ),
+        (
+            "oracle-07-carillon-belfry",
+            "zone-town-carillon-belfry",
+            "Oracle_of_Dusk_Sanctuary",
+            "Priestess of Dusk Andromeda & Shadow Festival Guide",
+            "Under Lv.43",
+            "4,500 Blue / 2,700 Green / 1,350 Red Seal Stones",
+            1950,
+            "2,850,000 Ancient Adena Dusk Revolution Pool",
+            "18-Minute Dark-Lunar Sanctuary · Hex/Vampiric Sustainment + Double Chest of Darkness Wave",
+        ),
+        (
+            "oracle-08-cinnamon-mill",
+            "zone-town-cinnamon-mill",
+            "Oracle_of_Dusk_Sanctuary",
+            "Priest of Dusk Casca & Soul-Wing Festival Guide",
+            "Under Lv.43",
+            "4,500 Blue / 2,700 Green / 1,350 Red Seal Stones",
+            2000,
+            "2,950,000 Ancient Adena Dusk Revolution Pool",
+            "18-Minute Furral Soul-Combo Festival · Pride of Kamael Party Synergy + Witch Sacrifice Bonus",
+        ),
+        (
+            "oracle-09-saffron-press",
+            "zone-town-saffron-press",
+            "Oracle_of_Dusk_Sanctuary",
+            "Priestess of Dusk Sybilla & Freeholds Oracle Steward",
+            "Under Lv.54",
+            "6,000 Blue / 3,600 Green / 1,800 Red Seal Stones",
+            2750,
+            "4,300,000 Ancient Adena Dusk Revolution Pool",
+            "18-Minute Freeholds Rebel Festival · Zero Castle Tax Entry + Triple Witch Sacrifice Tier",
+        ),
+        (
+            "oracle-10-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Oracle_of_Dusk_Sanctuary",
+            "Priest of Dusk Krevo & Steppe Oracle Guide",
+            "Under Lv.54",
+            "6,000 Blue / 3,600 Green / 1,800 Red Seal Stones",
+            2900,
+            "4,600,000 Ancient Adena Dusk Revolution Pool",
+            "18-Minute Steppe Gateway Festival · High-Velocity Respawn Waves + Blood Offering Multiplier",
+        ),
+        # 5 High_Bracket_Blood_Offering_Altar Towns
+        (
+            "oracle-11-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "High_Bracket_Blood_Offering_Altar",
+            "Grand Oracle Priestess Vell & Dusk/Dawn Arbiter",
+            "Under Lv.65",
+            "7,500 Blue / 4,500 Green / 2,250 Red Seal Stones",
+            3600,
+            "6,400,000 Ancient Adena High-Bracket Jackpot",
+            "18-Minute Oren Ivory Bracket · 5-Member Full Party Required + Archon of Darkness Final Wave",
+        ),
+        (
+            "oracle-12-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "High_Bracket_Blood_Offering_Altar",
+            "Metropolitan Oracle Archon Wood & Festival Herald",
+            "Under Lv.65",
+            "7,500 Blue / 4,500 Green / 2,250 Red Seal Stones",
+            3950,
+            "7,500,000 Ancient Adena Giran Metropolitan Jackpot",
+            "18-Minute Giran Trade Capital Bracket · Record Blood Offering Leaderboard + Top-Grade Seal Payout",
+        ),
+        (
+            "oracle-13-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "High_Bracket_Blood_Offering_Altar",
+            "Imperial Oracle High Priest Orven & Dusk Herald",
+            "No-Limit Lv.65–85",
+            "9,000 Blue / 5,400 Green / 2,700 Red Seal Stones",
+            4650,
+            "9,800,000 Ancient Adena Imperial Aden Jackpot",
+            "18-Minute No-Limit Imperial Bracket · S-Grade 300-Attribute AOE Party + 3× Witch Sacrifice",
+        ),
+        (
+            "oracle-14-starfall-haven",
+            "zone-town-starfall-haven",
+            "High_Bracket_Blood_Offering_Altar",
+            "Astral Oracle High Priestess Agripel & Dusk Seer",
+            "No-Limit Lv.65–85",
+            "9,000 Blue / 5,400 Green / 2,700 Red Seal Stones",
+            4950,
+            "11,200,000 Ancient Adena Rune Astral Jackpot",
+            "18-Minute Rune Grand Bracket · Anakim/Zaken Transformation Burst + Golden Chest of Darkness",
+        ),
+        (
+            "oracle-15-crown-beacon",
+            "zone-town-crown-beacon",
+            "High_Bracket_Blood_Offering_Altar",
+            "Sovereign Oracle Primarch Benedikt & Twilight Judge",
+            "No-Limit Lv.65–85",
+            "9,000 Blue / 5,400 Green / 2,700 Red Seal Stones",
+            5400,
+            "14,500,000 Ancient Adena Sovereign World-Apex Jackpot",
+            "18-Minute Sovereign Apex Bracket · Decides +110 Competition Points for Seal of Strife / Gnosis / Avarice",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        oid,
+        tzid,
+        ocat,
+        pnpc,
+        fbracket,
+        sfee,
+        bscore,
+        jpool,
+        wmech,
+    ) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(tzid) or {}
+        tname = str(t_obj.get("name", tzid))
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        oloc = _fmt_loc(bx - 165 - idx * 8, by + 185 + idx * 7)
+        rows.append(
+            {
+                "oracle_id": oid,
+                "town_zone_id": tzid,
+                "town_name": tname,
+                "oracle_category": ocat,
+                "priest_npc_name": pnpc,
+                "oracle_loc": oloc,
+                "festival_level_bracket": fbracket,
+                "seal_stone_entry_fee": sfee,
+                "blood_offering_target_score": bscore,
+                "ancient_adena_jackpot_pool": jpool,
+                "festival_witch_mechanic": wmech,
+            }
+        )
+    return rows
+
+
+def _build_luxury_black_market_boutiques(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 12 Luxury Boutique & Black Marketeer of Mammon Exchange Nodes (4 Crystal_Luxury_Armory + 4 Black_Marketeer_of_Mammon + 4 Couture_Emporium) (D52)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones: list[dict[str, Any]] = []
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            all_zones.extend(e for e in entries if isinstance(e, dict))
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if z.get("zone_id")}
+    specs = [
+        # 4 Crystal_Luxury_Armory Nodes
+        (
+            "boutique-01-giran-alexandria-armory",
+            "Giran Luxury Gallery — Alexandria's Crystal C/B-Grade Armory",
+            "Crystal_Luxury_Armory",
+            "zone-town-inductor-switchyard",
+            "Luxury Weapons & Armor Trader Alexandria",
+            "Crystal: C-Grade + Crystal: D-Grade (Zero Adena Tax)",
+            [
+                "Homunkulus's Sword / Eminence Bow / Orcish Poleaxe / Yaksa Mace (Crystal C)",
+                "Full Plate Armor / Composite Armor / Demon's Tunic & Stockings (Crystal C)",
+                "Keshanberk / Great Sword / Avadon & Zubei Unsealed Luxury Bundles",
+            ],
+            "24h Sovereign Luxury Gallery (Giran Prestigious Quarter #7)",
+        ),
+        (
+            "boutique-02-aden-imperial-crystal-gallery",
+            "Imperial Aden Crystal Vault — High-Grade B/A-Crystal Exchange",
+            "Crystal_Luxury_Armory",
+            "zone-town-torque-balance-citadel",
+            "Imperial Luxury Curator Evelyn",
+            "Crystal: B-Grade + Crystal: C-Grade + Ancient Tome",
+            [
+                "Damascus Sword / Bow of Peril / Sword of Valhalla (Crystal B)",
+                "Doom Plate / Blue Wolf / Tallum Tunic & Necklace of Black Ore",
+                "Ring of Black Ore & Adamantite Luxury Jewelry Suite",
+            ],
+            "24h Imperial Boutique (Aden Grand Colonnade)",
+        ),
+        (
+            "boutique-03-rune-astral-crystal-exchange",
+            "Starfall Haven Astral Armory — A/S-Crystal & Bracelet Boutique",
+            "Crystal_Luxury_Armory",
+            "zone-town-starfall-haven",
+            "Astral Luxury Broker Silvershadow",
+            "Crystal: A-Grade + Crystal: B-Grade + Shining Belt Clasp",
+            [
+                "Carnage Bow / Arcana Mace / Tallum Blade*Dark Legion's Edge Prep",
+                "Majestic / Nightmare Luxury Accessory & Belt Ornament Exchange",
+                "Iron/Mithril Talisman Bracelet & Magic Pouch Unlocks",
+            ],
+            "24h Astral Gallery (Rune Upper Citadel Terrace)",
+        ),
+        (
+            "boutique-04-crown-beacon-sovereign-armory",
+            "Crown-Beacon Sovereign Armory — S80 Dynasty & Masterwork Crystal Vault",
+            "Crystal_Luxury_Armory",
+            "zone-town-crown-beacon",
+            "Sovereign Armory factor Aurelius",
+            "Crystal: S-Grade + Crystal: A-Grade + Ancient Adena",
+            [
+                "Dynasty Weapon & Sigil / Shield Luxury Crystal Exchange",
+                "S-Grade Draconic / Imperial Crusader / Major Arcana Unseal Kits",
+                "Top-Grade Magic Ornament Mithril Belt (+Inventory/+Weight Limit)",
+            ],
+            "24h Sovereign Gallery (High-Halo Royal Plaza)",
+        ),
+        # 4 Black_Marketeer_of_Mammon Nodes
+        (
+            "boutique-05-giran-mammon-smuggler",
+            "Giran Back-Alley Smuggler — Black Marketeer of Mammon",
+            "Black_Marketeer_of_Mammon",
+            "zone-town-inductor-switchyard",
+            "Black Marketeer of Mammon (Giran Back-Alley)",
+            "Ancient Adena (AA) ⇄ Adena (1:4 Night Smuggler Rate)",
+            [
+                "500,000 Ancient Adena Daily Uncapped Adena Liquidity Bundle",
+                "Black-Market Seal Stone (Blue/Green/Red) Direct Conversion",
+                "Scroll: Remove Henna Symbol & Contraband Mammon Varnish",
+            ],
+            "20:00–24:00 Game-Time Night Smuggler Window (1 Daily Exchange/Account)",
+        ),
+        (
+            "boutique-06-aden-mammon-smuggler",
+            "Aden Shadow Colonnade — Black Marketeer of Mammon",
+            "Black_Marketeer_of_Mammon",
+            "zone-town-torque-balance-citadel",
+            "Black Marketeer of Mammon (Aden Colonnade)",
+            "Ancient Adena (AA) ⇄ Adena + Blank Scrolls",
+            [
+                "High-Volume Ancient Adena ➔ Blacksmith of Mammon Dualsword Fee Pack",
+                "Scroll: Enchant Weapon/Armor (C/B/A-Grade) Blank Scroll Trade",
+                "Mammon's ContrabandGemstone A & Gemstone S Smuggler Chest",
+            ],
+            "20:00–24:00 Game-Time Night Smuggler Window (1 Daily Exchange/Account)",
+        ),
+        (
+            "boutique-07-rune-mammon-smuggler",
+            "Rune Undercroft Wharf — Black Marketeer of Mammon",
+            "Black_Marketeer_of_Mammon",
+            "zone-town-starfall-haven",
+            "Black Marketeer of Mammon (Rune Lower Wharf)",
+            "Ancient Adena (AA) ⇄ Adena + Seal of Gnosis Tokens",
+            [
+                "Merchant of Mammon Off-Cycle Dye (+4/-4 Henna) Smuggler Stock",
+                "Crystal: A-Grade & Crystal: S-Grade Contraband Liquidity Lot",
+                "Blessed Scroll of Escape: Seal Catacomb / Necropolis Direct Warp",
+            ],
+            "20:00–24:00 Game-Time Night Smuggler Window (1 Daily Exchange/Account)",
+        ),
+        (
+            "boutique-08-glaze-barge-harbor-smuggler",
+            "Glaze-Barge Maritime Quay — Black Marketeer of Mammon",
+            "Black_Marketeer_of_Mammon",
+            "zone-town-glaze-barge-quay",
+            "Black Marketeer of Mammon (Giran/Gludin Harbor Pier)",
+            "Ancient Adena (AA) ⇄ Adena + Pirate Isle Doubloons",
+            [
+                "Zaken Night-Raid Ancient Adena Emergency Supply Bundle",
+                "Red/Green/Blue Soul Crystal Stage 10–12 Resonance Insurance Pack",
+                "Smuggled Greater CP Potion & Quick Healing Potion Crate (×200)",
+            ],
+            "20:00–24:00 Game-Time Night Smuggler Window (Harbor Pier #4)",
+        ),
+        # 4 Couture_Emporium Nodes
+        (
+            "boutique-09-giran-galladucci-couture",
+            "Galladucci's Haute Couture — Formal Wear & Noble Headgear Emporium",
+            "Couture_Emporium",
+            "zone-town-inductor-switchyard",
+            "Luxury Trader Galladucci & Jeweler Alexis",
+            "Adena + Artisan's Frame + Oriharukon + Signet Ring",
+            [
+                "Formal Wear Wedding Tuxedo & Bridal Gown (Make A Sewing Kit Quest)",
+                "Party Mask, Monocle, Forget-me-not Hairpin & Daisy Hairpin",
+                "Little Angel Wing, Fairy Antennae & Feathered Hat Couture",
+            ],
+            "24h Haute Couture Salon (Giran Luxury Shop #7)",
+        ),
+        (
+            "boutique-10-aden-royal-coronet-salon",
+            "Aden Royal Coronet Salon — Castle Circlets & Ceremonial Regalia",
+            "Couture_Emporium",
+            "zone-town-torque-balance-citadel",
+            "Royal Milliner & Jeweler Ellie",
+            "Adena + Knights' Epaulette + Clan Reputation Points",
+            [
+                "Noblesse Tiara, Sovereign Castle Lord Crown & Territory Circlets",
+                "Golden Jester Hat, Pirate's Eye Patch & Outlaw's Eyepatch",
+                "Agathion Love/Pegasus Summon Bracelet & Wedding Bouquet",
+            ],
+            "24h Royal Salon (Aden Cathedral Plaza)",
+        ),
+        (
+            "boutique-11-dion-convergence-atelier",
+            "Kilnwatch Accord Atelier — 6-Race Heritage Cloaks & Emblem Tailoring",
+            "Couture_Emporium",
+            "zone-town-kilnwatch-bastion",
+            "Master Tailor weaver Olf Kanore",
+            "Adena + Seal-Thread + Territory Badges",
+            [
+                "Olf's T-Shirt (+0..+10 Speed/CON/MEN/STR/INT Special Enchant)",
+                "6-Race Ceremonial Heritage Tunics & Clan Academy Grad Circlet",
+                "Magic Rune Clip & Magic Ornament Belt Pouch Tailoring",
+            ],
+            "24h Convergence Atelier (Dion Central Square)",
+        ),
+        (
+            "boutique-12-lantern-ferry-maritime-bazaar",
+            "Lantern Ferry Exotic Bazaar — Talking Island & Maritime Curiosities",
+            "Couture_Emporium",
+            "zone-harbor-lantern-ferry-pier",
+            "Exotic Wharf Factor Rafforty & Trader Radia",
+            "Adena + Proof of Catching a Fish + Shiny Coin",
+            [
+                "Fisherman's Big Fish Hat, Pirate Hat & Refined Romantic Chapeau",
+                "Big Head Potion, Firework Pack & Large Firework Celebration Crate",
+                "Hair Style Change Potion (Type A–G) & Facelifting Potion Salon Kit",
+            ],
+            "24h Maritime Curio Bazaar (Lantern South Ferry Pier)",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        bid,
+        bname,
+        mcat,
+        zid,
+        pnpc,
+        acurr,
+        scatalog,
+        owin,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "147400:-55200"))
+        loc = _fmt_loc(bx + 215 + idx * 11, by + 165 - idx * 9)
+        rows.append(
+            {
+                "boutique_id": bid,
+                "boutique_name": bname,
+                "market_category": mcat,
+                "zone_id": zid,
+                "loc": loc,
+                "proprietor_npc_name": pnpc,
+                "accepted_currency": acurr,
+                "signature_catalog_items": scatalog,
+                "operating_window_rule": owin,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -9329,6 +9753,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("atlas_master_telemetry_checkpoints") or []) < 18:
         atlas["atlas_master_telemetry_checkpoints"] = _build_atlas_master_telemetry_checkpoints(atlas)
         actions.append("populated_18_atlas_master_telemetry_checkpoints")
+
+    # 35. Ensure all 15 Town Festival of Darkness & Oracle of Dawn/Dusk Party Altars exist in `festival_of_darkness_oracles` (D51)
+    if len(atlas.get("festival_of_darkness_oracles") or []) < 15:
+        atlas["festival_of_darkness_oracles"] = _build_festival_of_darkness_oracles(atlas)
+        actions.append("populated_15_festival_of_darkness_oracles")
+
+    # 36. Ensure all 12 Luxury Boutique & Black Marketeer of Mammon Exchange Nodes exist in `luxury_black_market_boutiques` (D52)
+    if len(atlas.get("luxury_black_market_boutiques") or []) < 12:
+        atlas["luxury_black_market_boutiques"] = _build_luxury_black_market_boutiques(atlas)
+        actions.append("populated_12_luxury_black_market_boutiques")
 
     return {"actions": actions}
 
@@ -11889,15 +12323,150 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d50_ratio * 80.0, 1)
     )
 
+    # D51: Interactive 15-Town Festival of Darkness & Oracle of Dawn/Dusk Party Altar Matrix (`festival_of_darkness_oracles` - 15/15 Town Hubs = 5 Oracle_of_Dawn_Sanctuary + 5 Oracle_of_Dusk_Sanctuary + 5 High_Bracket_Blood_Offering_Altar)
+    expected_oracle_categories = {
+        "Oracle_of_Dawn_Sanctuary",
+        "Oracle_of_Dusk_Sanctuary",
+        "High_Bracket_Blood_Offering_Altar",
+    }
+    oracle_rows = atlas.get("festival_of_darkness_oracles") or []
+    valid_festival_oracles = 0
+    dawn_oracle_count = 0
+    dusk_oracle_count = 0
+    high_bracket_altar_count = 0
+    seen_oracle_ids: set[str] = set()
+    seen_oracle_towns: set[str] = set()
+    seen_oracle_categories: set[str] = set()
+    for orow in oracle_rows:
+        if not isinstance(orow, dict):
+            continue
+        oid = str(orow.get("oracle_id") or "")
+        tzid = str(orow.get("town_zone_id") or "")
+        ocat = str(orow.get("oracle_category") or "")
+        bscore = orow.get("blood_offering_target_score")
+        if (
+            oid
+            and oid not in seen_oracle_ids
+            and tzid in town_zone_id_set
+            and tzid not in seen_oracle_towns
+            and orow.get("town_name")
+            and ocat in expected_oracle_categories
+            and orow.get("priest_npc_name")
+            and ":" in str(orow.get("oracle_loc", ""))
+            and orow.get("festival_level_bracket")
+            and orow.get("seal_stone_entry_fee")
+            and isinstance(bscore, int)
+            and bscore >= 100
+            and orow.get("ancient_adena_jackpot_pool")
+            and orow.get("festival_witch_mechanic")
+        ):
+            valid_festival_oracles += 1
+            seen_oracle_ids.add(oid)
+            seen_oracle_towns.add(tzid)
+            seen_oracle_categories.add(ocat)
+            if ocat == "Oracle_of_Dawn_Sanctuary":
+                dawn_oracle_count += 1
+            elif ocat == "Oracle_of_Dusk_Sanctuary":
+                dusk_oracle_count += 1
+            elif ocat == "High_Bracket_Blood_Offering_Altar":
+                high_bracket_altar_count += 1
+
+    has_d51_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_FESTIVAL_ORACLE_MODE",
+            "setAtlasFestivalOracleMode",
+            "renderAtlasFestivalOracleBarHtml",
+            "studioFestivalOracleOverlay",
+        )
+    )
+    d51_ratio = valid_festival_oracles / 15.0
+    d51_full_coverage = (
+        dawn_oracle_count == 5
+        and dusk_oracle_count == 5
+        and high_bracket_altar_count == 5
+        and seen_oracle_categories == expected_oracle_categories
+    )
+    d51_score = (
+        round(min(100.0, d51_ratio * 100.0), 1)
+        if (has_d51_ui and d51_full_coverage)
+        else round(d51_ratio * 80.0, 1)
+    )
+
+    # D52: Interactive 12-Node Luxury Boutique & Black Marketeer of Mammon Exchange Matrix (`luxury_black_market_boutiques` - 12/12 Nodes = 4 Crystal_Luxury_Armory + 4 Black_Marketeer_of_Mammon + 4 Couture_Emporium)
+    expected_market_categories = {
+        "Crystal_Luxury_Armory",
+        "Black_Marketeer_of_Mammon",
+        "Couture_Emporium",
+    }
+    boutique_rows = atlas.get("luxury_black_market_boutiques") or []
+    valid_luxury_boutiques = 0
+    crystal_armory_count = 0
+    black_marketeer_count = 0
+    couture_emporium_count = 0
+    seen_boutique_ids: set[str] = set()
+    seen_market_categories: set[str] = set()
+    for brow in boutique_rows:
+        if not isinstance(brow, dict):
+            continue
+        bid = str(brow.get("boutique_id") or "")
+        mcat = str(brow.get("market_category") or "")
+        zid = str(brow.get("zone_id") or "")
+        scatalog = brow.get("signature_catalog_items") or []
+        if (
+            bid
+            and bid not in seen_boutique_ids
+            and brow.get("boutique_name")
+            and mcat in expected_market_categories
+            and zid in zone_ids_set
+            and ":" in str(brow.get("loc", ""))
+            and brow.get("proprietor_npc_name")
+            and brow.get("accepted_currency")
+            and isinstance(scatalog, list)
+            and len(scatalog) >= 2
+            and brow.get("operating_window_rule")
+        ):
+            valid_luxury_boutiques += 1
+            seen_boutique_ids.add(bid)
+            seen_market_categories.add(mcat)
+            if mcat == "Crystal_Luxury_Armory":
+                crystal_armory_count += 1
+            elif mcat == "Black_Marketeer_of_Mammon":
+                black_marketeer_count += 1
+            elif mcat == "Couture_Emporium":
+                couture_emporium_count += 1
+
+    has_d52_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_LUXURY_MARKET_MODE",
+            "setAtlasLuxuryMarketMode",
+            "renderAtlasLuxuryMarketBarHtml",
+            "studioLuxuryBlackMarketOverlay",
+        )
+    )
+    d52_ratio = valid_luxury_boutiques / 12.0
+    d52_full_coverage = (
+        crystal_armory_count == 4
+        and black_marketeer_count == 4
+        and couture_emporium_count == 4
+        and seen_market_categories == expected_market_categories
+    )
+    d52_score = (
+        round(min(100.0, d52_ratio * 100.0), 1)
+        if (has_d52_ui and d52_full_coverage)
+        else round(d52_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 32.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 34.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 34.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 44.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 33.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score) / 40.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 34.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 36.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 36.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 46.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 35.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 42.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -11952,8 +12521,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d48_score
             + d49_score
             + d50_score
+            + d51_score
+            + d52_score
         )
-        / 50.0,
+        / 52.0,
         1,
     )
 
@@ -12343,6 +12914,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "tour_categories": sorted(seen_tour_categories),
                 "ui_wired": has_d50_ui,
             },
+            "D51_festival_of_darkness_and_oracle_altars": {
+                "score": d51_score,
+                "verified": valid_festival_oracles,
+                "target": 15,
+                "oracle_of_dawn_sanctuaries": dawn_oracle_count,
+                "oracle_of_dusk_sanctuaries": dusk_oracle_count,
+                "high_bracket_blood_altars": high_bracket_altar_count,
+                "oracle_categories": sorted(seen_oracle_categories),
+                "ui_wired": has_d51_ui,
+            },
+            "D52_luxury_boutique_and_black_marketeer_exchange": {
+                "score": d52_score,
+                "verified": valid_luxury_boutiques,
+                "target": 12,
+                "crystal_luxury_armories": crystal_armory_count,
+                "black_marketeers_of_mammon": black_marketeer_count,
+                "couture_emporiums": couture_emporium_count,
+                "market_categories": sorted(seen_market_categories),
+                "ui_wired": has_d52_ui,
+            },
         },
     }
 
@@ -12437,6 +13028,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D48 (15 Trans/Talismans)    : {dims['D48_transformation_sealbook_and_talisman_sanctums']['score']}/100 ({dims['D48_transformation_sealbook_and_talisman_sanctums']['verified']}/{dims['D48_transformation_sealbook_and_talisman_sanctums']['target']} relic sanctums)")
         print(f"  D49 (15 Warehouse/Freight)  : {dims['D49_warehouse_clan_vault_and_freight_network']['score']}/100 ({dims['D49_warehouse_clan_vault_and_freight_network']['verified']}/{dims['D49_warehouse_clan_vault_and_freight_network']['target']} warehouse vaults)")
         print(f"  D50 (18 Master Tour 50D)    : {dims['D50_master_cartographic_tour_and_50d_inspector']['score']}/100 ({dims['D50_master_cartographic_tour_and_50d_inspector']['verified']}/{dims['D50_master_cartographic_tour_and_50d_inspector']['target']} tour checkpoints)")
+        print(f"  D51 (15 Festival Oracles)   : {dims['D51_festival_of_darkness_and_oracle_altars']['score']}/100 ({dims['D51_festival_of_darkness_and_oracle_altars']['verified']}/{dims['D51_festival_of_darkness_and_oracle_altars']['target']} festival oracles)")
+        print(f"  D52 (12 Luxury/BlackMarket) : {dims['D52_luxury_boutique_and_black_marketeer_exchange']['score']}/100 ({dims['D52_luxury_boutique_and_black_marketeer_exchange']['verified']}/{dims['D52_luxury_boutique_and_black_marketeer_exchange']['target']} luxury boutiques)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

@@ -690,6 +690,8 @@ def validate_world_governance(
                 "transformationTalismanSanctumsCount": len(t_doc.get("transformation_talisman_sanctums") or []),
                 "warehouseFreightVaultsCount": len(t_doc.get("warehouse_freight_vaults") or []),
                 "atlasMasterTelemetryCheckpointsCount": len(t_doc.get("atlas_master_telemetry_checkpoints") or []),
+                "festivalOfDarknessOraclesCount": len(t_doc.get("festival_of_darkness_oracles") or []),
+                "luxuryBlackMarketBoutiquesCount": len(t_doc.get("luxury_black_market_boutiques") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1214,6 +1216,38 @@ def validate_world_governance(
                 if tc_did and tc_did not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: atlas_master_telemetry_checkpoints '{tc_id}' references unknown dungeon_id '{tc_did}'"
+                    )
+
+            # Validate 15 Town Festival of Darkness & Oracle of Dawn/Dusk Party Altars (D51)
+            festival_oracles = t_doc.get("festival_of_darkness_oracles") or []
+            if festival_oracles and len(festival_oracles) != 15:
+                errors.append(
+                    f"GOV-10 violation: festival_of_darkness_oracles must have 15 town oracles, got {len(festival_oracles)}"
+                )
+            for fo_item in festival_oracles:
+                if not isinstance(fo_item, dict):
+                    continue
+                fo_id = str(fo_item.get("oracle_id", ""))
+                fo_tzid = str(fo_item.get("town_zone_id", ""))
+                if fo_tzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: festival_of_darkness_oracles '{fo_id}' references unknown town_zone_id '{fo_tzid}'"
+                    )
+
+            # Validate 12 Luxury Boutique & Black Marketeer of Mammon Exchange Nodes (D52)
+            luxury_boutiques = t_doc.get("luxury_black_market_boutiques") or []
+            if luxury_boutiques and len(luxury_boutiques) != 12:
+                errors.append(
+                    f"GOV-10 violation: luxury_black_market_boutiques must have 12 boutiques, got {len(luxury_boutiques)}"
+                )
+            for lb_item in luxury_boutiques:
+                if not isinstance(lb_item, dict):
+                    continue
+                lb_id = str(lb_item.get("boutique_id", ""))
+                lb_zid = str(lb_item.get("zone_id", ""))
+                if lb_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: luxury_black_market_boutiques '{lb_id}' references unknown zone_id '{lb_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

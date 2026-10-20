@@ -54242,5 +54242,384 @@
       ],
       "council_inspection_summary": "Verifies Sealed-God Catacomb, Blacksmith/Merchant of Mammon rotation, Dimensional Rift portal, and Ancient Tome drops."
     }
+  ],
+  "festival_of_darkness_oracles": [
+    {
+      "oracle_id": "oracle-01-lantern-hollow",
+      "town_zone_id": "zone-town-lantern-hollow",
+      "town_name": "Lantern Hollow Village (Human Starter)",
+      "oracle_category": "Oracle_of_Dawn_Sanctuary",
+      "priest_npc_name": "Priest of Dawn Raymond & Festival Guide",
+      "oracle_loc": "-84293:243692",
+      "festival_level_bracket": "Under Lv.32",
+      "seal_stone_entry_fee": "3,000 Blue / 1,800 Green / 900 Red Seal Stones",
+      "blood_offering_target_score": 1250,
+      "ancient_adena_jackpot_pool": "1,850,000 Ancient Adena Dawn Cabal Pool",
+      "festival_witch_mechanic": "18-Minute Party Survival \u00b7 Sacrifice 1 Member to Festival Witch for +35% Monster Density & 2\u00d7 Blood Offerings"
+    },
+    {
+      "oracle_id": "oracle-02-porcelain-loom",
+      "town_zone_id": "zone-town-porcelain-loom",
+      "town_name": "Porcelain Loom Sanctuary (Lunar Starter)",
+      "oracle_category": "Oracle_of_Dawn_Sanctuary",
+      "priest_npc_name": "Priest of Dawn Franz & Lunar Oracle Guide",
+      "oracle_loc": "45619:41399",
+      "festival_level_bracket": "Under Lv.32",
+      "seal_stone_entry_fee": "3,000 Blue / 1,800 Green / 900 Red Seal Stones",
+      "blood_offering_target_score": 1350,
+      "ancient_adena_jackpot_pool": "1,950,000 Ancient Adena Dawn Cabal Pool",
+      "festival_witch_mechanic": "18-Minute Party Survival \u00b7 Lunar Moat Altar \u2014 Witch Sacrifice Spawns Chest of Darkness (+50 Blood Offerings)"
+    },
+    {
+      "oracle_id": "oracle-03-root-train-roundhouse",
+      "town_zone_id": "zone-town-root-train-roundhouse",
+      "town_name": "Root-Train Roundhouse (Dwarf Starter)",
+      "oracle_category": "Oracle_of_Dawn_Sanctuary",
+      "priest_npc_name": "Priest of Dawnugin & Iron Gate Oracle Steward",
+      "oracle_loc": "114911:-177994",
+      "festival_level_bracket": "Under Lv.43",
+      "seal_stone_entry_fee": "4,500 Blue / 2,700 Green / 1,350 Red Seal Stones",
+      "blood_offering_target_score": 1800,
+      "ancient_adena_jackpot_pool": "2,600,000 Ancient Adena Dawn Cabal Pool",
+      "festival_witch_mechanic": "18-Minute Party Survival \u00b7 Dwarven Spoil-Boosted Festival Mobs + 2\u00d7 Blood Offering Chests"
+    },
+    {
+      "oracle_id": "oracle-04-kilnwatch-bastion",
+      "town_zone_id": "zone-town-kilnwatch-bastion",
+      "town_name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+      "oracle_category": "Oracle_of_Dawn_Sanctuary",
+      "priest_npc_name": "High Priest of Dawn Maximilian & Festival Arbiter",
+      "oracle_loc": "-14397:123713",
+      "festival_level_bracket": "Under Lv.43",
+      "seal_stone_entry_fee": "4,500 Blue / 2,700 Green / 1,350 Red Seal Stones",
+      "blood_offering_target_score": 2100,
+      "ancient_adena_jackpot_pool": "3,200,000 Ancient Adena Dawn Cabal Pool",
+      "festival_witch_mechanic": "18-Minute All-Race Convergence Festival \u00b7 Up to 3 Witch Sacrifices for Wave-3 Archon Spawn"
+    },
+    {
+      "oracle_id": "oracle-05-glaze-barge-quay",
+      "town_zone_id": "zone-town-glaze-barge-quay",
+      "town_name": "Glaze-Barge Quay (River Trade & Raid Port)",
+      "oracle_category": "Oracle_of_Dawn_Sanctuary",
+      "priest_npc_name": "Priest of Dawn Iason & Maritime Oracle Guide",
+      "oracle_loc": "-81405:151620",
+      "festival_level_bracket": "Under Lv.54",
+      "seal_stone_entry_fee": "6,000 Blue / 3,600 Green / 1,800 Red Seal Stones",
+      "blood_offering_target_score": 2650,
+      "ancient_adena_jackpot_pool": "4,100,000 Ancient Adena Dawn Cabal Pool",
+      "festival_witch_mechanic": "18-Minute Harbor Sanctuary Festival \u00b7 AOE Polearm Wave Escalation + High-Score Cabal Registration"
+    },
+    {
+      "oracle_id": "oracle-06-draft-kiln-post",
+      "town_zone_id": "zone-town-draft-kiln-post",
+      "town_name": "Draft-Kiln Post (Ogre/Orc Starter)",
+      "oracle_category": "Oracle_of_Dusk_Sanctuary",
+      "priest_npc_name": "Priestess of Dusk Rukina & Twilight Guide",
+      "oracle_loc": "-45013:-112973",
+      "festival_level_bracket": "Under Lv.32",
+      "seal_stone_entry_fee": "3,000 Blue / 1,800 Green / 900 Red Seal Stones",
+      "blood_offering_target_score": 1400,
+      "ancient_adena_jackpot_pool": "2,050,000 Ancient Adena Dusk Revolution Pool",
+      "festival_witch_mechanic": "18-Minute Twilight Arena \u00b7 Ogre/Orc Frenzy Buff Allowed + Witch Blood Sacrifice Escalation"
+    },
+    {
+      "oracle_id": "oracle-07-carillon-belfry",
+      "town_zone_id": "zone-town-carillon-belfry",
+      "town_name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+      "oracle_category": "Oracle_of_Dusk_Sanctuary",
+      "priest_npc_name": "Priestess of Dusk Andromeda & Shadow Festival Guide",
+      "oracle_loc": "12179:17034",
+      "festival_level_bracket": "Under Lv.43",
+      "seal_stone_entry_fee": "4,500 Blue / 2,700 Green / 1,350 Red Seal Stones",
+      "blood_offering_target_score": 1950,
+      "ancient_adena_jackpot_pool": "2,850,000 Ancient Adena Dusk Revolution Pool",
+      "festival_witch_mechanic": "18-Minute Dark-Lunar Sanctuary \u00b7 Hex/Vampiric Sustainment + Double Chest of Darkness Wave"
+    },
+    {
+      "oracle_id": "oracle-08-cinnamon-mill",
+      "town_zone_id": "zone-town-cinnamon-mill",
+      "town_name": "Cinnamon-Mill Haven (Furral Starter)",
+      "oracle_category": "Oracle_of_Dusk_Sanctuary",
+      "priest_npc_name": "Priest of Dusk Casca & Soul-Wing Festival Guide",
+      "oracle_loc": "-118429:47041",
+      "festival_level_bracket": "Under Lv.43",
+      "seal_stone_entry_fee": "4,500 Blue / 2,700 Green / 1,350 Red Seal Stones",
+      "blood_offering_target_score": 2000,
+      "ancient_adena_jackpot_pool": "2,950,000 Ancient Adena Dusk Revolution Pool",
+      "festival_witch_mechanic": "18-Minute Furral Soul-Combo Festival \u00b7 Pride of Kamael Party Synergy + Witch Sacrifice Bonus"
+    },
+    {
+      "oracle_id": "oracle-09-saffron-press",
+      "town_zone_id": "zone-town-saffron-press",
+      "town_name": "Saffron Press Village (Manor Agricultural Hub)",
+      "oracle_category": "Oracle_of_Dusk_Sanctuary",
+      "priest_npc_name": "Priestess of Dusk Sybilla & Freeholds Oracle Steward",
+      "oracle_loc": "17163:170348",
+      "festival_level_bracket": "Under Lv.54",
+      "seal_stone_entry_fee": "6,000 Blue / 3,600 Green / 1,800 Red Seal Stones",
+      "blood_offering_target_score": 2750,
+      "ancient_adena_jackpot_pool": "4,300,000 Ancient Adena Dusk Revolution Pool",
+      "festival_witch_mechanic": "18-Minute Freeholds Rebel Festival \u00b7 Zero Castle Tax Entry + Triple Witch Sacrifice Tier"
+    },
+    {
+      "oracle_id": "oracle-10-pinion-terminus",
+      "town_zone_id": "zone-town-pinion-terminus",
+      "town_name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+      "oracle_category": "Oracle_of_Dusk_Sanctuary",
+      "priest_npc_name": "Priest of Dusk Krevo & Steppe Oracle Guide",
+      "oracle_loc": "82155:148855",
+      "festival_level_bracket": "Under Lv.54",
+      "seal_stone_entry_fee": "6,000 Blue / 3,600 Green / 1,800 Red Seal Stones",
+      "blood_offering_target_score": 2900,
+      "ancient_adena_jackpot_pool": "4,600,000 Ancient Adena Dusk Revolution Pool",
+      "festival_witch_mechanic": "18-Minute Steppe Gateway Festival \u00b7 High-Velocity Respawn Waves + Blood Offering Multiplier"
+    },
+    {
+      "oracle_id": "oracle-11-escapement-anvil",
+      "town_zone_id": "zone-town-escapement-anvil",
+      "town_name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+      "oracle_category": "High_Bracket_Blood_Offering_Altar",
+      "priest_npc_name": "Grand Oracle Priestess Vell & Dusk/Dawn Arbiter",
+      "oracle_loc": "82847:53462",
+      "festival_level_bracket": "Under Lv.65",
+      "seal_stone_entry_fee": "7,500 Blue / 4,500 Green / 2,250 Red Seal Stones",
+      "blood_offering_target_score": 3600,
+      "ancient_adena_jackpot_pool": "6,400,000 Ancient Adena High-Bracket Jackpot",
+      "festival_witch_mechanic": "18-Minute Oren Ivory Bracket \u00b7 5-Member Full Party Required + Archon of Darkness Final Wave"
+    },
+    {
+      "oracle_id": "oracle-12-inductor-switchyard",
+      "town_zone_id": "zone-town-inductor-switchyard",
+      "town_name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+      "oracle_category": "High_Bracket_Blood_Offering_Altar",
+      "priest_npc_name": "Metropolitan Oracle Archon Wood & Festival Herald",
+      "oracle_loc": "147139:-54931",
+      "festival_level_bracket": "Under Lv.65",
+      "seal_stone_entry_fee": "7,500 Blue / 4,500 Green / 2,250 Red Seal Stones",
+      "blood_offering_target_score": 3950,
+      "ancient_adena_jackpot_pool": "7,500,000 Ancient Adena Giran Metropolitan Jackpot",
+      "festival_witch_mechanic": "18-Minute Giran Trade Capital Bracket \u00b7 Record Blood Offering Leaderboard + Top-Grade Seal Payout"
+    },
+    {
+      "oracle_id": "oracle-13-torque-balance-citadel",
+      "town_zone_id": "zone-town-torque-balance-citadel",
+      "town_name": "Town of Torque-Balance Citadel (Human Ancestral Expedition Hub)",
+      "oracle_category": "High_Bracket_Blood_Offering_Altar",
+      "priest_npc_name": "Imperial Oracle High Priest Orven & Dusk Herald",
+      "oracle_loc": "116131:-18124",
+      "festival_level_bracket": "No-Limit Lv.65\u201385",
+      "seal_stone_entry_fee": "9,000 Blue / 5,400 Green / 2,700 Red Seal Stones",
+      "blood_offering_target_score": 4650,
+      "ancient_adena_jackpot_pool": "9,800,000 Ancient Adena Imperial Aden Jackpot",
+      "festival_witch_mechanic": "18-Minute No-Limit Imperial Bracket \u00b7 S-Grade 300-Attribute AOE Party + 3\u00d7 Witch Sacrifice"
+    },
+    {
+      "oracle_id": "oracle-14-starfall-haven",
+      "town_zone_id": "zone-town-starfall-haven",
+      "town_name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+      "oracle_category": "High_Bracket_Blood_Offering_Altar",
+      "priest_npc_name": "Astral Oracle High Priestess Agripel & Dusk Seer",
+      "oracle_loc": "43523:-47617",
+      "festival_level_bracket": "No-Limit Lv.65\u201385",
+      "seal_stone_entry_fee": "9,000 Blue / 5,400 Green / 2,700 Red Seal Stones",
+      "blood_offering_target_score": 4950,
+      "ancient_adena_jackpot_pool": "11,200,000 Ancient Adena Rune Astral Jackpot",
+      "festival_witch_mechanic": "18-Minute Rune Grand Bracket \u00b7 Anakim/Zaken Transformation Burst + Golden Chest of Darkness"
+    },
+    {
+      "oracle_id": "oracle-15-crown-beacon",
+      "town_zone_id": "zone-town-crown-beacon",
+      "town_name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+      "oracle_category": "High_Bracket_Blood_Offering_Altar",
+      "priest_npc_name": "Sovereign Oracle Primarch Benedikt & Twilight Judge",
+      "oracle_loc": "147615:27090",
+      "festival_level_bracket": "No-Limit Lv.65\u201385",
+      "seal_stone_entry_fee": "9,000 Blue / 5,400 Green / 2,700 Red Seal Stones",
+      "blood_offering_target_score": 5400,
+      "ancient_adena_jackpot_pool": "14,500,000 Ancient Adena Sovereign World-Apex Jackpot",
+      "festival_witch_mechanic": "18-Minute Sovereign Apex Bracket \u00b7 Decides +110 Competition Points for Seal of Strife / Gnosis / Avarice"
+    }
+  ],
+  "luxury_black_market_boutiques": [
+    {
+      "boutique_id": "boutique-01-giran-alexandria-armory",
+      "boutique_name": "Giran Luxury Gallery \u2014 Alexandria's Crystal C/B-Grade Armory",
+      "market_category": "Crystal_Luxury_Armory",
+      "zone_id": "zone-town-inductor-switchyard",
+      "loc": "147626:-55044",
+      "proprietor_npc_name": "Luxury Weapons & Armor Trader Alexandria",
+      "accepted_currency": "Crystal: C-Grade + Crystal: D-Grade (Zero Adena Tax)",
+      "signature_catalog_items": [
+        "Homunkulus's Sword / Eminence Bow / Orcish Poleaxe / Yaksa Mace (Crystal C)",
+        "Full Plate Armor / Composite Armor / Demon's Tunic & Stockings (Crystal C)",
+        "Keshanberk / Great Sword / Avadon & Zubei Unsealed Luxury Bundles"
+      ],
+      "operating_window_rule": "24h Sovereign Luxury Gallery (Giran Prestigious Quarter #7)"
+    },
+    {
+      "boutique_id": "boutique-02-aden-imperial-crystal-gallery",
+      "boutique_name": "Imperial Aden Crystal Vault \u2014 High-Grade B/A-Crystal Exchange",
+      "market_category": "Crystal_Luxury_Armory",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "loc": "116637:-18253",
+      "proprietor_npc_name": "Imperial Luxury Curator Evelyn",
+      "accepted_currency": "Crystal: B-Grade + Crystal: C-Grade + Ancient Tome",
+      "signature_catalog_items": [
+        "Damascus Sword / Bow of Peril / Sword of Valhalla (Crystal B)",
+        "Doom Plate / Blue Wolf / Tallum Tunic & Necklace of Black Ore",
+        "Ring of Black Ore & Adamantite Luxury Jewelry Suite"
+      ],
+      "operating_window_rule": "24h Imperial Boutique (Aden Grand Colonnade)"
+    },
+    {
+      "boutique_id": "boutique-03-rune-astral-crystal-exchange",
+      "boutique_name": "Starfall Haven Astral Armory \u2014 A/S-Crystal & Bracelet Boutique",
+      "market_category": "Crystal_Luxury_Armory",
+      "zone_id": "zone-town-starfall-haven",
+      "loc": "44048:-47762",
+      "proprietor_npc_name": "Astral Luxury Broker Silvershadow",
+      "accepted_currency": "Crystal: A-Grade + Crystal: B-Grade + Shining Belt Clasp",
+      "signature_catalog_items": [
+        "Carnage Bow / Arcana Mace / Tallum Blade*Dark Legion's Edge Prep",
+        "Majestic / Nightmare Luxury Accessory & Belt Ornament Exchange",
+        "Iron/Mithril Talisman Bracelet & Magic Pouch Unlocks"
+      ],
+      "operating_window_rule": "24h Astral Gallery (Rune Upper Citadel Terrace)"
+    },
+    {
+      "boutique_id": "boutique-04-crown-beacon-sovereign-armory",
+      "boutique_name": "Crown-Beacon Sovereign Armory \u2014 S80 Dynasty & Masterwork Crystal Vault",
+      "market_category": "Crystal_Luxury_Armory",
+      "zone_id": "zone-town-crown-beacon",
+      "loc": "148159:26929",
+      "proprietor_npc_name": "Sovereign Armory factor Aurelius",
+      "accepted_currency": "Crystal: S-Grade + Crystal: A-Grade + Ancient Adena",
+      "signature_catalog_items": [
+        "Dynasty Weapon & Sigil / Shield Luxury Crystal Exchange",
+        "S-Grade Draconic / Imperial Crusader / Major Arcana Unseal Kits",
+        "Top-Grade Magic Ornament Mithril Belt (+Inventory/+Weight Limit)"
+      ],
+      "operating_window_rule": "24h Sovereign Gallery (High-Halo Royal Plaza)"
+    },
+    {
+      "boutique_id": "boutique-05-giran-mammon-smuggler",
+      "boutique_name": "Giran Back-Alley Smuggler \u2014 Black Marketeer of Mammon",
+      "market_category": "Black_Marketeer_of_Mammon",
+      "zone_id": "zone-town-inductor-switchyard",
+      "loc": "147670:-55080",
+      "proprietor_npc_name": "Black Marketeer of Mammon (Giran Back-Alley)",
+      "accepted_currency": "Ancient Adena (AA) \u21c4 Adena (1:4 Night Smuggler Rate)",
+      "signature_catalog_items": [
+        "500,000 Ancient Adena Daily Uncapped Adena Liquidity Bundle",
+        "Black-Market Seal Stone (Blue/Green/Red) Direct Conversion",
+        "Scroll: Remove Henna Symbol & Contraband Mammon Varnish"
+      ],
+      "operating_window_rule": "20:00\u201324:00 Game-Time Night Smuggler Window (1 Daily Exchange/Account)"
+    },
+    {
+      "boutique_id": "boutique-06-aden-mammon-smuggler",
+      "boutique_name": "Aden Shadow Colonnade \u2014 Black Marketeer of Mammon",
+      "market_category": "Black_Marketeer_of_Mammon",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "loc": "116681:-18289",
+      "proprietor_npc_name": "Black Marketeer of Mammon (Aden Colonnade)",
+      "accepted_currency": "Ancient Adena (AA) \u21c4 Adena + Blank Scrolls",
+      "signature_catalog_items": [
+        "High-Volume Ancient Adena \u2794 Blacksmith of Mammon Dualsword Fee Pack",
+        "Scroll: Enchant Weapon/Armor (C/B/A-Grade) Blank Scroll Trade",
+        "Mammon's ContrabandGemstone A & Gemstone S Smuggler Chest"
+      ],
+      "operating_window_rule": "20:00\u201324:00 Game-Time Night Smuggler Window (1 Daily Exchange/Account)"
+    },
+    {
+      "boutique_id": "boutique-07-rune-mammon-smuggler",
+      "boutique_name": "Rune Undercroft Wharf \u2014 Black Marketeer of Mammon",
+      "market_category": "Black_Marketeer_of_Mammon",
+      "zone_id": "zone-town-starfall-haven",
+      "loc": "44092:-47798",
+      "proprietor_npc_name": "Black Marketeer of Mammon (Rune Lower Wharf)",
+      "accepted_currency": "Ancient Adena (AA) \u21c4 Adena + Seal of Gnosis Tokens",
+      "signature_catalog_items": [
+        "Merchant of Mammon Off-Cycle Dye (+4/-4 Henna) Smuggler Stock",
+        "Crystal: A-Grade & Crystal: S-Grade Contraband Liquidity Lot",
+        "Blessed Scroll of Escape: Seal Catacomb / Necropolis Direct Warp"
+      ],
+      "operating_window_rule": "20:00\u201324:00 Game-Time Night Smuggler Window (1 Daily Exchange/Account)"
+    },
+    {
+      "boutique_id": "boutique-08-glaze-barge-harbor-smuggler",
+      "boutique_name": "Glaze-Barge Maritime Quay \u2014 Black Marketeer of Mammon",
+      "market_category": "Black_Marketeer_of_Mammon",
+      "zone_id": "zone-town-glaze-barge-quay",
+      "loc": "-80897:151493",
+      "proprietor_npc_name": "Black Marketeer of Mammon (Giran/Gludin Harbor Pier)",
+      "accepted_currency": "Ancient Adena (AA) \u21c4 Adena + Pirate Isle Doubloons",
+      "signature_catalog_items": [
+        "Zaken Night-Raid Ancient Adena Emergency Supply Bundle",
+        "Red/Green/Blue Soul Crystal Stage 10\u201312 Resonance Insurance Pack",
+        "Smuggled Greater CP Potion & Quick Healing Potion Crate (\u00d7200)"
+      ],
+      "operating_window_rule": "20:00\u201324:00 Game-Time Night Smuggler Window (Harbor Pier #4)"
+    },
+    {
+      "boutique_id": "boutique-09-giran-galladucci-couture",
+      "boutique_name": "Galladucci's Haute Couture \u2014 Formal Wear & Noble Headgear Emporium",
+      "market_category": "Couture_Emporium",
+      "zone_id": "zone-town-inductor-switchyard",
+      "loc": "147714:-55116",
+      "proprietor_npc_name": "Luxury Trader Galladucci & Jeweler Alexis",
+      "accepted_currency": "Adena + Artisan's Frame + Oriharukon + Signet Ring",
+      "signature_catalog_items": [
+        "Formal Wear Wedding Tuxedo & Bridal Gown (Make A Sewing Kit Quest)",
+        "Party Mask, Monocle, Forget-me-not Hairpin & Daisy Hairpin",
+        "Little Angel Wing, Fairy Antennae & Feathered Hat Couture"
+      ],
+      "operating_window_rule": "24h Haute Couture Salon (Giran Luxury Shop #7)"
+    },
+    {
+      "boutique_id": "boutique-10-aden-royal-coronet-salon",
+      "boutique_name": "Aden Royal Coronet Salon \u2014 Castle Circlets & Ceremonial Regalia",
+      "market_category": "Couture_Emporium",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "loc": "116725:-18325",
+      "proprietor_npc_name": "Royal Milliner & Jeweler Ellie",
+      "accepted_currency": "Adena + Knights' Epaulette + Clan Reputation Points",
+      "signature_catalog_items": [
+        "Noblesse Tiara, Sovereign Castle Lord Crown & Territory Circlets",
+        "Golden Jester Hat, Pirate's Eye Patch & Outlaw's Eyepatch",
+        "Agathion Love/Pegasus Summon Bracelet & Wedding Bouquet"
+      ],
+      "operating_window_rule": "24h Royal Salon (Aden Cathedral Plaza)"
+    },
+    {
+      "boutique_id": "boutique-11-dion-convergence-atelier",
+      "boutique_name": "Kilnwatch Accord Atelier \u2014 6-Race Heritage Cloaks & Emblem Tailoring",
+      "market_category": "Couture_Emporium",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "loc": "-13864:123566",
+      "proprietor_npc_name": "Master Tailor weaver Olf Kanore",
+      "accepted_currency": "Adena + Seal-Thread + Territory Badges",
+      "signature_catalog_items": [
+        "Olf's T-Shirt (+0..+10 Speed/CON/MEN/STR/INT Special Enchant)",
+        "6-Race Ceremonial Heritage Tunics & Clan Academy Grad Circlet",
+        "Magic Rune Clip & Magic Ornament Belt Pouch Tailoring"
+      ],
+      "operating_window_rule": "24h Convergence Atelier (Dion Central Square)"
+    },
+    {
+      "boutique_id": "boutique-12-lantern-ferry-maritime-bazaar",
+      "boutique_name": "Lantern Ferry Exotic Bazaar \u2014 Talking Island & Maritime Curiosities",
+      "market_category": "Couture_Emporium",
+      "zone_id": "zone-harbor-lantern-ferry-pier",
+      "loc": "-95853:258457",
+      "proprietor_npc_name": "Exotic Wharf Factor Rafforty & Trader Radia",
+      "accepted_currency": "Adena + Proof of Catching a Fish + Shiny Coin",
+      "signature_catalog_items": [
+        "Fisherman's Big Fish Hat, Pirate Hat & Refined Romantic Chapeau",
+        "Big Head Potion, Firework Pack & Large Firework Celebration Crate",
+        "Hair Style Change Potion (Type A\u2013G) & Facelifting Potion Salon Kit"
+      ],
+      "operating_window_rule": "24h Maritime Curio Bazaar (Lantern South Ferry Pier)"
+    }
   ]
 }

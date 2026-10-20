@@ -1849,7 +1849,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 50)
+        self.assertGreaterEqual(len(audit["dimensions"]), 50)
 
         d49 = audit["dimensions"]["D49_warehouse_clan_vault_and_freight_network"]
         self.assertEqual(d49["score"], 100.0)
@@ -1903,10 +1903,99 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas50DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 50)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 50)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 50)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 50)
         self.assertIn("50-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave24_festival_of_darkness_oracles_and_luxury_black_market_boutiques(self) -> None:
+        """Wave 24 (D51–D52): 15 Town Festival of Darkness Oracles & 12 Luxury Boutique / Black Marketeer Nodes."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["festivalOfDarknessOraclesCount"], 15)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["luxuryBlackMarketBoutiquesCount"], 12)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_FESTIVAL_ORACLE_MODE",
+            "setAtlasFestivalOracleMode(",
+            "renderAtlasFestivalOracleBarHtml(",
+            "studioFestivalOracleOverlay",
+            "ATLAS_LUXURY_MARKET_MODE",
+            "setAtlasLuxuryMarketMode(",
+            "renderAtlasLuxuryMarketBarHtml(",
+            "studioLuxuryBlackMarketOverlay",
+            "52-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 24 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 52)
+
+        d51 = audit["dimensions"]["D51_festival_of_darkness_and_oracle_altars"]
+        self.assertEqual(d51["score"], 100.0)
+        self.assertEqual(d51["verified"], 15)
+        self.assertEqual(d51["target"], 15)
+        self.assertEqual(d51["oracle_of_dawn_sanctuaries"], 5)
+        self.assertEqual(d51["oracle_of_dusk_sanctuaries"], 5)
+        self.assertEqual(d51["high_bracket_blood_altars"], 5)
+        self.assertEqual(
+            set(d51["oracle_categories"]),
+            {
+                "Oracle_of_Dawn_Sanctuary",
+                "Oracle_of_Dusk_Sanctuary",
+                "High_Bracket_Blood_Offering_Altar",
+            },
+        )
+        self.assertTrue(d51["ui_wired"])
+
+        d52 = audit["dimensions"]["D52_luxury_boutique_and_black_marketeer_exchange"]
+        self.assertEqual(d52["score"], 100.0)
+        self.assertEqual(d52["verified"], 12)
+        self.assertEqual(d52["target"], 12)
+        self.assertEqual(d52["crystal_luxury_armories"], 4)
+        self.assertEqual(d52["black_marketeers_of_mammon"], 4)
+        self.assertEqual(d52["couture_emporiums"], 4)
+        self.assertEqual(
+            set(d52["market_categories"]),
+            {
+                "Crystal_Luxury_Armory",
+                "Black_Marketeer_of_Mammon",
+                "Couture_Emporium",
+            },
+        )
+        self.assertTrue(d52["ui_wired"])
+
+        oracles = atlas["festival_of_darkness_oracles"]
+        self.assertEqual(len(oracles), 15)
+        self.assertEqual(sum(1 for o in oracles if o["oracle_category"] == "Oracle_of_Dawn_Sanctuary"), 5)
+        self.assertEqual(sum(1 for o in oracles if o["oracle_category"] == "Oracle_of_Dusk_Sanctuary"), 5)
+        self.assertEqual(sum(1 for o in oracles if o["oracle_category"] == "High_Bracket_Blood_Offering_Altar"), 5)
+        for o in oracles:
+            self.assertGreaterEqual(o["blood_offering_target_score"], 1250)
+
+        boutiques = atlas["luxury_black_market_boutiques"]
+        self.assertEqual(len(boutiques), 12)
+        self.assertEqual(sum(1 for b in boutiques if b["market_category"] == "Crystal_Luxury_Armory"), 4)
+        self.assertEqual(sum(1 for b in boutiques if b["market_category"] == "Black_Marketeer_of_Mammon"), 4)
+        self.assertEqual(sum(1 for b in boutiques if b["market_category"] == "Couture_Emporium"), 4)
+        for b in boutiques:
+            self.assertGreaterEqual(len(b["signature_catalog_items"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas52DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 52)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 52)
+        self.assertIn("52-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

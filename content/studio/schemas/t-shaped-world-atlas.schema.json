@@ -215,6 +215,18 @@
       "maxItems": 18,
       "items": { "$ref": "#/$defs/atlasMasterTelemetryCheckpointSpec" }
     },
+    "festival_of_darkness_oracles": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/festivalOfDarknessOracleSpec" }
+    },
+    "luxury_black_market_boutiques": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": { "$ref": "#/$defs/luxuryBlackMarketBoutiqueSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2890,6 +2902,80 @@
           "items": { "type": "string" }
         },
         "council_inspection_summary": { "type": "string" }
+      }
+    },
+    "festivalOfDarknessOracleSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "oracle_id",
+        "town_zone_id",
+        "town_name",
+        "oracle_category",
+        "priest_npc_name",
+        "oracle_loc",
+        "festival_level_bracket",
+        "seal_stone_entry_fee",
+        "blood_offering_target_score",
+        "ancient_adena_jackpot_pool",
+        "festival_witch_mechanic"
+      ],
+      "properties": {
+        "oracle_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "oracle_category": {
+          "type": "string",
+          "enum": [
+            "Oracle_of_Dawn_Sanctuary",
+            "Oracle_of_Dusk_Sanctuary",
+            "High_Bracket_Blood_Offering_Altar"
+          ]
+        },
+        "priest_npc_name": { "type": "string" },
+        "oracle_loc": { "type": "string" },
+        "festival_level_bracket": { "type": "string" },
+        "seal_stone_entry_fee": { "type": "string" },
+        "blood_offering_target_score": { "type": "integer", "minimum": 100 },
+        "ancient_adena_jackpot_pool": { "type": "string" },
+        "festival_witch_mechanic": { "type": "string" }
+      }
+    },
+    "luxuryBlackMarketBoutiqueSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boutique_id",
+        "boutique_name",
+        "market_category",
+        "zone_id",
+        "loc",
+        "proprietor_npc_name",
+        "accepted_currency",
+        "signature_catalog_items",
+        "operating_window_rule"
+      ],
+      "properties": {
+        "boutique_id": { "type": "string" },
+        "boutique_name": { "type": "string" },
+        "market_category": {
+          "type": "string",
+          "enum": [
+            "Crystal_Luxury_Armory",
+            "Black_Marketeer_of_Mammon",
+            "Couture_Emporium"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "proprietor_npc_name": { "type": "string" },
+        "accepted_currency": { "type": "string" },
+        "signature_catalog_items": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "operating_window_rule": { "type": "string" }
       }
     }
   }

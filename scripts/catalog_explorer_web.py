@@ -89,15 +89,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas46DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas48DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas50DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas52DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 23)),
+        "wave": int(iter_state.get("wave", 24)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"52-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"50-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"48-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"46-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -114,7 +116,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D52 Verified"
         ),
     }
     return merged
@@ -4376,7 +4378,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D52 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4445,6 +4447,8 @@ let ATLAS_CLAN_HALL_MODE = 'All';
 let ATLAS_TRANSFORMATION_MODE = 'All';
 let ATLAS_WAREHOUSE_MODE = 'All';
 let ATLAS_MASTER_TOUR_MODE = 'All';
+let ATLAS_FESTIVAL_ORACLE_MODE = 'All';
+let ATLAS_LUXURY_MARKET_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4485,6 +4489,8 @@ const ATLAS_STATE_STORE = {
   transformationMode: 'All',               // D48: Active 15-Sanctum Transformation, Talisman & Agathion Selector ('Off' | 'All' | 'Avant_Garde_Transformation_Sanctum' | 'Epaulette_Talisman_Vault' | 'Agathion_Bracelet_Altar')
   warehouseMode: 'All',                    // D49: Active 15-Town Warehouse, Clan Vault & Freight Selector ('Off' | 'All' | 'Starter_Iron_Gate_Vault' | 'Regional_Freight_Depot' | 'Capital_Dimensional_Broker')
   masterTourMode: 'All',                   // D50: Active 18-Checkpoint 50D Master Cartographic Tour Selector ('Off' | 'All' | 'Race_Origin_To_Awakening' | 'Town_Blueprint_And_Economy' | 'Multi_Floor_Dungeon_Sanctum')
+  festivalOracleMode: 'All',               // D51: Active 15-Town Festival of Darkness & Oracle Selector ('Off' | 'All' | 'Oracle_of_Dawn_Sanctuary' | 'Oracle_of_Dusk_Sanctuary' | 'High_Bracket_Blood_Offering_Altar')
+  luxuryMarketMode: 'All',                 // D52: Active 12-Node Luxury Boutique & Black Marketeer Selector ('Off' | 'All' | 'Crystal_Luxury_Armory' | 'Black_Marketeer_of_Mammon' | 'Couture_Emporium')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4517,6 +4523,20 @@ function setAtlasWarehouseMode(modeId) {
 function setAtlasMasterTourMode(modeId) {
   ATLAS_MASTER_TOUR_MODE = String(modeId || 'All');
   ATLAS_STATE_STORE.masterTourMode = ATLAS_MASTER_TOUR_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasFestivalOracleMode(modeId) {
+  ATLAS_FESTIVAL_ORACLE_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.festivalOracleMode = ATLAS_FESTIVAL_ORACLE_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasLuxuryMarketMode(modeId) {
+  ATLAS_LUXURY_MARKET_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.luxuryMarketMode = ATLAS_LUXURY_MARKET_MODE;
   writeUrlState(false);
   render();
 }
@@ -9246,6 +9266,184 @@ function renderAtlasMasterTourBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasFestivalOracleBarHtml(tatlas) {
+  const oracles = (tatlas && tatlas.festival_of_darkness_oracles) || [];
+  if (!oracles.length) return '';
+
+  const curMode = ATLAS_FESTIVAL_ORACLE_MODE || ATLAS_STATE_STORE.festivalOracleMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🕯️ All 15 Oracles' },
+    { id: 'Oracle_of_Dawn_Sanctuary', label: '☀️ 5 Dawn Oracles' },
+    { id: 'Oracle_of_Dusk_Sanctuary', label: '🌙 5 Dusk Oracles' },
+    { id: 'High_Bracket_Blood_Offering_Altar', label: '🩸 5 High-Bracket Blood Altars' }
+  ];
+
+  const filteredOracles = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? oracles : oracles.filter(o => o.oracle_category === curMode));
+
+  const featuredOracles = curMode === 'All'
+    ? [
+        ...oracles.filter(o => o.oracle_category === 'Oracle_of_Dawn_Sanctuary').slice(0, 1),
+        ...oracles.filter(o => o.oracle_category === 'Oracle_of_Dusk_Sanctuary').slice(0, 1),
+        ...oracles.filter(o => o.oracle_category === 'High_Bracket_Blood_Offering_Altar').slice(0, 2)
+      ]
+    : filteredOracles.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasFestivalOracleBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1d1124;border:1px solid rgba(232,121,249,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#f5d0fe">🕯️ 15-TOWN FESTIVAL OF DARKNESS &amp; ORACLE OF DAWN/DUSK PARTY ALTAR MATRIX (D51 · 15 ORACLES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasFestivalOracleMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(232,121,249,0.45)'};background:${isAct ? '#a21caf' : '#090d14'};color:${isAct ? '#ffffff' : '#fae8ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 DAWN ORACLES + 5 DUSK ORACLES + 5 HIGH-BRACKET BLOOD ALTARS (18-MIN SURVIVAL &amp; WITCH SACRIFICE)
+        </span>
+      </div>
+
+      ${featuredOracles.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredOracles.map(o => {
+            const isDawn = o.oracle_category === 'Oracle_of_Dawn_Sanctuary';
+            const isDusk = o.oracle_category === 'Oracle_of_Dusk_Sanctuary';
+            const catCol = isDawn ? '#facc15' : (isDusk ? '#c084fc' : '#f43f5e');
+            const catIcon = isDawn ? '☀️' : (isDusk ? '🌙' : '🩸');
+            const zObj = byZid[o.town_zone_id] || {};
+            const jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || String(o.town_zone_id || '').replace('zone-', ''))}', '${escapeHtml(o.oracle_loc)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(o.town_name.slice(0, 30))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(o.festival_level_bracket)} · ${o.blood_offering_target_score} pts</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#f5d0fe;margin-top:1px">
+                    🙏 ${escapeHtml(o.priest_npc_name.slice(0, 32))} · 💰 ${escapeHtml(o.ancient_adena_jackpot_pool.slice(0, 26))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🕯️ ${escapeHtml(o.festival_witch_mechanic.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#4a044e;color:#fae8ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} Jump to Town Oracle Priest (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasLuxuryMarketBarHtml(tatlas) {
+  const boutiques = (tatlas && tatlas.luxury_black_market_boutiques) || [];
+  if (!boutiques.length) return '';
+
+  const curMode = ATLAS_LUXURY_MARKET_MODE || ATLAS_STATE_STORE.luxuryMarketMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🎩 All 12 Boutiques' },
+    { id: 'Crystal_Luxury_Armory', label: '💎 4 Crystal Luxury Armories' },
+    { id: 'Black_Marketeer_of_Mammon', label: '🕶️ 4 Black Marketeers of Mammon' },
+    { id: 'Couture_Emporium', label: '👑 4 Couture Emporiums' }
+  ];
+
+  const filteredBoutiques = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? boutiques : boutiques.filter(b => b.market_category === curMode));
+
+  const featuredBoutiques = curMode === 'All'
+    ? [
+        ...boutiques.filter(b => b.market_category === 'Crystal_Luxury_Armory').slice(0, 2),
+        ...boutiques.filter(b => b.market_category === 'Black_Marketeer_of_Mammon').slice(0, 1),
+        ...boutiques.filter(b => b.market_category === 'Couture_Emporium').slice(0, 1)
+      ]
+    : filteredBoutiques.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasLuxuryMarketBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1f1509;border:1px solid rgba(250,204,21,0.58)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fef08a">🎩 12-NODE LUXURY BOUTIQUE &amp; BLACK MARKETEER OF MAMMON EXCHANGE MATRIX (D52 · 12 BOUTIQUES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasLuxuryMarketMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(250,204,21,0.45)'};background:${isAct ? '#b45309' : '#090d14'};color:${isAct ? '#ffffff' : '#fef9c3'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          4 CRYSTAL C/B/A/S LUXURY ARMORIES + 4 NIGHT BLACK MARKETEERS OF MAMMON + 4 HAUTE COUTURE EMPORIUMS
+        </span>
+      </div>
+
+      ${featuredBoutiques.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredBoutiques.map(b => {
+            const isCrystal = b.market_category === 'Crystal_Luxury_Armory';
+            const isSmuggler = b.market_category === 'Black_Marketeer_of_Mammon';
+            const catCol = isCrystal ? '#38bdf8' : (isSmuggler ? '#f43f5e' : '#facc15');
+            const catIcon = isCrystal ? '💎' : (isSmuggler ? '🕶️' : '👑');
+            const zObj = byZid[b.zone_id] || {};
+            const zidStr = String(b.zone_id || '');
+            let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(b.loc)}')`;
+            if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(b.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(b.boutique_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(b.market_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fef08a;margin-top:1px">
+                    🎩 ${escapeHtml(b.proprietor_npc_name.slice(0, 30))} · 💱 ${escapeHtml(b.accepted_currency.slice(0, 26))}
+                  </div>
+                  <div style="font-size:8px;color:#bae6fd;margin-top:1px">
+                    🛍️ ${escapeHtml(((b.signature_catalog_items && b.signature_catalog_items[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#451a03;color:#fef9c3;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} Jump to Boutique / Smuggler Alley (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -9400,6 +9598,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasTransformationBarHtml(tatlas)}
       ${renderAtlasWarehouseBarHtml(tatlas)}
       ${renderAtlasMasterTourBarHtml(tatlas)}
+      ${renderAtlasFestivalOracleBarHtml(tatlas)}
+      ${renderAtlasLuxuryMarketBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -12210,6 +12410,66 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D51: Interactive 15-Town Festival of Darkness & Oracle of Dawn/Dusk Party Altar Overlay (`studioFestivalOracleOverlay`)
+  const festivalOracleRows = (tatlas && tatlas.festival_of_darkness_oracles) || [];
+  const curFestivalOracleMode = ATLAS_FESTIVAL_ORACLE_MODE || ATLAS_STATE_STORE.festivalOracleMode || 'All';
+  const activeFestivalOracles = curFestivalOracleMode === 'Off'
+    ? []
+    : (curFestivalOracleMode === 'All'
+        ? festivalOracleRows
+        : festivalOracleRows.filter(o => o.oracle_category === curFestivalOracleMode));
+  const festivalOracleOverlaySvg = `
+    <g id="studioFestivalOracleOverlay">
+      ${activeFestivalOracles.map(o => {
+        const oc = clampWorldLocCoord(o.oracle_loc || '-84120:243500');
+        const zObj = allZonesById[o.town_zone_id] || {};
+        const isDawn = o.oracle_category === 'Oracle_of_Dawn_Sanctuary';
+        const isDusk = o.oracle_category === 'Oracle_of_Dusk_Sanctuary';
+        const colHex = isDawn ? '#facc15' : (isDusk ? '#c084fc' : '#f43f5e');
+        const iconTxt = isDawn ? '☀️' : (isDusk ? '🌙' : '🩸');
+        const jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || String(o.town_zone_id || '').replace('zone-', ''))}', '${escapeHtml(o.oracle_loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${oc.svgX}" cy="${oc.svgY}" r="10.5" fill="rgba(162,28,175,0.4)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${oc.svgX}" y="${oc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D52: Interactive 12-Node Luxury Boutique & Black Marketeer of Mammon Exchange Overlay (`studioLuxuryBlackMarketOverlay`)
+  const luxuryBoutiqueRows = (tatlas && tatlas.luxury_black_market_boutiques) || [];
+  const curLuxuryMarketMode = ATLAS_LUXURY_MARKET_MODE || ATLAS_STATE_STORE.luxuryMarketMode || 'All';
+  const activeLuxuryBoutiques = curLuxuryMarketMode === 'Off'
+    ? []
+    : (curLuxuryMarketMode === 'All'
+        ? luxuryBoutiqueRows
+        : luxuryBoutiqueRows.filter(b => b.market_category === curLuxuryMarketMode));
+  const luxuryBlackMarketOverlaySvg = `
+    <g id="studioLuxuryBlackMarketOverlay">
+      ${activeLuxuryBoutiques.map(b => {
+        const bc = clampWorldLocCoord(b.loc || '147400:-55200');
+        const zObj = allZonesById[b.zone_id] || {};
+        const zidStr = String(b.zone_id || '');
+        const isCrystal = b.market_category === 'Crystal_Luxury_Armory';
+        const isSmuggler = b.market_category === 'Black_Marketeer_of_Mammon';
+        const colHex = isCrystal ? '#38bdf8' : (isSmuggler ? '#f43f5e' : '#facc15');
+        const iconTxt = isCrystal ? '💎' : (isSmuggler ? '🕶️' : '👑');
+        let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(b.loc)}')`;
+        if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(b.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${bc.svgX}" cy="${bc.svgY}" r="10.5" fill="rgba(180,83,9,0.42)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${bc.svgX}" y="${bc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -12240,6 +12500,8 @@ function renderDedicatedWorldAtlas() {
     ${transformationTalismanOverlaySvg}
     ${warehouseFreightOverlaySvg}
     ${masterTourOverlaySvg}
+    ${festivalOracleOverlaySvg}
+    ${luxuryBlackMarketOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
