@@ -107,6 +107,18 @@
       "maxItems": 16,
       "items": { "$ref": "#/$defs/fishingGuildSanctuarySpec" }
     },
+    "cursed_weapon_pvp_hotspots": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": { "$ref": "#/$defs/cursedWeaponPvpHotspotSpec" }
+    },
+    "dimensional_rift_sepulchers": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/dimensionalRiftSepulcherSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2027,6 +2039,86 @@
           ]
         },
         "primary_catch_reward": { "type": "string" }
+      }
+    },
+    "cursedWeaponPvpHotspotSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hotspot_id",
+        "hotspot_name",
+        "pvp_category",
+        "zone_id",
+        "loc",
+        "ruleset_tag",
+        "featured_artifact_or_npc",
+        "recommended_level_band",
+        "tactical_note"
+      ],
+      "properties": {
+        "hotspot_id": { "type": "string" },
+        "hotspot_name": { "type": "string" },
+        "pvp_category": {
+          "type": "string",
+          "enum": [
+            "Cursed_Weapon_Drop_Zone",
+            "Black_Judge_Karma_Sanctuary",
+            "Coliseum_PvP_Arena"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "ruleset_tag": {
+          "type": "string",
+          "enum": [
+            "World-Broadcast Cursed Drop",
+            "Zero-Guard Lawless Safe-Harbor",
+            "Free-PvP No-EXP-Loss Arena"
+          ]
+        },
+        "featured_artifact_or_npc": { "type": "string" },
+        "recommended_level_band": { "type": "string" },
+        "tactical_note": { "type": "string" }
+      }
+    },
+    "dimensionalRiftSepulcherSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "portal_id",
+        "portal_name",
+        "instance_category",
+        "dungeon_id",
+        "parent_zone_id",
+        "floor_id",
+        "loc",
+        "entry_key_or_token",
+        "party_requirement",
+        "cycle_window",
+        "signature_reward"
+      ],
+      "properties": {
+        "portal_id": { "type": "string" },
+        "portal_name": { "type": "string" },
+        "instance_category": {
+          "type": "string",
+          "enum": [
+            "Dimensional_Rift",
+            "Four_Sepulchers",
+            "Key_Gated_Chapel"
+          ]
+        },
+        "dungeon_id": { "type": "string" },
+        "parent_zone_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "entry_key_or_token": { "type": "string" },
+        "party_requirement": { "type": "string" },
+        "cycle_window": { "type": "string" },
+        "signature_reward": { "type": "string" }
       }
     }
   }

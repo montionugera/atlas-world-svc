@@ -672,6 +672,8 @@ def validate_world_governance(
                 "intercontinentalTransitLinesCount": len(t_doc.get("intercontinental_transit_lines") or []),
                 "soulCrystalResonanceStagesCount": len(t_doc.get("soul_crystal_resonance_stages") or []),
                 "fishingGuildSanctuariesCount": len(t_doc.get("fishing_guild_sanctuaries") or []),
+                "cursedWeaponPvpHotspotsCount": len(t_doc.get("cursed_weapon_pvp_hotspots") or []),
+                "dimensionalRiftSepulchersCount": len(t_doc.get("dimensional_rift_sepulchers") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1007,6 +1009,39 @@ def validate_world_governance(
                 if fs_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: fishing_guild_sanctuaries '{fs_id}' references unknown zone_id '{fs_zid}'"
+                    )
+
+            # Validate 14 Cursed Weapon, PK Karma Sanctuary & Open-World PvP Arena Hotspots (D33)
+            pvp_hotspots = t_doc.get("cursed_weapon_pvp_hotspots") or []
+            if pvp_hotspots and len(pvp_hotspots) != 14:
+                errors.append(f"GOV-10 violation: cursed_weapon_pvp_hotspots must have 14 hotspots, got {len(pvp_hotspots)}")
+            for pv_item in pvp_hotspots:
+                if not isinstance(pv_item, dict):
+                    continue
+                pv_id = str(pv_item.get("hotspot_id", ""))
+                pv_zid = str(pv_item.get("zone_id", ""))
+                if pv_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: cursed_weapon_pvp_hotspots '{pv_id}' references unknown zone_id '{pv_zid}'"
+                    )
+
+            # Validate 16 Dimensional Rift, Four Sepulchers & Key-Gated Endgame Sanctums (D34)
+            rift_sepulchers = t_doc.get("dimensional_rift_sepulchers") or []
+            if rift_sepulchers and len(rift_sepulchers) != 16:
+                errors.append(f"GOV-10 violation: dimensional_rift_sepulchers must have 16 portals, got {len(rift_sepulchers)}")
+            for rs_item in rift_sepulchers:
+                if not isinstance(rs_item, dict):
+                    continue
+                rs_id = str(rs_item.get("portal_id", ""))
+                rs_did = str(rs_item.get("dungeon_id", ""))
+                rs_pzid = str(rs_item.get("parent_zone_id", ""))
+                if rs_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: dimensional_rift_sepulchers '{rs_id}' references unknown dungeon_id '{rs_did}'"
+                    )
+                if rs_pzid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: dimensional_rift_sepulchers '{rs_id}' references unknown parent_zone_id '{rs_pzid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

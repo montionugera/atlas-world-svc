@@ -69,7 +69,7 @@ def compute_studio_self_evaluation() -> dict:
             }
             dims = iter_state["dimensions"]
     overall_atlas_score = float(iter_state.get("overall_score", 100.0))
-    dim_count = len(dims) or 32
+    dim_count = len(dims) or 34
     qs = dict(self_eval.get("qualityScorecard") or {})
     qs.setdefault("overallQualityScorePct", 100.0)
     qs["semanticZoomAtlas18DimensionScore"] = overall_atlas_score
@@ -80,15 +80,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas28DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas30DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas32DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas34DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 14)),
+        "wave": int(iter_state.get("wave", 15)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"34-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"32-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"30-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"28-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -96,7 +98,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D32 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D34 Verified"
         ),
     }
     return merged
@@ -4358,7 +4360,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D32 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D34 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4409,6 +4411,8 @@ let ATLAS_OLYMPIAD_MODE = 'All';
 let ATLAS_TRANSIT_MODE = 'All';
 let ATLAS_SOUL_CRYSTAL_MODE = 'All';
 let ATLAS_FISHING_MODE = 'All';
+let ATLAS_PVP_KARMA_MODE = 'All';
+let ATLAS_RIFT_SEPULCHER_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4431,6 +4435,8 @@ const ATLAS_STATE_STORE = {
   transitMode: 'All',                      // D30: Active Inter-Continental Transit ('Off' | 'All' | 'Maritime_Ship' | 'Brass_Airship' | 'Gatekeeper_Trunk')
   soulCrystalMode: 'All',                  // D31: Active Soul Crystal (SA) Stage 1-13 Selector ('Off' | 'All' | 'Crimson_Red' | 'Verdant_Green' | 'Azure_Blue' | 'Stage_11_to_13_S_Grade_Boss')
   fishingMode: 'All',                      // D32: Active Fishing Guild & Hot Springs Selector ('Off' | 'All' | 'Maritime_Harbor_Pier' | 'Luminous_Night_Lake' | 'Thermal_Hot_Spring')
+  pvpKarmaMode: 'All',                     // D33: Active Cursed Weapon, PK & PvP Arena Selector ('Off' | 'All' | 'Cursed_Weapon_Drop_Zone' | 'Black_Judge_Karma_Sanctuary' | 'Coliseum_PvP_Arena')
+  riftSepulcherMode: 'All',                // D34: Active Dimensional Rift & Four Sepulchers Selector ('Off' | 'All' | 'Dimensional_Rift' | 'Four_Sepulchers' | 'Key_Gated_Chapel')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4438,6 +4444,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasPvpKarmaMode(modeId) {
+  ATLAS_PVP_KARMA_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.pvpKarmaMode = ATLAS_PVP_KARMA_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasRiftSepulcherMode(modeId) {
+  ATLAS_RIFT_SEPULCHER_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.riftSepulcherMode = ATLAS_RIFT_SEPULCHER_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasSoulCrystalMode(modeId) {
   ATLAS_SOUL_CRYSTAL_MODE = String(modeId || 'All');
@@ -7427,6 +7447,183 @@ function renderAtlasFishingSanctuaryBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasPvpKarmaBarHtml(tatlas) {
+  const hotspots = (tatlas && tatlas.cursed_weapon_pvp_hotspots) || [];
+  if (!hotspots.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+    if (z.studio_node_id) zoneById[z.studio_node_id] = z;
+  });
+
+  const curMode = ATLAS_PVP_KARMA_MODE || ATLAS_STATE_STORE.pvpKarmaMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🩸 All 14 Hotspots' },
+    { id: 'Cursed_Weapon_Drop_Zone', label: '🗡️ 5 Zariche & Akamanah Zones' },
+    { id: 'Black_Judge_Karma_Sanctuary', label: '⚖️ 5 Black Judge Sanctuaries' },
+    { id: 'Coliseum_PvP_Arena', label: '🏟️ 4 Coliseum PvP Arenas' }
+  ];
+
+  const filteredHotspots = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? hotspots : hotspots.filter(h => h.pvp_category === curMode));
+
+  const featuredHotspots = curMode === 'All'
+    ? [
+        ...hotspots.filter(h => h.pvp_category === 'Cursed_Weapon_Drop_Zone').slice(0, 2),
+        ...hotspots.filter(h => h.pvp_category === 'Black_Judge_Karma_Sanctuary').slice(0, 1),
+        ...hotspots.filter(h => h.pvp_category === 'Coliseum_PvP_Arena').slice(0, 1)
+      ]
+    : filteredHotspots.slice(0, 4);
+
+  const buildHotspotJumpJs = (h) => {
+    const z = zoneById[h.zone_id] || {};
+    if (z.category === 'starting_town' || z.category === 'castle_or_hub_town') {
+      return `focusTownStreetBlueprint('${escapeHtml(z.studio_node_id || h.zone_id)}', '${escapeHtml(h.loc)}')`;
+    }
+    if (z.category === 'harbor' || z.category === 'clan_hall' || z.category === 'fortress') {
+      return `focusFortressBlueprint('${escapeHtml(h.zone_id)}', '${escapeHtml(h.loc)}')`;
+    }
+    return `focusFieldTacticalBlueprint('${escapeHtml(h.zone_id)}', '${escapeHtml(h.loc)}')`;
+  };
+
+  return `
+    <div id="atlasPvpKarmaBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#2a0a12;border:1px solid rgba(244,63,94,0.52)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fda4af">🩸 CURSED WEAPON (ZARICHE &amp; AKAMANAH), PK KARMA &amp; PVP ARENA OVERLAY (D33 · 14 HOTSPOTS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasPvpKarmaMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(244,63,94,0.45)'};background:${isAct ? '#9f1239' : '#090d14'};color:${isAct ? '#ffffff' : '#fecdd3'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 ZARICHE/AKAMANAH DROPS + 5 BLACK JUDGE SANCTUARIES + 4 COLISEUM ARENAS
+        </span>
+      </div>
+
+      ${featuredHotspots.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px">
+          ${featuredHotspots.map(h => {
+            const isCursed = h.pvp_category === 'Cursed_Weapon_Drop_Zone';
+            const isJudge = h.pvp_category === 'Black_Judge_Karma_Sanctuary';
+            const catCol = isCursed ? '#ef4444' : (isJudge ? '#c084fc' : '#f59e0b');
+            const catIcon = isCursed ? '🗡️' : (isJudge ? '⚖️' : '🏟️');
+            const jumpJs = buildHotspotJumpJs(h);
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(h.hotspot_name.slice(0, 38))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(h.recommended_level_band)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fecdd3;margin-top:1px">
+                    🎯 ${escapeHtml(h.featured_artifact_or_npc.slice(0, 48))} · ${escapeHtml(h.ruleset_tag)}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🛡️ ${escapeHtml(h.tactical_note.slice(0, 68))}
+                  </div>
+                </div>
+                <button type="button" onclick="${jumpJs}"
+                        style="margin-top:2px;padding:2px 6px;border-radius:4px;border:1px solid ${catCol};background:#4c0519;color:#ffe4e6;font-size:8.2px;font-weight:800;cursor:pointer;text-align:left">
+                  ${catIcon} Jump to Cursed Drop / Black Judge / PvP Ring
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasRiftSepulcherBarHtml(tatlas) {
+  const portals = (tatlas && tatlas.dimensional_rift_sepulchers) || [];
+  if (!portals.length) return '';
+
+  const curMode = ATLAS_RIFT_SEPULCHER_MODE || ATLAS_STATE_STORE.riftSepulcherMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🌀 All 16 Portals' },
+    { id: 'Dimensional_Rift', label: '🌌 6 Dimensional Rifts' },
+    { id: 'Four_Sepulchers', label: '⚰️ 6 Four Sepulchers' },
+    { id: 'Key_Gated_Chapel', label: '🗝️ 4 Key-Gated Chapels' }
+  ];
+
+  const filteredPortals = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? portals : portals.filter(p => p.instance_category === curMode));
+
+  const featuredPortals = curMode === 'All'
+    ? [
+        ...portals.filter(p => p.instance_category === 'Dimensional_Rift').slice(0, 2),
+        ...portals.filter(p => p.instance_category === 'Four_Sepulchers').slice(0, 1),
+        ...portals.filter(p => p.instance_category === 'Key_Gated_Chapel').slice(0, 1)
+      ]
+    : filteredPortals.slice(0, 4);
+
+  return `
+    <div id="atlasRiftSepulcherBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#13112b;border:1px solid rgba(129,140,248,0.52)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#c7d2fe">🌀 DIMENSIONAL RIFT, FOUR SEPULCHERS &amp; KEY-GATED ENDGAME SANCTUM MATRIX (D34 · 16 PORTALS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasRiftSepulcherMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(129,140,248,0.45)'};background:${isAct ? '#3730a3' : '#090d14'};color:${isAct ? '#ffffff' : '#e0e7ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 DIMENSIONAL RIFTS (RECRUIT..HERO) + 6 FOUR SEPULCHERS + 4 KEY-GATED PAGAN/NORNIL CHAPELS
+        </span>
+      </div>
+
+      ${featuredPortals.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px">
+          ${featuredPortals.map(p => {
+            const isRift = p.instance_category === 'Dimensional_Rift';
+            const isSep = p.instance_category === 'Four_Sepulchers';
+            const catCol = isRift ? '#818cf8' : (isSep ? '#f472b6' : '#facc15');
+            const catIcon = isRift ? '🌌' : (isSep ? '⚰️' : '🗝️');
+            const jumpJs = `openDungeonSubMap('${escapeHtml(p.dungeon_id)}', '${escapeHtml(p.floor_id || 'B3')}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(p.portal_name.slice(0, 38))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">[${escapeHtml(p.floor_id)}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#c7d2fe;margin-top:1px">
+                    🔑 ${escapeHtml(p.entry_key_or_token.slice(0, 46))} · ${escapeHtml(p.cycle_window.slice(0, 28))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🏆 <strong>Reward:</strong> ${escapeHtml(p.signature_reward.slice(0, 62))}
+                  </div>
+                </div>
+                <button type="button" onclick="${jumpJs}"
+                        style="margin-top:2px;padding:2px 6px;border-radius:4px;border:1px solid ${catCol};background:#1e1b4b;color:#e0e7ff;font-size:8.2px;font-weight:800;cursor:pointer;text-align:left">
+                  ${catIcon} Teleport to ${escapeHtml(p.floor_id)} Sanctum Floor
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -7563,6 +7760,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasTransitLinesBarHtml(tatlas)}
       ${renderAtlasSoulCrystalBarHtml(tatlas)}
       ${renderAtlasFishingSanctuaryBarHtml(tatlas)}
+      ${renderAtlasPvpKarmaBarHtml(tatlas)}
+      ${renderAtlasRiftSepulcherBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -9795,6 +9994,65 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D33: Cursed Weapon, PK Karma Sanctuary & Open-World PvP Arena Overlay (`studioCursedWeaponPvpOverlay`)
+  const pvpHotspots = (tatlas && tatlas.cursed_weapon_pvp_hotspots) || [];
+  const curPvpMode = ATLAS_PVP_KARMA_MODE || ATLAS_STATE_STORE.pvpKarmaMode || 'All';
+  const activePvpHotspots = curPvpMode === 'Off'
+    ? []
+    : (curPvpMode === 'All'
+      ? pvpHotspots
+      : pvpHotspots.filter(h => h.pvp_category === curPvpMode));
+  const cursedWeaponPvpOverlaySvg = `
+    <g id="studioCursedWeaponPvpOverlay">
+      ${activePvpHotspots.map(h => {
+        const hc = clampWorldLocCoord(h.loc || '25180:136540');
+        const isCursed = h.pvp_category === 'Cursed_Weapon_Drop_Zone';
+        const isJudge = h.pvp_category === 'Black_Judge_Karma_Sanctuary';
+        const colHex = isCursed ? '#ef4444' : (isJudge ? '#c084fc' : '#f59e0b');
+        const iconTxt = isCursed ? '🗡️' : (isJudge ? '⚖️' : '🏟️');
+        const z = allZonesById[h.zone_id] || {};
+        const clickJs = (z.category === 'starting_town' || z.category === 'castle_or_hub_town')
+          ? `focusTownStreetBlueprint('${escapeHtml(z.studio_node_id || h.zone_id)}', '${escapeHtml(h.loc)}')`
+          : ((z.category === 'harbor' || z.category === 'clan_hall' || z.category === 'fortress')
+            ? `focusFortressBlueprint('${escapeHtml(h.zone_id)}', '${escapeHtml(h.loc)}')`
+            : `focusFieldTacticalBlueprint('${escapeHtml(h.zone_id)}', '${escapeHtml(h.loc)}')`);
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${clickJs}">
+            <circle cx="${hc.svgX}" cy="${hc.svgY}" r="11" fill="rgba(159,18,57,0.3)" stroke="${colHex}" stroke-width="1.9" stroke-dasharray="4 2"/>
+            <text x="${hc.svgX}" y="${hc.svgY + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D34: Dimensional Rift, Four Sepulchers & Key-Gated Endgame Sanctum Overlay (`studioDimensionalRiftOverlay`)
+  const riftPortals = (tatlas && tatlas.dimensional_rift_sepulchers) || [];
+  const curRiftMode = ATLAS_RIFT_SEPULCHER_MODE || ATLAS_STATE_STORE.riftSepulcherMode || 'All';
+  const activeRiftPortals = curRiftMode === 'Off'
+    ? []
+    : (curRiftMode === 'All'
+      ? riftPortals
+      : riftPortals.filter(p => p.instance_category === curRiftMode));
+  const dimensionalRiftOverlaySvg = `
+    <g id="studioDimensionalRiftOverlay">
+      ${activeRiftPortals.map(p => {
+        const pc = clampWorldLocCoord(p.loc || '75410:116820');
+        const isRift = p.instance_category === 'Dimensional_Rift';
+        const isSep = p.instance_category === 'Four_Sepulchers';
+        const colHex = isRift ? '#818cf8' : (isSep ? '#f472b6' : '#facc15');
+        const iconTxt = isRift ? '🌌' : (isSep ? '⚰️' : '🗝️');
+        const clickJs = `openDungeonSubMap('${escapeHtml(p.dungeon_id)}', '${escapeHtml(p.floor_id || 'B3')}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${clickJs}">
+            <circle cx="${pc.svgX}" cy="${pc.svgY}" r="10.5" fill="rgba(55,48,163,0.32)" stroke="${colHex}" stroke-width="1.8" stroke-dasharray="3 2"/>
+            <text x="${pc.svgX}" y="${pc.svgY + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -9807,6 +10065,8 @@ function renderDedicatedWorldAtlas() {
     ${intercontinentalTransitOverlaySvg}
     ${soulCrystalOverlaySvg}
     ${fishingSanctuaryOverlaySvg}
+    ${cursedWeaponPvpOverlaySvg}
+    ${dimensionalRiftOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

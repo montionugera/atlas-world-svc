@@ -1063,7 +1063,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 32)
+        self.assertGreaterEqual(len(audit["dimensions"]), 32)
 
         d31 = audit["dimensions"]["D31_soul_crystal_resonance_and_boss_absorption"]
         self.assertEqual(d31["score"], 100.0)
@@ -1117,10 +1117,89 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas32DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 32)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 32)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 32)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 32)
         self.assertIn("32-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave15_cursed_weapon_pvp_hotspots_and_dimensional_rift_sepulchers(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["cursedWeaponPvpHotspotsCount"], 14)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["dimensionalRiftSepulchersCount"], 16)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_PVP_KARMA_MODE",
+            "setAtlasPvpKarmaMode(",
+            "renderAtlasPvpKarmaBarHtml(",
+            "studioCursedWeaponPvpOverlay",
+            "ATLAS_RIFT_SEPULCHER_MODE",
+            "setAtlasRiftSepulcherMode(",
+            "renderAtlasRiftSepulcherBarHtml(",
+            "studioDimensionalRiftOverlay",
+            "34-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 15 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 34)
+
+        d33 = audit["dimensions"]["D33_cursed_weapon_karma_and_pvp_arenas"]
+        self.assertEqual(d33["score"], 100.0)
+        self.assertEqual(d33["verified"], 14)
+        self.assertEqual(d33["target"], 14)
+        self.assertEqual(d33["cursed_drop_zones"], 5)
+        self.assertEqual(d33["black_judge_sanctuaries"], 5)
+        self.assertEqual(d33["coliseum_arenas"], 4)
+        self.assertTrue(d33["ui_wired"])
+
+        d34 = audit["dimensions"]["D34_dimensional_rift_and_four_sepulchers"]
+        self.assertEqual(d34["score"], 100.0)
+        self.assertEqual(d34["verified"], 16)
+        self.assertEqual(d34["target"], 16)
+        self.assertEqual(d34["dimensional_rifts"], 6)
+        self.assertEqual(d34["four_sepulchers"], 6)
+        self.assertEqual(d34["key_gated_chapels"], 4)
+        self.assertTrue(d34["ui_wired"])
+
+        pvp_hotspots = atlas["cursed_weapon_pvp_hotspots"]
+        self.assertEqual(len(pvp_hotspots), 14)
+        self.assertEqual(sum(1 for h in pvp_hotspots if h["pvp_category"] == "Cursed_Weapon_Drop_Zone"), 5)
+        self.assertEqual(sum(1 for h in pvp_hotspots if h["pvp_category"] == "Black_Judge_Karma_Sanctuary"), 5)
+        self.assertEqual(sum(1 for h in pvp_hotspots if h["pvp_category"] == "Coliseum_PvP_Arena"), 4)
+        self.assertEqual(
+            {h["pvp_category"] for h in pvp_hotspots},
+            {"Cursed_Weapon_Drop_Zone", "Black_Judge_Karma_Sanctuary", "Coliseum_PvP_Arena"},
+        )
+        self.assertEqual(
+            {h["ruleset_tag"] for h in pvp_hotspots},
+            {"World-Broadcast Cursed Drop", "Zero-Guard Lawless Safe-Harbor", "Free-PvP No-EXP-Loss Arena"},
+        )
+
+        rift_portals = atlas["dimensional_rift_sepulchers"]
+        self.assertEqual(len(rift_portals), 16)
+        self.assertEqual(sum(1 for p in rift_portals if p["instance_category"] == "Dimensional_Rift"), 6)
+        self.assertEqual(sum(1 for p in rift_portals if p["instance_category"] == "Four_Sepulchers"), 6)
+        self.assertEqual(sum(1 for p in rift_portals if p["instance_category"] == "Key_Gated_Chapel"), 4)
+        self.assertEqual(
+            {p["instance_category"] for p in rift_portals},
+            {"Dimensional_Rift", "Four_Sepulchers", "Key_Gated_Chapel"},
+        )
+        self.assertEqual(len({p["dungeon_id"] for p in rift_portals}), 16)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas34DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 34)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 34)
+        self.assertIn("34-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

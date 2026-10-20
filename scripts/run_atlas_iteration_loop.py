@@ -3570,6 +3570,432 @@ def _build_fishing_guild_sanctuaries(atlas: dict[str, Any]) -> list[dict[str, An
     return rows
 
 
+def _build_cursed_weapon_pvp_hotspots(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 14 Cursed Weapon, PK Karma Redemption & Open-World PvP Arena Hotspots (5 Cursed_Weapon_Drop_Zone + 5 Black_Judge_Karma_Sanctuary + 4 Coliseum_PvP_Arena) (D33)."""
+    specs = [
+        # 5 Cursed_Weapon_Drop_Zone
+        (
+            "pvp-cursed-01-zariche-slag-chasm",
+            "Vitrified Slag Chasm — Demonic Sword Zariche Awakening Crater",
+            "Cursed_Weapon_Drop_Zone",
+            "zone-field-slag-chasm",
+            "25180:136540",
+            "World-Broadcast Cursed Drop",
+            "Demonic Sword Zariche (+100% CP/P.Atk · Red Sky World Broadcast)",
+            "Lv.20–45 Contested Badlands",
+            "Global red-sky lightning announces Zariche drop; wielder is immediately flagged Chaotic (999,999 Karma) with radar ping.",
+        ),
+        (
+            "pvp-cursed-02-akamanah-brass-spur",
+            "Brass-Spur Gear Ridge — Blood Sword Akamanah Twin-Blade Ridge",
+            "Cursed_Weapon_Drop_Zone",
+            "zone-field-brass-spur-ridge",
+            "89540:138720",
+            "World-Broadcast Cursed Drop",
+            "Blood Sword Akamanah (Dual-Demonic Life-Drain Blades)",
+            "Lv.30–55 Frontier Ridge",
+            "Dual-sword blood-frenzy manifestation; every PK kill upgrades Akamanah Stage 1->10 while draining CP of nearby rivals.",
+        ),
+        (
+            "pvp-cursed-03-zariche-leyden-causeway",
+            "Leyden Capacitor Causeway — Zariche High-Voltage Blood Hunt",
+            "Cursed_Weapon_Drop_Zone",
+            "zone-field-leyden-causeway",
+            "141580:-48220",
+            "World-Broadcast Cursed Drop",
+            "Demonic Sword Zariche (Stage 5+ Overcharged Soul Reaper)",
+            "Lv.45–68 Grinding Corridor",
+            "Open chokepoint bridge where Zariche wielders ambush AoE parties; normal players deal bonus hero-damage vs Cursed wielder.",
+        ),
+        (
+            "pvp-cursed-04-akamanah-kelp-spiral",
+            "Kelp Spiral Undertide Reef — Akamanah Crimson Tide Hunting Shoals",
+            "Cursed_Weapon_Drop_Zone",
+            "zone-field-kelp-spiral-reef",
+            "-52040:-138260",
+            "World-Broadcast Cursed Drop",
+            "Blood Sword Akamanah (Pelagic Bloodlust Resonance)",
+            "Lv.52–74 Undertide Shoals",
+            "High-density pelagic monster packs accelerate initial Akamanah drop chance during twilight tide shifts.",
+        ),
+        (
+            "pvp-cursed-05-zariche-akamanah-aurora",
+            "Aurora Tether Span — Dual Cursed Weapon Clash & Sovereign Duel Span",
+            "Cursed_Weapon_Drop_Zone",
+            "zone-field-aurora-tether",
+            "152780:31560",
+            "World-Broadcast Cursed Drop",
+            "Demonic Sword Zariche vs. Blood Sword Akamanah Apex Clash",
+            "Lv.70–99 High-Halo Endgame",
+            "When Zariche and Akamanah wielders enter within 300m on Aurora Tether, mutual CP-shatter aura triggers for instant 1v1 duel.",
+        ),
+        # 5 Black_Judge_Karma_Sanctuary
+        (
+            "pvp-karma-01-floran-saffron-freeport",
+            "Saffron Press Lawless Outpost (Floran Village Zero-Guard Sanctuary)",
+            "Black_Judge_Karma_Sanctuary",
+            "zone-town-saffron-press",
+            "17680:170340",
+            "Zero-Guard Lawless Safe-Harbor",
+            "Black Judge (Remove Sin Penalty & Death-Wound Lv.1–3)",
+            "Lv.15–99 Red-Name Refuge",
+            "Lineage II Floran Village archetype: zero aggressive Town Guards, full Red-Name PK warehouse/grocery access, and Black Judge sin cleansing.",
+        ),
+        (
+            "pvp-karma-02-whispering-mire-camp",
+            "Whispering Teapot Mire — Black Judge Penitents' Reed Camp",
+            "Black_Judge_Karma_Sanctuary",
+            "zone-field-whispering-mire",
+            "-68080:228740",
+            "Zero-Guard Lawless Safe-Harbor",
+            "Black Judge & Sin-Eater Imp Companion Ritual",
+            "Lv.15–40 Border Marsh",
+            "Issues Penitents' Manacles to summon the Sin-Eater Imp that consumes character EXP to rapidly burn down high PK Karma.",
+        ),
+        (
+            "pvp-karma-03-shanty-kiln-outlaw-fort",
+            "Cinder-Apron Shanty Fortress — Outlaw & Red-Name Smuggler Bastion",
+            "Black_Judge_Karma_Sanctuary",
+            "zone-fortress-shanty-kiln",
+            "-4920:134480",
+            "Zero-Guard Lawless Safe-Harbor",
+            "Black Judge & Smuggler Fence (Chaotic Gear Insurance)",
+            "Lv.25–60 Badlands Haven",
+            "Neutral smuggler bastion where Chaotic players with >5 PK count can stash unequipped items before washing Karma.",
+        ),
+        (
+            "pvp-karma-04-spiral-wormway-penitent",
+            "Spiral Wormway Quarry — Deep-Trench Black Judge Confessional",
+            "Black_Judge_Karma_Sanctuary",
+            "zone-field-spiral-wormway-ramp",
+            "134520:-24320",
+            "Zero-Guard Lawless Safe-Harbor",
+            "Black Judge (Scroll of Recovery S-Grade & Karma Wash)",
+            "Lv.45–75 Helical Trench",
+            "Secluded quarry shrine for high-level PKs to clear Death Penalty Lv.1–15 and wash Karma on high-XP quarry golems.",
+        ),
+        (
+            "pvp-karma-05-orrery-bridge-exile-shrine",
+            "The Orrery Bridge — Astral Exile & Black Judge Absolution Altar",
+            "Black_Judge_Karma_Sanctuary",
+            "zone-field-orrery-bridge",
+            "-28080:-107860",
+            "Zero-Guard Lawless Safe-Harbor",
+            "Black Judge Grand Arbiter (Noblesse/Endgame Sin Absolution)",
+            "Lv.65–99 Sky-Span Exile",
+            "High-altitude sanctuary on Continent 03 allowing Chaotic war-clans to regroup and cleanse Shillien's Breath death penalties.",
+        ),
+        # 4 Coliseum_PvP_Arena
+        (
+            "pvp-arena-01-kilnwatch-monster-track",
+            "Kilnwatch Bastion — Monster Derby Track & Gludin/Dion PvP Ring",
+            "Coliseum_PvP_Arena",
+            "zone-town-kilnwatch-bastion",
+            "-13920:123780",
+            "Free-PvP No-EXP-Loss Arena",
+            "Arena Director & Monster Track Manager",
+            "Lv.10–99 Open Duel Ring",
+            "Fenced inner arena inside the Monster Derby Track: stepping across the boundary line enables instant Free-PvP with zero Karma or EXP loss.",
+        ),
+        (
+            "pvp-arena-02-escapement-anvil-giran-ring",
+            "Escapement Anvil — Giran-Style Mercenary & Clan Skirmish Arena",
+            "Coliseum_PvP_Arena",
+            "zone-town-escapement-anvil",
+            "83380:53480",
+            "Free-PvP No-EXP-Loss Arena",
+            "Arena Director (CP Recovery & Spectator Bleachers)",
+            "Lv.25–99 Tournament Ring",
+            "Classic Lineage II Giran Arena layout with safe spectator stands outside the rope perimeter and instant Arena CP restoration.",
+        ),
+        (
+            "pvp-arena-03-inductor-aden-coliseum",
+            "Inductor Switchyard — Grand Aden Underground Coliseum Amphitheater",
+            "Coliseum_PvP_Arena",
+            "zone-town-inductor-switchyard",
+            "147680:-54920",
+            "Free-PvP No-EXP-Loss Arena",
+            "Coliseum Broadcasting Director (9v9 Party Tournament)",
+            "Lv.40–99 Grand Coliseum",
+            "Circular pillared amphitheater supporting 9v9 party tournaments, siege warmups, and zero-penalty clan GvG eliminations.",
+        ),
+        (
+            "pvp-arena-04-crown-beacon-sky-ring",
+            "Crown-Beacon Citadel — High-Halo Imperial Sky-Coliseum",
+            "Coliseum_PvP_Arena",
+            "zone-town-crown-beacon",
+            "148180:27080",
+            "Free-PvP No-EXP-Loss Arena",
+            "Imperial Arena Marshal (S-Grade Hero & Sovereign Duels)",
+            "Lv.76–99 Endgame Coliseum",
+            "Apex open-world dueling ring overlooking the Star-Heart Spire with anti-zerg barrier gates and instant buff-recast obelisks.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for hid, hname, pcat, zid, loc, rtag, feat, lband, tnote in specs:
+        rows.append(
+            {
+                "hotspot_id": hid,
+                "hotspot_name": hname,
+                "pvp_category": pcat,
+                "zone_id": zid,
+                "loc": loc,
+                "ruleset_tag": rtag,
+                "featured_artifact_or_npc": feat,
+                "recommended_level_band": lband,
+                "tactical_note": tnote,
+            }
+        )
+    return rows
+
+
+def _build_dimensional_rift_sepulchers(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 Dimensional Rift, Four Sepulchers & Key-Gated Endgame Sanctums across all 16 Multi-Floor Dungeons (6 Dimensional_Rift + 6 Four_Sepulchers + 4 Key_Gated_Chapel) (D34)."""
+    specs = [
+        # 6 Dimensional_Rift (Recruit, Soldier, Officer, Captain, Commander, Hero)
+        (
+            "rift-01-recruit-kiln-cellar",
+            "Dimensional Rift [Recruit Lv.30+] — Kiln Cellar Breach",
+            "Dimensional_Rift",
+            "zone-dungeon-kiln-cellar",
+            "zone-field-clover-south-gate",
+            "B2",
+            "75410:116820",
+            "Dimensional Fragment (x18 Recruit Quota)",
+            "2–9 Party Members (Rift Post Keeper)",
+            "9m Room Shuffle (Max 4 Room Jumps + Anakazel Chance)",
+            "D-Grade Enchant Scrolls & Sealed Accessories",
+        ),
+        (
+            "rift-02-soldier-heretic-kiln",
+            "Dimensional Rift [Soldier Lv.40+] — Heretic Kiln Nexus",
+            "Dimensional_Rift",
+            "zone-catacomb-heretic-kiln",
+            "zone-field-apricot-aqueduct-terrace",
+            "B2",
+            "19800:173400",
+            "Dimensional Fragment (x24 Soldier Quota)",
+            "2–9 Party Members (Rift Post Keeper)",
+            "9m Room Shuffle (Max 4 Room Jumps + Anakazel Lv.48)",
+            "C-Grade Weapon/Armor Enchant Scrolls & Ancient Adena",
+        ),
+        (
+            "rift-03-officer-branded-bellows",
+            "Dimensional Rift [Officer Lv.50+] — Branded Bellows Rift Gate",
+            "Dimensional_Rift",
+            "zone-catacomb-branded-bellows",
+            "zone-town-escapement-anvil",
+            "B3",
+            "112400:18200",
+            "Dimensional Fragment (x30 Officer Quota)",
+            "4–9 Party Members (Rift Post Keeper)",
+            "9m Room Shuffle (Max 4 Room Jumps + Anakazel Lv.58)",
+            "B-Grade Blessed Enchant Scrolls & Blue Wolf/Avadon Parts",
+        ),
+        (
+            "rift-04-captain-apostate-dynamo",
+            "Dimensional Rift [Captain Lv.60+] — Apostate Dynamo Fracture",
+            "Dimensional_Rift",
+            "zone-catacomb-apostate-dynamo",
+            "zone-field-leyden-causeway",
+            "B3",
+            "149800:-51200",
+            "Dimensional Fragment (x36 Captain Quota)",
+            "5–9 Party Members (Rift Post Keeper)",
+            "9m Room Shuffle (Max 4 Room Jumps + Anakazel Lv.68)",
+            "A-Grade Weapon Blades, Dark Crystal/Tallum Fabrics & SA Stage 10",
+        ),
+        (
+            "rift-05-commander-witch-pendulum",
+            "Dimensional Rift [Commander Lv.70+] — Astral Witch Fold",
+            "Dimensional_Rift",
+            "zone-catacomb-witch-pendulum",
+            "zone-town-starfall-haven",
+            "B3",
+            "54200:-34800",
+            "Dimensional Fragment (x42 Commander Quota)",
+            "6–9 Party Members (Rift Post Keeper)",
+            "9m Room Shuffle (Max 4 Room Jumps + Anakazel Lv.78)",
+            "A-Grade/S-Grade Enchant Scrolls & Soul Crystal Stage 11–12 Resonance",
+        ),
+        (
+            "rift-06-hero-dark-omens-coral",
+            "Dimensional Rift [Hero Lv.80+] — Deep Devotion Abyssal Rift",
+            "Dimensional_Rift",
+            "zone-catacomb-dark-omens-coral",
+            "zone-field-kelp-spiral-reef",
+            "B3",
+            "38400:-28900",
+            "Dimensional Fragment (x48 Hero Quota)",
+            "7–9 Full Party (Hero Rift Steward)",
+            "9m Room Shuffle (Apex Raid Boss Anakazel Lv.84 Sanctum)",
+            "S-Grade Forgotten Blade / Arcana Mace Heads & Stage 13 SA Chance",
+        ),
+        # 6 Four_Sepulchers (Conquerors, Rulers, Great Sages, Judges, Pilgrims, Imperial Tomb)
+        (
+            "sepulcher-01-conquerors-forbidden-orrery",
+            "Four Sepulchers — Sepulcher of Conquerors (Halisha Sanctum I)",
+            "Four_Sepulchers",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-town-crown-beacon",
+            "B3",
+            "18400:-64200",
+            "Entrance Pass to the Sepulcher + Chapel Key",
+            "4–9 Party Members (Nameless Spirit)",
+            "50m Wave Cycle (Opens Every Hour at :55..:00)",
+            "Halisha's Mark, S-Grade Imperial Crusader Recipes & Brooch of the Marquis",
+        ),
+        (
+            "sepulcher-02-rulers-star-heart-nave",
+            "Four Sepulchers — Sepulcher of Rulers (Halisha Sanctum II)",
+            "Four_Sepulchers",
+            "zone-dungeon-star-heart-nave",
+            "zone-field-aurora-tether",
+            "3F",
+            "149200:28400",
+            "Entrance Pass to the Sepulcher + Scarab Key",
+            "4–9 Party Members (Conquerors' Gatekeeper)",
+            "50m Wave Cycle (Opens Every Hour at :55..:00)",
+            "Shadow of Halisha Kill Credit, Draconic Bow Shafts & Goblet of Alectia",
+        ),
+        (
+            "sepulcher-03-great-sages-chronometer-foundry",
+            "Four Sepulchers — Sepulcher of Great Sages (Halisha Sanctum III)",
+            "Four_Sepulchers",
+            "zone-dungeon-chronometer-foundry",
+            "zone-field-caldera-rim",
+            "3F",
+            "84800:56400",
+            "Entrance Pass to the Sepulcher + Mystery Box Key",
+            "4–9 Party Members (Great Sages' Spirit)",
+            "50m Wave Cycle (Opens Every Hour at :55..:00)",
+            "Major Arcana Robe 60% Recipes, Goblet of Tishas & Blessed S-Scrolls",
+        ),
+        (
+            "sepulcher-04-judges-pendulum-shaft",
+            "Four Sepulchers — Sepulcher of Judges (Halisha Sanctum IV)",
+            "Four_Sepulchers",
+            "zone-dungeon-pendulum-shaft",
+            "zone-field-brass-spur-ridge",
+            "3F",
+            "85400:144200",
+            "Entrance Pass to the Sepulcher + Executioner Key",
+            "4–9 Party Members (Judges' Ghost Steward)",
+            "50m Wave Cycle (Opens Every Hour at :55..:00)",
+            "Goblet of Mekara, Heaven's Divider Edge & High-Grade Life Stones",
+        ),
+        (
+            "sepulcher-05-pilgrims-sunken-potter",
+            "Four Sepulchers — Pilgrim's Necropolis & Ghost of Wigoth Hall",
+            "Four_Sepulchers",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-field-cobalt-sandbar-ford",
+            "B3",
+            "-78400:149200",
+            "Used Grave Pass & Four Goblets (Alectia/Tishas/Mekara/Morigul)",
+            "4–9 Party Members (Ghost of Wigoth)",
+            "50m Wave Cycle (Relic Exchange & Frintezza Pre-Trial)",
+            "Antique Brooch (Unlocks 4-Sepulcher Direct Teleport) & Sealed S-Armor",
+        ),
+        (
+            "sepulcher-06-imperial-mausoleum-ember-bellows",
+            "Imperial Tomb Mausoleum — Scarlet van Halisha / Frintezza Force Field",
+            "Four_Sepulchers",
+            "zone-dungeon-ember-bellows-chamber",
+            "zone-field-firebrick-duct",
+            "B3",
+            "-41200:-109800",
+            "Frintezza's Magic Force Field Removal Scroll + Dewdrop of Destruction",
+            "Command Channel (4–5 Parties / 36–45 Raiders)",
+            "48h Imperial Mausoleum Reset Window",
+            "Frintezza's Necklace (+15% Skill Reuse / +Stun/Bleed/Paralyze Resist)",
+        ),
+        # 4 Key_Gated_Chapel (Pagan Temple / Triol's Sanctum / Nornil Core)
+        (
+            "chapel-01-pagan-anteroom-ceramic-crypt",
+            "Pagan Temple — Anteroom & Visitors' Mark Gate",
+            "Key_Gated_Chapel",
+            "zone-dungeon-ceramic-resonator-crypt",
+            "zone-field-chime-pipe-colonnade",
+            "B3",
+            "15200:19400",
+            "Pagan's Mark + Anteroom Key (Drops from Resurrected Temple Guards)",
+            "Full 9-Player Holy-Buffed Party (Temple Mirror)",
+            "Continuous Key-Gated Lock (15s Door Auto-Relock)",
+            "A-Grade/S-Grade Life Stones & High-Density Undead AoE EXP",
+        ),
+        (
+            "chapel-02-triol-altar-medallion-vault",
+            "Pagan Temple — Chapel of Darkness & Triol's Revelation Altar",
+            "Key_Gated_Chapel",
+            "zone-dungeon-medallion-heart-vault",
+            "zone-field-celadon-causeway",
+            "B3",
+            "49800:44100",
+            "Key of Darkness + Pagan's Mark (Upgraded from Faded Visitor's Mark)",
+            "Full 9-Player Party (Dagger Unlock / Key of Darkness)",
+            "Continuous Key-Gated Lock (Chapel Inner Sanctum)",
+            "Triol's Blood Weapon Parts, S-Grade Gemstones & Blessed Armor Scrolls",
+        ),
+        (
+            "chapel-03-andreas-sanctum-sap-heart",
+            "Pagan Temple — High Priestess van Halter / Andreas Inner Sanctum",
+            "Key_Gated_Chapel",
+            "zone-dungeon-sap-heart-cistern",
+            "zone-field-resin-arch-tunnel",
+            "B3",
+            "119400:-174200",
+            "Chapel Door Key + Blooded Pagan's Mark",
+            "9–18 Player Raid Party (Altar Gatekeeper)",
+            "24h High Priestess Sanctum Lockout",
+            "Andreas van Halter's Sovereign Signet, S-Grade Recipes & SA Stage 12",
+        ),
+        (
+            "chapel-04-nornil-core-spice-kiln",
+            "Nornil's Garden Core — Spicula Zero & 3-Key Sealed Gatehouse",
+            "Key_Gated_Chapel",
+            "zone-dungeon-spice-kiln-cellar",
+            "zone-field-cinnamon-bark-viaduct",
+            "B3",
+            "-115400:49100",
+            "Red/Blue/Gold Nornil Gate Keys (3-Room Key Sequence)",
+            "2–9 Party Members (Nornil Statue Steward)",
+            "45m Instance Lockout & 3-Gate Key Sequence",
+            "Nornil's Seed Bracelet, Blessed Enchant Scrolls & Spice-Core Alloy",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        pid,
+        pname,
+        icat,
+        did,
+        pzid,
+        fid,
+        loc,
+        key_tok,
+        preq,
+        cwin,
+        srew,
+    ) in specs:
+        rows.append(
+            {
+                "portal_id": pid,
+                "portal_name": pname,
+                "instance_category": icat,
+                "dungeon_id": did,
+                "parent_zone_id": pzid,
+                "floor_id": fid,
+                "loc": loc,
+                "entry_key_or_token": key_tok,
+                "party_requirement": preq,
+                "cycle_window": cwin,
+                "signature_reward": srew,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -4563,6 +4989,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("fishing_guild_sanctuaries") or []) < 16:
         atlas["fishing_guild_sanctuaries"] = _build_fishing_guild_sanctuaries(atlas)
         actions.append("populated_16_fishing_guild_sanctuaries")
+
+    # 17. Ensure all 14 Cursed Weapon, PK Karma Redemption & Open-World PvP Arena Hotspots exist in `cursed_weapon_pvp_hotspots` (D33)
+    if len(atlas.get("cursed_weapon_pvp_hotspots") or []) < 14:
+        atlas["cursed_weapon_pvp_hotspots"] = _build_cursed_weapon_pvp_hotspots(atlas)
+        actions.append("populated_14_cursed_weapon_pvp_hotspots")
+
+    # 18. Ensure all 16 Dimensional Rift, Four Sepulchers & Key-Gated Endgame Sanctums exist in `dimensional_rift_sepulchers` (D34)
+    if len(atlas.get("dimensional_rift_sepulchers") or []) < 16:
+        atlas["dimensional_rift_sepulchers"] = _build_dimensional_rift_sepulchers(atlas)
+        actions.append("populated_16_dimensional_rift_sepulchers")
 
     return {"actions": actions}
 
@@ -5866,15 +6302,158 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d32_ratio * 80.0, 1)
     )
 
+    # D33: Interactive Cursed Weapon, PK Karma Redemption & Open-World PvP Arena Overlay (`cursed_weapon_pvp_hotspots` - 14 Hotspots = 5 Cursed_Weapon_Drop_Zone + 5 Black_Judge_Karma_Sanctuary + 4 Coliseum_PvP_Arena)
+    expected_pvp_categories = {
+        "Cursed_Weapon_Drop_Zone",
+        "Black_Judge_Karma_Sanctuary",
+        "Coliseum_PvP_Arena",
+    }
+    expected_ruleset_tags = {
+        "World-Broadcast Cursed Drop",
+        "Zero-Guard Lawless Safe-Harbor",
+        "Free-PvP No-EXP-Loss Arena",
+    }
+    pvp_hotspots = atlas.get("cursed_weapon_pvp_hotspots") or []
+    valid_pvp_hotspots = 0
+    cursed_drop_zone_count = 0
+    black_judge_sanctuary_count = 0
+    coliseum_arena_count = 0
+    seen_hotspot_ids: set[str] = set()
+    seen_pvp_categories: set[str] = set()
+    seen_ruleset_tags: set[str] = set()
+    for ph in pvp_hotspots:
+        if not isinstance(ph, dict):
+            continue
+        hid = str(ph.get("hotspot_id") or "")
+        pcat = str(ph.get("pvp_category") or "")
+        pzid = str(ph.get("zone_id") or "")
+        rtag = str(ph.get("ruleset_tag") or "")
+        if (
+            hid
+            and hid not in seen_hotspot_ids
+            and ph.get("hotspot_name")
+            and pcat in expected_pvp_categories
+            and pzid in zone_ids_set
+            and ":" in str(ph.get("loc", ""))
+            and rtag in expected_ruleset_tags
+            and ph.get("featured_artifact_or_npc")
+            and ph.get("recommended_level_band")
+            and ph.get("tactical_note")
+        ):
+            valid_pvp_hotspots += 1
+            seen_hotspot_ids.add(hid)
+            seen_pvp_categories.add(pcat)
+            seen_ruleset_tags.add(rtag)
+            if pcat == "Cursed_Weapon_Drop_Zone":
+                cursed_drop_zone_count += 1
+            elif pcat == "Black_Judge_Karma_Sanctuary":
+                black_judge_sanctuary_count += 1
+            elif pcat == "Coliseum_PvP_Arena":
+                coliseum_arena_count += 1
+
+    has_d33_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_PVP_KARMA_MODE",
+            "setAtlasPvpKarmaMode",
+            "renderAtlasPvpKarmaBarHtml",
+            "studioCursedWeaponPvpOverlay",
+        )
+    )
+    d33_ratio = valid_pvp_hotspots / 14.0
+    d33_full_coverage = (
+        cursed_drop_zone_count == 5
+        and black_judge_sanctuary_count == 5
+        and coliseum_arena_count == 4
+        and seen_pvp_categories == expected_pvp_categories
+        and seen_ruleset_tags == expected_ruleset_tags
+    )
+    d33_score = (
+        round(min(100.0, d33_ratio * 100.0), 1)
+        if (has_d33_ui and d33_full_coverage)
+        else round(d33_ratio * 80.0, 1)
+    )
+
+    # D34: Interactive Dimensional Rift, Four Sepulchers & Key-Gated Endgame Sanctum Matrix (`dimensional_rift_sepulchers` - 16 Portals = 6 Dimensional_Rift + 6 Four_Sepulchers + 4 Key_Gated_Chapel)
+    expected_instance_categories = {
+        "Dimensional_Rift",
+        "Four_Sepulchers",
+        "Key_Gated_Chapel",
+    }
+    rift_sepulchers = atlas.get("dimensional_rift_sepulchers") or []
+    valid_rift_sepulchers = 0
+    dimensional_rift_count = 0
+    four_sepulchers_count = 0
+    key_gated_chapel_count = 0
+    seen_portal_ids: set[str] = set()
+    seen_rift_dungeons: set[str] = set()
+    seen_instance_categories: set[str] = set()
+    for rs in rift_sepulchers:
+        if not isinstance(rs, dict):
+            continue
+        pid = str(rs.get("portal_id") or "")
+        icat = str(rs.get("instance_category") or "")
+        rdid = str(rs.get("dungeon_id") or "")
+        rpzid = str(rs.get("parent_zone_id") or "")
+        rfid = str(rs.get("floor_id") or "")
+        if (
+            pid
+            and pid not in seen_portal_ids
+            and rs.get("portal_name")
+            and icat in expected_instance_categories
+            and rdid in mf_dungeon_id_set
+            and rdid not in seen_rift_dungeons
+            and rpzid in zone_ids_set
+            and rfid in ("B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(rs.get("loc", ""))
+            and rs.get("entry_key_or_token")
+            and rs.get("party_requirement")
+            and rs.get("cycle_window")
+            and rs.get("signature_reward")
+        ):
+            valid_rift_sepulchers += 1
+            seen_portal_ids.add(pid)
+            seen_rift_dungeons.add(rdid)
+            seen_instance_categories.add(icat)
+            if icat == "Dimensional_Rift":
+                dimensional_rift_count += 1
+            elif icat == "Four_Sepulchers":
+                four_sepulchers_count += 1
+            elif icat == "Key_Gated_Chapel":
+                key_gated_chapel_count += 1
+
+    has_d34_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_RIFT_SEPULCHER_MODE",
+            "setAtlasRiftSepulcherMode",
+            "renderAtlasRiftSepulcherBarHtml",
+            "studioDimensionalRiftOverlay",
+        )
+    )
+    d34_ratio = valid_rift_sepulchers / 16.0
+    d34_full_coverage = (
+        dimensional_rift_count == 6
+        and four_sepulchers_count == 6
+        and key_gated_chapel_count == 4
+        and seen_instance_categories == expected_instance_categories
+        and len(seen_rift_dungeons) == 16
+    )
+    d34_score = (
+        round(min(100.0, d34_ratio * 100.0), 1)
+        if (has_d34_ui and d34_full_coverage)
+        else round(d34_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score) / 14.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score) / 16.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score) / 16.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score) / 26.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score) / 15.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score) / 22.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score) / 16.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score) / 18.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score) / 18.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score) / 28.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score) / 17.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score) / 24.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -5911,8 +6490,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d30_score
             + d31_score
             + d32_score
+            + d33_score
+            + d34_score
         )
-        / 32.0,
+        / 34.0,
         1,
     )
 
@@ -6123,6 +6704,27 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "time_windows": sorted(seen_time_windows),
                 "ui_wired": has_d32_ui,
             },
+            "D33_cursed_weapon_karma_and_pvp_arenas": {
+                "score": d33_score,
+                "verified": valid_pvp_hotspots,
+                "target": 14,
+                "cursed_drop_zones": cursed_drop_zone_count,
+                "black_judge_sanctuaries": black_judge_sanctuary_count,
+                "coliseum_arenas": coliseum_arena_count,
+                "pvp_categories": sorted(seen_pvp_categories),
+                "ruleset_tags": sorted(seen_ruleset_tags),
+                "ui_wired": has_d33_ui,
+            },
+            "D34_dimensional_rift_and_four_sepulchers": {
+                "score": d34_score,
+                "verified": valid_rift_sepulchers,
+                "target": 16,
+                "dimensional_rifts": dimensional_rift_count,
+                "four_sepulchers": four_sepulchers_count,
+                "key_gated_chapels": key_gated_chapel_count,
+                "instance_categories": sorted(seen_instance_categories),
+                "ui_wired": has_d34_ui,
+            },
         },
     }
 
@@ -6199,6 +6801,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D30 (18 Transit Corridors)  : {dims['D30_intercontinental_transit_network']['score']}/100 ({dims['D30_intercontinental_transit_network']['verified']}/{dims['D30_intercontinental_transit_network']['target']} transit lines)")
         print(f"  D31 (18 Soul Crystal Stages): {dims['D31_soul_crystal_resonance_and_boss_absorption']['score']}/100 ({dims['D31_soul_crystal_resonance_and_boss_absorption']['verified']}/{dims['D31_soul_crystal_resonance_and_boss_absorption']['target']} resonance stages)")
         print(f"  D32 (16 Fishing/Hot Springs): {dims['D32_fishing_guild_and_hot_springs_sanctuaries']['score']}/100 ({dims['D32_fishing_guild_and_hot_springs_sanctuaries']['verified']}/{dims['D32_fishing_guild_and_hot_springs_sanctuaries']['target']} sanctuaries)")
+        print(f"  D33 (14 Cursed/PvP Hotspots): {dims['D33_cursed_weapon_karma_and_pvp_arenas']['score']}/100 ({dims['D33_cursed_weapon_karma_and_pvp_arenas']['verified']}/{dims['D33_cursed_weapon_karma_and_pvp_arenas']['target']} hotspots)")
+        print(f"  D34 (16 Rift/4-Sepulchers)  : {dims['D34_dimensional_rift_and_four_sepulchers']['score']}/100 ({dims['D34_dimensional_rift_and_four_sepulchers']['verified']}/{dims['D34_dimensional_rift_and_four_sepulchers']['target']} portals)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
