@@ -455,6 +455,18 @@
       "maxItems": 22,
       "items": { "$ref": "#/$defs/studio90dMasterLedgerSpec" }
     },
+    "faction_reputation_dispositions": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/factionReputationDispositionSpec" }
+    },
+    "cross_realm_auction_escrows": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/crossRealmAuctionEscrowSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -5122,6 +5134,166 @@
         "accent": {
           "type": "string",
           "enum": ["#facc15", "#fde047", "#38bdf8", "#a855f7", "#34d399"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "factionReputationDispositionSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disposition_id",
+        "title",
+        "zone_id",
+        "town_id",
+        "dungeon_id",
+        "faction_category",
+        "standing_tiers",
+        "rival_faction_id",
+        "shop_tax_modifier_pct",
+        "guard_aggro_radius_m",
+        "quest_unlock_count",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "disposition_id": { "type": "string" },
+        "title": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "town_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "faction_category": {
+          "type": "string",
+          "enum": [
+            "Mutual-Exclusivity Tribal War",
+            "Progressive Zone Unlock Trust",
+            "Chaotic PK Guard Kill-On-Sight",
+            "Guild Trade Tax Discount Standing"
+          ]
+        },
+        "standing_tiers": {
+          "type": "string",
+          "enum": [
+            "Stage -5 Hostile .. +5 Exalted",
+            "Alliance Level 1..5",
+            "Caravan Trust Lv.1..11"
+          ]
+        },
+        "rival_faction_id": { "type": "string" },
+        "shop_tax_modifier_pct": {
+          "type": "number",
+          "minimum": -15.0,
+          "maximum": 25.0
+        },
+        "guard_aggro_radius_m": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 35.0
+        },
+        "quest_unlock_count": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 14
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#f97316", "#fb923c", "#ef4444", "#eab308"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "crossRealmAuctionEscrowSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "escrow_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "market_tier",
+        "settlement_protocol",
+        "listing_fee_bps",
+        "sales_tax_sink_bps",
+        "price_circuit_breaker_pct",
+        "max_concurrent_orders",
+        "settlement_p99_ms",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "escrow_id": { "type": "string" },
+        "title": { "type": "string" },
+        "town_id": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "market_tier": {
+          "type": "string",
+          "enum": [
+            "Continental Central Clearinghouse",
+            "Regional Craft & Material Hub",
+            "Starter Town Micro-Consignment",
+            "Frontier Raid Spoil Exchange"
+          ]
+        },
+        "settlement_protocol": {
+          "type": "string",
+          "enum": [
+            "2PC Postgres Serializable + Redis Stream",
+            "Optimistic CAS Ledger Lock",
+            "Atomic Escrow Mail Delivery"
+          ]
+        },
+        "listing_fee_bps": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 300
+        },
+        "sales_tax_sink_bps": {
+          "type": "integer",
+          "minimum": 150,
+          "maximum": 600
+        },
+        "price_circuit_breaker_pct": {
+          "type": "number",
+          "minimum": 35.0,
+          "maximum": 85.0
+        },
+        "max_concurrent_orders": {
+          "type": "integer",
+          "minimum": 2500,
+          "maximum": 50000
+        },
+        "settlement_p99_ms": {
+          "type": "number",
+          "minimum": 8.5,
+          "maximum": 42.0
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#14b8a6", "#2dd4bf", "#0d9488", "#38bdf8"]
         },
         "notes": { "type": "string" }
       }

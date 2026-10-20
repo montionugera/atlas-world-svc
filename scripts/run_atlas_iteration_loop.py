@@ -19409,6 +19409,633 @@ def inject_studio_90d_master_ledger(atlas: dict[str, Any]) -> list[dict[str, Any
     return rows
 
 
+def _build_faction_reputation_dispositions(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Record [Role 2: Content & World Tools — Dynamic Faction Reputation, NPC Disposition & Town Guard Hostility Matrix] (D91)."""
+    specs = [
+        (
+            "faction-disp-01-ketra-orc-outpost-alliance",
+            "Ketra Orc Outpost Alliance — Wahkan's Mark & Stage 1–5 Totem War Pact",
+            "zone-field-firebrick-duct",
+            "town-inductor-switchyard",
+            "",
+            "Mutual-Exclusivity Tribal War",
+            "Alliance Level 1..5",
+            "faction-disp-02-varka-silenos-stronghold-pact",
+            -10.0,
+            28.0,
+            12,
+            634,
+            172,
+            "#f97316",
+            "Grants Stage 1-5 Ketra Soldier/Captain badges and S-Grade 60% recipe boxes; any Varka Silenos kill advances standing while Ketra kills drop 1 full stage.",
+        ),
+        (
+            "faction-disp-02-varka-silenos-stronghold-pact",
+            "Varka Silenos Stronghold Pact — Naran Ashanuk's Feather & Stage 1–5 Shaman Accord",
+            "zone-field-cobalt-sandbar-ford",
+            "town-inductor-switchyard",
+            "",
+            "Mutual-Exclusivity Tribal War",
+            "Alliance Level 1..5",
+            "faction-disp-01-ketra-orc-outpost-alliance",
+            -10.0,
+            28.0,
+            12,
+            612,
+            184,
+            "#fb923c",
+            "Mutually exclusive rival to Ketra Orcs; unlocks Soul of Water Ashutar totem raids, Brown Feather Pouches, and zero-aggro passage through Varka camps.",
+        ),
+        (
+            "faction-disp-03-hellbound-caravan-trust-level",
+            "Hellbound Caravan Trust Level 1-11 — Falk & Jude Oasis Certificate Progression",
+            "zone-field-aurora-tether",
+            "town-torque-balance-citadel",
+            "",
+            "Progressive Zone Unlock Trust",
+            "Caravan Trust Lv.1..11",
+            "faction-disp-11-aden-royal-guard-chaotic-pk-kos",
+            -12.5,
+            18.0,
+            14,
+            468,
+            466,
+            "#eab308",
+            "Server-wide + personal Caravan Trust Lv.1-11 state machine unlocking Basic/Standard/Premium Caravan Certificates, Enchanted Megaliths, and Beleth's Citadel.",
+        ),
+        (
+            "faction-disp-04-primeval-isle-elrokian-tribe-bond",
+            "Primeval Isle Elrokian Tribe Bond — Marquez & Asamah Tyrannosaur Trap Mastery",
+            "zone-field-kelp-spiral-reef",
+            "town-starfall-haven",
+            "",
+            "Progressive Zone Unlock Trust",
+            "Stage -5 Hostile .. +5 Exalted",
+            "faction-disp-07-stakato-nest-mercenary-contract",
+            -8.5,
+            22.0,
+            9,
+            536,
+            162,
+            "#f97316",
+            "Unlocks Elrokian Trap capture skills, Dinosaur Egg clutch delivery quests, and A-Grade Sirra's Blade / Naga Storm weapon recipes.",
+        ),
+        (
+            "faction-disp-05-monastery-of-silence-solina-order",
+            "Monastery of Silence Solina Order — Armed Disarm Rule & Jude van Etina Sanctum Access",
+            "zone-dungeon-star-heart-nave",
+            "town-starfall-haven",
+            "zone-dungeon-star-heart-nave",
+            "Progressive Zone Unlock Trust",
+            "Stage -5 Hostile .. +5 Exalted",
+            "faction-disp-06-pagan-temple-triol-cult-infiltration",
+            -6.0,
+            24.0,
+            8,
+            644,
+            186,
+            "#eab308",
+            "Monastic guardians remain passive if weapons are sheathed; Exalted Solina standing unlocks Secret Library Holy Grail and Freya/Etina relic quests.",
+        ),
+        (
+            "faction-disp-06-pagan-temple-triol-cult-infiltration",
+            "Pagan Temple Triol Cult Infiltration — Visitor's Mark -> Pagan's Mark Undercover Disguise",
+            "zone-catacomb-dark-omens-coral",
+            "town-starfall-haven",
+            "zone-catacomb-dark-omens-coral",
+            "Mutual-Exclusivity Tribal War",
+            "Alliance Level 1..5",
+            "faction-disp-05-monastery-of-silence-solina-order",
+            0.0,
+            30.0,
+            7,
+            544,
+            214,
+            "#ef4444",
+            "Infiltrates High Priestess van Halter's blood chapel behind the Anteroom Doors; losing Pagan's Mark triggers immediate 30m cultist guard aggro.",
+        ),
+        (
+            "faction-disp-07-stakato-nest-mercenary-contract",
+            "Stakato Nest Mercenary Contract — Kahman's Golden Fang Bounty & Queen Shyeed Hunt",
+            "zone-field-whispering-mire",
+            "town-starfall-haven",
+            "",
+            "Guild Trade Tax Discount Standing",
+            "Alliance Level 1..5",
+            "faction-disp-04-primeval-isle-elrokian-tribe-bond",
+            -9.0,
+            20.0,
+            10,
+            568,
+            192,
+            "#fb923c",
+            "Swamp of Screams mercenary contract exchanging Stakato Fangs for Reid's Golden Crates, Dynasty ore pouches, and direct teleport to Queen Shyeed's cocoon.",
+        ),
+        (
+            "faction-disp-08-dragon-valley-hunter-guild-standing",
+            "Dragon Valley Hunter Guild Standing — Gilmore & Separated Soul Antharas Vanguard Bond",
+            "zone-field-leyden-causeway",
+            "town-pinion-terminus",
+            "zone-dungeon-chronometer-foundry",
+            "Progressive Zone Unlock Trust",
+            "Stage -5 Hostile .. +5 Exalted",
+            "faction-disp-09-gludin-harbor-smuggler-syndicate",
+            -11.0,
+            25.0,
+            11,
+            606,
+            352,
+            "#f97316",
+            "Tracks Hunter Guild Draconic Bone trophies across Dragon Valley and Antharas Lair, unlocking 7-Raid Dragon Vortex summons and Vesper Noble stones.",
+        ),
+        (
+            "faction-disp-09-gludin-harbor-smuggler-syndicate",
+            "Gludin Harbor Smuggler Syndicate — Black Marketeer of Mammon & Night Pier Contraband",
+            "zone-town-glaze-barge-quay",
+            "town-glaze-barge-quay",
+            "",
+            "Guild Trade Tax Discount Standing",
+            "Stage -5 Hostile .. +5 Exalted",
+            "faction-disp-10-giran-merchant-consortium-tier",
+            -15.0,
+            14.0,
+            6,
+            414,
+            408,
+            "#eab308",
+            "Reduces maritime contraband brokerage fees by up to -15% and opens 20:00-24:00 Black Marketeer Ancient Adena & Pirate Treasure Map exchanges.",
+        ),
+        (
+            "faction-disp-10-giran-merchant-consortium-tier",
+            "Giran Merchant Consortium Tier — Alexandria Luxury Gallery & Caravan Charter Rank",
+            "zone-town-pinion-terminus",
+            "town-pinion-terminus",
+            "",
+            "Guild Trade Tax Discount Standing",
+            "Stage -5 Hostile .. +5 Exalted",
+            "faction-disp-09-gludin-harbor-smuggler-syndicate",
+            -14.0,
+            16.0,
+            10,
+            582,
+            396,
+            "#fb923c",
+            "Consortium Exalted standing slashes Giran Luxury Shop C/B/A-Grade Crystal requirements and lowers private-store plaza stall tax by 14%.",
+        ),
+        (
+            "faction-disp-11-aden-royal-guard-chaotic-pk-kos",
+            "Aden Royal Guard Chaotic PK KOS — Captain Mouen High-Karma Kill-On-Sight & Sin Eater Matrix",
+            "zone-town-crown-beacon",
+            "town-crown-beacon-citadel",
+            "",
+            "Chaotic PK Guard Kill-On-Sight",
+            "Stage -5 Hostile .. +5 Exalted",
+            "faction-disp-03-hellbound-caravan-trust-level",
+            25.0,
+            35.0,
+            5,
+            658,
+            280,
+            "#ef4444",
+            "Enforces 35m instant Royal Guard bow/spear aggro and +25% merchant embargo surcharge on red-name Chaotic players (Karma > 0 & PK Count >= 5).",
+        ),
+        (
+            "faction-disp-12-rune-temple-high-priest-favor",
+            "Rune Temple High Priest Favor — Agripel & Innocentin Rune Undercroft Noble Conclave",
+            "zone-town-starfall-haven",
+            "town-starfall-haven",
+            "zone-catacomb-forbidden-path-orrery",
+            "Progressive Zone Unlock Trust",
+            "Stage -5 Hostile .. +5 Exalted",
+            "faction-disp-06-pagan-temple-triol-cult-infiltration",
+            -7.5,
+            22.0,
+            9,
+            554,
+            204,
+            "#eab308",
+            "Balances political intrigue between High Priest Agripel and Innocentin, unlocking Rune Castle Benom Undercroft raids and Forgotten Scroll exchanges.",
+        ),
+        (
+            "faction-disp-13-goddard-thermal-miners-union",
+            "Goddard Thermal Miners Union — Klein's Floating Stone & Forge of the Gods Roehm Accord",
+            "zone-town-inductor-switchyard",
+            "town-inductor-switchyard",
+            "zone-dungeon-star-heart-nave",
+            "Guild Trade Tax Discount Standing",
+            "Alliance Level 1..5",
+            "faction-disp-14-dwarven-black-anvil-guild-rank",
+            -12.0,
+            18.0,
+            11,
+            652,
+            198,
+            "#f97316",
+            "Governs Vacualite Ore refining for Valakas Floating Stones and Lower Forge S80 Icarus/Dynasty weapon recipe trading with Blacksmith Rooney.",
+        ),
+        (
+            "faction-disp-14-dwarven-black-anvil-guild-rank",
+            "Dwarven Black Anvil Guild Rank — Iron Gate Lockirin & Maestro Toma Masterwork Charter",
+            "zone-town-root-train-roundhouse",
+            "town-root-train-roundhouse",
+            "zone-dungeon-sap-heart-cistern",
+            "Guild Trade Tax Discount Standing",
+            "Stage -5 Hostile .. +5 Exalted",
+            "faction-disp-13-goddard-thermal-miners-union",
+            -13.5,
+            12.0,
+            13,
+            620,
+            84,
+            "#fb923c",
+            "Tracks Dwarven Artisan/Warsmith guild promotions, granting -13.5% anvil Polish/Unseal fee discounts and Mithril Mines Star Stone extraction charters.",
+        ),
+        (
+            "faction-disp-15-elven-mother-tree-guardians",
+            "Elven Mother Tree Guardians — Sentinel Knight Alberius & Nerupa Glade Peace Enforcement",
+            "zone-town-porcelain-loom",
+            "town-porcelain-loom-sanctuary",
+            "zone-dungeon-medallion-heart-vault",
+            "Chaotic PK Guard Kill-On-Sight",
+            "Stage -5 Hostile .. +5 Exalted",
+            "faction-disp-16-dark-elven-shilen-tetrarches",
+            20.0,
+            32.0,
+            8,
+            536,
+            292,
+            "#ef4444",
+            "Sentinel bowmen patrol Mother Tree Glade and Neutral Zone bridges with 32m KOS detection against Dark Elven infiltrators and Chaotic PK outlaws.",
+        ),
+        (
+            "faction-disp-16-dark-elven-shilen-tetrarches",
+            "Dark Elven Shilen Tetrarches — Tetrarch Thifiell & Mitraell Blood Altar Covenant",
+            "zone-town-carillon-belfry",
+            "town-carillon-hearth-belfry",
+            "zone-dungeon-ceramic-resonator-crypt",
+            "Chaotic PK Guard Kill-On-Sight",
+            "Stage -5 Hostile .. +5 Exalted",
+            "faction-disp-15-elven-mother-tree-guardians",
+            18.0,
+            32.0,
+            8,
+            510,
+            266,
+            "#ef4444",
+            "Sentry Blades around the Shilen Cavern Sanctuary enforce strict racial/alignment hostility against Trespassing Light Elves and low-standing outsiders.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        did_key,
+        title,
+        zid,
+        tid,
+        duid,
+        fcat,
+        stiers,
+        rival_id,
+        tax_mod,
+        aggro_r,
+        qcnt,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "disposition_id": did_key,
+                "title": title,
+                "zone_id": zid,
+                "town_id": tid,
+                "dungeon_id": duid,
+                "faction_category": fcat,
+                "standing_tiers": stiers,
+                "rival_faction_id": rival_id,
+                "shop_tax_modifier_pct": tax_mod,
+                "guard_aggro_radius_m": aggro_r,
+                "quest_unlock_count": qcnt,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_faction_reputation_dispositions(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_faction_reputation_dispositions(atlas)
+    atlas["faction_reputation_dispositions"] = rows
+    return rows
+
+
+def _build_cross_realm_auction_escrows(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Record [Role 4: Backend Infra — Cross-Realm Auction House, Escrow Settlement & Market Price-Circuit-Breaker Matrix] (D92)."""
+    specs = [
+        (
+            "auction-escrow-01-talking-island",
+            "Talking Island (Lantern Hollow) — Starter Town Apprentice Consignment & Escrow Desk",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Starter Town Micro-Consignment",
+            "Atomic Escrow Mail Delivery",
+            50,
+            150,
+            35.0,
+            3500,
+            9.2,
+            450,
+            434,
+            "#14b8a6",
+            "Zero-fee newbie No/D-Grade consignment counter with 35% price-collar protection against starter RMT Adena washing.",
+        ),
+        (
+            "auction-escrow-02-elven-village",
+            "Elven Village (Porcelain Loom) — Mithril Tunic & Elven Oriharukon Consignment Ledger",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "Starter Town Micro-Consignment",
+            "Atomic Escrow Mail Delivery",
+            60,
+            175,
+            38.0,
+            3200,
+            9.8,
+            536,
+            290,
+            "#2dd4bf",
+            "Handles cross-realm mystic spellbook, Elven Mithril, and Cobweb material consignments with atomic mailbox payout.",
+        ),
+        (
+            "auction-escrow-03-dark-elven-village",
+            "Dark Elven Village (Carillon Belfry) — Dark Arts Bone & Cursed Dagger Escrow Vault",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "Starter Town Micro-Consignment",
+            "Atomic Escrow Mail Delivery",
+            60,
+            175,
+            40.0,
+            3400,
+            10.1,
+            510,
+            264,
+            "#0d9488",
+            "Settles Dark Forest spoil materials and D-Grade assassin blades via SHA-256 item-UID locked mail attachments.",
+        ),
+        (
+            "auction-escrow-04-orc-village",
+            "Orc Village (Draft-Kiln Post) — Pa'agrio Cestus & Braided Hemp Tribal Exchange",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Starter Town Micro-Consignment",
+            "Optimistic CAS Ledger Lock",
+            55,
+            160,
+            36.0,
+            2800,
+            8.8,
+            460,
+            134,
+            "#38bdf8",
+            "High-speed optimistic CAS orderbook for Immortal Plateau coal, iron ore, and fist weapon crafting recipes.",
+        ),
+        (
+            "auction-escrow-05-dwarven-village",
+            "Dwarven Village (Root-Train Roundhouse) — Iron Gate Bulk Ore & Recipe Futures Exchange",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Regional Craft & Material Hub",
+            "Optimistic CAS Ledger Lock",
+            85,
+            220,
+            45.0,
+            14500,
+            12.4,
+            620,
+            80,
+            "#14b8a6",
+            "Primary Dwarven bulk commodity exchange matching 14,500 concurrent Cokes, Varnish, and 60%/100% recipe orders.",
+        ),
+        (
+            "auction-escrow-06-kamael-village",
+            "Kamael Village (Cinnamon-Mill Haven) — Isle of Souls Rapier/Crossbow & Soul Stone Escrow",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "Starter Town Micro-Consignment",
+            "Atomic Escrow Mail Delivery",
+            50,
+            150,
+            35.0,
+            2500,
+            8.5,
+            380,
+            298,
+            "#2dd4bf",
+            "Sub-8.5ms p99 micro-consignment node linking Isle of Souls ancient weapon conversion stones with mainland buyers.",
+        ),
+        (
+            "auction-escrow-07-gludin-village",
+            "Gludin Village (Glaze-Barge Quay) — West Coast Maritime Freight & Harbor Auction House",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Regional Craft & Material Hub",
+            "Optimistic CAS Ledger Lock",
+            110,
+            280,
+            50.0,
+            12000,
+            14.6,
+            420,
+            400,
+            "#0d9488",
+            "Cross-continental maritime clearinghouse settling Talking Island and Gracia ship cargo manifests without dupe windows.",
+        ),
+        (
+            "auction-escrow-08-gludio-town",
+            "Town of Gludio (Kilnwatch Bastion) — First-Class-Transfer C-Grade Equipment Clearinghouse",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Regional Craft & Material Hub",
+            "Optimistic CAS Ledger Lock",
+            120,
+            300,
+            52.0,
+            16000,
+            15.8,
+            490,
+            374,
+            "#38bdf8",
+            "Balances Lv.20-40 convergence demand with automated 52% 24h-VWAP circuit breakers on C-Grade Crystal and Dualsword stamps.",
+        ),
+        (
+            "auction-escrow-09-dion-town",
+            "Town of Dion (Saffron Press) — Cruma Core & Manor Seed Agricultural Commodity Exchange",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "Regional Craft & Material Hub",
+            "Optimistic CAS Ledger Lock",
+            125,
+            310,
+            55.0,
+            15500,
+            16.2,
+            520,
+            414,
+            "#14b8a6",
+            "Clears regional Manor crop harvests, Cruma Tower B-Grade parts, and Floran tax-free merchant consignments.",
+        ),
+        (
+            "auction-escrow-10-giran-castle-town",
+            "Giran Castle Town (Pinion Terminus) — Continental Central Clearinghouse & S-Grade Orderbook",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Continental Central Clearinghouse",
+            "2PC Postgres Serializable + Redis Stream",
+            250,
+            550,
+            75.0,
+            50000,
+            38.5,
+            586,
+            396,
+            "#2dd4bf",
+            "Flagship 50,000-order continental clearinghouse burning 5.5% Adena sales tax sink under 2PC Postgres Serializable isolation.",
+        ),
+        (
+            "auction-escrow-11-oren-town",
+            "Town of Oren (Escapement Anvil) — Ivory Tower Spellbook, Life Stone & Soul Crystal Exchange",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Regional Craft & Material Hub",
+            "Optimistic CAS Ledger Lock",
+            150,
+            360,
+            60.0,
+            18500,
+            18.4,
+            588,
+            300,
+            "#0d9488",
+            "Specializes in Top-Grade Life Stones, Stage 10-13 Soul Crystals, and Lv.81-83 Forgotten Scroll order matching.",
+        ),
+        (
+            "auction-escrow-12-hunters-village",
+            "Hunters Village (Torque-Balance Citadel) — Enchanted Valley Raid Spoil & Rare Pelt Exchange",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Frontier Raid Spoil Exchange",
+            "Atomic Escrow Mail Delivery",
+            165,
+            380,
+            65.0,
+            11000,
+            19.5,
+            620,
+            230,
+            "#38bdf8",
+            "Facilitates split-payout party raid auctions for Antharas/Orfen key materials and Enchanted Valley rare herb bundles.",
+        ),
+        (
+            "auction-escrow-13-aden-imperial-capital",
+            "Town of Aden (Crown-Beacon Citadel) — Imperial Sovereign Treasury, Epic Relic & Siege Escrow",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "Continental Central Clearinghouse",
+            "2PC Postgres Serializable + Redis Stream",
+            300,
+            600,
+            85.0,
+            45000,
+            42.0,
+            654,
+            276,
+            "#14b8a6",
+            "High-value S80/S84 Vesper/Elegia & Epic Boss Jewelry escrow desk enforcing 2PC serializable locks and 6.0% imperial deflation sink.",
+        ),
+        (
+            "auction-escrow-14-goddard-town",
+            "Town of Goddard (Inductor Switchyard) — Valakas/Ketra/Varka Frontier Raid Spoil Clearinghouse",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Frontier Raid Spoil Exchange",
+            "2PC Postgres Serializable + Redis Stream",
+            210,
+            480,
+            70.0,
+            24000,
+            31.2,
+            654,
+            194,
+            "#2dd4bf",
+            "Settles Forge of the Gods Fire Attribute Crystals (150/300) and Command Channel raid bid pools via Redis Stream event replication.",
+        ),
+        (
+            "auction-escrow-15-rune-township",
+            "Rune Township (Starfall Haven) — Northern Continent & Gracia Star Stone Central Clearinghouse",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "Continental Central Clearinghouse",
+            "2PC Postgres Serializable + Redis Stream",
+            240,
+            520,
+            80.0,
+            36000,
+            35.4,
+            550,
+            200,
+            "#0d9488",
+            "Bridges Elmore, Primeval Isle, and Gracia Seed of Infinity/Destruction markets with automated 80% flash-crash circuit breakers.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        eid,
+        title,
+        tid,
+        zid,
+        mtier,
+        sproto,
+        lfee,
+        stax,
+        cbpct,
+        mord,
+        p99,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "escrow_id": eid,
+                "title": title,
+                "town_id": tid,
+                "zone_id": zid,
+                "market_tier": mtier,
+                "settlement_protocol": sproto,
+                "listing_fee_bps": lfee,
+                "sales_tax_sink_bps": stax,
+                "price_circuit_breaker_pct": cbpct,
+                "max_concurrent_orders": mord,
+                "settlement_p99_ms": p99,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_cross_realm_auction_escrows(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_cross_realm_auction_escrows(atlas)
+    atlas["cross_realm_auction_escrows"] = rows
+    return rows
+
+
 
 
 
@@ -20694,6 +21321,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("studio_90d_master_ledger") or []) < 22:
         inject_studio_90d_master_ledger(atlas)
         actions.append("populated_22_studio_90d_master_ledger")
+
+    # 75. Ensure all 16 Dynamic Faction Reputation, NPC Disposition & Town Guard Hostility Matrix records exist in `faction_reputation_dispositions` (D91)
+    if len(atlas.get("faction_reputation_dispositions") or []) < 16:
+        inject_faction_reputation_dispositions(atlas)
+        actions.append("populated_16_faction_reputation_dispositions")
+
+    # 76. Ensure all 15 Cross-Realm Auction House, Escrow Settlement & Market Price-Circuit-Breaker Matrix records exist in `cross_realm_auction_escrows` (D92)
+    if len(atlas.get("cross_realm_auction_escrows") or []) < 15:
+        inject_cross_realm_auction_escrows(atlas)
+        actions.append("populated_15_cross_realm_auction_escrows")
 
     return {"actions": actions}
 
@@ -25514,15 +26151,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d90_eval = score_d90_studio_90d_master_ledger(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
     d90_score = d90_eval["score"]
 
+    # D91: Interactive 16-Record [Role 2: Content & World Tools — Dynamic Faction Reputation, NPC Disposition & Town Guard Hostility Matrix] (`faction_reputation_dispositions` - 16 Dispositions)
+    d91_eval = score_d91_faction_reputation_dispositions(atlas, zone_ids_set=zone_ids_set, mf_dungeon_id_set=mf_dungeon_id_set, web_txt=web_txt)
+    d91_score = d91_eval["score"]
+
+    # D92: Interactive 15-Record [Role 4: Backend Infra — Cross-Realm Auction House, Escrow Settlement & Market Price-Circuit-Breaker Matrix] (`cross_realm_auction_escrows` - 15 Escrows)
+    d92_eval = score_d92_cross_realm_auction_escrows(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d92_score = d92_eval["score"]
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score) / 72.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score) / 74.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score) / 74.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score) / 84.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score) / 73.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score) / 80.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 74.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 76.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 76.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 86.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 75.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 82.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -25617,8 +26262,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d88_score
             + d89_score
             + d90_score
+            + d91_score
+            + d92_score
         )
-        / 90.0,
+        / 92.0,
         1,
     )
 
@@ -26353,7 +27000,211 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D88_client_gpu_frame_time_draw_call_instancing_and_vram_budget_matrix": d88_eval,
             "D89_automated_headless_qa_playtest_and_golden_snapshot_suites": d89_eval,
             "D90_two_ring_11_role_studio_90d_master_signoff_ledger": d90_eval,
+            "D91_dynamic_faction_reputation_npc_disposition_and_guard_hostility_matrix": d91_eval,
+            "D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix": d92_eval,
         },
+    }
+
+
+def score_d91_faction_reputation_dispositions(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    mf_dungeon_id_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if mf_dungeon_id_set is None:
+        mf_dungeon_id_set = {
+            str(d.get("dungeon_id"))
+            for d in (atlas.get("multi_floor_dungeons") or [])
+            if isinstance(d, dict) and d.get("dungeon_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_categories = {
+        "Mutual-Exclusivity Tribal War",
+        "Progressive Zone Unlock Trust",
+        "Chaotic PK Guard Kill-On-Sight",
+        "Guild Trade Tax Discount Standing",
+    }
+    expected_tiers = {
+        "Stage -5 Hostile .. +5 Exalted",
+        "Alliance Level 1..5",
+        "Caravan Trust Lv.1..11",
+    }
+    rows = atlas.get("faction_reputation_dispositions") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_cats: set[str] = set()
+    seen_tiers: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        did_key = str(row.get("disposition_id") or "")
+        zid = str(row.get("zone_id") or "")
+        duid = str(row.get("dungeon_id") or "")
+        fcat = str(row.get("faction_category") or "")
+        stiers = str(row.get("standing_tiers") or "")
+        tax_mod = float(row.get("shop_tax_modifier_pct") if row.get("shop_tax_modifier_pct") is not None else -999.0)
+        aggro_r = float(row.get("guard_aggro_radius_m") if row.get("guard_aggro_radius_m") is not None else -1.0)
+        qcnt = int(row.get("quest_unlock_count") or 0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            did_key
+            and did_key not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and row.get("town_id")
+            and (not duid or duid in mf_dungeon_id_set)
+            and fcat in expected_categories
+            and stiers in expected_tiers
+            and row.get("rival_faction_id")
+            and -15.0 <= tax_mod <= 25.0
+            and 0.0 <= aggro_r <= 35.0
+            and 3 <= qcnt <= 14
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#f97316", "#fb923c", "#ef4444", "#eab308")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(did_key)
+            seen_cats.add(fcat)
+            seen_tiers.add(stiers)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_FACTION_DISPOSITION_MODE",
+            "setAtlasFactionDispositionMode",
+            "selectFactionDisposition",
+            "renderAtlasFactionDispositionBarHtml",
+            "studioFactionDispositionOverlay",
+        )
+    )
+    ratio = valid_count / 16.0
+    full_cov = valid_count == 16 and seen_cats == expected_categories and seen_tiers == expected_tiers
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 16,
+        "faction_categories": sorted(seen_cats),
+        "standing_tiers": sorted(seen_tiers),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d92_cross_realm_auction_escrows(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_tiers = {
+        "Continental Central Clearinghouse",
+        "Regional Craft & Material Hub",
+        "Starter Town Micro-Consignment",
+        "Frontier Raid Spoil Exchange",
+    }
+    expected_protocols = {
+        "2PC Postgres Serializable + Redis Stream",
+        "Optimistic CAS Ledger Lock",
+        "Atomic Escrow Mail Delivery",
+    }
+    rows = atlas.get("cross_realm_auction_escrows") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_towns: set[str] = set()
+    seen_tiers: set[str] = set()
+    seen_protocols: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        eid = str(row.get("escrow_id") or "")
+        tid = str(row.get("town_id") or "")
+        zid = str(row.get("zone_id") or "")
+        mtier = str(row.get("market_tier") or "")
+        sproto = str(row.get("settlement_protocol") or "")
+        lfee = int(row.get("listing_fee_bps") or 0)
+        stax = int(row.get("sales_tax_sink_bps") or 0)
+        cbpct = float(row.get("price_circuit_breaker_pct") or 0.0)
+        mord = int(row.get("max_concurrent_orders") or 0)
+        p99 = float(row.get("settlement_p99_ms") or 0.0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            eid
+            and eid not in seen_ids
+            and row.get("title")
+            and tid
+            and tid not in seen_towns
+            and zid in zone_ids_set
+            and mtier in expected_tiers
+            and sproto in expected_protocols
+            and 50 <= lfee <= 300
+            and 150 <= stax <= 600
+            and 35.0 <= cbpct <= 85.0
+            and 2500 <= mord <= 50000
+            and 8.5 <= p99 <= 42.0
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#14b8a6", "#2dd4bf", "#0d9488", "#38bdf8")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(eid)
+            seen_towns.add(tid)
+            seen_tiers.add(mtier)
+            seen_protocols.add(sproto)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_AUCTION_ESCROW_MODE",
+            "setAtlasAuctionEscrowMode",
+            "selectCrossRealmEscrow",
+            "renderAtlasAuctionEscrowBarHtml",
+            "studioCrossRealmEscrowOverlay",
+        )
+    )
+    ratio = valid_count / 15.0
+    full_cov = valid_count == 15 and seen_tiers == expected_tiers and seen_protocols == expected_protocols
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 15,
+        "market_tiers": sorted(seen_tiers),
+        "settlement_protocols": sorted(seen_protocols),
+        "ui_wired": has_ui,
     }
 
 
@@ -27168,7 +28019,7 @@ def evaluate_80d_atlas(whc: dict[str, Any] | None = None, atlas: dict[str, Any] 
     if atlas is None:
         atlas = json.loads(ATLAS_PATH.read_text(encoding="utf-8"))
     res = audit_world_atlas(whc, atlas)
-    res["wave"] = 43
+    res["wave"] = 44
     return res
 
 
@@ -27302,6 +28153,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D88 (15 Client GPU Budgets) : {dims['D88_client_gpu_frame_time_draw_call_instancing_and_vram_budget_matrix']['score']}/100 ({dims['D88_client_gpu_frame_time_draw_call_instancing_and_vram_budget_matrix']['verified']}/{dims['D88_client_gpu_frame_time_draw_call_instancing_and_vram_budget_matrix']['target']} client gpu vram budgets)")
         print(f"  D89 (16 Headless QA Suites) : {dims['D89_automated_headless_qa_playtest_and_golden_snapshot_suites']['score']}/100 ({dims['D89_automated_headless_qa_playtest_and_golden_snapshot_suites']['verified']}/{dims['D89_automated_headless_qa_playtest_and_golden_snapshot_suites']['target']} automated qa smoke suites)")
         print(f"  D90 (22 90D Master Ledger)  : {dims['D90_two_ring_11_role_studio_90d_master_signoff_ledger']['score']}/100 ({dims['D90_two_ring_11_role_studio_90d_master_signoff_ledger']['verified']}/{dims['D90_two_ring_11_role_studio_90d_master_signoff_ledger']['target']} 90d studio sign-off records)")
+        print(f"  D91 (16 Faction Dispositions): {dims['D91_dynamic_faction_reputation_npc_disposition_and_guard_hostility_matrix']['score']}/100 ({dims['D91_dynamic_faction_reputation_npc_disposition_and_guard_hostility_matrix']['verified']}/{dims['D91_dynamic_faction_reputation_npc_disposition_and_guard_hostility_matrix']['target']} faction reputation dispositions)")
+        print(f"  D92 (15 Auction Escrows)    : {dims['D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix']['score']}/100 ({dims['D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix']['verified']}/{dims['D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix']['target']} cross-realm auction escrows)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

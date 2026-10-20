@@ -730,6 +730,8 @@ def validate_world_governance(
                 "clientGpuVramBudgetsCount": len(t_doc.get("client_gpu_vram_budgets") or []),
                 "automatedQaSmokeSuitesCount": len(t_doc.get("automated_qa_smoke_suites") or []),
                 "studio90dMasterLedgerCount": len(t_doc.get("studio_90d_master_ledger") or []),
+                "factionReputationDispositionsCount": len(t_doc.get("faction_reputation_dispositions") or []),
+                "crossRealmAuctionEscrowsCount": len(t_doc.get("cross_realm_auction_escrows") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -2014,6 +2016,43 @@ def validate_world_governance(
                 if s90_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: studio_90d_master_ledger '{s90_id}' references unknown zone_id '{s90_zid}'"
+                    )
+
+            # Validate 16-Record Dynamic Faction Reputation, NPC Disposition & Town Guard Hostility Matrix (D91)
+            faction_disps = t_doc.get("faction_reputation_dispositions") or []
+            if faction_disps and len(faction_disps) < 16:
+                errors.append(
+                    f"GOV-10 violation: faction_reputation_dispositions must have at least 16 records, got {len(faction_disps)}"
+                )
+            for fd_item in faction_disps:
+                if not isinstance(fd_item, dict):
+                    continue
+                fd_id = str(fd_item.get("disposition_id", ""))
+                fd_zid = str(fd_item.get("zone_id", ""))
+                fd_did = str(fd_item.get("dungeon_id", ""))
+                if fd_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: faction_reputation_dispositions '{fd_id}' references unknown zone_id '{fd_zid}'"
+                    )
+                if fd_did and fd_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: faction_reputation_dispositions '{fd_id}' references unknown dungeon_id '{fd_did}'"
+                    )
+
+            # Validate 15-Record Cross-Realm Auction House, Escrow Settlement & Market Price-Circuit-Breaker Matrix (D92)
+            auction_escrows = t_doc.get("cross_realm_auction_escrows") or []
+            if auction_escrows and len(auction_escrows) < 15:
+                errors.append(
+                    f"GOV-10 violation: cross_realm_auction_escrows must have at least 15 records, got {len(auction_escrows)}"
+                )
+            for ae_item in auction_escrows:
+                if not isinstance(ae_item, dict):
+                    continue
+                ae_id = str(ae_item.get("escrow_id", ""))
+                ae_zid = str(ae_item.get("zone_id", ""))
+                if ae_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: cross_realm_auction_escrows '{ae_id}' references unknown zone_id '{ae_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

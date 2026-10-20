@@ -3764,7 +3764,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 90)
+        self.assertGreaterEqual(len(audit["dimensions"]), 90)
 
         d89 = audit["dimensions"]["D89_automated_headless_qa_playtest_and_golden_snapshot_suites"]
         self.assertEqual(d89["score"], 100.0)
@@ -3823,10 +3823,125 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas90DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 90)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 90)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 90)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 90)
         self.assertIn("90-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave44_faction_dispositions_and_cross_realm_auction_escrows(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["factionReputationDispositionsCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["crossRealmAuctionEscrowsCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "FACTION_DISPOSITIONS",
+            "CROSS_REALM_ESCROWS",
+            "ATLAS_FACTION_DISPOSITION_MODE",
+            "ATLAS_AUCTION_ESCROW_MODE",
+            "setAtlasFactionDispositionMode",
+            "setAtlasAuctionEscrowMode",
+            "selectFactionDisposition",
+            "selectCrossRealmEscrow",
+            "renderAtlasFactionDispositionBarHtml",
+            "renderAtlasAuctionEscrowBarHtml",
+            "studioFactionDispositionOverlay",
+            "studioCrossRealmEscrowOverlay",
+            "🤝 Faction Disposition (16)",
+            "⚖️ Auction Escrow (15)",
+            "92-Dimension Semantic-Zoom Atlas Score",
+            "D1–D92 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 44 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 92)
+
+        d91 = audit["dimensions"]["D91_dynamic_faction_reputation_npc_disposition_and_guard_hostility_matrix"]
+        self.assertEqual(d91["score"], 100.0)
+        self.assertEqual(d91["verified"], 16)
+        self.assertEqual(d91["target"], 16)
+        self.assertTrue(d91["ui_wired"])
+
+        d92 = audit["dimensions"]["D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix"]
+        self.assertEqual(d92["score"], 100.0)
+        self.assertEqual(d92["verified"], 15)
+        self.assertEqual(d92["target"], 15)
+        self.assertTrue(d92["ui_wired"])
+
+        dispositions = atlas["faction_reputation_dispositions"]
+        self.assertEqual(len(dispositions), 16)
+        for d_row in dispositions:
+            self.assertIn(
+                d_row["faction_category"],
+                {
+                    "Mutual-Exclusivity Tribal War",
+                    "Progressive Zone Unlock Trust",
+                    "Chaotic PK Guard Kill-On-Sight",
+                    "Guild Trade Tax Discount Standing",
+                },
+            )
+            self.assertIn(
+                d_row["standing_tiers"],
+                {
+                    "Stage -5 Hostile .. +5 Exalted",
+                    "Alliance Level 1..5",
+                    "Caravan Trust Lv.1..11",
+                },
+            )
+            self.assertGreaterEqual(d_row["shop_tax_modifier_pct"], -15.0)
+            self.assertLessEqual(d_row["shop_tax_modifier_pct"], 25.0)
+            self.assertGreaterEqual(d_row["guard_aggro_radius_m"], 0.0)
+            self.assertLessEqual(d_row["guard_aggro_radius_m"], 35.0)
+            self.assertGreaterEqual(d_row["quest_unlock_count"], 3)
+            self.assertLessEqual(d_row["quest_unlock_count"], 14)
+
+        escrows = atlas["cross_realm_auction_escrows"]
+        self.assertEqual(len(escrows), 15)
+        for e_row in escrows:
+            self.assertIn(
+                e_row["market_tier"],
+                {
+                    "Continental Central Clearinghouse",
+                    "Regional Craft & Material Hub",
+                    "Starter Town Micro-Consignment",
+                    "Frontier Raid Spoil Exchange",
+                },
+            )
+            self.assertIn(
+                e_row["settlement_protocol"],
+                {
+                    "2PC Postgres Serializable + Redis Stream",
+                    "Optimistic CAS Ledger Lock",
+                    "Atomic Escrow Mail Delivery",
+                },
+            )
+            self.assertGreaterEqual(e_row["listing_fee_bps"], 50)
+            self.assertLessEqual(e_row["listing_fee_bps"], 300)
+            self.assertGreaterEqual(e_row["sales_tax_sink_bps"], 150)
+            self.assertLessEqual(e_row["sales_tax_sink_bps"], 600)
+            self.assertGreaterEqual(e_row["price_circuit_breaker_pct"], 35.0)
+            self.assertLessEqual(e_row["price_circuit_breaker_pct"], 85.0)
+            self.assertGreaterEqual(e_row["max_concurrent_orders"], 2500)
+            self.assertLessEqual(e_row["max_concurrent_orders"], 50000)
+            self.assertGreaterEqual(e_row["settlement_p99_ms"], 8.5)
+            self.assertLessEqual(e_row["settlement_p99_ms"], 42.0)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas92DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 92)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 92)
+        self.assertIn("92-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
