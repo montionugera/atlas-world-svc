@@ -54621,5 +54621,357 @@
       ],
       "operating_window_rule": "24h Maritime Curio Bazaar (Lantern South Ferry Pier)"
     }
+  ],
+  "faction_alliance_war_camps": [
+    {
+      "camp_id": "faction-01-ketra-vanguard-outpost",
+      "camp_name": "Ketra Orc Vanguard Outpost \u2014 Herald Wahkan's War Camp",
+      "faction_category": "Vanguard_Orc_Alliance_Outpost",
+      "zone_id": "zone-field-metronome-bridge",
+      "rival_camp_zone_id": "zone-field-spiral-wormway-ramp",
+      "loc": "118828:-8580",
+      "herald_npc_name": "Ketra's Messenger Wahkan & Hierarch Kadun Zu Ketra",
+      "alliance_stage_band": "Alliance Stage 1\u20133 (100 Varka Soldier / 200 Officer Badges)",
+      "totem_raid_boss_or_relic": "Stage 3 Horn of Buffalo Warehouse & Gatekeeper Unlock + Feather of Valor Quest",
+      "betrayal_penalty_rule": "Killing 1 Allied Ketra Orc Mob Drops Alliance Stage by -1 Level Immediately (Mark of Ketra's Alliance Revoked)"
+    },
+    {
+      "camp_id": "faction-02-ketra-chieftain-citadel",
+      "camp_name": "Ketra High Chieftain War Citadel \u2014 Stage 4\u20135 S-Grade Recipe Quarter",
+      "faction_category": "Vanguard_Orc_Alliance_Outpost",
+      "zone_id": "zone-field-leyden-causeway",
+      "rival_camp_zone_id": "zone-field-caldera-rim",
+      "loc": "141416:-48770",
+      "herald_npc_name": "Soul Guide Asefa & Grocer Jafa (Horn of Buffalo Exchange)",
+      "alliance_stage_band": "Alliance Stage 4\u20135 (300 Varka Captain Badges + Totem of Wisdom)",
+      "totem_raid_boss_or_relic": "Stage 5 Brown Pouch S-Grade Armor/Weapon 60% Recipe Chest (Imperial/Draconic/Major Arcana)",
+      "betrayal_penalty_rule": "Killing 1 Allied Ketra Orc Mob Drops Alliance Stage from Lv.5 to Lv.4 & Revokes Soul Guide Buffs"
+    },
+    {
+      "camp_id": "faction-03-turek-orc-war-encampment",
+      "camp_name": "Cinder-Apron Turek Orc War Camp \u2014 Southern Frontier Alliance",
+      "faction_category": "Vanguard_Orc_Alliance_Outpost",
+      "zone_id": "zone-field-cinder-apron",
+      "rival_camp_zone_id": "zone-field-cobalt-sandbar-ford",
+      "loc": "-6196:131640",
+      "herald_npc_name": "Turek War Herald Burai & Shaman Kasman",
+      "alliance_stage_band": "Alliance Stage 1\u20133 (100 Ol Mahum Soldier / 200 Officer Insignias)",
+      "totem_raid_boss_or_relic": "Stage 3 Frontier Caravan Safe-Passage Seal & C-Grade Pouch Unlocks",
+      "betrayal_penalty_rule": "Killing 1 Allied Turek Orc Mob Drops Alliance Stage by -1 Level Immediately"
+    },
+    {
+      "camp_id": "faction-04-breka-stronghold-vanguard",
+      "camp_name": "Siphon-Sluice Breka Orc Bastion \u2014 Steppe Warlord Alliance",
+      "faction_category": "Vanguard_Orc_Alliance_Outpost",
+      "zone_id": "zone-field-siphon-sluice",
+      "rival_camp_zone_id": "zone-field-astrolabe-rift",
+      "loc": "64392:34650",
+      "herald_npc_name": "Breka Chieftain Voltar & Envoy Kakai's Torch",
+      "alliance_stage_band": "Alliance Stage 1\u20133 (100 Lizardman Fang / 200 Shaman Totems)",
+      "totem_raid_boss_or_relic": "Stage 3 Steppe Warhorn Buffs (Focus/Death Whisper/Haste) & B-Grade Supply Chest",
+      "betrayal_penalty_rule": "Killing 1 Allied Breka Orc Mob Drops Alliance Stage by -1 Level Immediately"
+    },
+    {
+      "camp_id": "faction-05-ramsebalius-halo-orc-garrison",
+      "camp_name": "Aurora-Tether Vanguard Orc Garrison \u2014 High-Halo War Camp",
+      "faction_category": "Vanguard_Orc_Alliance_Outpost",
+      "zone_id": "zone-field-aurora-tether",
+      "rival_camp_zone_id": "zone-field-kelp-spiral-reef",
+      "loc": "152580:31060",
+      "herald_npc_name": "High Vanguard Commander Tayr & Quartermasterjumba",
+      "alliance_stage_band": "Alliance Stage 4\u20135 (300 Rival Captain Mane Badges + Totem Trophy)",
+      "totem_raid_boss_or_relic": "Stage 5 Brown/Feather S-Grade Recipe Chest & 3rd-Class Soul Crystal Stage 12 Trials",
+      "betrayal_penalty_rule": "Killing 1 Allied Vanguard Orc Mob Drops Alliance Stage by -1 Level Immediately"
+    },
+    {
+      "camp_id": "faction-06-varka-silenos-outpost",
+      "camp_name": "Varka Silenos Stronghold \u2014 Herald Naran Ashanuk's War Camp",
+      "faction_category": "Shaman_Silenos_Alliance_Stronghold",
+      "zone_id": "zone-field-spiral-wormway-ramp",
+      "rival_camp_zone_id": "zone-field-metronome-bridge",
+      "loc": "134368:-24730",
+      "herald_npc_name": "Varka's Messenger Naran Ashanuk & Hierarch Horuth",
+      "alliance_stage_band": "Alliance Stage 1\u20133 (100 Ketra Soldier / 200 Officer Badges)",
+      "totem_raid_boss_or_relic": "Stage 3Nepenthes Seed Warehouse & Gatekeeper Unlock + Mane of Wisdom Quest",
+      "betrayal_penalty_rule": "Killing 1 Allied Varka Silenos Mob Drops Alliance Stage by -1 Level Immediately (Mark of Varka's Alliance Revoked)"
+    },
+    {
+      "camp_id": "faction-07-varka-high-shaman-sanctum",
+      "camp_name": "Varka Silenos High Shaman Sanctum \u2014 Stage 4\u20135 S-Grade Recipe Quarter",
+      "faction_category": "Shaman_Silenos_Alliance_Stronghold",
+      "zone_id": "zone-field-caldera-rim",
+      "rival_camp_zone_id": "zone-field-leyden-causeway",
+      "loc": "86556:61080",
+      "herald_npc_name": "Soul Guide Udan Mardui & Trader Diyabu (Nepenthes Seed Exchange)",
+      "alliance_stage_band": "Alliance Stage 4\u20135 (300 Ketra Captain Badges + Totem of Fire)",
+      "totem_raid_boss_or_relic": "Stage 5 Feather Pouch S-Grade Armor/Weapon 60% Recipe Chest (Imperial/Draconic/Major Arcana)",
+      "betrayal_penalty_rule": "Killing 1 Allied Varka Silenos Mob Drops Alliance Stage from Lv.5 to Lv.4 & Revokes Soul Guide Buffs"
+    },
+    {
+      "camp_id": "faction-08-maille-shaman-barracks",
+      "camp_name": "Cobalt-Sandbar Shaman Barracks \u2014 River Delta Totem Pact",
+      "faction_category": "Shaman_Silenos_Alliance_Stronghold",
+      "zone_id": "zone-field-cobalt-sandbar-ford",
+      "rival_camp_zone_id": "zone-field-cinder-apron",
+      "loc": "-74056:142690",
+      "herald_npc_name": "High Shamanomatis & Herald Terava",
+      "alliance_stage_band": "Alliance Stage 1\u20133 (100 Turek Soldier / 200 Officer Badges)",
+      "totem_raid_boss_or_relic": "Stage 3 Delta Mystic Buffs (Acumen/Empower/Wild Magic) & C-Grade Recipe Chest",
+      "betrayal_penalty_rule": "Killing 1 Allied Delta Shaman Mob Drops Alliance Stage by -1 Level Immediately"
+    },
+    {
+      "camp_id": "faction-09-oel-mahum-shaman-redoubt",
+      "camp_name": "Astrolabe-Rift Shaman Stronghold \u2014 Escarpment Wind-Pact",
+      "faction_category": "Shaman_Silenos_Alliance_Stronghold",
+      "zone_id": "zone-field-astrolabe-rift",
+      "rival_camp_zone_id": "zone-field-siphon-sluice",
+      "loc": "76532:68100",
+      "herald_npc_name": "Shaman Envoy Varka-Thul & Quartermaster Shakon",
+      "alliance_stage_band": "Alliance Stage 1\u20133 (100 Breka Soldier / 200 Officer Badges)",
+      "totem_raid_boss_or_relic": "Stage 3 Nepenthes Seed Teleport Network & B-Grade Recipe Supply Chest",
+      "betrayal_penalty_rule": "Killing 1 Allied Rift Shaman Mob Drops Alliance Stage by -1 Level Immediately"
+    },
+    {
+      "camp_id": "faction-10-undertide-silenos-citadel",
+      "camp_name": "Kelp-Spiral Silenos Oracle Stronghold \u2014 Undertide Alliance",
+      "faction_category": "Shaman_Silenos_Alliance_Stronghold",
+      "zone_id": "zone-field-kelp-spiral-reef",
+      "rival_camp_zone_id": "zone-field-aurora-tether",
+      "loc": "-52280:-138690",
+      "herald_npc_name": "High Hierarch Shadith & Mystic Trader Hestui",
+      "alliance_stage_band": "Alliance Stage 4\u20135 (300 Vanguard Captain Badges + Totem Trophy)",
+      "totem_raid_boss_or_relic": "Stage 5 Feather S-Grade Recipe Chest & Dynasty Accessory Craft Patterns",
+      "betrayal_penalty_rule": "Killing 1 Allied Undertide Silenos Mob Drops Alliance Stage by -1 Level Immediately"
+    },
+    {
+      "camp_id": "faction-11-altar-of-water-ashutar",
+      "camp_name": "Ketra Altar of Water \u2014 Soul of Water Ashutar Totem Raid Sanctum",
+      "faction_category": "Totem_Spirit_Raid_Altar",
+      "zone_id": "zone-field-orrery-bridge",
+      "rival_camp_zone_id": "zone-field-tether-causeway",
+      "loc": "-28292:-108280",
+      "herald_npc_name": "Soul Guide Asefa (Red Totem Summon Altar)",
+      "alliance_stage_band": "Alliance Stage 2+ Required (Magical Power of Water - Part 1 & 2)",
+      "totem_raid_boss_or_relic": "Soul of Water Ashutar (Lv.80 Raid Boss \u00b7 Drops Divine Stone of Wisdom & Ice Heart of Ashutar)",
+      "betrayal_penalty_rule": "Attacking Ketra Guards During Raid Immediately Voids Divine Stone of Wisdom Credit"
+    },
+    {
+      "camp_id": "faction-12-altar-of-fire-nastron",
+      "camp_name": "Varka Altar of Fire \u2014 Soul of Fire Nastron Totem Raid Sanctum",
+      "faction_category": "Totem_Spirit_Raid_Altar",
+      "zone_id": "zone-field-tether-causeway",
+      "rival_camp_zone_id": "zone-field-orrery-bridge",
+      "loc": "49296:-41270",
+      "herald_npc_name": "Soul Guide Udan Mardui (Green Totem Summon Altar)",
+      "alliance_stage_band": "Alliance Stage 2+ Required (Magical Power of Fire - Part 1 & 2)",
+      "totem_raid_boss_or_relic": "Soul of Fire Nastron (Lv.80 Raid Boss \u00b7 Drops Divine Stone of Wisdom & Flame Heart of Nastron)",
+      "betrayal_penalty_rule": "Attacking Varka Guards During Raid Immediately Voids Divine Stone of Wisdom Credit"
+    },
+    {
+      "camp_id": "faction-13-altar-of-ketra-hero-hekaton",
+      "camp_name": "Ketra Sanctum of War \u2014 Ketra's Hero Hekaton & Commander Tayr Altar",
+      "faction_category": "Totem_Spirit_Raid_Altar",
+      "zone_id": "zone-field-brass-spur-ridge",
+      "rival_camp_zone_id": "zone-field-spiral-wormway-ramp",
+      "loc": "89284:138340",
+      "herald_npc_name": "Hierarch Kadun Zu Ketra (War With Varka Silenos Altar)",
+      "alliance_stage_band": "Alliance Stage 4\u20135 Required (Prove Your Courage! / Slay the Enemy Commander!)",
+      "totem_raid_boss_or_relic": "Ketra's Hero Hekaton (Lv.80 Raid) \u2014 Drops Head of Hekaton (Totem of Wisdom for Stage 5)",
+      "betrayal_penalty_rule": "Killing Any Ketra Raid Boss While Allied With Ketra Triggers Instant Stage -2 Penalty"
+    },
+    {
+      "camp_id": "faction-14-altar-of-varka-hero-shadith",
+      "camp_name": "Varka Sanctum of Wisdom \u2014 Varka's Hero Shadith & Commander Mos Altar",
+      "faction_category": "Totem_Spirit_Raid_Altar",
+      "zone_id": "zone-field-slag-chasm",
+      "rival_camp_zone_id": "zone-field-metronome-bridge",
+      "loc": "24872:136150",
+      "herald_npc_name": "Hierarch Ashas Varka Durai (War With Ketra Orcs Altar)",
+      "alliance_stage_band": "Alliance Stage 4\u20135 Required (Prove Your Courage! / Slay the Enemy Commander!)",
+      "totem_raid_boss_or_relic": "Varka's Hero Shadith (Lv.80 Raid) \u2014 Drops Head of Shadith (Totem of Fire for Stage 5)",
+      "betrayal_penalty_rule": "Killing Any Varka Raid Boss While Allied With Varka Triggers Instant Stage -2 Penalty"
+    }
+  ],
+  "monster_track_fantasy_plazas": [
+    {
+      "plaza_id": "plaza-01-giran-monster-derby-track",
+      "plaza_name": "Giran Monster Derby Stadium \u2014 Lane 1\u20138 Grand Parimutuel Track",
+      "activity_category": "Monster_Derby_Race_Track",
+      "zone_id": "zone-town-inductor-switchyard",
+      "loc": "147203:-55006",
+      "manager_npc_name": "Race Manager Bernice & Derby Announcer",
+      "entry_token_or_wager": "Derby Ticket (500\u201350,000 Adena Win / Place / Exacta Odds)",
+      "featured_rewards": [
+        "Double-Odds & Exacta Parimutuel Adena Jackpot Payout",
+        "Monster Race Commemorative Trophy & Speed Haste Potions",
+        "Little Angel Wing & Derby Champion Hair Accessory Voucher"
+      ],
+      "schedule_interval": "Every 20 Minutes (15m Lane Condition & Form Inspection + 5m Live 8-Monster Sprint)"
+    },
+    {
+      "plaza_id": "plaza-02-dion-florans-derby-paddock",
+      "plaza_name": "Kilnwatch-Saffron Derby Paddock \u2014 Southern 8-Lane Monster Track",
+      "activity_category": "Monster_Derby_Race_Track",
+      "zone_id": "zone-town-saffron-press",
+      "loc": "17216:170283",
+      "manager_npc_name": "Race Manager Bruno & Paddock Vet",
+      "entry_token_or_wager": "Derby Ticket (100\u201325,000 Adena Win / Place Wager)",
+      "featured_rewards": [
+        "Win/Place Adena Payout (1.8\u00d7 to 14.5\u00d7 Longshot Odds)",
+        "Blessed Scroll of Escape: Monster Race Track Direct Return",
+        "Hatchling/Strider High-Energy Racing Feed Bundle"
+      ],
+      "schedule_interval": "Every 20 Minutes (Continuous 24h Non-PK Stadium Sanctuary)"
+    },
+    {
+      "plaza_id": "plaza-03-aden-imperial-chariot-derby",
+      "plaza_name": "Imperial Aden Hippodrome \u2014 High-Stakes Noble Monster Derby",
+      "activity_category": "Monster_Derby_Race_Track",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "loc": "116229:-18228",
+      "manager_npc_name": "Imperial Race Steward Alfonse",
+      "entry_token_or_wager": "High-Roller Derby Ticket (10,000\u2013500,000 Adena Royal Odds)",
+      "featured_rewards": [
+        "Royal Parimutuel Adena Jackpot & Shiny Coin Payout",
+        "Refined Jester Hat, Dapper Cap & Hippodrome Crown",
+        "Top-Grade Quick Healing Potion & Greater Swift Attack Pack"
+      ],
+      "schedule_interval": "Every 30 Minutes (Broadcast Across All 15 Town Gatekeeper Plazas)"
+    },
+    {
+      "plaza_id": "plaza-04-glaze-barge-maritime-derby",
+      "plaza_name": "Glaze-Barge Quay Boardwalk Track \u2014 Coastal Monster Sprint",
+      "activity_category": "Monster_Derby_Race_Track",
+      "zone_id": "zone-town-glaze-barge-quay",
+      "loc": "-81358:151561",
+      "manager_npc_name": "Harbor Race Manager Clarissa",
+      "entry_token_or_wager": "Derby Ticket (500\u201350,000 Adena Win / Place Wager)",
+      "featured_rewards": [
+        "Coastal Derby Adena Dividend & Pirate Doubloon Bonus",
+        "Party Mask, Fireworks Box & Large Firework Crate",
+        "Scroll of Buff: Wind Walk Lv.2 & Haste Lv.2 (1h Track Blessing)"
+      ],
+      "schedule_interval": "Every 20 Minutes (Synchronized With Harbor Ferry Arrivals)"
+    },
+    {
+      "plaza_id": "plaza-05-hunters-sorint-collector-lodge",
+      "plaza_name": "Warehouse Keeper Sorint's Numismatic Guild \u2014 Grade 3/2/1 Royal Lodge",
+      "activity_category": "Coin_of_Magic_Collector_Lodge",
+      "zone_id": "zone-town-pinion-terminus",
+      "loc": "82255:148750",
+      "manager_npc_name": "Warehouse Keeper Sorint & Head Blacksmith Vergara",
+      "entry_token_or_wager": "Blood Medusa / Silver Unicorn / Gold Wyrm Coins (10/20/50 Sequence Game)",
+      "featured_rewards": [
+        "A-Grade Weapon Recipes (Dragon Slayer, Dark Legion's Edge, Soul Bow)",
+        "B-Grade Weapon & Full Armor Set Recipes (Grade 2 Member Catalog)",
+        "Moonstone Earring, Necklace of Protection & Demon's Boots"
+      ],
+      "schedule_interval": "24h Collector Guild (3-Color Coin Sequence Guessing Minigame Available Anytime)"
+    },
+    {
+      "plaza_id": "plaza-06-oren-hagger-numismatic-vault",
+      "plaza_name": "Escapement Anvil Coin Vault \u2014 Collector Hagger & Stan's Exchange",
+      "activity_category": "Coin_of_Magic_Collector_Lodge",
+      "zone_id": "zone-town-escapement-anvil",
+      "loc": "82968:53339",
+      "manager_npc_name": "Warehouse Keeper Hagger & Guard Stan",
+      "entry_token_or_wager": "Gold Knight / Silver Golem / Blood Werewolf / Nia's Gold Wyrm Coins",
+      "featured_rewards": [
+        "Sword of Miracles, Beleth's Blood Dragon & Dark Screamer Recipes",
+        "Full Plate Helmet, Shining Circlet & Drake Leather Boots",
+        "3-Step Sequence Jackpot (1:8 Coin Multiplication Payout)"
+      ],
+      "schedule_interval": "24h Collector Vault (Accepts Coins Dropped in Timak Outpost, Pavel & Tower of Insolence)"
+    },
+    {
+      "plaza_id": "plaza-07-giran-collob-royal-coin-parlor",
+      "plaza_name": "Giran Royal Numismatic Parlor \u2014 Warehouse Keeper Collob's Grade-1 Exchange",
+      "activity_category": "Coin_of_Magic_Collector_Lodge",
+      "zone_id": "zone-town-inductor-switchyard",
+      "loc": "147281:-55072",
+      "manager_npc_name": "Warehouse Keeper Collob & Researcher Lorain",
+      "entry_token_or_wager": "Gold Drake / Silver Fairy / Blood Succubus / Manak's Gold Giant Coins",
+      "featured_rewards": [
+        "Grade 1 Royal Membership Certificate & Rare A-Grade Key Materials",
+        "Tallum Blade, Carnage Bow & Elysian 60% Craft Recipes",
+        "Scroll: Enchant Weapon (A-Grade) & (B-Grade) Numismatic Prize"
+      ],
+      "schedule_interval": "24h Royal Collector Parlor (Requires Coin of Magic Membership Grade 1\u20133)"
+    },
+    {
+      "plaza_id": "plaza-08-rune-astral-numismatic-society",
+      "plaza_name": "Starfall Haven Numismatic Society \u2014 High-Tier Beleth & Kaldis Coin Vault",
+      "activity_category": "Coin_of_Magic_Collector_Lodge",
+      "zone_id": "zone-town-starfall-haven",
+      "loc": "43694:-47783",
+      "manager_npc_name": "Guild Magister Page & Blacksmith Duning",
+      "entry_token_or_wager": "Kaldis's Gold Dragon / Beleth's Silver Dragon / Bereth's Blood Dragon",
+      "featured_rewards": [
+        "S-Grade & A-Grade Masterwork Weapon Key Material Bundles",
+        "Dynasty & Draconic Rare Accessory Craft Patterns",
+        "Blessed Scroll of Escape & High-Grade Life Stone (Lv.76) Pack"
+      ],
+      "schedule_interval": "24h Astral Numismatic Exchange (Instant 1:10 Tier-Up Coin Conversion)"
+    },
+    {
+      "plaza_id": "plaza-09-fantasy-isle-kratei-cube-arena",
+      "plaza_name": "Kratei's Cube Entrance Plaza \u2014 Lv.70\u201385 20-Minute PvE/PvP Point Arena",
+      "activity_category": "Kratei_Cube_Fantasy_Arena",
+      "zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "loc": "-89493:155306",
+      "manager_npc_name": "Kratei's Cube Entrance Manager & Teleport Paddy",
+      "entry_token_or_wager": "Free Registration (Lv.70\u201375 / Lv.76\u201379 / Lv.80+ Brackets \u00b7 Fantasy Isle Coin)",
+      "featured_rewards": [
+        "Fantasy Isle Coin (Exchangeable for S-Grade Enchant Scrolls & Titles)",
+        "XP/SP Point-Multiplier Jackpot (100\u20132,000 Cube Kill Points)",
+        "Colorful Fantasy Isle Parade Mounts & Decorative Weapons"
+      ],
+      "schedule_interval": "Every 30 Minutes on the Hour & Half-Hour (3m Registration + 20m Cube Match)"
+    },
+    {
+      "plaza_id": "plaza-10-handys-block-checker-pavilion",
+      "plaza_name": "Handy's Block Checker Pavilion \u2014 6v6 Red vs. Blue Tile-Flip Minigame",
+      "activity_category": "Kratei_Cube_Fantasy_Arena",
+      "zone_id": "zone-harbor-lantern-ferry-pier",
+      "loc": "-96280:258495",
+      "manager_npc_name": "Block Checker Arena Manager Handy (Arena #1\u2013#4)",
+      "entry_token_or_wager": "Free 6v6 Team Queue (Bond / Land Mine / Hammer Power-Up Drops)",
+      "featured_rewards": [
+        "Fantasy Isle Coin (\u00d715 Winner Team / \u00d75 Participant Reward)",
+        "Ribbon Hairband, Cat Ear, Raccoon Ear & Rabbit Ear Headpieces",
+        "Transformation Sealbook: Toy Knight / Spirit of Snowman / Block Golem"
+      ],
+      "schedule_interval": "Continuous 5-Minute 6v6 Matches (Instant Queue at Arena #1\u2013#4)"
+    },
+    {
+      "plaza_id": "plaza-11-underground-coliseum-gladiator-cube",
+      "plaza_name": "Crown-Beacon Underground Coliseum \u2014 7-Party Last-Standing Survival Cube",
+      "activity_category": "Kratei_Cube_Fantasy_Arena",
+      "zone_id": "zone-town-crown-beacon",
+      "loc": "147833:26884",
+      "manager_npc_name": "Underground Coliseum Manager &Paddy's Envoy",
+      "entry_token_or_wager": "Party Leader Registration (7v7 Party Elimination + Resurrection Tower Control)",
+      "featured_rewards": [
+        "Fantasy Isle Coin & Clan Reputation Point (+500 Streak Bonus)",
+        "Coliseum Champion Aura & Exclusive Agathion Summon Bracelet",
+        "Fame Points (+150 per Match) for PvP Weapon Enhancement"
+      ],
+      "schedule_interval": "Every 30 Minutes (Top Winning Streak Party Broadcast on Coliseum Leaderboard)"
+    },
+    {
+      "plaza_id": "plaza-12-cleft-aerial-cube-sanctum",
+      "plaza_name": "Star-Heart Cleft Aerial Arena \u2014 9v9 Flying Transformation Emery Cube",
+      "activity_category": "Kratei_Cube_Fantasy_Arena",
+      "zone_id": "zone-fortress-cloud-halo",
+      "loc": "46146:-45027",
+      "manager_npc_name": "Engineer Lekon & Aerial Arena Steward",
+      "entry_token_or_wager": "Aurabird Falcon / Owl Transformation Required (25m Aerial Emery Match)",
+      "featured_rewards": [
+        "Extracted Red Star Stone & Emery Pieces (Attribute Crystal Crafting)",
+        "Fantasy Isle Coin & Keucereus Supply Box (S80 Recipe Materials)",
+        "Scroll: Enchant Aerial Transformation Skill & SP Tome"
+      ],
+      "schedule_interval": "Every 45 Minutes (Minimum 18 Players \u00b7 9v9 Dawn vs. Dusk Aerial Control)"
+    }
   ]
 }

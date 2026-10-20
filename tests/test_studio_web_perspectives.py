@@ -1938,7 +1938,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 52)
+        self.assertGreaterEqual(len(audit["dimensions"]), 52)
 
         d51 = audit["dimensions"]["D51_festival_of_darkness_and_oracle_altars"]
         self.assertEqual(d51["score"], 100.0)
@@ -1992,10 +1992,99 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas52DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 52)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 52)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 52)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 52)
         self.assertIn("52-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave25_faction_alliance_war_camps_and_monster_track_fantasy_plazas(self) -> None:
+        """Wave 25 (D53–D54): 14 Factional Alliance War & Totem Raid Camps & 12 Monster Derby / Coin of Magic / Kratei's Cube Plazas."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["factionAllianceWarCampsCount"], 14)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["monsterTrackFantasyPlazasCount"], 12)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_FACTION_ALLIANCE_MODE",
+            "setAtlasFactionAllianceMode(",
+            "renderAtlasFactionAllianceBarHtml(",
+            "studioFactionAllianceOverlay",
+            "ATLAS_FANTASY_PLAZA_MODE",
+            "setAtlasFantasyPlazaMode(",
+            "renderAtlasFantasyPlazaBarHtml(",
+            "studioFantasyPlazaOverlay",
+            "54-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 25 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 54)
+
+        d53 = audit["dimensions"]["D53_faction_alliance_war_and_totem_altars"]
+        self.assertEqual(d53["score"], 100.0)
+        self.assertEqual(d53["verified"], 14)
+        self.assertEqual(d53["target"], 14)
+        self.assertEqual(d53["vanguard_orc_outposts"], 5)
+        self.assertEqual(d53["shaman_silenos_strongholds"], 5)
+        self.assertEqual(d53["totem_raid_altars"], 4)
+        self.assertEqual(
+            set(d53["faction_categories"]),
+            {
+                "Vanguard_Orc_Alliance_Outpost",
+                "Shaman_Silenos_Alliance_Stronghold",
+                "Totem_Spirit_Raid_Altar",
+            },
+        )
+        self.assertTrue(d53["ui_wired"])
+
+        d54 = audit["dimensions"]["D54_monster_derby_coin_and_kratei_plazas"]
+        self.assertEqual(d54["score"], 100.0)
+        self.assertEqual(d54["verified"], 12)
+        self.assertEqual(d54["target"], 12)
+        self.assertEqual(d54["monster_derby_tracks"], 4)
+        self.assertEqual(d54["coin_of_magic_lodges"], 4)
+        self.assertEqual(d54["kratei_cube_arenas"], 4)
+        self.assertEqual(
+            set(d54["activity_categories"]),
+            {
+                "Monster_Derby_Race_Track",
+                "Coin_of_Magic_Collector_Lodge",
+                "Kratei_Cube_Fantasy_Arena",
+            },
+        )
+        self.assertTrue(d54["ui_wired"])
+
+        camps = atlas["faction_alliance_war_camps"]
+        self.assertEqual(len(camps), 14)
+        self.assertEqual(sum(1 for c in camps if c["faction_category"] == "Vanguard_Orc_Alliance_Outpost"), 5)
+        self.assertEqual(sum(1 for c in camps if c["faction_category"] == "Shaman_Silenos_Alliance_Stronghold"), 5)
+        self.assertEqual(sum(1 for c in camps if c["faction_category"] == "Totem_Spirit_Raid_Altar"), 4)
+        for c in camps:
+            self.assertTrue(c["betrayal_penalty_rule"])
+
+        plazas = atlas["monster_track_fantasy_plazas"]
+        self.assertEqual(len(plazas), 12)
+        self.assertEqual(sum(1 for p in plazas if p["activity_category"] == "Monster_Derby_Race_Track"), 4)
+        self.assertEqual(sum(1 for p in plazas if p["activity_category"] == "Coin_of_Magic_Collector_Lodge"), 4)
+        self.assertEqual(sum(1 for p in plazas if p["activity_category"] == "Kratei_Cube_Fantasy_Arena"), 4)
+        for p in plazas:
+            self.assertGreaterEqual(len(p["featured_rewards"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas54DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 54)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 54)
+        self.assertIn("54-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

@@ -692,6 +692,8 @@ def validate_world_governance(
                 "atlasMasterTelemetryCheckpointsCount": len(t_doc.get("atlas_master_telemetry_checkpoints") or []),
                 "festivalOfDarknessOraclesCount": len(t_doc.get("festival_of_darkness_oracles") or []),
                 "luxuryBlackMarketBoutiquesCount": len(t_doc.get("luxury_black_market_boutiques") or []),
+                "factionAllianceWarCampsCount": len(t_doc.get("faction_alliance_war_camps") or []),
+                "monsterTrackFantasyPlazasCount": len(t_doc.get("monster_track_fantasy_plazas") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1248,6 +1250,43 @@ def validate_world_governance(
                 if lb_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: luxury_black_market_boutiques '{lb_id}' references unknown zone_id '{lb_zid}'"
+                    )
+
+            # Validate 14 Factional Alliance War & Totem Raid Altar Nodes (D53)
+            faction_camps = t_doc.get("faction_alliance_war_camps") or []
+            if faction_camps and len(faction_camps) != 14:
+                errors.append(
+                    f"GOV-10 violation: faction_alliance_war_camps must have 14 camps, got {len(faction_camps)}"
+                )
+            for fc_item in faction_camps:
+                if not isinstance(fc_item, dict):
+                    continue
+                fc_id = str(fc_item.get("camp_id", ""))
+                fc_zid = str(fc_item.get("zone_id", ""))
+                fc_rzid = str(fc_item.get("rival_camp_zone_id", ""))
+                if fc_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: faction_alliance_war_camps '{fc_id}' references unknown zone_id '{fc_zid}'"
+                    )
+                if fc_rzid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: faction_alliance_war_camps '{fc_id}' references unknown rival_camp_zone_id '{fc_rzid}'"
+                    )
+
+            # Validate 12 Monster Derby Race Track, Coin of Magic & Kratei's Cube Plazas (D54)
+            fantasy_plazas = t_doc.get("monster_track_fantasy_plazas") or []
+            if fantasy_plazas and len(fantasy_plazas) != 12:
+                errors.append(
+                    f"GOV-10 violation: monster_track_fantasy_plazas must have 12 plazas, got {len(fantasy_plazas)}"
+                )
+            for fp_item in fantasy_plazas:
+                if not isinstance(fp_item, dict):
+                    continue
+                fp_id = str(fp_item.get("plaza_id", ""))
+                fp_zid = str(fp_item.get("zone_id", ""))
+                if fp_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: monster_track_fantasy_plazas '{fp_id}' references unknown zone_id '{fp_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

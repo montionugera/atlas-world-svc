@@ -227,6 +227,18 @@
       "maxItems": 12,
       "items": { "$ref": "#/$defs/luxuryBlackMarketBoutiqueSpec" }
     },
+    "faction_alliance_war_camps": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": { "$ref": "#/$defs/factionAllianceWarCampSpec" }
+    },
+    "monster_track_fantasy_plazas": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": { "$ref": "#/$defs/monsterTrackFantasyPlazaSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2976,6 +2988,78 @@
           "items": { "type": "string" }
         },
         "operating_window_rule": { "type": "string" }
+      }
+    },
+    "factionAllianceWarCampSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "camp_id",
+        "camp_name",
+        "faction_category",
+        "zone_id",
+        "rival_camp_zone_id",
+        "loc",
+        "herald_npc_name",
+        "alliance_stage_band",
+        "totem_raid_boss_or_relic",
+        "betrayal_penalty_rule"
+      ],
+      "properties": {
+        "camp_id": { "type": "string" },
+        "camp_name": { "type": "string" },
+        "faction_category": {
+          "type": "string",
+          "enum": [
+            "Vanguard_Orc_Alliance_Outpost",
+            "Shaman_Silenos_Alliance_Stronghold",
+            "Totem_Spirit_Raid_Altar"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "rival_camp_zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "herald_npc_name": { "type": "string" },
+        "alliance_stage_band": { "type": "string" },
+        "totem_raid_boss_or_relic": { "type": "string" },
+        "betrayal_penalty_rule": { "type": "string" }
+      }
+    },
+    "monsterTrackFantasyPlazaSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plaza_id",
+        "plaza_name",
+        "activity_category",
+        "zone_id",
+        "loc",
+        "manager_npc_name",
+        "entry_token_or_wager",
+        "featured_rewards",
+        "schedule_interval"
+      ],
+      "properties": {
+        "plaza_id": { "type": "string" },
+        "plaza_name": { "type": "string" },
+        "activity_category": {
+          "type": "string",
+          "enum": [
+            "Monster_Derby_Race_Track",
+            "Coin_of_Magic_Collector_Lodge",
+            "Kratei_Cube_Fantasy_Arena"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "manager_npc_name": { "type": "string" },
+        "entry_token_or_wager": { "type": "string" },
+        "featured_rewards": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "schedule_interval": { "type": "string" }
       }
     }
   }

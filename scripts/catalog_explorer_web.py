@@ -90,15 +90,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas48DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas50DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas52DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas54DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 24)),
+        "wave": int(iter_state.get("wave", 25)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"54-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"52-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"50-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"48-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -116,7 +118,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D52 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D54 Verified"
         ),
     }
     return merged
@@ -4378,7 +4380,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D52 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4449,6 +4451,8 @@ let ATLAS_WAREHOUSE_MODE = 'All';
 let ATLAS_MASTER_TOUR_MODE = 'All';
 let ATLAS_FESTIVAL_ORACLE_MODE = 'All';
 let ATLAS_LUXURY_MARKET_MODE = 'All';
+let ATLAS_FACTION_ALLIANCE_MODE = 'All';
+let ATLAS_FANTASY_PLAZA_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4491,6 +4495,8 @@ const ATLAS_STATE_STORE = {
   masterTourMode: 'All',                   // D50: Active 18-Checkpoint 50D Master Cartographic Tour Selector ('Off' | 'All' | 'Race_Origin_To_Awakening' | 'Town_Blueprint_And_Economy' | 'Multi_Floor_Dungeon_Sanctum')
   festivalOracleMode: 'All',               // D51: Active 15-Town Festival of Darkness & Oracle Selector ('Off' | 'All' | 'Oracle_of_Dawn_Sanctuary' | 'Oracle_of_Dusk_Sanctuary' | 'High_Bracket_Blood_Offering_Altar')
   luxuryMarketMode: 'All',                 // D52: Active 12-Node Luxury Boutique & Black Marketeer Selector ('Off' | 'All' | 'Crystal_Luxury_Armory' | 'Black_Marketeer_of_Mammon' | 'Couture_Emporium')
+  factionAllianceMode: 'All',              // D53: Active 14-Node Factional Alliance & Totem War Selector ('Off' | 'All' | 'Vanguard_Orc_Alliance_Outpost' | 'Shaman_Silenos_Alliance_Stronghold' | 'Totem_Spirit_Raid_Altar')
+  fantasyPlazaMode: 'All',                 // D54: Active 12-Node Monster Derby, Coin of Magic & Kratei's Cube Selector ('Off' | 'All' | 'Monster_Derby_Race_Track' | 'Coin_of_Magic_Collector_Lodge' | 'Kratei_Cube_Fantasy_Arena')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4537,6 +4543,20 @@ function setAtlasFestivalOracleMode(modeId) {
 function setAtlasLuxuryMarketMode(modeId) {
   ATLAS_LUXURY_MARKET_MODE = String(modeId || 'All');
   ATLAS_STATE_STORE.luxuryMarketMode = ATLAS_LUXURY_MARKET_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasFactionAllianceMode(modeId) {
+  ATLAS_FACTION_ALLIANCE_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.factionAllianceMode = ATLAS_FACTION_ALLIANCE_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasFantasyPlazaMode(modeId) {
+  ATLAS_FANTASY_PLAZA_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.fantasyPlazaMode = ATLAS_FANTASY_PLAZA_MODE;
   writeUrlState(false);
   render();
 }
@@ -9444,6 +9464,184 @@ function renderAtlasLuxuryMarketBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasFactionAllianceBarHtml(tatlas) {
+  const camps = (tatlas && tatlas.faction_alliance_war_camps) || [];
+  if (!camps.length) return '';
+
+  const curMode = ATLAS_FACTION_ALLIANCE_MODE || ATLAS_STATE_STORE.factionAllianceMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '⚔️ All 14 Faction Camps' },
+    { id: 'Vanguard_Orc_Alliance_Outpost', label: '🐂 5 Vanguard Orc Outposts' },
+    { id: 'Shaman_Silenos_Alliance_Stronghold', label: '🦌 5 Silenos Shaman Strongholds' },
+    { id: 'Totem_Spirit_Raid_Altar', label: '🔥💧 4 Totem Raid Altars' }
+  ];
+
+  const filteredCamps = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? camps : camps.filter(c => c.faction_category === curMode));
+
+  const featuredCamps = curMode === 'All'
+    ? [
+        ...camps.filter(c => c.faction_category === 'Vanguard_Orc_Alliance_Outpost').slice(0, 1),
+        ...camps.filter(c => c.faction_category === 'Shaman_Silenos_Alliance_Stronghold').slice(0, 1),
+        ...camps.filter(c => c.faction_category === 'Totem_Spirit_Raid_Altar').slice(0, 2)
+      ]
+    : filteredCamps.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasFactionAllianceBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#23120b;border:1px solid rgba(249,115,22,0.58)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fed7aa">⚔️ 14-NODE FACTIONAL ALLIANCE WAR (STAGE 1–5) &amp; TOTEM RAID ALTAR MATRIX (D53 · 14 CAMPS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasFactionAllianceMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(249,115,22,0.45)'};background:${isAct ? '#c2410c' : '#090d14'};color:${isAct ? '#ffffff' : '#ffedd5'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 VANGUARD ORC OUTPOSTS + 5 SILENOS SHAMAN STRONGHOLDS + 4 ASHUTAR/NASTRON TOTEM RAID ALTARS
+        </span>
+      </div>
+
+      ${featuredCamps.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredCamps.map(c => {
+            const isOrc = c.faction_category === 'Vanguard_Orc_Alliance_Outpost';
+            const isSilenos = c.faction_category === 'Shaman_Silenos_Alliance_Stronghold';
+            const catCol = isOrc ? '#f97316' : (isSilenos ? '#34d399' : '#38bdf8');
+            const catIcon = isOrc ? '🐂' : (isSilenos ? '🦌' : '🔥');
+            const zidStr = String(c.zone_id || '');
+            const jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(c.loc)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(c.camp_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(c.faction_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fed7aa;margin-top:1px">
+                    🎖️ ${escapeHtml(c.alliance_stage_band.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#bae6fd;margin-top:1px">
+                    🏆 ${escapeHtml(c.totem_raid_boss_or_relic.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#431407;color:#ffedd5;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} Jump to Faction Outpost / Totem Altar (3.8×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasFantasyPlazaBarHtml(tatlas) {
+  const plazas = (tatlas && tatlas.monster_track_fantasy_plazas) || [];
+  if (!plazas.length) return '';
+
+  const curMode = ATLAS_FANTASY_PLAZA_MODE || ATLAS_STATE_STORE.fantasyPlazaMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🎪 All 12 Event Plazas' },
+    { id: 'Monster_Derby_Race_Track', label: '🏇 4 Monster Derby Tracks' },
+    { id: 'Coin_of_Magic_Collector_Lodge', label: '🪙 4 Coin of Magic Lodges' },
+    { id: 'Kratei_Cube_Fantasy_Arena', label: '🎡 4 Kratei\'s Cube Arenas' }
+  ];
+
+  const filteredPlazas = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? plazas : plazas.filter(p => p.activity_category === curMode));
+
+  const featuredPlazas = curMode === 'All'
+    ? [
+        ...plazas.filter(p => p.activity_category === 'Monster_Derby_Race_Track').slice(0, 1),
+        ...plazas.filter(p => p.activity_category === 'Coin_of_Magic_Collector_Lodge').slice(0, 1),
+        ...plazas.filter(p => p.activity_category === 'Kratei_Cube_Fantasy_Arena').slice(0, 2)
+      ]
+    : filteredPlazas.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasFantasyPlazaBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#101f24;border:1px solid rgba(45,212,191,0.58)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#99f6e4">🎪 12-NODE MONSTER DERBY RACE TRACK, COIN OF MAGIC &amp; KRATEI'S CUBE PLAZA MATRIX (D54 · 12 PLAZAS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasFantasyPlazaMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(45,212,191,0.45)'};background:${isAct ? '#0f766e' : '#090d14'};color:${isAct ? '#ffffff' : '#ccfbf1'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          4 MONSTER DERBY STADIUMS + 4 COIN OF MAGIC ROYAL LODGES + 4 KRATEI'S CUBE / BLOCK CHECKER ARENAS
+        </span>
+      </div>
+
+      ${featuredPlazas.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredPlazas.map(p => {
+            const isDerby = p.activity_category === 'Monster_Derby_Race_Track';
+            const isCoin = p.activity_category === 'Coin_of_Magic_Collector_Lodge';
+            const catCol = isDerby ? '#facc15' : (isCoin ? '#fb923c' : '#2dd4bf');
+            const catIcon = isDerby ? '🏇' : (isCoin ? '🪙' : '🎡');
+            const zObj = byZid[p.zone_id] || {};
+            const zidStr = String(p.zone_id || '');
+            let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(p.loc)}')`;
+            if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(p.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(p.plaza_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(p.activity_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#99f6e4;margin-top:1px">
+                    🎟️ ${escapeHtml(p.entry_token_or_wager.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🎁 ${escapeHtml(((p.featured_rewards && p.featured_rewards[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#134e4a;color:#ccfbf1;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} Jump to Event Plaza / Arena (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -9600,6 +9798,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasMasterTourBarHtml(tatlas)}
       ${renderAtlasFestivalOracleBarHtml(tatlas)}
       ${renderAtlasLuxuryMarketBarHtml(tatlas)}
+      ${renderAtlasFactionAllianceBarHtml(tatlas)}
+      ${renderAtlasFantasyPlazaBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -12470,6 +12670,69 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D53: Interactive 14-Node Factional Alliance War & Totem Raid Altar Overlay (`studioFactionAllianceOverlay`)
+  const factionCampRows = (tatlas && tatlas.faction_alliance_war_camps) || [];
+  const curFactionAllianceMode = ATLAS_FACTION_ALLIANCE_MODE || ATLAS_STATE_STORE.factionAllianceMode || 'All';
+  const activeFactionCamps = curFactionAllianceMode === 'Off'
+    ? []
+    : (curFactionAllianceMode === 'All'
+        ? factionCampRows
+        : factionCampRows.filter(c => c.faction_category === curFactionAllianceMode));
+  const factionAllianceOverlaySvg = `
+    <g id="studioFactionAllianceOverlay">
+      ${activeFactionCamps.map(c => {
+        const cc = clampWorldLocCoord(c.loc || '82900:53200');
+        const rzObj = allZonesById[c.rival_camp_zone_id] || {};
+        const rc = clampWorldLocCoord(rzObj.loc_coord || c.loc || '82900:53200');
+        const zidStr = String(c.zone_id || '');
+        const isOrc = c.faction_category === 'Vanguard_Orc_Alliance_Outpost';
+        const isSilenos = c.faction_category === 'Shaman_Silenos_Alliance_Stronghold';
+        const colHex = isOrc ? '#f97316' : (isSilenos ? '#34d399' : '#38bdf8');
+        const iconTxt = isOrc ? '🐂' : (isSilenos ? '🦌' : '🔥');
+        const jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(c.loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <line x1="${cc.svgX}" y1="${cc.svgY}" x2="${rc.svgX}" y2="${rc.svgY}" stroke="${colHex}" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.58"/>
+            <circle cx="${cc.svgX}" cy="${cc.svgY}" r="10.6" fill="rgba(194,65,12,0.42)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${cc.svgX}" y="${cc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D54: Interactive 12-Node Monster Derby Race Track, Coin of Magic & Kratei's Cube Overlay (`studioFantasyPlazaOverlay`)
+  const fantasyPlazaRows = (tatlas && tatlas.monster_track_fantasy_plazas) || [];
+  const curFantasyPlazaMode = ATLAS_FANTASY_PLAZA_MODE || ATLAS_STATE_STORE.fantasyPlazaMode || 'All';
+  const activeFantasyPlazas = curFantasyPlazaMode === 'Off'
+    ? []
+    : (curFantasyPlazaMode === 'All'
+        ? fantasyPlazaRows
+        : fantasyPlazaRows.filter(p => p.activity_category === curFantasyPlazaMode));
+  const fantasyPlazaOverlaySvg = `
+    <g id="studioFantasyPlazaOverlay">
+      ${activeFantasyPlazas.map(p => {
+        const pc = clampWorldLocCoord(p.loc || '18600:145200');
+        const zObj = allZonesById[p.zone_id] || {};
+        const zidStr = String(p.zone_id || '');
+        const isDerby = p.activity_category === 'Monster_Derby_Race_Track';
+        const isCoin = p.activity_category === 'Coin_of_Magic_Collector_Lodge';
+        const colHex = isDerby ? '#facc15' : (isCoin ? '#fb923c' : '#2dd4bf');
+        const iconTxt = isDerby ? '🏇' : (isCoin ? '🪙' : '🎡');
+        let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(p.loc)}')`;
+        if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(p.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${pc.svgX}" cy="${pc.svgY}" r="10.5" fill="rgba(15,118,110,0.44)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${pc.svgX}" y="${pc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -12502,6 +12765,8 @@ function renderDedicatedWorldAtlas() {
     ${masterTourOverlaySvg}
     ${festivalOracleOverlaySvg}
     ${luxuryBlackMarketOverlaySvg}
+    ${factionAllianceOverlaySvg}
+    ${fantasyPlazaOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

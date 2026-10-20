@@ -8669,6 +8669,416 @@ def _build_luxury_black_market_boutiques(atlas: dict[str, Any]) -> list[dict[str
     return rows
 
 
+def _build_faction_alliance_war_camps(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 14 Factional Alliance War (Stage 1–5) & Totem Raid Altar Nodes (5 Vanguard_Orc_Alliance_Outpost + 5 Shaman_Silenos_Alliance_Stronghold + 4 Totem_Spirit_Raid_Altar) (D53)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones: list[dict[str, Any]] = []
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            all_zones.extend(e for e in entries if isinstance(e, dict))
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if z.get("zone_id")}
+    specs = [
+        # 5 Vanguard_Orc_Alliance_Outpost Nodes
+        (
+            "faction-01-ketra-vanguard-outpost",
+            "Ketra Orc Vanguard Outpost — Herald Wahkan's War Camp",
+            "Vanguard_Orc_Alliance_Outpost",
+            "zone-field-metronome-bridge",
+            "zone-field-spiral-wormway-ramp",
+            "Ketra's Messenger Wahkan & Hierarch Kadun Zu Ketra",
+            "Alliance Stage 1–3 (100 Varka Soldier / 200 Officer Badges)",
+            "Stage 3 Horn of Buffalo Warehouse & Gatekeeper Unlock + Feather of Valor Quest",
+            "Killing 1 Allied Ketra Orc Mob Drops Alliance Stage by -1 Level Immediately (Mark of Ketra's Alliance Revoked)",
+        ),
+        (
+            "faction-02-ketra-chieftain-citadel",
+            "Ketra High Chieftain War Citadel — Stage 4–5 S-Grade Recipe Quarter",
+            "Vanguard_Orc_Alliance_Outpost",
+            "zone-field-leyden-causeway",
+            "zone-field-caldera-rim",
+            "Soul Guide Asefa & Grocer Jafa (Horn of Buffalo Exchange)",
+            "Alliance Stage 4–5 (300 Varka Captain Badges + Totem of Wisdom)",
+            "Stage 5 Brown Pouch S-Grade Armor/Weapon 60% Recipe Chest (Imperial/Draconic/Major Arcana)",
+            "Killing 1 Allied Ketra Orc Mob Drops Alliance Stage from Lv.5 to Lv.4 & Revokes Soul Guide Buffs",
+        ),
+        (
+            "faction-03-turek-orc-war-encampment",
+            "Cinder-Apron Turek Orc War Camp — Southern Frontier Alliance",
+            "Vanguard_Orc_Alliance_Outpost",
+            "zone-field-cinder-apron",
+            "zone-field-cobalt-sandbar-ford",
+            "Turek War Herald Burai & Shaman Kasman",
+            "Alliance Stage 1–3 (100 Ol Mahum Soldier / 200 Officer Insignias)",
+            "Stage 3 Frontier Caravan Safe-Passage Seal & C-Grade Pouch Unlocks",
+            "Killing 1 Allied Turek Orc Mob Drops Alliance Stage by -1 Level Immediately",
+        ),
+        (
+            "faction-04-breka-stronghold-vanguard",
+            "Siphon-Sluice Breka Orc Bastion — Steppe Warlord Alliance",
+            "Vanguard_Orc_Alliance_Outpost",
+            "zone-field-siphon-sluice",
+            "zone-field-astrolabe-rift",
+            "Breka Chieftain Voltar & Envoy Kakai's Torch",
+            "Alliance Stage 1–3 (100 Lizardman Fang / 200 Shaman Totems)",
+            "Stage 3 Steppe Warhorn Buffs (Focus/Death Whisper/Haste) & B-Grade Supply Chest",
+            "Killing 1 Allied Breka Orc Mob Drops Alliance Stage by -1 Level Immediately",
+        ),
+        (
+            "faction-05-ramsebalius-halo-orc-garrison",
+            "Aurora-Tether Vanguard Orc Garrison — High-Halo War Camp",
+            "Vanguard_Orc_Alliance_Outpost",
+            "zone-field-aurora-tether",
+            "zone-field-kelp-spiral-reef",
+            "High Vanguard Commander Tayr & Quartermasterjumba",
+            "Alliance Stage 4–5 (300 Rival Captain Mane Badges + Totem Trophy)",
+            "Stage 5 Brown/Feather S-Grade Recipe Chest & 3rd-Class Soul Crystal Stage 12 Trials",
+            "Killing 1 Allied Vanguard Orc Mob Drops Alliance Stage by -1 Level Immediately",
+        ),
+        # 5 Shaman_Silenos_Alliance_Stronghold Nodes
+        (
+            "faction-06-varka-silenos-outpost",
+            "Varka Silenos Stronghold — Herald Naran Ashanuk's War Camp",
+            "Shaman_Silenos_Alliance_Stronghold",
+            "zone-field-spiral-wormway-ramp",
+            "zone-field-metronome-bridge",
+            "Varka's Messenger Naran Ashanuk & Hierarch Horuth",
+            "Alliance Stage 1–3 (100 Ketra Soldier / 200 Officer Badges)",
+            "Stage 3Nepenthes Seed Warehouse & Gatekeeper Unlock + Mane of Wisdom Quest",
+            "Killing 1 Allied Varka Silenos Mob Drops Alliance Stage by -1 Level Immediately (Mark of Varka's Alliance Revoked)",
+        ),
+        (
+            "faction-07-varka-high-shaman-sanctum",
+            "Varka Silenos High Shaman Sanctum — Stage 4–5 S-Grade Recipe Quarter",
+            "Shaman_Silenos_Alliance_Stronghold",
+            "zone-field-caldera-rim",
+            "zone-field-leyden-causeway",
+            "Soul Guide Udan Mardui & Trader Diyabu (Nepenthes Seed Exchange)",
+            "Alliance Stage 4–5 (300 Ketra Captain Badges + Totem of Fire)",
+            "Stage 5 Feather Pouch S-Grade Armor/Weapon 60% Recipe Chest (Imperial/Draconic/Major Arcana)",
+            "Killing 1 Allied Varka Silenos Mob Drops Alliance Stage from Lv.5 to Lv.4 & Revokes Soul Guide Buffs",
+        ),
+        (
+            "faction-08-maille-shaman-barracks",
+            "Cobalt-Sandbar Shaman Barracks — River Delta Totem Pact",
+            "Shaman_Silenos_Alliance_Stronghold",
+            "zone-field-cobalt-sandbar-ford",
+            "zone-field-cinder-apron",
+            "High Shamanomatis & Herald Terava",
+            "Alliance Stage 1–3 (100 Turek Soldier / 200 Officer Badges)",
+            "Stage 3 Delta Mystic Buffs (Acumen/Empower/Wild Magic) & C-Grade Recipe Chest",
+            "Killing 1 Allied Delta Shaman Mob Drops Alliance Stage by -1 Level Immediately",
+        ),
+        (
+            "faction-09-oel-mahum-shaman-redoubt",
+            "Astrolabe-Rift Shaman Stronghold — Escarpment Wind-Pact",
+            "Shaman_Silenos_Alliance_Stronghold",
+            "zone-field-astrolabe-rift",
+            "zone-field-siphon-sluice",
+            "Shaman Envoy Varka-Thul & Quartermaster Shakon",
+            "Alliance Stage 1–3 (100 Breka Soldier / 200 Officer Badges)",
+            "Stage 3 Nepenthes Seed Teleport Network & B-Grade Recipe Supply Chest",
+            "Killing 1 Allied Rift Shaman Mob Drops Alliance Stage by -1 Level Immediately",
+        ),
+        (
+            "faction-10-undertide-silenos-citadel",
+            "Kelp-Spiral Silenos Oracle Stronghold — Undertide Alliance",
+            "Shaman_Silenos_Alliance_Stronghold",
+            "zone-field-kelp-spiral-reef",
+            "zone-field-aurora-tether",
+            "High Hierarch Shadith & Mystic Trader Hestui",
+            "Alliance Stage 4–5 (300 Vanguard Captain Badges + Totem Trophy)",
+            "Stage 5 Feather S-Grade Recipe Chest & Dynasty Accessory Craft Patterns",
+            "Killing 1 Allied Undertide Silenos Mob Drops Alliance Stage by -1 Level Immediately",
+        ),
+        # 4 Totem_Spirit_Raid_Altar Nodes
+        (
+            "faction-11-altar-of-water-ashutar",
+            "Ketra Altar of Water — Soul of Water Ashutar Totem Raid Sanctum",
+            "Totem_Spirit_Raid_Altar",
+            "zone-field-orrery-bridge",
+            "zone-field-tether-causeway",
+            "Soul Guide Asefa (Red Totem Summon Altar)",
+            "Alliance Stage 2+ Required (Magical Power of Water - Part 1 & 2)",
+            "Soul of Water Ashutar (Lv.80 Raid Boss · Drops Divine Stone of Wisdom & Ice Heart of Ashutar)",
+            "Attacking Ketra Guards During Raid Immediately Voids Divine Stone of Wisdom Credit",
+        ),
+        (
+            "faction-12-altar-of-fire-nastron",
+            "Varka Altar of Fire — Soul of Fire Nastron Totem Raid Sanctum",
+            "Totem_Spirit_Raid_Altar",
+            "zone-field-tether-causeway",
+            "zone-field-orrery-bridge",
+            "Soul Guide Udan Mardui (Green Totem Summon Altar)",
+            "Alliance Stage 2+ Required (Magical Power of Fire - Part 1 & 2)",
+            "Soul of Fire Nastron (Lv.80 Raid Boss · Drops Divine Stone of Wisdom & Flame Heart of Nastron)",
+            "Attacking Varka Guards During Raid Immediately Voids Divine Stone of Wisdom Credit",
+        ),
+        (
+            "faction-13-altar-of-ketra-hero-hekaton",
+            "Ketra Sanctum of War — Ketra's Hero Hekaton & Commander Tayr Altar",
+            "Totem_Spirit_Raid_Altar",
+            "zone-field-brass-spur-ridge",
+            "zone-field-spiral-wormway-ramp",
+            "Hierarch Kadun Zu Ketra (War With Varka Silenos Altar)",
+            "Alliance Stage 4–5 Required (Prove Your Courage! / Slay the Enemy Commander!)",
+            "Ketra's Hero Hekaton (Lv.80 Raid) — Drops Head of Hekaton (Totem of Wisdom for Stage 5)",
+            "Killing Any Ketra Raid Boss While Allied With Ketra Triggers Instant Stage -2 Penalty",
+        ),
+        (
+            "faction-14-altar-of-varka-hero-shadith",
+            "Varka Sanctum of Wisdom — Varka's Hero Shadith & Commander Mos Altar",
+            "Totem_Spirit_Raid_Altar",
+            "zone-field-slag-chasm",
+            "zone-field-metronome-bridge",
+            "Hierarch Ashas Varka Durai (War With Ketra Orcs Altar)",
+            "Alliance Stage 4–5 Required (Prove Your Courage! / Slay the Enemy Commander!)",
+            "Varka's Hero Shadith (Lv.80 Raid) — Drops Head of Shadith (Totem of Fire for Stage 5)",
+            "Killing Any Varka Raid Boss While Allied With Varka Triggers Instant Stage -2 Penalty",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        cid,
+        cname,
+        fcat,
+        zid,
+        rzid,
+        hnpc,
+        aband,
+        trelic,
+        brule,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "82900:53200"))
+        loc = _fmt_loc(bx + 240 - idx * 12, by - 190 + idx * 10)
+        rows.append(
+            {
+                "camp_id": cid,
+                "camp_name": cname,
+                "faction_category": fcat,
+                "zone_id": zid,
+                "rival_camp_zone_id": rzid,
+                "loc": loc,
+                "herald_npc_name": hnpc,
+                "alliance_stage_band": aband,
+                "totem_raid_boss_or_relic": trelic,
+                "betrayal_penalty_rule": brule,
+            }
+        )
+    return rows
+
+
+def _build_monster_track_fantasy_plazas(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 12 Monster Derby Race Track, Coin of Magic & Kratei's Cube Plazas (4 Monster_Derby_Race_Track + 4 Coin_of_Magic_Collector_Lodge + 4 Kratei_Cube_Fantasy_Arena) (D54)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones: list[dict[str, Any]] = []
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            all_zones.extend(e for e in entries if isinstance(e, dict))
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if z.get("zone_id")}
+    specs = [
+        # 4 Monster_Derby_Race_Track Plazas
+        (
+            "plaza-01-giran-monster-derby-track",
+            "Giran Monster Derby Stadium — Lane 1–8 Grand Parimutuel Track",
+            "Monster_Derby_Race_Track",
+            "zone-town-inductor-switchyard",
+            "Race Manager Bernice & Derby Announcer",
+            "Derby Ticket (500–50,000 Adena Win / Place / Exacta Odds)",
+            [
+                "Double-Odds & Exacta Parimutuel Adena Jackpot Payout",
+                "Monster Race Commemorative Trophy & Speed Haste Potions",
+                "Little Angel Wing & Derby Champion Hair Accessory Voucher",
+            ],
+            "Every 20 Minutes (15m Lane Condition & Form Inspection + 5m Live 8-Monster Sprint)",
+        ),
+        (
+            "plaza-02-dion-florans-derby-paddock",
+            "Kilnwatch-Saffron Derby Paddock — Southern 8-Lane Monster Track",
+            "Monster_Derby_Race_Track",
+            "zone-town-saffron-press",
+            "Race Manager Bruno & Paddock Vet",
+            "Derby Ticket (100–25,000 Adena Win / Place Wager)",
+            [
+                "Win/Place Adena Payout (1.8× to 14.5× Longshot Odds)",
+                "Blessed Scroll of Escape: Monster Race Track Direct Return",
+                "Hatchling/Strider High-Energy Racing Feed Bundle",
+            ],
+            "Every 20 Minutes (Continuous 24h Non-PK Stadium Sanctuary)",
+        ),
+        (
+            "plaza-03-aden-imperial-chariot-derby",
+            "Imperial Aden Hippodrome — High-Stakes Noble Monster Derby",
+            "Monster_Derby_Race_Track",
+            "zone-town-torque-balance-citadel",
+            "Imperial Race Steward Alfonse",
+            "High-Roller Derby Ticket (10,000–500,000 Adena Royal Odds)",
+            [
+                "Royal Parimutuel Adena Jackpot & Shiny Coin Payout",
+                "Refined Jester Hat, Dapper Cap & Hippodrome Crown",
+                "Top-Grade Quick Healing Potion & Greater Swift Attack Pack",
+            ],
+            "Every 30 Minutes (Broadcast Across All 15 Town Gatekeeper Plazas)",
+        ),
+        (
+            "plaza-04-glaze-barge-maritime-derby",
+            "Glaze-Barge Quay Boardwalk Track — Coastal Monster Sprint",
+            "Monster_Derby_Race_Track",
+            "zone-town-glaze-barge-quay",
+            "Harbor Race Manager Clarissa",
+            "Derby Ticket (500–50,000 Adena Win / Place Wager)",
+            [
+                "Coastal Derby Adena Dividend & Pirate Doubloon Bonus",
+                "Party Mask, Fireworks Box & Large Firework Crate",
+                "Scroll of Buff: Wind Walk Lv.2 & Haste Lv.2 (1h Track Blessing)",
+            ],
+            "Every 20 Minutes (Synchronized With Harbor Ferry Arrivals)",
+        ),
+        # 4 Coin_of_Magic_Collector_Lodge Plazas
+        (
+            "plaza-05-hunters-sorint-collector-lodge",
+            "Warehouse Keeper Sorint's Numismatic Guild — Grade 3/2/1 Royal Lodge",
+            "Coin_of_Magic_Collector_Lodge",
+            "zone-town-pinion-terminus",
+            "Warehouse Keeper Sorint & Head Blacksmith Vergara",
+            "Blood Medusa / Silver Unicorn / Gold Wyrm Coins (10/20/50 Sequence Game)",
+            [
+                "A-Grade Weapon Recipes (Dragon Slayer, Dark Legion's Edge, Soul Bow)",
+                "B-Grade Weapon & Full Armor Set Recipes (Grade 2 Member Catalog)",
+                "Moonstone Earring, Necklace of Protection & Demon's Boots",
+            ],
+            "24h Collector Guild (3-Color Coin Sequence Guessing Minigame Available Anytime)",
+        ),
+        (
+            "plaza-06-oren-hagger-numismatic-vault",
+            "Escapement Anvil Coin Vault — Collector Hagger & Stan's Exchange",
+            "Coin_of_Magic_Collector_Lodge",
+            "zone-town-escapement-anvil",
+            "Warehouse Keeper Hagger & Guard Stan",
+            "Gold Knight / Silver Golem / Blood Werewolf / Nia's Gold Wyrm Coins",
+            [
+                "Sword of Miracles, Beleth's Blood Dragon & Dark Screamer Recipes",
+                "Full Plate Helmet, Shining Circlet & Drake Leather Boots",
+                "3-Step Sequence Jackpot (1:8 Coin Multiplication Payout)",
+            ],
+            "24h Collector Vault (Accepts Coins Dropped in Timak Outpost, Pavel & Tower of Insolence)",
+        ),
+        (
+            "plaza-07-giran-collob-royal-coin-parlor",
+            "Giran Royal Numismatic Parlor — Warehouse Keeper Collob's Grade-1 Exchange",
+            "Coin_of_Magic_Collector_Lodge",
+            "zone-town-inductor-switchyard",
+            "Warehouse Keeper Collob & Researcher Lorain",
+            "Gold Drake / Silver Fairy / Blood Succubus / Manak's Gold Giant Coins",
+            [
+                "Grade 1 Royal Membership Certificate & Rare A-Grade Key Materials",
+                "Tallum Blade, Carnage Bow & Elysian 60% Craft Recipes",
+                "Scroll: Enchant Weapon (A-Grade) & (B-Grade) Numismatic Prize",
+            ],
+            "24h Royal Collector Parlor (Requires Coin of Magic Membership Grade 1–3)",
+        ),
+        (
+            "plaza-08-rune-astral-numismatic-society",
+            "Starfall Haven Numismatic Society — High-Tier Beleth & Kaldis Coin Vault",
+            "Coin_of_Magic_Collector_Lodge",
+            "zone-town-starfall-haven",
+            "Guild Magister Page & Blacksmith Duning",
+            "Kaldis's Gold Dragon / Beleth's Silver Dragon / Bereth's Blood Dragon",
+            [
+                "S-Grade & A-Grade Masterwork Weapon Key Material Bundles",
+                "Dynasty & Draconic Rare Accessory Craft Patterns",
+                "Blessed Scroll of Escape & High-Grade Life Stone (Lv.76) Pack",
+            ],
+            "24h Astral Numismatic Exchange (Instant 1:10 Tier-Up Coin Conversion)",
+        ),
+        # 4 Kratei_Cube_Fantasy_Arena Plazas
+        (
+            "plaza-09-fantasy-isle-kratei-cube-arena",
+            "Kratei's Cube Entrance Plaza — Lv.70–85 20-Minute PvE/PvP Point Arena",
+            "Kratei_Cube_Fantasy_Arena",
+            "zone-harbor-glaze-barge-airship-dock",
+            "Kratei's Cube Entrance Manager & Teleport Paddy",
+            "Free Registration (Lv.70–75 / Lv.76–79 / Lv.80+ Brackets · Fantasy Isle Coin)",
+            [
+                "Fantasy Isle Coin (Exchangeable for S-Grade Enchant Scrolls & Titles)",
+                "XP/SP Point-Multiplier Jackpot (100–2,000 Cube Kill Points)",
+                "Colorful Fantasy Isle Parade Mounts & Decorative Weapons",
+            ],
+            "Every 30 Minutes on the Hour & Half-Hour (3m Registration + 20m Cube Match)",
+        ),
+        (
+            "plaza-10-handys-block-checker-pavilion",
+            "Handy's Block Checker Pavilion — 6v6 Red vs. Blue Tile-Flip Minigame",
+            "Kratei_Cube_Fantasy_Arena",
+            "zone-harbor-lantern-ferry-pier",
+            "Block Checker Arena Manager Handy (Arena #1–#4)",
+            "Free 6v6 Team Queue (Bond / Land Mine / Hammer Power-Up Drops)",
+            [
+                "Fantasy Isle Coin (×15 Winner Team / ×5 Participant Reward)",
+                "Ribbon Hairband, Cat Ear, Raccoon Ear & Rabbit Ear Headpieces",
+                "Transformation Sealbook: Toy Knight / Spirit of Snowman / Block Golem",
+            ],
+            "Continuous 5-Minute 6v6 Matches (Instant Queue at Arena #1–#4)",
+        ),
+        (
+            "plaza-11-underground-coliseum-gladiator-cube",
+            "Crown-Beacon Underground Coliseum — 7-Party Last-Standing Survival Cube",
+            "Kratei_Cube_Fantasy_Arena",
+            "zone-town-crown-beacon",
+            "Underground Coliseum Manager &Paddy's Envoy",
+            "Party Leader Registration (7v7 Party Elimination + Resurrection Tower Control)",
+            [
+                "Fantasy Isle Coin & Clan Reputation Point (+500 Streak Bonus)",
+                "Coliseum Champion Aura & Exclusive Agathion Summon Bracelet",
+                "Fame Points (+150 per Match) for PvP Weapon Enhancement",
+            ],
+            "Every 30 Minutes (Top Winning Streak Party Broadcast on Coliseum Leaderboard)",
+        ),
+        (
+            "plaza-12-cleft-aerial-cube-sanctum",
+            "Star-Heart Cleft Aerial Arena — 9v9 Flying Transformation Emery Cube",
+            "Kratei_Cube_Fantasy_Arena",
+            "zone-fortress-cloud-halo",
+            "Engineer Lekon & Aerial Arena Steward",
+            "Aurabird Falcon / Owl Transformation Required (25m Aerial Emery Match)",
+            [
+                "Extracted Red Star Stone & Emery Pieces (Attribute Crystal Crafting)",
+                "Fantasy Isle Coin & Keucereus Supply Box (S80 Recipe Materials)",
+                "Scroll: Enchant Aerial Transformation Skill & SP Tome",
+            ],
+            "Every 45 Minutes (Minimum 18 Players · 9v9 Dawn vs. Dusk Aerial Control)",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        pid,
+        pname,
+        acat,
+        zid,
+        mnpc,
+        etoken,
+        frewards,
+        sinterval,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "18600:145200"))
+        loc = _fmt_loc(bx - 210 + idx * 13, by + 205 - idx * 11)
+        rows.append(
+            {
+                "plaza_id": pid,
+                "plaza_name": pname,
+                "activity_category": acat,
+                "zone_id": zid,
+                "loc": loc,
+                "manager_npc_name": mnpc,
+                "entry_token_or_wager": etoken,
+                "featured_rewards": frewards,
+                "schedule_interval": sinterval,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -9763,6 +10173,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("luxury_black_market_boutiques") or []) < 12:
         atlas["luxury_black_market_boutiques"] = _build_luxury_black_market_boutiques(atlas)
         actions.append("populated_12_luxury_black_market_boutiques")
+
+    # 37. Ensure all 14 Factional Alliance War & Totem Raid Altar Nodes exist in `faction_alliance_war_camps` (D53)
+    if len(atlas.get("faction_alliance_war_camps") or []) < 14:
+        atlas["faction_alliance_war_camps"] = _build_faction_alliance_war_camps(atlas)
+        actions.append("populated_14_faction_alliance_war_camps")
+
+    # 38. Ensure all 12 Monster Derby Race Track, Coin of Magic & Kratei's Cube Plazas exist in `monster_track_fantasy_plazas` (D54)
+    if len(atlas.get("monster_track_fantasy_plazas") or []) < 12:
+        atlas["monster_track_fantasy_plazas"] = _build_monster_track_fantasy_plazas(atlas)
+        actions.append("populated_12_monster_track_fantasy_plazas")
 
     return {"actions": actions}
 
@@ -12458,15 +12878,145 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d52_ratio * 80.0, 1)
     )
 
+    # D53: Interactive 14-Node Factional Alliance War (Stage 1–5) & Totem Raid Altar Matrix (`faction_alliance_war_camps` - 14/14 Nodes = 5 Vanguard_Orc_Alliance_Outpost + 5 Shaman_Silenos_Alliance_Stronghold + 4 Totem_Spirit_Raid_Altar)
+    expected_faction_categories = {
+        "Vanguard_Orc_Alliance_Outpost",
+        "Shaman_Silenos_Alliance_Stronghold",
+        "Totem_Spirit_Raid_Altar",
+    }
+    faction_rows = atlas.get("faction_alliance_war_camps") or []
+    valid_faction_camps = 0
+    vanguard_orc_count = 0
+    shaman_silenos_count = 0
+    totem_altar_count = 0
+    seen_camp_ids: set[str] = set()
+    seen_faction_categories: set[str] = set()
+    for frow in faction_rows:
+        if not isinstance(frow, dict):
+            continue
+        cid = str(frow.get("camp_id") or "")
+        fcat = str(frow.get("faction_category") or "")
+        zid = str(frow.get("zone_id") or "")
+        rzid = str(frow.get("rival_camp_zone_id") or "")
+        if (
+            cid
+            and cid not in seen_camp_ids
+            and frow.get("camp_name")
+            and fcat in expected_faction_categories
+            and zid in zone_ids_set
+            and rzid in zone_ids_set
+            and ":" in str(frow.get("loc", ""))
+            and frow.get("herald_npc_name")
+            and frow.get("alliance_stage_band")
+            and frow.get("totem_raid_boss_or_relic")
+            and frow.get("betrayal_penalty_rule")
+        ):
+            valid_faction_camps += 1
+            seen_camp_ids.add(cid)
+            seen_faction_categories.add(fcat)
+            if fcat == "Vanguard_Orc_Alliance_Outpost":
+                vanguard_orc_count += 1
+            elif fcat == "Shaman_Silenos_Alliance_Stronghold":
+                shaman_silenos_count += 1
+            elif fcat == "Totem_Spirit_Raid_Altar":
+                totem_altar_count += 1
+
+    has_d53_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_FACTION_ALLIANCE_MODE",
+            "setAtlasFactionAllianceMode",
+            "renderAtlasFactionAllianceBarHtml",
+            "studioFactionAllianceOverlay",
+        )
+    )
+    d53_ratio = valid_faction_camps / 14.0
+    d53_full_coverage = (
+        vanguard_orc_count == 5
+        and shaman_silenos_count == 5
+        and totem_altar_count == 4
+        and seen_faction_categories == expected_faction_categories
+    )
+    d53_score = (
+        round(min(100.0, d53_ratio * 100.0), 1)
+        if (has_d53_ui and d53_full_coverage)
+        else round(d53_ratio * 80.0, 1)
+    )
+
+    # D54: Interactive 12-Node Monster Derby Race Track, Coin of Magic & Kratei's Cube Plaza Matrix (`monster_track_fantasy_plazas` - 12/12 Plazas = 4 Monster_Derby_Race_Track + 4 Coin_of_Magic_Collector_Lodge + 4 Kratei_Cube_Fantasy_Arena)
+    expected_activity_categories = {
+        "Monster_Derby_Race_Track",
+        "Coin_of_Magic_Collector_Lodge",
+        "Kratei_Cube_Fantasy_Arena",
+    }
+    plaza_rows = atlas.get("monster_track_fantasy_plazas") or []
+    valid_fantasy_plazas = 0
+    derby_track_count = 0
+    coin_lodge_count = 0
+    kratei_arena_count = 0
+    seen_plaza_ids: set[str] = set()
+    seen_activity_categories: set[str] = set()
+    for prow in plaza_rows:
+        if not isinstance(prow, dict):
+            continue
+        pid = str(prow.get("plaza_id") or "")
+        acat = str(prow.get("activity_category") or "")
+        zid = str(prow.get("zone_id") or "")
+        frewards = prow.get("featured_rewards") or []
+        if (
+            pid
+            and pid not in seen_plaza_ids
+            and prow.get("plaza_name")
+            and acat in expected_activity_categories
+            and zid in zone_ids_set
+            and ":" in str(prow.get("loc", ""))
+            and prow.get("manager_npc_name")
+            and prow.get("entry_token_or_wager")
+            and isinstance(frewards, list)
+            and len(frewards) >= 2
+            and prow.get("schedule_interval")
+        ):
+            valid_fantasy_plazas += 1
+            seen_plaza_ids.add(pid)
+            seen_activity_categories.add(acat)
+            if acat == "Monster_Derby_Race_Track":
+                derby_track_count += 1
+            elif acat == "Coin_of_Magic_Collector_Lodge":
+                coin_lodge_count += 1
+            elif acat == "Kratei_Cube_Fantasy_Arena":
+                kratei_arena_count += 1
+
+    has_d54_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_FANTASY_PLAZA_MODE",
+            "setAtlasFantasyPlazaMode",
+            "renderAtlasFantasyPlazaBarHtml",
+            "studioFantasyPlazaOverlay",
+        )
+    )
+    d54_ratio = valid_fantasy_plazas / 12.0
+    d54_full_coverage = (
+        derby_track_count == 4
+        and coin_lodge_count == 4
+        and kratei_arena_count == 4
+        and seen_activity_categories == expected_activity_categories
+    )
+    d54_score = (
+        round(min(100.0, d54_ratio * 100.0), 1)
+        if (has_d54_ui and d54_full_coverage)
+        else round(d54_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 34.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 36.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 36.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 46.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 35.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score) / 42.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 36.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 38.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 38.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 48.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 37.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score) / 44.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -12523,8 +13073,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d50_score
             + d51_score
             + d52_score
+            + d53_score
+            + d54_score
         )
-        / 52.0,
+        / 54.0,
         1,
     )
 
@@ -12934,6 +13486,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "market_categories": sorted(seen_market_categories),
                 "ui_wired": has_d52_ui,
             },
+            "D53_faction_alliance_war_and_totem_altars": {
+                "score": d53_score,
+                "verified": valid_faction_camps,
+                "target": 14,
+                "vanguard_orc_outposts": vanguard_orc_count,
+                "shaman_silenos_strongholds": shaman_silenos_count,
+                "totem_raid_altars": totem_altar_count,
+                "faction_categories": sorted(seen_faction_categories),
+                "ui_wired": has_d53_ui,
+            },
+            "D54_monster_derby_coin_and_kratei_plazas": {
+                "score": d54_score,
+                "verified": valid_fantasy_plazas,
+                "target": 12,
+                "monster_derby_tracks": derby_track_count,
+                "coin_of_magic_lodges": coin_lodge_count,
+                "kratei_cube_arenas": kratei_arena_count,
+                "activity_categories": sorted(seen_activity_categories),
+                "ui_wired": has_d54_ui,
+            },
         },
     }
 
@@ -13030,6 +13602,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D50 (18 Master Tour 50D)    : {dims['D50_master_cartographic_tour_and_50d_inspector']['score']}/100 ({dims['D50_master_cartographic_tour_and_50d_inspector']['verified']}/{dims['D50_master_cartographic_tour_and_50d_inspector']['target']} tour checkpoints)")
         print(f"  D51 (15 Festival Oracles)   : {dims['D51_festival_of_darkness_and_oracle_altars']['score']}/100 ({dims['D51_festival_of_darkness_and_oracle_altars']['verified']}/{dims['D51_festival_of_darkness_and_oracle_altars']['target']} festival oracles)")
         print(f"  D52 (12 Luxury/BlackMarket) : {dims['D52_luxury_boutique_and_black_marketeer_exchange']['score']}/100 ({dims['D52_luxury_boutique_and_black_marketeer_exchange']['verified']}/{dims['D52_luxury_boutique_and_black_marketeer_exchange']['target']} luxury boutiques)")
+        print(f"  D53 (14 Faction War Camps)  : {dims['D53_faction_alliance_war_and_totem_altars']['score']}/100 ({dims['D53_faction_alliance_war_and_totem_altars']['verified']}/{dims['D53_faction_alliance_war_and_totem_altars']['target']} faction camps)")
+        print(f"  D54 (12 Derby/Coin/Kratei)  : {dims['D54_monster_derby_coin_and_kratei_plazas']['score']}/100 ({dims['D54_monster_derby_coin_and_kratei_plazas']['verified']}/{dims['D54_monster_derby_coin_and_kratei_plazas']['target']} event plazas)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
