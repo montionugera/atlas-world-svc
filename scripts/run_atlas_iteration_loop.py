@@ -316,6 +316,442 @@ def _build_race_spawn_locations(whc: dict[str, Any], atlas: dict[str, Any]) -> l
     return spawns
 
 
+RACE_ROUTE_SPECS: tuple[tuple[str, str, str, str, str, str, str, str, str, str], ...] = (
+    (
+        "human_demi_human",
+        "Human",
+        "Human (Hearth-Born)",
+        "#eab308",
+        "zone-town-lantern-hollow",
+        "Lantern Hollow Village",
+        "Talking Island / Gludin Village",
+        "zone-field-clover-south-gate",
+        "Clover South-Gate Meadow",
+        "Talking Island Eastern Territory",
+    ),
+    (
+        "lunar",
+        "Lunar",
+        "Lunar (Moon-Weavers)",
+        "#38bdf8",
+        "zone-town-porcelain-loom",
+        "Porcelain Loom Sanctuary",
+        "Elven Village (Mother Tree)",
+        "zone-field-celadon-causeway",
+        "Celadon Glaze Causeway",
+        "Elven Forest / Neutral Zone",
+    ),
+    (
+        "ogre_orc",
+        "Ogre/Orc",
+        "Ogre/Orc (Bellows-Kin)",
+        "#f97316",
+        "zone-town-draft-kiln-post",
+        "Draft-Kiln Post",
+        "Orc Village (Immortal Plateau)",
+        "zone-field-firebrick-duct",
+        "Firebrick Bellows Duct",
+        "Valley of Heroes",
+    ),
+    (
+        "dwarf",
+        "Dwarf",
+        "Dwarf (Anvil-Forged)",
+        "#f59e0b",
+        "zone-town-root-train-roundhouse",
+        "Root-Train Roundhouse",
+        "Dwarven Village (Western Mining)",
+        "zone-field-resin-arch-tunnel",
+        "Resin-Arch Root Tunnel",
+        "Western Mining Zone",
+    ),
+    (
+        "dark_lunar",
+        "Dark-Lunar",
+        "Dark-Lunar (Chime-Forged)",
+        "#a855f7",
+        "zone-town-carillon-belfry",
+        "Carillon Hearth Belfry",
+        "Dark Elven Village (Dark Forest)",
+        "zone-field-chime-pipe-colonnade",
+        "Chime-Pipe Colonnade",
+        "Swampland / Dark Forest",
+    ),
+    (
+        "furral",
+        "Furral",
+        "Furral (Wind-Tail)",
+        "#22c55e",
+        "zone-town-cinnamon-mill",
+        "Cinnamon-Mill Haven",
+        "Kamael Village (Isle of Souls)",
+        "zone-field-cinnamon-bark-viaduct",
+        "Cinnamon-Bark Viaduct",
+        "Hills of Gold / Isle of Souls",
+    ),
+)
+
+RACE_STARTER_DUNGEON_MAP: dict[str, tuple[str, str, str, str]] = {
+    "human_demi_human": (
+        "zone-dungeon-kiln-cellar",
+        "Kiln Cellar Ruins (The Ant Nest)",
+        "The Ant Nest / Elven Ruins B1–B3",
+        "-113490:235526",
+    ),
+    "lunar": (
+        "zone-dungeon-medallion-heart-vault",
+        "Medallion Heart Fortress",
+        "Elven Fortress / The Ant Nest B1–B3",
+        "49800:44100",
+    ),
+    "ogre_orc": (
+        "zone-dungeon-ember-bellows-chamber",
+        "Ember Bellows Cave of Trials",
+        "Cave of Trials / The Ant Nest B1–B3",
+        "-41200:-109800",
+    ),
+    "dwarf": (
+        "zone-dungeon-sap-heart-cistern",
+        "Sap-Heart Abandoned Mines",
+        "Abandoned Coal Mines / Ant Nest B1–B3",
+        "119400:-174200",
+    ),
+    "dark_lunar": (
+        "zone-dungeon-ceramic-resonator-crypt",
+        "Ceramic Resonator School of Dark Arts",
+        "School of Dark Arts / Ant Nest B1–B3",
+        "15200:19400",
+    ),
+    "furral": (
+        "zone-dungeon-spice-kiln-cellar",
+        "Spice-Kiln Nornil's Cave",
+        "Nornil's Cave / The Ant Nest B1–B3",
+        "-115400:49100",
+    ),
+}
+
+
+def _build_race_growth_routes(whc: dict[str, Any], atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    zones_by_id: dict[str, dict[str, Any]] = {}
+    for cat_list in zdir.values():
+        if isinstance(cat_list, list):
+            for z in cat_list:
+                if isinstance(z, dict) and z.get("zone_id"):
+                    zones_by_id[str(z["zone_id"])] = z
+
+    routes: list[dict[str, Any]] = []
+    for (
+        rkey,
+        rlabel,
+        rname,
+        color_hex,
+        town_zid,
+        town_name,
+        town_alias,
+        field_zid,
+        field_name,
+        field_alias,
+    ) in RACE_ROUTE_SPECS:
+        t_doc = zones_by_id.get(town_zid, {})
+        f_doc = zones_by_id.get(field_zid, {})
+        d_zid, d_name, d_alias, d_loc = RACE_STARTER_DUNGEON_MAP[rkey]
+        t_loc = str(t_doc.get("loc_coord", "-84120:243500"))
+        f_loc = str(f_doc.get("loc_coord", "72986:113330"))
+        bx, by = _parse_loc(t_loc)
+        spawn_loc = _fmt_loc(bx + 70, by - 80)
+
+        waypoints = [
+            {
+                "step_index": 1,
+                "stage_code": "A",
+                "zone_id": town_zid,
+                "name": f"{rlabel} Awakening Shrine ({town_name})",
+                "l2_alias": f"{rlabel} Spawn Shrine · {town_alias}",
+                "loc": spawn_loc,
+                "level_range": "Lv.1–4",
+                "travel_mode": "footpath",
+                "milestone_goal": f"Awaken at {rlabel} Shrine, claim Newbie Soulshots, and equip starter gear in {town_name}.",
+            },
+            {
+                "step_index": 2,
+                "stage_code": "B",
+                "zone_id": field_zid,
+                "name": field_name,
+                "l2_alias": field_alias,
+                "loc": f_loc,
+                "level_range": "Lv.4–12",
+                "travel_mode": "footpath",
+                "milestone_goal": f"Clear {rlabel} starter field packs, harvest High-Grade Iron Ore, and refine weapon to +3.",
+            },
+            {
+                "step_index": 3,
+                "stage_code": "C",
+                "zone_id": d_zid,
+                "name": d_name,
+                "l2_alias": d_alias,
+                "loc": d_loc,
+                "level_range": "Lv.10–20",
+                "travel_mode": "dungeon_warp",
+                "milestone_goal": "Descend B1->B2->B3 subterranean halls and defeat the Stage C Mini-Boss / Queen Ant brood.",
+            },
+            {
+                "step_index": 4,
+                "stage_code": "D",
+                "zone_id": "zone-town-kilnwatch-bastion",
+                "name": "Town of Kilnwatch Bastion (All-Race Dion/Gludio Hub)",
+                "l2_alias": "Town of Dion / Town of Gludio (1st Class Transfer)",
+                "loc": "18600:145200",
+                "level_range": "Lv.18–22",
+                "travel_mode": "gatekeeper_teleport",
+                "milestone_goal": "Complete 1st Class Transfer at Neutral Adventure Guild and unlock D-Grade +6 Anvil Refinement.",
+            },
+            {
+                "step_index": 5,
+                "stage_code": "E",
+                "zone_id": "zone-dungeon-kiln-cellar",
+                "name": "Kiln Cellar Ruins (The Ant Nest Convergence Raid)",
+                "l2_alias": "The Ant Nest B1–B3 (Queen Ant Lair)",
+                "loc": "-113490:235526",
+                "level_range": "Lv.20–24",
+                "travel_mode": "dungeon_warp",
+                "milestone_goal": "Form multi-race party to farm Ant Nest B3 spoils and Queen Ant Soul Crystal catalysts.",
+            },
+            {
+                "step_index": 6,
+                "stage_code": "F",
+                "zone_id": "zone-town-pinion-terminus",
+                "name": "Pinion Terminus Township (Clockwork Steppe Hub)",
+                "l2_alias": "Town of Oren / Giran Castle Cross-Continental Hub",
+                "loc": "82900:53200",
+                "level_range": "Lv.24–28",
+                "travel_mode": "highway",
+                "milestone_goal": "Cross into Continent 02 (The Clockwork Steppe) and stock C-Grade weapons at Oren Blacksmith.",
+            },
+            {
+                "step_index": 7,
+                "stage_code": "G",
+                "zone_id": "zone-dungeon-pendulum-shaft",
+                "name": "Pendulum Shaft Tower (Cruma Tower 1F–3F)",
+                "l2_alias": "Cruma Tower (Core Prime Governor Spire)",
+                "loc": "85400:144200",
+                "level_range": "Lv.26–32",
+                "travel_mode": "dungeon_warp",
+                "milestone_goal": "Ascend 1F->2F->3F mechanical spire, challenge Catherok Raid & Core MVP, and refine gear to +9.",
+            },
+            {
+                "step_index": 8,
+                "stage_code": "H",
+                "zone_id": "zone-town-escapement-anvil",
+                "name": "Town of Escapement Anvil (2nd-Class Trial Arena)",
+                "l2_alias": "Hardin's Academy / Town of Oren Mastery Hall",
+                "loc": "83100:53200",
+                "level_range": "Lv.32–36",
+                "travel_mode": "highway",
+                "milestone_goal": "Undertake the Three Trial Marks for 2nd-Class Awakening and bind Stage 7 Soul Crystals.",
+            },
+            {
+                "step_index": 9,
+                "stage_code": "I",
+                "zone_id": "zone-dungeon-chronometer-foundry",
+                "name": "Chronometer Foundry (Tower of Insolence 1F–3F)",
+                "l2_alias": "Tower of Insolence / Mithril Mines Labyrinth",
+                "loc": "84800:56400",
+                "level_range": "Lv.35–42",
+                "travel_mode": "dungeon_warp",
+                "milestone_goal": "Conquer Hallate Vanguard & Sovereign Chronometer Aethelgard for +12 Blessed Enchant Scrolls.",
+            },
+            {
+                "step_index": 10,
+                "stage_code": "J",
+                "zone_id": "zone-town-inductor-switchyard",
+                "name": "Town of Inductor Switchyard (Promotion Capital)",
+                "l2_alias": "Town of Goddard / Schuttgart Industrial Capital",
+                "loc": "147400:-55200",
+                "level_range": "Lv.40–48",
+                "travel_mode": "gatekeeper_teleport",
+                "milestone_goal": "Finalize 2nd-Class Promotion and board the Astral Tether Airship toward Continent 03.",
+            },
+            {
+                "step_index": 11,
+                "stage_code": "K",
+                "zone_id": "zone-town-starfall-haven",
+                "name": "Starfall Haven Sky-Harbor (Shattered Halo Capital)",
+                "l2_alias": "Aden / Gracia Sky-Harbor Alliance Base",
+                "loc": "-14200:-124000",
+                "level_range": "Lv.48–75",
+                "travel_mode": "sea_or_airship",
+                "milestone_goal": "Arrive in Continent 03 (The Shattered Halo) via Sky-Harbor Airship and forge S-Grade equipment.",
+            },
+            {
+                "step_index": 12,
+                "stage_code": "L",
+                "zone_id": "zone-dungeon-star-heart-nave",
+                "name": "Star-Heart Nave & Crown-Beacon Astrolabe (Halo Endgame)",
+                "l2_alias": "Seed of Infinity / Tower of Insolence Apex Sanctum",
+                "loc": "142000:-198000",
+                "level_range": "Lv.75–99",
+                "travel_mode": "dungeon_warp",
+                "milestone_goal": "Challenge the Apostle of the Shattered Halo MVP and complete +15 Sovereign Weapon Refinement.",
+            },
+        ]
+
+        routes.append(
+            {
+                "route_id": f"route-growth-{rkey}",
+                "race_key": rkey,
+                "race_label": rlabel,
+                "race_name": rname,
+                "color_hex": color_hex,
+                "summary": f"{rlabel} progression: Spawn ({town_name}) -> {field_name} -> {d_name} -> Dion Hub -> Oren/Cruma Tower -> Halo Endgame (Stages A..L).",
+                "waypoints": waypoints,
+            }
+        )
+    return routes
+
+
+def _synthesize_shop_and_refinement_catalog(zone_entry: dict[str, Any], idx: int) -> dict[str, Any]:
+    tname = str(zone_entry.get("name", f"Town {idx}")).split("(")[0].strip()
+    lmin, lmax = (zone_entry.get("level_band") or [1, 15])[:2]
+    grade = "No-Grade / D-Grade" if lmax <= 20 else ("C-Grade / B-Grade" if lmax <= 40 else "A-Grade / S-Grade")
+    base_item_id = 40000 + idx * 100
+    price_mult = max(1, lmin)
+
+    return {
+        "equip_shop_stock": [
+            {
+                "item_id": base_item_id + 1,
+                "name": f"{tname} Tempered Broadsword",
+                "category": "Weapon",
+                "grade": grade,
+                "stats": f"P.Atk +{42 + lmin * 3} · M.Atk +{28 + lmin * 2} · Crit +88",
+                "price_adena": 12500 * price_mult,
+                "max_refinement": "+15",
+            },
+            {
+                "item_id": base_item_id + 2,
+                "name": f"{tname} Resonance Whisper Staff",
+                "category": "Weapon",
+                "grade": grade,
+                "stats": f"M.Atk +{56 + lmin * 3} · Cast Spd +12% · MP Regen +8%",
+                "price_adena": 13800 * price_mult,
+                "max_refinement": "+15",
+            },
+            {
+                "item_id": base_item_id + 3,
+                "name": f"{tname} Brigandine & Scale Cuirass",
+                "category": "Armor",
+                "grade": grade,
+                "stats": f"P.Def +{68 + lmin * 4} · Max HP +{180 + lmin * 10} · Seal Resist +6%",
+                "price_adena": 9400 * price_mult,
+                "max_refinement": "+15",
+            },
+            {
+                "item_id": base_item_id + 4,
+                "name": f"{tname} Aegis Tower Shield",
+                "category": "Shield",
+                "grade": grade,
+                "stats": f"Shield Def +{52 + lmin * 3} · Block Rate +24%",
+                "price_adena": 6200 * price_mult,
+                "max_refinement": "+15",
+            },
+        ],
+        "consumable_shop_stock": [
+            {
+                "item_id": base_item_id + 11,
+                "name": "Greater Hearth Healing Potion",
+                "category": "Potion",
+                "effect": "Restores 450–850 HP over 15s (Weight 4)",
+                "price_adena": 180 * max(1, price_mult // 4),
+            },
+            {
+                "item_id": base_item_id + 12,
+                "name": f"Alacrity & Haste Draught ({grade.split('/')[0].strip()})",
+                "category": "Potion",
+                "effect": "Atk.Spd +15% and Move Speed +20 for 20 minutes",
+                "price_adena": 650 * max(1, price_mult // 4),
+            },
+            {
+                "item_id": base_item_id + 13,
+                "name": f"Compressed Soulshot & Blessed Spiritshot Pack ({grade})",
+                "category": "Soulshot",
+                "effect": "Doubles physical P.Atk / M.Atk strike potency for 500 charges",
+                "price_adena": 1200 * max(1, price_mult // 4),
+            },
+            {
+                "item_id": base_item_id + 14,
+                "name": f"Scroll of Escape: {tname}",
+                "category": "Scroll",
+                "effect": f"Instant channel warp back to {tname} Spawn Shrine",
+                "price_adena": 400 * max(1, price_mult // 4),
+            },
+        ],
+        "refinement_anvil_rates": [
+            {
+                "enchant_range": "+1 to +3 (Safe Anvil Tempering)",
+                "success_rate_pct": 100.0,
+                "stat_bonus": "+3% P.Atk/M.Atk/P.Def per +1 step (Zero Break Risk)",
+                "failure_penalty": "None (100% Safe Tempering Guarantee)",
+                "required_catalyst": f"Scroll: Enchant Weapon/Armor ({grade}) + 2× High-Grade Iron Ore",
+                "material_spoils": ["High-Grade Iron Ore", "Varnish", "Refinement Flux Dust"],
+            },
+            {
+                "enchant_range": "+4 to +6 (Artisan Over-Enchant)",
+                "success_rate_pct": 66.0,
+                "stat_bonus": "+7% P.Atk/M.Atk per step + Subtle Amber Weapon Glow",
+                "failure_penalty": "Resets to +3 when using Blessed Scroll (or Crystallizes on standard scroll)",
+                "required_catalyst": f"Blessed Scroll: Enchant ({grade}) + 4× Tempered Alloy Plate",
+                "material_spoils": ["Tempered Alloy Plate", "Seal-Stone Cluster", "Weapon Enchant Scroll Fragment"],
+            },
+            {
+                "enchant_range": "+7 to +9 (Master Blacksmith Resonance)",
+                "success_rate_pct": 45.0,
+                "stat_bonus": "+12% P.Atk/M.Atk per step + Radiant Cobalt/Crimson Aura",
+                "failure_penalty": "Retains current +level if fortified with Seal-Stone Stabilizer",
+                "required_catalyst": f"Master Anvil Scroll ({grade}) + 2× Warden Alloy Core",
+                "material_spoils": ["Warden Alloy Core", "Soul Crystal Stage 5", "Orichalcum Ore"],
+            },
+            {
+                "enchant_range": "+10 to +12 (Grand Master Sovereign Forge)",
+                "success_rate_pct": 28.0,
+                "stat_bonus": "+18% P.Atk/M.Atk per step + Piercing Boss Ward +8%",
+                "failure_penalty": "Drops -1 level on failure (Protected from destruction by Anvil Core)",
+                "required_catalyst": "Ancient Refinement Catalyst + 2× Fortress Forge Core",
+                "material_spoils": ["Ancient Refinement Catalyst", "Fortress Forge Core", "Blessed Weapon Enchant"],
+            },
+            {
+                "enchant_range": "+13 to +15 (Apex Architect God-Anvil Limit)",
+                "success_rate_pct": 15.0,
+                "stat_bonus": "+25% All Offensive/Defensive Stats + Sovereign Halo Lightning Trail",
+                "failure_penalty": "Retains +12 floor when bound with Divine Apostle Anvil Core",
+                "required_catalyst": "Divine Apostle Anvil Core + Architect Seal Crest",
+                "material_spoils": ["Divine Apostle Anvil Core", "Architect Seal Crest", "Sovereign Bastion Heart"],
+            },
+        ],
+        "blacksmith_material_spoils": [
+            {
+                "material_name": "High-Grade Iron Ore & Varnish",
+                "source_zone": f"{tname} Adjacent Hunting Fields (Monster Pack Rings)",
+                "drop_or_spoil_rate": "42.0% Dwarf Spoil / 18.5% Pack Drop",
+                "used_for_tiers": "+1 to +6 Safe & Artisan Refinement",
+            },
+            {
+                "material_name": "Tempered Alloy Plate & Warden Alloy Core",
+                "source_zone": "Field Mini-Boss Patrols & B1–B2 Dungeon Overseers",
+                "drop_or_spoil_rate": "24.0% Mini-Boss Spoil / 12.0% Raid Drop",
+                "used_for_tiers": "+7 to +12 Master & Grand Master Refinement",
+            },
+            {
+                "material_name": "Divine Apostle Anvil Core & Architect Seal Crest",
+                "source_zone": "B3 / 3F Dungeon MVP Sanctums & Field MVP Bosses",
+                "drop_or_spoil_rate": "8.5% MVP Sanctum Drop / 15.0% Raid Spoil",
+                "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement",
+            },
+        ],
+    }
+
+
+
 def _synthesize_town_blueprint(zone_entry: dict[str, Any], idx: int) -> dict[str, Any]:
     zid = str(zone_entry.get("zone_id", f"zone-town-{idx}"))
     snid = str(zone_entry.get("studio_node_id", f"town-{idx}"))
@@ -422,6 +858,7 @@ def _synthesize_town_blueprint(zone_entry: dict[str, Any], idx: int) -> dict[str
         "buildings": buildings,
         "service_marks": service_marks,
         "npc_roster": npc_roster,
+        "shop_and_refinement_catalog": _synthesize_shop_and_refinement_catalog(zone_entry, idx),
     }
 
 
@@ -992,7 +1429,12 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
         atlas["race_spawn_locations"] = _build_race_spawn_locations(whc, atlas)
         actions.append("populated_6_race_spawn_locations")
 
-    # Ensure deep_town.town_blueprint also has race_spawn_point & refinement_anvils & zone_id
+    # 1b. Ensure all 6 Playable Race Starter-to-Endgame Growth Routes exist (D9)
+    if len(atlas.get("race_growth_routes") or []) < 6:
+        atlas["race_growth_routes"] = _build_race_growth_routes(whc, atlas)
+        actions.append("populated_6_race_growth_routes")
+
+    # Ensure deep_town.town_blueprint also has race_spawn_point & refinement_anvils & zone_id & shop_and_refinement_catalog
     deep_town = (atlas.get("t_deep_validation_slice") or {}).get("deep_town") or {}
     deep_tb = deep_town.get("town_blueprint")
     if isinstance(deep_tb, dict):
@@ -1021,13 +1463,21 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
                 }
             ],
         )
+        if "shop_and_refinement_catalog" not in deep_tb:
+            deep_tb["shop_and_refinement_catalog"] = _synthesize_shop_and_refinement_catalog(
+                {"name": "Lantern Hollow Village", "level_band": [1, 10]}, 1
+            )
+            actions.append("populated_shop_and_refinement_catalog:zone-town-lantern-hollow")
 
     # Sync deep_town.town_blueprint onto starting_towns[0] if not attached yet
     starting_towns: list[dict[str, Any]] = zdir.get("starting_towns") or []
-    if starting_towns and "town_blueprint" not in starting_towns[0] and isinstance(deep_tb, dict):
-        starting_towns[0]["town_blueprint"] = deep_tb
+    if starting_towns and isinstance(deep_tb, dict):
+        if "town_blueprint" not in starting_towns[0]:
+            starting_towns[0]["town_blueprint"] = deep_tb
+        elif isinstance(starting_towns[0].get("town_blueprint"), dict) and "shop_and_refinement_catalog" not in starting_towns[0]["town_blueprint"]:
+            starting_towns[0]["town_blueprint"]["shop_and_refinement_catalog"] = deep_tb["shop_and_refinement_catalog"]
 
-    # 2. Expand next unbuilt Town Blueprint among the 6 Starting Towns + 9 Castle/Hub Towns
+    # 2. Expand next unbuilt Town Blueprint among the 6 Starting Towns + 9 Castle/Hub Towns, and ensure D10 shop_and_refinement_catalog
     all_towns = starting_towns + hub_towns
     for idx, t_entry in enumerate(all_towns, start=1):
         if "town_blueprint" not in t_entry:
@@ -1035,6 +1485,9 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
             t_entry["t_depth_status"] = "t_deep_validated"
             actions.append(f"expanded_town_blueprint:{t_entry['zone_id']}")
             break
+        elif isinstance(t_entry.get("town_blueprint"), dict) and "shop_and_refinement_catalog" not in t_entry["town_blueprint"]:
+            t_entry["town_blueprint"]["shop_and_refinement_catalog"] = _synthesize_shop_and_refinement_catalog(t_entry, idx)
+            actions.append(f"populated_shop_and_refinement_catalog:{t_entry['zone_id']}")
 
     # Mirror all built town_blueprints into root `town_blueprints` array for fast lookup
     atlas["town_blueprints"] = [t["town_blueprint"] for t in all_towns if isinstance(t.get("town_blueprint"), dict)]
@@ -1242,18 +1695,58 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     target_forts = max(8, len(forts_list))
     d8_score = round((valid_fort_bps / float(target_forts)) * 100.0, 1)
 
+    # D9: 6-Race Starter-to-Endgame Travel Path Highlighter (`race_growth_routes`)
+    r_routes = atlas.get("race_growth_routes") or []
+    valid_modes = {"footpath", "highway", "gatekeeper_teleport", "dungeon_warp", "sea_or_airship"}
+    valid_routes = [
+        rt
+        for rt in r_routes
+        if isinstance(rt, dict)
+        and rt.get("race_label") in ("Human", "Lunar", "Ogre/Orc", "Dwarf", "Dark-Lunar", "Furral")
+        and len(rt.get("waypoints") or []) >= 7
+        and all(
+            isinstance(wp, dict)
+            and wp.get("step_index")
+            and wp.get("stage_code")
+            and wp.get("zone_id")
+            and wp.get("travel_mode") in valid_modes
+            and wp.get("milestone_goal")
+            for wp in (rt.get("waypoints") or [])
+        )
+    ]
+    d9_score = round(min(100.0, (len(valid_routes) / 6.0) * 100.0), 1)
+
+    # D10: NPC Shop Catalog & +1..+15 Refinement Inspector in Town Blueprints (`shop_and_refinement_catalog`)
+    valid_shop_catalogs = 0
+    for t in all_towns:
+        tb = t.get("town_blueprint") or {}
+        cat = tb.get("shop_and_refinement_catalog")
+        if (
+            isinstance(cat, dict)
+            and len(cat.get("equip_shop_stock") or []) >= 4
+            and len(cat.get("consumable_shop_stock") or []) >= 4
+            and len(cat.get("refinement_anvil_rates") or []) >= 5
+            and len(cat.get("blacksmith_material_spoils") or []) >= 3
+        ):
+            valid_shop_catalogs += 1
+    d10_score = round((valid_shop_catalogs / float(target_towns)) * 100.0, 1)
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
         "Aesthetic": d5_score,
-        "Continuity": round((d1_score + d5_score) / 2.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score) / 3.0, 1),
         "Narrative": 100.0 if len(whc.get("historical_epochs") or []) >= 4 else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score) / 3.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score) / 4.0, 1),
-        "Fantasy": d1_score,
-        "Submission": round((d2_score + d4_score + d7_score) / 3.0, 1),
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score) / 4.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score) / 5.0, 1),
+        "Fantasy": round((d1_score + d9_score) / 2.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score) / 4.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
-    overall = round((d1_score + d2_score + d3_score + d4_score + d5_score + d6_score + d7_score + d8_score) / 8.0, 1)
+    overall = round(
+        (d1_score + d2_score + d3_score + d4_score + d5_score + d6_score + d7_score + d8_score + d9_score + d10_score)
+        / 10.0,
+        1,
+    )
 
     return {
         "overall_score": overall,
@@ -1275,6 +1768,8 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D6_mda_experience_pillars": {"score": d6_score, "pillars": pillar_scores},
             "D7_field_tactical_blueprints": {"score": d7_score, "verified": valid_field_bps, "target": target_fields},
             "D8_fortress_harbor_clanhall_blueprints": {"score": d8_score, "verified": valid_fort_bps, "target": target_forts},
+            "D9_race_growth_routes": {"score": d9_score, "verified": len(valid_routes), "target": 6},
+            "D10_shop_and_refinement_catalogs": {"score": d10_score, "verified": valid_shop_catalogs, "target": target_towns},
         },
     }
 
@@ -1319,17 +1814,19 @@ def main(argv: list[str] | None = None) -> int:
     else:
         dims = audit["dimensions"]
         print(f"ATLAS ITERATION WAVE {prev_wave} | OVERALL SCORE: {audit['overall_score']}/100")
-        print(f"  D1 (6-Race Spawns)         : {dims['D1_race_spawn_locations']['score']}/100 ({dims['D1_race_spawn_locations']['verified']}/{dims['D1_race_spawn_locations']['target']})")
-        print(f"  D2 (Town Blueprints & NPCs): {dims['D2_town_blueprints_and_npcs']['score']}/100 ({dims['D2_town_blueprints_and_npcs']['verified']}/{dims['D2_town_blueprints_and_npcs']['target']})")
-        print(f"  D3 (Multi-Floor Dungeons)  : {dims['D3_multi_floor_dungeon_warps']['score']}/100 ({dims['D3_multi_floor_dungeon_warps']['verified']}/{dims['D3_multi_floor_dungeon_warps']['target']})")
-        print(f"  D4 (Mob/Mini/Raid/MVP)     : {dims['D4_monster_miniboss_raid_mvp_spawns']['score']}/100 ({dims['D4_monster_miniboss_raid_mvp_spawns']['verified']}/{dims['D4_monster_miniboss_raid_mvp_spawns']['target']})")
-        print(f"  D5 (Travel & Anti-Clutter) : {dims['D5_geographic_travel_and_anticlutter']['score']}/100 ({dims['D5_geographic_travel_and_anticlutter']['connected_zones']}/{dims['D5_geographic_travel_and_anticlutter']['total_zones']} zones)")
-        print(f"  D6 (7 MDA Pillars)         : {dims['D6_mda_experience_pillars']['score']}/100 {dims['D6_mda_experience_pillars']['pillars']}")
-        print(f"  D7 (24 Field Blueprints)   : {dims['D7_field_tactical_blueprints']['score']}/100 ({dims['D7_field_tactical_blueprints']['verified']}/{dims['D7_field_tactical_blueprints']['target']})")
-        print(f"  D8 (8 Fortress Blueprints) : {dims['D8_fortress_harbor_clanhall_blueprints']['score']}/100 ({dims['D8_fortress_harbor_clanhall_blueprints']['verified']}/{dims['D8_fortress_harbor_clanhall_blueprints']['target']})")
+        print(f"  D1  (6-Race Spawns)         : {dims['D1_race_spawn_locations']['score']}/100 ({dims['D1_race_spawn_locations']['verified']}/{dims['D1_race_spawn_locations']['target']})")
+        print(f"  D2  (Town Blueprints & NPCs): {dims['D2_town_blueprints_and_npcs']['score']}/100 ({dims['D2_town_blueprints_and_npcs']['verified']}/{dims['D2_town_blueprints_and_npcs']['target']})")
+        print(f"  D3  (Multi-Floor Dungeons)  : {dims['D3_multi_floor_dungeon_warps']['score']}/100 ({dims['D3_multi_floor_dungeon_warps']['verified']}/{dims['D3_multi_floor_dungeon_warps']['target']})")
+        print(f"  D4  (Mob/Mini/Raid/MVP)     : {dims['D4_monster_miniboss_raid_mvp_spawns']['score']}/100 ({dims['D4_monster_miniboss_raid_mvp_spawns']['verified']}/{dims['D4_monster_miniboss_raid_mvp_spawns']['target']})")
+        print(f"  D5  (Travel & Anti-Clutter) : {dims['D5_geographic_travel_and_anticlutter']['score']}/100 ({dims['D5_geographic_travel_and_anticlutter']['connected_zones']}/{dims['D5_geographic_travel_and_anticlutter']['total_zones']} zones)")
+        print(f"  D6  (7 MDA Pillars)         : {dims['D6_mda_experience_pillars']['score']}/100 {dims['D6_mda_experience_pillars']['pillars']}")
+        print(f"  D7  (24 Field Blueprints)   : {dims['D7_field_tactical_blueprints']['score']}/100 ({dims['D7_field_tactical_blueprints']['verified']}/{dims['D7_field_tactical_blueprints']['target']})")
+        print(f"  D8  (8 Fortress Blueprints) : {dims['D8_fortress_harbor_clanhall_blueprints']['score']}/100 ({dims['D8_fortress_harbor_clanhall_blueprints']['verified']}/{dims['D8_fortress_harbor_clanhall_blueprints']['target']})")
+        print(f"  D9  (6-Race Growth Routes)  : {dims['D9_race_growth_routes']['score']}/100 ({dims['D9_race_growth_routes']['verified']}/{dims['D9_race_growth_routes']['target']})")
+        print(f"  D10 (Shop & +1..+15 Refine) : {dims['D10_shop_and_refinement_catalogs']['score']}/100 ({dims['D10_shop_and_refinement_catalogs']['verified']}/{dims['D10_shop_and_refinement_catalogs']['target']})")
         if executed_actions:
-            print(f"  Actions                    : {', '.join(executed_actions)}")
-        print(f"  Compact State Written      : {STATE_PATH}")
+            print(f"  Actions                     : {', '.join(executed_actions)}")
+        print(f"  Compact State Written       : {STATE_PATH}")
     return 0
 
 

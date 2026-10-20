@@ -4262,15 +4262,105 @@ let STUDIO_MAP_SELECTED_POI = null;
 let STUDIO_MAP_DRAG = null;
 let STUDIO_MAP_LOC = { x: -84120, y: 243500, svgX: 465, svgY: 442 };
 
+let ATLAS_FOCUSED_TOWN_ID = 'town-lantern-hollow';
+let ATLAS_FOCUSED_FIELD_ID = '';
+let ATLAS_FOCUSED_FORTRESS_ID = '';
+
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
   levelBand: 'All',      // 'All' | '1-20' | '21-40' | '41-60' | '61-80' | '81-99'
+  raceGrowthRoute: 'All', // 'All' | 'Human' | 'Lunar' | 'Ogre/Orc' | 'Dwarf' | 'Dark-Lunar' | 'Furral'
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
   activeTownId: 'town-lantern-hollow',
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function resolveNearestZoneFromPanAndLoc(
+  zoomVal = STUDIO_MAP_ZOOM,
+  locObj = STUDIO_MAP_LOC,
+  panX = STUDIO_MAP_PAN_X,
+  panY = STUDIO_MAP_PAN_Y
+) {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const towns = getAllAtlasTownEntries(tatlas);
+  const fields = getAllAtlasFieldEntries(tatlas);
+  const forts = getAllAtlasFortressEntries(tatlas);
+
+  let targetLoc = clampWorldLocCoord(locObj || STUDIO_MAP_LOC);
+  if ((panX !== 0 || panY !== 0) && (!locObj || locObj === STUDIO_MAP_LOC)) {
+    const effScale = Math.max(1.0, zoomVal);
+    const panSvgX = Math.max(30, Math.min(1010, Math.round((targetLoc.svgX || 520) - panX / effScale)));
+    const panSvgY = Math.max(30, Math.min(470, Math.round((targetLoc.svgY || 250) - panY / effScale)));
+    targetLoc = svgToL2Loc(panSvgX, panSvgY);
+  }
+
+  let nearestTown = towns[0] || { studio_node_id: 'town-lantern-hollow', zone_id: 'zone-town-lantern-hollow' };
+  let minTownDist = Infinity;
+  towns.forEach(t => {
+    const c = clampWorldLocCoord(t.loc_coord || '-84120:243500');
+    const dist = Math.hypot(c.x - targetLoc.x, c.y - targetLoc.y);
+    if (dist < minTownDist) {
+      minTownDist = dist;
+      nearestTown = t;
+    }
+  });
+
+  let nearestField = fields[0] || null;
+  let minFieldDist = Infinity;
+  fields.forEach(f => {
+    const c = clampWorldLocCoord(f.loc_coord || '72986:113330');
+    const dist = Math.hypot(c.x - targetLoc.x, c.y - targetLoc.y);
+    if (dist < minFieldDist) {
+      minFieldDist = dist;
+      nearestField = f;
+    }
+  });
+
+  let nearestFort = forts[0] || null;
+  let minFortDist = Infinity;
+  forts.forEach(h => {
+    const c = clampWorldLocCoord(h.loc_coord || '-96200:258400');
+    const dist = Math.hypot(c.x - targetLoc.x, c.y - targetLoc.y);
+    if (dist < minFortDist) {
+      minFortDist = dist;
+      nearestFort = h;
+    }
+  });
+
+  ATLAS_FOCUSED_TOWN_ID = nearestTown.studio_node_id || nearestTown.zone_id || 'town-lantern-hollow';
+  ATLAS_FOCUSED_FIELD_ID = (nearestField && (nearestField.zone_id || nearestField.studio_node_id)) || '';
+  ATLAS_FOCUSED_FORTRESS_ID = (nearestFort && (nearestFort.zone_id || nearestFort.studio_node_id)) || '';
+
+  if (zoomVal >= 4.5) {
+    ATLAS_STATE_STORE.activeTownId = ATLAS_FOCUSED_TOWN_ID;
+    ATLAS_STATE_STORE.activeFieldOrFortId = '';
+    STUDIO_SELECTED_NODE_ID = ATLAS_FOCUSED_TOWN_ID;
+  } else if (zoomVal >= 3.5) {
+    if (minTownDist <= Math.min(minFieldDist, minFortDist)) {
+      ATLAS_STATE_STORE.activeTownId = ATLAS_FOCUSED_TOWN_ID;
+      ATLAS_STATE_STORE.activeFieldOrFortId = '';
+      STUDIO_SELECTED_NODE_ID = ATLAS_FOCUSED_TOWN_ID;
+    } else if (minFieldDist <= minFortDist && ATLAS_FOCUSED_FIELD_ID) {
+      ATLAS_STATE_STORE.activeFieldOrFortId = ATLAS_FOCUSED_FIELD_ID;
+      STUDIO_SELECTED_NODE_ID = ATLAS_FOCUSED_FIELD_ID;
+    } else if (ATLAS_FOCUSED_FORTRESS_ID) {
+      ATLAS_STATE_STORE.activeFieldOrFortId = ATLAS_FOCUSED_FORTRESS_ID;
+      STUDIO_SELECTED_NODE_ID = ATLAS_FOCUSED_FORTRESS_ID;
+    }
+  }
+
+  return {
+    townId: ATLAS_FOCUSED_TOWN_ID,
+    fieldId: ATLAS_FOCUSED_FIELD_ID,
+    fortressId: ATLAS_FOCUSED_FORTRESS_ID,
+    nearestKind: minTownDist <= Math.min(minFieldDist, minFortDist)
+      ? 'town'
+      : (minFieldDist <= minFortDist ? 'field' : 'fortress')
+  };
+}
 
 function clampWorldLocCoord(locStrOrObj) {
   const sp = (DATA && DATA.studioPerspectives) || {};
@@ -4326,6 +4416,7 @@ function svgToL2Loc(svgX, svgY) {
 }
 
 function zoomStudioMap(delta, reset = false, targetZoom = null) {
+  const prevZoom = STUDIO_MAP_ZOOM;
   const prevTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
   if (reset) {
     STUDIO_MAP_ZOOM = 1.0;
@@ -4334,14 +4425,21 @@ function zoomStudioMap(delta, reset = false, targetZoom = null) {
     ATLAS_STATE_STORE.activeDungeonId = '';
     ATLAS_STATE_STORE.activeFloorId = '';
     ATLAS_STATE_STORE.activeFieldOrFortId = '';
+    ATLAS_FOCUSED_FIELD_ID = '';
+    ATLAS_FOCUSED_FORTRESS_ID = '';
   } else if (targetZoom !== null && Number.isFinite(targetZoom)) {
     STUDIO_MAP_ZOOM = Math.max(0.85, Math.min(12.0, +targetZoom.toFixed(2)));
   } else {
     STUDIO_MAP_ZOOM = Math.max(0.85, Math.min(12.0, +(STUDIO_MAP_ZOOM + delta).toFixed(2)));
   }
+  const crossed35 = (prevZoom < 3.5 && STUDIO_MAP_ZOOM >= 3.5) || (prevZoom >= 3.5 && STUDIO_MAP_ZOOM < 3.5);
+  const crossed45 = (prevZoom < 4.5 && STUDIO_MAP_ZOOM >= 4.5) || (prevZoom >= 4.5 && STUDIO_MAP_ZOOM < 4.5);
+  if (!reset && targetZoom === null && (crossed35 || crossed45)) {
+    resolveNearestZoneFromPanAndLoc(STUDIO_MAP_ZOOM, STUDIO_MAP_LOC, STUDIO_MAP_PAN_X, STUDIO_MAP_PAN_Y);
+  }
   const nextTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
   writeUrlState(false);
-  if (prevTier !== nextTier || reset || targetZoom !== null) {
+  if (prevTier !== nextTier || crossed35 || crossed45 || reset || targetZoom !== null) {
     render();
   } else {
     applyStudioMapTransform();
@@ -4391,16 +4489,26 @@ function setAtlasLevelBand(band) {
   render();
 }
 
+function setAtlasRaceGrowthRoute(raceLabel) {
+  ATLAS_STATE_STORE.raceGrowthRoute = raceLabel || 'All';
+  writeUrlState(false);
+  render();
+}
+
 function resetAtlasFilters() {
   ATLAS_STATE_STORE.filter = 'All';
   ATLAS_STATE_STORE.levelBand = 'All';
+  ATLAS_STATE_STORE.raceGrowthRoute = 'All';
   ATLAS_STATE_STORE.toastMessage = '';
   writeUrlState(false);
   render();
 }
 
 function focusTownStreetBlueprint(townId, locCoord) {
-  ATLAS_STATE_STORE.activeTownId = townId || 'town-lantern-hollow';
+  ATLAS_FOCUSED_TOWN_ID = townId || 'town-lantern-hollow';
+  ATLAS_FOCUSED_FIELD_ID = '';
+  ATLAS_FOCUSED_FORTRESS_ID = '';
+  ATLAS_STATE_STORE.activeTownId = ATLAS_FOCUSED_TOWN_ID;
   ATLAS_STATE_STORE.activeFieldOrFortId = '';
   ATLAS_STATE_STORE.activeDungeonId = '';
   ATLAS_STATE_STORE.activeFloorId = '';
@@ -4414,7 +4522,13 @@ function focusTownStreetBlueprint(townId, locCoord) {
 }
 
 function focusFieldTacticalBlueprint(fieldOrFortId, locCoord = '') {
-  ATLAS_STATE_STORE.activeFieldOrFortId = fieldOrFortId || 'zone-field-clover-south-gate';
+  const targetId = fieldOrFortId || 'zone-field-clover-south-gate';
+  if (targetId.includes('fortress') || targetId.includes('harbor') || targetId.includes('clanhall')) {
+    ATLAS_FOCUSED_FORTRESS_ID = targetId;
+  } else {
+    ATLAS_FOCUSED_FIELD_ID = targetId;
+  }
+  ATLAS_STATE_STORE.activeFieldOrFortId = targetId;
   ATLAS_STATE_STORE.activeDungeonId = '';
   ATLAS_STATE_STORE.activeFloorId = '';
   if (locCoord) {
@@ -4427,7 +4541,8 @@ function focusFieldTacticalBlueprint(fieldOrFortId, locCoord = '') {
 }
 
 function focusFortressBlueprint(fortId, locCoord = '') {
-  focusFieldTacticalBlueprint(fortId || 'zone-harbor-lantern-ferry-pier', locCoord);
+  ATLAS_FOCUSED_FORTRESS_ID = fortId || 'zone-harbor-lantern-ferry-pier';
+  focusFieldTacticalBlueprint(ATLAS_FOCUSED_FORTRESS_ID, locCoord);
 }
 
 function openDungeonSubMap(dungeonId, floorId = '') {
@@ -4879,7 +4994,7 @@ function renderCartoShellHtml({
 
         <!-- Card 3: Connections / Residents / Drops -->
         ${(poi.connections && poi.connections.length) ? `
-          <div style="padding:11px 12px;border-radius:10px;background:#111823;border:1px solid rgba(255,255,255,0.07)">
+          <div style="padding:11px 12px;border-radius:10px;background:#111823;border:1px solid rgba(255,255,255,0.07);margin-bottom:8px">
             <div style="font-size:10.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:6px">Connected Routes &amp; Landmarks</div>
             <div style="display:flex;flex-direction:column;gap:5px">
               ${poi.connections.map(c => `
@@ -4889,6 +5004,77 @@ function renderCartoShellHtml({
                 </div>
               `).join('')}
             </div>
+          </div>
+        ` : ''}
+
+        <!-- Card 4 (D10): NPC Shop Catalog (Weapons, Armor, Potions) & +1..+15 Refinement Anvil Inspector -->
+        ${poi.shopAndRefinementCatalog ? `
+          <div id="studioShopAndRefinementInspector" style="padding:11px 12px;border-radius:10px;background:#111823;border:1.5px solid rgba(250,204,21,0.45);margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:11px;color:#fde047;font-weight:900;text-transform:uppercase">🛍️ NPC Shop Stock &amp; +1 to +15 Refinement Inspector</span>
+              <span class="mono" style="font-size:9.5px;color:#4ade80;font-weight:800">D10 VERIFIED</span>
+            </div>
+
+            ${(!poi.activeCatalogTab || poi.activeCatalogTab === 'equip_shop' || poi.activeCatalogTab === 'all') ? `
+              <div style="margin-bottom:8px">
+                <div style="font-size:10.5px;font-weight:800;color:#fca5a5;margin-bottom:4px">⚔️ Equip Shop Stock (Weapons, Armor &amp; Shields)</div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  ${(poi.shopAndRefinementCatalog.equip_shop_stock || []).map(item => `
+                    <div style="padding:5px 7px;border-radius:6px;background:#182232;border-left:3px solid #eab308">
+                      <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                        <span style="font-size:11px;font-weight:800;color:#f8fafc">${escapeHtml(item.name)}</span>
+                        <span class="mono" style="font-size:9.5px;color:#fde047">${Number(item.price_adena || 0).toLocaleString()} Adena</span>
+                      </div>
+                      <div style="font-size:10px;color:#94a3b8;margin-top:2px">${escapeHtml(item.category)} (${escapeHtml(item.grade)}) · ${escapeHtml(item.stats)} · Max ${escapeHtml(item.max_refinement || '+15')}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+
+            ${(!poi.activeCatalogTab || poi.activeCatalogTab === 'consumable_shop' || poi.activeCatalogTab === 'all') ? `
+              <div style="margin-bottom:8px">
+                <div style="font-size:10.5px;font-weight:800;color:#67e8f9;margin-bottom:4px">🧪 Consumable &amp; Apothecary Stock (Potions, Soulshots &amp; Scrolls)</div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  ${(poi.shopAndRefinementCatalog.consumable_shop_stock || []).map(item => `
+                    <div style="padding:5px 7px;border-radius:6px;background:#182232;border-left:3px solid #06b6d4">
+                      <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                        <span style="font-size:11px;font-weight:800;color:#f8fafc">${escapeHtml(item.name)}</span>
+                        <span class="mono" style="font-size:9.5px;color:#67e8f9">${Number(item.price_adena || 0).toLocaleString()} Adena</span>
+                      </div>
+                      <div style="font-size:10px;color:#94a3b8;margin-top:2px">${escapeHtml(item.category)} · ${escapeHtml(item.effect)}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+
+            ${(!poi.activeCatalogTab || poi.activeCatalogTab === 'blacksmith' || poi.activeCatalogTab === 'refinement_anvils' || poi.activeCatalogTab === 'all') ? `
+              <div>
+                <div style="font-size:10.5px;font-weight:800;color:#fb923c;margin-bottom:4px">⚒️ +1 to +15 Refinement Anvil Rates &amp; Material Spoils</div>
+                <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">
+                  ${(poi.shopAndRefinementCatalog.refinement_anvil_rates || []).map(tier => `
+                    <div style="padding:5px 7px;border-radius:6px;background:#1f1924;border-left:3px solid #f97316">
+                      <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                        <span style="font-size:10.5px;font-weight:900;color:#fde047">${escapeHtml(tier.enchant_range)}</span>
+                        <span class="mono" style="font-size:10px;color:#4ade80;font-weight:800">${tier.success_rate_pct}% Success</span>
+                      </div>
+                      <div style="font-size:9.8px;color:#e2e8f0;margin-top:2px">${escapeHtml(tier.stat_bonus)}</div>
+                      <div style="font-size:9.5px;color:#fca5a5;margin-top:1px">⚠️ Penalty: ${escapeHtml(tier.failure_penalty)}</div>
+                      <div style="font-size:9.5px;color:#bae6fd;margin-top:2px">💎 Spoils: ${escapeHtml((tier.material_spoils || []).join(', '))}</div>
+                    </div>
+                  `).join('')}
+                </div>
+                <div style="font-size:10px;font-weight:800;color:#c084fc;margin-bottom:3px">📦 Blacksmith Material Spoils &amp; Smelting Sources</div>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  ${(poi.shopAndRefinementCatalog.blacksmith_material_spoils || []).map(sp => `
+                    <div style="padding:4px 6px;border-radius:5px;background:#182232;font-size:9.5px;color:#cbd5e1">
+                      <strong style="color:#f8fafc">${escapeHtml(sp.material_name)}</strong> (${escapeHtml(sp.used_for_tiers)}) — ${escapeHtml(sp.source_zone)} [<span class="mono" style="color:#fde047">${escapeHtml(sp.drop_or_spoil_rate)}</span>]
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
           </div>
         ` : ''}
       </div>
@@ -5156,13 +5342,30 @@ function renderAtlasFilterBarHtml(matchCount) {
               </button>
             `;
           }).join('')}
-          ${(ATLAS_STATE_STORE.filter !== 'All' || ATLAS_STATE_STORE.levelBand !== 'All') ? `
+          ${(ATLAS_STATE_STORE.filter !== 'All' || ATLAS_STATE_STORE.levelBand !== 'All' || ATLAS_STATE_STORE.raceGrowthRoute !== 'All') ? `
             <button type="button" onclick="resetAtlasFilters()"
                     style="min-height:26px;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid #f87171;background:rgba(220,38,38,0.2);color:#fca5a5">
               ↺ Reset Filters
             </button>
           ` : ''}
         </div>
+      </div>
+
+      <!-- D9: 6-Race Starter-to-Endgame Travel Path Selector (Spawn -> Starter Town -> Field -> Ant Nest/Dungeon -> Dion Hub -> Oren/Cruma Tower -> Halo Endgame) -->
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.06)">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:800;color:#fde047;margin-right:4px">🛤️ Highlight Race Growth Path:</span>
+          ${['All', 'Human', 'Lunar', 'Ogre/Orc', 'Dwarf', 'Dark-Lunar', 'Furral'].map(rLabel => {
+            const active = (ATLAS_STATE_STORE.raceGrowthRoute || 'All') === rLabel;
+            return `
+              <button type="button" onclick="setAtlasRaceGrowthRoute('${rLabel}')"
+                      style="min-height:25px;padding:2px 9px;border-radius:999px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid ${active ? '#fde047' : 'rgba(255,255,255,0.14)'};background:${active ? '#b45309' : '#172030'};color:${active ? '#ffffff' : '#fde68a'}">
+                ${rLabel === 'All' ? '🌐 All (Off)' : '🧬 ' + rLabel}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9.5px;color:#94a3b8">Stages A..L: Spawn ➔ Starter Town ➔ Field ➔ Ant Nest/Dungeon ➔ Dion Hub ➔ Oren/Cruma Tower ➔ Halo Endgame</span>
       </div>
 
       <!-- Quick Semantic Zoom, All 15 Town Street Blueprints, 24 Field Tactical Blueprints, 8 Fortress Blueprints & 16 Multi-Floor Dungeons -->
@@ -5474,6 +5677,7 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
     const by = Math.round((b.y_pct / 100) * 500);
     const bw = Math.round((b.w_pct / 100) * 1040);
     const bh = Math.round((b.h_pct / 100) * 500);
+    const bldgCatalogTab = b.building_number === 7 ? 'equip_shop' : (b.building_number === 8 ? 'consumable_shop' : (b.building_number === 3 ? 'blacksmith' : 'all'));
     const poiBldg = {
       title: `${b.name}`,
       category: `Town Blueprint Building #${b.building_number} · ${bp.archetype_subtitle}`,
@@ -5484,6 +5688,8 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
       coordinates: `Footprint: ${b.w_pct}% × ${b.h_pct}% · Roof: ${b.roof_color}`,
       scaleSpecs: `Doorway: 2.15m × 1.60m · Counter: 0.58m · Step Riser: 0.14m (90–120cm scale law)`,
       inspectId: (townNode && townNode.id) || 'town-lantern-hollow',
+      shopAndRefinementCatalog: bp.shop_and_refinement_catalog || null,
+      activeCatalogTab: bldgCatalogTab,
       connections: [{ label: `🏛️ Function: ${b.function}`, badge: `#${b.building_number}` }]
     };
     return `
@@ -5504,16 +5710,19 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
   const marksSvg = visibleMarks.map(m => {
     const mx = Math.round((m.x_pct / 100) * 1040);
     const my = Math.round((m.y_pct / 100) * 500);
+    const isShopOrRefine = ['equip_shop', 'consumable_shop', 'blacksmith', 'refinement_anvils'].includes(m.mark_type);
     const poiMark = {
       title: `${m.icon} ${m.label} (${m.mark_type})`,
       category: `Town Service Mark · Building #${m.building_number} · ${m.npc_name}`,
       thumb: '/thumbs/props/chest.webp',
       hoursOrStatus: `SERVICE MARK: ${m.mark_type.toUpperCase()} · Building #${m.building_number}`,
-      summary: m.description,
+      summary: `${m.description} ${isShopOrRefine ? 'Inspect concrete Shop Stock (Weapons, Armor, Potions) and +1 to +15 Refinement Anvil Rates & Material Spoils below!' : ''}`,
       address: `Building #${m.building_number} · ${bp.archetype_subtitle}`,
       coordinates: `Mark ID: ${m.mark_id} · NPC: ${m.npc_name}`,
       scaleSpecs: `0.58m Shop/Forge Counter · 4.4m Artisan Walkway`,
       inspectId: (townNode && townNode.id) || 'town-lantern-hollow',
+      shopAndRefinementCatalog: bp.shop_and_refinement_catalog || null,
+      activeCatalogTab: isShopOrRefine ? m.mark_type : 'all',
       connections: [{ label: `🛍️ Resident NPC: ${m.npc_name}`, badge: m.mark_type }]
     };
     return `
@@ -5629,12 +5838,14 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
     title: bp.archetype_subtitle,
     category: 'Tier 3 Semantic Zoom (4.5×–12.0×) · Walled Town Street, Building & Service-Mark Blueprint',
     thumb: '/thumbs/buildings/tower_round_roof_a.webp',
-    hoursOrStatus: `7 SERVICE MARKS · 12 NUMBERED BUILDINGS & NPCS · 4 GATES`,
-    summary: 'Includes Weapons & Armor Equip Shop (equip_shop), Consumable/Grocery Store (consumable_shop), Blacksmith Refinement Forge (blacksmith), Temple (temple), Warehouse (warehouse), Guilds (guild), and Gatekeeper (gatekeeper).',
+    hoursOrStatus: `7 SERVICE MARKS · 12 NUMBERED BUILDINGS & NPCS · +1..+15 REFINEMENT ANVILS`,
+    summary: 'Click any ⚔️ Equip Shop, 🧪 Consumable Shop, or ⚒️ Refinement & Blacksmith on the Town Blueprint to inspect concrete Shop Stock (Weapons, Armor, Potions) and +1 to +15 Refinement Anvil Rates & Material Spoils.',
     address: bp.archetype_subtitle,
     coordinates: `Zoom: ${STUDIO_MAP_ZOOM.toFixed(2)}× · loc=${STUDIO_MAP_LOC.x}:${STUDIO_MAP_LOC.y}`,
     scaleSpecs: `Main Meridian Avenue: 14.0m · Crossway: 12.5m · Ring: 6.0m · Shop Counters: 0.58m`,
     inspectId: (townNode && townNode.id) || 'town-lantern-hollow',
+    shopAndRefinementCatalog: bp.shop_and_refinement_catalog || null,
+    activeCatalogTab: 'all',
     connections: (bp.service_marks || []).map(m => ({ label: `${m.icon} #${m.building_number} ${m.label} (${m.npc_name})`, badge: m.mark_type }))
   };
 
@@ -5933,7 +6144,8 @@ function renderDedicatedWorldAtlas() {
   const lodTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
   const allFields = getAllAtlasFieldEntries(tatlas);
   const allForts = getAllAtlasFortressEntries(tatlas);
-  const candidateFieldOrFortId = ATLAS_STATE_STORE.activeFieldOrFortId || (STUDIO_MAP_ZOOM >= 3.5 ? STUDIO_SELECTED_NODE_ID : '');
+  const candidateFieldOrFortId = ATLAS_STATE_STORE.activeFieldOrFortId
+    || (STUDIO_MAP_ZOOM >= 3.5 && STUDIO_MAP_ZOOM < 4.5 ? (ATLAS_FOCUSED_FIELD_ID || ATLAS_FOCUSED_FORTRESS_ID || STUDIO_SELECTED_NODE_ID) : '');
   if (candidateFieldOrFortId) {
     const matchedFieldOrFort = allFields.find(f => f.zone_id === candidateFieldOrFortId || f.studio_node_id === candidateFieldOrFortId)
       || allForts.find(h => h.zone_id === candidateFieldOrFortId || h.studio_node_id === candidateFieldOrFortId);
@@ -5945,7 +6157,7 @@ function renderDedicatedWorldAtlas() {
   // 3. If Semantic Zoom >= 4.5x (Tier 3), automatically transition to the Town Street, Building & Service-Mark Blueprint!
   if (lodTier === 3) {
     const allTownEntries = getAllAtlasTownEntries(tatlas);
-    const targetTownId = ATLAS_STATE_STORE.activeTownId || STUDIO_SELECTED_NODE_ID || 'town-lantern-hollow';
+    const targetTownId = ATLAS_STATE_STORE.activeTownId || ATLAS_FOCUSED_TOWN_ID || STUDIO_SELECTED_NODE_ID || 'town-lantern-hollow';
     const activeTown = nodes.find(n => n.id === targetTownId)
       || allTownEntries.find(t => t.studio_node_id === targetTownId || t.zone_id === targetTownId)
       || nodes.find(n => n.node_type === 'town');
@@ -6236,6 +6448,113 @@ function renderDedicatedWorldAtlas() {
     `;
   }).join('');
 
+  // D9: 6-Race Starter-to-Endgame Travel Path Highlighter (Animated Golden Travel Path on World Canvas)
+  const raceRoutes = tatlas.race_growth_routes || [];
+  const activeRaceRouteLabel = ATLAS_STATE_STORE.raceGrowthRoute || 'All';
+  const activeRaceRouteObj = activeRaceRouteLabel !== 'All'
+    ? (raceRoutes.find(r => r.race_label === activeRaceRouteLabel || r.race_key === activeRaceRouteLabel) || null)
+    : null;
+
+  const zoneSvgAnchorMap = {
+    'zone-town-lantern-hollow': { x: 445, y: 432 },
+    'zone-field-clover-south-gate': { x: 468, y: 448 },
+    'zone-town-porcelain-loom': { x: 535, y: 398 },
+    'zone-field-celadon-causeway': { x: 558, y: 382 },
+    'zone-dungeon-medallion-heart-vault': { x: 572, y: 368 },
+    'zone-town-draft-kiln-post': { x: 345, y: 412 },
+    'zone-field-firebrick-duct': { x: 385, y: 422 },
+    'zone-dungeon-ember-bellows-chamber': { x: 418, y: 438 },
+    'zone-town-root-train-roundhouse': { x: 685, y: 418 },
+    'zone-field-resin-arch-tunnel': { x: 652, y: 392 },
+    'zone-dungeon-sap-heart-cistern': { x: 628, y: 372 },
+    'zone-town-carillon-belfry': { x: 392, y: 348 },
+    'zone-field-chime-pipe-colonnade': { x: 442, y: 352 },
+    'zone-dungeon-ceramic-resonator-crypt': { x: 488, y: 356 },
+    'zone-town-cinnamon-mill': { x: 245, y: 342 },
+    'zone-field-cinnamon-bark-viaduct': { x: 295, y: 346 },
+    'zone-dungeon-spice-kiln-cellar': { x: 342, y: 352 },
+    'zone-town-kilnwatch-bastion': { x: 595, y: 345 },
+    'zone-dungeon-kiln-cellar': { x: 495, y: 465 },
+    'zone-town-pinion-terminus': { x: 745, y: 288 },
+    'zone-dungeon-pendulum-shaft': { x: 665, y: 252 },
+    'zone-town-escapement-anvil': { x: 782, y: 255 },
+    'zone-dungeon-chronometer-foundry': { x: 845, y: 215 },
+    'zone-town-inductor-switchyard': { x: 765, y: 175 },
+    'zone-town-starfall-haven': { x: 565, y: 122 },
+    'zone-dungeon-star-heart-nave': { x: 785, y: 88 }
+  };
+
+  let raceGrowthPathSvg = '';
+  let bottomRaceGrowthPanelHtml = '';
+  if (activeRaceRouteObj && Array.isArray(activeRaceRouteObj.waypoints)) {
+    const wps = activeRaceRouteObj.waypoints.map((wp, idx) => {
+      const anchor = zoneSvgAnchorMap[wp.zone_id] || clampWorldLocCoord(wp.loc);
+      const sx = anchor.x !== undefined && anchor.x <= 1040 ? anchor.x : (anchor.svgX || 520);
+      const sy = anchor.y !== undefined && anchor.y <= 500 ? anchor.y : (anchor.svgY || 250);
+      return { ...wp, sx, sy, idx };
+    });
+
+    const segsSvg = wps.map((wp, idx) => {
+      if (idx === 0) return '';
+      const prev = wps[idx - 1];
+      const mx = Math.round((prev.sx + wp.sx) / 2);
+      const my = Math.round((prev.sy + wp.sy) / 2) - 14;
+      return `
+        <path d="M ${prev.sx},${prev.sy} Q ${mx},${my} ${wp.sx},${wp.sy}" fill="none" stroke="rgba(250,204,21,0.32)" stroke-width="11" stroke-linecap="round"/>
+        <path d="M ${prev.sx},${prev.sy} Q ${mx},${my} ${wp.sx},${wp.sy}" fill="none" stroke="#fde047" stroke-width="4.2" stroke-linecap="round" stroke-dasharray="10 6">
+          <animate attributeName="stroke-dashoffset" from="32" to="0" dur="1.4s" repeatCount="indefinite"/>
+        </path>
+      `;
+    }).join('');
+
+    const wpNodesSvg = wps.map(wp => {
+      const poiWp = {
+        title: `🛤️ Stage ${wp.stage_code} (Step ${wp.step_index}): ${wp.name}`,
+        category: `${activeRaceRouteObj.race_name} Growth Route · ${wp.level_range} · ${wp.travel_mode}`,
+        thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+        hoursOrStatus: `STAGE ${wp.stage_code} WAYPOINT #${wp.step_index} · Mode: ${wp.travel_mode.toUpperCase()}`,
+        summary: wp.milestone_goal,
+        address: `${wp.name} (${wp.l2_alias})`,
+        coordinates: `Zone: ${wp.zone_id} · loc=${wp.loc}`,
+        scaleSpecs: `Recommended Level: ${wp.level_range} · Travel Mode: ${wp.travel_mode}`,
+        locCoord: wp.loc,
+        townBlueprintId: wp.zone_id.startsWith('zone-town-') ? wp.zone_id : '',
+        fieldTacticalBlueprintId: wp.zone_id.startsWith('zone-field-') ? wp.zone_id : '',
+        dungeonWarpId: wp.zone_id.startsWith('zone-dungeon-') ? wp.zone_id : '',
+        inspectId: wp.zone_id,
+        connections: [{ label: `🎯 Milestone: ${wp.milestone_goal}`, badge: wp.stage_code }]
+      };
+      return `
+        <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiWp, svgX: wp.sx, svgY: wp.sy })}', event)" filter="url(#cartoDropShadow)">
+          <circle cx="${wp.sx}" cy="${wp.sy}" r="14" fill="#b45309" stroke="#fde047" stroke-width="2.5"/>
+          <text x="${wp.sx}" y="${wp.sy + 4}" text-anchor="middle" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace">${escapeHtml(wp.stage_code)}</text>
+        </g>
+      `;
+    }).join('');
+
+    raceGrowthPathSvg = `<g id="studioRaceGrowthRouteOverlay">${segsSvg}${wpNodesSvg}</g>`;
+    bottomRaceGrowthPanelHtml = `
+      <div style="padding:10px 16px;background:#14110b;border-top:1px solid rgba(250,204,21,0.35)">
+        <div style="font-size:11.5px;font-weight:900;color:#fde047;margin-bottom:6px">
+          🛤️ ${escapeHtml(activeRaceRouteObj.race_name.toUpperCase())} STARTER-TO-ENDGAME GROWTH ROUTE (STAGES A..L · 12 WAYPOINTS)
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px">
+          ${wps.map(wp => `
+            <div onclick="STUDIO_MAP_LOC=clampWorldLocCoord('${escapeHtml(wp.loc)}'); resolveNearestZoneFromPanAndLoc(STUDIO_MAP_ZOOM, STUDIO_MAP_LOC, 0, 0); render();"
+                 style="padding:6px 8px;border-radius:6px;background:#1c1917;border-left:3px solid #fde047;cursor:pointer">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                <span class="mono" style="font-size:10px;font-weight:900;color:#fde047">[Stage ${escapeHtml(wp.stage_code)} · #${wp.step_index}] ${escapeHtml(wp.level_range)}</span>
+                <span class="mono" style="font-size:9px;color:#38bdf8">${escapeHtml(wp.travel_mode)}</span>
+              </div>
+              <div style="font-size:10.5px;font-weight:800;color:#f8fafc;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(wp.name)}</div>
+              <div style="font-size:9.5px;color:#cbd5e1;margin-top:2px;line-height:1.3">${escapeHtml(wp.milestone_goal)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   // Tier 2 Regional LOD (2.2x - 4.5x): Reveal regional hunting territory rings, Lv.min-max highway shields & Gatekeeper teleport splines
   const regionalOverlaySvg = lodTier >= 2 ? `
     <g pointer-events="none" opacity="0.88">
@@ -6356,6 +6675,7 @@ function renderDedicatedWorldAtlas() {
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
     ${regionalOverlaySvg}
     ${highwaysSvg}
+    ${raceGrowthPathSvg}
     ${landmarksSvg}
     ${mobPinsSvg}
   `;
@@ -6389,10 +6709,12 @@ function renderDedicatedWorldAtlas() {
     activeScaleIndex: lodTier,
     defaultPoi,
     filterBarHtml: renderAtlasFilterBarHtml(matchCount),
+    bottomPanelHtml: bottomRaceGrowthPanelHtml,
     svgInnerHtml,
     legendItems: [
       { color: '#10b981', label: '🧬 6 Playable Race Spawns' },
       { color: '#eab308', label: '🏰 Towns (Zoom ≥4.5× for Shops)' },
+      { color: '#fde047', label: '🛤️ 6-Race Growth Route (A..L)' },
       { color: '#a855f7', label: '🕳️ / 🗼 Multi-Floor Dungeon Warp' },
       { color: '#ef4444', label: '👾 Monster / ⚔️ Mini-Boss' },
       { color: '#f97316', label: '🔥 Raid / 👑 MVP Boss' }

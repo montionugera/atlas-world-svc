@@ -29,6 +29,12 @@
       "maxItems": 6,
       "items": { "$ref": "#/$defs/raceSpawnLocationSpec" }
     },
+    "race_growth_routes": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": { "$ref": "#/$defs/raceGrowthRouteSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -555,6 +561,160 @@
               "x_pct": { "type": "number" },
               "y_pct": { "type": "number" },
               "loc_coord": { "type": "string" }
+            }
+          }
+        },
+        "shop_and_refinement_catalog": {
+          "$ref": "#/$defs/shopAndRefinementCatalogSpec"
+        }
+      }
+    },
+    "raceGrowthRouteSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_id",
+        "race_key",
+        "race_label",
+        "race_name",
+        "color_hex",
+        "summary",
+        "waypoints"
+      ],
+      "properties": {
+        "route_id": { "type": "string" },
+        "race_key": { "type": "string" },
+        "race_label": {
+          "type": "string",
+          "enum": ["Human", "Lunar", "Ogre/Orc", "Dwarf", "Dark-Lunar", "Furral"]
+        },
+        "race_name": { "type": "string" },
+        "color_hex": { "type": "string" },
+        "summary": { "type": "string" },
+        "waypoints": {
+          "type": "array",
+          "minItems": 7,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "step_index",
+              "stage_code",
+              "zone_id",
+              "name",
+              "l2_alias",
+              "loc",
+              "level_range",
+              "travel_mode",
+              "milestone_goal"
+            ],
+            "properties": {
+              "step_index": { "type": "integer", "minimum": 1 },
+              "stage_code": {
+                "type": "string",
+                "enum": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+              },
+              "zone_id": { "type": "string" },
+              "name": { "type": "string" },
+              "l2_alias": { "type": "string" },
+              "loc": { "type": "string" },
+              "level_range": { "type": "string" },
+              "travel_mode": {
+                "type": "string",
+                "enum": [
+                  "footpath",
+                  "highway",
+                  "gatekeeper_teleport",
+                  "dungeon_warp",
+                  "sea_or_airship"
+                ]
+              },
+              "milestone_goal": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "shopAndRefinementCatalogSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "equip_shop_stock",
+        "consumable_shop_stock",
+        "refinement_anvil_rates",
+        "blacksmith_material_spoils"
+      ],
+      "properties": {
+        "equip_shop_stock": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["item_id", "name", "category", "grade", "stats", "price_adena", "max_refinement"],
+            "properties": {
+              "item_id": { "type": "integer" },
+              "name": { "type": "string" },
+              "category": { "type": "string", "enum": ["Weapon", "Armor", "Shield", "Accessory"] },
+              "grade": { "type": "string" },
+              "stats": { "type": "string" },
+              "price_adena": { "type": "integer" },
+              "max_refinement": { "type": "string" }
+            }
+          }
+        },
+        "consumable_shop_stock": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["item_id", "name", "category", "effect", "price_adena"],
+            "properties": {
+              "item_id": { "type": "integer" },
+              "name": { "type": "string" },
+              "category": { "type": "string", "enum": ["Potion", "Soulshot", "Spiritshot", "Scroll"] },
+              "effect": { "type": "string" },
+              "price_adena": { "type": "integer" }
+            }
+          }
+        },
+        "refinement_anvil_rates": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "enchant_range",
+              "success_rate_pct",
+              "stat_bonus",
+              "failure_penalty",
+              "required_catalyst",
+              "material_spoils"
+            ],
+            "properties": {
+              "enchant_range": { "type": "string" },
+              "success_rate_pct": { "type": "number" },
+              "stat_bonus": { "type": "string" },
+              "failure_penalty": { "type": "string" },
+              "required_catalyst": { "type": "string" },
+              "material_spoils": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+            }
+          }
+        },
+        "blacksmith_material_spoils": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["material_name", "source_zone", "drop_or_spoil_rate", "used_for_tiers"],
+            "properties": {
+              "material_name": { "type": "string" },
+              "source_zone": { "type": "string" },
+              "drop_or_spoil_rate": { "type": "string" },
+              "used_for_tiers": { "type": "string" }
             }
           }
         }

@@ -565,6 +565,13 @@ def validate_world_governance(
                 "fortressBlueprintsCount": sum(
                     1 for h in (zdir.get("harbors_clanhalls_and_forts") or []) if isinstance(h, dict) and isinstance(h.get("fortress_blueprint"), dict)
                 ),
+                "raceGrowthRoutesCount": len(t_doc.get("race_growth_routes") or []),
+                "townShopRefinementCatalogsCount": sum(
+                    1
+                    for t in ((zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or []))
+                    if isinstance(t, dict)
+                    and isinstance((t.get("town_blueprint") or {}).get("shop_and_refinement_catalog"), dict)
+                ),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -594,6 +601,25 @@ def validate_world_governance(
                     errors.append(
                         f"GOV-10 violation: race_spawn_locations '{rs.get('race_key')}' references unknown starter_town_node_id '{rs.get('starter_town_node_id')}'"
                     )
+
+            # Validate 6-Race Starter-to-Endgame Growth Routes (D9)
+            all_zone_ids = {
+                str(z.get("zone_id", ""))
+                for entries in zdir.values()
+                if isinstance(entries, list)
+                for z in entries
+                if isinstance(z, dict) and z.get("zone_id")
+            }
+            r_routes = t_doc.get("race_growth_routes") or []
+            if r_routes and len(r_routes) != 6:
+                errors.append(f"GOV-10 violation: race_growth_routes must have 6 playable races, got {len(r_routes)}")
+            for rt in r_routes:
+                if isinstance(rt, dict):
+                    for wp in rt.get("waypoints") or []:
+                        if isinstance(wp, dict) and str(wp.get("zone_id", "")) not in all_zone_ids:
+                            errors.append(
+                                f"GOV-10 violation: race_growth_routes '{rt.get('race_key')}' waypoint references unknown zone_id '{wp.get('zone_id')}'"
+                            )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)
             tb = (deep_slice.get("deep_town") or {}).get("town_blueprint") or {}

@@ -316,6 +316,60 @@ class TestStudioWebPerspectives(unittest.TestCase):
                 self.assertIn(dw["dungeon_id"], mf_ids)
                 self.assertIn(dw["floor_id"], ("B1", "1F"))
 
+    def test_wave3_viewport_zoom_race_routes_and_refinement_inspector(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["raceGrowthRoutesCount"], 6)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["townShopRefinementCatalogsCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "resolveNearestZoneFromPanAndLoc",
+            "ATLAS_FOCUSED_TOWN_ID",
+            "ATLAS_FOCUSED_FIELD_ID",
+            "ATLAS_FOCUSED_FORTRESS_ID",
+            "setAtlasRaceGrowthRoute",
+            "Highlight Race Growth Path:",
+            "studioRaceGrowthRouteOverlay",
+            "studioShopAndRefinementInspector",
+            "shopAndRefinementCatalog",
+            "+1 to +15 Refinement Anvil Rates",
+        ):
+            self.assertIn(token, html, f"Missing Wave 3 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(audit["dimensions"]["D9_race_growth_routes"]["score"], 100.0)
+        self.assertEqual(audit["dimensions"]["D10_shop_and_refinement_catalogs"]["score"], 100.0)
+
+        routes = atlas["race_growth_routes"]
+        self.assertEqual(len(routes), 6)
+        expected_races = {"Human", "Lunar", "Ogre/Orc", "Dwarf", "Dark-Lunar", "Furral"}
+        self.assertEqual({r["race_label"] for r in routes}, expected_races)
+        valid_modes = {"footpath", "highway", "gatekeeper_teleport", "dungeon_warp", "sea_or_airship"}
+        for rt in routes:
+            wps = rt["waypoints"]
+            self.assertEqual(len(wps), 12)
+            self.assertEqual([w["stage_code"] for w in wps], list("ABCDEFGHIJKL"))
+            for wp in wps:
+                self.assertIn(wp["travel_mode"], valid_modes)
+                self.assertTrue(wp["milestone_goal"])
+
+        zdir = atlas["t_breadth_zone_directory"]
+        all_towns = zdir["starting_towns"] + zdir["other_castle_and_hub_towns"]
+        self.assertEqual(len(all_towns), 15)
+        for t_entry in all_towns:
+            cat = t_entry["town_blueprint"]["shop_and_refinement_catalog"]
+            self.assertGreaterEqual(len(cat["equip_shop_stock"]), 4)
+            self.assertGreaterEqual(len(cat["consumable_shop_stock"]), 4)
+            self.assertEqual(len(cat["refinement_anvil_rates"]), 5)
+            self.assertGreaterEqual(len(cat["blacksmith_material_spoils"]), 3)
+
 
 if __name__ == "__main__":
     unittest.main()
