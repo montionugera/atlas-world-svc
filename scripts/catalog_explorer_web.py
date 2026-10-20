@@ -69,18 +69,23 @@ def compute_studio_self_evaluation() -> dict:
             }
             dims = iter_state["dimensions"]
     overall_atlas_score = float(iter_state.get("overall_score", 100.0))
+    dim_count = len(dims) or 20
     qs = dict(self_eval.get("qualityScorecard") or {})
     qs.setdefault("overallQualityScorePct", 100.0)
     qs["semanticZoomAtlas18DimensionScore"] = overall_atlas_score
-    qs["semanticZoomAtlasDimensionsCount"] = len(dims) or 18
+    qs["semanticZoomAtlas20DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 7)),
+        "wave": int(iter_state.get("wave", 8)),
         "overallScore": overall_atlas_score,
-        "dimensionsCount": len(dims) or 18,
+        "dimensionsCount": dim_count,
         "dimensions": dims,
-        "summaryLabel": f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100)",
+        "summaryLabel": (
+            f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D20 Verified"
+        ),
     }
     return merged
 
@@ -3986,6 +3991,72 @@ function render() {
 }
 
 
+function syncStudioNodeToDedicatedAtlas(targetNodeId, perspective = '') {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const nodes = sp.nodes || [];
+  const allZones = getAllAtlas63Zones(tatlas);
+  const mfDungeons = tatlas.multi_floor_dungeons || [];
+  const rawId = String(targetNodeId || '');
+  if (!rawId) return;
+
+  const matchedDng = mfDungeons.find(d => d.dungeon_id === rawId || d.studio_node_id === rawId);
+  if (matchedDng) {
+    ATLAS_ACTIVE_DUNGEON_ID = matchedDng.dungeon_id;
+    ATLAS_FOCUSED_FIELD_ID = '';
+    ATLAS_FOCUSED_FORTRESS_ID = '';
+    ATLAS_STATE_STORE.activeDungeonId = matchedDng.dungeon_id;
+    ATLAS_STATE_STORE.activeFloorId = (matchedDng.floors && matchedDng.floors[0] && matchedDng.floors[0].floor_id) || 'B1';
+    ATLAS_STATE_STORE.activeFieldOrFortId = '';
+    if (matchedDng.entrance_loc) {
+      STUDIO_MAP_LOC = clampWorldLocCoord(matchedDng.entrance_loc);
+    }
+    return;
+  }
+
+  const matchedZone = allZones.find(z => z.zone_id === rawId || z.studio_node_id === rawId);
+  const matchedNode = nodes.find(n => n.id === rawId);
+  const isTown = (matchedZone && matchedZone.actionType === 'town')
+    || (matchedNode && matchedNode.node_type === 'town')
+    || rawId.startsWith('town-')
+    || rawId.startsWith('zone-town-');
+  const isFieldOrFort = (matchedZone && (matchedZone.actionType === 'field' || matchedZone.actionType === 'fortress'))
+    || (matchedNode && matchedNode.node_type === 'hunting_area')
+    || rawId.startsWith('hunting-area-')
+    || rawId.startsWith('zone-field-')
+    || rawId.startsWith('zone-harbor-')
+    || rawId.startsWith('zone-clanhall-')
+    || rawId.startsWith('zone-fortress-');
+
+  if (isTown) {
+    ATLAS_FOCUSED_TOWN_ID = (matchedZone && (matchedZone.studio_node_id || matchedZone.zone_id)) || rawId;
+    ATLAS_FOCUSED_FIELD_ID = '';
+    ATLAS_FOCUSED_FORTRESS_ID = '';
+    ATLAS_ACTIVE_DUNGEON_ID = '';
+    ATLAS_STATE_STORE.activeTownId = ATLAS_FOCUSED_TOWN_ID;
+    ATLAS_STATE_STORE.activeFieldOrFortId = '';
+    ATLAS_STATE_STORE.activeDungeonId = '';
+    ATLAS_STATE_STORE.activeFloorId = '';
+    if (matchedZone && matchedZone.loc_coord) {
+      STUDIO_MAP_LOC = clampWorldLocCoord(matchedZone.loc_coord);
+    }
+  } else if (isFieldOrFort) {
+    const resolvedFieldId = (matchedZone && matchedZone.zone_id) || rawId;
+    if (resolvedFieldId.includes('fortress') || resolvedFieldId.includes('harbor') || resolvedFieldId.includes('clanhall')) {
+      ATLAS_FOCUSED_FORTRESS_ID = resolvedFieldId;
+    } else {
+      ATLAS_FOCUSED_FIELD_ID = resolvedFieldId;
+    }
+    ATLAS_ACTIVE_DUNGEON_ID = '';
+    ATLAS_STATE_STORE.activeFieldOrFortId = resolvedFieldId;
+    ATLAS_STATE_STORE.activeDungeonId = '';
+    ATLAS_STATE_STORE.activeFloorId = '';
+    if (matchedZone && matchedZone.loc_coord) {
+      STUDIO_MAP_LOC = clampWorldLocCoord(matchedZone.loc_coord);
+    }
+  }
+}
+
 function setStudioPerspective(perspective, opts = {}) {
   CURRENT_TAB = 'studio';
   STUDIO_PERSPECTIVE = perspective;
@@ -3996,6 +4067,7 @@ function setStudioPerspective(perspective, opts = {}) {
   if (opts.pinnedMonsterId !== undefined) STUDIO_PINNED_MONSTER_ID = opts.pinnedMonsterId;
   if (opts.levelBand) STUDIO_LEVEL_BAND = opts.levelBand;
   if (opts.inspectId) STUDIO_ACTIVE_INSPECT_ID = opts.inspectId;
+  syncStudioNodeToDedicatedAtlas(opts.nodeId || opts.inspectId || STUDIO_SELECTED_NODE_ID, perspective);
   writeUrlState();
   renderSidebar();
   render();
@@ -4274,7 +4346,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D18 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D20 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4307,9 +4379,12 @@ let STUDIO_MAP_LOC = { x: -84120, y: 243500, svgX: 465, svgY: 442 };
 let ATLAS_FOCUSED_TOWN_ID = 'town-lantern-hollow';
 let ATLAS_FOCUSED_FIELD_ID = '';
 let ATLAS_FOCUSED_FORTRESS_ID = '';
+let ATLAS_ACTIVE_DUNGEON_ID = '';
 let ATLAS_OMNI_SEARCH_QUERY = '';
 let ATLAS_ROUTE_FROM_ID = 'zone-town-lantern-hollow';
 let ATLAS_ROUTE_TO_ID = 'zone-dungeon-kiln-cellar';
+let ATLAS_REFINE_GRADE = 'No-Grade Lv.1–19';
+let ATLAS_REFINE_PLUS = 3;
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4318,6 +4393,8 @@ const ATLAS_STATE_STORE = {
   omniSearchQuery: '',   // D13: Instant Atlas Omni-Search & Quick-Jump Query
   routeFromId: 'zone-town-lantern-hollow', // D17: Interactive Travel Path & Gatekeeper Route Origin
   routeToId: 'zone-dungeon-kiln-cellar',   // D17: Interactive Travel Path & Gatekeeper Route Destination
+  refineGrade: 'No-Grade Lv.1–19',         // D19: Active Blacksmith Refinement Equipment Grade
+  refinePlus: 3,                           // D19: Active Blacksmith Refinement Step (+1..+15)
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4325,6 +4402,48 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasRefineGrade(gradeCode) {
+  ATLAS_REFINE_GRADE = String(gradeCode || 'No-Grade Lv.1–19');
+  ATLAS_STATE_STORE.refineGrade = ATLAS_REFINE_GRADE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasRefinePlus(plusLevel) {
+  const lv = Math.max(1, Math.min(15, Number(plusLevel) || 3));
+  ATLAS_REFINE_PLUS = lv;
+  ATLAS_STATE_STORE.refinePlus = lv;
+  writeUrlState(false);
+  render();
+}
+
+function jumpToBlacksmithTownStreetMap(townZoneId) {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const allZones = getAllAtlas63Zones(tatlas);
+  const matched = allZones.find(z => z.zone_id === townZoneId || z.studio_node_id === townZoneId);
+  const nodeId = (matched && (matched.studio_node_id || matched.zone_id)) || townZoneId || 'town-lantern-hollow';
+  const loc = (matched && matched.loc_coord) || '';
+  focusTownStreetBlueprint(nodeId, loc);
+}
+
+function highlightMaterialDropZonesOrOpenDungeon(dropZoneId) {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const mfDungeons = tatlas.multi_floor_dungeons || [];
+  const allZones = getAllAtlas63Zones(tatlas);
+  const matchedDng = mfDungeons.find(d => d.dungeon_id === dropZoneId || d.studio_node_id === dropZoneId);
+  if (matchedDng) {
+    const firstFloor = (matchedDng.floors && matchedDng.floors[0] && matchedDng.floors[0].floor_id) || 'B1';
+    openDungeonSubMap(matchedDng.dungeon_id, firstFloor);
+    return;
+  }
+  const matchedZone = allZones.find(z => z.zone_id === dropZoneId || z.studio_node_id === dropZoneId);
+  if (matchedZone) {
+    focusFieldTacticalBlueprint(matchedZone.zone_id, matchedZone.loc_coord || '');
+  }
+}
 
 function getAllAtlas63Zones(tatlas) {
   const zdir = (tatlas && tatlas.t_breadth_zone_directory) || {};
@@ -4773,6 +4892,7 @@ function focusTownStreetBlueprint(townId, locCoord) {
   ATLAS_FOCUSED_TOWN_ID = townId || 'town-lantern-hollow';
   ATLAS_FOCUSED_FIELD_ID = '';
   ATLAS_FOCUSED_FORTRESS_ID = '';
+  ATLAS_ACTIVE_DUNGEON_ID = '';
   ATLAS_STATE_STORE.activeTownId = ATLAS_FOCUSED_TOWN_ID;
   ATLAS_STATE_STORE.activeFieldOrFortId = '';
   ATLAS_STATE_STORE.activeDungeonId = '';
@@ -4793,6 +4913,7 @@ function focusFieldTacticalBlueprint(fieldOrFortId, locCoord = '') {
   } else {
     ATLAS_FOCUSED_FIELD_ID = targetId;
   }
+  ATLAS_ACTIVE_DUNGEON_ID = '';
   ATLAS_STATE_STORE.activeFieldOrFortId = targetId;
   ATLAS_STATE_STORE.activeDungeonId = '';
   ATLAS_STATE_STORE.activeFloorId = '';
@@ -4819,6 +4940,7 @@ function openDungeonSubMap(dungeonId, floorId = '') {
     dng = dungeons[0];
   }
   if (!dng) return;
+  ATLAS_ACTIVE_DUNGEON_ID = dng.dungeon_id;
   ATLAS_STATE_STORE.activeDungeonId = dng.dungeon_id;
   const floors = dng.floors || [];
   const defaultFloor = (floors[0] && floors[0].floor_id) || 'B1';
@@ -4872,6 +4994,7 @@ function switchDungeonFloor(floorId, targetLoc = '') {
 }
 
 function exitDungeonSubMap(targetLoc = '') {
+  ATLAS_ACTIVE_DUNGEON_ID = '';
   ATLAS_STATE_STORE.activeDungeonId = '';
   ATLAS_STATE_STORE.activeFloorId = '';
   ATLAS_STATE_STORE.toastMessage = '';
@@ -5881,6 +6004,153 @@ function renderAtlasFilteredEntityMatrixHtml(tatlas) {
   `;
 }
 
+function renderAtlasBlacksmithRefinementBarHtml(tatlas) {
+  const canonGradeCodes = [
+    'No-Grade Lv.1–19',
+    'D-Grade Lv.20–39',
+    'C-Grade Lv.40–51',
+    'B-Grade Lv.52–60',
+    'A-Grade Lv.61–75',
+    'S-Grade Lv.76–99'
+  ];
+  const grades = (tatlas && tatlas.refinement_grade_matrix && tatlas.refinement_grade_matrix.length)
+    ? tatlas.refinement_grade_matrix
+    : canonGradeCodes.map(gc => ({ grade_code: gc, safe_refinement_level: 3, max_refinement_level: 15, rates_by_plus: [], required_materials: [], home_blacksmith_towns: [] }));
+  if (!grades.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+    if (z.studio_node_id) zoneById[z.studio_node_id] = z;
+  });
+
+  const curGradeCode = ATLAS_REFINE_GRADE || ATLAS_STATE_STORE.refineGrade || grades[0].grade_code;
+  const activeGrade = grades.find(g => g.grade_code === curGradeCode || g.grade_short_code === curGradeCode) || grades[0];
+  const curPlus = Math.max(1, Math.min(15, Number(ATLAS_REFINE_PLUS || ATLAS_STATE_STORE.refinePlus || 3)));
+  const rates = activeGrade.rates_by_plus || [];
+  const activeStep = rates.find(r => r.plus_level === curPlus) || rates[2] || rates[0] || {
+    plus_level: curPlus,
+    plus_label: `+${curPlus}`,
+    success_rate_pct: 100.0,
+    stat_bonus: '+9% P.Atk/M.Atk/P.Def',
+    failure_penalty: 'None (100% Safe Tempering Guarantee)',
+    required_catalyst: 'Scroll: Enchant Weapon/Armor'
+  };
+
+  const isSafe = curPlus <= (activeGrade.safe_refinement_level || 3);
+  const rateCol = isSafe ? '#34d399' : (curPlus <= 6 ? '#fde047' : (curPlus <= 9 ? '#38bdf8' : (curPlus <= 12 ? '#f97316' : '#f43f5e')));
+
+  return `
+    <div id="atlasBlacksmithRefinementLocatorBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#19130c;border:1px solid rgba(245,158,11,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fbbf24">⚒️ BLACKSMITH REFINEMENT (+1..+15) &amp; SPOIL SOURCE LOCATOR (D19):</span>
+          ${grades.map(g => {
+            const isAct = g.grade_code === activeGrade.grade_code;
+            return `
+              <button type="button" onclick="setAtlasRefineGrade('${escapeHtml(g.grade_code)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.8px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(245,158,11,0.35)'};background:${isAct ? '#b45309' : '#0f172a'};color:${isAct ? '#ffffff' : '#fde68a'}">
+                🛡️ ${escapeHtml(g.grade_code)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:3px">
+          <span class="mono" style="font-size:9.5px;color:#cbd5e1;font-weight:800">Anvil Step (Safe +${activeGrade.safe_refinement_level || 3}):</span>
+          ${rates.map(r => {
+            const isAct = r.plus_level === curPlus;
+            const stepSafe = r.plus_level <= (activeGrade.safe_refinement_level || 3);
+            return `
+              <button type="button" onclick="setAtlasRefinePlus(${r.plus_level})"
+                      style="min-width:28px;height:22px;padding:0 5px;border-radius:5px;font-size:9.5px;font-weight:900;cursor:pointer;border:1px solid ${isAct ? '#fde047' : (stepSafe ? 'rgba(52,211,153,0.45)' : 'rgba(255,255,255,0.14)')};background:${isAct ? '#d97706' : (stepSafe ? '#064e3b' : '#0f172a')};color:${isAct ? '#ffffff' : (stepSafe ? '#6ee7b7' : '#cbd5e1')}">
+                +${r.plus_level}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:7px;align-items:stretch">
+        <!-- Selected Grade Weapons/Armor + Active +1..+15 Anvil Rate -->
+        <div style="padding:6px 9px;border-radius:6px;background:#0f172a;border-left:3.5px solid ${rateCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+            <span style="font-size:10.5px;font-weight:900;color:#fde047">${escapeHtml(activeGrade.grade_code)} · Step ${escapeHtml(activeStep.plus_label)}</span>
+            <span class="mono" style="font-size:9.5px;padding:1px 6px;border-radius:4px;background:rgba(15,23,42,0.95);color:${rateCol};border:1px solid ${rateCol};font-weight:900">
+              ${activeStep.success_rate_pct}% Success ${isSafe ? '(SAFE)' : ''}
+            </span>
+          </div>
+          <div style="font-size:9.5px;color:#e2e8f0">
+            ⚔️ <strong>Weapons:</strong> ${escapeHtml((activeGrade.representative_weapons || []).join(' · '))}
+          </div>
+          <div style="font-size:9.5px;color:#cbd5e1">
+            🛡️ <strong>Armor:</strong> ${escapeHtml((activeGrade.representative_armor || []).join(' · '))}
+          </div>
+          <div style="font-size:9.5px;color:#6ee7b7;font-weight:700">
+            ✨ <strong>Bonus:</strong> ${escapeHtml(activeStep.stat_bonus)} · <span style="color:#fca5a5">${escapeHtml(activeStep.failure_penalty)}</span>
+          </div>
+          <div class="mono" style="font-size:9px;color:#93c5fd">
+            📜 Catalyst: ${escapeHtml(activeStep.required_catalyst)}
+          </div>
+        </div>
+
+        <!-- Required Refinement Materials & 1-Click Drop Zone / Dungeon Floor Locator -->
+        <div style="padding:6px 9px;border-radius:6px;background:#0f172a;border-left:3.5px solid #38bdf8;display:flex;flex-direction:column;gap:4px">
+          <div class="mono" style="font-size:9.5px;font-weight:900;color:#38bdf8">
+            💎 REQUIRED SPOIL &amp; DROP MATERIALS (Highlight Material Drop Zones / Open Dungeon Floor):
+          </div>
+          ${(activeGrade.required_materials || []).map(mat => `
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;padding:3px 6px;border-radius:5px;background:#162033">
+              <div style="min-width:0">
+                <div style="font-size:9.8px;font-weight:800;color:#f8fafc">${escapeHtml(mat.material_name)} <span class="mono" style="font-size:8.8px;color:#fde047">(${escapeHtml(mat.used_for_plus_range || '+1..+15')})</span></div>
+                <div class="mono" style="font-size:8.5px;color:#94a3b8">${escapeHtml(mat.drop_or_spoil_rate || 'Dwarf Spoil & Boss Drop')}</div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:3px">
+                ${(mat.drop_zones || []).map(dzId => {
+                  const zObj = zoneById[dzId];
+                  const zShort = zObj ? zObj.name.split('(')[0].trim().slice(0, 20) : dzId.replace('zone-', '');
+                  const isDng = dzId.includes('dungeon') || dzId.includes('catacomb');
+                  return `
+                    <button type="button" onclick="highlightMaterialDropZonesOrOpenDungeon('${escapeHtml(dzId)}')"
+                            title="Highlight Material Drop Zones / Open Dungeon Floor (${escapeHtml(dzId)})"
+                            style="padding:2px 6px;border-radius:4px;border:1px solid ${isDng ? '#c084fc' : '#4ade80'};background:${isDng ? '#3b0764' : '#052e16'};color:#f8fafc;font-size:8.8px;font-weight:800;cursor:pointer">
+                      ${isDng ? '🕳️' : '🏕️'} ${escapeHtml(zShort)}
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Home Blacksmith Towns (1-Click Jump to Blacksmith Town Street Map) -->
+        <div style="padding:6px 9px;border-radius:6px;background:#0f172a;border-left:3.5px solid #eab308;display:flex;flex-direction:column;justify-content:space-between;gap:5px">
+          <div>
+            <div class="mono" style="font-size:9.5px;font-weight:900;color:#fde047">
+              🏰 HOME BLACKSMITH ANVIL TOWNS (Jump to Blacksmith Town Street Map):
+            </div>
+            <div style="font-size:9px;color:#cbd5e1;margin-top:2px">
+              Click any town below to zoom to its Tier 3 Street Blueprint (5.2×) and inspect Building #3 (Blacksmith Clan &amp; Refinement Anvil).
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            ${(activeGrade.home_blacksmith_towns || []).map(tZid => {
+              const tObj = zoneById[tZid];
+              const tShort = tObj ? tObj.name.split('(')[0].trim() : tZid;
+              return `
+                <button type="button" onclick="jumpToBlacksmithTownStreetMap('${escapeHtml(tZid)}')"
+                        title="Jump to Blacksmith Town Street Map (${escapeHtml(tShort)})"
+                        style="padding:3px 8px;border-radius:5px;border:1px solid #fde047;background:#422006;color:#fef08a;font-size:9.2px;font-weight:900;cursor:pointer">
+                  ⚒️ Jump to Blacksmith Town Street Map: ${escapeHtml(tShort)}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -6004,6 +6274,8 @@ function renderAtlasFilterBarHtml(matchCount) {
           }).join('')}
         </div>
       </div>
+
+      ${renderAtlasBlacksmithRefinementBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">

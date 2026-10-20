@@ -660,6 +660,7 @@ def validate_world_governance(
                 "unifiedMapDirectoryZonesCount": sum(
                     len(entries) for entries in zdir.values() if isinstance(entries, list)
                 ),
+                "refinementGradeMatrixCount": len(t_doc.get("refinement_grade_matrix") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -708,6 +709,41 @@ def validate_world_governance(
                             errors.append(
                                 f"GOV-10 violation: race_growth_routes '{rt.get('race_key')}' waypoint references unknown zone_id '{wp.get('zone_id')}'"
                             )
+
+            # Validate 6-Grade Blacksmith Refinement & Spoil Source Matrix (D19)
+            town_zone_ids = {
+                str(z.get("zone_id", ""))
+                for z in ((zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or []))
+                if isinstance(z, dict) and z.get("zone_id")
+            }
+            drop_zone_ids = {
+                str(z.get("zone_id", ""))
+                for z in (zdir.get("fields_and_hunting_areas") or [])
+                if isinstance(z, dict) and z.get("zone_id")
+            } | {
+                str(d.get("dungeon_id", ""))
+                for d in mf_dungeons
+                if isinstance(d, dict) and d.get("dungeon_id")
+            }
+            ref_matrix = t_doc.get("refinement_grade_matrix") or []
+            if ref_matrix and len(ref_matrix) != 6:
+                errors.append(f"GOV-10 violation: refinement_grade_matrix must have 6 grades, got {len(ref_matrix)}")
+            for g_entry in ref_matrix:
+                if not isinstance(g_entry, dict):
+                    continue
+                gcode = str(g_entry.get("grade_code", ""))
+                for t_zid in g_entry.get("home_blacksmith_towns") or []:
+                    if str(t_zid) not in town_zone_ids:
+                        errors.append(
+                            f"GOV-10 violation: refinement_grade_matrix '{gcode}' references unknown home_blacksmith_town '{t_zid}'"
+                        )
+                for mat in g_entry.get("required_materials") or []:
+                    if isinstance(mat, dict):
+                        for d_zid in mat.get("drop_zones") or []:
+                            if str(d_zid) not in drop_zone_ids:
+                                errors.append(
+                                    f"GOV-10 violation: refinement_grade_matrix '{gcode}' material '{mat.get('material_name')}' references unknown drop_zone '{d_zid}'"
+                                )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)
             tb = (deep_slice.get("deep_town") or {}).get("town_blueprint") or {}

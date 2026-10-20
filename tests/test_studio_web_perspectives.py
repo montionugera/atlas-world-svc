@@ -571,7 +571,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 18)
+        self.assertGreaterEqual(len(audit["dimensions"]), 18)
 
         d17 = audit["dimensions"]["D17_travel_route_and_gatekeeper_calculator"]
         self.assertEqual(d17["score"], 100.0)
@@ -590,10 +590,84 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas18DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 18)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 18)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 18)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 18)
         self.assertIn("18-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave8_refinement_grade_matrix_spoil_locator_and_d20_sync(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["refinementGradeMatrixCount"], 6)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_REFINE_GRADE",
+            "ATLAS_REFINE_PLUS",
+            "ATLAS_ACTIVE_DUNGEON_ID",
+            "setAtlasRefineGrade",
+            "setAtlasRefinePlus",
+            "syncStudioNodeToDedicatedAtlas",
+            "Jump to Blacksmith Town Street Map",
+            "Highlight Material Drop Zones / Open Dungeon Floor",
+            "20-Dimension Semantic-Zoom Atlas Score",
+            "No-Grade Lv.1–19",
+            "D-Grade Lv.20–39",
+            "C-Grade Lv.40–51",
+            "B-Grade Lv.52–60",
+            "A-Grade Lv.61–75",
+            "S-Grade Lv.76–99",
+        ):
+            self.assertIn(token, html, f"Missing Wave 8 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 20)
+
+        d19 = audit["dimensions"]["D19_refinement_grade_and_spoil_locator"]
+        self.assertEqual(d19["score"], 100.0)
+        self.assertEqual(d19["verified"], 6)
+        self.assertEqual(d19["target"], 6)
+        self.assertTrue(d19["ui_wired"])
+
+        d20 = audit["dimensions"]["D20_bidirectional_studio_atlas_sync_and_docs"]
+        self.assertEqual(d20["score"], 100.0)
+        self.assertEqual(d20["verified"], 3)
+        self.assertEqual(d20["target"], 3)
+        self.assertTrue(d20["sync_js_wired"])
+        self.assertTrue(d20["readme_documented"])
+        self.assertTrue(d20["drawio_verified"])
+
+        ref_matrix = atlas["refinement_grade_matrix"]
+        self.assertEqual(len(ref_matrix), 6)
+        expected_grades = [
+            "No-Grade Lv.1–19",
+            "D-Grade Lv.20–39",
+            "C-Grade Lv.40–51",
+            "B-Grade Lv.52–60",
+            "A-Grade Lv.61–75",
+            "S-Grade Lv.76–99",
+        ]
+        self.assertEqual([g["grade_code"] for g in ref_matrix], expected_grades)
+        for g in ref_matrix:
+            self.assertEqual(g["safe_refinement_level"], 3)
+            self.assertEqual(g["max_refinement_level"], 15)
+            self.assertEqual(len(g["rates_by_plus"]), 15)
+            self.assertEqual([r["plus_level"] for r in g["rates_by_plus"]], list(range(1, 16)))
+            self.assertGreaterEqual(len(g["required_materials"]), 2)
+            self.assertGreaterEqual(len(g["home_blacksmith_towns"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas20DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 20)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 20)
+        self.assertIn("20-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

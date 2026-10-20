@@ -639,6 +639,379 @@ def _build_race_growth_routes(whc: dict[str, Any], atlas: dict[str, Any]) -> lis
     return routes
 
 
+REFINEMENT_GRADE_SPECS: tuple[dict[str, Any], ...] = (
+    {
+        "grade_code": "No-Grade Lv.1–19",
+        "grade_short_code": "No-Grade",
+        "level_band": [1, 19],
+        "representative_weapons": [
+            "Lantern Apprentice Broadsword",
+            "Porcelain Willow Wand",
+            "Bellows Iron Cleaver",
+        ],
+        "representative_armor": [
+            "Apprentice Hearth Tunic Set",
+            "Wooden Buckler & Leather Greaves",
+        ],
+        "required_materials": [
+            {
+                "material_name": "High-Grade Iron Ore & Varnish",
+                "drop_or_spoil_rate": "44.0% Dwarf Spoil / 22.0% Pack Drop",
+                "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+                "drop_zones": [
+                    "zone-field-clover-south-gate",
+                    "zone-field-celadon-causeway",
+                    "zone-dungeon-kiln-cellar",
+                ],
+            },
+            {
+                "material_name": "Refinement Flux Dust & Coal",
+                "drop_or_spoil_rate": "36.0% Dwarf Spoil / 18.0% Mini-Boss Drop",
+                "used_for_plus_range": "+7 to +12 Master Blacksmith Resonance",
+                "drop_zones": [
+                    "zone-field-firebrick-duct",
+                    "zone-field-resin-arch-tunnel",
+                    "zone-dungeon-sap-heart-cistern",
+                ],
+            },
+            {
+                "material_name": "Apprentice Anvil Seal Fragment",
+                "drop_or_spoil_rate": "15.0% B3/3F Boss Drop / 24.0% Raid Spoil",
+                "used_for_plus_range": "+13 to +15 Over-Enchant Stabilizer",
+                "drop_zones": [
+                    "zone-field-chime-pipe-colonnade",
+                    "zone-field-cinnamon-bark-viaduct",
+                    "zone-dungeon-medallion-heart-vault",
+                ],
+            },
+        ],
+        "home_blacksmith_towns": [
+            "zone-town-lantern-hollow",
+            "zone-town-porcelain-loom",
+            "zone-town-draft-kiln-post",
+            "zone-town-root-train-roundhouse",
+            "zone-town-carillon-belfry",
+            "zone-town-cinnamon-mill",
+        ],
+    },
+    {
+        "grade_code": "D-Grade Lv.20–39",
+        "grade_short_code": "D-Grade",
+        "level_band": [20, 39],
+        "representative_weapons": [
+            "Kilnwatch Sabre (Elven Long Sword)",
+            "Gastraphetes Crossbow",
+            "Staff of Life & Ash-Bone Glaive",
+        ],
+        "representative_armor": [
+            "Brigandine Plate Cuirass Set",
+            "Manticore Skin Shirt & Mithril Banded Mail",
+        ],
+        "required_materials": [
+            {
+                "material_name": "Tempered Alloy Plate & Cord",
+                "drop_or_spoil_rate": "38.0% Dwarf Spoil / 19.5% Pack Drop",
+                "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+                "drop_zones": [
+                    "zone-field-cinder-apron",
+                    "zone-field-brass-spur-ridge",
+                    "zone-dungeon-kiln-cellar",
+                ],
+            },
+            {
+                "material_name": "Mithril Ore & High-Grade Cokes",
+                "drop_or_spoil_rate": "28.0% Mini-Boss Spoil / 14.5% Raid Drop",
+                "used_for_plus_range": "+7 to +12 Master Blacksmith Resonance",
+                "drop_zones": [
+                    "zone-field-slag-chasm",
+                    "zone-field-caldera-rim",
+                    "zone-dungeon-pendulum-shaft",
+                ],
+            },
+            {
+                "material_name": "D-Grade Artisan Anvil Core",
+                "drop_or_spoil_rate": "12.5% Queen Ant / Core MVP Sanctum Drop",
+                "used_for_plus_range": "+13 to +15 Over-Enchant Stabilizer",
+                "drop_zones": [
+                    "zone-field-siphon-sluice",
+                    "zone-catacomb-heretic-kiln",
+                    "zone-dungeon-ember-bellows-chamber",
+                ],
+            },
+        ],
+        "home_blacksmith_towns": [
+            "zone-town-kilnwatch-bastion",
+            "zone-town-glaze-barge-quay",
+            "zone-town-pinion-terminus",
+        ],
+    },
+    {
+        "grade_code": "C-Grade Lv.40–51",
+        "grade_short_code": "C-Grade",
+        "level_band": [40, 51],
+        "representative_weapons": [
+            "Samurai Longsword of Escapement",
+            "Homunkulus Sword (Acumen)",
+            "Eminence Bow & Orcish Poleaxe",
+        ],
+        "representative_armor": [
+            "Full Plate Armor Set",
+            "Karmian Tunic Set & Plated Leather Mail",
+        ],
+        "required_materials": [
+            {
+                "material_name": "Oriharukon Ore & Compound Braid",
+                "drop_or_spoil_rate": "34.0% Dwarf Spoil / 17.0% Pack Drop",
+                "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+                "drop_zones": [
+                    "zone-field-leyden-causeway",
+                    "zone-field-metronome-bridge",
+                    "zone-dungeon-chronometer-foundry",
+                ],
+            },
+            {
+                "material_name": "Master Blacksmith Seal Cluster",
+                "drop_or_spoil_rate": "24.0% Catacomb Spoil / 13.0% Raid Drop",
+                "used_for_plus_range": "+7 to +12 Master Blacksmith Resonance",
+                "drop_zones": [
+                    "zone-field-spiral-wormway-ramp",
+                    "zone-catacomb-branded-bellows",
+                    "zone-catacomb-apostate-dynamo",
+                ],
+            },
+            {
+                "material_name": "C-Grade Resonance Catalyst",
+                "drop_or_spoil_rate": "11.0% Tower 3F MVP Sanctum Drop",
+                "used_for_plus_range": "+13 to +15 Over-Enchant Stabilizer",
+                "drop_zones": [
+                    "zone-field-orrery-bridge",
+                    "zone-dungeon-sunken-potter-hold",
+                    "zone-dungeon-pendulum-shaft",
+                ],
+            },
+        ],
+        "home_blacksmith_towns": [
+            "zone-town-escapement-anvil",
+            "zone-town-torque-balance-citadel",
+            "zone-town-inductor-switchyard",
+        ],
+    },
+    {
+        "grade_code": "B-Grade Lv.52–60",
+        "grade_short_code": "B-Grade",
+        "level_band": [52, 60],
+        "representative_weapons": [
+            "Sword of Damascus (Focus)",
+            "Sword of Valhalla & Kris Dagger",
+            "Bow of Peril & Lance",
+        ],
+        "representative_armor": [
+            "Blue Wolf Breastplate & Doom Plate Set",
+            "Avadon Robe Set & Zubei Leather Armor",
+        ],
+        "required_materials": [
+            {
+                "material_name": "Warden Alloy Core & Metallic Fiber",
+                "drop_or_spoil_rate": "30.0% Dwarf Spoil / 15.0% Pack Drop",
+                "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+                "drop_zones": [
+                    "zone-field-tether-causeway",
+                    "zone-field-kelp-spiral-reef",
+                    "zone-catacomb-witch-pendulum",
+                ],
+            },
+            {
+                "material_name": "High-Grade Oriharukon & Enria",
+                "drop_or_spoil_rate": "21.0% Mini-Boss Spoil / 11.5% Raid Drop",
+                "used_for_plus_range": "+7 to +12 Grand Master Forge",
+                "drop_zones": [
+                    "zone-field-orrery-bridge",
+                    "zone-dungeon-chronometer-foundry",
+                    "zone-catacomb-apostate-dynamo",
+                ],
+            },
+            {
+                "material_name": "B-Grade Grand Master Anvil Core",
+                "drop_or_spoil_rate": "9.5% MVP Sanctum Drop / 14.0% Raid Spoil",
+                "used_for_plus_range": "+13 to +15 Over-Enchant Stabilizer",
+                "drop_zones": [
+                    "zone-field-astrolabe-rift",
+                    "zone-dungeon-star-heart-nave",
+                    "zone-catacomb-dark-omens-coral",
+                ],
+            },
+        ],
+        "home_blacksmith_towns": [
+            "zone-town-inductor-switchyard",
+            "zone-town-starfall-haven",
+            "zone-town-torque-balance-citadel",
+        ],
+    },
+    {
+        "grade_code": "A-Grade Lv.61–75",
+        "grade_short_code": "A-Grade",
+        "level_band": [61, 75],
+        "representative_weapons": [
+            "Tallum Blade * Dark Legion's Edge",
+            "Sword of Miracles (Acumen)",
+            "Carnage Bow & Dragon Slayer",
+        ],
+        "representative_armor": [
+            "Dark Crystal Robe & Majestic Plate Set",
+            "Tallum Heavy Plate & Nightmare Light Armor",
+        ],
+        "required_materials": [
+            {
+                "material_name": "Ancient Refinement Catalyst & Asofe",
+                "drop_or_spoil_rate": "26.0% Dwarf Spoil / 13.5% Pack Drop",
+                "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+                "drop_zones": [
+                    "zone-field-aurora-tether",
+                    "zone-field-kelp-spiral-reef",
+                    "zone-dungeon-star-heart-nave",
+                ],
+            },
+            {
+                "material_name": "Fortress Forge Core & Thons",
+                "drop_or_spoil_rate": "18.5% Mini-Boss Spoil / 10.0% Raid Drop",
+                "used_for_plus_range": "+7 to +12 Sovereign Forge",
+                "drop_zones": [
+                    "zone-field-tether-causeway",
+                    "zone-catacomb-dark-omens-coral",
+                    "zone-catacomb-forbidden-path-orrery",
+                ],
+            },
+            {
+                "material_name": "A-Grade Sovereign Seal Matrix",
+                "drop_or_spoil_rate": "8.5% MVP Sanctum Drop / 12.5% Raid Spoil",
+                "used_for_plus_range": "+13 to +15 Over-Enchant Stabilizer",
+                "drop_zones": [
+                    "zone-field-aurora-tether",
+                    "zone-catacomb-witch-pendulum",
+                    "zone-dungeon-star-heart-nave",
+                ],
+            },
+        ],
+        "home_blacksmith_towns": [
+            "zone-town-starfall-haven",
+            "zone-town-crown-beacon",
+            "zone-town-inductor-switchyard",
+        ],
+    },
+    {
+        "grade_code": "S-Grade Lv.76–99",
+        "grade_short_code": "S-Grade",
+        "level_band": [76, 99],
+        "representative_weapons": [
+            "Forgotten Blade (Focus) — Sovereign Halo",
+            "Arcana Mace (Acumen) — Architect Seal",
+            "Draconic Bow & Heaven's Divider",
+        ],
+        "representative_armor": [
+            "Imperial Crusader Heavy Plate Set",
+            "Major Arcana Robe & Draconic Leather Set",
+        ],
+        "required_materials": [
+            {
+                "material_name": "Divine Apostle Anvil Core",
+                "drop_or_spoil_rate": "22.0% High-Halo Spoil / 11.0% Raid Drop",
+                "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+                "drop_zones": [
+                    "zone-field-aurora-tether",
+                    "zone-dungeon-star-heart-nave",
+                    "zone-catacomb-forbidden-path-orrery",
+                ],
+            },
+            {
+                "material_name": "Architect Seal Crest & Imperial Alloy",
+                "drop_or_spoil_rate": "15.0% Raid Spoil / 9.0% Sanctum Drop",
+                "used_for_plus_range": "+7 to +12 Grand Master Sovereign Forge",
+                "drop_zones": [
+                    "zone-field-tether-causeway",
+                    "zone-catacomb-dark-omens-coral",
+                    "zone-dungeon-star-heart-nave",
+                ],
+            },
+            {
+                "material_name": "Sovereign Bastion Heart (+13..+15 Stabilizer)",
+                "drop_or_spoil_rate": "6.5% Apostle MVP Sanctum Drop",
+                "used_for_plus_range": "+13 to +15 Apex God-Anvil Limit",
+                "drop_zones": [
+                    "zone-field-aurora-tether",
+                    "zone-catacomb-forbidden-path-orrery",
+                    "zone-dungeon-chronometer-foundry",
+                ],
+            },
+        ],
+        "home_blacksmith_towns": [
+            "zone-town-crown-beacon",
+            "zone-town-starfall-haven",
+        ],
+    },
+)
+
+
+def _build_refinement_grade_matrix() -> list[dict[str, Any]]:
+    plus_rate_table = {
+        1: (100.0, "+3% P.Atk/M.Atk/P.Def (Safe +1)", "None (100% Safe Tempering Guarantee)"),
+        2: (100.0, "+6% P.Atk/M.Atk/P.Def (Safe +2)", "None (100% Safe Tempering Guarantee)"),
+        3: (100.0, "+9% P.Atk/M.Atk/P.Def (Safe +3 Max)", "None (100% Safe Tempering Guarantee)"),
+        4: (66.0, "+16% P.Atk/M.Atk + Subtle Silver Glow", "Resets to +3 with Blessed Scroll (or Crystallizes)"),
+        5: (66.0, "+23% P.Atk/M.Atk + Subtle Amber Glow", "Resets to +3 with Blessed Scroll (or Crystallizes)"),
+        6: (66.0, "+30% P.Atk/M.Atk + Artisan Set Bonus Active", "Resets to +3 with Blessed Scroll (or Crystallizes)"),
+        7: (45.0, "+42% P.Atk/M.Atk + Radiant Cobalt Aura", "Retains current +level with Seal-Stone Stabilizer"),
+        8: (45.0, "+54% P.Atk/M.Atk + Deep Cobalt Weapon Trail", "Retains current +level with Seal-Stone Stabilizer"),
+        9: (45.0, "+66% P.Atk/M.Atk + Master Resonance Pulse", "Retains current +level with Seal-Stone Stabilizer"),
+        10: (28.0, "+84% P.Atk/M.Atk + Piercing Boss Ward +8%", "Drops -1 level on failure (Protected by Anvil Core)"),
+        11: (28.0, "+102% P.Atk/M.Atk + Piercing Boss Ward +12%", "Drops -1 level on failure (Protected by Anvil Core)"),
+        12: (28.0, "+120% P.Atk/M.Atk + Crimson Sovereign Aura", "Drops -1 level on failure (Protected by Anvil Core)"),
+        13: (15.0, "+145% All Stats + Golden Halo Arc", "Retains +12 floor when bound with Divine Apostle Core"),
+        14: (15.0, "+170% All Stats + Architect Seal Resonance", "Retains +12 floor when bound with Divine Apostle Core"),
+        15: (15.0, "+200% All Stats + Apex Sovereign Lightning Trail", "Retains +12 floor when bound with Divine Apostle Core"),
+    }
+    matrix: list[dict[str, Any]] = []
+    for spec in REFINEMENT_GRADE_SPECS:
+        g_short = spec["grade_short_code"]
+        mats = spec["required_materials"]
+        rates_by_plus: list[dict[str, Any]] = []
+        for p in range(1, 16):
+            rate_pct, bonus_str, pen_str = plus_rate_table[p]
+            if p <= 6:
+                cat_mat = mats[0]["material_name"]
+                scroll_prefix = "Scroll: Enchant" if p <= 3 else "Blessed Scroll: Enchant"
+            elif p <= 12:
+                cat_mat = mats[1]["material_name"]
+                scroll_prefix = "Master Anvil Scroll"
+            else:
+                cat_mat = mats[2]["material_name"]
+                scroll_prefix = "Divine Apostle Anvil Catalyst"
+            rates_by_plus.append(
+                {
+                    "plus_level": p,
+                    "plus_label": f"+{p}",
+                    "success_rate_pct": rate_pct,
+                    "stat_bonus": bonus_str,
+                    "failure_penalty": pen_str,
+                    "required_catalyst": f"{scroll_prefix} ({g_short}) + {cat_mat}",
+                }
+            )
+        matrix.append(
+            {
+                "grade_code": spec["grade_code"],
+                "grade_short_code": g_short,
+                "level_band": list(spec["level_band"]),
+                "representative_weapons": list(spec["representative_weapons"]),
+                "representative_armor": list(spec["representative_armor"]),
+                "safe_refinement_level": 3,
+                "max_refinement_level": 15,
+                "rates_by_plus": rates_by_plus,
+                "required_materials": [dict(m) for m in mats],
+                "home_blacksmith_towns": list(spec["home_blacksmith_towns"]),
+            }
+        )
+    return matrix
+
+
 def _synthesize_shop_and_refinement_catalog(zone_entry: dict[str, Any], idx: int) -> dict[str, Any]:
     tname = str(zone_entry.get("name", f"Town {idx}")).split("(")[0].strip()
     lmin, lmax = (zone_entry.get("level_band") or [1, 15])[:2]
@@ -1550,6 +1923,11 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
         atlas["race_growth_routes"] = _build_race_growth_routes(whc, atlas)
         actions.append("populated_6_race_growth_routes")
 
+    # 1c. Ensure all 6 Equipment Grades exist in `refinement_grade_matrix` (D19)
+    if len(atlas.get("refinement_grade_matrix") or []) < 6:
+        atlas["refinement_grade_matrix"] = _build_refinement_grade_matrix()
+        actions.append("populated_6_grade_refinement_matrix")
+
     # Ensure deep_town.town_blueprint also has race_spawn_point & refinement_anvils & zone_id & shop_and_refinement_catalog
     deep_town = (atlas.get("t_deep_validation_slice") or {}).get("deep_town") or {}
     deep_tb = deep_town.get("town_blueprint")
@@ -2127,15 +2505,109 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     )
     d18_score = round(min(100.0, d18_data_ratio * 100.0), 1) if has_d18_ui_and_telemetry else round(d18_data_ratio * 80.0, 1)
 
+    # D19: Interactive Blacksmith Refinement (+1..+15) & Material Spoil Source Locator (`refinement_grade_matrix`)
+    expected_grade_codes = (
+        "No-Grade Lv.1–19",
+        "D-Grade Lv.20–39",
+        "C-Grade Lv.40–51",
+        "B-Grade Lv.52–60",
+        "A-Grade Lv.61–75",
+        "S-Grade Lv.76–99",
+    )
+    town_zone_id_set = {
+        str(t.get("zone_id"))
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    valid_drop_zone_id_set = {
+        str(f.get("zone_id"))
+        for f in fields_list
+        if isinstance(f, dict) and f.get("zone_id")
+    } | {
+        str(d.get("dungeon_id"))
+        for d in mf_dungeons
+        if isinstance(d, dict) and d.get("dungeon_id")
+    }
+    ref_matrix = atlas.get("refinement_grade_matrix") or []
+    valid_grades = 0
+    for g_entry in ref_matrix:
+        if not isinstance(g_entry, dict):
+            continue
+        gcode = str(g_entry.get("grade_code") or "")
+        rates = g_entry.get("rates_by_plus") or []
+        mats = g_entry.get("required_materials") or []
+        smith_towns = g_entry.get("home_blacksmith_towns") or []
+        if (
+            gcode in expected_grade_codes
+            and g_entry.get("safe_refinement_level") == 3
+            and g_entry.get("max_refinement_level") == 15
+            and len(g_entry.get("representative_weapons") or []) >= 2
+            and len(g_entry.get("representative_armor") or []) >= 2
+            and len(rates) == 15
+            and [r.get("plus_level") for r in rates if isinstance(r, dict)] == list(range(1, 16))
+            and len(mats) >= 2
+            and all(
+                isinstance(m, dict)
+                and m.get("material_name")
+                and len(m.get("drop_zones") or []) >= 2
+                and all(str(dz) in valid_drop_zone_id_set for dz in (m.get("drop_zones") or []))
+                for m in mats
+            )
+            and len(smith_towns) >= 2
+            and all(str(tz) in town_zone_id_set for tz in smith_towns)
+        ):
+            valid_grades += 1
+
+    has_d19_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_REFINE_GRADE",
+            "ATLAS_REFINE_PLUS",
+            "setAtlasRefineGrade",
+            "setAtlasRefinePlus",
+            "Jump to Blacksmith Town Street Map",
+            "Highlight Material Drop Zones / Open Dungeon Floor",
+        )
+    )
+    d19_ratio = valid_grades / 6.0
+    d19_score = round(min(100.0, d19_ratio * 100.0), 1) if has_d19_ui else round(d19_ratio * 80.0, 1)
+
+    # D20: Bidirectional 4-Perspective Studio ⇄ Dedicated World Atlas Sync & Documentation
+    readme_path = REPO_ROOT / "README.md"
+    readme_txt = readme_path.read_text(encoding="utf-8") if readme_path.is_file() else ""
+    drawio_path = REPO_ROOT / "docs" / "superpowers" / "specs" / "2026-10-20-semantic-zoom-world-atlas-design.drawio"
+    has_d20_sync_js = all(
+        tok in web_txt
+        for tok in (
+            "syncStudioNodeToDedicatedAtlas",
+            "ATLAS_FOCUSED_TOWN_ID",
+            "ATLAS_FOCUSED_FIELD_ID",
+            "ATLAS_ACTIVE_DUNGEON_ID",
+            "20-Dimension Semantic-Zoom Atlas Score",
+        )
+    )
+    has_d20_readme = all(
+        tok in readme_txt
+        for tok in (
+            "20-Dimension",
+            "D1–D20",
+            "refinement_grade_matrix",
+            "syncStudioNodeToDedicatedAtlas",
+        )
+    )
+    has_d20_drawio = drawio_path.is_file() and drawio_path.stat().st_size > 1000
+    d20_checks = [has_d20_sync_js, has_d20_readme, has_d20_drawio]
+    d20_score = round((sum(1 for c in d20_checks if c) / float(len(d20_checks))) * 100.0, 1)
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score) / 4.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score) / 6.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score) / 5.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score) / 7.0, 1),
         "Narrative": 100.0 if len(whc.get("historical_epochs") or []) >= 4 else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score) / 7.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score) / 12.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score) / 4.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score) / 9.0, 1),
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score) / 8.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score) / 14.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score) / 5.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score) / 11.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -2158,8 +2630,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d16_score
             + d17_score
             + d18_score
+            + d19_score
+            + d20_score
         )
-        / 18.0,
+        / 20.0,
         1,
     )
 
@@ -2248,6 +2722,20 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "target": total_chambers + total_spawns,
                 "telemetry_wired": has_d18_ui_and_telemetry,
             },
+            "D19_refinement_grade_and_spoil_locator": {
+                "score": d19_score,
+                "verified": valid_grades,
+                "target": 6,
+                "ui_wired": has_d19_ui,
+            },
+            "D20_bidirectional_studio_atlas_sync_and_docs": {
+                "score": d20_score,
+                "verified": sum(1 for c in d20_checks if c),
+                "target": len(d20_checks),
+                "sync_js_wired": has_d20_sync_js,
+                "readme_documented": has_d20_readme,
+                "drawio_verified": has_d20_drawio,
+            },
         },
     }
 
@@ -2310,6 +2798,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D16 (63-Zone Map Directory) : {dims['D16_unified_connected_map_directory']['score']}/100 ({dims['D16_unified_connected_map_directory']['verified']}/{dims['D16_unified_connected_map_directory']['target']} zones)")
         print(f"  D17 (BFS Route Calculator)  : {dims['D17_travel_route_and_gatekeeper_calculator']['score']}/100 ({dims['D17_travel_route_and_gatekeeper_calculator']['verified']}/{dims['D17_travel_route_and_gatekeeper_calculator']['target']} starter->zone pairs)")
         print(f"  D18 (Chamber & Telemetry)   : {dims['D18_dungeon_room_inspector_and_telemetry']['score']}/100 ({dims['D18_dungeon_room_inspector_and_telemetry']['clickable_chambers']}/{dims['D18_dungeon_room_inspector_and_telemetry']['total_chambers']} chambers · {dims['D18_dungeon_room_inspector_and_telemetry']['clickable_spawns']}/{dims['D18_dungeon_room_inspector_and_telemetry']['total_spawns']} spawns)")
+        print(f"  D19 (Refine & Spoil Locator): {dims['D19_refinement_grade_and_spoil_locator']['score']}/100 ({dims['D19_refinement_grade_and_spoil_locator']['verified']}/{dims['D19_refinement_grade_and_spoil_locator']['target']} grades)")
+        print(f"  D20 (Studio/Atlas 20D Sync) : {dims['D20_bidirectional_studio_atlas_sync_and_docs']['score']}/100 ({dims['D20_bidirectional_studio_atlas_sync_and_docs']['verified']}/{dims['D20_bidirectional_studio_atlas_sync_and_docs']['target']} checks)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

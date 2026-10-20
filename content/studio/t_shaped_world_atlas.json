@@ -45433,5 +45433,1077 @@
         }
       ]
     }
+  ],
+  "refinement_grade_matrix": [
+    {
+      "grade_code": "No-Grade Lv.1\u201319",
+      "grade_short_code": "No-Grade",
+      "level_band": [
+        1,
+        19
+      ],
+      "representative_weapons": [
+        "Lantern Apprentice Broadsword",
+        "Porcelain Willow Wand",
+        "Bellows Iron Cleaver"
+      ],
+      "representative_armor": [
+        "Apprentice Hearth Tunic Set",
+        "Wooden Buckler & Leather Greaves"
+      ],
+      "safe_refinement_level": 3,
+      "max_refinement_level": 15,
+      "rates_by_plus": [
+        {
+          "plus_level": 1,
+          "plus_label": "+1",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+3% P.Atk/M.Atk/P.Def (Safe +1)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (No-Grade) + High-Grade Iron Ore & Varnish"
+        },
+        {
+          "plus_level": 2,
+          "plus_label": "+2",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+6% P.Atk/M.Atk/P.Def (Safe +2)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (No-Grade) + High-Grade Iron Ore & Varnish"
+        },
+        {
+          "plus_level": 3,
+          "plus_label": "+3",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+9% P.Atk/M.Atk/P.Def (Safe +3 Max)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (No-Grade) + High-Grade Iron Ore & Varnish"
+        },
+        {
+          "plus_level": 4,
+          "plus_label": "+4",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+16% P.Atk/M.Atk + Subtle Silver Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (No-Grade) + High-Grade Iron Ore & Varnish"
+        },
+        {
+          "plus_level": 5,
+          "plus_label": "+5",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+23% P.Atk/M.Atk + Subtle Amber Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (No-Grade) + High-Grade Iron Ore & Varnish"
+        },
+        {
+          "plus_level": 6,
+          "plus_label": "+6",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+30% P.Atk/M.Atk + Artisan Set Bonus Active",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (No-Grade) + High-Grade Iron Ore & Varnish"
+        },
+        {
+          "plus_level": 7,
+          "plus_label": "+7",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+42% P.Atk/M.Atk + Radiant Cobalt Aura",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (No-Grade) + Refinement Flux Dust & Coal"
+        },
+        {
+          "plus_level": 8,
+          "plus_label": "+8",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+54% P.Atk/M.Atk + Deep Cobalt Weapon Trail",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (No-Grade) + Refinement Flux Dust & Coal"
+        },
+        {
+          "plus_level": 9,
+          "plus_label": "+9",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+66% P.Atk/M.Atk + Master Resonance Pulse",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (No-Grade) + Refinement Flux Dust & Coal"
+        },
+        {
+          "plus_level": 10,
+          "plus_label": "+10",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+84% P.Atk/M.Atk + Piercing Boss Ward +8%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (No-Grade) + Refinement Flux Dust & Coal"
+        },
+        {
+          "plus_level": 11,
+          "plus_label": "+11",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+102% P.Atk/M.Atk + Piercing Boss Ward +12%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (No-Grade) + Refinement Flux Dust & Coal"
+        },
+        {
+          "plus_level": 12,
+          "plus_label": "+12",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+120% P.Atk/M.Atk + Crimson Sovereign Aura",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (No-Grade) + Refinement Flux Dust & Coal"
+        },
+        {
+          "plus_level": 13,
+          "plus_label": "+13",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+145% All Stats + Golden Halo Arc",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (No-Grade) + Apprentice Anvil Seal Fragment"
+        },
+        {
+          "plus_level": 14,
+          "plus_label": "+14",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+170% All Stats + Architect Seal Resonance",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (No-Grade) + Apprentice Anvil Seal Fragment"
+        },
+        {
+          "plus_level": 15,
+          "plus_label": "+15",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+200% All Stats + Apex Sovereign Lightning Trail",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (No-Grade) + Apprentice Anvil Seal Fragment"
+        }
+      ],
+      "required_materials": [
+        {
+          "material_name": "High-Grade Iron Ore & Varnish",
+          "drop_or_spoil_rate": "44.0% Dwarf Spoil / 22.0% Pack Drop",
+          "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+          "drop_zones": [
+            "zone-field-clover-south-gate",
+            "zone-field-celadon-causeway",
+            "zone-dungeon-kiln-cellar"
+          ]
+        },
+        {
+          "material_name": "Refinement Flux Dust & Coal",
+          "drop_or_spoil_rate": "36.0% Dwarf Spoil / 18.0% Mini-Boss Drop",
+          "used_for_plus_range": "+7 to +12 Master Blacksmith Resonance",
+          "drop_zones": [
+            "zone-field-firebrick-duct",
+            "zone-field-resin-arch-tunnel",
+            "zone-dungeon-sap-heart-cistern"
+          ]
+        },
+        {
+          "material_name": "Apprentice Anvil Seal Fragment",
+          "drop_or_spoil_rate": "15.0% B3/3F Boss Drop / 24.0% Raid Spoil",
+          "used_for_plus_range": "+13 to +15 Over-Enchant Stabilizer",
+          "drop_zones": [
+            "zone-field-chime-pipe-colonnade",
+            "zone-field-cinnamon-bark-viaduct",
+            "zone-dungeon-medallion-heart-vault"
+          ]
+        }
+      ],
+      "home_blacksmith_towns": [
+        "zone-town-lantern-hollow",
+        "zone-town-porcelain-loom",
+        "zone-town-draft-kiln-post",
+        "zone-town-root-train-roundhouse",
+        "zone-town-carillon-belfry",
+        "zone-town-cinnamon-mill"
+      ]
+    },
+    {
+      "grade_code": "D-Grade Lv.20\u201339",
+      "grade_short_code": "D-Grade",
+      "level_band": [
+        20,
+        39
+      ],
+      "representative_weapons": [
+        "Kilnwatch Sabre (Elven Long Sword)",
+        "Gastraphetes Crossbow",
+        "Staff of Life & Ash-Bone Glaive"
+      ],
+      "representative_armor": [
+        "Brigandine Plate Cuirass Set",
+        "Manticore Skin Shirt & Mithril Banded Mail"
+      ],
+      "safe_refinement_level": 3,
+      "max_refinement_level": 15,
+      "rates_by_plus": [
+        {
+          "plus_level": 1,
+          "plus_label": "+1",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+3% P.Atk/M.Atk/P.Def (Safe +1)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (D-Grade) + Tempered Alloy Plate & Cord"
+        },
+        {
+          "plus_level": 2,
+          "plus_label": "+2",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+6% P.Atk/M.Atk/P.Def (Safe +2)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (D-Grade) + Tempered Alloy Plate & Cord"
+        },
+        {
+          "plus_level": 3,
+          "plus_label": "+3",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+9% P.Atk/M.Atk/P.Def (Safe +3 Max)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (D-Grade) + Tempered Alloy Plate & Cord"
+        },
+        {
+          "plus_level": 4,
+          "plus_label": "+4",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+16% P.Atk/M.Atk + Subtle Silver Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (D-Grade) + Tempered Alloy Plate & Cord"
+        },
+        {
+          "plus_level": 5,
+          "plus_label": "+5",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+23% P.Atk/M.Atk + Subtle Amber Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (D-Grade) + Tempered Alloy Plate & Cord"
+        },
+        {
+          "plus_level": 6,
+          "plus_label": "+6",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+30% P.Atk/M.Atk + Artisan Set Bonus Active",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (D-Grade) + Tempered Alloy Plate & Cord"
+        },
+        {
+          "plus_level": 7,
+          "plus_label": "+7",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+42% P.Atk/M.Atk + Radiant Cobalt Aura",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (D-Grade) + Mithril Ore & High-Grade Cokes"
+        },
+        {
+          "plus_level": 8,
+          "plus_label": "+8",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+54% P.Atk/M.Atk + Deep Cobalt Weapon Trail",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (D-Grade) + Mithril Ore & High-Grade Cokes"
+        },
+        {
+          "plus_level": 9,
+          "plus_label": "+9",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+66% P.Atk/M.Atk + Master Resonance Pulse",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (D-Grade) + Mithril Ore & High-Grade Cokes"
+        },
+        {
+          "plus_level": 10,
+          "plus_label": "+10",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+84% P.Atk/M.Atk + Piercing Boss Ward +8%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (D-Grade) + Mithril Ore & High-Grade Cokes"
+        },
+        {
+          "plus_level": 11,
+          "plus_label": "+11",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+102% P.Atk/M.Atk + Piercing Boss Ward +12%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (D-Grade) + Mithril Ore & High-Grade Cokes"
+        },
+        {
+          "plus_level": 12,
+          "plus_label": "+12",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+120% P.Atk/M.Atk + Crimson Sovereign Aura",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (D-Grade) + Mithril Ore & High-Grade Cokes"
+        },
+        {
+          "plus_level": 13,
+          "plus_label": "+13",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+145% All Stats + Golden Halo Arc",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (D-Grade) + D-Grade Artisan Anvil Core"
+        },
+        {
+          "plus_level": 14,
+          "plus_label": "+14",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+170% All Stats + Architect Seal Resonance",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (D-Grade) + D-Grade Artisan Anvil Core"
+        },
+        {
+          "plus_level": 15,
+          "plus_label": "+15",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+200% All Stats + Apex Sovereign Lightning Trail",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (D-Grade) + D-Grade Artisan Anvil Core"
+        }
+      ],
+      "required_materials": [
+        {
+          "material_name": "Tempered Alloy Plate & Cord",
+          "drop_or_spoil_rate": "38.0% Dwarf Spoil / 19.5% Pack Drop",
+          "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+          "drop_zones": [
+            "zone-field-cinder-apron",
+            "zone-field-brass-spur-ridge",
+            "zone-dungeon-kiln-cellar"
+          ]
+        },
+        {
+          "material_name": "Mithril Ore & High-Grade Cokes",
+          "drop_or_spoil_rate": "28.0% Mini-Boss Spoil / 14.5% Raid Drop",
+          "used_for_plus_range": "+7 to +12 Master Blacksmith Resonance",
+          "drop_zones": [
+            "zone-field-slag-chasm",
+            "zone-field-caldera-rim",
+            "zone-dungeon-pendulum-shaft"
+          ]
+        },
+        {
+          "material_name": "D-Grade Artisan Anvil Core",
+          "drop_or_spoil_rate": "12.5% Queen Ant / Core MVP Sanctum Drop",
+          "used_for_plus_range": "+13 to +15 Over-Enchant Stabilizer",
+          "drop_zones": [
+            "zone-field-siphon-sluice",
+            "zone-catacomb-heretic-kiln",
+            "zone-dungeon-ember-bellows-chamber"
+          ]
+        }
+      ],
+      "home_blacksmith_towns": [
+        "zone-town-kilnwatch-bastion",
+        "zone-town-glaze-barge-quay",
+        "zone-town-pinion-terminus"
+      ]
+    },
+    {
+      "grade_code": "C-Grade Lv.40\u201351",
+      "grade_short_code": "C-Grade",
+      "level_band": [
+        40,
+        51
+      ],
+      "representative_weapons": [
+        "Samurai Longsword of Escapement",
+        "Homunkulus Sword (Acumen)",
+        "Eminence Bow & Orcish Poleaxe"
+      ],
+      "representative_armor": [
+        "Full Plate Armor Set",
+        "Karmian Tunic Set & Plated Leather Mail"
+      ],
+      "safe_refinement_level": 3,
+      "max_refinement_level": 15,
+      "rates_by_plus": [
+        {
+          "plus_level": 1,
+          "plus_label": "+1",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+3% P.Atk/M.Atk/P.Def (Safe +1)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (C-Grade) + Oriharukon Ore & Compound Braid"
+        },
+        {
+          "plus_level": 2,
+          "plus_label": "+2",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+6% P.Atk/M.Atk/P.Def (Safe +2)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (C-Grade) + Oriharukon Ore & Compound Braid"
+        },
+        {
+          "plus_level": 3,
+          "plus_label": "+3",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+9% P.Atk/M.Atk/P.Def (Safe +3 Max)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (C-Grade) + Oriharukon Ore & Compound Braid"
+        },
+        {
+          "plus_level": 4,
+          "plus_label": "+4",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+16% P.Atk/M.Atk + Subtle Silver Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (C-Grade) + Oriharukon Ore & Compound Braid"
+        },
+        {
+          "plus_level": 5,
+          "plus_label": "+5",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+23% P.Atk/M.Atk + Subtle Amber Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (C-Grade) + Oriharukon Ore & Compound Braid"
+        },
+        {
+          "plus_level": 6,
+          "plus_label": "+6",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+30% P.Atk/M.Atk + Artisan Set Bonus Active",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (C-Grade) + Oriharukon Ore & Compound Braid"
+        },
+        {
+          "plus_level": 7,
+          "plus_label": "+7",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+42% P.Atk/M.Atk + Radiant Cobalt Aura",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (C-Grade) + Master Blacksmith Seal Cluster"
+        },
+        {
+          "plus_level": 8,
+          "plus_label": "+8",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+54% P.Atk/M.Atk + Deep Cobalt Weapon Trail",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (C-Grade) + Master Blacksmith Seal Cluster"
+        },
+        {
+          "plus_level": 9,
+          "plus_label": "+9",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+66% P.Atk/M.Atk + Master Resonance Pulse",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (C-Grade) + Master Blacksmith Seal Cluster"
+        },
+        {
+          "plus_level": 10,
+          "plus_label": "+10",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+84% P.Atk/M.Atk + Piercing Boss Ward +8%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (C-Grade) + Master Blacksmith Seal Cluster"
+        },
+        {
+          "plus_level": 11,
+          "plus_label": "+11",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+102% P.Atk/M.Atk + Piercing Boss Ward +12%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (C-Grade) + Master Blacksmith Seal Cluster"
+        },
+        {
+          "plus_level": 12,
+          "plus_label": "+12",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+120% P.Atk/M.Atk + Crimson Sovereign Aura",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (C-Grade) + Master Blacksmith Seal Cluster"
+        },
+        {
+          "plus_level": 13,
+          "plus_label": "+13",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+145% All Stats + Golden Halo Arc",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (C-Grade) + C-Grade Resonance Catalyst"
+        },
+        {
+          "plus_level": 14,
+          "plus_label": "+14",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+170% All Stats + Architect Seal Resonance",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (C-Grade) + C-Grade Resonance Catalyst"
+        },
+        {
+          "plus_level": 15,
+          "plus_label": "+15",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+200% All Stats + Apex Sovereign Lightning Trail",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (C-Grade) + C-Grade Resonance Catalyst"
+        }
+      ],
+      "required_materials": [
+        {
+          "material_name": "Oriharukon Ore & Compound Braid",
+          "drop_or_spoil_rate": "34.0% Dwarf Spoil / 17.0% Pack Drop",
+          "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+          "drop_zones": [
+            "zone-field-leyden-causeway",
+            "zone-field-metronome-bridge",
+            "zone-dungeon-chronometer-foundry"
+          ]
+        },
+        {
+          "material_name": "Master Blacksmith Seal Cluster",
+          "drop_or_spoil_rate": "24.0% Catacomb Spoil / 13.0% Raid Drop",
+          "used_for_plus_range": "+7 to +12 Master Blacksmith Resonance",
+          "drop_zones": [
+            "zone-field-spiral-wormway-ramp",
+            "zone-catacomb-branded-bellows",
+            "zone-catacomb-apostate-dynamo"
+          ]
+        },
+        {
+          "material_name": "C-Grade Resonance Catalyst",
+          "drop_or_spoil_rate": "11.0% Tower 3F MVP Sanctum Drop",
+          "used_for_plus_range": "+13 to +15 Over-Enchant Stabilizer",
+          "drop_zones": [
+            "zone-field-orrery-bridge",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-pendulum-shaft"
+          ]
+        }
+      ],
+      "home_blacksmith_towns": [
+        "zone-town-escapement-anvil",
+        "zone-town-torque-balance-citadel",
+        "zone-town-inductor-switchyard"
+      ]
+    },
+    {
+      "grade_code": "B-Grade Lv.52\u201360",
+      "grade_short_code": "B-Grade",
+      "level_band": [
+        52,
+        60
+      ],
+      "representative_weapons": [
+        "Sword of Damascus (Focus)",
+        "Sword of Valhalla & Kris Dagger",
+        "Bow of Peril & Lance"
+      ],
+      "representative_armor": [
+        "Blue Wolf Breastplate & Doom Plate Set",
+        "Avadon Robe Set & Zubei Leather Armor"
+      ],
+      "safe_refinement_level": 3,
+      "max_refinement_level": 15,
+      "rates_by_plus": [
+        {
+          "plus_level": 1,
+          "plus_label": "+1",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+3% P.Atk/M.Atk/P.Def (Safe +1)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (B-Grade) + Warden Alloy Core & Metallic Fiber"
+        },
+        {
+          "plus_level": 2,
+          "plus_label": "+2",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+6% P.Atk/M.Atk/P.Def (Safe +2)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (B-Grade) + Warden Alloy Core & Metallic Fiber"
+        },
+        {
+          "plus_level": 3,
+          "plus_label": "+3",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+9% P.Atk/M.Atk/P.Def (Safe +3 Max)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (B-Grade) + Warden Alloy Core & Metallic Fiber"
+        },
+        {
+          "plus_level": 4,
+          "plus_label": "+4",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+16% P.Atk/M.Atk + Subtle Silver Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (B-Grade) + Warden Alloy Core & Metallic Fiber"
+        },
+        {
+          "plus_level": 5,
+          "plus_label": "+5",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+23% P.Atk/M.Atk + Subtle Amber Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (B-Grade) + Warden Alloy Core & Metallic Fiber"
+        },
+        {
+          "plus_level": 6,
+          "plus_label": "+6",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+30% P.Atk/M.Atk + Artisan Set Bonus Active",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (B-Grade) + Warden Alloy Core & Metallic Fiber"
+        },
+        {
+          "plus_level": 7,
+          "plus_label": "+7",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+42% P.Atk/M.Atk + Radiant Cobalt Aura",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (B-Grade) + High-Grade Oriharukon & Enria"
+        },
+        {
+          "plus_level": 8,
+          "plus_label": "+8",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+54% P.Atk/M.Atk + Deep Cobalt Weapon Trail",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (B-Grade) + High-Grade Oriharukon & Enria"
+        },
+        {
+          "plus_level": 9,
+          "plus_label": "+9",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+66% P.Atk/M.Atk + Master Resonance Pulse",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (B-Grade) + High-Grade Oriharukon & Enria"
+        },
+        {
+          "plus_level": 10,
+          "plus_label": "+10",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+84% P.Atk/M.Atk + Piercing Boss Ward +8%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (B-Grade) + High-Grade Oriharukon & Enria"
+        },
+        {
+          "plus_level": 11,
+          "plus_label": "+11",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+102% P.Atk/M.Atk + Piercing Boss Ward +12%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (B-Grade) + High-Grade Oriharukon & Enria"
+        },
+        {
+          "plus_level": 12,
+          "plus_label": "+12",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+120% P.Atk/M.Atk + Crimson Sovereign Aura",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (B-Grade) + High-Grade Oriharukon & Enria"
+        },
+        {
+          "plus_level": 13,
+          "plus_label": "+13",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+145% All Stats + Golden Halo Arc",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (B-Grade) + B-Grade Grand Master Anvil Core"
+        },
+        {
+          "plus_level": 14,
+          "plus_label": "+14",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+170% All Stats + Architect Seal Resonance",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (B-Grade) + B-Grade Grand Master Anvil Core"
+        },
+        {
+          "plus_level": 15,
+          "plus_label": "+15",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+200% All Stats + Apex Sovereign Lightning Trail",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (B-Grade) + B-Grade Grand Master Anvil Core"
+        }
+      ],
+      "required_materials": [
+        {
+          "material_name": "Warden Alloy Core & Metallic Fiber",
+          "drop_or_spoil_rate": "30.0% Dwarf Spoil / 15.0% Pack Drop",
+          "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+          "drop_zones": [
+            "zone-field-tether-causeway",
+            "zone-field-kelp-spiral-reef",
+            "zone-catacomb-witch-pendulum"
+          ]
+        },
+        {
+          "material_name": "High-Grade Oriharukon & Enria",
+          "drop_or_spoil_rate": "21.0% Mini-Boss Spoil / 11.5% Raid Drop",
+          "used_for_plus_range": "+7 to +12 Grand Master Forge",
+          "drop_zones": [
+            "zone-field-orrery-bridge",
+            "zone-dungeon-chronometer-foundry",
+            "zone-catacomb-apostate-dynamo"
+          ]
+        },
+        {
+          "material_name": "B-Grade Grand Master Anvil Core",
+          "drop_or_spoil_rate": "9.5% MVP Sanctum Drop / 14.0% Raid Spoil",
+          "used_for_plus_range": "+13 to +15 Over-Enchant Stabilizer",
+          "drop_zones": [
+            "zone-field-astrolabe-rift",
+            "zone-dungeon-star-heart-nave",
+            "zone-catacomb-dark-omens-coral"
+          ]
+        }
+      ],
+      "home_blacksmith_towns": [
+        "zone-town-inductor-switchyard",
+        "zone-town-starfall-haven",
+        "zone-town-torque-balance-citadel"
+      ]
+    },
+    {
+      "grade_code": "A-Grade Lv.61\u201375",
+      "grade_short_code": "A-Grade",
+      "level_band": [
+        61,
+        75
+      ],
+      "representative_weapons": [
+        "Tallum Blade * Dark Legion's Edge",
+        "Sword of Miracles (Acumen)",
+        "Carnage Bow & Dragon Slayer"
+      ],
+      "representative_armor": [
+        "Dark Crystal Robe & Majestic Plate Set",
+        "Tallum Heavy Plate & Nightmare Light Armor"
+      ],
+      "safe_refinement_level": 3,
+      "max_refinement_level": 15,
+      "rates_by_plus": [
+        {
+          "plus_level": 1,
+          "plus_label": "+1",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+3% P.Atk/M.Atk/P.Def (Safe +1)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (A-Grade) + Ancient Refinement Catalyst & Asofe"
+        },
+        {
+          "plus_level": 2,
+          "plus_label": "+2",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+6% P.Atk/M.Atk/P.Def (Safe +2)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (A-Grade) + Ancient Refinement Catalyst & Asofe"
+        },
+        {
+          "plus_level": 3,
+          "plus_label": "+3",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+9% P.Atk/M.Atk/P.Def (Safe +3 Max)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (A-Grade) + Ancient Refinement Catalyst & Asofe"
+        },
+        {
+          "plus_level": 4,
+          "plus_label": "+4",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+16% P.Atk/M.Atk + Subtle Silver Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (A-Grade) + Ancient Refinement Catalyst & Asofe"
+        },
+        {
+          "plus_level": 5,
+          "plus_label": "+5",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+23% P.Atk/M.Atk + Subtle Amber Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (A-Grade) + Ancient Refinement Catalyst & Asofe"
+        },
+        {
+          "plus_level": 6,
+          "plus_label": "+6",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+30% P.Atk/M.Atk + Artisan Set Bonus Active",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (A-Grade) + Ancient Refinement Catalyst & Asofe"
+        },
+        {
+          "plus_level": 7,
+          "plus_label": "+7",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+42% P.Atk/M.Atk + Radiant Cobalt Aura",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (A-Grade) + Fortress Forge Core & Thons"
+        },
+        {
+          "plus_level": 8,
+          "plus_label": "+8",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+54% P.Atk/M.Atk + Deep Cobalt Weapon Trail",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (A-Grade) + Fortress Forge Core & Thons"
+        },
+        {
+          "plus_level": 9,
+          "plus_label": "+9",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+66% P.Atk/M.Atk + Master Resonance Pulse",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (A-Grade) + Fortress Forge Core & Thons"
+        },
+        {
+          "plus_level": 10,
+          "plus_label": "+10",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+84% P.Atk/M.Atk + Piercing Boss Ward +8%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (A-Grade) + Fortress Forge Core & Thons"
+        },
+        {
+          "plus_level": 11,
+          "plus_label": "+11",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+102% P.Atk/M.Atk + Piercing Boss Ward +12%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (A-Grade) + Fortress Forge Core & Thons"
+        },
+        {
+          "plus_level": 12,
+          "plus_label": "+12",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+120% P.Atk/M.Atk + Crimson Sovereign Aura",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (A-Grade) + Fortress Forge Core & Thons"
+        },
+        {
+          "plus_level": 13,
+          "plus_label": "+13",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+145% All Stats + Golden Halo Arc",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (A-Grade) + A-Grade Sovereign Seal Matrix"
+        },
+        {
+          "plus_level": 14,
+          "plus_label": "+14",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+170% All Stats + Architect Seal Resonance",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (A-Grade) + A-Grade Sovereign Seal Matrix"
+        },
+        {
+          "plus_level": 15,
+          "plus_label": "+15",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+200% All Stats + Apex Sovereign Lightning Trail",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (A-Grade) + A-Grade Sovereign Seal Matrix"
+        }
+      ],
+      "required_materials": [
+        {
+          "material_name": "Ancient Refinement Catalyst & Asofe",
+          "drop_or_spoil_rate": "26.0% Dwarf Spoil / 13.5% Pack Drop",
+          "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+          "drop_zones": [
+            "zone-field-aurora-tether",
+            "zone-field-kelp-spiral-reef",
+            "zone-dungeon-star-heart-nave"
+          ]
+        },
+        {
+          "material_name": "Fortress Forge Core & Thons",
+          "drop_or_spoil_rate": "18.5% Mini-Boss Spoil / 10.0% Raid Drop",
+          "used_for_plus_range": "+7 to +12 Sovereign Forge",
+          "drop_zones": [
+            "zone-field-tether-causeway",
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-forbidden-path-orrery"
+          ]
+        },
+        {
+          "material_name": "A-Grade Sovereign Seal Matrix",
+          "drop_or_spoil_rate": "8.5% MVP Sanctum Drop / 12.5% Raid Spoil",
+          "used_for_plus_range": "+13 to +15 Over-Enchant Stabilizer",
+          "drop_zones": [
+            "zone-field-aurora-tether",
+            "zone-catacomb-witch-pendulum",
+            "zone-dungeon-star-heart-nave"
+          ]
+        }
+      ],
+      "home_blacksmith_towns": [
+        "zone-town-starfall-haven",
+        "zone-town-crown-beacon",
+        "zone-town-inductor-switchyard"
+      ]
+    },
+    {
+      "grade_code": "S-Grade Lv.76\u201399",
+      "grade_short_code": "S-Grade",
+      "level_band": [
+        76,
+        99
+      ],
+      "representative_weapons": [
+        "Forgotten Blade (Focus) \u2014 Sovereign Halo",
+        "Arcana Mace (Acumen) \u2014 Architect Seal",
+        "Draconic Bow & Heaven's Divider"
+      ],
+      "representative_armor": [
+        "Imperial Crusader Heavy Plate Set",
+        "Major Arcana Robe & Draconic Leather Set"
+      ],
+      "safe_refinement_level": 3,
+      "max_refinement_level": 15,
+      "rates_by_plus": [
+        {
+          "plus_level": 1,
+          "plus_label": "+1",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+3% P.Atk/M.Atk/P.Def (Safe +1)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (S-Grade) + Divine Apostle Anvil Core"
+        },
+        {
+          "plus_level": 2,
+          "plus_label": "+2",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+6% P.Atk/M.Atk/P.Def (Safe +2)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (S-Grade) + Divine Apostle Anvil Core"
+        },
+        {
+          "plus_level": 3,
+          "plus_label": "+3",
+          "success_rate_pct": 100.0,
+          "stat_bonus": "+9% P.Atk/M.Atk/P.Def (Safe +3 Max)",
+          "failure_penalty": "None (100% Safe Tempering Guarantee)",
+          "required_catalyst": "Scroll: Enchant (S-Grade) + Divine Apostle Anvil Core"
+        },
+        {
+          "plus_level": 4,
+          "plus_label": "+4",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+16% P.Atk/M.Atk + Subtle Silver Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (S-Grade) + Divine Apostle Anvil Core"
+        },
+        {
+          "plus_level": 5,
+          "plus_label": "+5",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+23% P.Atk/M.Atk + Subtle Amber Glow",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (S-Grade) + Divine Apostle Anvil Core"
+        },
+        {
+          "plus_level": 6,
+          "plus_label": "+6",
+          "success_rate_pct": 66.0,
+          "stat_bonus": "+30% P.Atk/M.Atk + Artisan Set Bonus Active",
+          "failure_penalty": "Resets to +3 with Blessed Scroll (or Crystallizes)",
+          "required_catalyst": "Blessed Scroll: Enchant (S-Grade) + Divine Apostle Anvil Core"
+        },
+        {
+          "plus_level": 7,
+          "plus_label": "+7",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+42% P.Atk/M.Atk + Radiant Cobalt Aura",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (S-Grade) + Architect Seal Crest & Imperial Alloy"
+        },
+        {
+          "plus_level": 8,
+          "plus_label": "+8",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+54% P.Atk/M.Atk + Deep Cobalt Weapon Trail",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (S-Grade) + Architect Seal Crest & Imperial Alloy"
+        },
+        {
+          "plus_level": 9,
+          "plus_label": "+9",
+          "success_rate_pct": 45.0,
+          "stat_bonus": "+66% P.Atk/M.Atk + Master Resonance Pulse",
+          "failure_penalty": "Retains current +level with Seal-Stone Stabilizer",
+          "required_catalyst": "Master Anvil Scroll (S-Grade) + Architect Seal Crest & Imperial Alloy"
+        },
+        {
+          "plus_level": 10,
+          "plus_label": "+10",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+84% P.Atk/M.Atk + Piercing Boss Ward +8%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (S-Grade) + Architect Seal Crest & Imperial Alloy"
+        },
+        {
+          "plus_level": 11,
+          "plus_label": "+11",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+102% P.Atk/M.Atk + Piercing Boss Ward +12%",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (S-Grade) + Architect Seal Crest & Imperial Alloy"
+        },
+        {
+          "plus_level": 12,
+          "plus_label": "+12",
+          "success_rate_pct": 28.0,
+          "stat_bonus": "+120% P.Atk/M.Atk + Crimson Sovereign Aura",
+          "failure_penalty": "Drops -1 level on failure (Protected by Anvil Core)",
+          "required_catalyst": "Master Anvil Scroll (S-Grade) + Architect Seal Crest & Imperial Alloy"
+        },
+        {
+          "plus_level": 13,
+          "plus_label": "+13",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+145% All Stats + Golden Halo Arc",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (S-Grade) + Sovereign Bastion Heart (+13..+15 Stabilizer)"
+        },
+        {
+          "plus_level": 14,
+          "plus_label": "+14",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+170% All Stats + Architect Seal Resonance",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (S-Grade) + Sovereign Bastion Heart (+13..+15 Stabilizer)"
+        },
+        {
+          "plus_level": 15,
+          "plus_label": "+15",
+          "success_rate_pct": 15.0,
+          "stat_bonus": "+200% All Stats + Apex Sovereign Lightning Trail",
+          "failure_penalty": "Retains +12 floor when bound with Divine Apostle Core",
+          "required_catalyst": "Divine Apostle Anvil Catalyst (S-Grade) + Sovereign Bastion Heart (+13..+15 Stabilizer)"
+        }
+      ],
+      "required_materials": [
+        {
+          "material_name": "Divine Apostle Anvil Core",
+          "drop_or_spoil_rate": "22.0% High-Halo Spoil / 11.0% Raid Drop",
+          "used_for_plus_range": "+1 to +6 Safe & Artisan Tempering",
+          "drop_zones": [
+            "zone-field-aurora-tether",
+            "zone-dungeon-star-heart-nave",
+            "zone-catacomb-forbidden-path-orrery"
+          ]
+        },
+        {
+          "material_name": "Architect Seal Crest & Imperial Alloy",
+          "drop_or_spoil_rate": "15.0% Raid Spoil / 9.0% Sanctum Drop",
+          "used_for_plus_range": "+7 to +12 Grand Master Sovereign Forge",
+          "drop_zones": [
+            "zone-field-tether-causeway",
+            "zone-catacomb-dark-omens-coral",
+            "zone-dungeon-star-heart-nave"
+          ]
+        },
+        {
+          "material_name": "Sovereign Bastion Heart (+13..+15 Stabilizer)",
+          "drop_or_spoil_rate": "6.5% Apostle MVP Sanctum Drop",
+          "used_for_plus_range": "+13 to +15 Apex God-Anvil Limit",
+          "drop_zones": [
+            "zone-field-aurora-tether",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-dungeon-chronometer-foundry"
+          ]
+        }
+      ],
+      "home_blacksmith_towns": [
+        "zone-town-crown-beacon",
+        "zone-town-starfall-haven"
+      ]
+    }
   ]
 }
