@@ -2866,7 +2866,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 72)
+        self.assertGreaterEqual(len(audit["dimensions"]), 72)
 
         d71 = audit["dimensions"]["D71_tech_art_asset_pipeline_and_chunk_bakers"]
         self.assertEqual(d71["score"], 100.0)
@@ -2920,10 +2920,144 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas72DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 72)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 72)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 72)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 72)
         self.assertIn("72-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave35_liveops_gm_control_anchors_and_platform_tools_squad_registry(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["liveopsGmControlAnchorsCount"], 15)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["platformToolsSquadRegistryCount"], 20)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_LIVEOPS_GM_MODE",
+            "setAtlasLiveopsGmMode",
+            "renderAtlasLiveopsGmBarHtml",
+            "studioLiveopsGmOverlay",
+            "GM_Stuck_Character_Rescue_Anchor",
+            "Inventory_Rollback_Audit_Vault",
+            "Zero_Restart_Live_Event_Hot_Config",
+            "ATLAS_TOOLS_SQUAD_MODE",
+            "setAtlasToolsSquadMode",
+            "renderAtlasToolsSquadBarHtml",
+            "studioToolsSquadOverlay",
+            "Stage_1_Content_And_World",
+            "Stage_2_Asset_And_Build_Pipeline",
+            "Stage_3_Server_And_Simulation",
+            "Stage_4_LiveOps_And_GM",
+            "74-Dimension Semantic-Zoom Atlas Score",
+            "D1–D74 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 35 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 74)
+
+        d73 = audit["dimensions"]["D73_liveops_gm_stuck_rescue_rollback_and_hot_config"]
+        self.assertEqual(d73["score"], 100.0)
+        self.assertEqual(d73["verified"], 15)
+        self.assertEqual(d73["target"], 15)
+        self.assertEqual(d73["gm_stuck_rescue_anchors"], 5)
+        self.assertEqual(d73["inventory_rollback_audit_vaults"], 5)
+        self.assertEqual(d73["zero_restart_live_event_hot_configs"], 5)
+        self.assertEqual(
+            set(d73["liveops_categories"]),
+            {
+                "GM_Stuck_Character_Rescue_Anchor",
+                "Inventory_Rollback_Audit_Vault",
+                "Zero_Restart_Live_Event_Hot_Config",
+            },
+        )
+        self.assertTrue(d73["ui_wired"])
+
+        d74 = audit["dimensions"]["D74_platform_tools_squad_unified_pipeline_registry"]
+        self.assertEqual(d74["score"], 100.0)
+        self.assertEqual(d74["verified"], 20)
+        self.assertEqual(d74["target"], 20)
+        self.assertEqual(d74["stage_1_content_world_tools"], 5)
+        self.assertEqual(d74["stage_2_asset_build_tools"], 5)
+        self.assertEqual(d74["stage_3_server_simulation_tools"], 5)
+        self.assertEqual(d74["stage_4_liveops_gm_tools"], 5)
+        self.assertEqual(d74["lead_architect_tools"], 4)
+        self.assertEqual(d74["content_world_engineer_tools"], 4)
+        self.assertEqual(d74["technical_artist_tools"], 4)
+        self.assertEqual(d74["backend_simulation_engineer_tools"], 4)
+        self.assertEqual(d74["liveops_gm_engineer_tools"], 4)
+        self.assertEqual(
+            set(d74["tooling_domains"]),
+            {
+                "Stage_1_Content_And_World",
+                "Stage_2_Asset_And_Build_Pipeline",
+                "Stage_3_Server_And_Simulation",
+                "Stage_4_LiveOps_And_GM",
+            },
+        )
+        self.assertEqual(
+            set(d74["squad_roles"]),
+            {
+                "Lead_Tools_Pipeline_Architect",
+                "Content_World_Tools_Engineer",
+                "Technical_Artist_Pipeline_DCC",
+                "Backend_Simulation_Infra_Engineer",
+                "LiveOps_Build_GM_Engineer",
+            },
+        )
+        self.assertEqual(
+            set(d74["architectural_principles"]),
+            {
+                "1_Internal_Customer_Embedded_DX",
+                "2_SSOT_Schema_Separated_From_UI",
+                "3_Web_First_Non_Spatial_Suite",
+            },
+        )
+        self.assertTrue(d74["ui_wired"])
+
+        anchors = atlas["liveops_gm_control_anchors"]
+        self.assertEqual(len(anchors), 15)
+        self.assertEqual(len({a["town_zone_id"] for a in anchors}), 15)
+        self.assertEqual(sum(1 for a in anchors if a["liveops_category"] == "GM_Stuck_Character_Rescue_Anchor"), 5)
+        self.assertEqual(sum(1 for a in anchors if a["liveops_category"] == "Inventory_Rollback_Audit_Vault"), 5)
+        self.assertEqual(sum(1 for a in anchors if a["liveops_category"] == "Zero_Restart_Live_Event_Hot_Config"), 5)
+        for a in anchors:
+            self.assertGreaterEqual(len(a["hot_config_and_audit_features"]), 2)
+
+        tools = atlas["platform_tools_squad_registry"]
+        self.assertEqual(len(tools), 20)
+        for dom in (
+            "Stage_1_Content_And_World",
+            "Stage_2_Asset_And_Build_Pipeline",
+            "Stage_3_Server_And_Simulation",
+            "Stage_4_LiveOps_And_GM",
+        ):
+            self.assertEqual(sum(1 for t in tools if t["tooling_domain"] == dom), 5)
+        for role in (
+            "Lead_Tools_Pipeline_Architect",
+            "Content_World_Tools_Engineer",
+            "Technical_Artist_Pipeline_DCC",
+            "Backend_Simulation_Infra_Engineer",
+            "LiveOps_Build_GM_Engineer",
+        ):
+            self.assertEqual(sum(1 for t in tools if t["owner_squad_role"] == role), 4)
+        for t in tools:
+            self.assertGreaterEqual(len(t["capabilities_and_ssot_hooks"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas74DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 74)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 74)
+        self.assertIn("74-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

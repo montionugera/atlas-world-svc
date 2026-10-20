@@ -347,6 +347,18 @@
       "maxItems": 16,
       "items": { "$ref": "#/$defs/backendBotSwarmSimulationSectorSpec" }
     },
+    "liveops_gm_control_anchors": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/liveopsGmControlAnchorSpec" }
+    },
+    "platform_tools_squad_registry": {
+      "type": "array",
+      "minItems": 20,
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/platformToolsSquadRegistrySpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -3913,6 +3925,102 @@
         "bot_concurrency_and_tick_budget": { "type": "string" },
         "spatial_partition_and_aoi_rule": { "type": "string" },
         "stress_test_assertions": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "liveopsGmControlAnchorSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "anchor_id",
+        "town_zone_id",
+        "town_name",
+        "liveops_category",
+        "owner_engineer_role",
+        "anchor_loc",
+        "gm_portal_command_suite",
+        "hot_config_and_audit_features",
+        "sla_and_build_farm_hook"
+      ],
+      "properties": {
+        "anchor_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "liveops_category": {
+          "type": "string",
+          "enum": [
+            "GM_Stuck_Character_Rescue_Anchor",
+            "Inventory_Rollback_Audit_Vault",
+            "Zero_Restart_Live_Event_Hot_Config"
+          ]
+        },
+        "owner_engineer_role": { "type": "string" },
+        "anchor_loc": { "type": "string" },
+        "gm_portal_command_suite": { "type": "string" },
+        "hot_config_and_audit_features": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "sla_and_build_farm_hook": { "type": "string" }
+      }
+    },
+    "platformToolsSquadRegistrySpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool_id",
+        "tool_name",
+        "tooling_domain",
+        "owner_squad_role",
+        "exemplar_zone_id",
+        "exemplar_dungeon_id",
+        "exemplar_floor_id",
+        "loc",
+        "architectural_principle_enforced",
+        "capabilities_and_ssot_hooks"
+      ],
+      "properties": {
+        "tool_id": { "type": "string" },
+        "tool_name": { "type": "string" },
+        "tooling_domain": {
+          "type": "string",
+          "enum": [
+            "Stage_1_Content_And_World",
+            "Stage_2_Asset_And_Build_Pipeline",
+            "Stage_3_Server_And_Simulation",
+            "Stage_4_LiveOps_And_GM"
+          ]
+        },
+        "owner_squad_role": {
+          "type": "string",
+          "enum": [
+            "Lead_Tools_Pipeline_Architect",
+            "Content_World_Tools_Engineer",
+            "Technical_Artist_Pipeline_DCC",
+            "Backend_Simulation_Infra_Engineer",
+            "LiveOps_Build_GM_Engineer"
+          ]
+        },
+        "exemplar_zone_id": { "type": "string" },
+        "exemplar_dungeon_id": { "type": "string" },
+        "exemplar_floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "architectural_principle_enforced": {
+          "type": "string",
+          "enum": [
+            "1_Internal_Customer_Embedded_DX",
+            "2_SSOT_Schema_Separated_From_UI",
+            "3_Web_First_Non_Spatial_Suite"
+          ]
+        },
+        "capabilities_and_ssot_hooks": {
           "type": "array",
           "minItems": 2,
           "items": { "type": "string" }

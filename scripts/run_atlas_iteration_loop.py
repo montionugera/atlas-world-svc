@@ -13838,6 +13838,599 @@ def _build_backend_bot_swarm_simulation_sectors(atlas: dict[str, Any]) -> list[d
     return rows
 
 
+def _build_liveops_gm_control_anchors(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 [Stage 4: LiveOps, Build & GM Portal] Town GM Stuck-Character Rescue, Inventory Rollback Audit & Zero-Restart Live Event Hot-Config Anchors (5 GM_Stuck_Character_Rescue_Anchor + 5 Inventory_Rollback_Audit_Vault + 5 Zero_Restart_Live_Event_Hot_Config) (D73)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 5 GM_Stuck_Character_Rescue_Anchor Towns
+        (
+            "liveops-gm-01-lantern-hollow-rescue",
+            "zone-town-lantern-hollow",
+            "GM_Stuck_Character_Rescue_Anchor",
+            "LiveOps, Build & GM Tools Engineer",
+            "/unstuck_recall -> Lantern Hollow Peace-Zone Fountain + 5s Invulnerability + NavMesh Unclip",
+            [
+                "One-Click Stuck Character Teleport to Building #1 Spawn Shrine",
+                "Automated NavMesh Fall-Through & Cliff-Trap Detection Alert",
+                "Immutable GM Action Audit Trail (Joymify SSO Bound)",
+            ],
+            "P1 Stuck-Player Auto-Rescue SLA < 15s · Nightly iOS/macOS Client Build Smoke Hook",
+        ),
+        (
+            "liveops-gm-02-porcelain-loom-rescue",
+            "zone-town-porcelain-loom",
+            "GM_Stuck_Character_Rescue_Anchor",
+            "LiveOps, Build & GM Tools Engineer",
+            "/unstuck_recall -> Porcelain Loom Mother-Tree Sanctuary + Debuff Purge + Safe-Spot Snap",
+            [
+                "One-Click Stuck Character Teleport from Underground Spore Gallery B1–B3",
+                "Collision Capsule & Bridge Heightfield Desync Recovery",
+                "Immutable GM Action Audit Trail (Joymify SSO Bound)",
+            ],
+            "P1 Stuck-Player Auto-Rescue SLA < 15s · Automated Teleport Coordinate Verification",
+        ),
+        (
+            "liveops-gm-03-draft-kiln-post-rescue",
+            "zone-town-draft-kiln-post",
+            "GM_Stuck_Character_Rescue_Anchor",
+            "LiveOps, Build & GM Tools Engineer",
+            "/unstuck_recall -> Draft-Kiln Flame Sanctuary + Aggro Leash Reset + 5s Invulnerability",
+            [
+                "One-Click Stuck Character Teleport from High-Altitude Plateau & Trial Cave",
+                "Server-Side Physics Velocity Zeroing & Stuck-Timer Override",
+                "Immutable GM Action Audit Trail (Joymify SSO Bound)",
+            ],
+            "P1 Stuck-Player Auto-Rescue SLA < 15s · Physics Leash Regression Gate",
+        ),
+        (
+            "liveops-gm-04-carillon-belfry-rescue",
+            "zone-town-carillon-belfry",
+            "GM_Stuck_Character_Rescue_Anchor",
+            "LiveOps, Build & GM Tools Engineer",
+            "/unstuck_recall -> Carillon Belfry Dark-Lunar Plaza + Water/Marsh Terrain Unstick",
+            [
+                "One-Click Stuck Character Teleport from Festering Marsh & Bell-Crypt B1–B3",
+                "Subterranean Waterfall & Root-Snare Geometry Escape Hook",
+                "Immutable GM Action Audit Trail (Joymify SSO Bound)",
+            ],
+            "P1 Stuck-Player Auto-Rescue SLA < 15s · Dungeon Portal Exit Integrity Check",
+        ),
+        (
+            "liveops-gm-05-kilnwatch-bastion-rescue",
+            "zone-town-kilnwatch-bastion",
+            "GM_Stuck_Character_Rescue_Anchor",
+            "LiveOps, Build & GM Tools Engineer & Backend Simulation Engineer",
+            "/unstuck_recall -> Kilnwatch Bastion Central Gatekeeper Obelisk + Mass Siege Unstuck",
+            [
+                "One-Click Individual or Party Stuck-Character Teleport to Dion Peace Zone",
+                "Siege Bridge & Ant Nest B1–B3 Crowd-Crush Safe Relocation",
+                "Immutable GM Action Audit Trail (Joymify SSO Bound)",
+            ],
+            "P1 Stuck-Player Auto-Rescue SLA < 15s · 300-Player Convergence Hub Stress Hook",
+        ),
+        # 5 Inventory_Rollback_Audit_Vault Towns
+        (
+            "liveops-gm-06-escapement-anvil-rollback",
+            "zone-town-escapement-anvil",
+            "Inventory_Rollback_Audit_Vault",
+            "LiveOps, Build & GM Tools Engineer",
+            "Atomic Item Ledger Point-in-Time Snapshot & SHA-256 OCC Rollback (Escapement Anvil)",
+            [
+                "Point-in-Time Character Inventory & +1..+15 Enchant State Diff Inspector",
+                "Atomic SHA-256 OCC Item Restoration Without Server Restart",
+                "Immutable GM Action Audit Trail & Dual-Approval Dupe Guard",
+            ],
+            "Zero-Dupe Ledger Invariant Gate · SQLite WAL / Postgres CAS Snapshot Verification",
+        ),
+        (
+            "liveops-gm-07-pinion-terminus-rollback",
+            "zone-town-pinion-terminus",
+            "Inventory_Rollback_Audit_Vault",
+            "LiveOps, Build & GM Tools Engineer",
+            "Atomic Item Ledger Point-in-Time Snapshot & Spoil/Trade Dispute Rollback (Pinion Terminus)",
+            [
+                "Player-to-Player Trade, Private Store & Spoil Drop Ledger Timeline",
+                "1-Click Scammed/Lost Item Recovery with Dupe-Serial Tombstone Lock",
+                "Immutable GM Action Audit Trail (Joymify SSO Bound)",
+            ],
+            "Zero-Dupe Ledger Invariant Gate · Nightly Meta-Store Consistency Check",
+        ),
+        (
+            "liveops-gm-08-saffron-press-rollback",
+            "zone-town-saffron-press",
+            "Inventory_Rollback_Audit_Vault",
+            "LiveOps, Build & GM Tools Engineer",
+            "Atomic Item Ledger Point-in-Time Snapshot & Manor/Caravan Escrow Audit (Saffron Press)",
+            [
+                "Manor Seed/Crop Tally & Ancient Adena Black-Market Transaction Diff",
+                "Atomic Account Warehouse & Freight Parcel Rollback",
+                "Immutable GM Action Audit Trail (Joymify SSO Bound)",
+            ],
+            "Zero-Dupe Ledger Invariant Gate · Freight Escrow Checksum Hook",
+        ),
+        (
+            "liveops-gm-09-inductor-switchyard-rollback",
+            "zone-town-inductor-switchyard",
+            "Inventory_Rollback_Audit_Vault",
+            "LiveOps, Build & GM Tools Engineer & Lead Tools & Pipeline Architect",
+            "Atomic Item Ledger Point-in-Time Snapshot & Giran Auction/Bazaar Audit (Inductor Switchyard)",
+            [
+                "Metropolitan Bazaar, Clan Hall Auction Bid & Masterwork Forge Ledger Inspector",
+                "Sub-Second Point-in-Time Character & Clan Vault Diff Restore",
+                "Immutable GM Action Audit Trail (Joymify SSO Bound)",
+            ],
+            "Zero-Dupe Ledger Invariant Gate · High-Frequency Economy Audit Pipeline",
+        ),
+        (
+            "liveops-gm-10-torque-balance-citadel-rollback",
+            "zone-town-torque-balance-citadel",
+            "Inventory_Rollback_Audit_Vault",
+            "LiveOps, Build & GM Tools Engineer",
+            "Atomic Item Ledger Point-in-Time Snapshot & Sovereign Epic/Heroic Relic Audit (Torque-Balance)",
+            [
+                "Epic Boss Jewelry, Infinity Hero Weapon & Castle Treasury Tax Ledger",
+                "Cryptographically Signed Rollback Voucher with Anti-Duplication Lock",
+                "Immutable GM Action Audit Trail (Joymify SSO Bound)",
+            ],
+            "Zero-Dupe Ledger Invariant Gate · Sovereign Relic Provenance Verification",
+        ),
+        # 5 Zero_Restart_Live_Event_Hot_Config Towns
+        (
+            "liveops-gm-11-glaze-barge-quay-hotconfig",
+            "zone-town-glaze-barge-quay",
+            "Zero_Restart_Live_Event_Hot_Config",
+            "LiveOps, Build & GM Tools Engineer",
+            "Zero-Restart Feature Flag: 2x Spoil / 2x Drop / Nocturnal Luminous Fishing Event",
+            [
+                "Zero-Downtime Hot-Reload of Loot, Spoil & Fishing Bait Multipliers",
+                "Live World Broadcast Banner & Scheduled Event Countdown Toggle",
+                "Automated Build Farm PCK/Bundle Hash Parity Verification",
+            ],
+            "Zero-Restart Hot-Config Propagation < 250ms Across All Agones GameServer Pods",
+        ),
+        (
+            "liveops-gm-12-cinnamon-mill-hotconfig",
+            "zone-town-cinnamon-mill",
+            "Zero_Restart_Live_Event_Hot_Config",
+            "LiveOps, Build & GM Tools Engineer",
+            "Zero-Restart Feature Flag: Newbie Vitality Breeze & 2x Quest/Craft Stamp Festival",
+            [
+                "Zero-Downtime Hot-Reload of Lv.1–75 Vitality & Hunting Helper Buff Tables",
+                "Instant Toggle for Seasonal L2day Letter Collector & Squash Smash Spawns",
+                "Automated Build Farm PCK/Bundle Hash Parity Verification",
+            ],
+            "Zero-Restart Hot-Config Propagation < 250ms · Schema-Validated Event JSON Push",
+        ),
+        (
+            "liveops-gm-13-root-train-roundhouse-hotconfig",
+            "zone-town-root-train-roundhouse",
+            "Zero_Restart_Live_Event_Hot_Config",
+            "LiveOps, Build & GM Tools Engineer",
+            "Zero-Restart Feature Flag: Champion Mob Aura (10x/50x) & Freight Fee Holiday Toggle",
+            [
+                "Zero-Downtime Hot-Reload of Blue/Crimson Champion Mob Spawn Probabilities",
+                "Dynamic Dwarven Warehouse Freight & Mammon Exchange Rate Hot-Config",
+                "Automated Build Farm PCK/Bundle Hash Parity Verification",
+            ],
+            "Zero-Restart Hot-Config Propagation < 250ms · Instant Rollback on Economy Anomaly",
+        ),
+        (
+            "liveops-gm-14-starfall-haven-hotconfig",
+            "zone-town-starfall-haven",
+            "Zero_Restart_Live_Event_Hot_Config",
+            "LiveOps, Build & GM Tools Engineer",
+            "Zero-Restart Feature Flag: Seven Signs Dawn/Dusk Seal Flip & Seed Cycle Override",
+            [
+                "Zero-Downtime Hot-Reload of Seven-Signs Cabal Week & Ekimus/Tiat Seed Stage",
+                "Live Command-Channel Raid Respawn Window & Olympiad Season Toggle",
+                "Automated Build Farm PCK/Bundle Hash Parity Verification",
+            ],
+            "Zero-Restart Hot-Config Propagation < 250ms · Multi-Pod State Synchronization",
+        ),
+        (
+            "liveops-gm-15-crown-beacon-hotconfig",
+            "zone-town-crown-beacon",
+            "Zero_Restart_Live_Event_Hot_Config",
+            "LiveOps, Build & GM Tools Engineer & Lead Tools & Pipeline Architect",
+            "Zero-Restart Feature Flag: Castle Siege / Territory War Window & Build Farm Canary",
+            [
+                "Zero-Downtime Hot-Reload of Siege Timers, Territory Ward Spawns & Fame Rates",
+                "Automated Nightly Godot 4.7 iOS/macOS PCK + server-rs Docker Build Farm Status",
+                "Immutable GM Action Audit Trail & Canary Release Promotion Gate",
+            ],
+            "Zero-Restart Hot-Config Propagation < 250ms · Nightly Build Farm Green Gate",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        aid,
+        tzid,
+        lcat,
+        orole,
+        gsuite,
+        hfeatures,
+        slahook,
+    ) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(tzid) or {}
+        tname = str(t_obj.get("name", tzid))
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        aloc = _fmt_loc(bx + 150 - idx * 11, by - 140 + idx * 10)
+        rows.append(
+            {
+                "anchor_id": aid,
+                "town_zone_id": tzid,
+                "town_name": tname,
+                "liveops_category": lcat,
+                "owner_engineer_role": orole,
+                "anchor_loc": aloc,
+                "gm_portal_command_suite": gsuite,
+                "hot_config_and_audit_features": hfeatures,
+                "sla_and_build_farm_hook": slahook,
+            }
+        )
+    return rows
+
+
+def _build_platform_tools_squad_registry(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 20 [4-Domain x 5-Role Platform & Tools Squad] Unified Studio Pipeline Registry Entries (5 per Tooling Domain x 4 per Squad Role) (D74)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {
+        str(z.get("zone_id")): z
+        for z in all_zones
+        if isinstance(z, dict) and z.get("zone_id")
+    }
+    specs = [
+        # Domain 1: Stage_1_Content_And_World (5 tools, 1 per squad role)
+        (
+            "squad-tool-01-ssot-world-schema-compiler",
+            "SSOT World Atlas JSON-Schema Compiler & GOV-01..GOV-10 Gate",
+            "Stage_1_Content_And_World",
+            "Lead_Tools_Pipeline_Architect",
+            "zone-town-lantern-hollow",
+            "",
+            "",
+            "2_SSOT_Schema_Separated_From_UI",
+            [
+                "Compiles t_shaped_world_atlas.json against Draft 2020-12 Schema with Zero Drift",
+                "Enforces Strict Separation of Canonical Data (content/studio/) from Web/Godot UI",
+                "Blocks Any PR with Broken Zone/Dungeon/NPC Cross-References in < 1.2s",
+            ],
+        ),
+        (
+            "squad-tool-02-visual-zone-spawner-and-patrol-editor",
+            "Visual 63-Zone Spawner, Patrol Waypoint & Leash Radius Editor",
+            "Stage_1_Content_And_World",
+            "Content_World_Tools_Engineer",
+            "zone-field-clover-south-gate",
+            "",
+            "",
+            "1_Internal_Customer_Embedded_DX",
+            [
+                "Zero Raw-JSON Hand Editing — Drag-and-Drop Monster/Mini-Boss/Raid Spawn Territories",
+                "Real-Time Leash Radius, Social Herd Agro Link & Respawn Timer Preview",
+                "1-Click Export to Canonical Field Tactical & Dungeon Floor Blueprints",
+            ],
+        ),
+        (
+            "squad-tool-03-character-scale-street-corridor-ruler",
+            "1.05m Cute Character Scale & >=6.0m Dungeon Corridor Clearance Ruler",
+            "Stage_1_Content_And_World",
+            "Technical_Artist_Pipeline_DCC",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B1",
+            "1_Internal_Customer_Embedded_DX",
+            [
+                "Overlays 90–120cm (1.05m) Character Silhouette Against 12–16m Town Plazas & >=6.0m Corridors",
+                "Flags Camera Occlusion, Doorway Clipping (>2.6m) & Stair Step Height (>0.16m) Violations",
+                "Synchronizes Town Archetype Plates with 3D Godot Navigation Clearance",
+            ],
+        ),
+        (
+            "squad-tool-04-economy-loot-monte-carlo-balancer",
+            "Monte-Carlo Loot Drop, Spoil Yield & +1..+15 Refinement Sink Simulator",
+            "Stage_1_Content_And_World",
+            "Backend_Simulation_Infra_Engineer",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "3_Web_First_Non_Spatial_Suite",
+            [
+                "Simulates 100,000 Hours of Party Farming & Blacksmith Enchant Sink in 800ms",
+                "Flags Adena Inflation, Spoil Material Bottlenecks & Drop-Table Outliers Before Merge",
+                "Web-First :8788 Interactive Economy Balance Matrix for Game Designers",
+            ],
+        ),
+        (
+            "squad-tool-05-quest-dialogue-and-event-calendar-studio",
+            "3-Track Quest DAG, Localization & Seasonal Event Calendar Authoring Suite",
+            "Stage_1_Content_And_World",
+            "LiveOps_Build_GM_Engineer",
+            "zone-town-kilnwatch-bastion",
+            "",
+            "",
+            "3_Web_First_Non_Spatial_Suite",
+            [
+                "Browser-Based Node Graph for Main Story, Class Transfer & Racial Heritage Quests",
+                "Validates Prerequisites, Giver/Turn-In Town IDs & Reward Item IDs Against SSOT",
+                "Generates Zero-Restart Seasonal Event Schedules with Pre-Flight Diff Preview",
+            ],
+        ),
+        # Domain 2: Stage_2_Asset_And_Build_Pipeline (5 tools, 1 per squad role)
+        (
+            "squad-tool-06-three-tier-asset-resolve-manifest-governor",
+            "Three-Tier Asset Resolve (Proxy -> Blockout -> Final GLB) & SHA-256 Manifest Governor",
+            "Stage_2_Asset_And_Build_Pipeline",
+            "Lead_Tools_Pipeline_Architect",
+            "zone-town-porcelain-loom",
+            "",
+            "",
+            "2_SSOT_Schema_Separated_From_UI",
+            [
+                "Guarantees Every Entity Resolves Cleanly Across Tier 1 CSG, Tier 2 Blockout & Tier 3 GLB",
+                "Enforces Immutable SHA-256 Asset Manifests & License/CC0 Provenance Gates",
+                "Zero Missing-Mesh Pink Placeholders Allowed in Dev or Release Builds",
+            ],
+        ),
+        (
+            "squad-tool-07-kitbash-prefab-and-biome-prop-scatter",
+            "Town Building #1..#12 Prefab Kitbasher & Field Biome Prop Scatter Tool",
+            "Stage_2_Asset_And_Build_Pipeline",
+            "Content_World_Tools_Engineer",
+            "zone-town-escapement-anvil",
+            "",
+            "",
+            "1_Internal_Customer_Embedded_DX",
+            [
+                "Snaps Modular Walled Keep, Radial Moat & Harbor Plaza Building Prefabs to Grid",
+                "Automated Herb Biome, Shrine & Camp Mark Placement with NavMesh Carve Masks",
+                "Saves Level Designers 10x Iteration Time Over Manual Scene Node Placement",
+            ],
+        ),
+        (
+            "squad-tool-08-dcc-blender-to-godot-glb-auto-importer",
+            "Headless Blender-to-Godot 4.7 GLB Importer, Poly/Bone Gate & 256px WebP Baker",
+            "Stage_2_Asset_And_Build_Pipeline",
+            "Technical_Artist_Pipeline_DCC",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "2F",
+            "1_Internal_Customer_Embedded_DX",
+            [
+                "Enforces <= 12,500 Triangles, <= 64 Skeleton Bones & ORM PBR Texture Compression",
+                "Auto-Renders 256x256 Transparent WebP Catalog Thumbnails on Every Asset Commit",
+                "Compiles Custom Toon/Cel & Elemental Weapon Aura Shaders for Apple Metal / Vulkan",
+            ],
+        ),
+        (
+            "squad-tool-09-shared-navmesh-and-collider-binary-baker",
+            "Dual-Target Godot NavigationRegion3D & server-rs Rapier2D Collider Binary Baker",
+            "Stage_2_Asset_And_Build_Pipeline",
+            "Backend_Simulation_Infra_Engineer",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "2_SSOT_Schema_Separated_From_UI",
+            [
+                "Bakes Identical Walkable Heightfields & Static Colliders for Client and Rust Server",
+                "Guarantees epsilon <= 0.02m Terrain & Bridge Parity Across All 63 Zones & 48 Floors",
+                "Eliminates Client-Server Wall-Clip & Knockback Desync by Construction",
+            ],
+        ),
+        (
+            "squad-tool-10-multi-platform-build-farm-and-pck-bundler",
+            "Automated Godot 4.7 NativeAOT iOS/macOS PCK & server-rs Container Build Farm",
+            "Stage_2_Asset_And_Build_Pipeline",
+            "LiveOps_Build_GM_Engineer",
+            "zone-harbor-glaze-barge-airship-dock",
+            "",
+            "",
+            "3_Web_First_Non_Spatial_Suite",
+            [
+                "Produces Signed iOS arm64 NativeAOT Bundles & < 35 MB server-rs Debian Images",
+                "Runs Headless Boot Smoke Tests & Asset Integrity Checks Before Artifact Promotion",
+                "Publishes Content Delta Manifests for Sub-10s Client Patch Downloads",
+            ],
+        ),
+        # Domain 3: Stage_3_Server_And_Simulation (5 tools, 1 per squad role)
+        (
+            "squad-tool-11-flatbuffers-protocol-and-codegen-drift-gate",
+            "FlatBuffers Binary Delta Schema Compiler & Cross-Language Codegen Drift Gate",
+            "Stage_3_Server_And_Simulation",
+            "Lead_Tools_Pipeline_Architect",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            "2_SSOT_Schema_Separated_From_UI",
+            [
+                "Compiles schemas/game_protocol.fbs to Rust, TypeScript & C# with Bit-Exact Roundtrip Tests",
+                "Enforces < 250B Typical AOI Frame Payload (< 5 KB/s Wire Bandwidth at 20Hz)",
+                "Blocks Schema Breaking Changes via Automated Wire-Compatibility Verification",
+            ],
+        ),
+        (
+            "squad-tool-12-boss-ai-phase-and-combat-formula-sandbox",
+            "5-Tier Boss AI State-Machine & 7-Element Combat Formula Sandbox",
+            "Stage_3_Server_And_Simulation",
+            "Content_World_Tools_Engineer",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "1_Internal_Customer_Embedded_DX",
+            [
+                "Interactive Designer Sandbox for Sealed-God / MVP / Raid Boss Phase Transitions",
+                "Tests 150/300 Elemental Attribute Multipliers, Debuff Resistances & Enrage Timers",
+                "Exports Verified Boss Behavior Trees Directly to server-rs ECS Systems",
+            ],
+        ),
+        (
+            "squad-tool-13-vfx-projectile-and-aoi-render-budget-profiler",
+            "300-Player Castle Siege VFX Particle, Draw-Call & 60 FPS Metal Frame Profiler",
+            "Stage_3_Server_And_Simulation",
+            "Technical_Artist_Pipeline_DCC",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "1_Internal_Customer_Embedded_DX",
+            [
+                "Profiles GPU Draw Calls, Shader Complexity & Particle Overdraw Under 9v9 / Siege Load",
+                "Auto-Throttles Non-Essential Spell VFX When Local AOI Entity Density Exceeds 120",
+                "Guarantees Locked 60 FPS on Apple Silicon iPad / macOS During Mass Raid Encounters",
+            ],
+        ),
+        (
+            "squad-tool-14-headless-10k-bot-swarm-and-deterministic-replay",
+            "Headless 10,000-Bot Swarm Load Generator & Seeded Deterministic Replay Inspector",
+            "Stage_3_Server_And_Simulation",
+            "Backend_Simulation_Infra_Engineer",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "2_SSOT_Schema_Separated_From_UI",
+            [
+                "Spawns 10,000 Concurrent Headless AI Bots at 0.503ms / 1.0ms Bevy ECS 20Hz Tick",
+                "Verifies Contiguous SpatialGrid AOI Partitioning & Zero Lock Contention",
+                "Replays Seeded Golden Simulation Traces with epsilon <= 0.05 Coordinate Parity",
+            ],
+        ),
+        (
+            "squad-tool-15-agones-fleet-autoscaler-and-chaos-probe",
+            "Agones GameServer Fleet Autoscaler, Cold-Boot (<5ms) & Pod Chaos Probe",
+            "Stage_3_Server_And_Simulation",
+            "LiveOps_Build_GM_Engineer",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "3_Web_First_Non_Spatial_Suite",
+            [
+                "Orchestrates Multi-Pod Agones GameServer Allocation & Graceful Drain on Kubernetes",
+                "Injects Synthetic Packet Loss & Pod Failover to Verify < 350ms State Recovery",
+                "Streams Live Prometheus Tick-Time & Entity-Count Telemetry to Studio Dashboard",
+            ],
+        ),
+        # Domain 4: Stage_4_LiveOps_And_GM (5 tools, 1 per squad role)
+        (
+            "squad-tool-16-joymify-sso-rbac-and-immutable-audit-gateway",
+            "Joymify SSO RBAC Gateway & Append-Only GM Command Audit Ledger",
+            "Stage_4_LiveOps_And_GM",
+            "Lead_Tools_Pipeline_Architect",
+            "zone-town-crown-beacon",
+            "",
+            "",
+            "3_Web_First_Non_Spatial_Suite",
+            [
+                "Binds Every Web Studio & GM Portal Action to Verified Joymify SSO Identity",
+                "Enforces Role-Based Access Control (Viewer / Designer / GM / Lead Architect)",
+                "Writes Tamper-Evident SHA-256 Chained Audit Logs for All Live Mutations",
+            ],
+        ),
+        (
+            "squad-tool-17-live-world-event-and-festival-director",
+            "Zero-Restart World Event, Seven-Signs Flip & Festival Director Console",
+            "Stage_4_LiveOps_And_GM",
+            "Content_World_Tools_Engineer",
+            "zone-town-glaze-barge-quay",
+            "",
+            "",
+            "3_Web_First_Non_Spatial_Suite",
+            [
+                "1-Click Live Activation of 2x Spoil/Drop Weekends, Festival of Darkness & Boss Spawns",
+                "Validates Event Config Payloads Against Canonical JSON Schema Before Broadcast",
+                "Propagates Feature Flags to All Active GameServer Pods in < 250ms Without Restart",
+            ],
+        ),
+        (
+            "squad-tool-18-live-client-visual-telemetry-and-stuck-heatmap",
+            "Live Client FPS, Asset-Stream Latency & Stuck-Player Coordinate Heatmap",
+            "Stage_4_LiveOps_And_GM",
+            "Technical_Artist_Pipeline_DCC",
+            "zone-field-caldera-rim",
+            "",
+            "",
+            "3_Web_First_Non_Spatial_Suite",
+            [
+                "Overlays Real-Time Player Unstuck Triggers & Client Frame-Drop Clusters on World Map",
+                "Pinpoints Exact Terrain Triangles or Dungeon Portals Causing Navigation Traps",
+                "Feeds Live Telemetry Directly Back into Stage 2 NavMesh & Chunk Re-Baking",
+            ],
+        ),
+        (
+            "squad-tool-19-atomic-occ-inventory-rollback-and-dupe-scanner",
+            "Atomic SHA-256 OCC Inventory Rollback Vault & Real-Time Economy Dupe Scanner",
+            "Stage_4_LiveOps_And_GM",
+            "Backend_Simulation_Infra_Engineer",
+            "zone-town-saffron-press",
+            "",
+            "",
+            "2_SSOT_Schema_Separated_From_UI",
+            [
+                "Continuous Background Audit of RustMetaEngine SQLite WAL / Postgres Item Ledgers",
+                "Point-in-Time Character Inventory, Warehouse & Enchant Snapshot Diffing",
+                "Executes Atomic CAS Item Restoration or Quarantine Without Stopping Active Matches",
+            ],
+        ),
+        (
+            "squad-tool-20-gm-tactical-rescue-and-player-support-cockpit",
+            "Web-First GM Stuck-Player Rescue, Chat Moderation & Live Support Cockpit (:8788)",
+            "Stage_4_LiveOps_And_GM",
+            "LiveOps_Build_GM_Engineer",
+            "zone-town-root-train-roundhouse",
+            "",
+            "",
+            "3_Web_First_Non_Spatial_Suite",
+            [
+                "1-Click /unstuck_recall Teleport to Any of 15 Town Peace-Zone Spawn Shrines",
+                "Live Character State Inspector (HP/SP, Active Buffs, Quest Flags, Coords & Party)",
+                "Integrated Incident Runbook & Automated P1 Escalation Hook (< 15s SLA)",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        tid,
+        tname,
+        tdomain,
+        orole,
+        zid,
+        did,
+        fid,
+        arch_p,
+        caps,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx - 130 + idx * 12, by + 135 - idx * 11)
+        rows.append(
+            {
+                "tool_id": tid,
+                "tool_name": tname,
+                "tooling_domain": tdomain,
+                "owner_squad_role": orole,
+                "exemplar_zone_id": zid,
+                "exemplar_dungeon_id": did,
+                "exemplar_floor_id": fid,
+                "loc": loc,
+                "architectural_principle_enforced": arch_p,
+                "capabilities_and_ssot_hooks": caps,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -15033,6 +15626,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("backend_bot_swarm_simulation_sectors") or []) < 16:
         atlas["backend_bot_swarm_simulation_sectors"] = _build_backend_bot_swarm_simulation_sectors(atlas)
         actions.append("populated_16_backend_bot_swarm_simulation_sectors")
+
+    # 57. Ensure all 15 Town LiveOps, Build & GM Portal Control Anchors exist in `liveops_gm_control_anchors` (D73)
+    if len(atlas.get("liveops_gm_control_anchors") or []) < 15:
+        atlas["liveops_gm_control_anchors"] = _build_liveops_gm_control_anchors(atlas)
+        actions.append("populated_15_liveops_gm_control_anchors")
+
+    # 58. Ensure all 20 4-Domain × 5-Role Platform & Tools Squad Unified Pipeline Registry entries exist in `platform_tools_squad_registry` (D74)
+    if len(atlas.get("platform_tools_squad_registry") or []) < 20:
+        atlas["platform_tools_squad_registry"] = _build_platform_tools_squad_registry(atlas)
+        actions.append("populated_20_platform_tools_squad_registry")
 
     return {"actions": actions}
 
@@ -19077,15 +19680,167 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d72_ratio * 80.0, 1)
     )
 
+    # D73: Interactive 15-Town [Stage 4: LiveOps, Build & GM Portal] Stuck-Character Rescue, Inventory Rollback Audit & Zero-Restart Live Event Hot-Config Matrix (`liveops_gm_control_anchors` - 15 Towns: 5 GM_Stuck_Character_Rescue_Anchor + 5 Inventory_Rollback_Audit_Vault + 5 Zero_Restart_Live_Event_Hot_Config)
+    expected_liveops_categories = {
+        "GM_Stuck_Character_Rescue_Anchor",
+        "Inventory_Rollback_Audit_Vault",
+        "Zero_Restart_Live_Event_Hot_Config",
+    }
+    liveops_rows = atlas.get("liveops_gm_control_anchors") or []
+    valid_liveops_anchors = 0
+    gm_rescue_count = 0
+    inventory_rollback_count = 0
+    zero_restart_hotconfig_count = 0
+    seen_liveops_ids: set[str] = set()
+    seen_liveops_town_ids: set[str] = set()
+    seen_liveops_categories: set[str] = set()
+    for lrow in liveops_rows:
+        if not isinstance(lrow, dict):
+            continue
+        laid = str(lrow.get("anchor_id") or "")
+        ltzid = str(lrow.get("town_zone_id") or "")
+        lcat = str(lrow.get("liveops_category") or "")
+        lfeat = lrow.get("hot_config_and_audit_features") or []
+        if (
+            laid
+            and laid not in seen_liveops_ids
+            and ltzid in town_zone_id_set
+            and ltzid not in seen_liveops_town_ids
+            and lrow.get("town_name")
+            and lcat in expected_liveops_categories
+            and lrow.get("owner_engineer_role")
+            and ":" in str(lrow.get("anchor_loc", ""))
+            and lrow.get("gm_portal_command_suite")
+            and isinstance(lfeat, list)
+            and len(lfeat) >= 2
+            and lrow.get("sla_and_build_farm_hook")
+        ):
+            valid_liveops_anchors += 1
+            seen_liveops_ids.add(laid)
+            seen_liveops_town_ids.add(ltzid)
+            seen_liveops_categories.add(lcat)
+            if lcat == "GM_Stuck_Character_Rescue_Anchor":
+                gm_rescue_count += 1
+            elif lcat == "Inventory_Rollback_Audit_Vault":
+                inventory_rollback_count += 1
+            elif lcat == "Zero_Restart_Live_Event_Hot_Config":
+                zero_restart_hotconfig_count += 1
+
+    has_d73_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_LIVEOPS_GM_MODE",
+            "setAtlasLiveopsGmMode",
+            "renderAtlasLiveopsGmBarHtml",
+            "studioLiveopsGmOverlay",
+        )
+    )
+    d73_ratio = valid_liveops_anchors / 15.0
+    d73_full_coverage = (
+        gm_rescue_count == 5
+        and inventory_rollback_count == 5
+        and zero_restart_hotconfig_count == 5
+        and len(seen_liveops_town_ids) == 15
+        and seen_liveops_categories == expected_liveops_categories
+    )
+    d73_score = (
+        round(min(100.0, d73_ratio * 100.0), 1)
+        if (has_d73_ui and d73_full_coverage)
+        else round(d73_ratio * 80.0, 1)
+    )
+
+    # D74: Interactive 20-Tool [4-Domain × 5-Role Platform & Tools Squad] Unified Studio Pipeline Registry (`platform_tools_squad_registry` - 20 Tools: 5 per Tooling Domain × 4 per Squad Role)
+    expected_tooling_domains = {
+        "Stage_1_Content_And_World",
+        "Stage_2_Asset_And_Build_Pipeline",
+        "Stage_3_Server_And_Simulation",
+        "Stage_4_LiveOps_And_GM",
+    }
+    expected_squad_roles = {
+        "Lead_Tools_Pipeline_Architect",
+        "Content_World_Tools_Engineer",
+        "Technical_Artist_Pipeline_DCC",
+        "Backend_Simulation_Infra_Engineer",
+        "LiveOps_Build_GM_Engineer",
+    }
+    expected_arch_principles = {
+        "1_Internal_Customer_Embedded_DX",
+        "2_SSOT_Schema_Separated_From_UI",
+        "3_Web_First_Non_Spatial_Suite",
+    }
+    tools_squad_rows = atlas.get("platform_tools_squad_registry") or []
+    valid_tools_squad = 0
+    domain_counts: dict[str, int] = {k: 0 for k in expected_tooling_domains}
+    squad_role_counts: dict[str, int] = {k: 0 for k in expected_squad_roles}
+    seen_tool_ids: set[str] = set()
+    seen_tooling_domains: set[str] = set()
+    seen_squad_roles: set[str] = set()
+    seen_arch_principles: set[str] = set()
+    for tsrow in tools_squad_rows:
+        if not isinstance(tsrow, dict):
+            continue
+        tsid = str(tsrow.get("tool_id") or "")
+        tdom = str(tsrow.get("tooling_domain") or "")
+        trole = str(tsrow.get("owner_squad_role") or "")
+        tzid = str(tsrow.get("exemplar_zone_id") or "")
+        tdid = str(tsrow.get("exemplar_dungeon_id") or "")
+        tfid = str(tsrow.get("exemplar_floor_id") or "")
+        archp = str(tsrow.get("architectural_principle_enforced") or "")
+        tcaps = tsrow.get("capabilities_and_ssot_hooks") or []
+        if (
+            tsid
+            and tsid not in seen_tool_ids
+            and tsrow.get("tool_name")
+            and tdom in expected_tooling_domains
+            and trole in expected_squad_roles
+            and tzid in zone_ids_set
+            and (tdid == "" or tdid in mf_dungeon_id_set)
+            and tfid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(tsrow.get("loc", ""))
+            and archp in expected_arch_principles
+            and isinstance(tcaps, list)
+            and len(tcaps) >= 2
+        ):
+            valid_tools_squad += 1
+            seen_tool_ids.add(tsid)
+            seen_tooling_domains.add(tdom)
+            seen_squad_roles.add(trole)
+            seen_arch_principles.add(archp)
+            domain_counts[tdom] = domain_counts.get(tdom, 0) + 1
+            squad_role_counts[trole] = squad_role_counts.get(trole, 0) + 1
+
+    has_d74_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_TOOLS_SQUAD_MODE",
+            "setAtlasToolsSquadMode",
+            "renderAtlasToolsSquadBarHtml",
+            "studioToolsSquadOverlay",
+        )
+    )
+    d74_ratio = valid_tools_squad / 20.0
+    d74_full_coverage = (
+        all(domain_counts.get(k, 0) == 5 for k in expected_tooling_domains)
+        and all(squad_role_counts.get(k, 0) == 4 for k in expected_squad_roles)
+        and seen_tooling_domains == expected_tooling_domains
+        and seen_squad_roles == expected_squad_roles
+        and seen_arch_principles == expected_arch_principles
+    )
+    d74_score = (
+        round(min(100.0, d74_ratio * 100.0), 1)
+        if (has_d74_ui and d74_full_coverage)
+        else round(d74_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 54.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 56.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 56.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 66.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 55.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 62.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 56.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 58.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 58.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 68.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 57.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 64.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -19162,8 +19917,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d70_score
             + d71_score
             + d72_score
+            + d73_score
+            + d74_score
         )
-        / 72.0,
+        / 74.0,
         1,
     )
 
@@ -19780,6 +20537,34 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "simulation_categories": sorted(seen_simulation_categories),
                 "ui_wired": has_d72_ui,
             },
+            "D73_liveops_gm_stuck_rescue_rollback_and_hot_config": {
+                "score": d73_score,
+                "verified": valid_liveops_anchors,
+                "target": 15,
+                "gm_stuck_rescue_anchors": gm_rescue_count,
+                "inventory_rollback_audit_vaults": inventory_rollback_count,
+                "zero_restart_live_event_hot_configs": zero_restart_hotconfig_count,
+                "liveops_categories": sorted(seen_liveops_categories),
+                "ui_wired": has_d73_ui,
+            },
+            "D74_platform_tools_squad_unified_pipeline_registry": {
+                "score": d74_score,
+                "verified": valid_tools_squad,
+                "target": 20,
+                "stage_1_content_world_tools": domain_counts.get("Stage_1_Content_And_World", 0),
+                "stage_2_asset_build_tools": domain_counts.get("Stage_2_Asset_And_Build_Pipeline", 0),
+                "stage_3_server_simulation_tools": domain_counts.get("Stage_3_Server_And_Simulation", 0),
+                "stage_4_liveops_gm_tools": domain_counts.get("Stage_4_LiveOps_And_GM", 0),
+                "lead_architect_tools": squad_role_counts.get("Lead_Tools_Pipeline_Architect", 0),
+                "content_world_engineer_tools": squad_role_counts.get("Content_World_Tools_Engineer", 0),
+                "technical_artist_tools": squad_role_counts.get("Technical_Artist_Pipeline_DCC", 0),
+                "backend_simulation_engineer_tools": squad_role_counts.get("Backend_Simulation_Infra_Engineer", 0),
+                "liveops_gm_engineer_tools": squad_role_counts.get("LiveOps_Build_GM_Engineer", 0),
+                "tooling_domains": sorted(seen_tooling_domains),
+                "squad_roles": sorted(seen_squad_roles),
+                "architectural_principles": sorted(seen_arch_principles),
+                "ui_wired": has_d74_ui,
+            },
         },
     }
 
@@ -19896,6 +20681,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D70 (15 Dualsword Forges)   : {dims['D70_dualsword_craft_stamp_and_ishuma_unseal_forges']['score']}/100 ({dims['D70_dualsword_craft_stamp_and_ishuma_unseal_forges']['verified']}/{dims['D70_dualsword_craft_stamp_and_ishuma_unseal_forges']['target']} dualsword forges)")
         print(f"  D71 (16 Tech-Art Gates)     : {dims['D71_tech_art_asset_pipeline_and_chunk_bakers']['score']}/100 ({dims['D71_tech_art_asset_pipeline_and_chunk_bakers']['verified']}/{dims['D71_tech_art_asset_pipeline_and_chunk_bakers']['target']} tech-art asset gates)")
         print(f"  D72 (16 Bot Swarm Sectors)  : {dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['score']}/100 ({dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['verified']}/{dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['target']} bot swarm sectors)")
+        print(f"  D73 (15 LiveOps/GM Anchors) : {dims['D73_liveops_gm_stuck_rescue_rollback_and_hot_config']['score']}/100 ({dims['D73_liveops_gm_stuck_rescue_rollback_and_hot_config']['verified']}/{dims['D73_liveops_gm_stuck_rescue_rollback_and_hot_config']['target']} liveops/gm anchors)")
+        print(f"  D74 (20 Tools Squad Reg)    : {dims['D74_platform_tools_squad_unified_pipeline_registry']['score']}/100 ({dims['D74_platform_tools_squad_unified_pipeline_registry']['verified']}/{dims['D74_platform_tools_squad_unified_pipeline_registry']['target']} platform squad tools)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

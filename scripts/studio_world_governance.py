@@ -712,6 +712,8 @@ def validate_world_governance(
                 "dualswordCraftUnsealForgesCount": len(t_doc.get("dualsword_craft_unseal_forges") or []),
                 "techArtAssetPipelineGatesCount": len(t_doc.get("tech_art_asset_pipeline_gates") or []),
                 "backendBotSwarmSimulationSectorsCount": len(t_doc.get("backend_bot_swarm_simulation_sectors") or []),
+                "liveopsGmControlAnchorsCount": len(t_doc.get("liveops_gm_control_anchors") or []),
+                "platformToolsSquadRegistryCount": len(t_doc.get("platform_tools_squad_registry") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1653,6 +1655,43 @@ def validate_world_governance(
                 if bs_did and bs_did not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: backend_bot_swarm_simulation_sectors '{bs_id}' references unknown dungeon_id '{bs_did}'"
+                    )
+
+            # Validate 15-Town LiveOps, Build & GM Portal Control Anchors (D73)
+            liveops_anchors = t_doc.get("liveops_gm_control_anchors") or []
+            if liveops_anchors and len(liveops_anchors) != 15:
+                errors.append(
+                    f"GOV-10 violation: liveops_gm_control_anchors must have 15 town LiveOps & GM control anchors, got {len(liveops_anchors)}"
+                )
+            for la_item in liveops_anchors:
+                if not isinstance(la_item, dict):
+                    continue
+                la_id = str(la_item.get("anchor_id", ""))
+                la_tzid = str(la_item.get("town_zone_id", ""))
+                if la_tzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: liveops_gm_control_anchors '{la_id}' references unknown town_zone_id '{la_tzid}'"
+                    )
+
+            # Validate 20-Tool 4-Domain × 5-Role Platform & Tools Squad Unified Pipeline Registry (D74)
+            tools_registry = t_doc.get("platform_tools_squad_registry") or []
+            if tools_registry and len(tools_registry) != 20:
+                errors.append(
+                    f"GOV-10 violation: platform_tools_squad_registry must have 20 platform & tools squad entries, got {len(tools_registry)}"
+                )
+            for tr_item in tools_registry:
+                if not isinstance(tr_item, dict):
+                    continue
+                tr_id = str(tr_item.get("tool_id", ""))
+                tr_zid = str(tr_item.get("exemplar_zone_id", ""))
+                tr_did = str(tr_item.get("exemplar_dungeon_id", ""))
+                if tr_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: platform_tools_squad_registry '{tr_id}' references unknown exemplar_zone_id '{tr_zid}'"
+                    )
+                if tr_did and tr_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: platform_tools_squad_registry '{tr_id}' references unknown exemplar_dungeon_id '{tr_did}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

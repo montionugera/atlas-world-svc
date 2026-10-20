@@ -59486,5 +59486,554 @@
         "Automated Stuck-Character Detection & Safe-Spot Recovery Trigger Verified"
       ]
     }
+  ],
+  "liveops_gm_control_anchors": [
+    {
+      "anchor_id": "liveops-gm-01-lantern-hollow-rescue",
+      "town_zone_id": "zone-town-lantern-hollow",
+      "town_name": "Lantern Hollow Village (Human Starter)",
+      "liveops_category": "GM_Stuck_Character_Rescue_Anchor",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "-83981:243370",
+      "gm_portal_command_suite": "/unstuck_recall -> Lantern Hollow Peace-Zone Fountain + 5s Invulnerability + NavMesh Unclip",
+      "hot_config_and_audit_features": [
+        "One-Click Stuck Character Teleport to Building #1 Spawn Shrine",
+        "Automated NavMesh Fall-Through & Cliff-Trap Detection Alert",
+        "Immutable GM Action Audit Trail (Joymify SSO Bound)"
+      ],
+      "sla_and_build_farm_hook": "P1 Stuck-Player Auto-Rescue SLA < 15s \u00b7 Nightly iOS/macOS Client Build Smoke Hook"
+    },
+    {
+      "anchor_id": "liveops-gm-02-porcelain-loom-rescue",
+      "town_zone_id": "zone-town-porcelain-loom",
+      "town_name": "Porcelain Loom Sanctuary (Lunar Starter)",
+      "liveops_category": "GM_Stuck_Character_Rescue_Anchor",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "45928:41080",
+      "gm_portal_command_suite": "/unstuck_recall -> Porcelain Loom Mother-Tree Sanctuary + Debuff Purge + Safe-Spot Snap",
+      "hot_config_and_audit_features": [
+        "One-Click Stuck Character Teleport from Underground Spore Gallery B1\u2013B3",
+        "Collision Capsule & Bridge Heightfield Desync Recovery",
+        "Immutable GM Action Audit Trail (Joymify SSO Bound)"
+      ],
+      "sla_and_build_farm_hook": "P1 Stuck-Player Auto-Rescue SLA < 15s \u00b7 Automated Teleport Coordinate Verification"
+    },
+    {
+      "anchor_id": "liveops-gm-03-draft-kiln-post-rescue",
+      "town_zone_id": "zone-town-draft-kiln-post",
+      "town_name": "Draft-Kiln Post (Ogre/Orc Starter)",
+      "liveops_category": "GM_Stuck_Character_Rescue_Anchor",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "-44683:-113310",
+      "gm_portal_command_suite": "/unstuck_recall -> Draft-Kiln Flame Sanctuary + Aggro Leash Reset + 5s Invulnerability",
+      "hot_config_and_audit_features": [
+        "One-Click Stuck Character Teleport from High-Altitude Plateau & Trial Cave",
+        "Server-Side Physics Velocity Zeroing & Stuck-Timer Override",
+        "Immutable GM Action Audit Trail (Joymify SSO Bound)"
+      ],
+      "sla_and_build_farm_hook": "P1 Stuck-Player Auto-Rescue SLA < 15s \u00b7 Physics Leash Regression Gate"
+    },
+    {
+      "anchor_id": "liveops-gm-04-carillon-belfry-rescue",
+      "town_zone_id": "zone-town-carillon-belfry",
+      "town_name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+      "liveops_category": "GM_Stuck_Character_Rescue_Anchor",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "12506:16700",
+      "gm_portal_command_suite": "/unstuck_recall -> Carillon Belfry Dark-Lunar Plaza + Water/Marsh Terrain Unstick",
+      "hot_config_and_audit_features": [
+        "One-Click Stuck Character Teleport from Festering Marsh & Bell-Crypt B1\u2013B3",
+        "Subterranean Waterfall & Root-Snare Geometry Escape Hook",
+        "Immutable GM Action Audit Trail (Joymify SSO Bound)"
+      ],
+      "sla_and_build_farm_hook": "P1 Stuck-Player Auto-Rescue SLA < 15s \u00b7 Dungeon Portal Exit Integrity Check"
+    },
+    {
+      "anchor_id": "liveops-gm-05-kilnwatch-bastion-rescue",
+      "town_zone_id": "zone-town-kilnwatch-bastion",
+      "town_name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+      "liveops_category": "GM_Stuck_Character_Rescue_Anchor",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Backend Simulation Engineer",
+      "anchor_loc": "-14105:123410",
+      "gm_portal_command_suite": "/unstuck_recall -> Kilnwatch Bastion Central Gatekeeper Obelisk + Mass Siege Unstuck",
+      "hot_config_and_audit_features": [
+        "One-Click Individual or Party Stuck-Character Teleport to Dion Peace Zone",
+        "Siege Bridge & Ant Nest B1\u2013B3 Crowd-Crush Safe Relocation",
+        "Immutable GM Action Audit Trail (Joymify SSO Bound)"
+      ],
+      "sla_and_build_farm_hook": "P1 Stuck-Player Auto-Rescue SLA < 15s \u00b7 300-Player Convergence Hub Stress Hook"
+    },
+    {
+      "anchor_id": "liveops-gm-06-escapement-anvil-rollback",
+      "town_zone_id": "zone-town-escapement-anvil",
+      "town_name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+      "liveops_category": "Inventory_Rollback_Audit_Vault",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "83184:53120",
+      "gm_portal_command_suite": "Atomic Item Ledger Point-in-Time Snapshot & SHA-256 OCC Rollback (Escapement Anvil)",
+      "hot_config_and_audit_features": [
+        "Point-in-Time Character Inventory & +1..+15 Enchant State Diff Inspector",
+        "Atomic SHA-256 OCC Item Restoration Without Server Restart",
+        "Immutable GM Action Audit Trail & Dual-Approval Dupe Guard"
+      ],
+      "sla_and_build_farm_hook": "Zero-Dupe Ledger Invariant Gate \u00b7 SQLite WAL / Postgres CAS Snapshot Verification"
+    },
+    {
+      "anchor_id": "liveops-gm-07-pinion-terminus-rollback",
+      "town_zone_id": "zone-town-pinion-terminus",
+      "town_name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+      "liveops_category": "Inventory_Rollback_Audit_Vault",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "82473:148530",
+      "gm_portal_command_suite": "Atomic Item Ledger Point-in-Time Snapshot & Spoil/Trade Dispute Rollback (Pinion Terminus)",
+      "hot_config_and_audit_features": [
+        "Player-to-Player Trade, Private Store & Spoil Drop Ledger Timeline",
+        "1-Click Scammed/Lost Item Recovery with Dupe-Serial Tombstone Lock",
+        "Immutable GM Action Audit Trail (Joymify SSO Bound)"
+      ],
+      "sla_and_build_farm_hook": "Zero-Dupe Ledger Invariant Gate \u00b7 Nightly Meta-Store Consistency Check"
+    },
+    {
+      "anchor_id": "liveops-gm-08-saffron-press-rollback",
+      "town_zone_id": "zone-town-saffron-press",
+      "town_name": "Saffron Press Village (Manor Agricultural Hub)",
+      "liveops_category": "Inventory_Rollback_Audit_Vault",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "17462:170040",
+      "gm_portal_command_suite": "Atomic Item Ledger Point-in-Time Snapshot & Manor/Caravan Escrow Audit (Saffron Press)",
+      "hot_config_and_audit_features": [
+        "Manor Seed/Crop Tally & Ancient Adena Black-Market Transaction Diff",
+        "Atomic Account Warehouse & Freight Parcel Rollback",
+        "Immutable GM Action Audit Trail (Joymify SSO Bound)"
+      ],
+      "sla_and_build_farm_hook": "Zero-Dupe Ledger Invariant Gate \u00b7 Freight Escrow Checksum Hook"
+    },
+    {
+      "anchor_id": "liveops-gm-09-inductor-switchyard-rollback",
+      "town_zone_id": "zone-town-inductor-switchyard",
+      "town_name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+      "liveops_category": "Inventory_Rollback_Audit_Vault",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Lead Tools & Pipeline Architect",
+      "anchor_loc": "147451:-55250",
+      "gm_portal_command_suite": "Atomic Item Ledger Point-in-Time Snapshot & Giran Auction/Bazaar Audit (Inductor Switchyard)",
+      "hot_config_and_audit_features": [
+        "Metropolitan Bazaar, Clan Hall Auction Bid & Masterwork Forge Ledger Inspector",
+        "Sub-Second Point-in-Time Character & Clan Vault Diff Restore",
+        "Immutable GM Action Audit Trail (Joymify SSO Bound)"
+      ],
+      "sla_and_build_farm_hook": "Zero-Dupe Ledger Invariant Gate \u00b7 High-Frequency Economy Audit Pipeline"
+    },
+    {
+      "anchor_id": "liveops-gm-10-torque-balance-citadel-rollback",
+      "town_zone_id": "zone-town-torque-balance-citadel",
+      "town_name": "Town of Torque-Balance Citadel (Human Ancestral Expedition Hub)",
+      "liveops_category": "Inventory_Rollback_Audit_Vault",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "116440:-18440",
+      "gm_portal_command_suite": "Atomic Item Ledger Point-in-Time Snapshot & Sovereign Epic/Heroic Relic Audit (Torque-Balance)",
+      "hot_config_and_audit_features": [
+        "Epic Boss Jewelry, Infinity Hero Weapon & Castle Treasury Tax Ledger",
+        "Cryptographically Signed Rollback Voucher with Anti-Duplication Lock",
+        "Immutable GM Action Audit Trail (Joymify SSO Bound)"
+      ],
+      "sla_and_build_farm_hook": "Zero-Dupe Ledger Invariant Gate \u00b7 Sovereign Relic Provenance Verification"
+    },
+    {
+      "anchor_id": "liveops-gm-11-glaze-barge-quay-hotconfig",
+      "town_zone_id": "zone-town-glaze-barge-quay",
+      "town_name": "Glaze-Barge Quay (River Trade & Raid Port)",
+      "liveops_category": "Zero_Restart_Live_Event_Hot_Config",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "-81171:151370",
+      "gm_portal_command_suite": "Zero-Restart Feature Flag: 2x Spoil / 2x Drop / Nocturnal Luminous Fishing Event",
+      "hot_config_and_audit_features": [
+        "Zero-Downtime Hot-Reload of Loot, Spoil & Fishing Bait Multipliers",
+        "Live World Broadcast Banner & Scheduled Event Countdown Toggle",
+        "Automated Build Farm PCK/Bundle Hash Parity Verification"
+      ],
+      "sla_and_build_farm_hook": "Zero-Restart Hot-Config Propagation < 250ms Across All Agones GameServer Pods"
+    },
+    {
+      "anchor_id": "liveops-gm-12-cinnamon-mill-hotconfig",
+      "town_zone_id": "zone-town-cinnamon-mill",
+      "town_name": "Cinnamon-Mill Haven (Furral Starter)",
+      "liveops_category": "Zero_Restart_Live_Event_Hot_Config",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "-118182:46780",
+      "gm_portal_command_suite": "Zero-Restart Feature Flag: Newbie Vitality Breeze & 2x Quest/Craft Stamp Festival",
+      "hot_config_and_audit_features": [
+        "Zero-Downtime Hot-Reload of Lv.1\u201375 Vitality & Hunting Helper Buff Tables",
+        "Instant Toggle for Seasonal L2day Letter Collector & Squash Smash Spawns",
+        "Automated Build Farm PCK/Bundle Hash Parity Verification"
+      ],
+      "sla_and_build_farm_hook": "Zero-Restart Hot-Config Propagation < 250ms \u00b7 Schema-Validated Event JSON Push"
+    },
+    {
+      "anchor_id": "liveops-gm-13-root-train-roundhouse-hotconfig",
+      "town_zone_id": "zone-town-root-train-roundhouse",
+      "town_name": "Root-Train Roundhouse (Dwarf Starter)",
+      "liveops_category": "Zero_Restart_Live_Event_Hot_Config",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "115107:-178210",
+      "gm_portal_command_suite": "Zero-Restart Feature Flag: Champion Mob Aura (10x/50x) & Freight Fee Holiday Toggle",
+      "hot_config_and_audit_features": [
+        "Zero-Downtime Hot-Reload of Blue/Crimson Champion Mob Spawn Probabilities",
+        "Dynamic Dwarven Warehouse Freight & Mammon Exchange Rate Hot-Config",
+        "Automated Build Farm PCK/Bundle Hash Parity Verification"
+      ],
+      "sla_and_build_farm_hook": "Zero-Restart Hot-Config Propagation < 250ms \u00b7 Instant Rollback on Economy Anomaly"
+    },
+    {
+      "anchor_id": "liveops-gm-14-starfall-haven-hotconfig",
+      "town_zone_id": "zone-town-starfall-haven",
+      "town_name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+      "liveops_category": "Zero_Restart_Live_Event_Hot_Config",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "anchor_loc": "43796:-47900",
+      "gm_portal_command_suite": "Zero-Restart Feature Flag: Seven Signs Dawn/Dusk Seal Flip & Seed Cycle Override",
+      "hot_config_and_audit_features": [
+        "Zero-Downtime Hot-Reload of Seven-Signs Cabal Week & Ekimus/Tiat Seed Stage",
+        "Live Command-Channel Raid Respawn Window & Olympiad Season Toggle",
+        "Automated Build Farm PCK/Bundle Hash Parity Verification"
+      ],
+      "sla_and_build_farm_hook": "Zero-Restart Hot-Config Propagation < 250ms \u00b7 Multi-Pod State Synchronization"
+    },
+    {
+      "anchor_id": "liveops-gm-15-crown-beacon-hotconfig",
+      "town_zone_id": "zone-town-crown-beacon",
+      "town_name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+      "liveops_category": "Zero_Restart_Live_Event_Hot_Config",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Lead Tools & Pipeline Architect",
+      "anchor_loc": "147885:26810",
+      "gm_portal_command_suite": "Zero-Restart Feature Flag: Castle Siege / Territory War Window & Build Farm Canary",
+      "hot_config_and_audit_features": [
+        "Zero-Downtime Hot-Reload of Siege Timers, Territory Ward Spawns & Fame Rates",
+        "Automated Nightly Godot 4.7 iOS/macOS PCK + server-rs Docker Build Farm Status",
+        "Immutable GM Action Audit Trail & Canary Release Promotion Gate"
+      ],
+      "sla_and_build_farm_hook": "Zero-Restart Hot-Config Propagation < 250ms \u00b7 Nightly Build Farm Green Gate"
+    }
+  ],
+  "platform_tools_squad_registry": [
+    {
+      "tool_id": "squad-tool-01-ssot-world-schema-compiler",
+      "tool_name": "SSOT World Atlas JSON-Schema Compiler & GOV-01..GOV-10 Gate",
+      "tooling_domain": "Stage_1_Content_And_World",
+      "owner_squad_role": "Lead_Tools_Pipeline_Architect",
+      "exemplar_zone_id": "zone-town-lantern-hollow",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "-84238:243624",
+      "architectural_principle_enforced": "2_SSOT_Schema_Separated_From_UI",
+      "capabilities_and_ssot_hooks": [
+        "Compiles t_shaped_world_atlas.json against Draft 2020-12 Schema with Zero Drift",
+        "Enforces Strict Separation of Canonical Data (content/studio/) from Web/Godot UI",
+        "Blocks Any PR with Broken Zone/Dungeon/NPC Cross-References in < 1.2s"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-02-visual-zone-spawner-and-patrol-editor",
+      "tool_name": "Visual 63-Zone Spawner, Patrol Waypoint & Leash Radius Editor",
+      "tooling_domain": "Stage_1_Content_And_World",
+      "owner_squad_role": "Content_World_Tools_Engineer",
+      "exemplar_zone_id": "zone-field-clover-south-gate",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "72880:113443",
+      "architectural_principle_enforced": "1_Internal_Customer_Embedded_DX",
+      "capabilities_and_ssot_hooks": [
+        "Zero Raw-JSON Hand Editing \u2014 Drag-and-Drop Monster/Mini-Boss/Raid Spawn Territories",
+        "Real-Time Leash Radius, Social Herd Agro Link & Respawn Timer Preview",
+        "1-Click Export to Canonical Field Tactical & Dungeon Floor Blueprints"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-03-character-scale-street-corridor-ruler",
+      "tool_name": "1.05m Cute Character Scale & >=6.0m Dungeon Corridor Clearance Ruler",
+      "tooling_domain": "Stage_1_Content_And_World",
+      "owner_squad_role": "Technical_Artist_Pipeline_DCC",
+      "exemplar_zone_id": "zone-dungeon-kiln-cellar",
+      "exemplar_dungeon_id": "zone-dungeon-kiln-cellar",
+      "exemplar_floor_id": "B1",
+      "loc": "75316:116922",
+      "architectural_principle_enforced": "1_Internal_Customer_Embedded_DX",
+      "capabilities_and_ssot_hooks": [
+        "Overlays 90\u2013120cm (1.05m) Character Silhouette Against 12\u201316m Town Plazas & >=6.0m Corridors",
+        "Flags Camera Occlusion, Doorway Clipping (>2.6m) & Stair Step Height (>0.16m) Violations",
+        "Synchronizes Town Archetype Plates with 3D Godot Navigation Clearance"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-04-economy-loot-monte-carlo-balancer",
+      "tool_name": "Monte-Carlo Loot Drop, Spoil Yield & +1..+15 Refinement Sink Simulator",
+      "tooling_domain": "Stage_1_Content_And_World",
+      "owner_squad_role": "Backend_Simulation_Infra_Engineer",
+      "exemplar_zone_id": "zone-town-inductor-switchyard",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "147318:-55109",
+      "architectural_principle_enforced": "3_Web_First_Non_Spatial_Suite",
+      "capabilities_and_ssot_hooks": [
+        "Simulates 100,000 Hours of Party Farming & Blacksmith Enchant Sink in 800ms",
+        "Flags Adena Inflation, Spoil Material Bottlenecks & Drop-Table Outliers Before Merge",
+        "Web-First :8788 Interactive Economy Balance Matrix for Game Designers"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-05-quest-dialogue-and-event-calendar-studio",
+      "tool_name": "3-Track Quest DAG, Localization & Seasonal Event Calendar Authoring Suite",
+      "tooling_domain": "Stage_1_Content_And_World",
+      "owner_squad_role": "LiveOps_Build_GM_Engineer",
+      "exemplar_zone_id": "zone-town-kilnwatch-bastion",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "-14270:123580",
+      "architectural_principle_enforced": "3_Web_First_Non_Spatial_Suite",
+      "capabilities_and_ssot_hooks": [
+        "Browser-Based Node Graph for Main Story, Class Transfer & Racial Heritage Quests",
+        "Validates Prerequisites, Giver/Turn-In Town IDs & Reward Item IDs Against SSOT",
+        "Generates Zero-Restart Seasonal Event Schedules with Pre-Flight Diff Preview"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-06-three-tier-asset-resolve-manifest-governor",
+      "tool_name": "Three-Tier Asset Resolve (Proxy -> Blockout -> Final GLB) & SHA-256 Manifest Governor",
+      "tooling_domain": "Stage_2_Asset_And_Build_Pipeline",
+      "owner_squad_role": "Lead_Tools_Pipeline_Architect",
+      "exemplar_zone_id": "zone-town-porcelain-loom",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "45742:41269",
+      "architectural_principle_enforced": "2_SSOT_Schema_Separated_From_UI",
+      "capabilities_and_ssot_hooks": [
+        "Guarantees Every Entity Resolves Cleanly Across Tier 1 CSG, Tier 2 Blockout & Tier 3 GLB",
+        "Enforces Immutable SHA-256 Asset Manifests & License/CC0 Provenance Gates",
+        "Zero Missing-Mesh Pink Placeholders Allowed in Dev or Release Builds"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-07-kitbash-prefab-and-biome-prop-scatter",
+      "tool_name": "Town Building #1..#12 Prefab Kitbasher & Field Biome Prop Scatter Tool",
+      "tooling_domain": "Stage_2_Asset_And_Build_Pipeline",
+      "owner_squad_role": "Content_World_Tools_Engineer",
+      "exemplar_zone_id": "zone-town-escapement-anvil",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "83054:53258",
+      "architectural_principle_enforced": "1_Internal_Customer_Embedded_DX",
+      "capabilities_and_ssot_hooks": [
+        "Snaps Modular Walled Keep, Radial Moat & Harbor Plaza Building Prefabs to Grid",
+        "Automated Herb Biome, Shrine & Camp Mark Placement with NavMesh Carve Masks",
+        "Saves Level Designers 10x Iteration Time Over Manual Scene Node Placement"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-08-dcc-blender-to-godot-glb-auto-importer",
+      "tool_name": "Headless Blender-to-Godot 4.7 GLB Importer, Poly/Bone Gate & 256px WebP Baker",
+      "tooling_domain": "Stage_2_Asset_And_Build_Pipeline",
+      "owner_squad_role": "Technical_Artist_Pipeline_DCC",
+      "exemplar_zone_id": "zone-dungeon-pendulum-shaft",
+      "exemplar_dungeon_id": "zone-dungeon-pendulum-shaft",
+      "exemplar_floor_id": "2F",
+      "loc": "85366:144247",
+      "architectural_principle_enforced": "1_Internal_Customer_Embedded_DX",
+      "capabilities_and_ssot_hooks": [
+        "Enforces <= 12,500 Triangles, <= 64 Skeleton Bones & ORM PBR Texture Compression",
+        "Auto-Renders 256x256 Transparent WebP Catalog Thumbnails on Every Asset Commit",
+        "Compiles Custom Toon/Cel & Elemental Weapon Aura Shaders for Apple Metal / Vulkan"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-09-shared-navmesh-and-collider-binary-baker",
+      "tool_name": "Dual-Target Godot NavigationRegion3D & server-rs Rapier2D Collider Binary Baker",
+      "tooling_domain": "Stage_2_Asset_And_Build_Pipeline",
+      "owner_squad_role": "Backend_Simulation_Infra_Engineer",
+      "exemplar_zone_id": "zone-dungeon-chronometer-foundry",
+      "exemplar_dungeon_id": "zone-dungeon-chronometer-foundry",
+      "exemplar_floor_id": "3F",
+      "loc": "84778:56436",
+      "architectural_principle_enforced": "2_SSOT_Schema_Separated_From_UI",
+      "capabilities_and_ssot_hooks": [
+        "Bakes Identical Walkable Heightfields & Static Colliders for Client and Rust Server",
+        "Guarantees epsilon <= 0.02m Terrain & Bridge Parity Across All 63 Zones & 48 Floors",
+        "Eliminates Client-Server Wall-Clip & Knockback Desync by Construction"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-10-multi-platform-build-farm-and-pck-bundler",
+      "tool_name": "Automated Godot 4.7 NativeAOT iOS/macOS PCK & server-rs Container Build Farm",
+      "tooling_domain": "Stage_2_Asset_And_Build_Pipeline",
+      "owner_squad_role": "LiveOps_Build_GM_Engineer",
+      "exemplar_zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "-89410:155225",
+      "architectural_principle_enforced": "3_Web_First_Non_Spatial_Suite",
+      "capabilities_and_ssot_hooks": [
+        "Produces Signed iOS arm64 NativeAOT Bundles & < 35 MB server-rs Debian Images",
+        "Runs Headless Boot Smoke Tests & Asset Integrity Checks Before Artifact Promotion",
+        "Publishes Content Delta Manifests for Sub-10s Client Patch Downloads"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-11-flatbuffers-protocol-and-codegen-drift-gate",
+      "tool_name": "FlatBuffers Binary Delta Schema Compiler & Cross-Language Codegen Drift Gate",
+      "tooling_domain": "Stage_3_Server_And_Simulation",
+      "owner_squad_role": "Lead_Tools_Pipeline_Architect",
+      "exemplar_zone_id": "zone-town-torque-balance-citadel",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "116402:-18386",
+      "architectural_principle_enforced": "2_SSOT_Schema_Separated_From_UI",
+      "capabilities_and_ssot_hooks": [
+        "Compiles schemas/game_protocol.fbs to Rust, TypeScript & C# with Bit-Exact Roundtrip Tests",
+        "Enforces < 250B Typical AOI Frame Payload (< 5 KB/s Wire Bandwidth at 20Hz)",
+        "Blocks Schema Breaking Changes via Automated Wire-Compatibility Verification"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-12-boss-ai-phase-and-combat-formula-sandbox",
+      "tool_name": "5-Tier Boss AI State-Machine & 7-Element Combat Formula Sandbox",
+      "tooling_domain": "Stage_3_Server_And_Simulation",
+      "owner_squad_role": "Content_World_Tools_Engineer",
+      "exemplar_zone_id": "zone-dungeon-star-heart-nave",
+      "exemplar_dungeon_id": "zone-dungeon-star-heart-nave",
+      "exemplar_floor_id": "3F",
+      "loc": "149214:28403",
+      "architectural_principle_enforced": "1_Internal_Customer_Embedded_DX",
+      "capabilities_and_ssot_hooks": [
+        "Interactive Designer Sandbox for Sealed-God / MVP / Raid Boss Phase Transitions",
+        "Tests 150/300 Elemental Attribute Multipliers, Debuff Resistances & Enrage Timers",
+        "Exports Verified Boss Behavior Trees Directly to server-rs ECS Systems"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-13-vfx-projectile-and-aoi-render-budget-profiler",
+      "tool_name": "300-Player Castle Siege VFX Particle, Draw-Call & 60 FPS Metal Frame Profiler",
+      "tooling_domain": "Stage_3_Server_And_Simulation",
+      "owner_squad_role": "Technical_Artist_Pipeline_DCC",
+      "exemplar_zone_id": "zone-catacomb-witch-pendulum",
+      "exemplar_dungeon_id": "zone-catacomb-witch-pendulum",
+      "exemplar_floor_id": "B3",
+      "loc": "54226:-34808",
+      "architectural_principle_enforced": "1_Internal_Customer_Embedded_DX",
+      "capabilities_and_ssot_hooks": [
+        "Profiles GPU Draw Calls, Shader Complexity & Particle Overdraw Under 9v9 / Siege Load",
+        "Auto-Throttles Non-Essential Spell VFX When Local AOI Entity Density Exceeds 120",
+        "Guarantees Locked 60 FPS on Apple Silicon iPad / macOS During Mass Raid Encounters"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-14-headless-10k-bot-swarm-and-deterministic-replay",
+      "tool_name": "Headless 10,000-Bot Swarm Load Generator & Seeded Deterministic Replay Inspector",
+      "tooling_domain": "Stage_3_Server_And_Simulation",
+      "owner_squad_role": "Backend_Simulation_Infra_Engineer",
+      "exemplar_zone_id": "zone-dungeon-kiln-cellar",
+      "exemplar_dungeon_id": "zone-dungeon-kiln-cellar",
+      "exemplar_floor_id": "B3",
+      "loc": "75448:116801",
+      "architectural_principle_enforced": "2_SSOT_Schema_Separated_From_UI",
+      "capabilities_and_ssot_hooks": [
+        "Spawns 10,000 Concurrent Headless AI Bots at 0.503ms / 1.0ms Bevy ECS 20Hz Tick",
+        "Verifies Contiguous SpatialGrid AOI Partitioning & Zero Lock Contention",
+        "Replays Seeded Golden Simulation Traces with epsilon <= 0.05 Coordinate Parity"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-15-agones-fleet-autoscaler-and-chaos-probe",
+      "tool_name": "Agones GameServer Fleet Autoscaler, Cold-Boot (<5ms) & Pod Chaos Probe",
+      "tooling_domain": "Stage_3_Server_And_Simulation",
+      "owner_squad_role": "LiveOps_Build_GM_Engineer",
+      "exemplar_zone_id": "zone-town-starfall-haven",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "43850:-47930",
+      "architectural_principle_enforced": "3_Web_First_Non_Spatial_Suite",
+      "capabilities_and_ssot_hooks": [
+        "Orchestrates Multi-Pod Agones GameServer Allocation & Graceful Drain on Kubernetes",
+        "Injects Synthetic Packet Loss & Pod Failover to Verify < 350ms State Recovery",
+        "Streams Live Prometheus Tick-Time & Entity-Count Telemetry to Studio Dashboard"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-16-joymify-sso-rbac-and-immutable-audit-gateway",
+      "tool_name": "Joymify SSO RBAC Gateway & Append-Only GM Command Audit Ledger",
+      "tooling_domain": "Stage_4_LiveOps_And_GM",
+      "owner_squad_role": "Lead_Tools_Pipeline_Architect",
+      "exemplar_zone_id": "zone-town-crown-beacon",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "147962:26759",
+      "architectural_principle_enforced": "3_Web_First_Non_Spatial_Suite",
+      "capabilities_and_ssot_hooks": [
+        "Binds Every Web Studio & GM Portal Action to Verified Joymify SSO Identity",
+        "Enforces Role-Based Access Control (Viewer / Designer / GM / Lead Architect)",
+        "Writes Tamper-Evident SHA-256 Chained Audit Logs for All Live Mutations"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-17-live-world-event-and-festival-director",
+      "tool_name": "Zero-Restart World Event, Seven-Signs Flip & Festival Director Console",
+      "tooling_domain": "Stage_4_LiveOps_And_GM",
+      "owner_squad_role": "Content_World_Tools_Engineer",
+      "exemplar_zone_id": "zone-town-glaze-barge-quay",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "-81126:151348",
+      "architectural_principle_enforced": "3_Web_First_Non_Spatial_Suite",
+      "capabilities_and_ssot_hooks": [
+        "1-Click Live Activation of 2x Spoil/Drop Weekends, Festival of Darkness & Boss Spawns",
+        "Validates Event Config Payloads Against Canonical JSON Schema Before Broadcast",
+        "Propagates Feature Flags to All Active GameServer Pods in < 250ms Without Restart"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-18-live-client-visual-telemetry-and-stuck-heatmap",
+      "tool_name": "Live Client FPS, Asset-Stream Latency & Stuck-Player Coordinate Heatmap",
+      "tooling_domain": "Stage_4_LiveOps_And_GM",
+      "owner_squad_role": "Technical_Artist_Pipeline_DCC",
+      "exemplar_zone_id": "zone-field-caldera-rim",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "86486:61137",
+      "architectural_principle_enforced": "3_Web_First_Non_Spatial_Suite",
+      "capabilities_and_ssot_hooks": [
+        "Overlays Real-Time Player Unstuck Triggers & Client Frame-Drop Clusters on World Map",
+        "Pinpoints Exact Terrain Triangles or Dungeon Portals Causing Navigation Traps",
+        "Feeds Live Telemetry Directly Back into Stage 2 NavMesh & Chunk Re-Baking"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-19-atomic-occ-inventory-rollback-and-dupe-scanner",
+      "tool_name": "Atomic SHA-256 OCC Inventory Rollback Vault & Real-Time Economy Dupe Scanner",
+      "tooling_domain": "Stage_4_LiveOps_And_GM",
+      "owner_squad_role": "Backend_Simulation_Infra_Engineer",
+      "exemplar_zone_id": "zone-town-saffron-press",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "17498:170026",
+      "architectural_principle_enforced": "2_SSOT_Schema_Separated_From_UI",
+      "capabilities_and_ssot_hooks": [
+        "Continuous Background Audit of RustMetaEngine SQLite WAL / Postgres Item Ledgers",
+        "Point-in-Time Character Inventory, Warehouse & Enchant Snapshot Diffing",
+        "Executes Atomic CAS Item Restoration or Quarantine Without Stopping Active Matches"
+      ]
+    },
+    {
+      "tool_id": "squad-tool-20-gm-tactical-rescue-and-player-support-cockpit",
+      "tool_name": "Web-First GM Stuck-Player Rescue, Chat Moderation & Live Support Cockpit (:8788)",
+      "tooling_domain": "Stage_4_LiveOps_And_GM",
+      "owner_squad_role": "LiveOps_Build_GM_Engineer",
+      "exemplar_zone_id": "zone-town-root-train-roundhouse",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "115210:-178285",
+      "architectural_principle_enforced": "3_Web_First_Non_Spatial_Suite",
+      "capabilities_and_ssot_hooks": [
+        "1-Click /unstuck_recall Teleport to Any of 15 Town Peace-Zone Spawn Shrines",
+        "Live Character State Inspector (HP/SP, Active Buffs, Quest Flags, Coords & Party)",
+        "Integrated Incident Runbook & Automated P1 Escalation Hook (< 15s SLA)"
+      ]
+    }
   ]
 }

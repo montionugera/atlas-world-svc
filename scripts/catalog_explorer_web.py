@@ -100,15 +100,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas68DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas70DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas72DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas74DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 34)),
+        "wave": int(iter_state.get("wave", 35)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"74-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"72-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"70-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"68-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -136,7 +138,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 Verified"
         ),
     }
     return merged
@@ -4398,7 +4400,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4489,6 +4491,8 @@ let ATLAS_CHAMPION_MOB_MODE = 'All';
 let ATLAS_DUALSWORD_FORGE_MODE = 'All';
 let ATLAS_TECH_ART_PIPELINE_MODE = 'All';
 let ATLAS_BOT_SWARM_SIM_MODE = 'All';
+let ATLAS_LIVEOPS_GM_MODE = 'All';
+let ATLAS_TOOLS_SQUAD_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4551,6 +4555,8 @@ const ATLAS_STATE_STORE = {
   dualswordForgeMode: 'All',               // D70: Active 15-Town Dualsword Craft Stamp & Maestro Ishuma Unseal Selector ('Off' | 'All' | 'Starter_C_B_Dualsword_Anvil' | 'A_S_Grade_Craft_Stamp_Forge' | 'Maestro_Ishuma_S80_S84_Unseal_Dock')
   techArtPipelineMode: 'All',              // D71: Active 16-Node [Stage 2: Asset & Build] Technical Artist Pipeline Selector ('Off' | 'All' | 'Three_Tier_GLB_Asset_Gate' | 'Polygon_Bone_Shader_Validator' | 'Godot_World_Chunk_Streaming_Baker')
   botSwarmSimMode: 'All',                  // D72: Active 16-Node [Stage 3: Server & Simulation] 10k-Bot Swarm & Spatial Partition Selector ('Off' | 'All' | 'Headless_10k_Bot_Swarm_Sector' | 'Spatial_Grid_AOI_Partition_Cell' | 'Deterministic_Replay_Desync_Probe')
+  liveopsGmMode: 'All',                    // D73: Active 15-Town [Stage 4: LiveOps & GM] Control Selector ('Off' | 'All' | 'GM_Stuck_Character_Rescue_Anchor' | 'Inventory_Rollback_Audit_Vault' | 'Zero_Restart_Live_Event_Hot_Config')
+  toolsSquadMode: 'All',                   // D74: Active 20-Tool [4-Domain x 5-Role Tools Squad] Unified Pipeline Selector ('Off' | 'All' | 'Stage_1_Content_And_World' | 'Stage_2_Asset_And_Build_Pipeline' | 'Stage_3_Server_And_Simulation' | 'Stage_4_LiveOps_And_GM')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4558,6 +4564,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasLiveopsGmMode(modeId) {
+  ATLAS_LIVEOPS_GM_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.liveopsGmMode = ATLAS_LIVEOPS_GM_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasToolsSquadMode(modeId) {
+  ATLAS_TOOLS_SQUAD_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.toolsSquadMode = ATLAS_TOOLS_SQUAD_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasTechArtPipelineMode(modeId) {
   ATLAS_TECH_ART_PIPELINE_MODE = String(modeId || 'All');
@@ -11532,6 +11552,193 @@ function renderAtlasBotSwarmSimBarHtml(tatlas) {
   `;
 }
 
+// D73: Interactive 15-Node [Stage 4: LiveOps, Build & GM Portal] Stuck-Character Rescue, Inventory Rollback Audit & Zero-Restart Hot-Config Bar
+function renderAtlasLiveopsGmBarHtml(tatlas) {
+  const anchors = (tatlas && tatlas.liveops_gm_control_anchors) || [];
+  const curMode = ATLAS_LIVEOPS_GM_MODE || ATLAS_STATE_STORE.liveopsGmMode || 'All';
+  const modePills = [
+    { id: 'All', label: '🌐 All LiveOps & GM Anchors (15)' },
+    { id: 'GM_Stuck_Character_Rescue_Anchor', label: '🛟 GM Stuck-Character Rescue (5)' },
+    { id: 'Inventory_Rollback_Audit_Vault', label: '🔐 Inventory Rollback Audit (5)' },
+    { id: 'Zero_Restart_Live_Event_Hot_Config', label: '🔥 Zero-Restart Hot-Config (5)' },
+    { id: 'Off', label: '🙈 Hide Overlay' }
+  ];
+  const filteredAnchors = curMode === 'Off'
+    ? []
+    : (curMode === 'All'
+        ? anchors
+        : anchors.filter(a => a.liveops_category === curMode));
+  const featuredAnchors = filteredAnchors.slice(0, 6);
+  const allTowns = getAllAtlasTownEntries(tatlas);
+  const byTownId = {};
+  allTowns.forEach(t => { byTownId[t.zone_id] = t; });
+  const catStyleMap = {
+    'GM_Stuck_Character_Rescue_Anchor': { col: '#34d399', badge: 'STUCK RESCUE', icon: '🛟' },
+    'Inventory_Rollback_Audit_Vault': { col: '#c084fc', badge: 'ROLLBACK VAULT', icon: '🔐' },
+    'Zero_Restart_Live_Event_Hot_Config': { col: '#fb923c', badge: 'HOT-CONFIG', icon: '🔥' }
+  };
+
+  return `
+    <div id="atlasLiveopsGmBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          <span class="mono" style="font-size:9.5px;font-weight:900;color:#fb923c;margin-right:2px">
+            🛟 [STAGE 4: LIVEOPS, BUILD &amp; GM PORTAL] (D73):
+          </span>
+          ${modePills.map(mp => {
+            const act = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasLiveopsGmMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 7px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${act ? '#fb923c' : 'rgba(255,255,255,0.14)'};background:${act ? '#7c2d12' : '#0f172a'};color:${act ? '#fff7ed' : '#cbd5e1'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 GM STUCK-CHARACTER RESCUE · 5 INVENTORY ROLLBACK VAULTS · 5 ZERO-RESTART HOT-CONFIGS
+        </span>
+      </div>
+
+      ${featuredAnchors.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredAnchors.map(a => {
+            const cs = catStyleMap[a.liveops_category] || { col: '#fb923c', badge: 'LIVEOPS GM', icon: '🛟' };
+            const tidStr = String(a.town_zone_id || '');
+            const tObj = byTownId[tidStr];
+            const jumpJs = tObj
+              ? `focusTownStreetBlueprint('${escapeHtml(tObj.studio_node_id || tidStr.replace('zone-', ''))}', '${escapeHtml(a.loc)}')`
+              : `focusTownStreetBlueprint('${escapeHtml(tidStr.replace('zone-', ''))}', '${escapeHtml(a.loc)}')`;
+            const guardTxt = (a.safety_and_audit_guards || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(a.anchor_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fdba74;margin-top:1px">
+                    🛡️ ${escapeHtml(a.gm_portal_action_and_rollback_sla.slice(0, 54))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🔒 ${escapeHtml(guardTxt.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${cs.col};background:#431407;color:#fff7ed;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cs.icon} Jump to Town LiveOps Anchor
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+// D74: Interactive 20-Tool [4-Domain × 5-Role Platform & Tools Squad] Unified Studio Pipeline Registry Bar
+function renderAtlasToolsSquadBarHtml(tatlas) {
+  const tools = (tatlas && tatlas.platform_tools_squad_registry) || [];
+  const curMode = ATLAS_TOOLS_SQUAD_MODE || ATLAS_STATE_STORE.toolsSquadMode || 'All';
+  const modePills = [
+    { id: 'All', label: '🌐 All 20 Studio Squad Tools (4D×5R)' },
+    { id: 'Stage_1_Content_And_World', label: '🗺️ Stage 1: Content & World (5)' },
+    { id: 'Stage_2_Asset_And_Build_Pipeline', label: '🎨 Stage 2: Asset & Build (5)' },
+    { id: 'Stage_3_Server_And_Simulation', label: '🤖 Stage 3: Server & Sim (5)' },
+    { id: 'Stage_4_LiveOps_And_GM', label: '🛟 Stage 4: LiveOps & GM (5)' },
+    { id: 'Lead_Tools_Pipeline_Architect', label: '🏛️ Lead Architect (4)' },
+    { id: 'Content_World_Tools_Engineer', label: '🧭 Content/World Eng (4)' },
+    { id: 'Technical_Artist_Pipeline_DCC', label: '📐 Tech Artist (4)' },
+    { id: 'Backend_Simulation_Infra_Engineer', label: '⚡ Backend Sim Eng (4)' },
+    { id: 'LiveOps_Build_GM_Engineer', label: '🚀 LiveOps/GM Eng (4)' },
+    { id: 'Off', label: '🙈 Hide Overlay' }
+  ];
+  const filteredTools = curMode === 'Off'
+    ? []
+    : (curMode === 'All'
+        ? tools
+        : tools.filter(t => t.tooling_domain === curMode || t.owner_squad_role === curMode));
+  const featuredTools = filteredTools.slice(0, 6);
+  const allTowns = getAllAtlasTownEntries(tatlas);
+  const byTownId = {};
+  allTowns.forEach(t => { byTownId[t.zone_id] = t; });
+  const domStyleMap = {
+    'Stage_1_Content_And_World': { col: '#fde047', badge: 'STAGE 1 CONTENT', icon: '🗺️' },
+    'Stage_2_Asset_And_Build_Pipeline': { col: '#34d399', badge: 'STAGE 2 ASSET', icon: '🎨' },
+    'Stage_3_Server_And_Simulation': { col: '#38bdf8', badge: 'STAGE 3 SERVER', icon: '🤖' },
+    'Stage_4_LiveOps_And_GM': { col: '#fb923c', badge: 'STAGE 4 LIVEOPS', icon: '🛟' }
+  };
+
+  return `
+    <div id="atlasToolsSquadBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          <span class="mono" style="font-size:9.5px;font-weight:900;color:#e879f9;margin-right:2px">
+            🛠️ [4-DOMAIN × 5-ROLE PLATFORM &amp; TOOLS SQUAD REGISTRY] (D74):
+          </span>
+          ${modePills.map(mp => {
+            const act = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasToolsSquadMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 7px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${act ? '#e879f9' : 'rgba(255,255,255,0.14)'};background:${act ? '#701a75' : '#0f172a'};color:${act ? '#fdf4ff' : '#cbd5e1'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 TOOLS/STAGE × 4 TOOLS/ROLE · EMBEDDED DX · SSOT SCHEMA · WEB-FIRST SUITE
+        </span>
+      </div>
+
+      ${featuredTools.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredTools.map(t => {
+            const ds = domStyleMap[t.tooling_domain] || { col: '#e879f9', badge: 'SQUAD TOOL', icon: '🛠️' };
+            const zidStr = String(t.exemplar_zone_id || '');
+            const didStr = String(t.exemplar_dungeon_id || '');
+            const fidStr = String(t.exemplar_floor_id || 'B3');
+            const tObj = byTownId[zidStr];
+            const jumpJs = didStr
+              ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+              : (tObj
+                  ? `focusTownStreetBlueprint('${escapeHtml(tObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(t.loc)}')`
+                  : (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')
+                      ? `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(t.loc)}')`
+                      : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(t.loc)}')`));
+            const capTxt = (t.capabilities_and_ssot_hooks || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${ds.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${ds.icon} ${escapeHtml(t.tool_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${ds.col}">[${ds.badge}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#f5d0fe;margin-top:1px">
+                    👤 ${escapeHtml(t.owner_squad_role)} · ${escapeHtml(t.architectural_principle_enforced)}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ⚙️ ${escapeHtml(capTxt.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${ds.col};background:#4a044e;color:#fdf4ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${ds.icon} ${didStr ? `Inspect Exemplar Dungeon (${escapeHtml(fidStr)})` : 'Inspect Exemplar Zone'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -11708,6 +11915,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasDualswordForgeBarHtml(tatlas)}
       ${renderAtlasTechArtPipelineBarHtml(tatlas)}
       ${renderAtlasBotSwarmSimBarHtml(tatlas)}
+      ${renderAtlasLiveopsGmBarHtml(tatlas)}
+      ${renderAtlasToolsSquadBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -15273,6 +15482,79 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D73: Interactive 15-Node [Stage 4: LiveOps, Build & GM Portal] Stuck-Character Rescue, Rollback Audit & Hot-Config Overlay (`studioLiveopsGmOverlay`)
+  const liveopsGmRows = (tatlas && tatlas.liveops_gm_control_anchors) || [];
+  const curLiveopsGmMode = ATLAS_LIVEOPS_GM_MODE || ATLAS_STATE_STORE.liveopsGmMode || 'All';
+  const activeLiveopsGmAnchors = curLiveopsGmMode === 'Off'
+    ? []
+    : (curLiveopsGmMode === 'All'
+        ? liveopsGmRows
+        : liveopsGmRows.filter(a => a.liveops_category === curLiveopsGmMode));
+  const liveopsGmOverlaySvg = `
+    <g id="studioLiveopsGmOverlay">
+      ${activeLiveopsGmAnchors.map(a => {
+        const lc = clampWorldLocCoord(a.loc || '-84120:243500');
+        const tidStr = String(a.town_zone_id || '');
+        const zObj = allZonesById[tidStr] || {};
+        const isRescue = a.liveops_category === 'GM_Stuck_Character_Rescue_Anchor';
+        const isRollback = a.liveops_category === 'Inventory_Rollback_Audit_Vault';
+        const colHex = isRescue ? '#34d399' : (isRollback ? '#c084fc' : '#fb923c');
+        const iconTxt = isRescue ? '🛟' : (isRollback ? '🔐' : '🔥');
+        const jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || tidStr.replace('zone-', ''))}', '${escapeHtml(a.loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${lc.svgX}" cy="${lc.svgY}" r="10.6" fill="rgba(124,45,18,0.48)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${lc.svgX}" y="${lc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D74: Interactive 20-Tool [4-Domain × 5-Role Platform & Tools Squad] Unified Studio Pipeline Registry Overlay (`studioToolsSquadOverlay`)
+  const toolsSquadRows = (tatlas && tatlas.platform_tools_squad_registry) || [];
+  const curToolsSquadMode = ATLAS_TOOLS_SQUAD_MODE || ATLAS_STATE_STORE.toolsSquadMode || 'All';
+  const activeToolsSquadItems = curToolsSquadMode === 'Off'
+    ? []
+    : (curToolsSquadMode === 'All'
+        ? toolsSquadRows
+        : toolsSquadRows.filter(t => t.tooling_domain === curToolsSquadMode || t.owner_squad_role === curToolsSquadMode));
+  const toolsSquadOverlaySvg = `
+    <g id="studioToolsSquadOverlay">
+      ${activeToolsSquadItems.map(t => {
+        const tsc = clampWorldLocCoord(t.loc || '-84120:243500');
+        const zidStr = String(t.exemplar_zone_id || '');
+        const didStr = String(t.exemplar_dungeon_id || '');
+        const fidStr = String(t.exemplar_floor_id || 'B3');
+        const zObj = allZonesById[zidStr] || {};
+        const dom = t.tooling_domain;
+        const colHex = dom === 'Stage_1_Content_And_World'
+          ? '#fde047'
+          : (dom === 'Stage_2_Asset_And_Build_Pipeline'
+              ? '#34d399'
+              : (dom === 'Stage_3_Server_And_Simulation' ? '#38bdf8' : '#fb923c'));
+        const iconTxt = dom === 'Stage_1_Content_And_World'
+          ? '🗺️'
+          : (dom === 'Stage_2_Asset_And_Build_Pipeline'
+              ? '🎨'
+              : (dom === 'Stage_3_Server_And_Simulation' ? '🤖' : '🛟'));
+        const jumpJs = didStr
+          ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+          : (zidStr.startsWith('zone-town-')
+              ? `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(t.loc)}')`
+              : (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')
+                  ? `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(t.loc)}')`
+                  : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(t.loc)}')`));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${tsc.svgX}" cy="${tsc.svgY}" r="10.6" fill="rgba(112,26,117,0.48)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${tsc.svgX}" y="${tsc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -15325,6 +15607,8 @@ function renderDedicatedWorldAtlas() {
     ${dualswordForgeOverlaySvg}
     ${techArtPipelineOverlaySvg}
     ${botSwarmSimOverlaySvg}
+    ${liveopsGmOverlaySvg}
+    ${toolsSquadOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
