@@ -674,6 +674,8 @@ def validate_world_governance(
                 "fishingGuildSanctuariesCount": len(t_doc.get("fishing_guild_sanctuaries") or []),
                 "cursedWeaponPvpHotspotsCount": len(t_doc.get("cursed_weapon_pvp_hotspots") or []),
                 "dimensionalRiftSepulchersCount": len(t_doc.get("dimensional_rift_sepulchers") or []),
+                "weaponAugmentationDyeHubsCount": len(t_doc.get("weapon_augmentation_dye_hubs") or []),
+                "companionMountSanctuariesCount": len(t_doc.get("companion_mount_sanctuaries") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1042,6 +1044,41 @@ def validate_world_governance(
                 if rs_pzid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: dimensional_rift_sepulchers '{rs_id}' references unknown parent_zone_id '{rs_pzid}'"
+                    )
+
+            # Validate 15 Town Life Stone Weapon Augmentation & Symbol Maker Dye Parlor Hubs (D35)
+            aug_dye_hubs = t_doc.get("weapon_augmentation_dye_hubs") or []
+            if aug_dye_hubs and len(aug_dye_hubs) != 15:
+                errors.append(f"GOV-10 violation: weapon_augmentation_dye_hubs must have 15 hubs, got {len(aug_dye_hubs)}")
+            for ad_item in aug_dye_hubs:
+                if not isinstance(ad_item, dict):
+                    continue
+                ad_id = str(ad_item.get("hub_id", ""))
+                ad_tzid = str(ad_item.get("town_zone_id", ""))
+                ad_dzid = str(ad_item.get("life_stone_drop_zone_id", ""))
+                if ad_tzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: weapon_augmentation_dye_hubs '{ad_id}' references unknown town_zone_id '{ad_tzid}'"
+                    )
+                if ad_dzid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: weapon_augmentation_dye_hubs '{ad_id}' references unknown life_stone_drop_zone_id '{ad_dzid}'"
+                    )
+
+            # Validate 12 Pet, Strider & Castle Wyvern Mount Sanctuaries (D36)
+            comp_sanctuaries = t_doc.get("companion_mount_sanctuaries") or []
+            if comp_sanctuaries and len(comp_sanctuaries) != 12:
+                errors.append(
+                    f"GOV-10 violation: companion_mount_sanctuaries must have 12 sanctuaries, got {len(comp_sanctuaries)}"
+                )
+            for cm_item in comp_sanctuaries:
+                if not isinstance(cm_item, dict):
+                    continue
+                cm_id = str(cm_item.get("companion_node_id", ""))
+                cm_zid = str(cm_item.get("zone_id", ""))
+                if cm_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: companion_mount_sanctuaries '{cm_id}' references unknown zone_id '{cm_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

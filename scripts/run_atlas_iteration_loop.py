@@ -3996,6 +3996,500 @@ def _build_dimensional_rift_sepulchers(atlas: dict[str, Any]) -> list[dict[str, 
     return rows
 
 
+def _build_weapon_augmentation_dye_hubs(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 Town Life Stone Weapon Augmentation & Symbol Maker Dye Parlor Hubs across all 15 Towns (D35)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 4 Standard_Life_Stone Towns
+        (
+            "augment-hub-01-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Blacksmith Refiner Kluto",
+            "Symbol Maker Carson",
+            "Standard_Life_Stone",
+            "zone-field-clover-south-gate",
+            "20 Gemstone D",
+            [
+                "Item Skill: Might (Passive Lv.3)",
+                "Item Skill: Kiss of Eva (Active)",
+                "Item Skill: Guidance (+Accuracy)",
+            ],
+            [
+                "+4 STR / -4 CON (Early Melee Burst)",
+                "+4 WIT / -4 MEN (Apprentice Fast Cast)",
+                "+4 DEX / -4 STR (Scout Crit Rate)",
+            ],
+        ),
+        (
+            "augment-hub-02-porcelain-loom",
+            "zone-town-porcelain-loom",
+            "Blacksmith Refiner Aios",
+            "Symbol Makerienna",
+            "Standard_Life_Stone",
+            "zone-field-celadon-causeway",
+            "20 Gemstone D",
+            [
+                "Item Skill: Acumen (Passive Cast Spd)",
+                "Item Skill: Clarity (Passive MP Cost -10%)",
+                "Item Skill: Hydro Blast (Chance on Hit)",
+            ],
+            [
+                "+4 WIT / -4 MEN (Lunar Mystic Cast)",
+                "+4 INT / -4 MEN (Elemental Nuker)",
+                "+4 MEN / -4 INT (Oracle MP Regen)",
+            ],
+        ),
+        (
+            "augment-hub-03-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Blacksmith Refiner Sumari",
+            "Symbol Maker Kakai-Tattooist",
+            "Standard_Life_Stone",
+            "zone-field-firebrick-duct",
+            "20 Gemstone D",
+            [
+                "Item Skill: Duel Might (Passive PvP P.Atk)",
+                "Item Skill: Fire Burn (Active Nuke)",
+                "Item Skill: Stun Resistance (+15%)",
+            ],
+            [
+                "+4 STR / -4 DEX (Destroyer Cleave)",
+                "+4 CON / -4 DEX (Titan HP Pool)",
+                "+4 WIT / -4 INT (Warcryer Chant Speed)",
+            ],
+        ),
+        (
+            "augment-hub-04-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Blacksmith Refiner Silvera",
+            "Symbol Maker Bronk-Scribe",
+            "Standard_Life_Stone",
+            "zone-field-resin-arch-tunnel",
+            "20 Gemstone D",
+            [
+                "Item Skill: Weight Limit (Passive 2x Cap)",
+                "Item Skill: EarthTremor (Active AoE)",
+                "Item Skill: Shield Block (+12%)",
+            ],
+            [
+                "+4 CON / -4 STR (Spoil Scavenger Tank)",
+                "+4 STR / -4 CON (Artisan Polearm Sweep)",
+                "+4 DEX / -4 CON (Haste Hammer Swing)",
+            ],
+        ),
+        # 4 Mid_Grade_Life_Stone Towns
+        (
+            "augment-hub-05-carillon-belfry",
+            "zone-town-carillon-belfry",
+            "Blacksmith Refiner Karrod",
+            "Symbol Maker Thalia-Ink",
+            "Mid_Grade_Life_Stone",
+            "zone-field-chime-pipe-colonnade",
+            "25 Gemstone C",
+            [
+                "Item Skill: Empower (Passive M.Atk)",
+                "Item Skill: Shadow Flare (Active Dark Nuke)",
+                "Item Skill: Vampiric Rage (Passive Drain)",
+            ],
+            [
+                "+4 INT / -4 MEN (Spellhowler Dark Burst)",
+                "+4 WIT / -4 MEN (Phantom Fast Cast)",
+                "+4 DEX / -4 CON (Abyss Walker Backstab)",
+            ],
+        ),
+        (
+            "augment-hub-06-cinnamon-mill",
+            "zone-town-cinnamon-mill",
+            "Blacksmith Refiner Feynn",
+            "Symbol Maker Spice-Carver",
+            "Mid_Grade_Life_Stone",
+            "zone-field-cinnamon-bark-viaduct",
+            "25 Gemstone C",
+            [
+                "Item Skill: Agility (Passive Evasion +4)",
+                "Item Skill: Wind Strike (Chance Proc)",
+                "Item Skill: Stealth (Active Shadow Ambush)",
+            ],
+            [
+                "+4 DEX / -4 CON (Furral Skirmisher Crit)",
+                "+4 STR / -4 CON (Soul Breaker Rapier)",
+                "+4 CON / -4 DEX (Frontline Warder)",
+            ],
+        ),
+        (
+            "augment-hub-07-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Blacksmith Refiner Poitan",
+            "Symbol Maker Croto",
+            "Mid_Grade_Life_Stone",
+            "zone-field-slag-chasm",
+            "25 Gemstone C",
+            [
+                "Item Skill: Focus (Passive +85 Crit Rate)",
+                "Item Skill: Blessed Body (Active Max HP)",
+                "Item Skill: Hold (Active Root Proc)",
+            ],
+            [
+                "+4 DEX / -4 CON (Hawkeye / Silver Ranger)",
+                "+4 STR / -4 CON (Gladiator Sonic Burst)",
+                "+4 CON / -4 STR (Paladin / Dark Avenger)",
+            ],
+        ),
+        (
+            "augment-hub-08-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Blacksmith Refiner Kluck",
+            "Symbol Maker Reisa",
+            "Mid_Grade_Life_Stone",
+            "zone-field-cobalt-sandbar-ford",
+            "25 Gemstone C",
+            [
+                "Item Skill: Kiss of Eva (Lung Capacity)",
+                "Item Skill:Mana Gain (Passive +Recharge)",
+                "Item Skill: Paralyze (Chance on Magic Hit)",
+            ],
+            [
+                "+4 WIT / -4 MEN (Heine Bishop Fast Heal)",
+                "+4 CON / -4 STR (Temple Knight Aegis)",
+                "+4 DEX / -4 CON (Treasure Hunter Dash)",
+            ],
+        ),
+        # 4 High_Grade_Life_Stone Towns
+        (
+            "augment-hub-09-saffron-press",
+            "zone-town-saffron-press",
+            "Blacksmith Refiner Pushkin",
+            "Symbol MakerMAXIM",
+            "High_Grade_Life_Stone",
+            "zone-field-apricot-aqueduct-terrace",
+            "20 Gemstone B",
+            [
+                "Item Skill: Duel Might (Active +15% PvP P.Atk)",
+                "Item Skill: Medusa (AoE Petrify Proc)",
+                "Item Skill: Lesser Celestial Shield (Invuln)",
+            ],
+            [
+                "+4 STR / -4 CON (Outlaw PK Burst Build)",
+                "+4 DEX / -4 CON (Plainswalker Crit/Evasion)",
+                "+4 WIT / -4 MEN (Necromancer Anchor Cast)",
+            ],
+        ),
+        (
+            "augment-hub-10-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Blacksmith Refiner Rupio",
+            "Symbol Maker Achim",
+            "High_Grade_Life_Stone",
+            "zone-field-brass-spur-ridge",
+            "20 Gemstone B",
+            [
+                "Item Skill: Wild Magic (Passive +2 Magic Crit)",
+                "Item Skill: Skill Refresh (Active -15% Reuse)",
+                "Item Skill: Prayer (Passive Heal Power +12%)",
+            ],
+            [
+                "+4 WIT / -4 MEN (Sorcerer / Spellsinger)",
+                "+4 INT / -4 MEN (High M.Atk Siege Nuker)",
+                "+4 CON / -4 STR (Cardinal Anti-Stun Setup)",
+            ],
+        ),
+        (
+            "augment-hub-11-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Blacksmith Refiner Tatabos",
+            "Symbol Makerirk",
+            "High_Grade_Life_Stone",
+            "zone-field-caldera-rim",
+            "25 Gemstone A",
+            [
+                "Item Skill: Spell Refresh (Active Magic Reuse)",
+                "Item Skill: Clarity (Passive All Skills -15% MP)",
+                "Item Skill: Reflect Damage (Passive 18% Return)",
+            ],
+            [
+                "+4 STR / -4 DEX (Warlord AoE Polearm)",
+                "+4 CON / -4 STR (Hell Knight Reflect Tank)",
+                "+4 WIT / -4 MEN (Overlord Alliance Debuff)",
+            ],
+        ),
+        (
+            "augment-hub-12-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Blacksmith Refiner Ferris",
+            "Symbol Maker Olsun",
+            "High_Grade_Life_Stone",
+            "zone-field-leyden-causeway",
+            "25 Gemstone A",
+            [
+                "Item Skill: Celestial Shield (Active Invincibility)",
+                "Item Skill: Refresh (Active All Reuse -15%)",
+                "Item Skill: Heal Empower (Passive +Heal)",
+            ],
+            [
+                "+4 WIT / -4 MEN (Archmage / Mystic Muse)",
+                "+4 DEX / -4 CON (Sagittarius Crit Bow)",
+                "+4 CON / -4 STR (Siege Vanguard Shield)",
+            ],
+        ),
+        # 3 Top_Grade_Life_Stone Towns
+        (
+            "augment-hub-13-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Blacksmith Refiner Hilda",
+            "Symbol MakerBaylor",
+            "Top_Grade_Life_Stone",
+            "zone-field-spiral-wormway-ramp",
+            "25 Gemstone S",
+            [
+                "Item Skill: Duel Might (Passive Lv.10 +PvP P.Atk)",
+                "Item Skill: Doom (Chance Silence All Skills)",
+                "Item Skill: Music Refresh (Active Song/Dance)",
+            ],
+            [
+                "+5 STR / -5 CON (Grand Khavatari / Titan)",
+                "+4 CON / -4 DEX (Maestro Siege Golem)",
+                "+4 DEX / -4 STR (Sword Muse / Spectral Dancer)",
+            ],
+        ),
+        (
+            "augment-hub-14-starfall-haven",
+            "zone-town-starfall-haven",
+            "Blacksmith Refiner Vincenz",
+            "Symbol Maker Shakul",
+            "Top_Grade_Life_Stone",
+            "zone-field-kelp-spiral-reef",
+            "25 Gemstone S",
+            [
+                "Item Skill: Wild Magic (Passive Lv.10 +M.Crit)",
+                "Item Skill:Spell Clarity (Active -20% MP Cost)",
+                "Item Skill: Battle Roar (Active +Max HP/Heal)",
+            ],
+            [
+                "+4 WIT / +4 INT / -8 MEN (Storm Screamer Glass Cannon)",
+                "+4 CON / +4 DEX / -8 STR (Eva's Templar Olympiad)",
+                "+4 STR / +4 DEX / -8 CON (Ghost Hunter Lethal)",
+            ],
+        ),
+        (
+            "augment-hub-15-crown-beacon",
+            "zone-town-crown-beacon",
+            "Blacksmith Refiner Mammon-Envoy",
+            "Symbol Maker Grand-Scribe",
+            "Top_Grade_Life_Stone",
+            "zone-field-aurora-tether",
+            "25 Gemstone S",
+            [
+                "Item Skill: Celestial Shield (Active Sovereign Aegis)",
+                "Item Skill: Refresh (Active Lv.10 All Skill Reuse)",
+                "Item Skill: Wild Magic (Passive Lv.10 Apex Crit)",
+            ],
+            [
+                "+4 WIT / +4 CON / -8 MEN (Olympiad Hero Archmage)",
+                "+4 STR / +4 DEX / -8 CON (S-Grade Draconic/Basalt DPS)",
+                "+4 CON / +4 MEN / -8 INT (Sovereign Siege Tank)",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (hid, tzid, smith, sym_npc, lstier, drop_zid, gem_cost, aug_skills, dye_combos) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(tzid) or {}
+        tname = str(t_obj.get("name", tzid))
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        anvil_loc = _fmt_loc(bx - 160 - idx * 8, by + 130 + idx * 6)
+        rows.append(
+            {
+                "hub_id": hid,
+                "town_zone_id": tzid,
+                "town_name": tname,
+                "blacksmith_refiner_npc": smith,
+                "symbol_maker_npc": sym_npc,
+                "anvil_loc": anvil_loc,
+                "life_stone_tier": lstier,
+                "life_stone_drop_zone_id": drop_zid,
+                "gemstone_cost": gem_cost,
+                "signature_augment_skills": aug_skills,
+                "signature_dye_combos": dye_combos,
+            }
+        )
+    return rows
+
+
+def _build_companion_mount_sanctuaries(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 12 Pet, Strider & Castle Wyvern Mount Sanctuaries (4 Pet_Manager_Kennel + 4 Hatchling_Strider_Sanctum + 4 Castle_Wyvern_Roost) (D36)."""
+    specs = [
+        # 4 Pet_Manager_Kennel (Town Pet Manager Kennels)
+        (
+            "companion-kennel-01-lantern-lundy",
+            "Lantern Hollow Kennel — Pet Manager Lundy's Wolf Sanctuary",
+            "Pet_Manager_Kennel",
+            "zone-town-lantern-hollow",
+            "-83880:243720",
+            "Pet Manager Lundy",
+            "Wolf ➔ Great Wolf ➔ Fenrir (Riding Wolf Mount)",
+            15,
+            "Quest: Get a Pet (Lv.15 Animal Slayer Trial & Fang Collar)",
+            "Evolves at Lv.55 into Great Wolf and Lv.70 into rideable Fenrir with +30% Bite P.Atk buff.",
+        ),
+        (
+            "companion-kennel-02-kilnwatch-cooper",
+            "Kilnwatch Bastion Kennel — Pet Manager Cooper's Buffalo Paddock",
+            "Pet_Manager_Kennel",
+            "zone-town-kilnwatch-bastion",
+            "-14180:123980",
+            "Pet Manager Cooper",
+            "Baby Buffalo ➔ Improved Baby Buffalo (Melee Fighter Companion)",
+            24,
+            "Quest: Help the Uncle! (Lv.24 Waterside Pet Exchange Ticket: Buffalo)",
+            "Auto-casts Fighter's Will, Blessed Body, Vampiric Rage & Battle Heal for melee grinders.",
+        ),
+        (
+            "companion-kennel-03-escapement-martin",
+            "Escapement Anvil Kennel — Pet Manager Martin's Kookaburra Aviary",
+            "Pet_Manager_Kennel",
+            "zone-town-escapement-anvil",
+            "83120:53180",
+            "Pet Manager Martin",
+            "Baby Kookaburra ➔ Improved Baby Kookaburra (Mystic MP Charger)",
+            25,
+            "Quest: Help the Son! (Lv.25 Maille Lizardman Pet Exchange Ticket: Kookaburra)",
+            "Provides active MP Recharge, Acumen, Empower & Blessed Soul for nonstop mage hunting.",
+        ),
+        (
+            "companion-kennel-04-inductor-waters",
+            "Inductor Switchyard Kennel — Pet Manager Waters' Cougar Menagerie",
+            "Pet_Manager_Kennel",
+            "zone-town-inductor-switchyard",
+            "147420:-55180",
+            "Pet Manager Waters",
+            "Baby Cougar ➔ Improved Baby Cougar (Hybrid Crit/Mage Companion)",
+            26,
+            "Quest: Help the Sister! (Lv.26 Trimmed Minotaur Pet Exchange Ticket: Cougar)",
+            "Hybrid companion casting Might, Shield, Focus, Death Whisper & emergency Greater Battle Heal.",
+        ),
+        # 4 Hatchling_Strider_Sanctum (Hatchling / Strider Evolution Sanctums)
+        (
+            "companion-strider-01-whispering-cronos",
+            "Whispering Teapot Mire — Elder Cronos & Fairy Mymyu Hatchling Glade",
+            "Hatchling_Strider_Sanctum",
+            "zone-field-whispering-mire",
+            "-67920:228880",
+            "Elder Cronos & Fairy Mymyu",
+            "Hatchling of Wind / Star / Twilight (Dragon Flute Summon)",
+            35,
+            "Quest: Little Wing (Lv.35 Craft Regular or Deluxe Fairy Stone for Mymyu)",
+            "Unlocks Dragon Flute of Wind (Melee), Star (Siege/Support), or Twilight (High-Speed Mount).",
+        ),
+        (
+            "companion-strider-02-chime-pipe-mymyu",
+            "Chime-Pipe Colonnade — Tree of Wind & Fairy Mymyu Strider Grove",
+            "Hatchling_Strider_Sanctum",
+            "zone-field-chime-pipe-colonnade",
+            "19280:24480",
+            "Fairy Mymyu & Ancient Tree of Wind",
+            "Strider of Wind (Fast Overland Cavalry Mount)",
+            55,
+            "Quest: Little Wing's Big Adventure (Lv.55 Hatchling Attack on 4 Fairy Trees)",
+            "Transforms Dragon Flute into Bugle of Wind: rideable cavalry mount with Wild Stun & Dash.",
+        ),
+        (
+            "companion-strider-03-caldera-star-tree",
+            "Mainspring Caldera Rim — Tree of Star & Guardian Strider Sanctum",
+            "Hatchling_Strider_Sanctum",
+            "zone-field-caldera-rim",
+            "86840:61520",
+            "Guardian of the Star & Tree of Abyss",
+            "Strider of Star (Siege Gate-Breaker & Heavy Pack Mount)",
+            55,
+            "Quest: Little Wing's Big Adventure (Lv.55 Apply Fairy Leaf to Star/Abyss Tree)",
+            "Transforms Hatchling of Star into Bugle of Star with Siege Punch and high cargo capacity.",
+        ),
+        (
+            "companion-strider-04-aurora-twilight-fenrir",
+            "Aurora Tether Span — Astral Twilight Strider & Snow Fenrir Sanctum",
+            "Hatchling_Strider_Sanctum",
+            "zone-field-aurora-tether",
+            "152880:31680",
+            "Astral Beast-Tamer Rood",
+            "Strider of Twilight & Great Snow Fenrir (Apex Ground Mounts)",
+            70,
+            "Lv.70 Great Wolf / Strider Awakening + Clan Hall Beast Insignia",
+            "Maximum overland mount speed (+195 Spd) with zero casting penalty on dismount.",
+        ),
+        # 4 Castle_Wyvern_Roost (Castle/Citadel Wyvern Aerial Roosts across the 3 continents)
+        (
+            "companion-wyvern-01-kilnwatch-accord-roost",
+            "Kilnwatch Accord Keep — Continent 01 Sovereign Wyvern Aerial Roost",
+            "Castle_Wyvern_Roost",
+            "zone-clanhall-kilnwatch-accord",
+            "-18120:118420",
+            "Wyvern Manager Schna",
+            "Lord's Sovereign Wyvern (Continent 01 Aerial Keep)",
+            55,
+            "Clan Lord Sovereign Status + Mounted Strider Lv.55+ + 25 Crystals: B-Grade",
+            "Full 3D aerial flight across Continent 01, bypassing castle walls and river chokepoints with Wyvern Breath.",
+        ),
+        (
+            "companion-wyvern-02-dragonspine-cog-roost",
+            "Dragonspine Cog Fortress — Continent 02 Ridge Wyvern Spire",
+            "Castle_Wyvern_Roost",
+            "zone-fortress-dragonspine-cog",
+            "94280:142640",
+            "Wyvern Manager Trond",
+            "Lord's Sovereign Wyvern (Continent 02 Fortress Roost)",
+            55,
+            "Fortress/Castle Lord Crest + Mounted Strider Lv.55+ + 25 Crystals: B-Grade",
+            "High-altitude aerial reconnaissance and siege bombardment over Brass-Spur Ridge and Oren/Giran.",
+        ),
+        (
+            "companion-wyvern-03-inductor-conclave-roost",
+            "Inductor Conclave Citadel — Capital Sovereign Wyvern Sky-Tower",
+            "Castle_Wyvern_Roost",
+            "zone-clanhall-inductor-conclave",
+            "144620:-58180",
+            "Wyvern Manager Titus",
+            "Lord's Sovereign Wyvern (Capital Citadel Sky-Roost)",
+            70,
+            "Capital Citadel Sovereign + Mounted Strider Lv.55+ + Wyvern Food Tribute",
+            "Grants aerial entry to the Tower of Insolence apex balcony and Aden Capital siege command.",
+        ),
+        (
+            "companion-wyvern-04-cloud-halo-roost",
+            "Cloud-Mountain Halo Fortress — Continent 03 Astral Wyvern Aerie",
+            "Castle_Wyvern_Roost",
+            "zone-fortress-cloud-halo",
+            "158420:36280",
+            "High Wyvern Marshal Zephyr",
+            "Lord's Sovereign Wyvern (Continent 03 High-Halo Roost)",
+            75,
+            "High-Halo Sovereign + Mounted Strider Lv.55+ + 25 Crystals: B-Grade",
+            "Sovereign aerial dominance over Continent 03 sky-spans with AoE Wyvern Flame Breath.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for cid, nname, mcat, zid, loc, steward, species, lv_req, qreq, tben in specs:
+        rows.append(
+            {
+                "companion_node_id": cid,
+                "node_name": nname,
+                "mount_category": mcat,
+                "zone_id": zid,
+                "loc": loc,
+                "steward_npc_name": steward,
+                "companion_species": species,
+                "evolution_level_req": lv_req,
+                "quest_or_tribute_req": qreq,
+                "tactical_benefit": tben,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -4999,6 +5493,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("dimensional_rift_sepulchers") or []) < 16:
         atlas["dimensional_rift_sepulchers"] = _build_dimensional_rift_sepulchers(atlas)
         actions.append("populated_16_dimensional_rift_sepulchers")
+
+    # 19. Ensure all 15 Town Life Stone Weapon Augmentation & Symbol Maker Dye Parlor Hubs exist in `weapon_augmentation_dye_hubs` (D35)
+    if len(atlas.get("weapon_augmentation_dye_hubs") or []) < 15:
+        atlas["weapon_augmentation_dye_hubs"] = _build_weapon_augmentation_dye_hubs(atlas)
+        actions.append("populated_15_weapon_augmentation_dye_hubs")
+
+    # 20. Ensure all 12 Pet, Strider & Castle Wyvern Mount Sanctuaries exist in `companion_mount_sanctuaries` (D36)
+    if len(atlas.get("companion_mount_sanctuaries") or []) < 12:
+        atlas["companion_mount_sanctuaries"] = _build_companion_mount_sanctuaries(atlas)
+        actions.append("populated_12_companion_mount_sanctuaries")
 
     return {"actions": actions}
 
@@ -6445,15 +6949,143 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d34_ratio * 80.0, 1)
     )
 
+    # D35: Interactive Life Stone Weapon Augmentation & Symbol Maker Dye Parlor Matrix (`weapon_augmentation_dye_hubs` - 15/15 Town Hubs)
+    expected_life_stone_tiers = {
+        "Standard_Life_Stone",
+        "Mid_Grade_Life_Stone",
+        "High_Grade_Life_Stone",
+        "Top_Grade_Life_Stone",
+    }
+    aug_dye_hubs = atlas.get("weapon_augmentation_dye_hubs") or []
+    valid_aug_dye_hubs = 0
+    seen_aug_hub_ids: set[str] = set()
+    seen_aug_town_ids: set[str] = set()
+    seen_life_stone_tiers: set[str] = set()
+    for ah in aug_dye_hubs:
+        if not isinstance(ah, dict):
+            continue
+        hid = str(ah.get("hub_id") or "")
+        tzid = str(ah.get("town_zone_id") or "")
+        lstier = str(ah.get("life_stone_tier") or "")
+        dzid = str(ah.get("life_stone_drop_zone_id") or "")
+        aug_skills = ah.get("signature_augment_skills") or []
+        dye_combos = ah.get("signature_dye_combos") or []
+        if (
+            hid
+            and hid not in seen_aug_hub_ids
+            and tzid in town_zone_id_set
+            and tzid not in seen_aug_town_ids
+            and ah.get("town_name")
+            and ah.get("blacksmith_refiner_npc")
+            and ah.get("symbol_maker_npc")
+            and ":" in str(ah.get("anvil_loc", ""))
+            and lstier in expected_life_stone_tiers
+            and dzid in zone_ids_set
+            and ah.get("gemstone_cost")
+            and isinstance(aug_skills, list)
+            and len(aug_skills) >= 2
+            and isinstance(dye_combos, list)
+            and len(dye_combos) >= 2
+        ):
+            valid_aug_dye_hubs += 1
+            seen_aug_hub_ids.add(hid)
+            seen_aug_town_ids.add(tzid)
+            seen_life_stone_tiers.add(lstier)
+
+    has_d35_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_AUGMENT_DYE_MODE",
+            "setAtlasAugmentDyeMode",
+            "renderAtlasAugmentDyeBarHtml",
+            "studioWeaponAugmentationDyeOverlay",
+        )
+    )
+    d35_ratio = valid_aug_dye_hubs / 15.0
+    d35_full_coverage = (
+        len(seen_aug_town_ids) == 15
+        and seen_life_stone_tiers == expected_life_stone_tiers
+    )
+    d35_score = (
+        round(min(100.0, d35_ratio * 100.0), 1)
+        if (has_d35_ui and d35_full_coverage)
+        else round(d35_ratio * 80.0, 1)
+    )
+
+    # D36: Interactive Pet, Strider & Castle Wyvern Mount Sanctuary Overlay (`companion_mount_sanctuaries` - 12/12 Nodes = 4 Pet_Manager_Kennel + 4 Hatchling_Strider_Sanctum + 4 Castle_Wyvern_Roost)
+    expected_mount_categories = {
+        "Pet_Manager_Kennel",
+        "Hatchling_Strider_Sanctum",
+        "Castle_Wyvern_Roost",
+    }
+    comp_sanctuaries = atlas.get("companion_mount_sanctuaries") or []
+    valid_comp_sanctuaries = 0
+    pet_kennel_count = 0
+    strider_sanctum_count = 0
+    wyvern_roost_count = 0
+    seen_comp_node_ids: set[str] = set()
+    seen_mount_categories: set[str] = set()
+    for cs in comp_sanctuaries:
+        if not isinstance(cs, dict):
+            continue
+        cnid = str(cs.get("companion_node_id") or "")
+        mcat = str(cs.get("mount_category") or "")
+        czid = str(cs.get("zone_id") or "")
+        ev_lv = int(cs.get("evolution_level_req") or 0)
+        if (
+            cnid
+            and cnid not in seen_comp_node_ids
+            and cs.get("node_name")
+            and mcat in expected_mount_categories
+            and czid in zone_ids_set
+            and ":" in str(cs.get("loc", ""))
+            and cs.get("steward_npc_name")
+            and cs.get("companion_species")
+            and ev_lv >= 15
+            and cs.get("quest_or_tribute_req")
+            and cs.get("tactical_benefit")
+        ):
+            valid_comp_sanctuaries += 1
+            seen_comp_node_ids.add(cnid)
+            seen_mount_categories.add(mcat)
+            if mcat == "Pet_Manager_Kennel":
+                pet_kennel_count += 1
+            elif mcat == "Hatchling_Strider_Sanctum":
+                strider_sanctum_count += 1
+            elif mcat == "Castle_Wyvern_Roost":
+                wyvern_roost_count += 1
+
+    has_d36_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_COMPANION_MOUNT_MODE",
+            "setAtlasCompanionMountMode",
+            "renderAtlasCompanionMountBarHtml",
+            "studioCompanionMountOverlay",
+        )
+    )
+    d36_ratio = valid_comp_sanctuaries / 12.0
+    d36_full_coverage = (
+        pet_kennel_count == 4
+        and strider_sanctum_count == 4
+        and wyvern_roost_count == 4
+        and seen_mount_categories == expected_mount_categories
+    )
+    d36_score = (
+        round(min(100.0, d36_ratio * 100.0), 1)
+        if (has_d36_ui and d36_full_coverage)
+        else round(d36_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score) / 16.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score) / 18.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score) / 18.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score) / 28.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score) / 17.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score) / 24.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score) / 18.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score) / 20.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score) / 20.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score) / 30.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score) / 19.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score) / 26.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -6492,8 +7124,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d32_score
             + d33_score
             + d34_score
+            + d35_score
+            + d36_score
         )
-        / 34.0,
+        / 36.0,
         1,
     )
 
@@ -6725,6 +7359,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "instance_categories": sorted(seen_instance_categories),
                 "ui_wired": has_d34_ui,
             },
+            "D35_weapon_augmentation_and_symbol_dye_hubs": {
+                "score": d35_score,
+                "verified": valid_aug_dye_hubs,
+                "target": 15,
+                "life_stone_tiers": sorted(seen_life_stone_tiers),
+                "ui_wired": has_d35_ui,
+            },
+            "D36_companion_pet_strider_and_wyvern_sanctuaries": {
+                "score": d36_score,
+                "verified": valid_comp_sanctuaries,
+                "target": 12,
+                "pet_kennels": pet_kennel_count,
+                "strider_sanctums": strider_sanctum_count,
+                "wyvern_roosts": wyvern_roost_count,
+                "mount_categories": sorted(seen_mount_categories),
+                "ui_wired": has_d36_ui,
+            },
         },
     }
 
@@ -6803,6 +7454,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D32 (16 Fishing/Hot Springs): {dims['D32_fishing_guild_and_hot_springs_sanctuaries']['score']}/100 ({dims['D32_fishing_guild_and_hot_springs_sanctuaries']['verified']}/{dims['D32_fishing_guild_and_hot_springs_sanctuaries']['target']} sanctuaries)")
         print(f"  D33 (14 Cursed/PvP Hotspots): {dims['D33_cursed_weapon_karma_and_pvp_arenas']['score']}/100 ({dims['D33_cursed_weapon_karma_and_pvp_arenas']['verified']}/{dims['D33_cursed_weapon_karma_and_pvp_arenas']['target']} hotspots)")
         print(f"  D34 (16 Rift/4-Sepulchers)  : {dims['D34_dimensional_rift_and_four_sepulchers']['score']}/100 ({dims['D34_dimensional_rift_and_four_sepulchers']['verified']}/{dims['D34_dimensional_rift_and_four_sepulchers']['target']} portals)")
+        print(f"  D35 (15 Augment/Dye Hubs)   : {dims['D35_weapon_augmentation_and_symbol_dye_hubs']['score']}/100 ({dims['D35_weapon_augmentation_and_symbol_dye_hubs']['verified']}/{dims['D35_weapon_augmentation_and_symbol_dye_hubs']['target']} hubs)")
+        print(f"  D36 (12 Pet/Strider/Wyvern) : {dims['D36_companion_pet_strider_and_wyvern_sanctuaries']['score']}/100 ({dims['D36_companion_pet_strider_and_wyvern_sanctuaries']['verified']}/{dims['D36_companion_pet_strider_and_wyvern_sanctuaries']['target']} sanctuaries)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

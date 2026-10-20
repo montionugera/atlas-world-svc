@@ -69,7 +69,7 @@ def compute_studio_self_evaluation() -> dict:
             }
             dims = iter_state["dimensions"]
     overall_atlas_score = float(iter_state.get("overall_score", 100.0))
-    dim_count = len(dims) or 34
+    dim_count = len(dims) or 36
     qs = dict(self_eval.get("qualityScorecard") or {})
     qs.setdefault("overallQualityScorePct", 100.0)
     qs["semanticZoomAtlas18DimensionScore"] = overall_atlas_score
@@ -81,15 +81,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas30DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas32DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas34DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas36DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 15)),
+        "wave": int(iter_state.get("wave", 16)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"36-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"34-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"32-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"30-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -98,7 +100,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D34 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D36 Verified"
         ),
     }
     return merged
@@ -4360,7 +4362,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D34 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D36 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4413,6 +4415,8 @@ let ATLAS_SOUL_CRYSTAL_MODE = 'All';
 let ATLAS_FISHING_MODE = 'All';
 let ATLAS_PVP_KARMA_MODE = 'All';
 let ATLAS_RIFT_SEPULCHER_MODE = 'All';
+let ATLAS_AUGMENT_DYE_MODE = 'All';
+let ATLAS_COMPANION_MOUNT_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4437,6 +4441,8 @@ const ATLAS_STATE_STORE = {
   fishingMode: 'All',                      // D32: Active Fishing Guild & Hot Springs Selector ('Off' | 'All' | 'Maritime_Harbor_Pier' | 'Luminous_Night_Lake' | 'Thermal_Hot_Spring')
   pvpKarmaMode: 'All',                     // D33: Active Cursed Weapon, PK & PvP Arena Selector ('Off' | 'All' | 'Cursed_Weapon_Drop_Zone' | 'Black_Judge_Karma_Sanctuary' | 'Coliseum_PvP_Arena')
   riftSepulcherMode: 'All',                // D34: Active Dimensional Rift & Four Sepulchers Selector ('Off' | 'All' | 'Dimensional_Rift' | 'Four_Sepulchers' | 'Key_Gated_Chapel')
+  augmentDyeMode: 'All',                   // D35: Active Weapon Augmentation & Symbol Dye Selector ('Off' | 'All' | 'Top_High_Life_Stone' | 'Augment_Anvils' | 'Symbol_Dye_Parlors')
+  companionMountMode: 'All',               // D36: Active Pet, Strider & Wyvern Mount Selector ('Off' | 'All' | 'Pet_Manager_Kennel' | 'Hatchling_Strider_Sanctum' | 'Castle_Wyvern_Roost')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4444,6 +4450,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasAugmentDyeMode(modeId) {
+  ATLAS_AUGMENT_DYE_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.augmentDyeMode = ATLAS_AUGMENT_DYE_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasCompanionMountMode(modeId) {
+  ATLAS_COMPANION_MOUNT_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.companionMountMode = ATLAS_COMPANION_MOUNT_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasPvpKarmaMode(modeId) {
   ATLAS_PVP_KARMA_MODE = String(modeId || 'All');
@@ -7624,6 +7644,189 @@ function renderAtlasRiftSepulcherBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasAugmentDyeBarHtml(tatlas) {
+  const hubs = (tatlas && tatlas.weapon_augmentation_dye_hubs) || [];
+  if (!hubs.length) return '';
+
+  const curMode = ATLAS_AUGMENT_DYE_MODE || ATLAS_STATE_STORE.augmentDyeMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🔮 All 15 Hubs' },
+    { id: 'Top_High_Life_Stone', label: '💎 Top/High-Grade Life Stones' },
+    { id: 'Augment_Anvils', label: '⚡ Augment Anvils' },
+    { id: 'Symbol_Dye_Parlors', label: '🎨 Symbol Dye Parlors' }
+  ];
+
+  const filteredHubs = curMode === 'Off'
+    ? []
+    : (curMode === 'Top_High_Life_Stone'
+      ? hubs.filter(h => h.life_stone_tier === 'Top_Grade_Life_Stone' || h.life_stone_tier === 'High_Grade_Life_Stone')
+      : hubs);
+
+  const featuredHubs = curMode === 'All'
+    ? [
+        ...hubs.filter(h => h.life_stone_tier === 'Top_Grade_Life_Stone').slice(0, 2),
+        ...hubs.filter(h => h.life_stone_tier === 'High_Grade_Life_Stone').slice(0, 1),
+        ...hubs.filter(h => h.life_stone_tier === 'Mid_Grade_Life_Stone').slice(0, 1)
+      ]
+    : filteredHubs.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasAugmentDyeBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1f122b;border:1px solid rgba(192,132,252,0.52)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#e9d5ff">🔮 LIFE STONE WEAPON AUGMENTATION &amp; SYMBOL MAKER DYE PARLOR MATRIX (D35 · 15 TOWN HUBS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasAugmentDyeMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(192,132,252,0.45)'};background:${isAct ? '#6b21a8' : '#090d14'};color:${isAct ? '#ffffff' : '#f3e8ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          15 TOWN REFINER ANVILS + 15 SYMBOL MAKER DYE PARLORS (+4/-4 STAT TATTOOS &amp; ITEM SKILLS)
+        </span>
+      </div>
+
+      ${featuredHubs.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredHubs.map(h => {
+            const isTop = h.life_stone_tier === 'Top_Grade_Life_Stone';
+            const isHigh = h.life_stone_tier === 'High_Grade_Life_Stone';
+            const tierCol = isTop ? '#f43f5e' : (isHigh ? '#c084fc' : '#38bdf8');
+            const tz = byZid[h.town_zone_id] || {};
+            const townNode = tz.studio_node_id || h.town_zone_id.replace('zone-', '');
+            const townJumpJs = `focusTownStreetBlueprint('${escapeHtml(townNode)}', '${escapeHtml(h.anvil_loc)}')`;
+            const dropJumpJs = `focusFieldTacticalBlueprint('${escapeHtml(h.life_stone_drop_zone_id)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${tierCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🔮 ${escapeHtml(h.town_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${tierCol}">${escapeHtml(h.life_stone_tier.replace(/_/g, ' '))}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#e9d5ff;margin-top:1px">
+                    ⚒️ ${escapeHtml(h.blacksmith_refiner_npc)} · 🎨 ${escapeHtml(h.symbol_maker_npc)} (${escapeHtml(h.gemstone_cost)})
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ⚡ ${escapeHtml((h.signature_augment_skills || [])[0] || '')} · 🎨 ${escapeHtml((h.signature_dye_combos || [])[0] || '')}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${townJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${tierCol};background:#3b0764;color:#f3e8ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ⚒️ Town Refiner/Dye
+                  </button>
+                  <button type="button" onclick="${dropJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid #38bdf8;background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    💎 Life Stone Field
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasCompanionMountBarHtml(tatlas) {
+  const nodes = (tatlas && tatlas.companion_mount_sanctuaries) || [];
+  if (!nodes.length) return '';
+
+  const curMode = ATLAS_COMPANION_MOUNT_MODE || ATLAS_STATE_STORE.companionMountMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🐉 All 12 Nodes' },
+    { id: 'Pet_Manager_Kennel', label: '🐾 4 Pet Kennels' },
+    { id: 'Hatchling_Strider_Sanctum', label: '🦎 4 Strider Sanctums' },
+    { id: 'Castle_Wyvern_Roost', label: '🐉 4 Castle Wyvern Roosts' }
+  ];
+
+  const filteredNodes = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? nodes : nodes.filter(n => n.mount_category === curMode));
+
+  const featuredNodes = curMode === 'All'
+    ? [
+        ...nodes.filter(n => n.mount_category === 'Pet_Manager_Kennel').slice(0, 1),
+        ...nodes.filter(n => n.mount_category === 'Hatchling_Strider_Sanctum').slice(0, 2),
+        ...nodes.filter(n => n.mount_category === 'Castle_Wyvern_Roost').slice(0, 1)
+      ]
+    : filteredNodes.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasCompanionMountBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0b241c;border:1px solid rgba(52,211,153,0.52)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#a7f3d0">🐉 PET, STRIDER &amp; CASTLE WYVERN MOUNT SANCTUARY OVERLAY (D36 · 12 SANCTUARIES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasCompanionMountMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(52,211,153,0.45)'};background:${isAct ? '#065f46' : '#090d14'};color:${isAct ? '#ffffff' : '#d1fae5'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          4 TOWN PET KENNELS + 4 HATCHLING/STRIDER GROVES + 4 SOVEREIGN CASTLE WYVERN ROOSTS
+        </span>
+      </div>
+
+      ${featuredNodes.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredNodes.map(n => {
+            const isPet = n.mount_category === 'Pet_Manager_Kennel';
+            const isStrider = n.mount_category === 'Hatchling_Strider_Sanctum';
+            const catCol = isPet ? '#38bdf8' : (isStrider ? '#34d399' : '#f59e0b');
+            const catIcon = isPet ? '🐾' : (isStrider ? '🦎' : '🐉');
+            const z = byZid[n.zone_id] || {};
+            const jumpJs = isPet
+              ? `focusTownStreetBlueprint('${escapeHtml(z.studio_node_id || n.zone_id.replace('zone-', ''))}', '${escapeHtml(n.loc)}')`
+              : (isStrider
+                ? `focusFieldTacticalBlueprint('${escapeHtml(n.zone_id)}', '${escapeHtml(n.loc)}')`
+                : `focusFortressBlueprint('${escapeHtml(n.zone_id)}', '${escapeHtml(n.loc)}')`);
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(n.node_name.slice(0, 36))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">Lv.${n.evolution_level_req}+</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#a7f3d0;margin-top:1px">
+                    👤 ${escapeHtml(n.steward_npc_name)} · ${escapeHtml(n.companion_species.slice(0, 38))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🏆 ${escapeHtml(n.tactical_benefit.slice(0, 66))}
+                  </div>
+                </div>
+                <button type="button" onclick="${jumpJs}"
+                        style="margin-top:2px;padding:2px 6px;border-radius:4px;border:1px solid ${catCol};background:#064e3b;color:#ecfdf5;font-size:8.2px;font-weight:800;cursor:pointer;text-align:left">
+                  ${catIcon} Jump to Kennel / Strider Grove / Wyvern Roost
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -7762,6 +7965,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasFishingSanctuaryBarHtml(tatlas)}
       ${renderAtlasPvpKarmaBarHtml(tatlas)}
       ${renderAtlasRiftSepulcherBarHtml(tatlas)}
+      ${renderAtlasAugmentDyeBarHtml(tatlas)}
+      ${renderAtlasCompanionMountBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -10053,6 +10258,69 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D35: Interactive Life Stone Weapon Augmentation & Symbol Maker Dye Parlor Overlay (`studioWeaponAugmentationDyeOverlay`)
+  const augDyeHubs = (tatlas && tatlas.weapon_augmentation_dye_hubs) || [];
+  const curAugMode = ATLAS_AUGMENT_DYE_MODE || ATLAS_STATE_STORE.augmentDyeMode || 'All';
+  const activeAugDyeHubs = curAugMode === 'Off'
+    ? []
+    : (curAugMode === 'Top_High_Life_Stone'
+      ? augDyeHubs.filter(h => h.life_stone_tier === 'Top_Grade_Life_Stone' || h.life_stone_tier === 'High_Grade_Life_Stone')
+      : augDyeHubs);
+  const weaponAugmentationDyeOverlaySvg = `
+    <g id="studioWeaponAugmentationDyeOverlay">
+      ${activeAugDyeHubs.map(h => {
+        const ac = clampWorldLocCoord(h.anvil_loc || '-84120:243500');
+        const dz = allZonesById[h.life_stone_drop_zone_id] || {};
+        const tz = allZonesById[h.town_zone_id] || {};
+        const dc = clampWorldLocCoord(dz.loc_coord || '-68180:228620');
+        const isTop = h.life_stone_tier === 'Top_Grade_Life_Stone';
+        const isHigh = h.life_stone_tier === 'High_Grade_Life_Stone';
+        const colHex = isTop ? '#f43f5e' : (isHigh ? '#c084fc' : '#38bdf8');
+        const iconTxt = curAugMode === 'Symbol_Dye_Parlors' ? '🎨' : '🔮';
+        const townClickJs = `focusTownStreetBlueprint('${escapeHtml(tz.studio_node_id || h.town_zone_id.replace('zone-', ''))}', '${escapeHtml(h.anvil_loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${townClickJs}">
+            <line x1="${dc.svgX}" y1="${dc.svgY}" x2="${ac.svgX}" y2="${ac.svgY}" stroke="${colHex}" stroke-width="1.6" stroke-dasharray="4 2" opacity="0.78"/>
+            <circle cx="${ac.svgX}" cy="${ac.svgY}" r="10.5" fill="rgba(107,33,168,0.34)" stroke="${colHex}" stroke-width="1.8"/>
+            <text x="${ac.svgX}" y="${ac.svgY + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D36: Interactive Pet, Strider & Castle Wyvern Mount Sanctuary Overlay (`studioCompanionMountOverlay`)
+  const companionNodes = (tatlas && tatlas.companion_mount_sanctuaries) || [];
+  const curCompMode = ATLAS_COMPANION_MOUNT_MODE || ATLAS_STATE_STORE.companionMountMode || 'All';
+  const activeCompanionNodes = curCompMode === 'Off'
+    ? []
+    : (curCompMode === 'All'
+      ? companionNodes
+      : companionNodes.filter(n => n.mount_category === curCompMode));
+  const companionMountOverlaySvg = `
+    <g id="studioCompanionMountOverlay">
+      ${activeCompanionNodes.map(n => {
+        const cc = clampWorldLocCoord(n.loc || '-83880:243720');
+        const isPet = n.mount_category === 'Pet_Manager_Kennel';
+        const isStrider = n.mount_category === 'Hatchling_Strider_Sanctum';
+        const colHex = isPet ? '#38bdf8' : (isStrider ? '#34d399' : '#f59e0b');
+        const iconTxt = isPet ? '🐾' : (isStrider ? '🦎' : '🐉');
+        const z = allZonesById[n.zone_id] || {};
+        const clickJs = isPet
+          ? `focusTownStreetBlueprint('${escapeHtml(z.studio_node_id || n.zone_id.replace('zone-', ''))}', '${escapeHtml(n.loc)}')`
+          : (isStrider
+            ? `focusFieldTacticalBlueprint('${escapeHtml(n.zone_id)}', '${escapeHtml(n.loc)}')`
+            : `focusFortressBlueprint('${escapeHtml(n.zone_id)}', '${escapeHtml(n.loc)}')`);
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${clickJs}">
+            <circle cx="${cc.svgX}" cy="${cc.svgY}" r="11" fill="rgba(6,95,70,0.34)" stroke="${colHex}" stroke-width="1.9" stroke-dasharray="3 2"/>
+            <text x="${cc.svgX}" y="${cc.svgY + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -10067,6 +10335,8 @@ function renderDedicatedWorldAtlas() {
     ${fishingSanctuaryOverlaySvg}
     ${cursedWeaponPvpOverlaySvg}
     ${dimensionalRiftOverlaySvg}
+    ${weaponAugmentationDyeOverlaySvg}
+    ${companionMountOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

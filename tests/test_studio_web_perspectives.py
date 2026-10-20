@@ -1149,7 +1149,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 34)
+        self.assertGreaterEqual(len(audit["dimensions"]), 34)
 
         d33 = audit["dimensions"]["D33_cursed_weapon_karma_and_pvp_arenas"]
         self.assertEqual(d33["score"], 100.0)
@@ -1196,10 +1196,96 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas34DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 34)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 34)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 34)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 34)
         self.assertIn("34-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave16_weapon_augmentation_dye_hubs_and_companion_mount_sanctuaries(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["weaponAugmentationDyeHubsCount"], 15)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["companionMountSanctuariesCount"], 12)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_AUGMENT_DYE_MODE",
+            "setAtlasAugmentDyeMode(",
+            "renderAtlasAugmentDyeBarHtml(",
+            "studioWeaponAugmentationDyeOverlay",
+            "ATLAS_COMPANION_MOUNT_MODE",
+            "setAtlasCompanionMountMode(",
+            "renderAtlasCompanionMountBarHtml(",
+            "studioCompanionMountOverlay",
+            "36-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 16 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 36)
+
+        d35 = audit["dimensions"]["D35_weapon_augmentation_and_symbol_dye_hubs"]
+        self.assertEqual(d35["score"], 100.0)
+        self.assertEqual(d35["verified"], 15)
+        self.assertEqual(d35["target"], 15)
+        self.assertEqual(
+            set(d35["life_stone_tiers"]),
+            {
+                "Standard_Life_Stone",
+                "Mid_Grade_Life_Stone",
+                "High_Grade_Life_Stone",
+                "Top_Grade_Life_Stone",
+            },
+        )
+        self.assertTrue(d35["ui_wired"])
+
+        d36 = audit["dimensions"]["D36_companion_pet_strider_and_wyvern_sanctuaries"]
+        self.assertEqual(d36["score"], 100.0)
+        self.assertEqual(d36["verified"], 12)
+        self.assertEqual(d36["target"], 12)
+        self.assertEqual(d36["pet_kennels"], 4)
+        self.assertEqual(d36["strider_sanctums"], 4)
+        self.assertEqual(d36["wyvern_roosts"], 4)
+        self.assertTrue(d36["ui_wired"])
+
+        aug_hubs = atlas["weapon_augmentation_dye_hubs"]
+        self.assertEqual(len(aug_hubs), 15)
+        self.assertEqual(len({h["town_zone_id"] for h in aug_hubs}), 15)
+        self.assertEqual(
+            {h["life_stone_tier"] for h in aug_hubs},
+            {
+                "Standard_Life_Stone",
+                "Mid_Grade_Life_Stone",
+                "High_Grade_Life_Stone",
+                "Top_Grade_Life_Stone",
+            },
+        )
+        for h in aug_hubs:
+            self.assertGreaterEqual(len(h["signature_augment_skills"]), 2)
+            self.assertGreaterEqual(len(h["signature_dye_combos"]), 2)
+
+        comp_nodes = atlas["companion_mount_sanctuaries"]
+        self.assertEqual(len(comp_nodes), 12)
+        self.assertEqual(sum(1 for n in comp_nodes if n["mount_category"] == "Pet_Manager_Kennel"), 4)
+        self.assertEqual(sum(1 for n in comp_nodes if n["mount_category"] == "Hatchling_Strider_Sanctum"), 4)
+        self.assertEqual(sum(1 for n in comp_nodes if n["mount_category"] == "Castle_Wyvern_Roost"), 4)
+        self.assertEqual(
+            {n["mount_category"] for n in comp_nodes},
+            {"Pet_Manager_Kennel", "Hatchling_Strider_Sanctum", "Castle_Wyvern_Roost"},
+        )
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas36DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 36)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 36)
+        self.assertIn("36-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

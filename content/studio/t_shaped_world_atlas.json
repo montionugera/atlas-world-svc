@@ -50235,5 +50235,468 @@
       "cycle_window": "45m Instance Lockout & 3-Gate Key Sequence",
       "signature_reward": "Nornil's Seed Bracelet, Blessed Enchant Scrolls & Spice-Core Alloy"
     }
+  ],
+  "weapon_augmentation_dye_hubs": [
+    {
+      "hub_id": "augment-hub-01-lantern-hollow",
+      "town_zone_id": "zone-town-lantern-hollow",
+      "town_name": "Lantern Hollow Village (Human Starter)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Kluto",
+      "symbol_maker_npc": "Symbol Maker Carson",
+      "anvil_loc": "-84288:243636",
+      "life_stone_tier": "Standard_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-clover-south-gate",
+      "gemstone_cost": "20 Gemstone D",
+      "signature_augment_skills": [
+        "Item Skill: Might (Passive Lv.3)",
+        "Item Skill: Kiss of Eva (Active)",
+        "Item Skill: Guidance (+Accuracy)"
+      ],
+      "signature_dye_combos": [
+        "+4 STR / -4 CON (Early Melee Burst)",
+        "+4 WIT / -4 MEN (Apprentice Fast Cast)",
+        "+4 DEX / -4 STR (Scout Crit Rate)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-02-porcelain-loom",
+      "town_zone_id": "zone-town-porcelain-loom",
+      "town_name": "Porcelain Loom Sanctuary (Lunar Starter)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Aios",
+      "symbol_maker_npc": "Symbol Makerienna",
+      "anvil_loc": "45624:41342",
+      "life_stone_tier": "Standard_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-celadon-causeway",
+      "gemstone_cost": "20 Gemstone D",
+      "signature_augment_skills": [
+        "Item Skill: Acumen (Passive Cast Spd)",
+        "Item Skill: Clarity (Passive MP Cost -10%)",
+        "Item Skill: Hydro Blast (Chance on Hit)"
+      ],
+      "signature_dye_combos": [
+        "+4 WIT / -4 MEN (Lunar Mystic Cast)",
+        "+4 INT / -4 MEN (Elemental Nuker)",
+        "+4 MEN / -4 INT (Oracle MP Regen)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-03-draft-kiln-post",
+      "town_zone_id": "zone-town-draft-kiln-post",
+      "town_name": "Draft-Kiln Post (Ogre/Orc Starter)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Sumari",
+      "symbol_maker_npc": "Symbol Maker Kakai-Tattooist",
+      "anvil_loc": "-44984:-113052",
+      "life_stone_tier": "Standard_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-firebrick-duct",
+      "gemstone_cost": "20 Gemstone D",
+      "signature_augment_skills": [
+        "Item Skill: Duel Might (Passive PvP P.Atk)",
+        "Item Skill: Fire Burn (Active Nuke)",
+        "Item Skill: Stun Resistance (+15%)"
+      ],
+      "signature_dye_combos": [
+        "+4 STR / -4 DEX (Destroyer Cleave)",
+        "+4 CON / -4 DEX (Titan HP Pool)",
+        "+4 WIT / -4 INT (Warcryer Chant Speed)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-04-root-train-roundhouse",
+      "town_zone_id": "zone-town-root-train-roundhouse",
+      "town_name": "Root-Train Roundhouse (Dwarf Starter)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Silvera",
+      "symbol_maker_npc": "Symbol Maker Bronk-Scribe",
+      "anvil_loc": "114908:-178046",
+      "life_stone_tier": "Standard_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-resin-arch-tunnel",
+      "gemstone_cost": "20 Gemstone D",
+      "signature_augment_skills": [
+        "Item Skill: Weight Limit (Passive 2x Cap)",
+        "Item Skill: EarthTremor (Active AoE)",
+        "Item Skill: Shield Block (+12%)"
+      ],
+      "signature_dye_combos": [
+        "+4 CON / -4 STR (Spoil Scavenger Tank)",
+        "+4 STR / -4 CON (Artisan Polearm Sweep)",
+        "+4 DEX / -4 CON (Haste Hammer Swing)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-05-carillon-belfry",
+      "town_zone_id": "zone-town-carillon-belfry",
+      "town_name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Karrod",
+      "symbol_maker_npc": "Symbol Maker Thalia-Ink",
+      "anvil_loc": "12200:16960",
+      "life_stone_tier": "Mid_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-chime-pipe-colonnade",
+      "gemstone_cost": "25 Gemstone C",
+      "signature_augment_skills": [
+        "Item Skill: Empower (Passive M.Atk)",
+        "Item Skill: Shadow Flare (Active Dark Nuke)",
+        "Item Skill: Vampiric Rage (Passive Drain)"
+      ],
+      "signature_dye_combos": [
+        "+4 INT / -4 MEN (Spellhowler Dark Burst)",
+        "+4 WIT / -4 MEN (Phantom Fast Cast)",
+        "+4 DEX / -4 CON (Abyss Walker Backstab)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-06-cinnamon-mill",
+      "town_zone_id": "zone-town-cinnamon-mill",
+      "town_name": "Cinnamon-Mill Haven (Furral Starter)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Feynn",
+      "symbol_maker_npc": "Symbol Maker Spice-Carver",
+      "anvil_loc": "-118408:46966",
+      "life_stone_tier": "Mid_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-cinnamon-bark-viaduct",
+      "gemstone_cost": "25 Gemstone C",
+      "signature_augment_skills": [
+        "Item Skill: Agility (Passive Evasion +4)",
+        "Item Skill: Wind Strike (Chance Proc)",
+        "Item Skill: Stealth (Active Shadow Ambush)"
+      ],
+      "signature_dye_combos": [
+        "+4 DEX / -4 CON (Furral Skirmisher Crit)",
+        "+4 STR / -4 CON (Soul Breaker Rapier)",
+        "+4 CON / -4 DEX (Frontline Warder)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-07-kilnwatch-bastion",
+      "town_zone_id": "zone-town-kilnwatch-bastion",
+      "town_name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Poitan",
+      "symbol_maker_npc": "Symbol Maker Croto",
+      "anvil_loc": "-14416:123672",
+      "life_stone_tier": "Mid_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-slag-chasm",
+      "gemstone_cost": "25 Gemstone C",
+      "signature_augment_skills": [
+        "Item Skill: Focus (Passive +85 Crit Rate)",
+        "Item Skill: Blessed Body (Active Max HP)",
+        "Item Skill: Hold (Active Root Proc)"
+      ],
+      "signature_dye_combos": [
+        "+4 DEX / -4 CON (Hawkeye / Silver Ranger)",
+        "+4 STR / -4 CON (Gladiator Sonic Burst)",
+        "+4 CON / -4 STR (Paladin / Dark Avenger)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-08-glaze-barge-quay",
+      "town_zone_id": "zone-town-glaze-barge-quay",
+      "town_name": "Glaze-Barge Quay (River Trade & Raid Port)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Kluck",
+      "symbol_maker_npc": "Symbol Maker Reisa",
+      "anvil_loc": "-81424:151578",
+      "life_stone_tier": "Mid_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-cobalt-sandbar-ford",
+      "gemstone_cost": "25 Gemstone C",
+      "signature_augment_skills": [
+        "Item Skill: Kiss of Eva (Lung Capacity)",
+        "Item Skill:Mana Gain (Passive +Recharge)",
+        "Item Skill: Paralyze (Chance on Magic Hit)"
+      ],
+      "signature_dye_combos": [
+        "+4 WIT / -4 MEN (Heine Bishop Fast Heal)",
+        "+4 CON / -4 STR (Temple Knight Aegis)",
+        "+4 DEX / -4 CON (Treasure Hunter Dash)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-09-saffron-press",
+      "town_zone_id": "zone-town-saffron-press",
+      "town_name": "Saffron Press Village (Manor Agricultural Hub)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Pushkin",
+      "symbol_maker_npc": "Symbol MakerMAXIM",
+      "anvil_loc": "17168:170284",
+      "life_stone_tier": "High_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-apricot-aqueduct-terrace",
+      "gemstone_cost": "20 Gemstone B",
+      "signature_augment_skills": [
+        "Item Skill: Duel Might (Active +15% PvP P.Atk)",
+        "Item Skill: Medusa (AoE Petrify Proc)",
+        "Item Skill: Lesser Celestial Shield (Invuln)"
+      ],
+      "signature_dye_combos": [
+        "+4 STR / -4 CON (Outlaw PK Burst Build)",
+        "+4 DEX / -4 CON (Plainswalker Crit/Evasion)",
+        "+4 WIT / -4 MEN (Necromancer Anchor Cast)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-10-pinion-terminus",
+      "town_zone_id": "zone-town-pinion-terminus",
+      "town_name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Rupio",
+      "symbol_maker_npc": "Symbol Maker Achim",
+      "anvil_loc": "82160:148790",
+      "life_stone_tier": "High_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-brass-spur-ridge",
+      "gemstone_cost": "20 Gemstone B",
+      "signature_augment_skills": [
+        "Item Skill: Wild Magic (Passive +2 Magic Crit)",
+        "Item Skill: Skill Refresh (Active -15% Reuse)",
+        "Item Skill: Prayer (Passive Heal Power +12%)"
+      ],
+      "signature_dye_combos": [
+        "+4 WIT / -4 MEN (Sorcerer / Spellsinger)",
+        "+4 INT / -4 MEN (High M.Atk Siege Nuker)",
+        "+4 CON / -4 STR (Cardinal Anti-Stun Setup)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-11-escapement-anvil",
+      "town_zone_id": "zone-town-escapement-anvil",
+      "town_name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Tatabos",
+      "symbol_maker_npc": "Symbol Makerirk",
+      "anvil_loc": "82852:53396",
+      "life_stone_tier": "High_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-caldera-rim",
+      "gemstone_cost": "25 Gemstone A",
+      "signature_augment_skills": [
+        "Item Skill: Spell Refresh (Active Magic Reuse)",
+        "Item Skill: Clarity (Passive All Skills -15% MP)",
+        "Item Skill: Reflect Damage (Passive 18% Return)"
+      ],
+      "signature_dye_combos": [
+        "+4 STR / -4 DEX (Warlord AoE Polearm)",
+        "+4 CON / -4 STR (Hell Knight Reflect Tank)",
+        "+4 WIT / -4 MEN (Overlord Alliance Debuff)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-12-inductor-switchyard",
+      "town_zone_id": "zone-town-inductor-switchyard",
+      "town_name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Ferris",
+      "symbol_maker_npc": "Symbol Maker Olsun",
+      "anvil_loc": "147144:-54998",
+      "life_stone_tier": "High_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-leyden-causeway",
+      "gemstone_cost": "25 Gemstone A",
+      "signature_augment_skills": [
+        "Item Skill: Celestial Shield (Active Invincibility)",
+        "Item Skill: Refresh (Active All Reuse -15%)",
+        "Item Skill: Heal Empower (Passive +Heal)"
+      ],
+      "signature_dye_combos": [
+        "+4 WIT / -4 MEN (Archmage / Mystic Muse)",
+        "+4 DEX / -4 CON (Sagittarius Crit Bow)",
+        "+4 CON / -4 STR (Siege Vanguard Shield)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-13-torque-balance-citadel",
+      "town_zone_id": "zone-town-torque-balance-citadel",
+      "town_name": "Town of Torque-Balance Citadel (Human Ancestral Expedition Hub)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Hilda",
+      "symbol_maker_npc": "Symbol MakerBaylor",
+      "anvil_loc": "116136:-18192",
+      "life_stone_tier": "Top_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-spiral-wormway-ramp",
+      "gemstone_cost": "25 Gemstone S",
+      "signature_augment_skills": [
+        "Item Skill: Duel Might (Passive Lv.10 +PvP P.Atk)",
+        "Item Skill: Doom (Chance Silence All Skills)",
+        "Item Skill: Music Refresh (Active Song/Dance)"
+      ],
+      "signature_dye_combos": [
+        "+5 STR / -5 CON (Grand Khavatari / Titan)",
+        "+4 CON / -4 DEX (Maestro Siege Golem)",
+        "+4 DEX / -4 STR (Sword Muse / Spectral Dancer)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-14-starfall-haven",
+      "town_zone_id": "zone-town-starfall-haven",
+      "town_name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Vincenz",
+      "symbol_maker_npc": "Symbol Maker Shakul",
+      "anvil_loc": "43528:-47686",
+      "life_stone_tier": "Top_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-kelp-spiral-reef",
+      "gemstone_cost": "25 Gemstone S",
+      "signature_augment_skills": [
+        "Item Skill: Wild Magic (Passive Lv.10 +M.Crit)",
+        "Item Skill:Spell Clarity (Active -20% MP Cost)",
+        "Item Skill: Battle Roar (Active +Max HP/Heal)"
+      ],
+      "signature_dye_combos": [
+        "+4 WIT / +4 INT / -8 MEN (Storm Screamer Glass Cannon)",
+        "+4 CON / +4 DEX / -8 STR (Eva's Templar Olympiad)",
+        "+4 STR / +4 DEX / -8 CON (Ghost Hunter Lethal)"
+      ]
+    },
+    {
+      "hub_id": "augment-hub-15-crown-beacon",
+      "town_zone_id": "zone-town-crown-beacon",
+      "town_name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+      "blacksmith_refiner_npc": "Blacksmith Refiner Mammon-Envoy",
+      "symbol_maker_npc": "Symbol Maker Grand-Scribe",
+      "anvil_loc": "147620:27020",
+      "life_stone_tier": "Top_Grade_Life_Stone",
+      "life_stone_drop_zone_id": "zone-field-aurora-tether",
+      "gemstone_cost": "25 Gemstone S",
+      "signature_augment_skills": [
+        "Item Skill: Celestial Shield (Active Sovereign Aegis)",
+        "Item Skill: Refresh (Active Lv.10 All Skill Reuse)",
+        "Item Skill: Wild Magic (Passive Lv.10 Apex Crit)"
+      ],
+      "signature_dye_combos": [
+        "+4 WIT / +4 CON / -8 MEN (Olympiad Hero Archmage)",
+        "+4 STR / +4 DEX / -8 CON (S-Grade Draconic/Basalt DPS)",
+        "+4 CON / +4 MEN / -8 INT (Sovereign Siege Tank)"
+      ]
+    }
+  ],
+  "companion_mount_sanctuaries": [
+    {
+      "companion_node_id": "companion-kennel-01-lantern-lundy",
+      "node_name": "Lantern Hollow Kennel \u2014 Pet Manager Lundy's Wolf Sanctuary",
+      "mount_category": "Pet_Manager_Kennel",
+      "zone_id": "zone-town-lantern-hollow",
+      "loc": "-83880:243720",
+      "steward_npc_name": "Pet Manager Lundy",
+      "companion_species": "Wolf \u2794 Great Wolf \u2794 Fenrir (Riding Wolf Mount)",
+      "evolution_level_req": 15,
+      "quest_or_tribute_req": "Quest: Get a Pet (Lv.15 Animal Slayer Trial & Fang Collar)",
+      "tactical_benefit": "Evolves at Lv.55 into Great Wolf and Lv.70 into rideable Fenrir with +30% Bite P.Atk buff."
+    },
+    {
+      "companion_node_id": "companion-kennel-02-kilnwatch-cooper",
+      "node_name": "Kilnwatch Bastion Kennel \u2014 Pet Manager Cooper's Buffalo Paddock",
+      "mount_category": "Pet_Manager_Kennel",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "loc": "-14180:123980",
+      "steward_npc_name": "Pet Manager Cooper",
+      "companion_species": "Baby Buffalo \u2794 Improved Baby Buffalo (Melee Fighter Companion)",
+      "evolution_level_req": 24,
+      "quest_or_tribute_req": "Quest: Help the Uncle! (Lv.24 Waterside Pet Exchange Ticket: Buffalo)",
+      "tactical_benefit": "Auto-casts Fighter's Will, Blessed Body, Vampiric Rage & Battle Heal for melee grinders."
+    },
+    {
+      "companion_node_id": "companion-kennel-03-escapement-martin",
+      "node_name": "Escapement Anvil Kennel \u2014 Pet Manager Martin's Kookaburra Aviary",
+      "mount_category": "Pet_Manager_Kennel",
+      "zone_id": "zone-town-escapement-anvil",
+      "loc": "83120:53180",
+      "steward_npc_name": "Pet Manager Martin",
+      "companion_species": "Baby Kookaburra \u2794 Improved Baby Kookaburra (Mystic MP Charger)",
+      "evolution_level_req": 25,
+      "quest_or_tribute_req": "Quest: Help the Son! (Lv.25 Maille Lizardman Pet Exchange Ticket: Kookaburra)",
+      "tactical_benefit": "Provides active MP Recharge, Acumen, Empower & Blessed Soul for nonstop mage hunting."
+    },
+    {
+      "companion_node_id": "companion-kennel-04-inductor-waters",
+      "node_name": "Inductor Switchyard Kennel \u2014 Pet Manager Waters' Cougar Menagerie",
+      "mount_category": "Pet_Manager_Kennel",
+      "zone_id": "zone-town-inductor-switchyard",
+      "loc": "147420:-55180",
+      "steward_npc_name": "Pet Manager Waters",
+      "companion_species": "Baby Cougar \u2794 Improved Baby Cougar (Hybrid Crit/Mage Companion)",
+      "evolution_level_req": 26,
+      "quest_or_tribute_req": "Quest: Help the Sister! (Lv.26 Trimmed Minotaur Pet Exchange Ticket: Cougar)",
+      "tactical_benefit": "Hybrid companion casting Might, Shield, Focus, Death Whisper & emergency Greater Battle Heal."
+    },
+    {
+      "companion_node_id": "companion-strider-01-whispering-cronos",
+      "node_name": "Whispering Teapot Mire \u2014 Elder Cronos & Fairy Mymyu Hatchling Glade",
+      "mount_category": "Hatchling_Strider_Sanctum",
+      "zone_id": "zone-field-whispering-mire",
+      "loc": "-67920:228880",
+      "steward_npc_name": "Elder Cronos & Fairy Mymyu",
+      "companion_species": "Hatchling of Wind / Star / Twilight (Dragon Flute Summon)",
+      "evolution_level_req": 35,
+      "quest_or_tribute_req": "Quest: Little Wing (Lv.35 Craft Regular or Deluxe Fairy Stone for Mymyu)",
+      "tactical_benefit": "Unlocks Dragon Flute of Wind (Melee), Star (Siege/Support), or Twilight (High-Speed Mount)."
+    },
+    {
+      "companion_node_id": "companion-strider-02-chime-pipe-mymyu",
+      "node_name": "Chime-Pipe Colonnade \u2014 Tree of Wind & Fairy Mymyu Strider Grove",
+      "mount_category": "Hatchling_Strider_Sanctum",
+      "zone_id": "zone-field-chime-pipe-colonnade",
+      "loc": "19280:24480",
+      "steward_npc_name": "Fairy Mymyu & Ancient Tree of Wind",
+      "companion_species": "Strider of Wind (Fast Overland Cavalry Mount)",
+      "evolution_level_req": 55,
+      "quest_or_tribute_req": "Quest: Little Wing's Big Adventure (Lv.55 Hatchling Attack on 4 Fairy Trees)",
+      "tactical_benefit": "Transforms Dragon Flute into Bugle of Wind: rideable cavalry mount with Wild Stun & Dash."
+    },
+    {
+      "companion_node_id": "companion-strider-03-caldera-star-tree",
+      "node_name": "Mainspring Caldera Rim \u2014 Tree of Star & Guardian Strider Sanctum",
+      "mount_category": "Hatchling_Strider_Sanctum",
+      "zone_id": "zone-field-caldera-rim",
+      "loc": "86840:61520",
+      "steward_npc_name": "Guardian of the Star & Tree of Abyss",
+      "companion_species": "Strider of Star (Siege Gate-Breaker & Heavy Pack Mount)",
+      "evolution_level_req": 55,
+      "quest_or_tribute_req": "Quest: Little Wing's Big Adventure (Lv.55 Apply Fairy Leaf to Star/Abyss Tree)",
+      "tactical_benefit": "Transforms Hatchling of Star into Bugle of Star with Siege Punch and high cargo capacity."
+    },
+    {
+      "companion_node_id": "companion-strider-04-aurora-twilight-fenrir",
+      "node_name": "Aurora Tether Span \u2014 Astral Twilight Strider & Snow Fenrir Sanctum",
+      "mount_category": "Hatchling_Strider_Sanctum",
+      "zone_id": "zone-field-aurora-tether",
+      "loc": "152880:31680",
+      "steward_npc_name": "Astral Beast-Tamer Rood",
+      "companion_species": "Strider of Twilight & Great Snow Fenrir (Apex Ground Mounts)",
+      "evolution_level_req": 70,
+      "quest_or_tribute_req": "Lv.70 Great Wolf / Strider Awakening + Clan Hall Beast Insignia",
+      "tactical_benefit": "Maximum overland mount speed (+195 Spd) with zero casting penalty on dismount."
+    },
+    {
+      "companion_node_id": "companion-wyvern-01-kilnwatch-accord-roost",
+      "node_name": "Kilnwatch Accord Keep \u2014 Continent 01 Sovereign Wyvern Aerial Roost",
+      "mount_category": "Castle_Wyvern_Roost",
+      "zone_id": "zone-clanhall-kilnwatch-accord",
+      "loc": "-18120:118420",
+      "steward_npc_name": "Wyvern Manager Schna",
+      "companion_species": "Lord's Sovereign Wyvern (Continent 01 Aerial Keep)",
+      "evolution_level_req": 55,
+      "quest_or_tribute_req": "Clan Lord Sovereign Status + Mounted Strider Lv.55+ + 25 Crystals: B-Grade",
+      "tactical_benefit": "Full 3D aerial flight across Continent 01, bypassing castle walls and river chokepoints with Wyvern Breath."
+    },
+    {
+      "companion_node_id": "companion-wyvern-02-dragonspine-cog-roost",
+      "node_name": "Dragonspine Cog Fortress \u2014 Continent 02 Ridge Wyvern Spire",
+      "mount_category": "Castle_Wyvern_Roost",
+      "zone_id": "zone-fortress-dragonspine-cog",
+      "loc": "94280:142640",
+      "steward_npc_name": "Wyvern Manager Trond",
+      "companion_species": "Lord's Sovereign Wyvern (Continent 02 Fortress Roost)",
+      "evolution_level_req": 55,
+      "quest_or_tribute_req": "Fortress/Castle Lord Crest + Mounted Strider Lv.55+ + 25 Crystals: B-Grade",
+      "tactical_benefit": "High-altitude aerial reconnaissance and siege bombardment over Brass-Spur Ridge and Oren/Giran."
+    },
+    {
+      "companion_node_id": "companion-wyvern-03-inductor-conclave-roost",
+      "node_name": "Inductor Conclave Citadel \u2014 Capital Sovereign Wyvern Sky-Tower",
+      "mount_category": "Castle_Wyvern_Roost",
+      "zone_id": "zone-clanhall-inductor-conclave",
+      "loc": "144620:-58180",
+      "steward_npc_name": "Wyvern Manager Titus",
+      "companion_species": "Lord's Sovereign Wyvern (Capital Citadel Sky-Roost)",
+      "evolution_level_req": 70,
+      "quest_or_tribute_req": "Capital Citadel Sovereign + Mounted Strider Lv.55+ + Wyvern Food Tribute",
+      "tactical_benefit": "Grants aerial entry to the Tower of Insolence apex balcony and Aden Capital siege command."
+    },
+    {
+      "companion_node_id": "companion-wyvern-04-cloud-halo-roost",
+      "node_name": "Cloud-Mountain Halo Fortress \u2014 Continent 03 Astral Wyvern Aerie",
+      "mount_category": "Castle_Wyvern_Roost",
+      "zone_id": "zone-fortress-cloud-halo",
+      "loc": "158420:36280",
+      "steward_npc_name": "High Wyvern Marshal Zephyr",
+      "companion_species": "Lord's Sovereign Wyvern (Continent 03 High-Halo Roost)",
+      "evolution_level_req": 75,
+      "quest_or_tribute_req": "High-Halo Sovereign + Mounted Strider Lv.55+ + 25 Crystals: B-Grade",
+      "tactical_benefit": "Sovereign aerial dominance over Continent 03 sky-spans with AoE Wyvern Flame Breath."
+    }
   ]
 }

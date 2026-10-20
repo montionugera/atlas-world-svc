@@ -119,6 +119,18 @@
       "maxItems": 16,
       "items": { "$ref": "#/$defs/dimensionalRiftSepulcherSpec" }
     },
+    "weapon_augmentation_dye_hubs": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/weaponAugmentationDyeHubSpec" }
+    },
+    "companion_mount_sanctuaries": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": { "$ref": "#/$defs/companionMountSanctuarySpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2119,6 +2131,87 @@
         "party_requirement": { "type": "string" },
         "cycle_window": { "type": "string" },
         "signature_reward": { "type": "string" }
+      }
+    },
+    "weaponAugmentationDyeHubSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hub_id",
+        "town_zone_id",
+        "town_name",
+        "blacksmith_refiner_npc",
+        "symbol_maker_npc",
+        "anvil_loc",
+        "life_stone_tier",
+        "life_stone_drop_zone_id",
+        "gemstone_cost",
+        "signature_augment_skills",
+        "signature_dye_combos"
+      ],
+      "properties": {
+        "hub_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "blacksmith_refiner_npc": { "type": "string" },
+        "symbol_maker_npc": { "type": "string" },
+        "anvil_loc": { "type": "string" },
+        "life_stone_tier": {
+          "type": "string",
+          "enum": [
+            "Standard_Life_Stone",
+            "Mid_Grade_Life_Stone",
+            "High_Grade_Life_Stone",
+            "Top_Grade_Life_Stone"
+          ]
+        },
+        "life_stone_drop_zone_id": { "type": "string" },
+        "gemstone_cost": { "type": "string" },
+        "signature_augment_skills": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "signature_dye_combos": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "companionMountSanctuarySpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "companion_node_id",
+        "node_name",
+        "mount_category",
+        "zone_id",
+        "loc",
+        "steward_npc_name",
+        "companion_species",
+        "evolution_level_req",
+        "quest_or_tribute_req",
+        "tactical_benefit"
+      ],
+      "properties": {
+        "companion_node_id": { "type": "string" },
+        "node_name": { "type": "string" },
+        "mount_category": {
+          "type": "string",
+          "enum": [
+            "Pet_Manager_Kennel",
+            "Hatchling_Strider_Sanctum",
+            "Castle_Wyvern_Roost"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "steward_npc_name": { "type": "string" },
+        "companion_species": { "type": "string" },
+        "evolution_level_req": { "type": "integer", "minimum": 1, "maximum": 99 },
+        "quest_or_tribute_req": { "type": "string" },
+        "tactical_benefit": { "type": "string" }
       }
     }
   }
