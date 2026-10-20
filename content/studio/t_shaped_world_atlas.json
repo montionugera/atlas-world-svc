@@ -58938,5 +58938,553 @@
       "stamp_and_purity_cost": "Dualsword Craft Stamp + 1,355 Stones of Purity + 678 Crystal: S-Grade + 10,935,000 Adena",
       "plus_four_enchant_passive": "+4 Periel / Eternal Core Dual Sword Grants +109 Crit Rate, +10% Max HP & +10% PvP Skill Power"
     }
+  ],
+  "tech_art_asset_pipeline_gates": [
+    {
+      "gate_id": "techart-01-glb-lantern-hollow-town-kit",
+      "gate_name": "Lantern Hollow Village \u2014 3-Tier GLB Town Architecture & 12-Service Kit Gate",
+      "pipeline_stage_category": "Three_Tier_GLB_Asset_Gate",
+      "zone_id": "zone-town-lantern-hollow",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-83977:243370",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC) & Asset Forge Director",
+      "asset_resolve_tier_status": "Tier 3 Final CC0/Studio GLB Resolved (LOD0..LOD3 + 256px WebP Thumb \u00b7 SHA-256 Verified)",
+      "polygon_and_bone_budget": "<= 7,800 Tris per Modular Building / 1024px ORM PBR Atlas / 13.0m Main Plaza Road",
+      "automated_ci_validators": [
+        "Three-Tier Asset Resolve Check (Tier 1 CSG -> Tier 2 Blockout -> Tier 3 GLB)",
+        "manifest.json SHA-256 & CC0 Attribution Gate",
+        "Godot 4.x Headless Scene Import Smoke Gate"
+      ]
+    },
+    {
+      "gate_id": "techart-02-glb-porcelain-loom-elven-sanctuary",
+      "gate_name": "Porcelain Loom Sanctuary \u2014 3-Tier GLB Radial Moat & Bridge Kit Gate",
+      "pipeline_stage_category": "Three_Tier_GLB_Asset_Gate",
+      "zone_id": "zone-town-porcelain-loom",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "45931:41080",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC)",
+      "asset_resolve_tier_status": "Tier 3 Final CC0/Studio GLB Resolved (LOD0..LOD3 + 256px WebP Thumb \u00b7 SHA-256 Verified)",
+      "polygon_and_bone_budget": "<= 8,200 Tris per Sanctuary Spire / Translucent Water Shader / <= 0.16m Stair Risers",
+      "automated_ci_validators": [
+        "Three-Tier Asset Resolve Check",
+        "ORM + Emission Shader Parameter Linter",
+        "90\u2013120cm Character Scale Law Clearance Gate"
+      ]
+    },
+    {
+      "gate_id": "techart-03-glb-inductor-switchyard-giran-market",
+      "gate_name": "Inductor Switchyard (Giran Hub) \u2014 3-Tier GLB High-Density Market Stall & Forge Kit Gate",
+      "pipeline_stage_category": "Three_Tier_GLB_Asset_Gate",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147519:-55310",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC) & Lead Tools & Pipeline Architect",
+      "asset_resolve_tier_status": "Tier 3 Final CC0/Studio GLB Resolved (180+ Props Instanced via MultiMeshInstance3D)",
+      "polygon_and_bone_budget": "<= 6,500 Tris per Stall Cluster / GPU Instanced Market Props / <= 2 Draw Calls per Block",
+      "automated_ci_validators": [
+        "Three-Tier Asset Resolve Check",
+        "MultiMeshInstance3D Batching & Draw-Call Budget Gate",
+        "256px WebP Catalog Thumbnail Sync Gate"
+      ]
+    },
+    {
+      "gate_id": "techart-04-glb-torque-balance-aden-citadel",
+      "gate_name": "Torque-Balance Citadel (Aden Capital) \u2014 3-Tier GLB Sovereign Castle & Cathedral Kit Gate",
+      "pipeline_stage_category": "Three_Tier_GLB_Asset_Gate",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "116507:-18500",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC)",
+      "asset_resolve_tier_status": "Tier 3 Final CC0/Studio GLB Resolved (LOD0..LOD3 + Destruction State Swap Meshes)",
+      "polygon_and_bone_budget": "<= 11,500 Tris per Gatehouse / Intact + Breached Wall State GLB Pair / ORM PBR Atlas",
+      "automated_ci_validators": [
+        "Three-Tier Asset Resolve Check",
+        "Siege Destructible Mesh Swap State Validator",
+        "CollisionShape3D Convex Hull Count Gate (<= 16 Hulls)"
+      ]
+    },
+    {
+      "gate_id": "techart-05-glb-glaze-barge-airship-wharf",
+      "gate_name": "Glaze-Barge Airship Dock \u2014 3-Tier GLB Brass Airship Hull & Mooring Gantry Gate",
+      "pipeline_stage_category": "Three_Tier_GLB_Asset_Gate",
+      "zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-89305:155110",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC)",
+      "asset_resolve_tier_status": "Tier 3 Final CC0/Studio GLB Resolved (Animated Rotor Rig + Boarding Ramp Collision)",
+      "polygon_and_bone_budget": "<= 12,000 Tris per Airship Vessel / <= 32 Mechanical Bones / Dual-Sided Brass PBR Shader",
+      "automated_ci_validators": [
+        "Three-Tier Asset Resolve Check",
+        "Skeletal Animation & Root-Motion Export Validator",
+        "Godot Tool-Scene Storybook Visual Diff Gate"
+      ]
+    },
+    {
+      "gate_id": "techart-06-glb-starfall-haven-rune-tiered-port",
+      "gate_name": "Starfall Haven (Rune Vertical Port) \u2014 3-Tier GLB Elevator Viaduct & Cliff Citadel Gate",
+      "pipeline_stage_category": "Three_Tier_GLB_Asset_Gate",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "43883:-47980",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC) & Content & World Tools Engineer",
+      "asset_resolve_tier_status": "Tier 3 Final CC0/Studio GLB Resolved (Vertical Upper/Lower Harbor LOD Chain)",
+      "polygon_and_bone_budget": "<= 9,400 Tris per Viaduct Span / <= 0.25m Terrace Step Law / Zero Z-Fighting UV2 Lightmap",
+      "automated_ci_validators": [
+        "Three-Tier Asset Resolve Check",
+        "UV2 Lightmap Texel Density & Seam Validator",
+        "Vertical Camera Occlusion Fade Shader Gate"
+      ]
+    },
+    {
+      "gate_id": "techart-07-validator-clover-south-gate-foliage-scale",
+      "gate_name": "Clover South Gate \u2014 90\u2013120cm Character Scale Law & Foliage Height Validator",
+      "pipeline_stage_category": "Polygon_Bone_Shader_Validator",
+      "zone_id": "zone-field-clover-south-gate",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "73057:113260",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC) & Asset Forge Director",
+      "asset_resolve_tier_status": "100% Scale-Law Compliant (1.05m Cute Kid Reference Avatar Head 100% Visible Above Grass/Bushes)",
+      "polygon_and_bone_budget": "Grass <= 0.35m / Bush <= 0.65m / Mob Rig <= 4,200 Tris & <= 48 Bones / Wind Vertex Shader",
+      "automated_ci_validators": [
+        "90\u2013120cm Character Scale Law Automated Bounding-Box Gate",
+        "Skeletal Rig <= 64 Bone & <= 4 Weights/Vertex Validator",
+        "Foliage Alpha-Scissor Overdraw Budget Gate"
+      ]
+    },
+    {
+      "gate_id": "techart-08-validator-cinder-apron-champion-aura-shader",
+      "gate_name": "Cinder-Apron Outlands \u2014 Champion Aura (Blue 10\u00d7 / Red 50\u00d7) Rim-Shader & Mob Rig Validator",
+      "pipeline_stage_category": "Polygon_Bone_Shader_Validator",
+      "zone_id": "zone-field-cinder-apron",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-6341:131740",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC)",
+      "asset_resolve_tier_status": "100% Shader & Rig Compliant (Fresnel Aura Rim + GPU Particle Budget Verified at 60 FPS)",
+      "polygon_and_bone_budget": "Mob Mesh <= 4,800 Tris / <= 52 Bones / Single-Pass Fresnel Rim + Soulshot Flash Shader",
+      "automated_ci_validators": [
+        "GLB Mesh/Rig Budget Gate (<= 5,000 Tris / <= 64 Bones)",
+        "Godot Shader Compilation & Uniform Type Linter",
+        "GPU Particle Overdraw & 60 FPS Frame-Time Gate"
+      ]
+    },
+    {
+      "gate_id": "techart-09-validator-kiln-cellar-b3-queen-ant-boss-rig",
+      "gate_name": "Kiln Cellar B3 \u2014 Queen Ant MVP Boss Rig, Hitbox & Acid-Shader Validator",
+      "pipeline_stage_category": "Polygon_Bone_Shader_Validator",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B3",
+      "loc": "75457:116770",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC)",
+      "asset_resolve_tier_status": "100% Boss Rig & Hitbox Verified (LOD0..LOD3 + Server-Synced Capsule Radius)",
+      "polygon_and_bone_budget": "MVP Boss <= 12,400 Tris / <= 64 Bones / 2048px Chitin ORM + Subsurface Scattering Shader",
+      "automated_ci_validators": [
+        "Boss GLB Polygon & 64-Bone Skinning Validator",
+        "Client Hitbox <-> server-rs Collision Radius Parity Gate",
+        "Dungeon Corridor >= 6.0m Camera Clearance Check"
+      ]
+    },
+    {
+      "gate_id": "techart-10-validator-chronometer-foundry-3f-baium-wing-shader",
+      "gate_name": "Chronometer Foundry 3F \u2014 Archangel & Sovereign Boss Wing Cloth/Shader Validator",
+      "pipeline_stage_category": "Polygon_Bone_Shader_Validator",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84835:56360",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC)",
+      "asset_resolve_tier_status": "100% Apex Boss Shader & Dualsword Socket Attachment Verified (R_Hand / L_Hand / Cloak_Back)",
+      "polygon_and_bone_budget": "Apex Boss <= 12,500 Tris / <= 64 Bones / +4..+15 Enchant Weapon Glow & Sovereign Cloak Bones",
+      "automated_ci_validators": [
+        "BoneAttachment3D Socket Naming Gate (R_Hand, L_Hand, Cloak_Back, Head_Crown)",
+        "+1..+15 Weapon Enchant Emission Gradient Validator",
+        "ORM PBR Metallic/Roughness Channel Packing Check"
+      ]
+    },
+    {
+      "gate_id": "techart-11-validator-aurora-tether-s84-armor-masterwork",
+      "gate_name": "Aurora Tether Span \u2014 S80/S84 Dynasty, Icarus & Vesper 6-Race Armor Rig Validator",
+      "pipeline_stage_category": "Polygon_Bone_Shader_Validator",
+      "zone_id": "zone-field-aurora-tether",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "152423:31170",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC) & Lead Tools & Pipeline Architect",
+      "asset_resolve_tier_status": "100% 6-Race Proportions Verified (Human, Lunar, Orc, Dwarf, Dark-Lunar, Furral/Kamael One-Wing)",
+      "polygon_and_bone_budget": "Player Armor Set <= 6,800 Tris / <= 60 Shared Humanoid Bones / Zero Clipping Across 6 Races",
+      "automated_ci_validators": [
+        "6-Race Skeletal Retargeting & Bind-Pose Parity Gate",
+        "Heavy/Light/Robe Modular Seam Welder Check",
+        "Godot Tool-Scene Storybook 360-Turntable Render Gate"
+      ]
+    },
+    {
+      "gate_id": "techart-12-baker-kilnwatch-bastion-town-navmesh-chunk",
+      "gate_name": "Kilnwatch Bastion (Dion Hub) \u2014 Godot 4 NavigationRegion3D & OccluderInstance3D Chunk Baker",
+      "pipeline_stage_category": "Godot_World_Chunk_Streaming_Baker",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-14189:123480",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC) & Lead Tools & Pipeline Architect",
+      "asset_resolve_tier_status": "Baked & Stream-Ready (256m\u00d7256m World Chunk \u00b7 Async ResourceLoader Background Thread)",
+      "polygon_and_bone_budget": "NavMesh Agent Radius 0.45m / Max Slope 38\u00b0 / Step Height <= 0.25m / < 1.8ms Chunk Hitch",
+      "automated_ci_validators": [
+        "NavigationRegion3D Bake & Connected Island Validator",
+        "OccluderInstance3D Portal & Frustum Culling Gate",
+        "Async Chunk Streaming Zero-Stutter (< 2.0ms) Benchmark"
+      ]
+    },
+    {
+      "gate_id": "techart-13-baker-pendulum-shaft-3f-vertical-tower-cutaway",
+      "gate_name": "Pendulum Shaft 3F (Cruma Tower) \u2014 Multi-Floor Vertical Cutaway & Inter-Floor Portal Baker",
+      "pipeline_stage_category": "Godot_World_Chunk_Streaming_Baker",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "3F",
+      "loc": "85399:144190",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC) & Content & World Tools Engineer",
+      "asset_resolve_tier_status": "Baked & Stream-Ready (1F \u21c4 2F \u21c4 3F Vertical Slab Cutaway + Roof Dither Fade)",
+      "polygon_and_bone_budget": "<= 9,500 Tris per Floor Chunk / Ceiling Auto-Cutaway Shader / >= 6.0m Corridor NavMesh",
+      "automated_ci_validators": [
+        "Multi-Floor (1F..3F) Vertical Cutaway Bounds Gate",
+        "Inter-Floor Warp Portal Trigger Volume Check",
+        "Headless Godot Dungeon Scene Load & Quit Smoke Gate"
+      ]
+    },
+    {
+      "gate_id": "techart-14-baker-witch-pendulum-b3-catacomb-lightmap-chunk",
+      "gate_name": "Catacomb of the Astral Witch B3 \u2014 Subterranean Seal Torch Lightmap & Fog Volume Baker",
+      "pipeline_stage_category": "Godot_World_Chunk_Streaming_Baker",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "54187:-34800",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC)",
+      "asset_resolve_tier_status": "Baked & Stream-Ready (B1 \u21c4 B2 \u21c4 B3 Dawn/Dusk Cabal Dynamic Lightmap Swap)",
+      "polygon_and_bone_budget": "LightmapGI 16 Texels/Meter / Volumetric Fog <= 0.4ms GPU / 8.5m Crypt Gallery Clearance",
+      "automated_ci_validators": [
+        "LightmapGI Bake Integrity & Zero Black-Texel Gate",
+        "Dawn/Dusk Seven-Signs Environment Palette Swap Check",
+        "Subterranean B1..B3 Occlusion Culling Verification"
+      ]
+    },
+    {
+      "gate_id": "techart-15-baker-star-heart-nave-3f-spire-lod-streaming",
+      "gate_name": "Star-Heart Nave 3F (Tower of Insolence) \u2014 13-Tier Spire HLOD & Skybox Horizon Baker",
+      "pipeline_stage_category": "Godot_World_Chunk_Streaming_Baker",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149175:28410",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC)",
+      "asset_resolve_tier_status": "Baked & Stream-Ready (Hierarchical LOD0..LOD3 + Distant Spire Impostor Proxy)",
+      "polygon_and_bone_budget": "HLOD Proxy <= 1,200 Tris at > 180m / Seamless Floor Transition Preload Ring",
+      "automated_ci_validators": [
+        "HLOD Distance Transition Screen-Size Error Gate",
+        "Vertical Spire Elevator & Warp Anchor Validator",
+        "VRAM Texture Streaming Budget Gate (<= 512 MB Zone Peak)"
+      ]
+    },
+    {
+      "gate_id": "techart-16-baker-orrery-bridge-overland-seam-stitcher",
+      "gate_name": "The Orrery Bridge \u2014 Overland Continent Seam Stitcher & Highway Spline Terrain Baker",
+      "pipeline_stage_category": "Godot_World_Chunk_Streaming_Baker",
+      "zone_id": "zone-field-orrery-bridge",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-28437:-108180",
+      "owner_role_npc": "Technical Artist (Pipeline & DCC) & Lead Tools & Pipeline Architect",
+      "asset_resolve_tier_status": "Baked & Stream-Ready (Zero-Crack Terrain Skirt Stitching + >= 12.0m Highway Spline Carve)",
+      "polygon_and_bone_budget": "Terrain Chunk 256m Grid / >= 12.0m Main Road Width / 4-Layer Triplanar Ground Splatmap",
+      "automated_ci_validators": [
+        "Adjacent Terrain Chunk Edge Vertex Normal Welder Gate",
+        "Highway Spline >= 12.0m & Footpath >= 4.0m Scale Law Check",
+        "ground_palettes.json Biome Splatmap Parity Validator"
+      ]
+    }
+  ],
+  "backend_bot_swarm_simulation_sectors": [
+    {
+      "sector_id": "botsim-01-swarm-inductor-switchyard-giran-market-2000bots",
+      "sector_name": "Inductor Switchyard (Giran Hub) \u2014 2,000-Bot Private Store, Auction & Trade Swarm Sector",
+      "simulation_category": "Headless_10k_Bot_Swarm_Sector",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147269:-55343",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "bot_concurrency_and_tick_budget": "2,000 Concurrent Market & Trade Bots \u00b7 0.503ms / 1.0ms Bevy ECS Tick @ 20Hz FlatBuffers",
+      "spatial_partition_and_aoi_rule": "Town Plaza High-Density AOI Cell (250B Typical Delta Frame / < 4.8 KB/s Wire per Client)",
+      "stress_test_assertions": [
+        "10,000-Bot Cluster Slice: 2,000 Giran Market & Private Manufacture Bots Pass",
+        "Atomic CAS Inventory & Adena Settlement Zero-Duplication Invariant",
+        "Tick Duration P99 <= 0.89ms Under Peak Chat/Store Broadcast Load"
+      ]
+    },
+    {
+      "sector_id": "botsim-02-swarm-torque-balance-aden-castle-siege-450v450",
+      "sector_name": "Torque-Balance Citadel (Aden Siege) \u2014 900-Bot (450v450) Command-Channel Castle Siege Swarm",
+      "simulation_category": "Headless_10k_Bot_Swarm_Sector",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "116283:-18531",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & Lead Tools & Pipeline Architect",
+      "bot_concurrency_and_tick_budget": "900 Siege Bots (100 Clans / 450v450) \u00b7 0.640ms / 1.0ms Bevy ECS Tick @ 20Hz FlatBuffers",
+      "spatial_partition_and_aoi_rule": "Siege Throne & Outer Gate Multi-Cell Partition (Priority Combat Delta Culling <= 5.0 KB/s)",
+      "stress_test_assertions": [
+        "450v450 AoE Skill, Siege Golem & Gate Destruction Stress Test Pass",
+        "Holy Artifact Seal 180s Channeling Interruption Determinism Verified",
+        "Zero Packet Drop or Tokio Channel Backpressure Spike"
+      ]
+    },
+    {
+      "sector_id": "botsim-03-swarm-lantern-hollow-starter-6race-onboarding",
+      "sector_name": "Lantern Hollow Village \u2014 1,500-Bot 6-Race Starter Onboarding & Gatekeeper Burst Sector",
+      "simulation_category": "Headless_10k_Bot_Swarm_Sector",
+      "zone_id": "zone-town-lantern-hollow",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-84223:243381",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "bot_concurrency_and_tick_budget": "1,500 Concurrent Onboarding Bots \u00b7 0.440ms / 1.0ms Bevy ECS Tick @ 20Hz FlatBuffers",
+      "spatial_partition_and_aoi_rule": "Starter Town + Gatekeeper Hub Cell (Zero Spawn-Overlap Ring Distribution)",
+      "stress_test_assertions": [
+        "1,500 Simultaneous Launch-Day Login & Novice Buff Grant Burst Pass",
+        "Quest State Machine & Soulshot Auto-Loop Throughput Verified",
+        "Zero Memory Leak Across 10,000 Connect/Disconnect Churn Cycles"
+      ]
+    },
+    {
+      "sector_id": "botsim-04-swarm-chronometer-foundry-3f-command-raid-swarm",
+      "sector_name": "Chronometer Foundry 3F \u2014 450-Bot Command-Channel Boss Raid & Soul Crystal Swarm Sector",
+      "simulation_category": "Headless_10k_Bot_Swarm_Sector",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84711:56293",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "bot_concurrency_and_tick_budget": "450 Concurrent Raid Bots (50\u00d7 9P Parties) \u00b7 0.520ms / 1.0ms Bevy ECS Tick @ 20Hz",
+      "spatial_partition_and_aoi_rule": "Isolated Boss Sanctum Instance Cell (Aggro Table & SA Resonance Broadcast < 4.2 KB/s)",
+      "stress_test_assertions": [
+        "450-Bot Simultaneous Boss Hate/Aggro Table Lock-Free Update Pass",
+        "Stage 11\u201313 Soul Crystal Resonance & Boss Loot Auction Atomic Split",
+        "Zero ECS Schedule Contention Under 9,000 Active Buff/Debuff Timers"
+      ]
+    },
+    {
+      "sector_id": "botsim-05-swarm-kelp-spiral-reef-aoe-herd-pull-swarm",
+      "sector_name": "Kelp Spiral Undertide Reef \u2014 1,600-Bot Polearm Herd-Leader AoE & Mass Sweeper Swarm",
+      "simulation_category": "Headless_10k_Bot_Swarm_Sector",
+      "zone_id": "zone-field-kelp-spiral-reef",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-52475:-138695",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & Content & World Tools Engineer",
+      "bot_concurrency_and_tick_budget": "1,600 Concurrent Farming Bots + 4,800 Herd Mobs \u00b7 0.580ms / 1.0ms Bevy ECS Tick @ 20Hz",
+      "spatial_partition_and_aoi_rule": "Overland Pack-Hunting SpatialGrid Cell (Linked Leader+5 Minion AI Batch Evaluation)",
+      "stress_test_assertions": [
+        "4,800 Social Herd Mob Aggro-Link & Teleport-to-Leader Stress Pass",
+        "Dwarven Festival Sweeper Multi-Corpse Loot Extraction Atomicity",
+        "Deterministic Respawn Wave & Vitality Drain Telemetry Parity"
+      ]
+    },
+    {
+      "sector_id": "botsim-06-swarm-starfall-haven-territory-ward-warfare",
+      "sector_name": "Starfall Haven (Rune Capital) \u2014 1,800-Bot 9-Ward Territory War & Fortress Caravan Swarm",
+      "simulation_category": "Headless_10k_Bot_Swarm_Sector",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "43739:-47983",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & LiveOps, Build & GM Tools Engineer",
+      "bot_concurrency_and_tick_budget": "1,800 Concurrent Territory War Bots \u00b7 0.610ms / 1.0ms Bevy ECS Tick @ 20Hz FlatBuffers",
+      "spatial_partition_and_aoi_rule": "Cross-Zone Territory Ward Carrier Radar + Castle Sanctum Boundary Handoff",
+      "stress_test_assertions": [
+        "9 Territory Ward Relic Pickup, Map-Wide Radar Ping & Capture Pass",
+        "Fame (+375/5m) Batch Accrual Across 1,800 Active Combatants",
+        "Hot-Config Siege Window Toggle Zero-Stall Verification"
+      ]
+    },
+    {
+      "sector_id": "botsim-07-spatial-kilnwatch-bastion-4way-highway-handoff",
+      "sector_name": "Kilnwatch Bastion (Dion Crossroads) \u2014 4-Highway SpatialGrid Boundary & Authority Handoff Cell",
+      "simulation_category": "Spatial_Grid_AOI_Partition_Cell",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-14247:123429",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & Lead Tools & Pipeline Architect",
+      "bot_concurrency_and_tick_budget": "1,100 Boundary-Crossing Entities/s \u00b7 0.390ms SpatialGrid Re-Index @ 20Hz",
+      "spatial_partition_and_aoi_rule": "Contiguous Vec SpatialGrid (64m\u00d764m Cells \u00b7 3\u00d73 9-Cell AOI Neighborhood \u00b7 Zero HashMap Alloc)",
+      "stress_test_assertions": [
+        "Zero Ghost-Entity or Duplicate-ID on Sub-Tick Cell Boundary Crossing",
+        "O(1) Contiguous Cell Lookup & Cache-Line Friendly Entity Iteration",
+        "250B Typical FlatBuffers Delta Frame (< 5.0 KB/s Downstream Wire Cap)"
+      ]
+    },
+    {
+      "sector_id": "botsim-08-spatial-pendulum-shaft-3f-vertical-z-slice-aoi",
+      "sector_name": "Pendulum Shaft 3F (Cruma Tower) \u2014 Multi-Floor Vertical Z-Slice AOI Isolation Cell",
+      "simulation_category": "Spatial_Grid_AOI_Partition_Cell",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "3F",
+      "loc": "85367:144141",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "bot_concurrency_and_tick_budget": "750 Tower Bots Across 1F/2F/3F \u00b7 0.410ms Z-Stratified SpatialGrid Tick @ 20Hz",
+      "spatial_partition_and_aoi_rule": "Floor-Scoped SpatialGrid Partition (1F/2F/3F Z-Layer Isolation \u00b7 Zero Cross-Floor Packet Leak)",
+      "stress_test_assertions": [
+        "Zero 1F/2F Unseen Floor Entity Leakage into 3F Client AOI Wire Stream",
+        "Instant Inter-Floor Warp Portal (1F <-> 2F <-> 3F) Cell Rebinding",
+        "Dungeon Corridor >= 6.0m Server Raycast Line-of-Sight Parity"
+      ]
+    },
+    {
+      "sector_id": "botsim-09-spatial-witch-pendulum-b3-catacomb-room-culling",
+      "sector_name": "Catacomb of the Astral Witch B3 \u2014 Subterranean Chamber Door & Corridor AOI Culling Cell",
+      "simulation_category": "Spatial_Grid_AOI_Partition_Cell",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "54181:-34847",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "bot_concurrency_and_tick_budget": "680 Catacomb Seal Farmers \u00b7 0.380ms SpatialGrid + Chamber Visibility Tick @ 20Hz",
+      "spatial_partition_and_aoi_rule": "Room-Graph + 64m SpatialGrid Hybrid Partition (210B Compact FlatBuffers Delta Frame)",
+      "stress_test_assertions": [
+        "Adjacent Crypt Room Combat Packet Suppression (-62% Wire Bandwidth)",
+        "50x Crimson Champion Spawn Broadcast Scoped Strictly to Active Floor",
+        "Seven Signs Seal Stone Drop Ownership Lock Expiration Accuracy"
+      ]
+    },
+    {
+      "sector_id": "botsim-10-spatial-glaze-barge-airship-moving-platform-aoi",
+      "sector_name": "Glaze-Barge Airship Dock \u2014 Moving Airship Reference-Frame & Harbor AOI Partition Cell",
+      "simulation_category": "Spatial_Grid_AOI_Partition_Cell",
+      "zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-89405:155165",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "bot_concurrency_and_tick_budget": "520 Harbor & Airship Deck Passengers \u00b7 0.450ms Relative-Transform Tick @ 20Hz",
+      "spatial_partition_and_aoi_rule": "Parent-Relative Airship Deck Coordinate Frame + World SpatialGrid Handoff on Docking",
+      "stress_test_assertions": [
+        "Zero Passenger Positional Jitter During Continental Airship Transit",
+        "Seamless World <-> Deck Coordinate Frame Transform on Boarding/Disembark",
+        "FlatBuffers Relative Velocity Quantization Error <= 0.01m"
+      ]
+    },
+    {
+      "sector_id": "botsim-11-spatial-leyden-causeway-world-boss-raid-ring",
+      "sector_name": "Leyden Capacitor Causeway \u2014 Overland World-Boss Dynamic AOI Throttling Cell",
+      "simulation_category": "Spatial_Grid_AOI_Partition_Cell",
+      "zone_id": "zone-field-leyden-causeway",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "141209:-48623",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "bot_concurrency_and_tick_budget": "850 Overland Raid Bots \u00b7 0.490ms Adaptive AOI Priority Tick @ 20Hz",
+      "spatial_partition_and_aoi_rule": "3-Ring Priority AOI (Inner 20Hz Full / Mid 10Hz Combat / Outer 5Hz Position-Only <= 5 KB/s)",
+      "stress_test_assertions": [
+        "Adaptive 20Hz/10Hz/5Hz Distance-Ring Frequency Scaling Under 850+ Raid Load",
+        "Guaranteed 20Hz Full-Fidelity Updates for Active Party, Target & Raid Boss",
+        "Downstream Client Bandwidth Capped at <= 4.9 KB/s During Peak AoE"
+      ]
+    },
+    {
+      "sector_id": "botsim-12-replay-kiln-cellar-b3-queen-ant-golden-trace",
+      "sector_name": "Kiln Cellar B3 \u2014 Queen Ant MVP Combat, Larva Heal & Drop RNG Golden-Trace Replay Probe",
+      "simulation_category": "Deterministic_Replay_Desync_Probe",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B3",
+      "loc": "75433:116809",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & QA Gatekeeper",
+      "bot_concurrency_and_tick_budget": "10,000-Tick Seeded Golden Trace \u00b7 epsilon <= 0.05 Positional & Exact HP/Drop Parity",
+      "spatial_partition_and_aoi_rule": "ChaCha8 Deterministic PRNG Stream per Dungeon Instance (Bit-Exact Replay Verification)",
+      "stress_test_assertions": [
+        "Golden Trace epsilon <= 0.05 Positional Parity Across 10,000 Replay Ticks",
+        "100% Bit-Exact Queen Ant Ring Drop & Spoil Table Reproduction from Seed",
+        "Client Prediction <-> Server Reconciliation Rollback Zero-Desync Pass"
+      ]
+    },
+    {
+      "sector_id": "botsim-13-replay-escapement-anvil-plus15-refinement-cas-probe",
+      "sector_name": "Escapement Anvil (Oren Forge) \u2014 +1..+15 Enchant, Dualsword Craft & Mammon CAS Replay Probe",
+      "simulation_category": "Deterministic_Replay_Desync_Probe",
+      "zone_id": "zone-town-escapement-anvil",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "83137:53201",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & LiveOps, Build & GM Tools Engineer",
+      "bot_concurrency_and_tick_budget": "50,000 Simulated Enchant & Dualsword Transactions \u00b7 0.00% State Divergence",
+      "spatial_partition_and_aoi_rule": "Optimistic Concurrency Control (OCC SHA-256 Revision) + Append-Only GM Audit Ledger",
+      "stress_test_assertions": [
+        "Zero Item Duplication or Lost Crystal Split Under Concurrent Packet Injection",
+        "Deterministic +1..+15 Failure Crystal Yield & Blessed Scroll Reset Replay",
+        "1-Click GM Inventory Rollback Point-in-Time Snapshot Verification"
+      ]
+    },
+    {
+      "sector_id": "botsim-14-replay-star-heart-nave-3f-olympiad-coliseum-combat-probe",
+      "sector_name": "Star-Heart Nave 3F \u2014 Olympiad & 9v9 Coliseum Skill-Cancel, Lethal & Debuff Replay Probe",
+      "simulation_category": "Deterministic_Replay_Desync_Probe",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149251:28413",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "bot_concurrency_and_tick_budget": "25,000 Simulated PvP Duel & 9v9 Match Ticks \u00b7 100% Frame-Exact Cooldown & Buff Parity",
+      "spatial_partition_and_aoi_rule": "Fixed-Point 50ms Tick Combat Resolver (Deterministic Cast-Interrupt & Status Resist Ordering)",
+      "stress_test_assertions": [
+        "Zero Order-Dependent Tie-Break Drift in Simultaneous Lethal/Cancel Casts",
+        "150/300 Elemental Attribute vs. Armor Resistance Formula Exactness",
+        "Full Match Replay File (< 180 KB Compressed) Playback in Web Studio Inspector"
+      ]
+    },
+    {
+      "sector_id": "botsim-15-replay-forbidden-path-b3-ekimus-tiat-seed-state-probe",
+      "sector_name": "Catacomb of the Forbidden Path B3 \u2014 Seed Stage 1\u20135 & Seven Signs Weekly Transition Probe",
+      "simulation_category": "Deterministic_Replay_Desync_Probe",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B3",
+      "loc": "18465:-64175",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & Lead Tools & Pipeline Architect",
+      "bot_concurrency_and_tick_budget": "30-Day Accelerated World Clock Replay (720h Simulated in 18s) \u00b7 Zero FSM Deadlock",
+      "spatial_partition_and_aoi_rule": "Deterministic World-Epoch State Machine (Dawn/Dusk Seal Flip + Ekimus/Tiat Cycle)",
+      "stress_test_assertions": [
+        "Zero State-Machine Deadlock Across 100 Simulated Weekly Seven-Signs Flips",
+        "Blacksmith/Merchant of Mammon Spawn Rotation 100% Seed-Reproducible",
+        "Crash-Recovery Snapshot Restore (< 350ms Cold Boot to Exact Tick)"
+      ]
+    },
+    {
+      "sector_id": "botsim-16-replay-caldera-rim-movement-obstruction-desync-probe",
+      "sector_name": "Mainspring Caldera Rim \u2014 Steep Terrace, Knockback & Bridge Navigation Desync Probe",
+      "simulation_category": "Deterministic_Replay_Desync_Probe",
+      "zone_id": "zone-field-caldera-rim",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "86479:61237",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & Technical Artist (Pipeline & DCC)",
+      "bot_concurrency_and_tick_budget": "5,000 Knockback, Rush-Impact & Elevation Transitions \u00b7 epsilon <= 0.02m NavMesh Parity",
+      "spatial_partition_and_aoi_rule": "Shared NavMesh Heightfield Triangle Query Between Godot Client & server-rs",
+      "stress_test_assertions": [
+        "Zero Fall-Through-Terrain or Cliff-Clip Desync on Rush/Knockback Skills",
+        "Client Godot NavigationRegion3D <-> server-rs Heightfield <= 0.02m Delta",
+        "Automated Stuck-Character Detection & Safe-Spot Recovery Trigger Verified"
+      ]
+    }
   ]
 }

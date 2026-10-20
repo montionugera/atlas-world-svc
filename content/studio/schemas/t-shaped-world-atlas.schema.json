@@ -335,6 +335,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/dualswordCraftUnsealForgeSpec" }
     },
+    "tech_art_asset_pipeline_gates": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/techArtAssetPipelineGateSpec" }
+    },
+    "backend_bot_swarm_simulation_sectors": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/backendBotSwarmSimulationSectorSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -3817,6 +3829,94 @@
         },
         "stamp_and_purity_cost": { "type": "string" },
         "plus_four_enchant_passive": { "type": "string" }
+      }
+    },
+    "techArtAssetPipelineGateSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_id",
+        "gate_name",
+        "pipeline_stage_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "owner_role_npc",
+        "asset_resolve_tier_status",
+        "polygon_and_bone_budget",
+        "automated_ci_validators"
+      ],
+      "properties": {
+        "gate_id": { "type": "string" },
+        "gate_name": { "type": "string" },
+        "pipeline_stage_category": {
+          "type": "string",
+          "enum": [
+            "Three_Tier_GLB_Asset_Gate",
+            "Polygon_Bone_Shader_Validator",
+            "Godot_World_Chunk_Streaming_Baker"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "owner_role_npc": { "type": "string" },
+        "asset_resolve_tier_status": { "type": "string" },
+        "polygon_and_bone_budget": { "type": "string" },
+        "automated_ci_validators": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "backendBotSwarmSimulationSectorSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sector_id",
+        "sector_name",
+        "simulation_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "owner_engineer_role",
+        "bot_concurrency_and_tick_budget",
+        "spatial_partition_and_aoi_rule",
+        "stress_test_assertions"
+      ],
+      "properties": {
+        "sector_id": { "type": "string" },
+        "sector_name": { "type": "string" },
+        "simulation_category": {
+          "type": "string",
+          "enum": [
+            "Headless_10k_Bot_Swarm_Sector",
+            "Spatial_Grid_AOI_Partition_Cell",
+            "Deterministic_Replay_Desync_Probe"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "owner_engineer_role": { "type": "string" },
+        "bot_concurrency_and_tick_budget": { "type": "string" },
+        "spatial_partition_and_aoi_rule": { "type": "string" },
+        "stress_test_assertions": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
       }
     }
   }

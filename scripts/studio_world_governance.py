@@ -710,6 +710,8 @@ def validate_world_governance(
                 "eightHourCouncilSignoffLedgerCount": len(t_doc.get("eight_hour_council_signoff_ledger") or []),
                 "championMobHerdGroundsCount": len(t_doc.get("champion_mob_herd_grounds") or []),
                 "dualswordCraftUnsealForgesCount": len(t_doc.get("dualsword_craft_unseal_forges") or []),
+                "techArtAssetPipelineGatesCount": len(t_doc.get("tech_art_asset_pipeline_gates") or []),
+                "backendBotSwarmSimulationSectorsCount": len(t_doc.get("backend_bot_swarm_simulation_sectors") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1609,6 +1611,48 @@ def validate_world_governance(
                 if df_tzid not in town_zone_ids:
                     errors.append(
                         f"GOV-10 violation: dualsword_craft_unseal_forges '{df_id}' references unknown town_zone_id '{df_tzid}'"
+                    )
+
+            # Validate 16-Node Technical Artist 3-Tier GLB Asset Resolve, Poly/Bone Validator & Godot Chunk Baking Gates (D71)
+            tech_art_gates = t_doc.get("tech_art_asset_pipeline_gates") or []
+            if tech_art_gates and len(tech_art_gates) != 16:
+                errors.append(
+                    f"GOV-10 violation: tech_art_asset_pipeline_gates must have 16 tech-art asset pipeline gates, got {len(tech_art_gates)}"
+                )
+            for ta_item in tech_art_gates:
+                if not isinstance(ta_item, dict):
+                    continue
+                ta_id = str(ta_item.get("gate_id", ""))
+                ta_zid = str(ta_item.get("zone_id", ""))
+                ta_did = str(ta_item.get("dungeon_id", ""))
+                if ta_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: tech_art_asset_pipeline_gates '{ta_id}' references unknown zone_id '{ta_zid}'"
+                    )
+                if ta_did and ta_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: tech_art_asset_pipeline_gates '{ta_id}' references unknown dungeon_id '{ta_did}'"
+                    )
+
+            # Validate 16-Node Backend 10,000-Bot Swarm Simulator, Spatial Partitioning & Deterministic Replay Sectors (D72)
+            bot_swarm_sectors = t_doc.get("backend_bot_swarm_simulation_sectors") or []
+            if bot_swarm_sectors and len(bot_swarm_sectors) != 16:
+                errors.append(
+                    f"GOV-10 violation: backend_bot_swarm_simulation_sectors must have 16 backend simulation sectors, got {len(bot_swarm_sectors)}"
+                )
+            for bs_item in bot_swarm_sectors:
+                if not isinstance(bs_item, dict):
+                    continue
+                bs_id = str(bs_item.get("sector_id", ""))
+                bs_zid = str(bs_item.get("zone_id", ""))
+                bs_did = str(bs_item.get("dungeon_id", ""))
+                if bs_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: backend_bot_swarm_simulation_sectors '{bs_id}' references unknown zone_id '{bs_zid}'"
+                    )
+                if bs_did and bs_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: backend_bot_swarm_simulation_sectors '{bs_id}' references unknown dungeon_id '{bs_did}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

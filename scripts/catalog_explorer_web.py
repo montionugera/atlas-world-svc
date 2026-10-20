@@ -99,15 +99,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas66DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas68DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas70DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas72DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 33)),
+        "wave": int(iter_state.get("wave", 34)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"72-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"70-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"68-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"66-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -134,7 +136,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 Verified"
         ),
     }
     return merged
@@ -4396,7 +4398,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4485,6 +4487,8 @@ let ATLAS_NEVIT_BLESSING_MODE = 'All';
 let ATLAS_COUNCIL_SIGNOFF_MODE = 'All';
 let ATLAS_CHAMPION_MOB_MODE = 'All';
 let ATLAS_DUALSWORD_FORGE_MODE = 'All';
+let ATLAS_TECH_ART_PIPELINE_MODE = 'All';
+let ATLAS_BOT_SWARM_SIM_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4545,6 +4549,8 @@ const ATLAS_STATE_STORE = {
   councilSignoffMode: 'All',               // D68: Active 24-Record 8-Hour Studio Council D1-D68 Sign-Off Selector ('Off' | 'All' | 'Product_Owner' | 'Game_Designer_Lead' | 'Player_Growth_Path_Designer' | 'Game_Story_Designer' | 'Monster_And_Mob_Designer' | 'Lead_Systems_Map_Architect')
   championMobMode: 'All',                  // D69: Active 16-Zone Champion Mob Aura & Herd Leader Selector ('Off' | 'All' | 'Blue_Aura_10x_Champion_Field' | 'Crimson_Aura_50x_Champion_Sanctum' | 'Social_Herd_Leader_Pack_Ground')
   dualswordForgeMode: 'All',               // D70: Active 15-Town Dualsword Craft Stamp & Maestro Ishuma Unseal Selector ('Off' | 'All' | 'Starter_C_B_Dualsword_Anvil' | 'A_S_Grade_Craft_Stamp_Forge' | 'Maestro_Ishuma_S80_S84_Unseal_Dock')
+  techArtPipelineMode: 'All',              // D71: Active 16-Node [Stage 2: Asset & Build] Technical Artist Pipeline Selector ('Off' | 'All' | 'Three_Tier_GLB_Asset_Gate' | 'Polygon_Bone_Shader_Validator' | 'Godot_World_Chunk_Streaming_Baker')
+  botSwarmSimMode: 'All',                  // D72: Active 16-Node [Stage 3: Server & Simulation] 10k-Bot Swarm & Spatial Partition Selector ('Off' | 'All' | 'Headless_10k_Bot_Swarm_Sector' | 'Spatial_Grid_AOI_Partition_Cell' | 'Deterministic_Replay_Desync_Probe')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4552,6 +4558,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasTechArtPipelineMode(modeId) {
+  ATLAS_TECH_ART_PIPELINE_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.techArtPipelineMode = ATLAS_TECH_ART_PIPELINE_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasBotSwarmSimMode(modeId) {
+  ATLAS_BOT_SWARM_SIM_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.botSwarmSimMode = ATLAS_BOT_SWARM_SIM_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasChampionMobMode(modeId) {
   ATLAS_CHAMPION_MOB_MODE = String(modeId || 'All');
@@ -11312,6 +11332,206 @@ function renderAtlasDualswordForgeBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasTechArtPipelineBarHtml(tatlas) {
+  const gates = (tatlas && tatlas.tech_art_asset_pipeline_gates) || [];
+  if (!gates.length) return '';
+
+  const curMode = ATLAS_TECH_ART_PIPELINE_MODE || ATLAS_STATE_STORE.techArtPipelineMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🎨 All 16 Asset Gates' },
+    { id: 'Three_Tier_GLB_Asset_Gate', label: '📦 6 3-Tier GLB Gates' },
+    { id: 'Polygon_Bone_Shader_Validator', label: '📐 5 Poly/Bone/Shader Validators' },
+    { id: 'Godot_World_Chunk_Streaming_Baker', label: '🗺️ 5 Godot Chunk Bakers' }
+  ];
+
+  const filteredGates = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? gates : gates.filter(g => g.pipeline_stage_category === curMode));
+
+  const featuredGates = curMode === 'All'
+    ? [
+        ...gates.filter(g => g.pipeline_stage_category === 'Three_Tier_GLB_Asset_Gate').slice(0, 2),
+        ...gates.filter(g => g.pipeline_stage_category === 'Polygon_Bone_Shader_Validator').slice(0, 1),
+        ...gates.filter(g => g.pipeline_stage_category === 'Godot_World_Chunk_Streaming_Baker').slice(0, 1)
+      ]
+    : filteredGates.slice(0, 4);
+
+  const allTowns = getAllAtlasTownEntries(tatlas);
+  const byTownId = {};
+  allTowns.forEach(t => { byTownId[t.zone_id] = t; });
+
+  const catStyleMap = {
+    'Three_Tier_GLB_Asset_Gate': { col: '#34d399', badge: '3-TIER GLB', icon: '📦' },
+    'Polygon_Bone_Shader_Validator': { col: '#f472b6', badge: 'POLY/BONE/SHADER', icon: '📐' },
+    'Godot_World_Chunk_Streaming_Baker': { col: '#38bdf8', badge: 'CHUNK BAKER', icon: '🗺️' }
+  };
+
+  return `
+    <div id="atlasTechArtPipelineBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#112224;border:1px solid rgba(52,211,153,0.68)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#6ee7b7">🎨 [STAGE 2: ASSET &amp; BUILD PIPELINE] TECHNICAL ARTIST 3-TIER GLB, POLY/BONE &amp; CHUNK BAKER SELECTOR (D71 · 16 GATES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasTechArtPipelineMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(52,211,153,0.45)'};background:${isAct ? '#065f46' : '#090d14'};color:${isAct ? '#ffffff' : '#d1fae5'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 3-TIER GLB GATES · 5 POLY/BONE/90-120CM SCALE VALIDATORS · 5 GODOT 4 CHUNK/NAVMESH BAKERS
+        </span>
+      </div>
+
+      ${featuredGates.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredGates.map(g => {
+            const cs = catStyleMap[g.pipeline_stage_category] || { col: '#34d399', badge: 'TECH ART', icon: '🎨' };
+            const zidStr = String(g.zone_id || '');
+            const didStr = String(g.dungeon_id || '');
+            const fidStr = String(g.floor_id || 'B3');
+            const tObj = byTownId[zidStr];
+            const jumpJs = didStr
+              ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+              : (tObj
+                  ? `focusTownStreetBlueprint('${escapeHtml(tObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(g.loc)}')`
+                  : (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')
+                      ? `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(g.loc)}')`
+                      : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(g.loc)}')`));
+            const ciTxt = (g.automated_ci_validators || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(g.gate_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#a7f3d0;margin-top:1px">
+                    📐 ${escapeHtml(g.polygon_and_bone_budget.slice(0, 54))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ✅ ${escapeHtml(ciTxt.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${cs.col};background:#064e3b;color:#ecfdf5;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cs.icon} ${didStr ? `Inspect Dungeon Chunk (${escapeHtml(fidStr)})` : 'Inspect Zone Asset Gate'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasBotSwarmSimBarHtml(tatlas) {
+  const sectors = (tatlas && tatlas.backend_bot_swarm_simulation_sectors) || [];
+  if (!sectors.length) return '';
+
+  const curMode = ATLAS_BOT_SWARM_SIM_MODE || ATLAS_STATE_STORE.botSwarmSimMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🤖 All 16 Sim Sectors' },
+    { id: 'Headless_10k_Bot_Swarm_Sector', label: '🤖 6 10k-Bot Swarm Sectors' },
+    { id: 'Spatial_Grid_AOI_Partition_Cell', label: '🕸️ 5 Spatial Grid AOI Cells' },
+    { id: 'Deterministic_Replay_Desync_Probe', label: '⏪ 5 Deterministic Replay Probes' }
+  ];
+
+  const filteredSectors = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? sectors : sectors.filter(s => s.simulation_category === curMode));
+
+  const featuredSectors = curMode === 'All'
+    ? [
+        ...sectors.filter(s => s.simulation_category === 'Headless_10k_Bot_Swarm_Sector').slice(0, 2),
+        ...sectors.filter(s => s.simulation_category === 'Spatial_Grid_AOI_Partition_Cell').slice(0, 1),
+        ...sectors.filter(s => s.simulation_category === 'Deterministic_Replay_Desync_Probe').slice(0, 1)
+      ]
+    : filteredSectors.slice(0, 4);
+
+  const allTowns = getAllAtlasTownEntries(tatlas);
+  const byTownId = {};
+  allTowns.forEach(t => { byTownId[t.zone_id] = t; });
+
+  const catStyleMap = {
+    'Headless_10k_Bot_Swarm_Sector': { col: '#38bdf8', badge: '10K BOT SWARM', icon: '🤖' },
+    'Spatial_Grid_AOI_Partition_Cell': { col: '#a855f7', badge: 'SPATIAL AOI', icon: '🕸️' },
+    'Deterministic_Replay_Desync_Probe': { col: '#fbbf24', badge: 'REPLAY PROBE', icon: '⏪' }
+  };
+
+  return `
+    <div id="atlasBotSwarmSimBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0f1d2e;border:1px solid rgba(56,189,248,0.68)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#7dd3fc">🤖 [STAGE 3: SERVER &amp; SIMULATION] 10K-BOT SWARM, SPATIAL GRID AOI &amp; REPLAY SELECTOR (D72 · 16 SECTORS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasBotSwarmSimMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.45)'};background:${isAct ? '#0369a1' : '#090d14'};color:${isAct ? '#ffffff' : '#bae6fd'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 10K-BOT SWARM SECTORS (0.503MS/20HZ) · 5 SPATIAL GRID AOI CELLS (&lt;5KB/S) · 5 GOLDEN REPLAY PROBES
+        </span>
+      </div>
+
+      ${featuredSectors.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredSectors.map(s => {
+            const cs = catStyleMap[s.simulation_category] || { col: '#38bdf8', badge: 'SIM SECTOR', icon: '🤖' };
+            const zidStr = String(s.zone_id || '');
+            const didStr = String(s.dungeon_id || '');
+            const fidStr = String(s.floor_id || 'B3');
+            const tObj = byTownId[zidStr];
+            const jumpJs = didStr
+              ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+              : (tObj
+                  ? `focusTownStreetBlueprint('${escapeHtml(tObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`
+                  : (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')
+                      ? `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`
+                      : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`));
+            const assertTxt = (s.stress_test_assertions || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(s.sector_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#93c5fd;margin-top:1px">
+                    ⚡ ${escapeHtml(s.bot_concurrency_and_tick_budget.slice(0, 54))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🔬 ${escapeHtml(assertTxt.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${cs.col};background:#0c4a6e;color:#f0f9ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cs.icon} ${didStr ? `Open Sim Dungeon (${escapeHtml(fidStr)})` : 'Jump to Sim Sector'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -11486,6 +11706,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasCouncilSignoffBarHtml(tatlas)}
       ${renderAtlasChampionMobBarHtml(tatlas)}
       ${renderAtlasDualswordForgeBarHtml(tatlas)}
+      ${renderAtlasTechArtPipelineBarHtml(tatlas)}
+      ${renderAtlasBotSwarmSimBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -14977,6 +15199,80 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D71: Interactive 16-Node [Stage 2: Asset & Build] Technical Artist Pipeline Overlay (`studioTechArtPipelineOverlay`)
+  const techArtRows = (tatlas && tatlas.tech_art_asset_pipeline_gates) || [];
+  const curTechArtMode = ATLAS_TECH_ART_PIPELINE_MODE || ATLAS_STATE_STORE.techArtPipelineMode || 'All';
+  const activeTechArtGates = curTechArtMode === 'Off'
+    ? []
+    : (curTechArtMode === 'All'
+        ? techArtRows
+        : techArtRows.filter(g => g.pipeline_stage_category === curTechArtMode));
+  const techArtPipelineOverlaySvg = `
+    <g id="studioTechArtPipelineOverlay">
+      ${activeTechArtGates.map(g => {
+        const tc = clampWorldLocCoord(g.loc || '-84120:243500');
+        const zidStr = String(g.zone_id || '');
+        const didStr = String(g.dungeon_id || '');
+        const fidStr = String(g.floor_id || 'B3');
+        const zObj = allZonesById[zidStr] || {};
+        const isGlb = g.pipeline_stage_category === 'Three_Tier_GLB_Asset_Gate';
+        const isVal = g.pipeline_stage_category === 'Polygon_Bone_Shader_Validator';
+        const colHex = isGlb ? '#34d399' : (isVal ? '#f472b6' : '#38bdf8');
+        const iconTxt = isGlb ? '📦' : (isVal ? '📐' : '🗺️');
+        const jumpJs = didStr
+          ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+          : (zidStr.startsWith('zone-town-')
+              ? `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(g.loc)}')`
+              : (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')
+                  ? `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(g.loc)}')`
+                  : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(g.loc)}')`));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${tc.svgX}" cy="${tc.svgY}" r="10.6" fill="rgba(6,78,59,0.48)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${tc.svgX}" y="${tc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D72: Interactive 16-Node [Stage 3: Server & Simulation] 10k-Bot Swarm & Spatial Partition Overlay (`studioBotSwarmSimOverlay`)
+  const botSwarmRows = (tatlas && tatlas.backend_bot_swarm_simulation_sectors) || [];
+  const curBotSwarmMode = ATLAS_BOT_SWARM_SIM_MODE || ATLAS_STATE_STORE.botSwarmSimMode || 'All';
+  const activeBotSwarmSectors = curBotSwarmMode === 'Off'
+    ? []
+    : (curBotSwarmMode === 'All'
+        ? botSwarmRows
+        : botSwarmRows.filter(s => s.simulation_category === curBotSwarmMode));
+  const botSwarmSimOverlaySvg = `
+    <g id="studioBotSwarmSimOverlay">
+      ${activeBotSwarmSectors.map(s => {
+        const sc = clampWorldLocCoord(s.loc || '-84120:243500');
+        const zidStr = String(s.zone_id || '');
+        const didStr = String(s.dungeon_id || '');
+        const fidStr = String(s.floor_id || 'B3');
+        const zObj = allZonesById[zidStr] || {};
+        const isSwarm = s.simulation_category === 'Headless_10k_Bot_Swarm_Sector';
+        const isSpatial = s.simulation_category === 'Spatial_Grid_AOI_Partition_Cell';
+        const colHex = isSwarm ? '#38bdf8' : (isSpatial ? '#a855f7' : '#fbbf24');
+        const iconTxt = isSwarm ? '🤖' : (isSpatial ? '🕸️' : '⏪');
+        const jumpJs = didStr
+          ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+          : (zidStr.startsWith('zone-town-')
+              ? `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`
+              : (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')
+                  ? `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`
+                  : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${sc.svgX}" cy="${sc.svgY}" r="10.6" fill="rgba(12,74,110,0.48)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${sc.svgX}" y="${sc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -15027,6 +15323,8 @@ function renderDedicatedWorldAtlas() {
     ${councilSignoffOverlaySvg}
     ${championMobOverlaySvg}
     ${dualswordForgeOverlaySvg}
+    ${techArtPipelineOverlaySvg}
+    ${botSwarmSimOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

@@ -13222,6 +13222,622 @@ def _build_dualsword_craft_unseal_forges(atlas: dict[str, Any]) -> list[dict[str
     return rows
 
 
+def _build_tech_art_asset_pipeline_gates(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 [Stage 2: Asset & Build Pipeline] Technical Artist 3-Tier GLB Asset Resolve, Poly/Bone Validator & Godot Chunk Baking Gates (6 Three_Tier_GLB_Asset_Gate + 5 Polygon_Bone_Shader_Validator + 5 Godot_World_Chunk_Streaming_Baker) (D71)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 6 Three_Tier_GLB_Asset_Gate Nodes
+        (
+            "techart-01-glb-lantern-hollow-town-kit",
+            "Lantern Hollow Village — 3-Tier GLB Town Architecture & 12-Service Kit Gate",
+            "Three_Tier_GLB_Asset_Gate",
+            "zone-town-lantern-hollow",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC) & Asset Forge Director",
+            "Tier 3 Final CC0/Studio GLB Resolved (LOD0..LOD3 + 256px WebP Thumb · SHA-256 Verified)",
+            "<= 7,800 Tris per Modular Building / 1024px ORM PBR Atlas / 13.0m Main Plaza Road",
+            [
+                "Three-Tier Asset Resolve Check (Tier 1 CSG -> Tier 2 Blockout -> Tier 3 GLB)",
+                "manifest.json SHA-256 & CC0 Attribution Gate",
+                "Godot 4.x Headless Scene Import Smoke Gate",
+            ],
+        ),
+        (
+            "techart-02-glb-porcelain-loom-elven-sanctuary",
+            "Porcelain Loom Sanctuary — 3-Tier GLB Radial Moat & Bridge Kit Gate",
+            "Three_Tier_GLB_Asset_Gate",
+            "zone-town-porcelain-loom",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC)",
+            "Tier 3 Final CC0/Studio GLB Resolved (LOD0..LOD3 + 256px WebP Thumb · SHA-256 Verified)",
+            "<= 8,200 Tris per Sanctuary Spire / Translucent Water Shader / <= 0.16m Stair Risers",
+            [
+                "Three-Tier Asset Resolve Check",
+                "ORM + Emission Shader Parameter Linter",
+                "90–120cm Character Scale Law Clearance Gate",
+            ],
+        ),
+        (
+            "techart-03-glb-inductor-switchyard-giran-market",
+            "Inductor Switchyard (Giran Hub) — 3-Tier GLB High-Density Market Stall & Forge Kit Gate",
+            "Three_Tier_GLB_Asset_Gate",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC) & Lead Tools & Pipeline Architect",
+            "Tier 3 Final CC0/Studio GLB Resolved (180+ Props Instanced via MultiMeshInstance3D)",
+            "<= 6,500 Tris per Stall Cluster / GPU Instanced Market Props / <= 2 Draw Calls per Block",
+            [
+                "Three-Tier Asset Resolve Check",
+                "MultiMeshInstance3D Batching & Draw-Call Budget Gate",
+                "256px WebP Catalog Thumbnail Sync Gate",
+            ],
+        ),
+        (
+            "techart-04-glb-torque-balance-aden-citadel",
+            "Torque-Balance Citadel (Aden Capital) — 3-Tier GLB Sovereign Castle & Cathedral Kit Gate",
+            "Three_Tier_GLB_Asset_Gate",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC)",
+            "Tier 3 Final CC0/Studio GLB Resolved (LOD0..LOD3 + Destruction State Swap Meshes)",
+            "<= 11,500 Tris per Gatehouse / Intact + Breached Wall State GLB Pair / ORM PBR Atlas",
+            [
+                "Three-Tier Asset Resolve Check",
+                "Siege Destructible Mesh Swap State Validator",
+                "CollisionShape3D Convex Hull Count Gate (<= 16 Hulls)",
+            ],
+        ),
+        (
+            "techart-05-glb-glaze-barge-airship-wharf",
+            "Glaze-Barge Airship Dock — 3-Tier GLB Brass Airship Hull & Mooring Gantry Gate",
+            "Three_Tier_GLB_Asset_Gate",
+            "zone-harbor-glaze-barge-airship-dock",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC)",
+            "Tier 3 Final CC0/Studio GLB Resolved (Animated Rotor Rig + Boarding Ramp Collision)",
+            "<= 12,000 Tris per Airship Vessel / <= 32 Mechanical Bones / Dual-Sided Brass PBR Shader",
+            [
+                "Three-Tier Asset Resolve Check",
+                "Skeletal Animation & Root-Motion Export Validator",
+                "Godot Tool-Scene Storybook Visual Diff Gate",
+            ],
+        ),
+        (
+            "techart-06-glb-starfall-haven-rune-tiered-port",
+            "Starfall Haven (Rune Vertical Port) — 3-Tier GLB Elevator Viaduct & Cliff Citadel Gate",
+            "Three_Tier_GLB_Asset_Gate",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC) & Content & World Tools Engineer",
+            "Tier 3 Final CC0/Studio GLB Resolved (Vertical Upper/Lower Harbor LOD Chain)",
+            "<= 9,400 Tris per Viaduct Span / <= 0.25m Terrace Step Law / Zero Z-Fighting UV2 Lightmap",
+            [
+                "Three-Tier Asset Resolve Check",
+                "UV2 Lightmap Texel Density & Seam Validator",
+                "Vertical Camera Occlusion Fade Shader Gate",
+            ],
+        ),
+        # 5 Polygon_Bone_Shader_Validator Nodes
+        (
+            "techart-07-validator-clover-south-gate-foliage-scale",
+            "Clover South Gate — 90–120cm Character Scale Law & Foliage Height Validator",
+            "Polygon_Bone_Shader_Validator",
+            "zone-field-clover-south-gate",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC) & Asset Forge Director",
+            "100% Scale-Law Compliant (1.05m Cute Kid Reference Avatar Head 100% Visible Above Grass/Bushes)",
+            "Grass <= 0.35m / Bush <= 0.65m / Mob Rig <= 4,200 Tris & <= 48 Bones / Wind Vertex Shader",
+            [
+                "90–120cm Character Scale Law Automated Bounding-Box Gate",
+                "Skeletal Rig <= 64 Bone & <= 4 Weights/Vertex Validator",
+                "Foliage Alpha-Scissor Overdraw Budget Gate",
+            ],
+        ),
+        (
+            "techart-08-validator-cinder-apron-champion-aura-shader",
+            "Cinder-Apron Outlands — Champion Aura (Blue 10× / Red 50×) Rim-Shader & Mob Rig Validator",
+            "Polygon_Bone_Shader_Validator",
+            "zone-field-cinder-apron",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC)",
+            "100% Shader & Rig Compliant (Fresnel Aura Rim + GPU Particle Budget Verified at 60 FPS)",
+            "Mob Mesh <= 4,800 Tris / <= 52 Bones / Single-Pass Fresnel Rim + Soulshot Flash Shader",
+            [
+                "GLB Mesh/Rig Budget Gate (<= 5,000 Tris / <= 64 Bones)",
+                "Godot Shader Compilation & Uniform Type Linter",
+                "GPU Particle Overdraw & 60 FPS Frame-Time Gate",
+            ],
+        ),
+        (
+            "techart-09-validator-kiln-cellar-b3-queen-ant-boss-rig",
+            "Kiln Cellar B3 — Queen Ant MVP Boss Rig, Hitbox & Acid-Shader Validator",
+            "Polygon_Bone_Shader_Validator",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "Technical Artist (Pipeline & DCC)",
+            "100% Boss Rig & Hitbox Verified (LOD0..LOD3 + Server-Synced Capsule Radius)",
+            "MVP Boss <= 12,400 Tris / <= 64 Bones / 2048px Chitin ORM + Subsurface Scattering Shader",
+            [
+                "Boss GLB Polygon & 64-Bone Skinning Validator",
+                "Client Hitbox <-> server-rs Collision Radius Parity Gate",
+                "Dungeon Corridor >= 6.0m Camera Clearance Check",
+            ],
+        ),
+        (
+            "techart-10-validator-chronometer-foundry-3f-baium-wing-shader",
+            "Chronometer Foundry 3F — Archangel & Sovereign Boss Wing Cloth/Shader Validator",
+            "Polygon_Bone_Shader_Validator",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "Technical Artist (Pipeline & DCC)",
+            "100% Apex Boss Shader & Dualsword Socket Attachment Verified (R_Hand / L_Hand / Cloak_Back)",
+            "Apex Boss <= 12,500 Tris / <= 64 Bones / +4..+15 Enchant Weapon Glow & Sovereign Cloak Bones",
+            [
+                "BoneAttachment3D Socket Naming Gate (R_Hand, L_Hand, Cloak_Back, Head_Crown)",
+                "+1..+15 Weapon Enchant Emission Gradient Validator",
+                "ORM PBR Metallic/Roughness Channel Packing Check",
+            ],
+        ),
+        (
+            "techart-11-validator-aurora-tether-s84-armor-masterwork",
+            "Aurora Tether Span — S80/S84 Dynasty, Icarus & Vesper 6-Race Armor Rig Validator",
+            "Polygon_Bone_Shader_Validator",
+            "zone-field-aurora-tether",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC) & Lead Tools & Pipeline Architect",
+            "100% 6-Race Proportions Verified (Human, Lunar, Orc, Dwarf, Dark-Lunar, Furral/Kamael One-Wing)",
+            "Player Armor Set <= 6,800 Tris / <= 60 Shared Humanoid Bones / Zero Clipping Across 6 Races",
+            [
+                "6-Race Skeletal Retargeting & Bind-Pose Parity Gate",
+                "Heavy/Light/Robe Modular Seam Welder Check",
+                "Godot Tool-Scene Storybook 360-Turntable Render Gate",
+            ],
+        ),
+        # 5 Godot_World_Chunk_Streaming_Baker Nodes
+        (
+            "techart-12-baker-kilnwatch-bastion-town-navmesh-chunk",
+            "Kilnwatch Bastion (Dion Hub) — Godot 4 NavigationRegion3D & OccluderInstance3D Chunk Baker",
+            "Godot_World_Chunk_Streaming_Baker",
+            "zone-town-kilnwatch-bastion",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC) & Lead Tools & Pipeline Architect",
+            "Baked & Stream-Ready (256m×256m World Chunk · Async ResourceLoader Background Thread)",
+            "NavMesh Agent Radius 0.45m / Max Slope 38° / Step Height <= 0.25m / < 1.8ms Chunk Hitch",
+            [
+                "NavigationRegion3D Bake & Connected Island Validator",
+                "OccluderInstance3D Portal & Frustum Culling Gate",
+                "Async Chunk Streaming Zero-Stutter (< 2.0ms) Benchmark",
+            ],
+        ),
+        (
+            "techart-13-baker-pendulum-shaft-3f-vertical-tower-cutaway",
+            "Pendulum Shaft 3F (Cruma Tower) — Multi-Floor Vertical Cutaway & Inter-Floor Portal Baker",
+            "Godot_World_Chunk_Streaming_Baker",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "Technical Artist (Pipeline & DCC) & Content & World Tools Engineer",
+            "Baked & Stream-Ready (1F ⇄ 2F ⇄ 3F Vertical Slab Cutaway + Roof Dither Fade)",
+            "<= 9,500 Tris per Floor Chunk / Ceiling Auto-Cutaway Shader / >= 6.0m Corridor NavMesh",
+            [
+                "Multi-Floor (1F..3F) Vertical Cutaway Bounds Gate",
+                "Inter-Floor Warp Portal Trigger Volume Check",
+                "Headless Godot Dungeon Scene Load & Quit Smoke Gate",
+            ],
+        ),
+        (
+            "techart-14-baker-witch-pendulum-b3-catacomb-lightmap-chunk",
+            "Catacomb of the Astral Witch B3 — Subterranean Seal Torch Lightmap & Fog Volume Baker",
+            "Godot_World_Chunk_Streaming_Baker",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "Technical Artist (Pipeline & DCC)",
+            "Baked & Stream-Ready (B1 ⇄ B2 ⇄ B3 Dawn/Dusk Cabal Dynamic Lightmap Swap)",
+            "LightmapGI 16 Texels/Meter / Volumetric Fog <= 0.4ms GPU / 8.5m Crypt Gallery Clearance",
+            [
+                "LightmapGI Bake Integrity & Zero Black-Texel Gate",
+                "Dawn/Dusk Seven-Signs Environment Palette Swap Check",
+                "Subterranean B1..B3 Occlusion Culling Verification",
+            ],
+        ),
+        (
+            "techart-15-baker-star-heart-nave-3f-spire-lod-streaming",
+            "Star-Heart Nave 3F (Tower of Insolence) — 13-Tier Spire HLOD & Skybox Horizon Baker",
+            "Godot_World_Chunk_Streaming_Baker",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "Technical Artist (Pipeline & DCC)",
+            "Baked & Stream-Ready (Hierarchical LOD0..LOD3 + Distant Spire Impostor Proxy)",
+            "HLOD Proxy <= 1,200 Tris at > 180m / Seamless Floor Transition Preload Ring",
+            [
+                "HLOD Distance Transition Screen-Size Error Gate",
+                "Vertical Spire Elevator & Warp Anchor Validator",
+                "VRAM Texture Streaming Budget Gate (<= 512 MB Zone Peak)",
+            ],
+        ),
+        (
+            "techart-16-baker-orrery-bridge-overland-seam-stitcher",
+            "The Orrery Bridge — Overland Continent Seam Stitcher & Highway Spline Terrain Baker",
+            "Godot_World_Chunk_Streaming_Baker",
+            "zone-field-orrery-bridge",
+            "",
+            "",
+            "Technical Artist (Pipeline & DCC) & Lead Tools & Pipeline Architect",
+            "Baked & Stream-Ready (Zero-Crack Terrain Skirt Stitching + >= 12.0m Highway Spline Carve)",
+            "Terrain Chunk 256m Grid / >= 12.0m Main Road Width / 4-Layer Triplanar Ground Splatmap",
+            [
+                "Adjacent Terrain Chunk Edge Vertex Normal Welder Gate",
+                "Highway Spline >= 12.0m & Footpath >= 4.0m Scale Law Check",
+                "ground_palettes.json Biome Splatmap Parity Validator",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        gid,
+        gname,
+        pcat,
+        zid,
+        did,
+        fid,
+        onpc,
+        tstatus,
+        pbudget,
+        cival,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx + 155 - idx * 12, by - 140 + idx * 10)
+        rows.append(
+            {
+                "gate_id": gid,
+                "gate_name": gname,
+                "pipeline_stage_category": pcat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "owner_role_npc": onpc,
+                "asset_resolve_tier_status": tstatus,
+                "polygon_and_bone_budget": pbudget,
+                "automated_ci_validators": cival,
+            }
+        )
+    return rows
+
+
+def _build_backend_bot_swarm_simulation_sectors(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 [Stage 3: Server & Simulation] Backend 10,000-Bot Swarm Simulator, Spatial Partitioning & Deterministic Replay Sectors (6 Headless_10k_Bot_Swarm_Sector + 5 Spatial_Grid_AOI_Partition_Cell + 5 Deterministic_Replay_Desync_Probe) (D72)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 6 Headless_10k_Bot_Swarm_Sector Nodes
+        (
+            "botsim-01-swarm-inductor-switchyard-giran-market-2000bots",
+            "Inductor Switchyard (Giran Hub) — 2,000-Bot Private Store, Auction & Trade Swarm Sector",
+            "Headless_10k_Bot_Swarm_Sector",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "Backend Simulation & Infra Tools Engineer",
+            "2,000 Concurrent Market & Trade Bots · 0.503ms / 1.0ms Bevy ECS Tick @ 20Hz FlatBuffers",
+            "Town Plaza High-Density AOI Cell (250B Typical Delta Frame / < 4.8 KB/s Wire per Client)",
+            [
+                "10,000-Bot Cluster Slice: 2,000 Giran Market & Private Manufacture Bots Pass",
+                "Atomic CAS Inventory & Adena Settlement Zero-Duplication Invariant",
+                "Tick Duration P99 <= 0.89ms Under Peak Chat/Store Broadcast Load",
+            ],
+        ),
+        (
+            "botsim-02-swarm-torque-balance-aden-castle-siege-450v450",
+            "Torque-Balance Citadel (Aden Siege) — 900-Bot (450v450) Command-Channel Castle Siege Swarm",
+            "Headless_10k_Bot_Swarm_Sector",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            "Backend Simulation & Infra Tools Engineer & Lead Tools & Pipeline Architect",
+            "900 Siege Bots (100 Clans / 450v450) · 0.640ms / 1.0ms Bevy ECS Tick @ 20Hz FlatBuffers",
+            "Siege Throne & Outer Gate Multi-Cell Partition (Priority Combat Delta Culling <= 5.0 KB/s)",
+            [
+                "450v450 AoE Skill, Siege Golem & Gate Destruction Stress Test Pass",
+                "Holy Artifact Seal 180s Channeling Interruption Determinism Verified",
+                "Zero Packet Drop or Tokio Channel Backpressure Spike",
+            ],
+        ),
+        (
+            "botsim-03-swarm-lantern-hollow-starter-6race-onboarding",
+            "Lantern Hollow Village — 1,500-Bot 6-Race Starter Onboarding & Gatekeeper Burst Sector",
+            "Headless_10k_Bot_Swarm_Sector",
+            "zone-town-lantern-hollow",
+            "",
+            "",
+            "Backend Simulation & Infra Tools Engineer",
+            "1,500 Concurrent Onboarding Bots · 0.440ms / 1.0ms Bevy ECS Tick @ 20Hz FlatBuffers",
+            "Starter Town + Gatekeeper Hub Cell (Zero Spawn-Overlap Ring Distribution)",
+            [
+                "1,500 Simultaneous Launch-Day Login & Novice Buff Grant Burst Pass",
+                "Quest State Machine & Soulshot Auto-Loop Throughput Verified",
+                "Zero Memory Leak Across 10,000 Connect/Disconnect Churn Cycles",
+            ],
+        ),
+        (
+            "botsim-04-swarm-chronometer-foundry-3f-command-raid-swarm",
+            "Chronometer Foundry 3F — 450-Bot Command-Channel Boss Raid & Soul Crystal Swarm Sector",
+            "Headless_10k_Bot_Swarm_Sector",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "Backend Simulation & Infra Tools Engineer",
+            "450 Concurrent Raid Bots (50× 9P Parties) · 0.520ms / 1.0ms Bevy ECS Tick @ 20Hz",
+            "Isolated Boss Sanctum Instance Cell (Aggro Table & SA Resonance Broadcast < 4.2 KB/s)",
+            [
+                "450-Bot Simultaneous Boss Hate/Aggro Table Lock-Free Update Pass",
+                "Stage 11–13 Soul Crystal Resonance & Boss Loot Auction Atomic Split",
+                "Zero ECS Schedule Contention Under 9,000 Active Buff/Debuff Timers",
+            ],
+        ),
+        (
+            "botsim-05-swarm-kelp-spiral-reef-aoe-herd-pull-swarm",
+            "Kelp Spiral Undertide Reef — 1,600-Bot Polearm Herd-Leader AoE & Mass Sweeper Swarm",
+            "Headless_10k_Bot_Swarm_Sector",
+            "zone-field-kelp-spiral-reef",
+            "",
+            "",
+            "Backend Simulation & Infra Tools Engineer & Content & World Tools Engineer",
+            "1,600 Concurrent Farming Bots + 4,800 Herd Mobs · 0.580ms / 1.0ms Bevy ECS Tick @ 20Hz",
+            "Overland Pack-Hunting SpatialGrid Cell (Linked Leader+5 Minion AI Batch Evaluation)",
+            [
+                "4,800 Social Herd Mob Aggro-Link & Teleport-to-Leader Stress Pass",
+                "Dwarven Festival Sweeper Multi-Corpse Loot Extraction Atomicity",
+                "Deterministic Respawn Wave & Vitality Drain Telemetry Parity",
+            ],
+        ),
+        (
+            "botsim-06-swarm-starfall-haven-territory-ward-warfare",
+            "Starfall Haven (Rune Capital) — 1,800-Bot 9-Ward Territory War & Fortress Caravan Swarm",
+            "Headless_10k_Bot_Swarm_Sector",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "Backend Simulation & Infra Tools Engineer & LiveOps, Build & GM Tools Engineer",
+            "1,800 Concurrent Territory War Bots · 0.610ms / 1.0ms Bevy ECS Tick @ 20Hz FlatBuffers",
+            "Cross-Zone Territory Ward Carrier Radar + Castle Sanctum Boundary Handoff",
+            [
+                "9 Territory Ward Relic Pickup, Map-Wide Radar Ping & Capture Pass",
+                "Fame (+375/5m) Batch Accrual Across 1,800 Active Combatants",
+                "Hot-Config Siege Window Toggle Zero-Stall Verification",
+            ],
+        ),
+        # 5 Spatial_Grid_AOI_Partition_Cell Nodes
+        (
+            "botsim-07-spatial-kilnwatch-bastion-4way-highway-handoff",
+            "Kilnwatch Bastion (Dion Crossroads) — 4-Highway SpatialGrid Boundary & Authority Handoff Cell",
+            "Spatial_Grid_AOI_Partition_Cell",
+            "zone-town-kilnwatch-bastion",
+            "",
+            "",
+            "Backend Simulation & Infra Tools Engineer & Lead Tools & Pipeline Architect",
+            "1,100 Boundary-Crossing Entities/s · 0.390ms SpatialGrid Re-Index @ 20Hz",
+            "Contiguous Vec SpatialGrid (64m×64m Cells · 3×3 9-Cell AOI Neighborhood · Zero HashMap Alloc)",
+            [
+                "Zero Ghost-Entity or Duplicate-ID on Sub-Tick Cell Boundary Crossing",
+                "O(1) Contiguous Cell Lookup & Cache-Line Friendly Entity Iteration",
+                "250B Typical FlatBuffers Delta Frame (< 5.0 KB/s Downstream Wire Cap)",
+            ],
+        ),
+        (
+            "botsim-08-spatial-pendulum-shaft-3f-vertical-z-slice-aoi",
+            "Pendulum Shaft 3F (Cruma Tower) — Multi-Floor Vertical Z-Slice AOI Isolation Cell",
+            "Spatial_Grid_AOI_Partition_Cell",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "Backend Simulation & Infra Tools Engineer",
+            "750 Tower Bots Across 1F/2F/3F · 0.410ms Z-Stratified SpatialGrid Tick @ 20Hz",
+            "Floor-Scoped SpatialGrid Partition (1F/2F/3F Z-Layer Isolation · Zero Cross-Floor Packet Leak)",
+            [
+                "Zero 1F/2F Unseen Floor Entity Leakage into 3F Client AOI Wire Stream",
+                "Instant Inter-Floor Warp Portal (1F <-> 2F <-> 3F) Cell Rebinding",
+                "Dungeon Corridor >= 6.0m Server Raycast Line-of-Sight Parity",
+            ],
+        ),
+        (
+            "botsim-09-spatial-witch-pendulum-b3-catacomb-room-culling",
+            "Catacomb of the Astral Witch B3 — Subterranean Chamber Door & Corridor AOI Culling Cell",
+            "Spatial_Grid_AOI_Partition_Cell",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "Backend Simulation & Infra Tools Engineer",
+            "680 Catacomb Seal Farmers · 0.380ms SpatialGrid + Chamber Visibility Tick @ 20Hz",
+            "Room-Graph + 64m SpatialGrid Hybrid Partition (210B Compact FlatBuffers Delta Frame)",
+            [
+                "Adjacent Crypt Room Combat Packet Suppression (-62% Wire Bandwidth)",
+                "50x Crimson Champion Spawn Broadcast Scoped Strictly to Active Floor",
+                "Seven Signs Seal Stone Drop Ownership Lock Expiration Accuracy",
+            ],
+        ),
+        (
+            "botsim-10-spatial-glaze-barge-airship-moving-platform-aoi",
+            "Glaze-Barge Airship Dock — Moving Airship Reference-Frame & Harbor AOI Partition Cell",
+            "Spatial_Grid_AOI_Partition_Cell",
+            "zone-harbor-glaze-barge-airship-dock",
+            "",
+            "",
+            "Backend Simulation & Infra Tools Engineer",
+            "520 Harbor & Airship Deck Passengers · 0.450ms Relative-Transform Tick @ 20Hz",
+            "Parent-Relative Airship Deck Coordinate Frame + World SpatialGrid Handoff on Docking",
+            [
+                "Zero Passenger Positional Jitter During Continental Airship Transit",
+                "Seamless World <-> Deck Coordinate Frame Transform on Boarding/Disembark",
+                "FlatBuffers Relative Velocity Quantization Error <= 0.01m",
+            ],
+        ),
+        (
+            "botsim-11-spatial-leyden-causeway-world-boss-raid-ring",
+            "Leyden Capacitor Causeway — Overland World-Boss Dynamic AOI Throttling Cell",
+            "Spatial_Grid_AOI_Partition_Cell",
+            "zone-field-leyden-causeway",
+            "",
+            "",
+            "Backend Simulation & Infra Tools Engineer",
+            "850 Overland Raid Bots · 0.490ms Adaptive AOI Priority Tick @ 20Hz",
+            "3-Ring Priority AOI (Inner 20Hz Full / Mid 10Hz Combat / Outer 5Hz Position-Only <= 5 KB/s)",
+            [
+                "Adaptive 20Hz/10Hz/5Hz Distance-Ring Frequency Scaling Under 850+ Raid Load",
+                "Guaranteed 20Hz Full-Fidelity Updates for Active Party, Target & Raid Boss",
+                "Downstream Client Bandwidth Capped at <= 4.9 KB/s During Peak AoE",
+            ],
+        ),
+        # 5 Deterministic_Replay_Desync_Probe Nodes
+        (
+            "botsim-12-replay-kiln-cellar-b3-queen-ant-golden-trace",
+            "Kiln Cellar B3 — Queen Ant MVP Combat, Larva Heal & Drop RNG Golden-Trace Replay Probe",
+            "Deterministic_Replay_Desync_Probe",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "Backend Simulation & Infra Tools Engineer & QA Gatekeeper",
+            "10,000-Tick Seeded Golden Trace · epsilon <= 0.05 Positional & Exact HP/Drop Parity",
+            "ChaCha8 Deterministic PRNG Stream per Dungeon Instance (Bit-Exact Replay Verification)",
+            [
+                "Golden Trace epsilon <= 0.05 Positional Parity Across 10,000 Replay Ticks",
+                "100% Bit-Exact Queen Ant Ring Drop & Spoil Table Reproduction from Seed",
+                "Client Prediction <-> Server Reconciliation Rollback Zero-Desync Pass",
+            ],
+        ),
+        (
+            "botsim-13-replay-escapement-anvil-plus15-refinement-cas-probe",
+            "Escapement Anvil (Oren Forge) — +1..+15 Enchant, Dualsword Craft & Mammon CAS Replay Probe",
+            "Deterministic_Replay_Desync_Probe",
+            "zone-town-escapement-anvil",
+            "",
+            "",
+            "Backend Simulation & Infra Tools Engineer & LiveOps, Build & GM Tools Engineer",
+            "50,000 Simulated Enchant & Dualsword Transactions · 0.00% State Divergence",
+            "Optimistic Concurrency Control (OCC SHA-256 Revision) + Append-Only GM Audit Ledger",
+            [
+                "Zero Item Duplication or Lost Crystal Split Under Concurrent Packet Injection",
+                "Deterministic +1..+15 Failure Crystal Yield & Blessed Scroll Reset Replay",
+                "1-Click GM Inventory Rollback Point-in-Time Snapshot Verification",
+            ],
+        ),
+        (
+            "botsim-14-replay-star-heart-nave-3f-olympiad-coliseum-combat-probe",
+            "Star-Heart Nave 3F — Olympiad & 9v9 Coliseum Skill-Cancel, Lethal & Debuff Replay Probe",
+            "Deterministic_Replay_Desync_Probe",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "Backend Simulation & Infra Tools Engineer",
+            "25,000 Simulated PvP Duel & 9v9 Match Ticks · 100% Frame-Exact Cooldown & Buff Parity",
+            "Fixed-Point 50ms Tick Combat Resolver (Deterministic Cast-Interrupt & Status Resist Ordering)",
+            [
+                "Zero Order-Dependent Tie-Break Drift in Simultaneous Lethal/Cancel Casts",
+                "150/300 Elemental Attribute vs. Armor Resistance Formula Exactness",
+                "Full Match Replay File (< 180 KB Compressed) Playback in Web Studio Inspector",
+            ],
+        ),
+        (
+            "botsim-15-replay-forbidden-path-b3-ekimus-tiat-seed-state-probe",
+            "Catacomb of the Forbidden Path B3 — Seed Stage 1–5 & Seven Signs Weekly Transition Probe",
+            "Deterministic_Replay_Desync_Probe",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "Backend Simulation & Infra Tools Engineer & Lead Tools & Pipeline Architect",
+            "30-Day Accelerated World Clock Replay (720h Simulated in 18s) · Zero FSM Deadlock",
+            "Deterministic World-Epoch State Machine (Dawn/Dusk Seal Flip + Ekimus/Tiat Cycle)",
+            [
+                "Zero State-Machine Deadlock Across 100 Simulated Weekly Seven-Signs Flips",
+                "Blacksmith/Merchant of Mammon Spawn Rotation 100% Seed-Reproducible",
+                "Crash-Recovery Snapshot Restore (< 350ms Cold Boot to Exact Tick)",
+            ],
+        ),
+        (
+            "botsim-16-replay-caldera-rim-movement-obstruction-desync-probe",
+            "Mainspring Caldera Rim — Steep Terrace, Knockback & Bridge Navigation Desync Probe",
+            "Deterministic_Replay_Desync_Probe",
+            "zone-field-caldera-rim",
+            "",
+            "",
+            "Backend Simulation & Infra Tools Engineer & Technical Artist (Pipeline & DCC)",
+            "5,000 Knockback, Rush-Impact & Elevation Transitions · epsilon <= 0.02m NavMesh Parity",
+            "Shared NavMesh Heightfield Triangle Query Between Godot Client & server-rs",
+            [
+                "Zero Fall-Through-Terrain or Cliff-Clip Desync on Rush/Knockback Skills",
+                "Client Godot NavigationRegion3D <-> server-rs Heightfield <= 0.02m Delta",
+                "Automated Stuck-Character Detection & Safe-Spot Recovery Trigger Verified",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        sid,
+        sname,
+        scat,
+        zid,
+        did,
+        fid,
+        orole,
+        bbudget,
+        srule,
+        sassert,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx - 145 + idx * 14, by - 155 + idx * 12)
+        rows.append(
+            {
+                "sector_id": sid,
+                "sector_name": sname,
+                "simulation_category": scat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "owner_engineer_role": orole,
+                "bot_concurrency_and_tick_budget": bbudget,
+                "spatial_partition_and_aoi_rule": srule,
+                "stress_test_assertions": sassert,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -14407,6 +15023,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("dualsword_craft_unseal_forges") or []) < 15:
         atlas["dualsword_craft_unseal_forges"] = _build_dualsword_craft_unseal_forges(atlas)
         actions.append("populated_15_dualsword_craft_unseal_forges")
+
+    # 55. Ensure all 16 Technical Artist 3-Tier GLB Asset Resolve, Poly/Bone Validator & Godot Chunk Baking Gates exist in `tech_art_asset_pipeline_gates` (D71)
+    if len(atlas.get("tech_art_asset_pipeline_gates") or []) < 16:
+        atlas["tech_art_asset_pipeline_gates"] = _build_tech_art_asset_pipeline_gates(atlas)
+        actions.append("populated_16_tech_art_asset_pipeline_gates")
+
+    # 56. Ensure all 16 Backend 10,000-Bot Swarm Simulator, Spatial Partitioning & Deterministic Replay Sectors exist in `backend_bot_swarm_simulation_sectors` (D72)
+    if len(atlas.get("backend_bot_swarm_simulation_sectors") or []) < 16:
+        atlas["backend_bot_swarm_simulation_sectors"] = _build_backend_bot_swarm_simulation_sectors(atlas)
+        actions.append("populated_16_backend_bot_swarm_simulation_sectors")
 
     return {"actions": actions}
 
@@ -18313,15 +18939,153 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d70_ratio * 80.0, 1)
     )
 
+    # D71: Interactive 16-Node [Stage 2: Asset & Build Pipeline] Technical Artist 3-Tier GLB Asset Resolve, Poly/Bone Validator & Godot Chunk Baking Gates (`tech_art_asset_pipeline_gates` - 16 Gates: 6 Three_Tier_GLB_Asset_Gate + 5 Polygon_Bone_Shader_Validator + 5 Godot_World_Chunk_Streaming_Baker)
+    expected_pipeline_categories = {
+        "Three_Tier_GLB_Asset_Gate",
+        "Polygon_Bone_Shader_Validator",
+        "Godot_World_Chunk_Streaming_Baker",
+    }
+    tech_art_rows = atlas.get("tech_art_asset_pipeline_gates") or []
+    valid_tech_art_gates = 0
+    three_tier_glb_count = 0
+    poly_bone_validator_count = 0
+    godot_chunk_baker_count = 0
+    seen_tech_art_ids: set[str] = set()
+    seen_pipeline_categories: set[str] = set()
+    for trow in tech_art_rows:
+        if not isinstance(trow, dict):
+            continue
+        tgid = str(trow.get("gate_id") or "")
+        pcat = str(trow.get("pipeline_stage_category") or "")
+        zid = str(trow.get("zone_id") or "")
+        did = str(trow.get("dungeon_id") or "")
+        fid = str(trow.get("floor_id") or "")
+        cival = trow.get("automated_ci_validators") or []
+        if (
+            tgid
+            and tgid not in seen_tech_art_ids
+            and trow.get("gate_name")
+            and pcat in expected_pipeline_categories
+            and zid in zone_ids_set
+            and (did == "" or did in mf_dungeon_id_set)
+            and fid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(trow.get("loc", ""))
+            and trow.get("owner_role_npc")
+            and trow.get("asset_resolve_tier_status")
+            and trow.get("polygon_and_bone_budget")
+            and isinstance(cival, list)
+            and len(cival) >= 2
+        ):
+            valid_tech_art_gates += 1
+            seen_tech_art_ids.add(tgid)
+            seen_pipeline_categories.add(pcat)
+            if pcat == "Three_Tier_GLB_Asset_Gate":
+                three_tier_glb_count += 1
+            elif pcat == "Polygon_Bone_Shader_Validator":
+                poly_bone_validator_count += 1
+            elif pcat == "Godot_World_Chunk_Streaming_Baker":
+                godot_chunk_baker_count += 1
+
+    has_d71_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_TECH_ART_PIPELINE_MODE",
+            "setAtlasTechArtPipelineMode",
+            "renderAtlasTechArtPipelineBarHtml",
+            "studioTechArtPipelineOverlay",
+        )
+    )
+    d71_ratio = valid_tech_art_gates / 16.0
+    d71_full_coverage = (
+        three_tier_glb_count == 6
+        and poly_bone_validator_count == 5
+        and godot_chunk_baker_count == 5
+        and seen_pipeline_categories == expected_pipeline_categories
+    )
+    d71_score = (
+        round(min(100.0, d71_ratio * 100.0), 1)
+        if (has_d71_ui and d71_full_coverage)
+        else round(d71_ratio * 80.0, 1)
+    )
+
+    # D72: Interactive 16-Node [Stage 3: Server & Simulation] Backend 10,000-Bot Swarm Simulator, Spatial Partitioning & Deterministic Replay Sectors (`backend_bot_swarm_simulation_sectors` - 16 Sectors: 6 Headless_10k_Bot_Swarm_Sector + 5 Spatial_Grid_AOI_Partition_Cell + 5 Deterministic_Replay_Desync_Probe)
+    expected_simulation_categories = {
+        "Headless_10k_Bot_Swarm_Sector",
+        "Spatial_Grid_AOI_Partition_Cell",
+        "Deterministic_Replay_Desync_Probe",
+    }
+    bot_swarm_rows = atlas.get("backend_bot_swarm_simulation_sectors") or []
+    valid_bot_swarm_sectors = 0
+    headless_10k_swarm_count = 0
+    spatial_grid_aoi_count = 0
+    deterministic_replay_count = 0
+    seen_bot_swarm_ids: set[str] = set()
+    seen_simulation_categories: set[str] = set()
+    for srow in bot_swarm_rows:
+        if not isinstance(srow, dict):
+            continue
+        bsid = str(srow.get("sector_id") or "")
+        scat = str(srow.get("simulation_category") or "")
+        zid = str(srow.get("zone_id") or "")
+        did = str(srow.get("dungeon_id") or "")
+        fid = str(srow.get("floor_id") or "")
+        sassert = srow.get("stress_test_assertions") or []
+        if (
+            bsid
+            and bsid not in seen_bot_swarm_ids
+            and srow.get("sector_name")
+            and scat in expected_simulation_categories
+            and zid in zone_ids_set
+            and (did == "" or did in mf_dungeon_id_set)
+            and fid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(srow.get("loc", ""))
+            and srow.get("owner_engineer_role")
+            and srow.get("bot_concurrency_and_tick_budget")
+            and srow.get("spatial_partition_and_aoi_rule")
+            and isinstance(sassert, list)
+            and len(sassert) >= 2
+        ):
+            valid_bot_swarm_sectors += 1
+            seen_bot_swarm_ids.add(bsid)
+            seen_simulation_categories.add(scat)
+            if scat == "Headless_10k_Bot_Swarm_Sector":
+                headless_10k_swarm_count += 1
+            elif scat == "Spatial_Grid_AOI_Partition_Cell":
+                spatial_grid_aoi_count += 1
+            elif scat == "Deterministic_Replay_Desync_Probe":
+                deterministic_replay_count += 1
+
+    has_d72_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_BOT_SWARM_SIM_MODE",
+            "setAtlasBotSwarmSimMode",
+            "renderAtlasBotSwarmSimBarHtml",
+            "studioBotSwarmSimOverlay",
+        )
+    )
+    d72_ratio = valid_bot_swarm_sectors / 16.0
+    d72_full_coverage = (
+        headless_10k_swarm_count == 6
+        and spatial_grid_aoi_count == 5
+        and deterministic_replay_count == 5
+        and seen_simulation_categories == expected_simulation_categories
+    )
+    d72_score = (
+        round(min(100.0, d72_ratio * 100.0), 1)
+        if (has_d72_ui and d72_full_coverage)
+        else round(d72_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 52.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 54.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 54.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 64.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 53.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 60.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 54.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 56.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 56.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 66.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 55.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score) / 62.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -18396,8 +19160,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d68_score
             + d69_score
             + d70_score
+            + d71_score
+            + d72_score
         )
-        / 70.0,
+        / 72.0,
         1,
     )
 
@@ -18994,6 +19760,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "dualsword_tier_categories": sorted(seen_dualsword_categories),
                 "ui_wired": has_d70_ui,
             },
+            "D71_tech_art_asset_pipeline_and_chunk_bakers": {
+                "score": d71_score,
+                "verified": valid_tech_art_gates,
+                "target": 16,
+                "three_tier_glb_asset_gates": three_tier_glb_count,
+                "polygon_bone_shader_validators": poly_bone_validator_count,
+                "godot_world_chunk_streaming_bakers": godot_chunk_baker_count,
+                "pipeline_stage_categories": sorted(seen_pipeline_categories),
+                "ui_wired": has_d71_ui,
+            },
+            "D72_backend_bot_swarm_and_spatial_simulation_sectors": {
+                "score": d72_score,
+                "verified": valid_bot_swarm_sectors,
+                "target": 16,
+                "headless_10k_bot_swarm_sectors": headless_10k_swarm_count,
+                "spatial_grid_aoi_partition_cells": spatial_grid_aoi_count,
+                "deterministic_replay_desync_probes": deterministic_replay_count,
+                "simulation_categories": sorted(seen_simulation_categories),
+                "ui_wired": has_d72_ui,
+            },
         },
     }
 
@@ -19108,6 +19894,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D68 (24 Council Sign-Offs)  : {dims['D68_eight_hour_studio_council_signoff_ledger']['score']}/100 ({dims['D68_eight_hour_studio_council_signoff_ledger']['verified']}/{dims['D68_eight_hour_studio_council_signoff_ledger']['target']} council sign-off records)")
         print(f"  D69 (16 Champion/Herd Zones): {dims['D69_champion_mob_aura_and_herd_leader_grounds']['score']}/100 ({dims['D69_champion_mob_aura_and_herd_leader_grounds']['verified']}/{dims['D69_champion_mob_aura_and_herd_leader_grounds']['target']} champion/herd grounds)")
         print(f"  D70 (15 Dualsword Forges)   : {dims['D70_dualsword_craft_stamp_and_ishuma_unseal_forges']['score']}/100 ({dims['D70_dualsword_craft_stamp_and_ishuma_unseal_forges']['verified']}/{dims['D70_dualsword_craft_stamp_and_ishuma_unseal_forges']['target']} dualsword forges)")
+        print(f"  D71 (16 Tech-Art Gates)     : {dims['D71_tech_art_asset_pipeline_and_chunk_bakers']['score']}/100 ({dims['D71_tech_art_asset_pipeline_and_chunk_bakers']['verified']}/{dims['D71_tech_art_asset_pipeline_and_chunk_bakers']['target']} tech-art asset gates)")
+        print(f"  D72 (16 Bot Swarm Sectors)  : {dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['score']}/100 ({dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['verified']}/{dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['target']} bot swarm sectors)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

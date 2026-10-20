@@ -2766,7 +2766,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 70)
+        self.assertGreaterEqual(len(audit["dimensions"]), 70)
 
         d69 = audit["dimensions"]["D69_champion_mob_aura_and_herd_leader_grounds"]
         self.assertEqual(d69["score"], 100.0)
@@ -2820,10 +2820,110 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas70DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 70)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 70)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 70)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 70)
         self.assertIn("70-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave34_tech_art_asset_pipeline_gates_and_backend_bot_swarm_simulation_sectors(self) -> None:
+        from pathlib import Path
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+
+        agents_dir = Path(__file__).resolve().parent.parent / ".claude" / "agents"
+        for agent_file in (
+            "lead-tools-pipeline-architect.md",
+            "content-world-tools-engineer.md",
+            "technical-artist-pipeline-dcc.md",
+            "backend-simulation-infra-engineer.md",
+            "liveops-build-gm-engineer.md",
+        ):
+            self.assertTrue((agents_dir / agent_file).exists(), f"Missing squad agent file {agent_file}")
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_TECH_ART_PIPELINE_MODE",
+            "setAtlasTechArtPipelineMode",
+            "renderAtlasTechArtPipelineBarHtml",
+            "studioTechArtPipelineOverlay",
+            "Three_Tier_GLB_Asset_Gate",
+            "Polygon_Bone_Shader_Validator",
+            "Godot_World_Chunk_Streaming_Baker",
+            "ATLAS_BOT_SWARM_SIM_MODE",
+            "setAtlasBotSwarmSimMode",
+            "renderAtlasBotSwarmSimBarHtml",
+            "studioBotSwarmSimOverlay",
+            "Headless_10k_Bot_Swarm_Sector",
+            "Spatial_Grid_AOI_Partition_Cell",
+            "Deterministic_Replay_Desync_Probe",
+            "72-Dimension Semantic-Zoom Atlas Score",
+            "D1–D72 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 34 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 72)
+
+        d71 = audit["dimensions"]["D71_tech_art_asset_pipeline_and_chunk_bakers"]
+        self.assertEqual(d71["score"], 100.0)
+        self.assertEqual(d71["verified"], 16)
+        self.assertEqual(d71["target"], 16)
+        self.assertEqual(d71["three_tier_glb_asset_gates"], 6)
+        self.assertEqual(d71["polygon_bone_shader_validators"], 5)
+        self.assertEqual(d71["godot_world_chunk_streaming_bakers"], 5)
+        self.assertEqual(
+            set(d71["pipeline_stage_categories"]),
+            {
+                "Three_Tier_GLB_Asset_Gate",
+                "Polygon_Bone_Shader_Validator",
+                "Godot_World_Chunk_Streaming_Baker",
+            },
+        )
+        self.assertTrue(d71["ui_wired"])
+
+        d72 = audit["dimensions"]["D72_backend_bot_swarm_and_spatial_simulation_sectors"]
+        self.assertEqual(d72["score"], 100.0)
+        self.assertEqual(d72["verified"], 16)
+        self.assertEqual(d72["target"], 16)
+        self.assertEqual(d72["headless_10k_bot_swarm_sectors"], 6)
+        self.assertEqual(d72["spatial_grid_aoi_partition_cells"], 5)
+        self.assertEqual(d72["deterministic_replay_desync_probes"], 5)
+        self.assertEqual(
+            set(d72["simulation_categories"]),
+            {
+                "Headless_10k_Bot_Swarm_Sector",
+                "Spatial_Grid_AOI_Partition_Cell",
+                "Deterministic_Replay_Desync_Probe",
+            },
+        )
+        self.assertTrue(d72["ui_wired"])
+
+        gates = atlas["tech_art_asset_pipeline_gates"]
+        self.assertEqual(len(gates), 16)
+        self.assertEqual(sum(1 for g in gates if g["pipeline_stage_category"] == "Three_Tier_GLB_Asset_Gate"), 6)
+        self.assertEqual(sum(1 for g in gates if g["pipeline_stage_category"] == "Polygon_Bone_Shader_Validator"), 5)
+        self.assertEqual(sum(1 for g in gates if g["pipeline_stage_category"] == "Godot_World_Chunk_Streaming_Baker"), 5)
+        for g in gates:
+            self.assertGreaterEqual(len(g["automated_ci_validators"]), 2)
+
+        sectors = atlas["backend_bot_swarm_simulation_sectors"]
+        self.assertEqual(len(sectors), 16)
+        self.assertEqual(sum(1 for s in sectors if s["simulation_category"] == "Headless_10k_Bot_Swarm_Sector"), 6)
+        self.assertEqual(sum(1 for s in sectors if s["simulation_category"] == "Spatial_Grid_AOI_Partition_Cell"), 5)
+        self.assertEqual(sum(1 for s in sectors if s["simulation_category"] == "Deterministic_Replay_Desync_Probe"), 5)
+        for s in sectors:
+            self.assertGreaterEqual(len(s["stress_test_assertions"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas72DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 72)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 72)
+        self.assertIn("72-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
