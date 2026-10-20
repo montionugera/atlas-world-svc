@@ -738,6 +738,8 @@ def validate_world_governance(
                 "globalCdnWebrtcRelaysCount": len(t_doc.get("global_cdn_webrtc_relays") or []),
                 "caravanTradeRoutesCount": len(t_doc.get("caravan_trade_routes") or []),
                 "localizationVoiceoverBanksCount": len(t_doc.get("localization_voiceover_banks") or []),
+                "crossToolHotReloadBridgesCount": len(t_doc.get("cross_tool_hot_reload_bridges") or []),
+                "centennial100dStudioChartersCount": len(t_doc.get("centennial_100d_studio_charters") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -2160,6 +2162,38 @@ def validate_world_governance(
                 if vb_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: localization_voiceover_banks '{vb_id}' references unknown zone_id '{vb_zid}'"
+                    )
+
+            # Validate 16-Record Cross-Tool Hot-Reload WebSocket Bus, Undo/Redo Command Journal & Godot Live-Sync Bridge Matrix (D99)
+            hot_bridges = t_doc.get("cross_tool_hot_reload_bridges") or []
+            if hot_bridges and len(hot_bridges) < 16:
+                errors.append(
+                    f"GOV-10 violation: cross_tool_hot_reload_bridges must have at least 16 records, got {len(hot_bridges)}"
+                )
+            for hb_item in hot_bridges:
+                if not isinstance(hb_item, dict):
+                    continue
+                hb_id = str(hb_item.get("bridge_id", ""))
+                hb_zid = str(hb_item.get("zone_id", ""))
+                if hb_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: cross_tool_hot_reload_bridges '{hb_id}' references unknown zone_id '{hb_zid}'"
+                    )
+
+            # Validate 22-Record 100D Centennial Studio Milestone Grand Charter & Guided Tour Matrix (D100)
+            centennial_charters = t_doc.get("centennial_100d_studio_charters") or []
+            if centennial_charters and len(centennial_charters) < 22:
+                errors.append(
+                    f"GOV-10 violation: centennial_100d_studio_charters must have at least 22 records, got {len(centennial_charters)}"
+                )
+            for cc_item in centennial_charters:
+                if not isinstance(cc_item, dict):
+                    continue
+                cc_id = str(cc_item.get("charter_id", ""))
+                cc_zid = str(cc_item.get("zone_id", ""))
+                if cc_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: centennial_100d_studio_charters '{cc_id}' references unknown zone_id '{cc_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

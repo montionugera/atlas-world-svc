@@ -4216,7 +4216,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 98)
+        self.assertGreaterEqual(len(audit["dimensions"]), 98)
 
         d97 = audit["dimensions"]["D97_dynamic_caravan_trade_routes_bandit_ambush_and_arbitrage_matrix"]
         self.assertEqual(d97["score"], 100.0)
@@ -4290,10 +4290,135 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas98DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 98)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 98)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 98)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 98)
         self.assertIn("98-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave48_hot_reload_bridges_and_centennial_100d_studio_charters(self) -> None:
+        """Wave 48 (D99 & D100): Verify 16 Cross-Tool Hot-Reload Bridges and 22 100D Centennial Studio Charters."""
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        t_summary = report["summary"]["tShapedAtlasSummary"]
+        self.assertEqual(t_summary["crossToolHotReloadBridgesCount"], 16)
+        self.assertEqual(t_summary["centennial100dStudioChartersCount"], 22)
+
+        index_html = web.INDEX_HTML
+        for token in (
+            "CROSS_TOOL_BRIDGES",
+            "ATLAS_HOT_RELOAD_BRIDGE_MODE",
+            "setAtlasHotReloadBridgeMode",
+            "selectCrossToolBridge",
+            "renderAtlasHotReloadBridgeBarHtml",
+            "studioCrossToolBridgesOverlay",
+            "CENTENNIAL_100D_CHARTERS",
+            "ATLAS_CENTENNIAL_100D_MODE",
+            "setAtlasCentennial100dMode",
+            "selectCentennial100dCharter",
+            "renderAtlasCentennial100dBarHtml",
+            "studioCentennial100dChartersOverlay",
+            "⚡ Hot-Reload Bridges (16)",
+            "👑 100D Centennial Charter (22)",
+            "100-Dimension Semantic-Zoom Atlas Score",
+            "D1–D100 Verified",
+        ):
+            self.assertIn(token, index_html)
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.evaluate_80d_atlas(whc, atlas)
+        self.assertEqual(audit["wave"], 48)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 100)
+
+        d99 = audit["dimensions"]["D99_cross_tool_hot_reload_websocket_bus_and_godot_live_sync_matrix"]
+        self.assertEqual(d99["score"], 100.0)
+        self.assertEqual(d99["verified"], 16)
+        self.assertEqual(d99["target"], 16)
+        self.assertTrue(d99["ui_wired"])
+
+        d100 = audit["dimensions"]["D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix"]
+        self.assertEqual(d100["score"], 100.0)
+        self.assertEqual(d100["verified"], 22)
+        self.assertEqual(d100["target"], 22)
+        self.assertTrue(d100["ui_wired"])
+
+        bridges = atlas["cross_tool_hot_reload_bridges"]
+        self.assertEqual(len(bridges), 16)
+        expected_channels = {
+            "Web-to-Godot @tool Scene Live-Patch",
+            "Web-to-Rust SpatialGrid Spawner Hot-Swap",
+            "Web-to-Postgres JSONB Schema Atomic Commit",
+            "Web-to-Redis LiveOps PubSub Broadcast",
+        }
+        seen_channels = set()
+        for b_row in bridges:
+            self.assertIn(b_row["bridge_channel"], expected_channels)
+            seen_channels.add(b_row["bridge_channel"])
+            self.assertTrue(str(b_row["websocket_topic"]).startswith("ws://studio-bus/hot-reload/"))
+            self.assertGreaterEqual(b_row["command_journal_depth"], 50)
+            self.assertLessEqual(b_row["command_journal_depth"], 200)
+            self.assertGreaterEqual(b_row["roundtrip_sync_p99_ms"], 12.0)
+            self.assertLessEqual(b_row["roundtrip_sync_p99_ms"], 48.0)
+            self.assertEqual(b_row["conflict_resolution_mode"], "SHA-256 OCC Precondition + CRDT Field Merge")
+            self.assertEqual(b_row["auto_ci_drift_gate"], "GOV-01..GOV-10 Pre-Commit Pass")
+        self.assertEqual(seen_channels, expected_channels)
+
+        charters = atlas["centennial_100d_studio_charters"]
+        self.assertEqual(len(charters), 22)
+        expected_rings = {
+            "Ring A: Creative Council",
+            "Ring B: Platform & Tools Squad",
+        }
+        expected_roles = {
+            "Product Owner",
+            "Game Designer Lead",
+            "Player Growth Path Designer",
+            "Game Story Designer",
+            "Monster & Mob Designer",
+            "Lead Systems & Map Architect",
+            "Lead Tools & Pipeline Architect",
+            "Content & World Tools Engineer",
+            "Technical Artist (Pipeline & DCC)",
+            "Backend Simulation & Infra Tools Engineer",
+            "LiveOps, Build & GM Tools Engineer",
+        }
+        expected_stages = {
+            "[Stage 1: Content & World]",
+            "[Stage 2: Asset & Build Pipeline]",
+            "[Stage 3: Server & Simulation]",
+            "[Stage 4: LiveOps & GM]",
+        }
+        seen_rings = set()
+        seen_roles = set()
+        seen_stages = set()
+        for c_row in charters:
+            self.assertIn(c_row["ring"], expected_rings)
+            seen_rings.add(c_row["ring"])
+            self.assertIn(c_row["role_name"], expected_roles)
+            seen_roles.add(c_row["role_name"])
+            self.assertIn(c_row["stage_domain"], expected_stages)
+            seen_stages.add(c_row["stage_domain"])
+            self.assertTrue(c_row["centennial_dimension_span"])
+            self.assertGreaterEqual(c_row["camera_zoom_preset"], 1.5)
+            self.assertLessEqual(c_row["camera_zoom_preset"], 9.5)
+            self.assertTrue(c_row["golden_invariant_proof"])
+            self.assertEqual(c_row["charter_status"], "APPROVED_100D_CENTENNIAL_PLATINUM")
+        self.assertEqual(seen_rings, expected_rings)
+        self.assertEqual(seen_roles, expected_roles)
+        self.assertEqual(seen_stages, expected_stages)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas100DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 100)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 100)
+        self.assertIn("100-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

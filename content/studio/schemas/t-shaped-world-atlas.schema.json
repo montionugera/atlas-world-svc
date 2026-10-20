@@ -503,6 +503,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/localizationVoiceoverBankSpec" }
     },
+    "cross_tool_hot_reload_bridges": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/crossToolHotReloadBridgeSpec" }
+    },
+    "centennial_100d_studio_charters": {
+      "type": "array",
+      "minItems": 22,
+      "maxItems": 22,
+      "items": { "$ref": "#/$defs/centennial100dStudioCharterSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -5798,6 +5810,163 @@
         "accent": {
           "type": "string",
           "enum": ["#ec4899", "#f472b6", "#a855f7", "#38bdf8"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "crossToolHotReloadBridgeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bridge_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "bridge_channel",
+        "websocket_topic",
+        "command_journal_depth",
+        "roundtrip_sync_p99_ms",
+        "conflict_resolution_mode",
+        "auto_ci_drift_gate",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "bridge_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "town_id": { "type": "string", "minLength": 1 },
+        "zone_id": { "type": "string", "minLength": 1 },
+        "bridge_channel": {
+          "type": "string",
+          "enum": [
+            "Web-to-Godot @tool Scene Live-Patch",
+            "Web-to-Rust SpatialGrid Spawner Hot-Swap",
+            "Web-to-Postgres JSONB Schema Atomic Commit",
+            "Web-to-Redis LiveOps PubSub Broadcast"
+          ]
+        },
+        "websocket_topic": {
+          "type": "string",
+          "pattern": "^ws://studio-bus/hot-reload/(town|spawner|schema|liveops)/.+"
+        },
+        "command_journal_depth": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 200
+        },
+        "roundtrip_sync_p99_ms": {
+          "type": "number",
+          "minimum": 12.0,
+          "maximum": 48.0
+        },
+        "conflict_resolution_mode": {
+          "type": "string",
+          "const": "SHA-256 OCC Precondition + CRDT Field Merge"
+        },
+        "auto_ci_drift_gate": {
+          "type": "string",
+          "const": "GOV-01..GOV-10 Pre-Commit Pass"
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#38bdf8", "#60a5fa", "#a855f7", "#34d399"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "centennial100dStudioCharterSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "charter_id",
+        "title",
+        "ring",
+        "role_name",
+        "stage_domain",
+        "centennial_dimension_span",
+        "town_id",
+        "zone_id",
+        "camera_zoom_preset",
+        "golden_invariant_proof",
+        "charter_status",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "charter_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "ring": {
+          "type": "string",
+          "enum": [
+            "Ring A: Creative Council",
+            "Ring B: Platform & Tools Squad"
+          ]
+        },
+        "role_name": {
+          "type": "string",
+          "enum": [
+            "Product Owner",
+            "Game Designer Lead",
+            "Player Growth Path Designer",
+            "Game Story Designer",
+            "Monster & Mob Designer",
+            "Lead Systems & Map Architect",
+            "Lead Tools & Pipeline Architect",
+            "Content & World Tools Engineer",
+            "Technical Artist (Pipeline & DCC)",
+            "Backend Simulation & Infra Tools Engineer",
+            "LiveOps, Build & GM Tools Engineer"
+          ]
+        },
+        "stage_domain": {
+          "type": "string",
+          "enum": [
+            "[Stage 1: Content & World]",
+            "[Stage 2: Asset & Build Pipeline]",
+            "[Stage 3: Server & Simulation]",
+            "[Stage 4: LiveOps & GM]"
+          ]
+        },
+        "centennial_dimension_span": { "type": "string", "minLength": 1 },
+        "town_id": { "type": "string", "minLength": 1 },
+        "zone_id": { "type": "string", "minLength": 1 },
+        "camera_zoom_preset": {
+          "type": "number",
+          "minimum": 1.5,
+          "maximum": 9.5
+        },
+        "golden_invariant_proof": { "type": "string", "minLength": 1 },
+        "charter_status": {
+          "type": "string",
+          "const": "APPROVED_100D_CENTENNIAL_PLATINUM"
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#facc15", "#fde047", "#f59e0b", "#38bdf8", "#a855f7"]
         },
         "notes": { "type": "string" }
       }

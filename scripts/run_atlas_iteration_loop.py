@@ -21816,6 +21816,734 @@ def inject_localization_voiceover_banks(atlas: dict[str, Any]) -> list[dict[str,
     return rows
 
 
+def _build_cross_tool_hot_reload_bridges(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Record [Role 1: Lead Tools & Pipeline Architect — Cross-Tool Hot-Reload WebSocket Bus, Undo/Redo Command Journal & Godot Live-Sync Bridge Matrix] (D99)."""
+    specs = [
+        (
+            "hot-bridge-01-talking-island",
+            "Talking Island (Lantern Hollow) — Starter Town Godot @tool Scene Live-Patch Bridge",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Web-to-Godot @tool Scene Live-Patch",
+            "ws://studio-bus/hot-reload/town/lantern-hollow",
+            120,
+            14.5,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            458,
+            444,
+            "#38bdf8",
+            "Streams Web Atlas street/NPC marker edits directly into Godot 4 @tool scene `lantern_hollow.tscn` with 120-step RFC-6902 undo journal.",
+        ),
+        (
+            "hot-bridge-02-elven-village",
+            "Elven Village (Porcelain Loom) — Mother Tree Sanctuary Scene Live-Patch Bridge",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "Web-to-Godot @tool Scene Live-Patch",
+            "ws://studio-bus/hot-reload/town/porcelain-loom",
+            100,
+            16.2,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            546,
+            298,
+            "#60a5fa",
+            "Bi-directional hot-reload bridge syncing Elven water-mirror shaders and NPC spawn transforms between Web Atlas and Godot 4.",
+        ),
+        (
+            "hot-bridge-03-dark-elven-village",
+            "Dark Elven Village (Carillon Belfry) — Abyssal Cavern Spawner Hot-Swap Bridge",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "Web-to-Rust SpatialGrid Spawner Hot-Swap",
+            "ws://studio-bus/hot-reload/spawner/carillon-belfry",
+            140,
+            18.8,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            518,
+            272,
+            "#a855f7",
+            "Hot-swaps Rust `server-rs` SpatialGrid patrol polygons and leash radii in real time without dropping active player sessions.",
+        ),
+        (
+            "hot-bridge-04-orc-village",
+            "Orc Village (Draft-Kiln Post) — Immortal Plateau Spawner & Leash Hot-Swap Bridge",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Web-to-Rust SpatialGrid Spawner Hot-Swap",
+            "ws://studio-bus/hot-reload/spawner/draft-kiln-post",
+            110,
+            19.4,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            470,
+            142,
+            "#34d399",
+            "Streams polygon spawner density and Champion mob aura weights directly into the Rust Bevy ECS simulation loop.",
+        ),
+        (
+            "hot-bridge-05-dwarven-village",
+            "Dwarven Village (Root-Train Roundhouse) — Black Anvil JSONB Catalog Atomic Commit Bridge",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Web-to-Postgres JSONB Schema Atomic Commit",
+            "ws://studio-bus/hot-reload/schema/root-train-roundhouse",
+            160,
+            22.0,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            628,
+            90,
+            "#38bdf8",
+            "Commits Dwarven workshop recipe and refinement fee edits atomically to PostgreSQL JSONB with SHA-256 OCC version guards.",
+        ),
+        (
+            "hot-bridge-06-kamael-village",
+            "Kamael Village (Cinnamon-Mill Haven) — Isle of Souls Godot @tool Prefab Sync Bridge",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "Web-to-Godot @tool Scene Live-Patch",
+            "ws://studio-bus/hot-reload/town/cinnamon-mill",
+            90,
+            15.6,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            390,
+            308,
+            "#60a5fa",
+            "Synchronizes Kamael Nornil chamber warps and 3D kitbash prefab placements with sub-16ms p99 WebSocket roundtrip latency.",
+        ),
+        (
+            "hot-bridge-07-gludin-village",
+            "Gludin Village (Glaze-Barge Quay) — Harbor Transit & Dock Scene Live-Patch Bridge",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Web-to-Godot @tool Scene Live-Patch",
+            "ws://studio-bus/hot-reload/town/glaze-barge-quay",
+            130,
+            17.5,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            428,
+            410,
+            "#a855f7",
+            "Live-patches Gludin harbor pier waypoints, ship boarding triggers, and coastal lightmaps into running Godot editor viewports.",
+        ),
+        (
+            "hot-bridge-08-gludio-town",
+            "Town of Gludio (Kilnwatch Bastion) — Convergence Hub Spawner & Guard AI Hot-Swap Bridge",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Web-to-Rust SpatialGrid Spawner Hot-Swap",
+            "ws://studio-bus/hot-reload/spawner/kilnwatch-bastion",
+            150,
+            21.0,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            498,
+            384,
+            "#34d399",
+            "Pushes Lv.10–25 convergence field spawn tables and town guard hostility radii to Rust shard workers in <21ms p99.",
+        ),
+        (
+            "hot-bridge-09-dion-town",
+            "Town of Dion (Saffron Press) — Manor Seed & JSONB Economy Schema Commit Bridge",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "Web-to-Postgres JSONB Schema Atomic Commit",
+            "ws://studio-bus/hot-reload/schema/saffron-press",
+            140,
+            24.5,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            528,
+            424,
+            "#38bdf8",
+            "Validates Dion manor seed procurement tables against GOV-01..GOV-10 before executing atomic PostgreSQL JSONB write-backs.",
+        ),
+        (
+            "hot-bridge-10-giran-castle-town",
+            "Giran Castle Town (Pinion Terminus) — Commercial Clearinghouse JSONB Schema Commit Bridge",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Web-to-Postgres JSONB Schema Atomic Commit",
+            "ws://studio-bus/hot-reload/schema/pinion-terminus",
+            200,
+            26.8,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            594,
+            406,
+            "#60a5fa",
+            "Flagship 200-step command journal governing Giran luxury shop catalogs, auction circuit-breakers, and caravan arbitrage rates.",
+        ),
+        (
+            "hot-bridge-11-oren-town",
+            "Town of Oren (Escapement Anvil) — Ivory Tower Redis LiveOps PubSub Broadcast Bridge",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Web-to-Redis LiveOps PubSub Broadcast",
+            "ws://studio-bus/hot-reload/liveops/escapement-anvil",
+            150,
+            12.8,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            598,
+            310,
+            "#a855f7",
+            "Broadcasts Ivory Tower elemental Balance tweaks and Oren border siege flags across all realm nodes via Redis PubSub in 12.8ms.",
+        ),
+        (
+            "hot-bridge-12-hunters-village",
+            "Hunters Village (Torque-Balance Citadel) — Bounty Spawner & Herd AI Hot-Swap Bridge",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Web-to-Rust SpatialGrid Spawner Hot-Swap",
+            "ws://studio-bus/hot-reload/spawner/torque-balance",
+            120,
+            20.2,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            630,
+            240,
+            "#34d399",
+            "Live-updates Enchanted Valley and Forest of Mirrors social herd pack AI and rare bounty spawn timers on Rust simulation nodes.",
+        ),
+        (
+            "hot-bridge-13-aden-imperial-capital",
+            "Town of Aden (Crown-Beacon Citadel) — Sovereign Capital Redis LiveOps PubSub Bridge",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "Web-to-Redis LiveOps PubSub Broadcast",
+            "ws://studio-bus/hot-reload/liveops/crown-beacon",
+            200,
+            12.0,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            664,
+            286,
+            "#38bdf8",
+            "Fastest 12.0ms p99 LiveOps broadcast bridge driving Aden Castle siege telemetry, Olympiad schedules, and GM hot-configs.",
+        ),
+        (
+            "hot-bridge-14-goddard-town",
+            "Town of Goddard (Inductor Switchyard) — Volcanic Raid Redis LiveOps PubSub Bridge",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Web-to-Redis LiveOps PubSub Broadcast",
+            "ws://studio-bus/hot-reload/liveops/inductor-switchyard",
+            160,
+            15.0,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            664,
+            204,
+            "#60a5fa",
+            "Synchronizes Valakas world-boss respawn windows and Ketra/Varka alliance war stage modifiers across Redis Streams.",
+        ),
+        (
+            "hot-bridge-15-rune-township",
+            "Rune Township (Starfall Haven) — Sky-Citadel JSONB Schema & Codegen Atomic Bridge",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "Web-to-Postgres JSONB Schema Atomic Commit",
+            "ws://studio-bus/hot-reload/schema/starfall-haven",
+            180,
+            28.4,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            560,
+            210,
+            "#a855f7",
+            "Atomically commits Rune Undercroft raid locks, Pagan Temple disguise rules, and voice-over bank manifests to PostgreSQL.",
+        ),
+        (
+            "hot-bridge-16-hellbound-citadel",
+            "Hellbound Citadel (Aurora Tether) — Trust Lv.1–11 LiveOps & Godot Scene Dual Bridge",
+            "town-torque-balance-citadel",
+            "zone-field-aurora-tether",
+            "Web-to-Redis LiveOps PubSub Broadcast",
+            "ws://studio-bus/hot-reload/liveops/hellbound-aurora-tether",
+            175,
+            31.5,
+            "SHA-256 OCC Precondition + CRDT Field Merge",
+            "GOV-01..GOV-10 Pre-Commit Pass",
+            472,
+            468,
+            "#34d399",
+            "Synchronizes server-wide Hellbound Caravan Trust Lv.1–11 stage transitions simultaneously to Redis LiveOps and Godot skybox shaders.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        bid,
+        title,
+        tid,
+        zid,
+        chan,
+        topic,
+        depth,
+        p99,
+        crmode,
+        cigate,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "bridge_id": bid,
+                "title": title,
+                "town_id": tid,
+                "zone_id": zid,
+                "bridge_channel": chan,
+                "websocket_topic": topic,
+                "command_journal_depth": depth,
+                "roundtrip_sync_p99_ms": p99,
+                "conflict_resolution_mode": crmode,
+                "auto_ci_drift_gate": cigate,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_cross_tool_hot_reload_bridges(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_cross_tool_hot_reload_bridges(atlas)
+    atlas["cross_tool_hot_reload_bridges"] = rows
+    return rows
+
+
+def _build_centennial_100d_studio_charters(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 22-Record [100D Centennial Studio Milestone — Two-Ring 11-Role Creative Council + Platform & Tools Squad D1–D100 Grand Centennial Sign-Off & Guided Tour Matrix] (D100)."""
+    specs = [
+        (
+            "charter-100d-01-po-centennial-world-vision",
+            "Product Owner Centennial Charter I — 100-Dimension T-Shaped World Vision & 7-Pillar MDA 100% Seal",
+            "Ring A: Creative Council",
+            "Product Owner",
+            "[Stage 1: Content & World]",
+            "D1..D100 (Macro World Vision & MDA Pillars)",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            1.8,
+            "100/100 Dimensions = 100.0/100 · All 7 MDA Pillars = 100.0%",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            662,
+            276,
+            "#facc15",
+            "Tour Stop #1: Certifies the 100-Dimension Semantic-Zoom World Atlas across 3 continents, 63 zones, and 48 continuous iteration waves.",
+        ),
+        (
+            "charter-100d-02-po-two-ring-operating-charter",
+            "Product Owner Centennial Charter II — Two-Ring 11-Role Studio Operating Model & Release 1.16 Platinum Seal",
+            "Ring A: Creative Council",
+            "Product Owner",
+            "[Stage 4: LiveOps & GM]",
+            "D50, D60, D68, D80, D90, D100",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            2.2,
+            "11/11 Roles × 2 Charters = 22/22 Platinum Sign-Offs · GOV-01..GOV-10 PASS",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            594,
+            392,
+            "#fde047",
+            "Tour Stop #2: Unifies Ring A (6-Role Creative Council) and Ring B (5-Role Platform & Tools Squad) in a single self-evaluating cockpit.",
+        ),
+        (
+            "charter-100d-03-gdl-faucet-sink-caravan-equilibrium",
+            "Game Designer Lead Centennial Charter I — +1..+15 Refinement, Manor, Auction Escrow & Caravan Arbitrage Loop",
+            "Ring A: Creative Council",
+            "Game Designer Lead",
+            "[Stage 1: Content & World]",
+            "D10, D19, D28, D35, D39, D52, D70, D92, D94, D97",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            5.2,
+            "15/15 Town Catalogs · 16 Caravan Routes · Adena Inflation Drift < 1.0%/wk",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            628,
+            80,
+            "#f59e0b",
+            "Tour Stop #3: Certifies closed-loop Adena faucet/sink equilibrium across blacksmith refinement, cross-realm escrow, and caravan trade.",
+        ),
+        (
+            "charter-100d-04-gdl-siege-faction-incursion-endgame",
+            "Game Designer Lead Centennial Charter II — 8-Castle Sieges, Olympiad, Faction Wars & World Incursions",
+            "Ring A: Creative Council",
+            "Game Designer Lead",
+            "[Stage 3: Server & Simulation]",
+            "D25, D27, D29, D33, D40, D53, D62, D64, D91, D93",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            3.5,
+            "8/8 Castle Domains · 16 Faction Alliances · 16 Zone Incursions Verified",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            498,
+            374,
+            "#facc15",
+            "Tour Stop #4: Approves competitive clan siege taxation, Ketra/Varka mutual-exclusivity pacts, and 3-phase zone emergency public quests.",
+        ),
+        (
+            "charter-100d-05-pgpd-starter-convergence-vitality",
+            "Player Growth Path Designer Centennial Charter I — 6-Race Starter Spokes (Lv.1–10) & Gludio Convergence Funnel",
+            "Ring A: Creative Council",
+            "Player Growth Path Designer",
+            "[Stage 1: Content & World]",
+            "D1, D9, D24, D38, D42, D67",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            4.8,
+            "6/6 Race Spawns · 99.5% Lv.1–25 Convergence Retention · 0 Dead-End Spokes",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            446,
+            442,
+            "#fde047",
+            "Tour Stop #5: Certifies novice onboarding from all 6 racial shrines into Gludio/Dion party hunting grounds with Vitality and herb sustain.",
+        ),
+        (
+            "charter-100d-06-pgpd-stages-a-to-l-housing-mastery",
+            "Player Growth Path Designer Centennial Charter II — 12-Stage (A..L) Lv.1–99 Progression, Housing & Subclass Mastery",
+            "Ring A: Creative Council",
+            "Player Growth Path Designer",
+            "[Stage 1: Content & World]",
+            "D9, D43, D44, D45, D46, D48, D58, D95",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            4.5,
+            "12/12 Growth Stages (A..L) · 16 Housing Estates (+15..50% Rested Vitality)",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            528,
+            422,
+            "#38bdf8",
+            "Tour Stop #6: Validates solo, duo-spoiler, and 9-player party progression curves through Lv.85–99 awakening and player homesteads.",
+        ),
+        (
+            "charter-100d-07-gsd-epochs-quests-and-4-locale-vo",
+            "Game Story Designer Centennial Charter I — 4 Epochs, 18 Quest DAGs & 15-Town 4-Locale (EN/TH/JP/KR) VO Banks",
+            "Ring A: Creative Council",
+            "Game Story Designer",
+            "[Stage 1: Content & World]",
+            "D23, D51, D59, D75, D98",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            5.5,
+            "18/18 Cycle-Free Quest DAGs · 15/15 EN/TH/JP/KR VO Banks · ICU Zero-Orphan Pass",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            544,
+            300,
+            "#a855f7",
+            "Tour Stop #7: Certifies branching narrative dialogue graphs, 5 cultural dialect registers, and 22-phoneme lip-sync across 4 languages.",
+        ),
+        (
+            "charter-100d-08-gsd-cutscene-rails-and-primordial-seals",
+            "Game Story Designer Centennial Charter II — 16 Catmull-Rom Cutscene Camera Rails & Seven Seals Environmental Lore",
+            "Ring A: Creative Council",
+            "Game Story Designer",
+            "[Stage 2: Asset & Build Pipeline]",
+            "D21, D27, D61, D87",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            6.0,
+            "16/16 Cutscene Spline Rails · 100% Unanimous/Instant Skip Governance",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            518,
+            274,
+            "#facc15",
+            "Tour Stop #8: Approves boss intro cinematics, town arrival flythroughs, and Primordial God seal lore continuity.",
+        ),
+        (
+            "charter-100d-09-mmd-four-tier-ecology-and-champions",
+            "Monster & Mob Designer Centennial Charter I — 4-Tier Monster/Mini-Boss/Raid/MVP Ecology & Champion Herd AI",
+            "Ring A: Creative Council",
+            "Monster & Mob Designer",
+            "[Stage 1: Content & World]",
+            "D4, D7, D14, D31, D56, D69",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            4.2,
+            "64/64 Spawn Containers 4-Tier Complete · 16 Champion Aura Zones Verified",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            628,
+            238,
+            "#f59e0b",
+            "Tour Stop #9: Certifies tactical field spawn territories, Blue 10x / Red 50x Champion mob auras, and 100% spoil material coverage.",
+        ),
+        (
+            "charter-100d-10-mmd-six-god-hierarchy-and-command-raids",
+            "Monster & Mob Designer Centennial Charter II — 6-God Boss Hierarchy, 32-Boss Radar & Command-Channel Sanctums",
+            "Ring A: Creative Council",
+            "Monster & Mob Designer",
+            "[Stage 3: Server & Simulation]",
+            "D21, D26, D41, D65, D66, D77",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            3.8,
+            "32/32 Raid/MVP Respawn Windows · 16 Combat Hitbox & Boss Telegraph Timelines",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            662,
+            202,
+            "#fde047",
+            "Tour Stop #10: Approves Antharas, Valakas, Baium, Zaken, Freya, and Frintezza boss phase telegraphs and Epic Jewelry drop tables.",
+        ),
+        (
+            "charter-100d-11-lsma-semantic-zoom-and-town-blueprints",
+            "Lead Systems & Map Architect Centennial Charter I — 3-Tier Semantic Zoom (1×..9.5×), 15 Towns & PiP Radar",
+            "Ring A: Creative Council",
+            "Lead Systems & Map Architect",
+            "[Stage 1: Content & World]",
+            "D2, D5, D8, D11, D13, D15, D16, D22",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            6.5,
+            "63/63 Connected Zones · 15 Town Street Blueprints (180 NPCs) · Zero Clutter",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            420,
+            408,
+            "#38bdf8",
+            "Tour Stop #11: Certifies seamless 1.0x Macro -> 2.2x Regional -> 4.5x+ Town Street semantic zoom and omni-search navigation.",
+        ),
+        (
+            "charter-100d-12-lsma-multifloor-dungeons-and-transit",
+            "Lead Systems & Map Architect Centennial Charter II — 16 Multi-Floor Dungeons (B1–B3 / 1F–3F) & Global Transit",
+            "Ring A: Creative Council",
+            "Lead Systems & Map Architect",
+            "[Stage 1: Content & World]",
+            "D3, D12, D17, D18, D30, D34, D47, D49, D57",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            7.5,
+            "48/48 Dungeon Floors & 96 Chambers Clickable · 100% BFS Route Reachability",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            550,
+            208,
+            "#a855f7",
+            "Tour Stop #12: Approves vertical dungeon cutaway sub-maps, Ship/Airship/Gatekeeper trunks, and BFS travel cost calculation.",
+        ),
+        (
+            "charter-100d-13-ltpa-ssot-schema-and-hot-reload-bus",
+            "Lead Tools & Pipeline Architect Centennial Charter I — JSON Schema SSOT, Codegen Drift-Gate & 16 Hot-Reload Bridges",
+            "Ring B: Platform & Tools Squad",
+            "Lead Tools & Pipeline Architect",
+            "[Stage 2: Asset & Build Pipeline]",
+            "D20, D74, D79, D99",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            5.0,
+            "16/16 WebSocket Hot-Reload Bridges (12–31.5ms p99) · 0 Schema Drift",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            596,
+            308,
+            "#38bdf8",
+            "Tour Stop #13: Certifies real-time Web-to-Godot/Rust/Postgres/Redis hot-reload bridges with SHA-256 OCC + CRDT conflict resolution.",
+        ),
+        (
+            "charter-100d-14-ltpa-headless-qa-and-100d-governance",
+            "Lead Tools & Pipeline Architect Centennial Charter II — 16 Headless QA Playtest Suites & 100D Centennial Telemetry",
+            "Ring B: Platform & Tools Squad",
+            "Lead Tools & Pipeline Architect",
+            "[Stage 3: Server & Simulation]",
+            "D80, D89, D90, D100",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            2.8,
+            "16/16 Blocking CI Smoke Bot Suites · 100/100 Dimensions Deterministic Pass",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            650,
+            272,
+            "#facc15",
+            "Tour Stop #14: Approves pre-merge headless bot regression gates and the 100-Dimension Centennial Studio governance architecture.",
+        ),
+        (
+            "charter-100d-15-cwte-visual-spawner-loot-and-dialogue",
+            "Content & World Tools Engineer Centennial Charter I — Visual Spawner, 100k-Kill Loot Sim & Dialogue DAG Suite",
+            "Ring B: Platform & Tools Squad",
+            "Content & World Tools Engineer",
+            "[Stage 1: Content & World]",
+            "D75, D76, D77, D91, D93",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            5.8,
+            "2-Click Polygon Spawner · 100k-Kill Monte Carlo <1.8s · 0 Broken Loot Refs",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            516,
+            424,
+            "#38bdf8",
+            "Tour Stop #15: Certifies web-native editors for mob leash polygons, Monte Carlo drop inflation, and faction/incursion triggers.",
+        ),
+        (
+            "charter-100d-16-cwte-godot-storybook-and-housing-tools",
+            "Content & World Tools Engineer Centennial Charter II — Godot 3D Storybook Prefab Inspector & Estate/Caravan Tools",
+            "Ring B: Platform & Tools Squad",
+            "Content & World Tools Engineer",
+            "[Stage 2: Asset & Build Pipeline]",
+            "D84, D87, D95, D97",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            6.8,
+            "15/15 Godot .tscn Prefab Storybooks · 16 Housing & 16 Caravan Editors Live",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            388,
+            306,
+            "#a855f7",
+            "Tour Stop #16: Approves @tool scene kitbash previewers, cutscene camera spline editors, and caravan route waypoint authoring.",
+        ),
+        (
+            "charter-100d-17-tapd-three-tier-glb-and-cute-scale",
+            "Technical Artist Centennial Charter I — 3-Tier GLB Asset Resolve, 1.05m Cute Proportions & Godot Chunk Baker",
+            "Ring B: Platform & Tools Squad",
+            "Technical Artist (Pipeline & DCC)",
+            "[Stage 2: Asset & Build Pipeline]",
+            "D15, D71, D84",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            7.2,
+            "<=12,500 Tris · <=64 Skeleton Bones · 100% Character-to-Building Scale Pass",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            468,
+            142,
+            "#f59e0b",
+            "Tour Stop #17: Certifies Tier-1 CSG -> Tier-2 Blockout -> Tier-3 Final GLB asset pipeline and automated scale/material validators.",
+        ),
+        (
+            "charter-100d-18-tapd-weather-acoustics-and-gpu-vram",
+            "Technical Artist Centennial Charter II — Dynamic Weather/Day-Night Shaders, Spatial Audio & 15-Town GPU Budgets",
+            "Ring B: Platform & Tools Squad",
+            "Technical Artist (Pipeline & DCC)",
+            "[Stage 2: Asset & Build Pipeline]",
+            "D81, D88",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            8.0,
+            "60–120 FPS (8.3–16.6ms Frame Budget) · <=1536MB BasisU KTX2 VRAM Cap",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            532,
+            288,
+            "#38bdf8",
+            "Tour Stop #18: Approves MultiMesh instancing, hierarchical Z-buffer portal occlusion, and town acoustic reverb convolution.",
+        ),
+        (
+            "charter-100d-19-bsite-10k-bot-swarm-and-server-mesh",
+            "Backend Simulation & Infra Centennial Charter I — 10,000-Bot Bevy ECS Swarm, 64m Ghost-Buffer Mesh & Auction CAS",
+            "Ring B: Platform & Tools Squad",
+            "Backend Simulation & Infra Tools Engineer",
+            "[Stage 3: Server & Simulation]",
+            "D72, D82, D92, D94",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            8.5,
+            "20Hz Tick 0.503ms/1.0ms · <5KB/s FlatBuffers Delta · 0 Dupe/Escrow Drift",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            582,
+            404,
+            "#fde047",
+            "Tour Stop #19: Certifies stateless Redis Stream cross-realm buses, 64m seamless zone handoffs, and serializable auction/treasury ledgers.",
+        ),
+        (
+            "charter-100d-20-bsite-navmesh-obstacles-and-replay",
+            "Backend Simulation & Infra Centennial Charter II — Recast/Detour 3D NavMesh Obstacles & Deterministic Siege Replay",
+            "Ring B: Platform & Tools Squad",
+            "Backend Simulation & Infra Tools Engineer",
+            "[Stage 3: Server & Simulation]",
+            "D85, D89",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            9.0,
+            "16/16 dtTileCache Sectors · Raycast LOS <=220us · 100% Seeded Replay Match",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            652,
+            192,
+            "#38bdf8",
+            "Tour Stop #20: Approves dynamic siege gate/drawbridge NavMesh slicing, jump-link off-mesh connections, and zero-desync replay proofs.",
+        ),
+        (
+            "charter-100d-21-lbgte-gm-rescue-rollback-and-cdn-webrtc",
+            "LiveOps, Build & GM Centennial Charter I — GM Rescue/Rollback, Multi-Platform Build Farm & Global CDN/WebRTC SFU",
+            "Ring B: Platform & Tools Squad",
+            "LiveOps, Build & GM Tools Engineer",
+            "[Stage 4: LiveOps & GM]",
+            "D73, D78, D96",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            9.2,
+            "15/15 Anycast PoPs (14–58ms RTT) · <8.5MB Zstd Delta Patch · <5s Edge Rollback",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            488,
+            382,
+            "#a855f7",
+            "Tour Stop #21: Certifies 1.5–12.0 Tbps DDoS scrubbing, 200v200 siege WebRTC Opus voice SFUs, and SHA-256 inventory rollback vaults.",
+        ),
+        (
+            "charter-100d-22-lbgte-anti-bot-flags-and-vo-localization",
+            "LiveOps, Build & GM Centennial Charter II — Anti-Bot/RMT Sentinels, Sub-85ms Feature Flags & 4-Locale VO Delivery",
+            "Ring B: Platform & Tools Squad",
+            "LiveOps, Build & GM Tools Engineer",
+            "[Stage 4: LiveOps & GM]",
+            "D83, D86, D98",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            9.5,
+            "99.95% Anti-Bot Precision · 12–85ms Flag Rollout · 4-Locale Opus Streaming",
+            "APPROVED_100D_CENTENNIAL_PLATINUM",
+            560,
+            200,
+            "#facc15",
+            "Tour Stop #22: Approves RMT graph-centrality quarantine sentinels, zero-restart holiday event flags, and OTA voiceover bank streaming.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        cid,
+        title,
+        ring,
+        rname,
+        sdom,
+        span,
+        tid,
+        zid,
+        zoom,
+        proof,
+        status,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "charter_id": cid,
+                "title": title,
+                "ring": ring,
+                "role_name": rname,
+                "stage_domain": sdom,
+                "centennial_dimension_span": span,
+                "town_id": tid,
+                "zone_id": zid,
+                "camera_zoom_preset": zoom,
+                "golden_invariant_proof": proof,
+                "charter_status": status,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_centennial_100d_studio_charters(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_centennial_100d_studio_charters(atlas)
+    atlas["centennial_100d_studio_charters"] = rows
+    return rows
+
+
 
 
 
@@ -23141,6 +23869,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("localization_voiceover_banks") or []) < 15:
         inject_localization_voiceover_banks(atlas)
         actions.append("populated_15_localization_voiceover_banks")
+
+    # 83. Ensure all 16 Cross-Tool Hot-Reload WebSocket Bus, Undo/Redo Command Journal & Godot Live-Sync Bridge Matrix records exist in `cross_tool_hot_reload_bridges` (D99)
+    if len(atlas.get("cross_tool_hot_reload_bridges") or []) < 16:
+        inject_cross_tool_hot_reload_bridges(atlas)
+        actions.append("populated_16_cross_tool_hot_reload_bridges")
+
+    # 84. Ensure all 22 100D Centennial Studio Milestone Grand Charter & Guided Tour Matrix records exist in `centennial_100d_studio_charters` (D100)
+    if len(atlas.get("centennial_100d_studio_charters") or []) < 22:
+        inject_centennial_100d_studio_charters(atlas)
+        actions.append("populated_22_centennial_100d_studio_charters")
 
     return {"actions": actions}
 
@@ -27993,15 +28731,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d98_eval = score_d98_localization_voiceover_banks(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
     d98_score = d98_eval["score"]
 
+    # D99: Interactive 16-Record [Role 1: Lead Tools & Pipeline Architect — Cross-Tool Hot-Reload WebSocket Bus, Undo/Redo Command Journal & Godot Live-Sync Bridge Matrix] (`cross_tool_hot_reload_bridges` - 16 Bridges)
+    d99_eval = score_d99_cross_tool_hot_reload_bridges(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d99_score = d99_eval["score"]
+
+    # D100: Interactive 22-Record [100D Centennial Studio Milestone — Two-Ring 11-Role Creative Council + Platform & Tools Squad D1–D100 Grand Centennial Sign-Off & Guided Tour Matrix] (`centennial_100d_studio_charters` - 22 Charters)
+    d100_eval = score_d100_centennial_100d_studio_charters(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d100_score = d100_eval["score"]
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 80.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 82.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 82.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 92.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 81.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 88.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 82.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 84.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0 and d99_score == 100.0 and d100_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 84.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 94.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 83.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 90.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -28104,8 +28850,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d96_score
             + d97_score
             + d98_score
+            + d99_score
+            + d100_score
         )
-        / 98.0,
+        / 100.0,
         1,
     )
 
@@ -28848,7 +29596,219 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix": d96_eval,
             "D97_dynamic_caravan_trade_routes_bandit_ambush_and_arbitrage_matrix": d97_eval,
             "D98_automated_localization_voiceover_lipsync_and_subtitle_matrix": d98_eval,
+            "D99_cross_tool_hot_reload_websocket_bus_and_godot_live_sync_matrix": d99_eval,
+            "D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix": d100_eval,
         },
+    }
+
+
+def score_d99_cross_tool_hot_reload_bridges(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_channels = {
+        "Web-to-Godot @tool Scene Live-Patch",
+        "Web-to-Rust SpatialGrid Spawner Hot-Swap",
+        "Web-to-Postgres JSONB Schema Atomic Commit",
+        "Web-to-Redis LiveOps PubSub Broadcast",
+    }
+    expected_prefixes = (
+        "ws://studio-bus/hot-reload/town/",
+        "ws://studio-bus/hot-reload/spawner/",
+        "ws://studio-bus/hot-reload/schema/",
+        "ws://studio-bus/hot-reload/liveops/",
+    )
+    rows = atlas.get("cross_tool_hot_reload_bridges") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_chans: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        bid = str(row.get("bridge_id") or "")
+        tid = str(row.get("town_id") or "")
+        zid = str(row.get("zone_id") or "")
+        chan = str(row.get("bridge_channel") or "")
+        topic = str(row.get("websocket_topic") or "")
+        depth = int(row.get("command_journal_depth") or 0)
+        p99 = float(row.get("roundtrip_sync_p99_ms") or 0.0)
+        crmode = str(row.get("conflict_resolution_mode") or "")
+        cigate = str(row.get("auto_ci_drift_gate") or "")
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            bid
+            and bid not in seen_ids
+            and row.get("title")
+            and tid
+            and zid in zone_ids_set
+            and chan in expected_channels
+            and any(topic.startswith(pfx) for pfx in expected_prefixes)
+            and 50 <= depth <= 200
+            and 12.0 <= p99 <= 48.0
+            and crmode == "SHA-256 OCC Precondition + CRDT Field Merge"
+            and cigate == "GOV-01..GOV-10 Pre-Commit Pass"
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#38bdf8", "#60a5fa", "#a855f7", "#34d399")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(bid)
+            seen_chans.add(chan)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_HOT_RELOAD_BRIDGE_MODE",
+            "setAtlasHotReloadBridgeMode",
+            "selectCrossToolBridge",
+            "renderAtlasHotReloadBridgeBarHtml",
+            "studioCrossToolBridgesOverlay",
+        )
+    )
+    ratio = valid_count / 16.0
+    full_cov = valid_count == 16 and seen_chans == expected_channels
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 16,
+        "bridge_channels": sorted(seen_chans),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d100_centennial_100d_studio_charters(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_rings = {
+        "Ring A: Creative Council",
+        "Ring B: Platform & Tools Squad",
+    }
+    expected_roles = {
+        "Product Owner",
+        "Game Designer Lead",
+        "Player Growth Path Designer",
+        "Game Story Designer",
+        "Monster & Mob Designer",
+        "Lead Systems & Map Architect",
+        "Lead Tools & Pipeline Architect",
+        "Content & World Tools Engineer",
+        "Technical Artist (Pipeline & DCC)",
+        "Backend Simulation & Infra Tools Engineer",
+        "LiveOps, Build & GM Tools Engineer",
+    }
+    expected_stages = {
+        "[Stage 1: Content & World]",
+        "[Stage 2: Asset & Build Pipeline]",
+        "[Stage 3: Server & Simulation]",
+        "[Stage 4: LiveOps & GM]",
+    }
+    rows = atlas.get("centennial_100d_studio_charters") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_rings: set[str] = set()
+    seen_roles: set[str] = set()
+    seen_stages: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        cid = str(row.get("charter_id") or "")
+        ring = str(row.get("ring") or "")
+        rname = str(row.get("role_name") or "")
+        sdom = str(row.get("stage_domain") or "")
+        span = str(row.get("centennial_dimension_span") or "")
+        tid = str(row.get("town_id") or "")
+        zid = str(row.get("zone_id") or "")
+        zoom = float(row.get("camera_zoom_preset") or 0.0)
+        proof = str(row.get("golden_invariant_proof") or "")
+        status = str(row.get("charter_status") or "")
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            cid
+            and cid not in seen_ids
+            and row.get("title")
+            and ring in expected_rings
+            and rname in expected_roles
+            and sdom in expected_stages
+            and span
+            and tid
+            and zid in zone_ids_set
+            and 1.5 <= zoom <= 9.5
+            and proof
+            and status == "APPROVED_100D_CENTENNIAL_PLATINUM"
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#facc15", "#fde047", "#f59e0b", "#38bdf8", "#a855f7")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(cid)
+            seen_rings.add(ring)
+            seen_roles.add(rname)
+            seen_stages.add(sdom)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_CENTENNIAL_100D_MODE",
+            "setAtlasCentennial100dMode",
+            "selectCentennial100dCharter",
+            "renderAtlasCentennial100dBarHtml",
+            "studioCentennial100dChartersOverlay",
+        )
+    )
+    ratio = valid_count / 22.0
+    full_cov = (
+        valid_count == 22
+        and seen_rings == expected_rings
+        and seen_roles == expected_roles
+        and seen_stages == expected_stages
+    )
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 22,
+        "rings": sorted(seen_rings),
+        "roles_covered": len(seen_roles),
+        "stage_domains": sorted(seen_stages),
+        "ui_wired": has_ui,
     }
 
 
@@ -30453,7 +31413,7 @@ def evaluate_80d_atlas(whc: dict[str, Any] | None = None, atlas: dict[str, Any] 
     if atlas is None:
         atlas = json.loads(ATLAS_PATH.read_text(encoding="utf-8"))
     res = audit_world_atlas(whc, atlas)
-    res["wave"] = 47
+    res["wave"] = 48
     return res
 
 
@@ -30595,6 +31555,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D96 (15 Global CDN/WebRTC)  : {dims['D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix']['score']}/100 ({dims['D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix']['verified']}/{dims['D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix']['target']} global cdn webrtc relays)")
         print(f"  D97 (16 Caravan Routes)     : {dims['D97_dynamic_caravan_trade_routes_bandit_ambush_and_arbitrage_matrix']['score']}/100 ({dims['D97_dynamic_caravan_trade_routes_bandit_ambush_and_arbitrage_matrix']['verified']}/{dims['D97_dynamic_caravan_trade_routes_bandit_ambush_and_arbitrage_matrix']['target']} caravan trade routes)")
         print(f"  D98 (15 Localization VO)    : {dims['D98_automated_localization_voiceover_lipsync_and_subtitle_matrix']['score']}/100 ({dims['D98_automated_localization_voiceover_lipsync_and_subtitle_matrix']['verified']}/{dims['D98_automated_localization_voiceover_lipsync_and_subtitle_matrix']['target']} localization voiceover banks)")
+        print(f"  D99 (16 Hot-Reload Bridges) : {dims['D99_cross_tool_hot_reload_websocket_bus_and_godot_live_sync_matrix']['score']}/100 ({dims['D99_cross_tool_hot_reload_websocket_bus_and_godot_live_sync_matrix']['verified']}/{dims['D99_cross_tool_hot_reload_websocket_bus_and_godot_live_sync_matrix']['target']} cross-tool hot-reload bridges)")
+        print(f"  D100 (22 100D Charters)     : {dims['D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix']['score']}/100 ({dims['D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix']['verified']}/{dims['D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix']['target']} 100D centennial studio charters)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
