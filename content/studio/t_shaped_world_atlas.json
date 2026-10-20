@@ -60635,5 +60635,506 @@
         "1-Click Revert to Last Green Iteration Wave State"
       ]
     }
+  ],
+  "combat_skill_timeline_profiles": [
+    {
+      "timeline_id": "timeline-01-martial-human-duelist-triple-sonic-slash",
+      "profile_name": "Human Duelist \u2014 Triple Sonic Slash & Momentum Charge Frame Timeline",
+      "timeline_category": "Martial_Combo_Hitbox_Timeline",
+      "zone_id": "zone-town-lantern-hollow",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-84008:243619",
+      "owner_engineer_role": "Content & World Tools Engineer & Technical Artist",
+      "frame_window_breakdown": "Startup 150ms (3 Ticks) -> Active Hitbox 100ms (2 Ticks \u00b7 4.2m Cone) -> Recovery/Cancel 250ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Soulshot 2.0x Physical Damage Frame Locked to Tick #3 + Sonic Blade Trail VFX Sync",
+      "timeline_validation_gates": [
+        "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+        "Animation Cancel Exploit Guard",
+        "VFX Audio/Particle Cue Frame Lock"
+      ]
+    },
+    {
+      "timeline_id": "timeline-02-martial-lunar-evas-templar-shield-bash-combo",
+      "profile_name": "Lunar Eva's Templar \u2014 Tribunal Shield Bash & Aggro Lock Hitbox Timeline",
+      "timeline_category": "Martial_Combo_Hitbox_Timeline",
+      "zone_id": "zone-town-porcelain-loom",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "45899:41308",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "frame_window_breakdown": "Startup 100ms (2 Ticks) -> Active Stun Hitbox 100ms (2 Ticks \u00b7 2.8m Arc) -> Recovery 200ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Soulshot 2.0x Impact + Instant Target-Interrupt Frame Locked to Tick #2",
+      "timeline_validation_gates": [
+        "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+        "Stun Immunity & Diminishing Return Frame Gate",
+        "Shield Impact Audio/Shockwave Frame Lock"
+      ]
+    },
+    {
+      "timeline_id": "timeline-03-martial-orc-titan-armor-crush-cleave",
+      "profile_name": "Ogre/Orc Titan \u2014 Frenzy Armor Crush & 180-Degree Polearm Cleave Timeline",
+      "timeline_category": "Martial_Combo_Hitbox_Timeline",
+      "zone_id": "zone-town-draft-kiln-post",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-44714:-113103",
+      "owner_engineer_role": "Content & World Tools Engineer & Backend Simulation Engineer",
+      "frame_window_breakdown": "Startup 200ms (4 Ticks) -> Active Multi-Target Cleave 150ms (3 Ticks \u00b7 5.5m Arc) -> Recovery 300ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Soulshot 2.0x Heavy Cleave Locked to Tick #4 (Max 8 Targets Capped per Swing)",
+      "timeline_validation_gates": [
+        "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+        "Polearm Multi-Target AoE Cap (8 Entities) Invariant",
+        "Ground-Crack Decal & Camera Shake Sync"
+      ]
+    },
+    {
+      "timeline_id": "timeline-04-martial-dwarf-fortune-seeker-spoil-crush",
+      "profile_name": "Dwarf Fortune Seeker \u2014 Spoil Crush, Blunt Stun & Festival Sweeper Timeline",
+      "timeline_category": "Martial_Combo_Hitbox_Timeline",
+      "zone_id": "zone-town-escapement-anvil",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "83173:53286",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "frame_window_breakdown": "Startup 100ms (2 Ticks) -> Active Spoil+Hit Frame 100ms (2 Ticks \u00b7 2.5m) -> Sweeper Cancel 150ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Soulshot 2.0x Blunt Hit + Spoil Condition State Transition Locked to Tick #2",
+      "timeline_validation_gates": [
+        "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+        "Zero Double-Sweeper Corpse Extraction Race Guard",
+        "Blue Spoil Sparkle VFX Cue Frame Lock"
+      ]
+    },
+    {
+      "timeline_id": "timeline-05-martial-dark-lunar-ghost-hunter-lethal-backstab",
+      "profile_name": "Dark-Lunar Ghost Hunter \u2014 Deadly Blow, Shadow Step & Backstab Arc Timeline",
+      "timeline_category": "Martial_Combo_Hitbox_Timeline",
+      "zone_id": "zone-town-carillon-belfry",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "12460:16875",
+      "owner_engineer_role": "Content & World Tools Engineer & Backend Simulation Engineer",
+      "frame_window_breakdown": "Startup 100ms (2 Ticks \u00b7 Behind-Target 120\u00b0 Check) -> Active Lethal Frame 50ms (1 Tick) -> Recovery 200ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Soulshot 2.0x Critical Multiplier + Server Positional Facing Dot-Product Verified on Tick #2",
+      "timeline_validation_gates": [
+        "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+        "Authoritative Rear-Arc (120\u00b0) Facing Validation Gate",
+        "Shadow-Step Teleport Arrival Frame Lock"
+      ]
+    },
+    {
+      "timeline_id": "timeline-06-martial-furral-doombringer-rush-impact-disarm",
+      "profile_name": "Furral Doombringer \u2014 Rush Impact Charge, Soul Barrier & Disarm Timeline",
+      "timeline_category": "Martial_Combo_Hitbox_Timeline",
+      "zone_id": "zone-town-saffron-press",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "17447:170164",
+      "owner_engineer_role": "Content & World Tools Engineer & Technical Artist",
+      "frame_window_breakdown": "Startup 50ms (1 Tick) -> Linear Charge Raycast 200ms (4 Ticks \u00b7 12m Path) -> Impact Stun 100ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Soulshot 2.0x Charge + NavMesh Heightfield Raycast Swept Per Tick (#2..#5)",
+      "timeline_validation_gates": [
+        "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+        "NavMesh Obstacle & Wall-Clip Swept Raycast Guard",
+        "Wing-Soul Trail & Disarm Icon Sync"
+      ]
+    },
+    {
+      "timeline_id": "timeline-07-arcane-archmage-prominence-vortex-cast",
+      "profile_name": "Archmage \u2014 Fire Vortex & Prominence Channeling/Interrupt Window Timeline",
+      "timeline_category": "Arcane_Cast_Interrupt_Timeline",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147434:-55147",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "frame_window_breakdown": "Cast Channel 450ms (9 Ticks \u00b7 Interruptible #1..#7) -> Projectile Launch Tick #8 -> Recovery 150ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Blessed Spiritshot 4.0x Matk Consumed at Tick #1 + Concentration Cancel-Threshold Check",
+      "timeline_validation_gates": [
+        "Server-Client Cast Bar Desync <= 1 Tick (50ms)",
+        "Interrupt/Cancel Window (#1..#7) vs Commit Point (#8) Gate",
+        "Projectile Travel Speed & Hit Impact VFX Sync"
+      ]
+    },
+    {
+      "timeline_id": "timeline-08-arcane-mystic-muse-hydro-blast-ice-vortex",
+      "profile_name": "Mystic Muse \u2014 Hydro Blast, Ice Vortex & Instant-Cast Enlightenment Timeline",
+      "timeline_category": "Arcane_Cast_Interrupt_Timeline",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-14179:123542",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "frame_window_breakdown": "Cast Channel 350ms (7 Ticks \u00b7 Haste Scaled) -> Frost Impact Frame Tick #6 -> Recovery 100ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Blessed Spiritshot 4.0x Matk + Water 150/300 Attribute Multiplier Locked to Tick #6",
+      "timeline_validation_gates": [
+        "Server-Client Cast Bar Desync <= 1 Tick (50ms)",
+        "Acumen/Enlightenment Cast-Speed Cap (1,999) Clamp Gate",
+        "Frost Shatter Audio/Decal Cue Frame Lock"
+      ]
+    },
+    {
+      "timeline_id": "timeline-09-arcane-storm-screamer-hurricane-empower-chain",
+      "profile_name": "Storm Screamer \u2014 Echo Hurricane & Arcane Chaos Debuff Tick Timeline",
+      "timeline_category": "Arcane_Cast_Interrupt_Timeline",
+      "zone_id": "zone-town-pinion-terminus",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "82408:148631",
+      "owner_engineer_role": "Content & World Tools Engineer & Backend Simulation Engineer",
+      "frame_window_breakdown": "Cast Channel 400ms (8 Ticks) -> Wind Bolt Release Tick #7 -> DoT/Drain Periodic Tick Every 40 Ticks (2.0s)",
+      "vfx_and_soulshot_sync_rule": "Blessed Spiritshot 4.0x Matk + Echo Empower 1.35x Amplifier Verified at Tick #7",
+      "timeline_validation_gates": [
+        "Server-Client Cast Bar Desync <= 1 Tick (50ms)",
+        "Periodic DoT/MP-Drain Tick Alignment to 20Hz Loop",
+        "Twin-Vortex Wind Spiral Particle Frame Lock"
+      ]
+    },
+    {
+      "timeline_id": "timeline-10-arcane-cardinal-balance-life-cleanse-cast",
+      "profile_name": "Cardinal \u2014 Balance Life Party HP Equalization & Instant Cleanse Timeline",
+      "timeline_category": "Arcane_Cast_Interrupt_Timeline",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "116395:-18380",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "frame_window_breakdown": "Cast Channel 250ms (5 Ticks) -> Atomic 9-Member Party HP Ratio Commit Tick #4 -> Recovery 100ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Blessed Spiritshot Heal Bonus + Line-of-Sight Party Radius (18m) Verified at Tick #4",
+      "timeline_validation_gates": [
+        "Server-Client Cast Bar Desync <= 1 Tick (50ms)",
+        "Atomic 9-Player Party HP Equalization Overflow Guard",
+        "Golden Sanctum Pillar VFX & Heal Chime Sync"
+      ]
+    },
+    {
+      "timeline_id": "timeline-11-arcane-dominator-seal-of-limit-overlord-aura",
+      "profile_name": "Dominator \u2014 Seal of Limit, Flames of Invincibility & 45-Player Alliance Pulse Timeline",
+      "timeline_category": "Arcane_Cast_Interrupt_Timeline",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "43782:-47891",
+      "owner_engineer_role": "Content & World Tools Engineer & Backend Simulation Engineer",
+      "frame_window_breakdown": "Cast Channel 500ms (10 Ticks) -> 20m PBAE Alliance Buff/Seal Commit Tick #9 -> Recovery 200ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Blessed Spiritshot Status Land-Rate Boost + 45-Player Command-Channel Batch Apply on Tick #9",
+      "timeline_validation_gates": [
+        "Server-Client Cast Bar Desync <= 1 Tick (50ms)",
+        "Zero Tick-Spike Batch Buff Application (< 0.35ms for 45 Players)",
+        "Crimson Overlord Crest Ground Ring VFX Sync"
+      ]
+    },
+    {
+      "timeline_id": "timeline-12-boss-kiln-cellar-b3-queen-ant-pheromone-spray",
+      "profile_name": "Kiln Cellar B3 (Queen Ant MVP) \u2014 Acid Pheromone Cone & Royal Nurse Heal Telegraph Timeline",
+      "timeline_category": "Boss_Telegraph_VFX_Timeline",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B3",
+      "loc": "75379:116818",
+      "owner_engineer_role": "Content & World Tools Engineer & Technical Artist",
+      "frame_window_breakdown": "Telegraph Decal 600ms (12 Ticks \u00b7 14m 90\u00b0 Cone) -> Active Acid Detonation 150ms (3 Ticks) -> Cooldown 400ms @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Ground Warning Decal Spawn at Tick #1 + Authoritative Server AoE Damage Polygon Evaluated at Tick #13",
+      "timeline_validation_gates": [
+        "Server Hitbox Polygon == Client Telegraph Decal Geometry (<= 0.05m)",
+        "12-Tick (600ms) Fair Dodge Window Guarantee",
+        "Royal Nurse Larva Heal Interrupt Window Frame Lock"
+      ]
+    },
+    {
+      "timeline_id": "timeline-13-boss-pendulum-shaft-3f-core-gravity-pulse",
+      "profile_name": "Pendulum Shaft 3F (Core Automaton) \u2014 Concentric Gravity Donut & Laser Sweep Timeline",
+      "timeline_category": "Boss_Telegraph_VFX_Timeline",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "3F",
+      "loc": "85356:144187",
+      "owner_engineer_role": "Content & World Tools Engineer & Technical Artist",
+      "frame_window_breakdown": "Inner Safe-Ring / Outer Danger-Donut Telegraph 750ms (15 Ticks \u00b7 6m\u201322m) -> Detonation Tick #16 @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Annular Ring Shader Warning Locked to Tick #1..#15 + Knockback Impulse Evaluated on Tick #16",
+      "timeline_validation_gates": [
+        "Server Hitbox Polygon == Client Telegraph Decal Geometry (<= 0.05m)",
+        "Annular Inner-Safe-Radius (0m\u20136m) Zero-False-Hit Gate",
+        "Rotating Pendulum Laser Angular Velocity Parity"
+      ]
+    },
+    {
+      "timeline_id": "timeline-14-boss-chronometer-foundry-3f-valakas-meteor-breath",
+      "profile_name": "Chronometer Foundry 3F \u2014 Molten Dragon Breath, Tail Swipe & Meteor Crater Timeline",
+      "timeline_category": "Boss_Telegraph_VFX_Timeline",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84743:56376",
+      "owner_engineer_role": "Content & World Tools Engineer & Technical Artist",
+      "frame_window_breakdown": "Telegraph Breath Corridor 800ms (16 Ticks \u00b7 28m\u00d78m Box) -> Multi-Tick Flame Wave 250ms (5 Ticks) @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Volcanic Ground Fracture Decal at Tick #1 + 5-Tick Progressive Flame Wave (#17..#21) Sync",
+      "timeline_validation_gates": [
+        "Server Hitbox Polygon == Client Telegraph Decal Geometry (<= 0.05m)",
+        "Rear Tail-Swipe vs Frontal Breath Mutual-Exclusion Gate",
+        "60 FPS GPU Particle Budget Cap During 45-Player Raid"
+      ]
+    },
+    {
+      "timeline_id": "timeline-15-boss-star-heart-nave-3f-frintezza-organ-requiem",
+      "profile_name": "Star-Heart Nave 3F \u2014 Scarlet Halisha Morph Charge & Pipe-Organ Requiem Dance Timeline",
+      "timeline_category": "Boss_Telegraph_VFX_Timeline",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149130:28365",
+      "owner_engineer_role": "Content & World Tools Engineer & Backend Simulation Engineer",
+      "frame_window_breakdown": "Organ Melody Cue 1000ms (20 Ticks) -> 360\u00b0 Scarlet Cleave / Soul-Breaking Arrow Window 200ms (4 Ticks) @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Pipe-Organ Audio Beat Sync Locked to Server Tick #1 + Soul-Breaking Arrow Cancel Window (#1..#18)",
+      "timeline_validation_gates": [
+        "Server Hitbox Polygon == Client Telegraph Decal Geometry (<= 0.05m)",
+        "Soul-Breaking Arrow Interrupt vs Organ Melody Phase Lock",
+        "Phase 1->2->3 Cinematic Morph Invulnerability Frame Guard"
+      ]
+    },
+    {
+      "timeline_id": "timeline-16-boss-witch-pendulum-b3-anakim-lilith-eclipse-beam",
+      "profile_name": "Witch Pendulum Catacomb B3 \u2014 Dawn/Dusk Seal Apostle Twin Eclipse Beam Timeline",
+      "timeline_category": "Boss_Telegraph_VFX_Timeline",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "54117:-34846",
+      "owner_engineer_role": "Content & World Tools Engineer & Technical Artist",
+      "frame_window_breakdown": "Cross-Chamber Line Telegraph 700ms (14 Ticks \u00b7 Dual 24m Beams) -> Holy/Dark Detonation Tick #15 @ 20Hz",
+      "vfx_and_soulshot_sync_rule": "Holy/Dark 300-Attribute Beam Decal Spawn at Tick #1 + Pillar Line-of-Sight Occlusion Check at Tick #15",
+      "timeline_validation_gates": [
+        "Server Hitbox Polygon == Client Telegraph Decal Geometry (<= 0.05m)",
+        "Catacomb Pillar Line-of-Sight Safe-Shadow Raycast Gate",
+        "Dawn/Dusk Seal Polarity VFX Shader Switch Parity"
+      ]
+    }
+  ],
+  "build_farm_patch_cdn_nodes": [
+    {
+      "build_node_id": "buildfarm-01-lantern-hollow-godot-pak-cooker",
+      "town_zone_id": "zone-town-lantern-hollow",
+      "town_name": "Lantern Hollow Village (Human Starter)",
+      "build_farm_category": "Godot_Client_Pak_Cooker_Node",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Technical Artist",
+      "node_loc": "-84233:243379",
+      "target_platforms_and_artifacts": "Godot 4.7 macOS Universal (ARM64/x86_64) + Win64 + Linux .pck & VRAM BasisU Texture Bundle",
+      "delta_patch_and_rollout_metrics": "Content-Addressed Zstd .pck Cook (< 38s Incremental CI Cook \u00b7 SHA-256 Asset Manifest Signed)",
+      "ci_release_gates": [
+        "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+        "3-Tier GLB Asset Resolve Zero-Missing-Mesh Gate",
+        "Godot 4.7 Headless Scene Boot & Shader Pre-Warm Smoke Pass"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-02-porcelain-loom-godot-pak-cooker",
+      "town_zone_id": "zone-town-porcelain-loom",
+      "town_name": "Porcelain Loom Sanctuary (Lunar Starter)",
+      "build_farm_category": "Godot_Client_Pak_Cooker_Node",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Technical Artist",
+      "node_loc": "45699:41093",
+      "target_platforms_and_artifacts": "Godot 4.7 iOS Metal / Android Vulkan Mobile & Desktop Cross-Platform .pck + Foliage LOD Bundle",
+      "delta_patch_and_rollout_metrics": "Content-Addressed Zstd .pck Cook (< 42s Mobile/Desktop Cook \u00b7 < 140 MB Regional Streaming Pak)",
+      "ci_release_gates": [
+        "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+        "Polygon/Bone/Material Limit CI Validator Gate",
+        "Zero Uncompressed Raw PNG/TGA in Cooked .pck Bundle"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-03-draft-kiln-post-godot-pak-cooker",
+      "town_zone_id": "zone-town-draft-kiln-post",
+      "town_name": "Draft-Kiln Post (Ogre/Orc Starter)",
+      "build_farm_category": "Godot_Client_Pak_Cooker_Node",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "node_loc": "-44889:-113293",
+      "target_platforms_and_artifacts": "Godot 4.7 Highland Terrain Heightmap, Volcanic Particle Shader & Audio Bank .pck Cooker",
+      "delta_patch_and_rollout_metrics": "Content-Addressed Zstd .pck Cook (< 35s Incremental Cook \u00b7 100% Deterministic Byte-Reproducible Pak)",
+      "ci_release_gates": [
+        "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+        "Deterministic .pck Byte-Reproducibility Checksum Gate",
+        "Vulkan/Metal Forward+ Shader Compilation Zero-Warning Gate"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-04-carillon-belfry-godot-pak-cooker",
+      "town_zone_id": "zone-town-carillon-belfry",
+      "town_name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+      "build_farm_category": "Godot_Client_Pak_Cooker_Node",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Technical Artist",
+      "node_loc": "12323:16721",
+      "target_platforms_and_artifacts": "Godot 4.7 Subterranean Catacomb Lightmap, Cutaway B1\u2013B3 Mesh & Skeletal Rig .pck Cooker",
+      "delta_patch_and_rollout_metrics": "Content-Addressed Zstd .pck Cook (< 40s Incremental Cook \u00b7 Occlusion Culling Bake Verified)",
+      "ci_release_gates": [
+        "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+        "Dungeon Corridor >= 6.0m & NavMesh Parity Gate",
+        "Skeletal Animation Retarget & Root-Motion Smoke Pass"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-05-saffron-press-godot-pak-cooker",
+      "town_zone_id": "zone-town-saffron-press",
+      "town_name": "Saffron Press Village (Manor Agricultural Hub)",
+      "build_farm_category": "Godot_Client_Pak_Cooker_Node",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Content & World Tools Engineer",
+      "node_loc": "17335:170035",
+      "target_platforms_and_artifacts": "Godot 4.7 EN/TH Localization Font Atlas, Paraglide String Table & UI Minimap Plate .pck Cooker",
+      "delta_patch_and_rollout_metrics": "Content-Addressed Zstd .pck Cook (< 28s i18n/UI Fast-Cook \u00b7 11 Archetype Raster Plates Embedded)",
+      "ci_release_gates": [
+        "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+        "100% EN/TH Localization Key & Thai Glyph Coverage Gate",
+        "Zero NativeAOT C# Reflection Warning in Client Build"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-06-escapement-anvil-server-rs-runner",
+      "town_zone_id": "zone-town-escapement-anvil",
+      "town_name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+      "build_farm_category": "Server_Rs_Linux_Musl_Build_Runner",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Backend Simulation Engineer",
+      "node_loc": "83047:53149",
+      "target_platforms_and_artifacts": "server-rs x86_64-unknown-linux-musl & aarch64 Static Release Binary (ThinLTO + PGO + Agones SDK)",
+      "delta_patch_and_rollout_metrics": "Sccache + Cargo Chef Layer Cache (< 48s Incremental Rust Release Build \u00b7 24 MB Distroless Image)",
+      "ci_release_gates": [
+        "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+        "20Hz Tick Budget <= 0.55ms Under 2,000-Bot Benchmark Gate",
+        "Zero Unsafe Memory / Clippy Pedantic Clean Gate"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-07-kilnwatch-bastion-server-rs-runner",
+      "town_zone_id": "zone-town-kilnwatch-bastion",
+      "town_name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+      "build_farm_category": "Server_Rs_Linux_Musl_Build_Runner",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Backend Simulation Engineer",
+      "node_loc": "-14241:123463",
+      "target_platforms_and_artifacts": "server-rs Authoritative Zone & SpatialGrid Partition Container Image + FlatBuffers Wire Verifier",
+      "delta_patch_and_rollout_metrics": "Multi-Arch OCI Image Build (< 50s CI Build \u00b7 250B FlatBuffers Delta Wire Contract Locked)",
+      "ci_release_gates": [
+        "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+        "10,000-Tick Seeded Golden-Trace Replay Parity (epsilon <= 0.05)",
+        "SpatialGrid 4-Highway Boundary Handoff Smoke Pass"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-08-pinion-terminus-server-rs-runner",
+      "town_zone_id": "zone-town-pinion-terminus",
+      "town_name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+      "build_farm_category": "Server_Rs_Linux_Musl_Build_Runner",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Backend Simulation Engineer",
+      "node_loc": "82371:148577",
+      "target_platforms_and_artifacts": "server-rs Economy, Spoil/Refinement CAS & PostgreSQL/SQLite Persistence Worker Binary",
+      "delta_patch_and_rollout_metrics": "Cargo Nextest + Real-DB Migration Runner (< 44s Build & Test \u00b7 Zero-Dupe OCC Ledger Verified)",
+      "ci_release_gates": [
+        "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+        "50,000-Transaction Enchant/Trade OCC Zero-Dupe Replay Gate",
+        "Database Migration Forward + Rollback Idempotency Gate"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-09-inductor-switchyard-server-rs-runner",
+      "town_zone_id": "zone-town-inductor-switchyard",
+      "town_name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+      "build_farm_category": "Server_Rs_Linux_Musl_Build_Runner",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Lead Tools & Pipeline Architect",
+      "node_loc": "147383:-55209",
+      "target_platforms_and_artifacts": "server-rs 300-Player Giran Bazaar, Clan Auction & Agones Fleet Autoscaler Image",
+      "delta_patch_and_rollout_metrics": "Deterministic Container Build (< 45s CI Pipeline \u00b7 SBOM + Cosign Container Signature Verified)",
+      "ci_release_gates": [
+        "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+        "GOV-01..GOV-10 World Studio Governance 10/10 Pass Gate",
+        "Agones GameServer Health-Probe & Graceful Drain Verification"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-10-torque-balance-citadel-server-rs-runner",
+      "town_zone_id": "zone-town-torque-balance-citadel",
+      "town_name": "Town of Torque-Balance Citadel (Human Ancestral Expedition Hub)",
+      "build_farm_category": "Server_Rs_Linux_Musl_Build_Runner",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Backend Simulation Engineer",
+      "node_loc": "116395:-18395",
+      "target_platforms_and_artifacts": "server-rs 450-Player Castle Siege, Territory Ward & Command-Channel Raid Authority Binary",
+      "delta_patch_and_rollout_metrics": "High-Concurrency Siege Profile Build (< 52s Build + 450-Bot Siege Smoke Run \u00b7 P99 Tick < 0.75ms)",
+      "ci_release_gates": [
+        "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+        "450-Bot Castle Siege & Holy Artifact Cast Stress Gate",
+        "Zero-Downtime Rolling Realm Cutover Readiness Gate"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-11-glaze-barge-quay-delta-patch-cdn",
+      "town_zone_id": "zone-town-glaze-barge-quay",
+      "town_name": "Glaze-Barge Quay (River Trade & Raid Port)",
+      "build_farm_category": "Delta_Binary_Patch_CDN_Edge",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "node_loc": "-81193:151419",
+      "target_platforms_and_artifacts": "Content-Addressed Zstd + Bsdiff4 Binary Delta Patch Edge (Southern Maritime & Harbor Cluster)",
+      "delta_patch_and_rollout_metrics": "Chunk-Deduplicated Zstd Delta Patch (< 6.8 MB Typical Hotfix \u00b7 < 12s Client Patch Apply)",
+      "ci_release_gates": [
+        "Ed25519 + SHA-256 Chunk Manifest Signature Verification",
+        "Client-Server Protocol Version Handshake Lock",
+        "1-Click Instant CDN Manifest Rollback (< 5s Edge Purge)"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-12-cinnamon-mill-delta-patch-cdn",
+      "town_zone_id": "zone-town-cinnamon-mill",
+      "town_name": "Cinnamon-Mill Haven (Furral Starter)",
+      "build_farm_category": "Delta_Binary_Patch_CDN_Edge",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "node_loc": "-118181:46833",
+      "target_platforms_and_artifacts": "Content-Addressed Zstd + Bsdiff4 Binary Delta Patch Edge (Dion/Floran Agricultural Frontier)",
+      "delta_patch_and_rollout_metrics": "Chunk-Deduplicated Zstd Delta Patch (< 7.2 MB Typical Hotfix \u00b7 HTTP/3 Range-Request Resume)",
+      "ci_release_gates": [
+        "Ed25519 + SHA-256 Chunk Manifest Signature Verification",
+        "Interrupted Download Block-Level Resume Integrity Gate",
+        "1-Click Instant CDN Manifest Rollback (< 5s Edge Purge)"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-13-root-train-roundhouse-delta-patch-cdn",
+      "town_zone_id": "zone-town-root-train-roundhouse",
+      "town_name": "Root-Train Roundhouse (Dwarf Starter)",
+      "build_farm_category": "Delta_Binary_Patch_CDN_Edge",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "node_loc": "115131:-178153",
+      "target_platforms_and_artifacts": "Content-Addressed Zstd + Bsdiff4 Binary Delta Patch Edge (Northern Dwarven Freight & Schuttgart Hub)",
+      "delta_patch_and_rollout_metrics": "Chunk-Deduplicated Zstd Delta Patch (< 8.1 MB Typical Hotfix \u00b7 98.4% Block Cache Hit Ratio)",
+      "ci_release_gates": [
+        "Ed25519 + SHA-256 Chunk Manifest Signature Verification",
+        "Background Pre-Download While Playing (Zero Frame Drop)",
+        "1-Click Instant CDN Manifest Rollback (< 5s Edge Purge)"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-14-starfall-haven-delta-patch-cdn",
+      "town_zone_id": "zone-town-starfall-haven",
+      "town_name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+      "build_farm_category": "Delta_Binary_Patch_CDN_Edge",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer",
+      "node_loc": "43843:-47839",
+      "target_platforms_and_artifacts": "Content-Addressed Zstd + Bsdiff4 Binary Delta Patch Edge (Rune Maritime & Gracia Airship Gateway)",
+      "delta_patch_and_rollout_metrics": "Chunk-Deduplicated Zstd Delta Patch (< 7.9 MB Typical Hotfix \u00b7 Multi-Region Anycast Edge Sync)",
+      "ci_release_gates": [
+        "Ed25519 + SHA-256 Chunk Manifest Signature Verification",
+        "Canary 5% -> 25% -> 100% Staged Launcher Rollout Gate",
+        "1-Click Instant CDN Manifest Rollback (< 5s Edge Purge)"
+      ]
+    },
+    {
+      "build_node_id": "buildfarm-15-crown-beacon-delta-patch-cdn",
+      "town_zone_id": "zone-town-crown-beacon",
+      "town_name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+      "build_farm_category": "Delta_Binary_Patch_CDN_Edge",
+      "owner_engineer_role": "LiveOps, Build & GM Tools Engineer & Lead Tools & Pipeline Architect",
+      "node_loc": "147955:26875",
+      "target_platforms_and_artifacts": "Content-Addressed Zstd + Bsdiff4 Binary Delta Patch Edge (Goddard Volcanic & Sovereign Endgame Hub)",
+      "delta_patch_and_rollout_metrics": "Chunk-Deduplicated Zstd Delta Patch (< 8.5 MB Hotfix Patch \u00b7 < 45s End-to-End CI-to-CDN Publish)",
+      "ci_release_gates": [
+        "Ed25519 + SHA-256 Chunk Manifest Signature Verification",
+        "Zero-Downtime Rolling Realm Cutover (Old + New Pod Drain)",
+        "1-Click Instant CDN Manifest Rollback (< 5s Edge Purge)"
+      ]
+    }
   ]
 }

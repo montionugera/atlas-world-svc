@@ -371,6 +371,18 @@
       "maxItems": 16,
       "items": { "$ref": "#/$defs/spawnerLootBalancerSuiteSpec" }
     },
+    "combat_skill_timeline_profiles": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/combatSkillTimelineProfileSpec" }
+    },
+    "build_farm_patch_cdn_nodes": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/buildFarmPatchCdnNodeSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -4133,6 +4145,87 @@
         "spawner_or_economy_simulation": { "type": "string" },
         "ssot_writeback_protocol": { "type": "string" },
         "protected_invariants": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "combatSkillTimelineProfileSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timeline_id",
+        "profile_name",
+        "timeline_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "owner_engineer_role",
+        "frame_window_breakdown",
+        "vfx_and_soulshot_sync_rule",
+        "timeline_validation_gates"
+      ],
+      "properties": {
+        "timeline_id": { "type": "string" },
+        "profile_name": { "type": "string" },
+        "timeline_category": {
+          "type": "string",
+          "enum": [
+            "Martial_Combo_Hitbox_Timeline",
+            "Arcane_Cast_Interrupt_Timeline",
+            "Boss_Telegraph_VFX_Timeline"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "owner_engineer_role": { "type": "string" },
+        "frame_window_breakdown": { "type": "string" },
+        "vfx_and_soulshot_sync_rule": { "type": "string" },
+        "timeline_validation_gates": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "buildFarmPatchCdnNodeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "build_node_id",
+        "town_zone_id",
+        "town_name",
+        "build_farm_category",
+        "owner_engineer_role",
+        "node_loc",
+        "target_platforms_and_artifacts",
+        "delta_patch_and_rollout_metrics",
+        "ci_release_gates"
+      ],
+      "properties": {
+        "build_node_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "build_farm_category": {
+          "type": "string",
+          "enum": [
+            "Godot_Client_Pak_Cooker_Node",
+            "Server_Rs_Linux_Musl_Build_Runner",
+            "Delta_Binary_Patch_CDN_Edge"
+          ]
+        },
+        "owner_engineer_role": { "type": "string" },
+        "node_loc": { "type": "string" },
+        "target_platforms_and_artifacts": { "type": "string" },
+        "delta_patch_and_rollout_metrics": { "type": "string" },
+        "ci_release_gates": {
           "type": "array",
           "minItems": 2,
           "items": { "type": "string" }

@@ -3095,7 +3095,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 76)
+        self.assertGreaterEqual(len(audit["dimensions"]), 76)
 
         d75 = audit["dimensions"]["D75_dialogue_dag_and_i18n_localization_graphs"]
         self.assertEqual(d75["score"], 100.0)
@@ -3155,10 +3155,106 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas76DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 76)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 76)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 76)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 76)
         self.assertIn("76-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave37_combat_skill_timeline_profiles_and_build_farm_patch_cdn_nodes(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["combatSkillTimelineProfilesCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["buildFarmPatchCdnNodesCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_SKILL_TIMELINE_MODE",
+            "setAtlasSkillTimelineMode",
+            "renderAtlasSkillTimelineBarHtml",
+            "studioSkillTimelineOverlay",
+            "Martial_Combo_Hitbox_Timeline",
+            "Arcane_Cast_Interrupt_Timeline",
+            "Boss_Telegraph_VFX_Timeline",
+            "ATLAS_BUILD_FARM_MODE",
+            "setAtlasBuildFarmMode",
+            "renderAtlasBuildFarmBarHtml",
+            "studioBuildFarmOverlay",
+            "Godot_Client_Pak_Cooker_Node",
+            "Server_Rs_Linux_Musl_Build_Runner",
+            "Delta_Binary_Patch_CDN_Edge",
+            "78-Dimension Semantic-Zoom Atlas Score",
+            "D1–D78 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 37 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 78)
+
+        d77 = audit["dimensions"]["D77_combat_skill_timeline_and_boss_telegraph_profiles"]
+        self.assertEqual(d77["score"], 100.0)
+        self.assertEqual(d77["verified"], 16)
+        self.assertEqual(d77["target"], 16)
+        self.assertEqual(d77["martial_combo_hitbox_timelines"], 6)
+        self.assertEqual(d77["arcane_cast_interrupt_timelines"], 5)
+        self.assertEqual(d77["boss_telegraph_vfx_timelines"], 5)
+        self.assertEqual(
+            set(d77["timeline_categories"]),
+            {
+                "Martial_Combo_Hitbox_Timeline",
+                "Arcane_Cast_Interrupt_Timeline",
+                "Boss_Telegraph_VFX_Timeline",
+            },
+        )
+        self.assertTrue(d77["ui_wired"])
+
+        d78 = audit["dimensions"]["D78_automated_build_farm_and_delta_patch_cdn_nodes"]
+        self.assertEqual(d78["score"], 100.0)
+        self.assertEqual(d78["verified"], 15)
+        self.assertEqual(d78["target"], 15)
+        self.assertEqual(d78["godot_client_pak_cooker_nodes"], 5)
+        self.assertEqual(d78["server_rs_linux_musl_build_runners"], 5)
+        self.assertEqual(d78["delta_binary_patch_cdn_edges"], 5)
+        self.assertEqual(
+            set(d78["build_farm_categories"]),
+            {
+                "Godot_Client_Pak_Cooker_Node",
+                "Server_Rs_Linux_Musl_Build_Runner",
+                "Delta_Binary_Patch_CDN_Edge",
+            },
+        )
+        self.assertTrue(d78["ui_wired"])
+
+        timelines = atlas["combat_skill_timeline_profiles"]
+        self.assertEqual(len(timelines), 16)
+        self.assertEqual(sum(1 for t in timelines if t["timeline_category"] == "Martial_Combo_Hitbox_Timeline"), 6)
+        self.assertEqual(sum(1 for t in timelines if t["timeline_category"] == "Arcane_Cast_Interrupt_Timeline"), 5)
+        self.assertEqual(sum(1 for t in timelines if t["timeline_category"] == "Boss_Telegraph_VFX_Timeline"), 5)
+        for t in timelines:
+            self.assertGreaterEqual(len(t["timeline_validation_gates"]), 2)
+
+        build_nodes = atlas["build_farm_patch_cdn_nodes"]
+        self.assertEqual(len(build_nodes), 15)
+        self.assertEqual(len({n["town_zone_id"] for n in build_nodes}), 15)
+        self.assertEqual(sum(1 for n in build_nodes if n["build_farm_category"] == "Godot_Client_Pak_Cooker_Node"), 5)
+        self.assertEqual(sum(1 for n in build_nodes if n["build_farm_category"] == "Server_Rs_Linux_Musl_Build_Runner"), 5)
+        self.assertEqual(sum(1 for n in build_nodes if n["build_farm_category"] == "Delta_Binary_Patch_CDN_Edge"), 5)
+        for n in build_nodes:
+            self.assertGreaterEqual(len(n["ci_release_gates"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas78DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 78)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 78)
+        self.assertIn("78-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

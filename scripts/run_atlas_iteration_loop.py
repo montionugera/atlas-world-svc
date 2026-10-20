@@ -15105,6 +15105,556 @@ def _build_spawner_loot_balancer_suites(atlas: dict[str, Any]) -> list[dict[str,
     return rows
 
 
+def _build_combat_skill_timeline_profiles(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 [Role 2: Combat & Skill Timeline Editor] Combat Skill Timeline, Hitbox Frame & Boss Telegraph VFX Profiles (6 Martial_Combo_Hitbox_Timeline + 5 Arcane_Cast_Interrupt_Timeline + 5 Boss_Telegraph_VFX_Timeline across Racial Dojos, Arenas & Dungeon Sanctums) (D77)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {
+        str(z.get("zone_id")): z
+        for z in all_zones
+        if isinstance(z, dict) and z.get("zone_id")
+    }
+    specs = [
+        # 6 Martial_Combo_Hitbox_Timeline
+        (
+            "timeline-01-martial-human-duelist-triple-sonic-slash",
+            "Human Duelist — Triple Sonic Slash & Momentum Charge Frame Timeline",
+            "Martial_Combo_Hitbox_Timeline",
+            "zone-town-lantern-hollow",
+            "",
+            "",
+            "Content & World Tools Engineer & Technical Artist",
+            "Startup 150ms (3 Ticks) -> Active Hitbox 100ms (2 Ticks · 4.2m Cone) -> Recovery/Cancel 250ms @ 20Hz",
+            "Soulshot 2.0x Physical Damage Frame Locked to Tick #3 + Sonic Blade Trail VFX Sync",
+            [
+                "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+                "Animation Cancel Exploit Guard",
+                "VFX Audio/Particle Cue Frame Lock",
+            ],
+        ),
+        (
+            "timeline-02-martial-lunar-evas-templar-shield-bash-combo",
+            "Lunar Eva's Templar — Tribunal Shield Bash & Aggro Lock Hitbox Timeline",
+            "Martial_Combo_Hitbox_Timeline",
+            "zone-town-porcelain-loom",
+            "",
+            "",
+            "Content & World Tools Engineer",
+            "Startup 100ms (2 Ticks) -> Active Stun Hitbox 100ms (2 Ticks · 2.8m Arc) -> Recovery 200ms @ 20Hz",
+            "Soulshot 2.0x Impact + Instant Target-Interrupt Frame Locked to Tick #2",
+            [
+                "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+                "Stun Immunity & Diminishing Return Frame Gate",
+                "Shield Impact Audio/Shockwave Frame Lock",
+            ],
+        ),
+        (
+            "timeline-03-martial-orc-titan-armor-crush-cleave",
+            "Ogre/Orc Titan — Frenzy Armor Crush & 180-Degree Polearm Cleave Timeline",
+            "Martial_Combo_Hitbox_Timeline",
+            "zone-town-draft-kiln-post",
+            "",
+            "",
+            "Content & World Tools Engineer & Backend Simulation Engineer",
+            "Startup 200ms (4 Ticks) -> Active Multi-Target Cleave 150ms (3 Ticks · 5.5m Arc) -> Recovery 300ms @ 20Hz",
+            "Soulshot 2.0x Heavy Cleave Locked to Tick #4 (Max 8 Targets Capped per Swing)",
+            [
+                "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+                "Polearm Multi-Target AoE Cap (8 Entities) Invariant",
+                "Ground-Crack Decal & Camera Shake Sync",
+            ],
+        ),
+        (
+            "timeline-04-martial-dwarf-fortune-seeker-spoil-crush",
+            "Dwarf Fortune Seeker — Spoil Crush, Blunt Stun & Festival Sweeper Timeline",
+            "Martial_Combo_Hitbox_Timeline",
+            "zone-town-escapement-anvil",
+            "",
+            "",
+            "Content & World Tools Engineer",
+            "Startup 100ms (2 Ticks) -> Active Spoil+Hit Frame 100ms (2 Ticks · 2.5m) -> Sweeper Cancel 150ms @ 20Hz",
+            "Soulshot 2.0x Blunt Hit + Spoil Condition State Transition Locked to Tick #2",
+            [
+                "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+                "Zero Double-Sweeper Corpse Extraction Race Guard",
+                "Blue Spoil Sparkle VFX Cue Frame Lock",
+            ],
+        ),
+        (
+            "timeline-05-martial-dark-lunar-ghost-hunter-lethal-backstab",
+            "Dark-Lunar Ghost Hunter — Deadly Blow, Shadow Step & Backstab Arc Timeline",
+            "Martial_Combo_Hitbox_Timeline",
+            "zone-town-carillon-belfry",
+            "",
+            "",
+            "Content & World Tools Engineer & Backend Simulation Engineer",
+            "Startup 100ms (2 Ticks · Behind-Target 120° Check) -> Active Lethal Frame 50ms (1 Tick) -> Recovery 200ms @ 20Hz",
+            "Soulshot 2.0x Critical Multiplier + Server Positional Facing Dot-Product Verified on Tick #2",
+            [
+                "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+                "Authoritative Rear-Arc (120°) Facing Validation Gate",
+                "Shadow-Step Teleport Arrival Frame Lock",
+            ],
+        ),
+        (
+            "timeline-06-martial-furral-doombringer-rush-impact-disarm",
+            "Furral Doombringer — Rush Impact Charge, Soul Barrier & Disarm Timeline",
+            "Martial_Combo_Hitbox_Timeline",
+            "zone-town-saffron-press",
+            "",
+            "",
+            "Content & World Tools Engineer & Technical Artist",
+            "Startup 50ms (1 Tick) -> Linear Charge Raycast 200ms (4 Ticks · 12m Path) -> Impact Stun 100ms @ 20Hz",
+            "Soulshot 2.0x Charge + NavMesh Heightfield Raycast Swept Per Tick (#2..#5)",
+            [
+                "Server-Client Hitbox Desync <= 1 Tick (50ms)",
+                "NavMesh Obstacle & Wall-Clip Swept Raycast Guard",
+                "Wing-Soul Trail & Disarm Icon Sync",
+            ],
+        ),
+        # 5 Arcane_Cast_Interrupt_Timeline
+        (
+            "timeline-07-arcane-archmage-prominence-vortex-cast",
+            "Archmage — Fire Vortex & Prominence Channeling/Interrupt Window Timeline",
+            "Arcane_Cast_Interrupt_Timeline",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "Content & World Tools Engineer",
+            "Cast Channel 450ms (9 Ticks · Interruptible #1..#7) -> Projectile Launch Tick #8 -> Recovery 150ms @ 20Hz",
+            "Blessed Spiritshot 4.0x Matk Consumed at Tick #1 + Concentration Cancel-Threshold Check",
+            [
+                "Server-Client Cast Bar Desync <= 1 Tick (50ms)",
+                "Interrupt/Cancel Window (#1..#7) vs Commit Point (#8) Gate",
+                "Projectile Travel Speed & Hit Impact VFX Sync",
+            ],
+        ),
+        (
+            "timeline-08-arcane-mystic-muse-hydro-blast-ice-vortex",
+            "Mystic Muse — Hydro Blast, Ice Vortex & Instant-Cast Enlightenment Timeline",
+            "Arcane_Cast_Interrupt_Timeline",
+            "zone-town-kilnwatch-bastion",
+            "",
+            "",
+            "Content & World Tools Engineer",
+            "Cast Channel 350ms (7 Ticks · Haste Scaled) -> Frost Impact Frame Tick #6 -> Recovery 100ms @ 20Hz",
+            "Blessed Spiritshot 4.0x Matk + Water 150/300 Attribute Multiplier Locked to Tick #6",
+            [
+                "Server-Client Cast Bar Desync <= 1 Tick (50ms)",
+                "Acumen/Enlightenment Cast-Speed Cap (1,999) Clamp Gate",
+                "Frost Shatter Audio/Decal Cue Frame Lock",
+            ],
+        ),
+        (
+            "timeline-09-arcane-storm-screamer-hurricane-empower-chain",
+            "Storm Screamer — Echo Hurricane & Arcane Chaos Debuff Tick Timeline",
+            "Arcane_Cast_Interrupt_Timeline",
+            "zone-town-pinion-terminus",
+            "",
+            "",
+            "Content & World Tools Engineer & Backend Simulation Engineer",
+            "Cast Channel 400ms (8 Ticks) -> Wind Bolt Release Tick #7 -> DoT/Drain Periodic Tick Every 40 Ticks (2.0s)",
+            "Blessed Spiritshot 4.0x Matk + Echo Empower 1.35x Amplifier Verified at Tick #7",
+            [
+                "Server-Client Cast Bar Desync <= 1 Tick (50ms)",
+                "Periodic DoT/MP-Drain Tick Alignment to 20Hz Loop",
+                "Twin-Vortex Wind Spiral Particle Frame Lock",
+            ],
+        ),
+        (
+            "timeline-10-arcane-cardinal-balance-life-cleanse-cast",
+            "Cardinal — Balance Life Party HP Equalization & Instant Cleanse Timeline",
+            "Arcane_Cast_Interrupt_Timeline",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            "Content & World Tools Engineer",
+            "Cast Channel 250ms (5 Ticks) -> Atomic 9-Member Party HP Ratio Commit Tick #4 -> Recovery 100ms @ 20Hz",
+            "Blessed Spiritshot Heal Bonus + Line-of-Sight Party Radius (18m) Verified at Tick #4",
+            [
+                "Server-Client Cast Bar Desync <= 1 Tick (50ms)",
+                "Atomic 9-Player Party HP Equalization Overflow Guard",
+                "Golden Sanctum Pillar VFX & Heal Chime Sync",
+            ],
+        ),
+        (
+            "timeline-11-arcane-dominator-seal-of-limit-overlord-aura",
+            "Dominator — Seal of Limit, Flames of Invincibility & 45-Player Alliance Pulse Timeline",
+            "Arcane_Cast_Interrupt_Timeline",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "Content & World Tools Engineer & Backend Simulation Engineer",
+            "Cast Channel 500ms (10 Ticks) -> 20m PBAE Alliance Buff/Seal Commit Tick #9 -> Recovery 200ms @ 20Hz",
+            "Blessed Spiritshot Status Land-Rate Boost + 45-Player Command-Channel Batch Apply on Tick #9",
+            [
+                "Server-Client Cast Bar Desync <= 1 Tick (50ms)",
+                "Zero Tick-Spike Batch Buff Application (< 0.35ms for 45 Players)",
+                "Crimson Overlord Crest Ground Ring VFX Sync",
+            ],
+        ),
+        # 5 Boss_Telegraph_VFX_Timeline
+        (
+            "timeline-12-boss-kiln-cellar-b3-queen-ant-pheromone-spray",
+            "Kiln Cellar B3 (Queen Ant MVP) — Acid Pheromone Cone & Royal Nurse Heal Telegraph Timeline",
+            "Boss_Telegraph_VFX_Timeline",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "Content & World Tools Engineer & Technical Artist",
+            "Telegraph Decal 600ms (12 Ticks · 14m 90° Cone) -> Active Acid Detonation 150ms (3 Ticks) -> Cooldown 400ms @ 20Hz",
+            "Ground Warning Decal Spawn at Tick #1 + Authoritative Server AoE Damage Polygon Evaluated at Tick #13",
+            [
+                "Server Hitbox Polygon == Client Telegraph Decal Geometry (<= 0.05m)",
+                "12-Tick (600ms) Fair Dodge Window Guarantee",
+                "Royal Nurse Larva Heal Interrupt Window Frame Lock",
+            ],
+        ),
+        (
+            "timeline-13-boss-pendulum-shaft-3f-core-gravity-pulse",
+            "Pendulum Shaft 3F (Core Automaton) — Concentric Gravity Donut & Laser Sweep Timeline",
+            "Boss_Telegraph_VFX_Timeline",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "Content & World Tools Engineer & Technical Artist",
+            "Inner Safe-Ring / Outer Danger-Donut Telegraph 750ms (15 Ticks · 6m–22m) -> Detonation Tick #16 @ 20Hz",
+            "Annular Ring Shader Warning Locked to Tick #1..#15 + Knockback Impulse Evaluated on Tick #16",
+            [
+                "Server Hitbox Polygon == Client Telegraph Decal Geometry (<= 0.05m)",
+                "Annular Inner-Safe-Radius (0m–6m) Zero-False-Hit Gate",
+                "Rotating Pendulum Laser Angular Velocity Parity",
+            ],
+        ),
+        (
+            "timeline-14-boss-chronometer-foundry-3f-valakas-meteor-breath",
+            "Chronometer Foundry 3F — Molten Dragon Breath, Tail Swipe & Meteor Crater Timeline",
+            "Boss_Telegraph_VFX_Timeline",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "Content & World Tools Engineer & Technical Artist",
+            "Telegraph Breath Corridor 800ms (16 Ticks · 28m×8m Box) -> Multi-Tick Flame Wave 250ms (5 Ticks) @ 20Hz",
+            "Volcanic Ground Fracture Decal at Tick #1 + 5-Tick Progressive Flame Wave (#17..#21) Sync",
+            [
+                "Server Hitbox Polygon == Client Telegraph Decal Geometry (<= 0.05m)",
+                "Rear Tail-Swipe vs Frontal Breath Mutual-Exclusion Gate",
+                "60 FPS GPU Particle Budget Cap During 45-Player Raid",
+            ],
+        ),
+        (
+            "timeline-15-boss-star-heart-nave-3f-frintezza-organ-requiem",
+            "Star-Heart Nave 3F — Scarlet Halisha Morph Charge & Pipe-Organ Requiem Dance Timeline",
+            "Boss_Telegraph_VFX_Timeline",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "Content & World Tools Engineer & Backend Simulation Engineer",
+            "Organ Melody Cue 1000ms (20 Ticks) -> 360° Scarlet Cleave / Soul-Breaking Arrow Window 200ms (4 Ticks) @ 20Hz",
+            "Pipe-Organ Audio Beat Sync Locked to Server Tick #1 + Soul-Breaking Arrow Cancel Window (#1..#18)",
+            [
+                "Server Hitbox Polygon == Client Telegraph Decal Geometry (<= 0.05m)",
+                "Soul-Breaking Arrow Interrupt vs Organ Melody Phase Lock",
+                "Phase 1->2->3 Cinematic Morph Invulnerability Frame Guard",
+            ],
+        ),
+        (
+            "timeline-16-boss-witch-pendulum-b3-anakim-lilith-eclipse-beam",
+            "Witch Pendulum Catacomb B3 — Dawn/Dusk Seal Apostle Twin Eclipse Beam Timeline",
+            "Boss_Telegraph_VFX_Timeline",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "Content & World Tools Engineer & Technical Artist",
+            "Cross-Chamber Line Telegraph 700ms (14 Ticks · Dual 24m Beams) -> Holy/Dark Detonation Tick #15 @ 20Hz",
+            "Holy/Dark 300-Attribute Beam Decal Spawn at Tick #1 + Pillar Line-of-Sight Occlusion Check at Tick #15",
+            [
+                "Server Hitbox Polygon == Client Telegraph Decal Geometry (<= 0.05m)",
+                "Catacomb Pillar Line-of-Sight Safe-Shadow Raycast Gate",
+                "Dawn/Dusk Seal Polarity VFX Shader Switch Parity",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        tid,
+        pname,
+        tcat,
+        zid,
+        did,
+        fid,
+        orole,
+        fbreak,
+        vrule,
+        vgates,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx + 125 - idx * 13, by + 130 - idx * 11)
+        rows.append(
+            {
+                "timeline_id": tid,
+                "profile_name": pname,
+                "timeline_category": tcat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "owner_engineer_role": orole,
+                "frame_window_breakdown": fbreak,
+                "vfx_and_soulshot_sync_rule": vrule,
+                "timeline_validation_gates": vgates,
+            }
+        )
+    return rows
+
+
+def _build_build_farm_patch_cdn_nodes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 [Role 5: Automated Multi-Platform Build Farm & Binary Patching] Town Client/Server Build Farm, Asset Cooker & Delta Patch CDN Nodes (5 Godot_Client_Pak_Cooker_Node + 5 Server_Rs_Linux_Musl_Build_Runner + 5 Delta_Binary_Patch_CDN_Edge across all 15 Towns) (D78)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 5 Godot_Client_Pak_Cooker_Node
+        (
+            "buildfarm-01-lantern-hollow-godot-pak-cooker",
+            "zone-town-lantern-hollow",
+            "Godot_Client_Pak_Cooker_Node",
+            "LiveOps, Build & GM Tools Engineer & Technical Artist",
+            "Godot 4.7 macOS Universal (ARM64/x86_64) + Win64 + Linux .pck & VRAM BasisU Texture Bundle",
+            "Content-Addressed Zstd .pck Cook (< 38s Incremental CI Cook · SHA-256 Asset Manifest Signed)",
+            [
+                "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+                "3-Tier GLB Asset Resolve Zero-Missing-Mesh Gate",
+                "Godot 4.7 Headless Scene Boot & Shader Pre-Warm Smoke Pass",
+            ],
+        ),
+        (
+            "buildfarm-02-porcelain-loom-godot-pak-cooker",
+            "zone-town-porcelain-loom",
+            "Godot_Client_Pak_Cooker_Node",
+            "LiveOps, Build & GM Tools Engineer & Technical Artist",
+            "Godot 4.7 iOS Metal / Android Vulkan Mobile & Desktop Cross-Platform .pck + Foliage LOD Bundle",
+            "Content-Addressed Zstd .pck Cook (< 42s Mobile/Desktop Cook · < 140 MB Regional Streaming Pak)",
+            [
+                "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+                "Polygon/Bone/Material Limit CI Validator Gate",
+                "Zero Uncompressed Raw PNG/TGA in Cooked .pck Bundle",
+            ],
+        ),
+        (
+            "buildfarm-03-draft-kiln-post-godot-pak-cooker",
+            "zone-town-draft-kiln-post",
+            "Godot_Client_Pak_Cooker_Node",
+            "LiveOps, Build & GM Tools Engineer",
+            "Godot 4.7 Highland Terrain Heightmap, Volcanic Particle Shader & Audio Bank .pck Cooker",
+            "Content-Addressed Zstd .pck Cook (< 35s Incremental Cook · 100% Deterministic Byte-Reproducible Pak)",
+            [
+                "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+                "Deterministic .pck Byte-Reproducibility Checksum Gate",
+                "Vulkan/Metal Forward+ Shader Compilation Zero-Warning Gate",
+            ],
+        ),
+        (
+            "buildfarm-04-carillon-belfry-godot-pak-cooker",
+            "zone-town-carillon-belfry",
+            "Godot_Client_Pak_Cooker_Node",
+            "LiveOps, Build & GM Tools Engineer & Technical Artist",
+            "Godot 4.7 Subterranean Catacomb Lightmap, Cutaway B1–B3 Mesh & Skeletal Rig .pck Cooker",
+            "Content-Addressed Zstd .pck Cook (< 40s Incremental Cook · Occlusion Culling Bake Verified)",
+            [
+                "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+                "Dungeon Corridor >= 6.0m & NavMesh Parity Gate",
+                "Skeletal Animation Retarget & Root-Motion Smoke Pass",
+            ],
+        ),
+        (
+            "buildfarm-05-saffron-press-godot-pak-cooker",
+            "zone-town-saffron-press",
+            "Godot_Client_Pak_Cooker_Node",
+            "LiveOps, Build & GM Tools Engineer & Content & World Tools Engineer",
+            "Godot 4.7 EN/TH Localization Font Atlas, Paraglide String Table & UI Minimap Plate .pck Cooker",
+            "Content-Addressed Zstd .pck Cook (< 28s i18n/UI Fast-Cook · 11 Archetype Raster Plates Embedded)",
+            [
+                "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+                "100% EN/TH Localization Key & Thai Glyph Coverage Gate",
+                "Zero NativeAOT C# Reflection Warning in Client Build",
+            ],
+        ),
+        # 5 Server_Rs_Linux_Musl_Build_Runner
+        (
+            "buildfarm-06-escapement-anvil-server-rs-runner",
+            "zone-town-escapement-anvil",
+            "Server_Rs_Linux_Musl_Build_Runner",
+            "LiveOps, Build & GM Tools Engineer & Backend Simulation Engineer",
+            "server-rs x86_64-unknown-linux-musl & aarch64 Static Release Binary (ThinLTO + PGO + Agones SDK)",
+            "Sccache + Cargo Chef Layer Cache (< 48s Incremental Rust Release Build · 24 MB Distroless Image)",
+            [
+                "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+                "20Hz Tick Budget <= 0.55ms Under 2,000-Bot Benchmark Gate",
+                "Zero Unsafe Memory / Clippy Pedantic Clean Gate",
+            ],
+        ),
+        (
+            "buildfarm-07-kilnwatch-bastion-server-rs-runner",
+            "zone-town-kilnwatch-bastion",
+            "Server_Rs_Linux_Musl_Build_Runner",
+            "LiveOps, Build & GM Tools Engineer & Backend Simulation Engineer",
+            "server-rs Authoritative Zone & SpatialGrid Partition Container Image + FlatBuffers Wire Verifier",
+            "Multi-Arch OCI Image Build (< 50s CI Build · 250B FlatBuffers Delta Wire Contract Locked)",
+            [
+                "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+                "10,000-Tick Seeded Golden-Trace Replay Parity (epsilon <= 0.05)",
+                "SpatialGrid 4-Highway Boundary Handoff Smoke Pass",
+            ],
+        ),
+        (
+            "buildfarm-08-pinion-terminus-server-rs-runner",
+            "zone-town-pinion-terminus",
+            "Server_Rs_Linux_Musl_Build_Runner",
+            "LiveOps, Build & GM Tools Engineer & Backend Simulation Engineer",
+            "server-rs Economy, Spoil/Refinement CAS & PostgreSQL/SQLite Persistence Worker Binary",
+            "Cargo Nextest + Real-DB Migration Runner (< 44s Build & Test · Zero-Dupe OCC Ledger Verified)",
+            [
+                "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+                "50,000-Transaction Enchant/Trade OCC Zero-Dupe Replay Gate",
+                "Database Migration Forward + Rollback Idempotency Gate",
+            ],
+        ),
+        (
+            "buildfarm-09-inductor-switchyard-server-rs-runner",
+            "zone-town-inductor-switchyard",
+            "Server_Rs_Linux_Musl_Build_Runner",
+            "LiveOps, Build & GM Tools Engineer & Lead Tools & Pipeline Architect",
+            "server-rs 300-Player Giran Bazaar, Clan Auction & Agones Fleet Autoscaler Image",
+            "Deterministic Container Build (< 45s CI Pipeline · SBOM + Cosign Container Signature Verified)",
+            [
+                "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+                "GOV-01..GOV-10 World Studio Governance 10/10 Pass Gate",
+                "Agones GameServer Health-Probe & Graceful Drain Verification",
+            ],
+        ),
+        (
+            "buildfarm-10-torque-balance-citadel-server-rs-runner",
+            "zone-town-torque-balance-citadel",
+            "Server_Rs_Linux_Musl_Build_Runner",
+            "LiveOps, Build & GM Tools Engineer & Backend Simulation Engineer",
+            "server-rs 450-Player Castle Siege, Territory Ward & Command-Channel Raid Authority Binary",
+            "High-Concurrency Siege Profile Build (< 52s Build + 450-Bot Siege Smoke Run · P99 Tick < 0.75ms)",
+            [
+                "Codegen Drift-Gate (FlatBuffers + JSON Schema)",
+                "450-Bot Castle Siege & Holy Artifact Cast Stress Gate",
+                "Zero-Downtime Rolling Realm Cutover Readiness Gate",
+            ],
+        ),
+        # 5 Delta_Binary_Patch_CDN_Edge
+        (
+            "buildfarm-11-glaze-barge-quay-delta-patch-cdn",
+            "zone-town-glaze-barge-quay",
+            "Delta_Binary_Patch_CDN_Edge",
+            "LiveOps, Build & GM Tools Engineer",
+            "Content-Addressed Zstd + Bsdiff4 Binary Delta Patch Edge (Southern Maritime & Harbor Cluster)",
+            "Chunk-Deduplicated Zstd Delta Patch (< 6.8 MB Typical Hotfix · < 12s Client Patch Apply)",
+            [
+                "Ed25519 + SHA-256 Chunk Manifest Signature Verification",
+                "Client-Server Protocol Version Handshake Lock",
+                "1-Click Instant CDN Manifest Rollback (< 5s Edge Purge)",
+            ],
+        ),
+        (
+            "buildfarm-12-cinnamon-mill-delta-patch-cdn",
+            "zone-town-cinnamon-mill",
+            "Delta_Binary_Patch_CDN_Edge",
+            "LiveOps, Build & GM Tools Engineer",
+            "Content-Addressed Zstd + Bsdiff4 Binary Delta Patch Edge (Dion/Floran Agricultural Frontier)",
+            "Chunk-Deduplicated Zstd Delta Patch (< 7.2 MB Typical Hotfix · HTTP/3 Range-Request Resume)",
+            [
+                "Ed25519 + SHA-256 Chunk Manifest Signature Verification",
+                "Interrupted Download Block-Level Resume Integrity Gate",
+                "1-Click Instant CDN Manifest Rollback (< 5s Edge Purge)",
+            ],
+        ),
+        (
+            "buildfarm-13-root-train-roundhouse-delta-patch-cdn",
+            "zone-town-root-train-roundhouse",
+            "Delta_Binary_Patch_CDN_Edge",
+            "LiveOps, Build & GM Tools Engineer",
+            "Content-Addressed Zstd + Bsdiff4 Binary Delta Patch Edge (Northern Dwarven Freight & Schuttgart Hub)",
+            "Chunk-Deduplicated Zstd Delta Patch (< 8.1 MB Typical Hotfix · 98.4% Block Cache Hit Ratio)",
+            [
+                "Ed25519 + SHA-256 Chunk Manifest Signature Verification",
+                "Background Pre-Download While Playing (Zero Frame Drop)",
+                "1-Click Instant CDN Manifest Rollback (< 5s Edge Purge)",
+            ],
+        ),
+        (
+            "buildfarm-14-starfall-haven-delta-patch-cdn",
+            "zone-town-starfall-haven",
+            "Delta_Binary_Patch_CDN_Edge",
+            "LiveOps, Build & GM Tools Engineer",
+            "Content-Addressed Zstd + Bsdiff4 Binary Delta Patch Edge (Rune Maritime & Gracia Airship Gateway)",
+            "Chunk-Deduplicated Zstd Delta Patch (< 7.9 MB Typical Hotfix · Multi-Region Anycast Edge Sync)",
+            [
+                "Ed25519 + SHA-256 Chunk Manifest Signature Verification",
+                "Canary 5% -> 25% -> 100% Staged Launcher Rollout Gate",
+                "1-Click Instant CDN Manifest Rollback (< 5s Edge Purge)",
+            ],
+        ),
+        (
+            "buildfarm-15-crown-beacon-delta-patch-cdn",
+            "zone-town-crown-beacon",
+            "Delta_Binary_Patch_CDN_Edge",
+            "LiveOps, Build & GM Tools Engineer & Lead Tools & Pipeline Architect",
+            "Content-Addressed Zstd + Bsdiff4 Binary Delta Patch Edge (Goddard Volcanic & Sovereign Endgame Hub)",
+            "Chunk-Deduplicated Zstd Delta Patch (< 8.5 MB Hotfix Patch · < 45s End-to-End CI-to-CDN Publish)",
+            [
+                "Ed25519 + SHA-256 Chunk Manifest Signature Verification",
+                "Zero-Downtime Rolling Realm Cutover (Old + New Pod Drain)",
+                "1-Click Instant CDN Manifest Rollback (< 5s Edge Purge)",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        bnid,
+        tzid,
+        bfcat,
+        orole,
+        tplat,
+        dmetrics,
+        cgates,
+    ) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(tzid) or {}
+        t_name = str(t_obj.get("name") or tzid)
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        node_loc = _fmt_loc(bx - 125 + idx * 12, by - 135 + idx * 14)
+        rows.append(
+            {
+                "build_node_id": bnid,
+                "town_zone_id": tzid,
+                "town_name": t_name,
+                "build_farm_category": bfcat,
+                "owner_engineer_role": orole,
+                "node_loc": node_loc,
+                "target_platforms_and_artifacts": tplat,
+                "delta_patch_and_rollout_metrics": dmetrics,
+                "ci_release_gates": cgates,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -16320,6 +16870,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("spawner_loot_balancer_suites") or []) < 16:
         atlas["spawner_loot_balancer_suites"] = _build_spawner_loot_balancer_suites(atlas)
         actions.append("populated_16_spawner_loot_balancer_suites")
+
+    # 61. Ensure all 16 Combat Skill Timeline, Hitbox Frame & Boss Telegraph VFX Profiles exist in `combat_skill_timeline_profiles` (D77)
+    if len(atlas.get("combat_skill_timeline_profiles") or []) < 16:
+        atlas["combat_skill_timeline_profiles"] = _build_combat_skill_timeline_profiles(atlas)
+        actions.append("populated_16_combat_skill_timeline_profiles")
+
+    # 62. Ensure all 15 Town Client/Server Build Farm, Asset Cooker & Delta Patch CDN Nodes exist in `build_farm_patch_cdn_nodes` (D78)
+    if len(atlas.get("build_farm_patch_cdn_nodes") or []) < 15:
+        atlas["build_farm_patch_cdn_nodes"] = _build_build_farm_patch_cdn_nodes(atlas)
+        actions.append("populated_15_build_farm_patch_cdn_nodes")
 
     return {"actions": actions}
 
@@ -20670,15 +21230,153 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d76_ratio * 80.0, 1)
     )
 
+    # D77: Interactive 16-Archetype [Role 2: Combat & Skill Timeline Editor] Combat Skill Timeline, Hitbox Frame & Boss Telegraph VFX Matrix (`combat_skill_timeline_profiles` - 16 Profiles: 6 Martial_Combo_Hitbox_Timeline + 5 Arcane_Cast_Interrupt_Timeline + 5 Boss_Telegraph_VFX_Timeline)
+    expected_timeline_categories = {
+        "Martial_Combo_Hitbox_Timeline",
+        "Arcane_Cast_Interrupt_Timeline",
+        "Boss_Telegraph_VFX_Timeline",
+    }
+    timeline_rows = atlas.get("combat_skill_timeline_profiles") or []
+    valid_skill_timelines = 0
+    martial_combo_count = 0
+    arcane_cast_count = 0
+    boss_telegraph_count = 0
+    seen_timeline_ids: set[str] = set()
+    seen_timeline_categories: set[str] = set()
+    for trow in timeline_rows:
+        if not isinstance(trow, dict):
+            continue
+        tid = str(trow.get("timeline_id") or "")
+        tcat = str(trow.get("timeline_category") or "")
+        tzid = str(trow.get("zone_id") or "")
+        tdid = str(trow.get("dungeon_id") or "")
+        tfid = str(trow.get("floor_id") or "")
+        tgates = trow.get("timeline_validation_gates") or []
+        if (
+            tid
+            and tid not in seen_timeline_ids
+            and trow.get("profile_name")
+            and tcat in expected_timeline_categories
+            and tzid in zone_ids_set
+            and (tdid == "" or tdid in mf_dungeon_id_set)
+            and tfid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(trow.get("loc", ""))
+            and trow.get("owner_engineer_role")
+            and trow.get("frame_window_breakdown")
+            and trow.get("vfx_and_soulshot_sync_rule")
+            and isinstance(tgates, list)
+            and len(tgates) >= 2
+        ):
+            valid_skill_timelines += 1
+            seen_timeline_ids.add(tid)
+            seen_timeline_categories.add(tcat)
+            if tcat == "Martial_Combo_Hitbox_Timeline":
+                martial_combo_count += 1
+            elif tcat == "Arcane_Cast_Interrupt_Timeline":
+                arcane_cast_count += 1
+            elif tcat == "Boss_Telegraph_VFX_Timeline":
+                boss_telegraph_count += 1
+
+    has_d77_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_SKILL_TIMELINE_MODE",
+            "setAtlasSkillTimelineMode",
+            "renderAtlasSkillTimelineBarHtml",
+            "studioSkillTimelineOverlay",
+        )
+    )
+    d77_ratio = valid_skill_timelines / 16.0
+    d77_full_coverage = (
+        martial_combo_count == 6
+        and arcane_cast_count == 5
+        and boss_telegraph_count == 5
+        and seen_timeline_categories == expected_timeline_categories
+    )
+    d77_score = (
+        round(min(100.0, d77_ratio * 100.0), 1)
+        if (has_d77_ui and d77_full_coverage)
+        else round(d77_ratio * 80.0, 1)
+    )
+
+    # D78: Interactive 15-Node [Role 5: Automated Multi-Platform Build Farm & Binary Patching] Client/Server Build Farm, Asset Cooker & Delta Patch CDN Matrix (`build_farm_patch_cdn_nodes` - 15 Nodes: 5 Godot_Client_Pak_Cooker_Node + 5 Server_Rs_Linux_Musl_Build_Runner + 5 Delta_Binary_Patch_CDN_Edge)
+    expected_build_farm_categories = {
+        "Godot_Client_Pak_Cooker_Node",
+        "Server_Rs_Linux_Musl_Build_Runner",
+        "Delta_Binary_Patch_CDN_Edge",
+    }
+    build_farm_rows = atlas.get("build_farm_patch_cdn_nodes") or []
+    valid_build_farm_nodes = 0
+    godot_pak_cooker_count = 0
+    server_rs_runner_count = 0
+    delta_patch_cdn_count = 0
+    seen_build_node_ids: set[str] = set()
+    seen_build_town_ids: set[str] = set()
+    seen_build_farm_categories: set[str] = set()
+    for bfrow in build_farm_rows:
+        if not isinstance(bfrow, dict):
+            continue
+        bnid = str(bfrow.get("build_node_id") or "")
+        btzid = str(bfrow.get("town_zone_id") or "")
+        bfcat = str(bfrow.get("build_farm_category") or "")
+        bgates = bfrow.get("ci_release_gates") or []
+        if (
+            bnid
+            and bnid not in seen_build_node_ids
+            and btzid in town_zone_id_set
+            and btzid not in seen_build_town_ids
+            and bfrow.get("town_name")
+            and bfcat in expected_build_farm_categories
+            and bfrow.get("owner_engineer_role")
+            and ":" in str(bfrow.get("node_loc", ""))
+            and bfrow.get("target_platforms_and_artifacts")
+            and bfrow.get("delta_patch_and_rollout_metrics")
+            and isinstance(bgates, list)
+            and len(bgates) >= 2
+        ):
+            valid_build_farm_nodes += 1
+            seen_build_node_ids.add(bnid)
+            seen_build_town_ids.add(btzid)
+            seen_build_farm_categories.add(bfcat)
+            if bfcat == "Godot_Client_Pak_Cooker_Node":
+                godot_pak_cooker_count += 1
+            elif bfcat == "Server_Rs_Linux_Musl_Build_Runner":
+                server_rs_runner_count += 1
+            elif bfcat == "Delta_Binary_Patch_CDN_Edge":
+                delta_patch_cdn_count += 1
+
+    has_d78_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_BUILD_FARM_MODE",
+            "setAtlasBuildFarmMode",
+            "renderAtlasBuildFarmBarHtml",
+            "studioBuildFarmOverlay",
+        )
+    )
+    d78_ratio = valid_build_farm_nodes / 15.0
+    d78_full_coverage = (
+        godot_pak_cooker_count == 5
+        and server_rs_runner_count == 5
+        and delta_patch_cdn_count == 5
+        and len(seen_build_town_ids) == 15
+        and seen_build_farm_categories == expected_build_farm_categories
+    )
+    d78_score = (
+        round(min(100.0, d78_ratio * 100.0), 1)
+        if (has_d78_ui and d78_full_coverage)
+        else round(d78_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 58.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 60.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 60.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 70.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 59.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 66.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score) / 60.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score) / 62.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score) / 62.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score) / 72.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score) / 61.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score) / 68.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -20759,8 +21457,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d74_score
             + d75_score
             + d76_score
+            + d77_score
+            + d78_score
         )
-        / 76.0,
+        / 78.0,
         1,
     )
 
@@ -21426,6 +22126,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "balancer_categories": sorted(seen_balancer_categories),
                 "ui_wired": has_d76_ui,
             },
+            "D77_combat_skill_timeline_and_boss_telegraph_profiles": {
+                "score": d77_score,
+                "verified": valid_skill_timelines,
+                "target": 16,
+                "martial_combo_hitbox_timelines": martial_combo_count,
+                "arcane_cast_interrupt_timelines": arcane_cast_count,
+                "boss_telegraph_vfx_timelines": boss_telegraph_count,
+                "timeline_categories": sorted(seen_timeline_categories),
+                "ui_wired": has_d77_ui,
+            },
+            "D78_automated_build_farm_and_delta_patch_cdn_nodes": {
+                "score": d78_score,
+                "verified": valid_build_farm_nodes,
+                "target": 15,
+                "godot_client_pak_cooker_nodes": godot_pak_cooker_count,
+                "server_rs_linux_musl_build_runners": server_rs_runner_count,
+                "delta_binary_patch_cdn_edges": delta_patch_cdn_count,
+                "build_farm_categories": sorted(seen_build_farm_categories),
+                "ui_wired": has_d78_ui,
+            },
         },
     }
 
@@ -21546,6 +22266,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D74 (20 Tools Squad Reg)    : {dims['D74_platform_tools_squad_unified_pipeline_registry']['score']}/100 ({dims['D74_platform_tools_squad_unified_pipeline_registry']['verified']}/{dims['D74_platform_tools_squad_unified_pipeline_registry']['target']} platform squad tools)")
         print(f"  D75 (18 Dialogue/i18n DAGs) : {dims['D75_dialogue_dag_and_i18n_localization_graphs']['score']}/100 ({dims['D75_dialogue_dag_and_i18n_localization_graphs']['verified']}/{dims['D75_dialogue_dag_and_i18n_localization_graphs']['target']} dialogue/i18n graphs)")
         print(f"  D76 (16 Spawner/Loot Suites): {dims['D76_visual_spawner_and_loot_economy_balancer_suites']['score']}/100 ({dims['D76_visual_spawner_and_loot_economy_balancer_suites']['verified']}/{dims['D76_visual_spawner_and_loot_economy_balancer_suites']['target']} spawner/loot suites)")
+        print(f"  D77 (16 Skill Timelines)    : {dims['D77_combat_skill_timeline_and_boss_telegraph_profiles']['score']}/100 ({dims['D77_combat_skill_timeline_and_boss_telegraph_profiles']['verified']}/{dims['D77_combat_skill_timeline_and_boss_telegraph_profiles']['target']} skill timelines)")
+        print(f"  D78 (15 Build Farm/CDN)     : {dims['D78_automated_build_farm_and_delta_patch_cdn_nodes']['score']}/100 ({dims['D78_automated_build_farm_and_delta_patch_cdn_nodes']['verified']}/{dims['D78_automated_build_farm_and_delta_patch_cdn_nodes']['target']} build/cdn nodes)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

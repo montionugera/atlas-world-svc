@@ -716,6 +716,8 @@ def validate_world_governance(
                 "platformToolsSquadRegistryCount": len(t_doc.get("platform_tools_squad_registry") or []),
                 "dialogueLocalizationGraphsCount": len(t_doc.get("dialogue_localization_graphs") or []),
                 "spawnerLootBalancerSuitesCount": len(t_doc.get("spawner_loot_balancer_suites") or []),
+                "combatSkillTimelineProfilesCount": len(t_doc.get("combat_skill_timeline_profiles") or []),
+                "buildFarmPatchCdnNodesCount": len(t_doc.get("build_farm_patch_cdn_nodes") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1736,6 +1738,43 @@ def validate_world_governance(
                 if bs_sdid and bs_sdid not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: spawner_loot_balancer_suites '{bs_sid}' references unknown dungeon_id '{bs_sdid}'"
+                    )
+
+            # Validate 16-Archetype Combat Skill Timeline, Hitbox Frame & Boss Telegraph VFX Matrix (D77)
+            skill_timelines = t_doc.get("combat_skill_timeline_profiles") or []
+            if skill_timelines and len(skill_timelines) != 16:
+                errors.append(
+                    f"GOV-10 violation: combat_skill_timeline_profiles must have 16 skill timeline profiles, got {len(skill_timelines)}"
+                )
+            for st_item in skill_timelines:
+                if not isinstance(st_item, dict):
+                    continue
+                st_id = str(st_item.get("timeline_id", ""))
+                st_zid = str(st_item.get("zone_id", ""))
+                st_did = str(st_item.get("dungeon_id", ""))
+                if st_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: combat_skill_timeline_profiles '{st_id}' references unknown zone_id '{st_zid}'"
+                    )
+                if st_did and st_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: combat_skill_timeline_profiles '{st_id}' references unknown dungeon_id '{st_did}'"
+                    )
+
+            # Validate 15-Node Client/Server Build Farm, Asset Cooker & Delta Patch CDN Matrix (D78)
+            build_farm_nodes = t_doc.get("build_farm_patch_cdn_nodes") or []
+            if build_farm_nodes and len(build_farm_nodes) != 15:
+                errors.append(
+                    f"GOV-10 violation: build_farm_patch_cdn_nodes must have 15 town build farm/CDN nodes, got {len(build_farm_nodes)}"
+                )
+            for bf_item in build_farm_nodes:
+                if not isinstance(bf_item, dict):
+                    continue
+                bf_id = str(bf_item.get("build_node_id", ""))
+                bf_tzid = str(bf_item.get("town_zone_id", ""))
+                if bf_tzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: build_farm_patch_cdn_nodes '{bf_id}' references unknown town_zone_id '{bf_tzid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

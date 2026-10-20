@@ -102,15 +102,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas72DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas74DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas76DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas78DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 36)),
+        "wave": int(iter_state.get("wave", 37)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"78-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"76-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"74-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"72-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -140,7 +142,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 Verified"
         ),
     }
     return merged
@@ -4402,7 +4404,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4497,6 +4499,8 @@ let ATLAS_LIVEOPS_GM_MODE = 'All';
 let ATLAS_TOOLS_SQUAD_MODE = 'All';
 let ATLAS_DIALOGUE_GRAPH_MODE = 'All';
 let ATLAS_SPAWNER_BALANCER_MODE = 'All';
+let ATLAS_SKILL_TIMELINE_MODE = 'All';
+let ATLAS_BUILD_FARM_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4563,6 +4567,8 @@ const ATLAS_STATE_STORE = {
   toolsSquadMode: 'All',                   // D74: Active 20-Tool [4-Domain x 5-Role Tools Squad] Unified Pipeline Selector ('Off' | 'All' | 'Stage_1_Content_And_World' | 'Stage_2_Asset_And_Build_Pipeline' | 'Stage_3_Server_And_Simulation' | 'Stage_4_LiveOps_And_GM')
   dialogueGraphMode: 'All',                // D75: Active 18-Graph [Role 2: Content Tools] Branching Dialogue DAG & EN/TH Localization Selector ('Off' | 'All' | 'Main_Story_Dialogue_DAG' | 'Class_Trial_Branching_Tree' | 'Racial_Lore_Localization_Bundle')
   spawnerBalancerMode: 'All',              // D76: Active 16-Zone [Role 1 & 2: Spawner & Economy Tools] Visual Spawner & Loot Balancer Selector ('Off' | 'All' | 'Visual_Spawner_Leash_Editor' | 'Monte_Carlo_Loot_Inflation_Balancer' | 'Hot_Reload_SSOT_Writeback_Bridge')
+  skillTimelineMode: 'All',                // D77: Active 16-Archetype [Role 2: Combat Timeline Editor] Skill & Boss Telegraph Selector ('Off' | 'All' | 'Martial_Combo_Hitbox_Timeline' | 'Arcane_Cast_Interrupt_Timeline' | 'Boss_Telegraph_VFX_Timeline')
+  buildFarmMode: 'All',                    // D78: Active 15-Node [Role 5: Build Farm & Patch CDN] Cooker & Delta Patch Selector ('Off' | 'All' | 'Godot_Client_Pak_Cooker_Node' | 'Server_Rs_Linux_Musl_Build_Runner' | 'Delta_Binary_Patch_CDN_Edge')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4570,6 +4576,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasSkillTimelineMode(modeId) {
+  ATLAS_SKILL_TIMELINE_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.skillTimelineMode = ATLAS_SKILL_TIMELINE_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasBuildFarmMode(modeId) {
+  ATLAS_BUILD_FARM_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.buildFarmMode = ATLAS_BUILD_FARM_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasDialogueGraphMode(modeId) {
   ATLAS_DIALOGUE_GRAPH_MODE = String(modeId || 'All');
@@ -11941,6 +11961,182 @@ function renderAtlasSpawnerBalancerBarHtml(tatlas) {
   `;
 }
 
+// D77: Interactive 16-Archetype [Role 2: Combat & Skill Timeline Editor] Combat Skill Timeline, Hitbox Frame & Boss Telegraph VFX Bar
+function renderAtlasSkillTimelineBarHtml(tatlas) {
+  const timelines = (tatlas && tatlas.combat_skill_timeline_profiles) || [];
+  const curMode = ATLAS_SKILL_TIMELINE_MODE || ATLAS_STATE_STORE.skillTimelineMode || 'All';
+  const modePills = [
+    { id: 'All', label: '⚡ All 16 Skill Timelines' },
+    { id: 'Martial_Combo_Hitbox_Timeline', label: '🗡️ 6 Martial Combo Timelines' },
+    { id: 'Arcane_Cast_Interrupt_Timeline', label: '🔮 5 Arcane Cast Timelines' },
+    { id: 'Boss_Telegraph_VFX_Timeline', label: '🐉 5 Boss Telegraph Timelines' },
+    { id: 'Off', label: '🙈 Hide Overlay' }
+  ];
+  const filteredTimelines = curMode === 'Off'
+    ? []
+    : (curMode === 'All'
+        ? timelines
+        : timelines.filter(t => t.timeline_category === curMode));
+  const featuredTimelines = filteredTimelines.slice(0, 6);
+  const allTowns = getAllAtlasTownEntries(tatlas);
+  const byTownId = {};
+  allTowns.forEach(t => { byTownId[t.zone_id] = t; });
+  const catStyleMap = {
+    'Martial_Combo_Hitbox_Timeline': { col: '#f97316', badge: 'MARTIAL COMBO', icon: '🗡️' },
+    'Arcane_Cast_Interrupt_Timeline': { col: '#38bdf8', badge: 'ARCANE CAST', icon: '🔮' },
+    'Boss_Telegraph_VFX_Timeline': { col: '#f43f5e', badge: 'BOSS TELEGRAPH', icon: '🐉' }
+  };
+
+  return `
+    <div id="atlasSkillTimelineBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          <span class="mono" style="font-size:9.5px;font-weight:900;color:#fb923c;margin-right:2px">
+            ⚡ [ROLE 2: COMBAT TIMELINE EDITOR — 16-ARCHETYPE SKILL &amp; BOSS TELEGRAPH] (D77):
+          </span>
+          ${modePills.map(mp => {
+            const act = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasSkillTimelineMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 7px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${act ? '#fb923c' : 'rgba(255,255,255,0.14)'};background:${act ? '#7c2d12' : '#0f172a'};color:${act ? '#fff7ed' : '#cbd5e1'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 MARTIAL COMBO HITBOX · 5 ARCANE CAST INTERRUPT · 5 BOSS TELEGRAPH VFX · 20HZ TICK LOCK
+        </span>
+      </div>
+
+      ${featuredTimelines.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredTimelines.map(t => {
+            const cs = catStyleMap[t.timeline_category] || { col: '#fb923c', badge: 'SKILL TIMELINE', icon: '⚡' };
+            const zidStr = String(t.zone_id || '');
+            const didStr = String(t.dungeon_id || '');
+            const fidStr = String(t.floor_id || 'B3');
+            const tObj = byTownId[zidStr];
+            const jumpJs = didStr
+              ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+              : (tObj
+                  ? `focusTownStreetBlueprint('${escapeHtml(tObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(t.loc)}')`
+                  : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(t.loc)}')`);
+            const gateTxt = (t.timeline_validation_gates || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(t.profile_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fed7aa;margin-top:1px">
+                    ⏱️ ${escapeHtml(t.frame_window_breakdown.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ✨ ${escapeHtml(t.vfx_and_soulshot_sync_rule.slice(0, 42))} · ${escapeHtml(gateTxt.slice(0, 32))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${cs.col};background:#431407;color:#fff7ed;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cs.icon} ${didStr ? `Open Boss Telegraph Sanctum (${escapeHtml(fidStr)})` : 'Jump to Racial Dojo / Arena'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+// D78: Interactive 15-Node [Role 5: Automated Multi-Platform Build Farm & Binary Patching] Client/Server Build Farm, Asset Cooker & Delta Patch CDN Bar
+function renderAtlasBuildFarmBarHtml(tatlas) {
+  const nodes = (tatlas && tatlas.build_farm_patch_cdn_nodes) || [];
+  const curMode = ATLAS_BUILD_FARM_MODE || ATLAS_STATE_STORE.buildFarmMode || 'All';
+  const modePills = [
+    { id: 'All', label: '🏗️ All 15 Build Nodes' },
+    { id: 'Godot_Client_Pak_Cooker_Node', label: '📦 5 Godot Pak Cookers' },
+    { id: 'Server_Rs_Linux_Musl_Build_Runner', label: '🦀 5 server-rs Build Runners' },
+    { id: 'Delta_Binary_Patch_CDN_Edge', label: '🌐 5 Delta Patch CDN Edges' },
+    { id: 'Off', label: '🙈 Hide Overlay' }
+  ];
+  const filteredNodes = curMode === 'Off'
+    ? []
+    : (curMode === 'All'
+        ? nodes
+        : nodes.filter(n => n.build_farm_category === curMode));
+  const featuredNodes = filteredNodes.slice(0, 6);
+  const allTowns = getAllAtlasTownEntries(tatlas);
+  const byTownId = {};
+  allTowns.forEach(t => { byTownId[t.zone_id] = t; });
+  const catStyleMap = {
+    'Godot_Client_Pak_Cooker_Node': { col: '#38bdf8', badge: 'GODOT PAK COOKER', icon: '📦' },
+    'Server_Rs_Linux_Musl_Build_Runner': { col: '#fb923c', badge: 'SERVER-RS RUNNER', icon: '🦀' },
+    'Delta_Binary_Patch_CDN_Edge': { col: '#34d399', badge: 'DELTA PATCH CDN', icon: '🌐' }
+  };
+
+  return `
+    <div id="atlasBuildFarmBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          <span class="mono" style="font-size:9.5px;font-weight:900;color:#34d399;margin-right:2px">
+            🏗️ [ROLE 5: BUILD FARM &amp; PATCH CDN — 15-NODE COOKER &amp; DELTA PATCH] (D78):
+          </span>
+          ${modePills.map(mp => {
+            const act = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasBuildFarmMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 7px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${act ? '#34d399' : 'rgba(255,255,255,0.14)'};background:${act ? '#064e3b' : '#0f172a'};color:${act ? '#ecfdf5' : '#cbd5e1'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 GODOT PAK COOKERS · 5 SERVER-RS MUSL RUNNERS · 5 ZSTD DELTA PATCH CDN EDGES
+        </span>
+      </div>
+
+      ${featuredNodes.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredNodes.map(n => {
+            const cs = catStyleMap[n.build_farm_category] || { col: '#34d399', badge: 'BUILD NODE', icon: '🏗️' };
+            const tzidStr = String(n.town_zone_id || '');
+            const tObj = byTownId[tzidStr] || {};
+            const jumpJs = `focusTownStreetBlueprint('${escapeHtml(tObj.studio_node_id || tzidStr.replace('zone-', ''))}', '${escapeHtml(n.node_loc)}')`;
+            const gateTxt = (n.ci_release_gates || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(n.town_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#a7f3d0;margin-top:1px">
+                    🎯 ${escapeHtml(n.target_platforms_and_artifacts.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ⚡ ${escapeHtml(n.delta_patch_and_rollout_metrics.slice(0, 42))} · ${escapeHtml(gateTxt.slice(0, 32))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${cs.col};background:#064e3b;color:#ecfdf5;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cs.icon} Jump to Town Build/CDN Node (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -12121,6 +12317,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasToolsSquadBarHtml(tatlas)}
       ${renderAtlasDialogueGraphBarHtml(tatlas)}
       ${renderAtlasSpawnerBalancerBarHtml(tatlas)}
+      ${renderAtlasSkillTimelineBarHtml(tatlas)}
+      ${renderAtlasBuildFarmBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -15835,6 +16033,75 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Combat Skill Timeline & Boss Telegraph Profiles Overlay (D77)
+  const skillTimelineProfiles = Array.isArray(atlas.combat_skill_timeline_profiles) ? atlas.combat_skill_timeline_profiles : [];
+  const skillTimelineOverlaySvg = !ATLAS_SKILL_TIMELINE_MODE ? '' : `
+    <g id="studioSkillTimelineOverlay">
+      ${skillTimelineProfiles.map((p, idx) => {
+        const zMap = {};
+        (atlas.zones || []).forEach(z => { zMap[z.id] = z; });
+        const dMap = {};
+        (atlas.dungeons || []).forEach(d => { dMap[d.id] = d; });
+        const zidStr = p.zone_id || '';
+        const didStr = p.dungeon_id || '';
+        const fidStr = p.floor_id || '';
+        const zObj = zMap[zidStr] || {};
+        const dObj = dMap[didStr] || {};
+        const rawX = typeof zObj.x === 'number' ? zObj.x : (typeof dObj.x === 'number' ? dObj.x : -14000);
+        const rawY = typeof zObj.y === 'number' ? zObj.y : (typeof dObj.y === 'number' ? dObj.y : 123500);
+        const stc = locToAtlasSvg(rawX + ((idx % 4) - 1.5) * 2850, rawY - 2950);
+        const cat = p.timeline_category || 'Martial_Combo_Hitbox_Timeline';
+        const colHex = cat === 'Martial_Combo_Hitbox_Timeline'
+          ? '#f87171'
+          : (cat === 'Arcane_Cast_Interrupt_Timeline' ? '#38bdf8' : '#facc15');
+        const iconTxt = cat === 'Martial_Combo_Hitbox_Timeline'
+          ? '⚔️'
+          : (cat === 'Arcane_Cast_Interrupt_Timeline' ? '✨' : '🎯');
+        const jumpJs = didStr
+          ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+          : (zidStr.startsWith('zone-town-')
+              ? `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(p.loc)}')`
+              : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(p.loc)}')`);
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${stc.svgX}" cy="${stc.svgY}" r="10.4" fill="rgba(127,29,29,0.48)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${stc.svgX}" y="${stc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Automated Build Farm & Delta Binary Patch CDN Nodes Overlay (D78)
+  const buildFarmNodes = Array.isArray(atlas.build_farm_patch_cdn_nodes) ? atlas.build_farm_patch_cdn_nodes : [];
+  const buildFarmOverlaySvg = !ATLAS_BUILD_FARM_MODE ? '' : `
+    <g id="studioBuildFarmOverlay">
+      ${buildFarmNodes.map((n, idx) => {
+        const zMap = {};
+        (atlas.zones || []).forEach(z => { zMap[z.id] = z; });
+        const zidStr = n.zone_id || '';
+        const zObj = zMap[zidStr] || {};
+        const rawX = typeof zObj.x === 'number' ? zObj.x : -14000;
+        const rawY = typeof zObj.y === 'number' ? zObj.y : 123500;
+        const bfc = locToAtlasSvg(rawX + ((idx % 3) - 1) * 3200, rawY + 3150);
+        const cat = n.build_node_category || 'Godot_Client_Pak_Cooker_Node';
+        const colHex = cat === 'Godot_Client_Pak_Cooker_Node'
+          ? '#fb923c'
+          : (cat === 'Server_Rs_Linux_Musl_Build_Runner' ? '#38bdf8' : '#34d399');
+        const iconTxt = cat === 'Godot_Client_Pak_Cooker_Node'
+          ? '📦'
+          : (cat === 'Server_Rs_Linux_Musl_Build_Runner' ? '🦀' : '🌐');
+        const jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(n.loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${bfc.svgX}" cy="${bfc.svgY}" r="10.4" fill="rgba(124,45,18,0.48)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${bfc.svgX}" y="${bfc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -15891,6 +16158,8 @@ function renderDedicatedWorldAtlas() {
     ${toolsSquadOverlaySvg}
     ${dialogueGraphOverlaySvg}
     ${spawnerBalancerOverlaySvg}
+    ${skillTimelineOverlaySvg}
+    ${buildFarmOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
