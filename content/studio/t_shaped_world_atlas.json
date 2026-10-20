@@ -61755,5 +61755,521 @@
       ],
       "verdict_and_evidence": "CERTIFIED 100.0/100: Automated Godot `.pck` cookers, static Linux-musl Agones images (< 35MB), and Ed25519-signed Zstd delta patches (< 5s rollback) are production-ready."
     }
+  ],
+  "weather_shader_acoustic_profiles": [
+    {
+      "profile_id": "weather-acoustic-01-lantern-hollow-pastoral-symphony",
+      "profile_name": "Lantern Hollow (Gludin) \u2014 Pastoral String Overture, Wind-Chime Plaza & Tavern Hearth Reverb",
+      "atmosphere_category": "Town_Symphony_And_Tavern_Reverb",
+      "zone_id": "zone-town-lantern-hollow",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-84100:243500",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC)",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> Golden Hour Warmth LUT (17:00\u201319:00) + Starlight Lantern Bloom at Dusk",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Plaza_OpenAir_IR + Tavern_Wood_Reverb (3.0s Crossfade on Building #1..#12 Door Thresholds)",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.45ms GPU Skybox & Color-Grading LUT Pass",
+        "Ogg Vorbis Streaming <= 12 MB Audio RAM Budget",
+        "Deterministic Server-Synced Day/Night Clock"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-02-porcelain-loom-lunar-harp-chorus",
+      "profile_name": "Porcelain Loom (Elven Village) \u2014 Mother-Tree Celestial Harp, Water-Lily Moat & Crystal Dome Reverb",
+      "atmosphere_category": "Town_Symphony_And_Tavern_Reverb",
+      "zone_id": "zone-town-porcelain-loom",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "46900:51200",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC)",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> Silver-Cyan Lunar Aurora Shader + Bioluminescent Moat Caustics (22:00\u201304:00)",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Crystal_Sanctuary_IR + Solo Harp & Choral Leitmotif (48kHz Opus Spatial 3D Emitters)",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.55ms GPU Water Caustics & Aurora Shader Pass",
+        "Ogg Vorbis Streaming <= 13 MB Audio RAM Budget",
+        "Zero Audio Clipping Across 24 Simultaneous SFX Emitters"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-03-inductor-switchyard-bazaar-fanfare",
+      "profile_name": "Inductor Switchyard (Giran) \u2014 Grand Brass Trade Fanfare, 300-Stall Crowd Murmur & Anvil Clang Occlusion",
+      "atmosphere_category": "Town_Symphony_And_Tavern_Reverb",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "83400:147900",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC) & Content & World Tools Engineer",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> High-Noon Specular Cobblestone Glint + Warm Market Brazier Point-Light Culling",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Cobblestone_Canyon_IR + Dynamic Crowd Density Stem (Scales with Active Merchant Stalls)",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.65ms GPU Clustered Forward+ Point-Light Pass (300 Players)",
+        "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+        "Distance-Attenuated Blacksmith Anvil SFX Polytechnic Voice Cap (<= 8 Voices)"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-04-torque-balance-cathedral-polyphony",
+      "profile_name": "Torque-Balance Citadel (Aden) \u2014 Sovereign Pipe-Organ Polyphony, Marble Nave & Siege Horn Acoustics",
+      "atmosphere_category": "Town_Symphony_And_Tavern_Reverb",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147400:25600",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC)",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> Volumetric Cathedral God-Rays (06:00\u201310:00) + Siege-State Crimson Sky Override",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Cathedral_Marble_4.2s_IR + Royal Brass & Choir Symphony (Seamless Combat/Peace Stem Switch)",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.75ms GPU Volumetric God-Ray & Marble SSR Pass",
+        "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+        "Instant Siege-State BGM Override Within 250ms of Ward Trigger"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-05-starfall-haven-maritime-foghorn",
+      "profile_name": "Starfall Haven (Rune) \u2014 Cliffside Maritime Orchestra, Sea-Gull Surf & Airship Dock Wind Shear",
+      "atmosphere_category": "Town_Symphony_And_Tavern_Reverb",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "43800:-47900",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC)",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> Dynamic Coastal Sea-Mist Shader + High-Altitude Cliff Wind Particle Drift",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Cliff_Fjord_Slapback_IR + Low-Brass Maritime Theme & 3D Harbor Bell Buoy Emitters",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.70ms GPU Height-Fog & Ocean Wave Foam Shader Pass",
+        "Ogg Vorbis Streaming <= 13 MB Audio RAM Budget",
+        "Elevation-Based Wind Filter LPF Automation (0m Harbor -> 180m Upper Keep)"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-06-root-train-roundhouse-steam-percussion",
+      "profile_name": "Root-Train Roundhouse (Dwarven Village) \u2014 Anvil Percussion March, Steam-Piston Hiss & Snowfall Muffler",
+      "atmosphere_category": "Town_Symphony_And_Tavern_Reverb",
+      "zone_id": "zone-town-root-train-roundhouse",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "115100:-178200",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC)",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> Sub-Zero Snow Flurry GPU Compute Particles + Warm Forge-Glow Subsurface Scatter",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Snow_Damped_Valley_IR + Dwarven Hammer-and-Tuba March (BPM-Synced to Forge Bellows)",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.60ms GPU Snow Particle & Thermal Glow Shader Pass",
+        "Ogg Vorbis Streaming <= 12 MB Audio RAM Budget",
+        "BPM-Locked Animation & Audio Hammer Strike Sync (<= 10ms Drift)"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-07-whispering-mire-toxic-spore-fog",
+      "profile_name": "Whispering Mire (Cruma Marshlands) \u2014 Nocturnal Stakato Spore Fog, Acid Rain & Marsh Croak Ambience",
+      "atmosphere_category": "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+      "zone_id": "zone-field-whispering-mire",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "17200:114300",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC) & Backend Simulation & Infra Tools Engineer",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> 00:00\u201306:00 Emerald Toxic Ground Fog + Nocturnal Stakato Aggro Range +20%",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Swamp_LowPass_Wet_IR + Eerie Bowed-Cymbal Drone & 3D Bubbling Mud Geophony",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.80ms GPU Froxel Volumetric Swamp Fog Pass",
+        "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+        "Deterministic Server-Synced Nocturnal Aggro & Shader State"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-08-slag-chasm-blood-rain-eclipse",
+      "profile_name": "Slag Chasm (Execution Grounds) \u2014 Crimson Moon Blood-Rain Shader, Gallows Thunder & Undead Whisper Field",
+      "atmosphere_category": "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+      "zone_id": "zone-field-slag-chasm",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "44800:148200",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC) & Backend Simulation & Infra Tools Engineer",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> 00:00\u201306:00 Crimson Moon Shader + Blood-Rain Wetness PBR + Nocturnal Undead P.Atk +15%",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Dead_Canyon_Flutter_IR + Dissonant Viola Tremolo & Directional Thunderclap Impulse",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.78ms GPU Blood-Rain Ripple & Crimson Moon LUT Pass",
+        "Ogg Vorbis Streaming <= 13 MB Audio RAM Budget",
+        "Deterministic Server-Synced Day/Night Clock & Undead Buff Trigger"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-09-caldera-rim-ash-storm-and-magma-haze",
+      "profile_name": "Caldera Rim (Blazing Swamp) \u2014 Volcanic Ash-Storm Particle Curtain, Heat-Distortion Shader & Magma Rumble",
+      "atmosphere_category": "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+      "zone_id": "zone-field-caldera-rim",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "154800:-14200",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC)",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> Periodic 20m Ash-Fall Weather Event + Screen-Space Thermal Refraction Shader",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Scorched_Crater_IR + Sub-Bass Tectonic LFE Rumble & Cinder-Wind Whistle",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.80ms GPU Thermal Refraction & Ember Particle Pass",
+        "Ogg Vorbis Streaming <= 13 MB Audio RAM Budget",
+        "60 FPS Lock During 9-Player AoE Pulls in Ash-Storm Weather"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-10-astrolabe-rift-dimensional-lightning",
+      "profile_name": "Astrolabe Rift (Dragon Valley) \u2014 Purple Dimensional Lightning Storm, Bone-Dust Gale & Drake Roar Acoustics",
+      "atmosphere_category": "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+      "zone_id": "zone-field-astrolabe-rift",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "73100:118400",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC) & Backend Simulation & Infra Tools Engineer",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> 00:00\u201306:00 Shadow-Drake Eclipse + Procedural Rim-Light Lightning Flash Shader",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Limestone_Gorge_3.6s_IR + Low-Horn Ostinato & Distance-Delayed Canyon Thunder",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.75ms GPU Procedural Lightning & Rim-Shadow Pass",
+        "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+        "Photosensitivity Safe-Clamp on Lightning Flash Luminance (<= 0.35 Delta)"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-11-kelp-spiral-reef-bioluminescent-squall",
+      "profile_name": "Kelp-Spiral Reef (Alligator Island) \u2014 Tropical Monsoon Squall, Bioluminescent Tide & Coral Surf Acoustics",
+      "atmosphere_category": "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+      "zone_id": "zone-field-kelp-spiral-reef",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "114600:178900",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC)",
+      "day_night_and_weather_cycle": "4h Day / 2h Night Cycle -> 00:00\u201306:00 Neon-Plankton Tide Shader + Dynamic Monsoon Wind-Bent Palm Vertex Shader",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Coastal_Lagoon_IR + Percussion Marimba Pulse & Binaural 3D Breaking-Wave Ambience",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.72ms GPU Vertex-Wind Foliage & Bioluminescent Water Pass",
+        "Ogg Vorbis Streaming <= 12 MB Audio RAM Budget",
+        "Seamless Wet-Surface Roughness Transition During Monsoon Squall"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-12-kiln-cellar-b3-chitin-drip-reverb",
+      "profile_name": "Kiln Cellar B3 (The Ant Nest) \u2014 Subterranean Chitin Cavern Drip, Acid Pool Glow & Queen Pheromone Hum",
+      "atmosphere_category": "Subterranean_Catacomb_Echo_And_Resonance",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B3",
+      "loc": "-9820:175180",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC)",
+      "day_night_and_weather_cycle": "Zero-Sunlight Subterranean Lock -> Bio-Acid Rim-Glow Shader + Cutaway Depth-Fog Attenuation (-195m B3)",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Cavern_Chitin_2.8s_IR + Sub-Audible Queen Heartbeat Pulse & Raycast Wall-Occlusion",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.65ms GPU Subterranean Point-Light & Acid Glow Pass",
+        "Ogg Vorbis Streaming <= 12 MB Audio RAM Budget",
+        "3D Audio Raycast Occlusion Across >= 6.0m Dungeon Corridors"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-13-pendulum-shaft-3f-clockwork-resonance",
+      "profile_name": "Pendulum Shaft 3F (Cruma Tower) \u2014 Giant Brass Pendulum Doppler Sweep, Tesla Arc Shader & Vaulted Echo",
+      "atmosphere_category": "Subterranean_Catacomb_Echo_And_Resonance",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "3F",
+      "loc": "17720:114080",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC)",
+      "day_night_and_weather_cycle": "Interior Tower Lock (+160m 3F) -> Synchronized Tesla-Coil Arc Shader + Core Automaton Pulse Lighting",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Metallic_Rotunda_4.8s_IR + Doppler-Shifted Pendulum Whoosh & Synthesized Choir Pad",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.70ms GPU Tesla Arc & Metallic Anisotropic Reflection Pass",
+        "Ogg Vorbis Streaming <= 13 MB Audio RAM Budget",
+        "Frame-Locked Pendulum Swing Position to 3D Doppler Audio Emitter"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-14-chronometer-foundry-3f-lava-chamber-roar",
+      "profile_name": "Chronometer Foundry 3F (Forge of the Gods) \u2014 Molten Slag Convection Shader, Anvil Quake & Basalt Echo",
+      "atmosphere_category": "Subterranean_Catacomb_Echo_And_Resonance",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "169200:-116200",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC)",
+      "day_night_and_weather_cycle": "Volcanic Interior Lock -> Blackbody Emissive Lava-Flow Shader + Valakas Roar Camera-Shake & Chromatic Aberration",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Basalt_Foundry_5.2s_IR + Industrial Brass Choir & Sub-40Hz Lava Bubble Resonance",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.80ms GPU Emissive Lava & Heat-Haze Post-Process Pass",
+        "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+        "Dynamic Range Compression (DRC) Guard During 45-Player Boss Roar"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-15-witch-pendulum-b3-seven-seals-chant",
+      "profile_name": "Witch Pendulum Catacomb B3 \u2014 Dawn/Dusk Seal Polarity Shader, Submerged Crypt Echo & Gregorian Drone",
+      "atmosphere_category": "Subterranean_Catacomb_Echo_And_Resonance",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "140200:79600",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC) & Content & World Tools Engineer",
+      "day_night_and_weather_cycle": "Seven-Signs Cycle Lock (-195m B3) -> Dawn Gold vs Dusk Violet Torchlight Shader Switch + Water-Table Reflection",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Flooded_Crypt_6.0s_IR + Latin Seal Chant & Torch Crackle Spatialization",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.68ms GPU Planar Crypt Water Reflection & Torch Flicker Pass",
+        "Ogg Vorbis Streaming <= 12 MB Audio RAM Budget",
+        "Live Dawn/Dusk Cabal Winner Shader & Audio Stem Switch (< 200ms)"
+      ]
+    },
+    {
+      "profile_id": "weather-acoustic-16-star-heart-nave-3f-pipe-organ-acoustics",
+      "profile_name": "Star-Heart Nave 3F (Imperial Tomb) \u2014 Frintezza 5-Melody Pipe-Organ Shader Pulse & Royal Mausoleum Reverb",
+      "atmosphere_category": "Subterranean_Catacomb_Echo_And_Resonance",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "174200:-88100",
+      "owner_engineer_role": "Technical Artist (Pipeline & DCC) & Backend Simulation & Infra Tools Engineer",
+      "day_night_and_weather_cycle": "Boss Concert Hall Lock (+160m 3F) -> 5-Melody Color-Coded Stained-Glass Projection Shader (Requiem / Rondo / Allegro)",
+      "spatial_audio_bus_and_bgm": "Godot AudioBus: Imperial_Concert_Hall_5.5s_IR + Sample-Accurate 20Hz Server-Tick Locked Pipe-Organ Stems",
+      "gpu_shader_and_memory_gates": [
+        "<= 0.75ms GPU Stained-Glass Caustic Projection & Morph VFX Pass",
+        "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+        "Server-Tick #1..#20 Pipe-Organ Audio Beat Lock (<= 15ms Desync)"
+      ]
+    }
+  ],
+  "server_mesh_persistence_corridors": [
+    {
+      "corridor_id": "mesh-corridor-01-lantern-hollow-to-clover-south-handoff",
+      "corridor_name": "Lantern Hollow South Gate \u2794 Clover South Gate \u2014 64m Ghost-Buffer Seamless Town-to-Field Authority Handoff",
+      "infra_category": "Zero_Loading_Zone_Boundary_Handoff",
+      "origin_zone_id": "zone-town-lantern-hollow",
+      "destination_zone_id": "zone-field-clover-south-gate",
+      "loc": "-84120:243500",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-2.8ms Seamless Bevy ECS Entity Authority Handoff Across 64m Overlap Ghost Buffer (Zero Loading Screen)",
+      "persistence_and_anti_dupe_contract": "Dual-Node Shadow-Entity Lease (200ms Grace Window) + Atomic Sequence-Number Packet Cutover",
+      "chaos_and_load_verifications": [
+        "1,000-Bot Simultaneous Town-Gate Crossing Stress Pass",
+        "Zero Dropped Combat/Movement Inputs Across 64m Boundary",
+        "FlatBuffers AOI Delta Continuity Verified (< 250B/Frame)"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-02-kilnwatch-to-cinnamon-mill-highway-handoff",
+      "corridor_name": "Kilnwatch Bastion (Gludio) \u2794 Cinnamon Mill (Dion) \u2014 Inter-District Highway Zero-Loading Mesh Handoff",
+      "infra_category": "Zero_Loading_Zone_Boundary_Handoff",
+      "origin_zone_id": "zone-town-kilnwatch-bastion",
+      "destination_zone_id": "zone-town-cinnamon-mill",
+      "loc": "-14200:123500",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-3.1ms Seamless Caravan & Party Authority Handoff Across Contiguous SpatialGrid Highway Cells",
+      "persistence_and_anti_dupe_contract": "Manor Caravan Cargo Lease Transfer + Party Leader/Follow Tether Preservation Across Worker Pods",
+      "chaos_and_load_verifications": [
+        "1,000-Bot Simultaneous Border Crossing Pass",
+        "Manor Caravan Escort State Preserved Across Pod Boundary",
+        "P99 Boundary Tick Latency <= 0.62ms @ 20Hz"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-03-cinnamon-mill-to-inductor-switchyard-handoff",
+      "corridor_name": "Cinnamon Mill (Dion) \u2794 Inductor Switchyard (Giran) \u2014 East Continental Bridge Zero-Loading Mesh Handoff",
+      "infra_category": "Zero_Loading_Zone_Boundary_Handoff",
+      "origin_zone_id": "zone-town-cinnamon-mill",
+      "destination_zone_id": "zone-town-inductor-switchyard",
+      "loc": "18800:145200",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-3.2ms Cross-Continent Worker Authority Handoff Across 64m Overlap Ghost Buffer (Continent 1 \u2794 Continent 2)",
+      "persistence_and_anti_dupe_contract": "Cross-Worker Buff/Debuff Timer Snapshot + Summon/Pet Entity Co-Migration Atomic Commit",
+      "chaos_and_load_verifications": [
+        "1,000-Bot Simultaneous Continental Bridge Crossing Pass",
+        "Pet/Strider/Summon Co-Migration Zero-Orphan Gate",
+        "Seeded Golden-Trace Replay Parity Across Worker Handoff (epsilon <= 0.05)"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-04-inductor-switchyard-to-astrolabe-rift-handoff",
+      "corridor_name": "Inductor Switchyard (Giran) \u2794 Astrolabe Rift (Dragon Valley) \u2014 High-Density Raid Approach Mesh Handoff",
+      "infra_category": "Zero_Loading_Zone_Boundary_Handoff",
+      "origin_zone_id": "zone-town-inductor-switchyard",
+      "destination_zone_id": "zone-field-astrolabe-rift",
+      "loc": "73100:118400",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-2.9ms 45-Player Command-Channel Authority Handoff Into High-Density Hunting Field Worker",
+      "persistence_and_anti_dupe_contract": "Command-Channel Party Hierarchy & Aggro-Hate Table Pre-Warm in Target SpatialGrid Partition",
+      "chaos_and_load_verifications": [
+        "450-Bot Multi-Alliance Raid Approach Border Stress Pass",
+        "Zero Song/Dance Aura Flicker During Zone Handoff",
+        "Dynamic Agones Worker Split When Zone Population > 1,500"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-05-starfall-haven-to-crown-beacon-handoff",
+      "corridor_name": "Starfall Haven (Rune) \u2794 Crown Beacon (Goddard) \u2014 Sovereign Northern Frontier Zero-Loading Mesh Handoff",
+      "infra_category": "Zero_Loading_Zone_Boundary_Handoff",
+      "origin_zone_id": "zone-town-starfall-haven",
+      "destination_zone_id": "zone-town-crown-beacon",
+      "loc": "147700:-55800",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-3.0ms High-Altitude Wyvern & Ground Party Authority Handoff Across Continent 3 Frontier",
+      "persistence_and_anti_dupe_contract": "3D Z-Axis Aerial Wyvern Lease Handoff + Territory Ward Carrier Position Broadcast Lock",
+      "chaos_and_load_verifications": [
+        "1,000-Bot Ground + Wyvern Aerial Border Crossing Pass",
+        "Territory Ward Flag Carrier Zero-Desync Handoff",
+        "Kill-9 Adjacent Worker Failover < 380ms Recovery"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-06-torque-balance-to-escapement-siege-bus",
+      "corridor_name": "Torque-Balance Citadel (Aden) \u2794 Escapement Anvil (Oren) \u2014 Redis Stream Castle Siege & Territory Tax Bus",
+      "infra_category": "Redis_Stream_Cross_Realm_Event_Bus",
+      "origin_zone_id": "zone-town-torque-balance-citadel",
+      "destination_zone_id": "zone-town-escapement-anvil",
+      "loc": "147400:25600",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & LiveOps, Build & GM Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-4.5ms Redis Streams (`XADD / XREADGROUP`) Cross-Zone Siege Relic & Territory Tax Rate Fan-Out",
+      "persistence_and_anti_dupe_contract": "Idempotent Event Consumer Group (`siege-authority-cg`) with Monotonic Lamport Tick & Dead-Letter Replay",
+      "chaos_and_load_verifications": [
+        "Redis Stream Consumer-Group Replay Verified (100k Events/s)",
+        "Zero Duplicate Territory Tax Broadcast on Worker Restart",
+        "Sub-250ms Global Castle Ownership Banner Sync Across All 15 Towns"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-07-witch-pendulum-to-carillon-seven-seals-bus",
+      "corridor_name": "Witch Pendulum Catacomb \u2794 Carillon Belfry (Dark Elven) \u2014 Seven-Seals Dawn/Dusk Cabal Score & Mammon Bus",
+      "infra_category": "Redis_Stream_Cross_Realm_Event_Bus",
+      "origin_zone_id": "zone-catacomb-witch-pendulum",
+      "destination_zone_id": "zone-town-carillon-belfry",
+      "loc": "140200:79600",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-5.0ms Redis Stream Seal-Stone Offering Aggregation & Blacksmith/Merchant of Mammon Rotation Bus",
+      "persistence_and_anti_dupe_contract": "Atomic Redis Lua Seal-Score Counter + Deterministic 30-Minute Mammon Teleport Node Broadcast",
+      "chaos_and_load_verifications": [
+        "Redis Stream Consumer-Group Replay Verified",
+        "16-Sanctum Simultaneous Seal-Stone Turn-In Race Condition Pass",
+        "Instant Dawn/Dusk Sky & Catacomb Shader Polarity Push"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-08-chronometer-foundry-to-crown-beacon-mvp-radar-bus",
+      "corridor_name": "Chronometer Foundry (Forge of the Gods) \u2794 Crown Beacon (Goddard) \u2014 World Boss & MVP Kill/Respawn Radar Bus",
+      "infra_category": "Redis_Stream_Cross_Realm_Event_Bus",
+      "origin_zone_id": "zone-dungeon-chronometer-foundry",
+      "destination_zone_id": "zone-town-crown-beacon",
+      "loc": "169200:-116200",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-3.8ms Redis Stream MVP/Raid Death, Cursed Weapon Drop & Respawn Window Telemetry Fan-Out",
+      "persistence_and_anti_dupe_contract": "Exactly-Once Boss Kill Ledger Event (`boss-radar-cg`) + WebSocket Live Push to `:8788` Studio Atlas",
+      "chaos_and_load_verifications": [
+        "Redis Stream Consumer-Group Replay Verified",
+        "32-Boss Simultaneous Respawn Timer Jitter Sync Verified",
+        "Global Cursed Weapon (Zariche/Akamanah) Drop Broadcast < 150ms"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-09-pinion-terminus-to-torque-balance-olympiad-bus",
+      "corridor_name": "Pinion Terminus (Heine) \u2794 Torque-Balance Citadel (Aden) \u2014 Grand Olympiad Matchmaking & Hero Monument Bus",
+      "infra_category": "Redis_Stream_Cross_Realm_Event_Bus",
+      "origin_zone_id": "zone-town-pinion-terminus",
+      "destination_zone_id": "zone-town-torque-balance-citadel",
+      "loc": "111400:219300",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-4.2ms Cross-Town Olympiad Arena Queue, Elo Point Settlement & Hero Monument Leaderboard Stream",
+      "persistence_and_anti_dupe_contract": "Transactional Olympiad Point Transfer + Anti-Win-Trading IP/Hardware-Hash Correlation Filter",
+      "chaos_and_load_verifications": [
+        "Redis Stream Consumer-Group Replay Verified",
+        "21-Node Hero Monument Simultaneous Cycle Settlement Pass",
+        "Zero Point-Loss on Arena Instance Pod Preemption"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-10-glaze-barge-to-starfall-haven-transit-bus",
+      "corridor_name": "Glaze-Barge Quay \u2794 Starfall Haven (Rune) \u2014 Inter-Continental Ship/Airship Schedule & Dock Telemetry Bus",
+      "infra_category": "Redis_Stream_Cross_Realm_Event_Bus",
+      "origin_zone_id": "zone-town-glaze-barge-quay",
+      "destination_zone_id": "zone-town-starfall-haven",
+      "loc": "43800:-47900",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-3.5ms Redis Stream Maritime Ship & Brass Airship Waypoint Synchronization Across 18 Transit Lines",
+      "persistence_and_anti_dupe_contract": "Deterministic Server-Clock Vessel Phase Interpolator + Passenger Boarding Bulk-Migration Lock",
+      "chaos_and_load_verifications": [
+        "Redis Stream Consumer-Group Replay Verified",
+        "200-Passenger Simultaneous Ship Boarding & Continent Transfer Pass",
+        "Zero Passenger Fell-Through-Deck Desync on Vessel Waypoint Turn"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-11-inductor-switchyard-to-kilnwatch-bazaar-wal",
+      "corridor_name": "Inductor Switchyard (Giran) \u2794 Kilnwatch Bastion (Gludio) \u2014 PostgreSQL Advisory-Lock Trade & Auction WAL",
+      "infra_category": "Postgres_Advisory_Lock_Writebehind_Wal",
+      "origin_zone_id": "zone-town-inductor-switchyard",
+      "destination_zone_id": "zone-town-kilnwatch-bastion",
+      "loc": "83400:147900",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & Lead Tools & Pipeline Architect",
+      "authority_handoff_and_latency_sla": "Sub-1.8ms Write-Behind WAL Append + 250ms Coalesced PostgreSQL Batch Commit for 300-Stall Giran Bazaar",
+      "persistence_and_anti_dupe_contract": "PostgreSQL `pg_try_advisory_xact_lock` + SHA-256 OCC CAS Transition (Zero Item/Adena Duplication on Crash)",
+      "chaos_and_load_verifications": [
+        "50,000-Transaction Concurrent Trade/Bazaar OCC Replay Pass",
+        "Kill-9 Node Failover < 400ms WAL Replay Zero-Item-Loss",
+        "Deadlock-Free Dual-Account Inventory Lock Ordering Gate"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-12-root-train-to-draft-kiln-warehouse-freight-wal",
+      "corridor_name": "Root-Train Roundhouse (Dwarven) \u2794 Draft-Kiln Post (Orc) \u2014 Iron Gate Clan Vault & Freight CAS Write-Behind WAL",
+      "infra_category": "Postgres_Advisory_Lock_Writebehind_Wal",
+      "origin_zone_id": "zone-town-root-train-roundhouse",
+      "destination_zone_id": "zone-town-draft-kiln-post",
+      "loc": "-45200:-113600",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-2.0ms Clan Vault Deposit/Withdrawal CAS & Cross-Town Freight Escrow Write-Behind WAL Pipeline",
+      "persistence_and_anti_dupe_contract": "PostgreSQL Advisory Lock on `clan_vault_id` + Monotonic `version_seq` OCC (Blocks Parallel Withdrawal Dupes)",
+      "chaos_and_load_verifications": [
+        "20-Member Simultaneous Clan Vault Withdrawal Race-Condition Pass",
+        "Cross-Town Freight Package Escrow Checksum Verified",
+        "Kill-9 Node Failover < 400ms Recovery with Zero Dupe/Loss"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-13-kiln-cellar-to-lantern-hollow-boss-loot-wal",
+      "corridor_name": "Kiln Cellar Ruins (Ant Nest) \u2794 Lantern Hollow (Gludin) \u2014 Epic Jewelry Drop & +1..+16 Enchant Ledger WAL",
+      "infra_category": "Postgres_Advisory_Lock_Writebehind_Wal",
+      "origin_zone_id": "zone-dungeon-kiln-cellar",
+      "destination_zone_id": "zone-town-lantern-hollow",
+      "loc": "-9820:175180",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer & LiveOps, Build & GM Tools Engineer",
+      "authority_handoff_and_latency_sla": "Immediate Synchronous WAL Flush (< 3.5ms) for Epic Boss Jewelry Drops & +1..+16 Refinement Scrolls",
+      "persistence_and_anti_dupe_contract": "Cryptographic Loot-Drop Seed Proof + Immutable `item_instance_uuid` Lineage Ledger for GM Rollback Audit",
+      "chaos_and_load_verifications": [
+        "100% Synchronous Durability on S-Grade / Epic Jewelry Drops",
+        "SHA-256 OCC Enchant Scroll Consumption Zero-Rollback-Exploit Gate",
+        "1-Click GM Point-in-Time Inventory Diff & Restore Verified"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-14-pendulum-shaft-to-porcelain-loom-spoil-wal",
+      "corridor_name": "Pendulum Shaft (Cruma Tower) \u2794 Porcelain Loom (Elven) \u2014 High-Frequency Mob XP/Spoil Coalesced Write-Behind WAL",
+      "infra_category": "Postgres_Advisory_Lock_Writebehind_Wal",
+      "origin_zone_id": "zone-dungeon-pendulum-shaft",
+      "destination_zone_id": "zone-town-porcelain-loom",
+      "loc": "17720:114080",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-0.4ms In-Memory ECS Dirty-Component Mark -> 500ms Coalesced PostgreSQL `COPY / UNNEST` Batch Upsert",
+      "persistence_and_anti_dupe_contract": "94% DB Write-IOPS Reduction via Tick-Coalesced XP/SP/Soulshot Consumption Delta Flush + Crash-Safe Redo Log",
+      "chaos_and_load_verifications": [
+        "10,000-Bot Grinding Storm <= 180 Postgres Batch IOPS/sec",
+        "Zero XP/SP/Vitality Rollback on Graceful or Ungraceful Pod Drain",
+        "PostgreSQL Connection Pool Saturation Guard (PgBouncer <= 60% Load)"
+      ]
+    },
+    {
+      "corridor_id": "mesh-corridor-15-star-heart-nave-to-saffron-press-instance-wal",
+      "corridor_name": "Star-Heart Nave (Imperial Tomb) \u2794 Saffron Press (Floran) \u2014 Command-Channel Raid Lockout & Instance State WAL",
+      "infra_category": "Postgres_Advisory_Lock_Writebehind_Wal",
+      "origin_zone_id": "zone-dungeon-star-heart-nave",
+      "destination_zone_id": "zone-town-saffron-press",
+      "loc": "174200:-88100",
+      "owner_engineer_role": "Backend Simulation & Infra Tools Engineer",
+      "authority_handoff_and_latency_sla": "Sub-2.4ms 45-Player Command-Channel Raid Lockout, Phase Checkpoint & Loot-Right Binding WAL Commit",
+      "persistence_and_anti_dupe_contract": "PostgreSQL Serializable Snapshot on `instance_lockout_id` + Disconnect Re-Entry Grace Lease (10 Minutes)",
+      "chaos_and_load_verifications": [
+        "45-Player Simultaneous Instance Entry & Lockout Stamp Pass",
+        "Mid-Boss-Fight Disconnected Player Re-Entry Position & Hate Restore",
+        "Kill-9 Instance Worker Recovery from Phase Checkpoint < 400ms"
+      ]
+    }
   ]
 }

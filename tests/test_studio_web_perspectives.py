@@ -3293,7 +3293,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 80)
+        self.assertGreaterEqual(len(audit["dimensions"]), 80)
 
         d79 = audit["dimensions"]["D79_architect_dx_undo_redo_and_codegen_drift_gates"]
         self.assertEqual(d79["score"], 100.0)
@@ -3345,10 +3345,107 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas80DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 80)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 80)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 80)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 80)
         self.assertIn("80-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave39_weather_shader_acoustic_profiles_and_server_mesh_persistence_corridors(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["weatherShaderAcousticProfilesCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["serverMeshPersistenceCorridorsCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_WEATHER_ACOUSTIC_MODE",
+            "setAtlasWeatherAcousticMode",
+            "renderAtlasWeatherAcousticBarHtml",
+            "atlasWeatherAcousticBar",
+            "studioWeatherAcousticOverlay",
+            "Town_Symphony_And_Tavern_Reverb",
+            "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+            "Subterranean_Catacomb_Echo_And_Resonance",
+            "ATLAS_SERVER_MESH_MODE",
+            "setAtlasServerMeshMode",
+            "renderAtlasServerMeshBarHtml",
+            "atlasServerMeshBar",
+            "studioServerMeshOverlay",
+            "Zero_Loading_Zone_Boundary_Handoff",
+            "Redis_Stream_Cross_Realm_Event_Bus",
+            "Postgres_Advisory_Lock_Writebehind_Wal",
+            "82-Dimension Semantic-Zoom Atlas Score",
+            "D1–D82 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 39 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 82)
+
+        d81 = audit["dimensions"]["D81_weather_day_night_shader_and_spatial_audio_profiles"]
+        self.assertEqual(d81["score"], 100.0)
+        self.assertEqual(d81["verified"], 16)
+        self.assertEqual(d81["target"], 16)
+        self.assertEqual(d81["town_symphony_and_tavern_reverbs"], 6)
+        self.assertEqual(d81["nocturnal_curse_fog_and_blood_rain_fields"], 5)
+        self.assertEqual(d81["subterranean_catacomb_echo_and_resonances"], 5)
+        self.assertEqual(
+            set(d81["atmosphere_categories"]),
+            {
+                "Town_Symphony_And_Tavern_Reverb",
+                "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+                "Subterranean_Catacomb_Echo_And_Resonance",
+            },
+        )
+        self.assertTrue(d81["ui_wired"])
+
+        d82 = audit["dimensions"]["D82_server_mesh_handoff_redis_bus_and_postgres_wal_corridors"]
+        self.assertEqual(d82["score"], 100.0)
+        self.assertEqual(d82["verified"], 15)
+        self.assertEqual(d82["target"], 15)
+        self.assertEqual(d82["zero_loading_zone_boundary_handoffs"], 5)
+        self.assertEqual(d82["redis_stream_cross_realm_event_buses"], 5)
+        self.assertEqual(d82["postgres_advisory_lock_writebehind_wals"], 5)
+        self.assertEqual(
+            set(d82["infra_categories"]),
+            {
+                "Zero_Loading_Zone_Boundary_Handoff",
+                "Redis_Stream_Cross_Realm_Event_Bus",
+                "Postgres_Advisory_Lock_Writebehind_Wal",
+            },
+        )
+        self.assertTrue(d82["ui_wired"])
+
+        profiles = atlas["weather_shader_acoustic_profiles"]
+        self.assertEqual(len(profiles), 16)
+        self.assertEqual(sum(1 for p in profiles if p["atmosphere_category"] == "Town_Symphony_And_Tavern_Reverb"), 6)
+        self.assertEqual(sum(1 for p in profiles if p["atmosphere_category"] == "Nocturnal_Curse_Fog_And_Blood_Rain_Field"), 5)
+        self.assertEqual(sum(1 for p in profiles if p["atmosphere_category"] == "Subterranean_Catacomb_Echo_And_Resonance"), 5)
+        for p in profiles:
+            self.assertGreaterEqual(len(p["gpu_shader_and_memory_gates"]), 2)
+
+        corridors = atlas["server_mesh_persistence_corridors"]
+        self.assertEqual(len(corridors), 15)
+        self.assertEqual(sum(1 for c in corridors if c["infra_category"] == "Zero_Loading_Zone_Boundary_Handoff"), 5)
+        self.assertEqual(sum(1 for c in corridors if c["infra_category"] == "Redis_Stream_Cross_Realm_Event_Bus"), 5)
+        self.assertEqual(sum(1 for c in corridors if c["infra_category"] == "Postgres_Advisory_Lock_Writebehind_Wal"), 5)
+        for c in corridors:
+            self.assertGreaterEqual(len(c["chaos_and_load_verifications"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas82DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 82)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 82)
+        self.assertIn("82-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

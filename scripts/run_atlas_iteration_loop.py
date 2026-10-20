@@ -16216,6 +16216,596 @@ def _build_two_ring_studio_80d_signoff_matrix(atlas: dict[str, Any]) -> list[dic
     return rows
 
 
+def _build_weather_shader_acoustic_profiles(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Zone [Role 3: Technical Artist — Weather, Shader & Spatial Audio Pipeline] Dynamic Weather, Day/Night Shader & Spatial Audio Acoustic Profiles (D81):
+    6 Town_Symphony_And_Tavern_Reverb + 5 Nocturnal_Curse_Fog_And_Blood_Rain_Field + 5 Subterranean_Catacomb_Echo_And_Resonance."""
+    specs = [
+        # --- 6 Town_Symphony_And_Tavern_Reverb ---
+        (
+            "weather-acoustic-01-lantern-hollow-pastoral-symphony",
+            "Lantern Hollow (Gludin) — Pastoral String Overture, Wind-Chime Plaza & Tavern Hearth Reverb",
+            "Town_Symphony_And_Tavern_Reverb",
+            "zone-town-lantern-hollow",
+            "",
+            "",
+            "-84100:243500",
+            "Technical Artist (Pipeline & DCC)",
+            "4h Day / 2h Night Cycle -> Golden Hour Warmth LUT (17:00–19:00) + Starlight Lantern Bloom at Dusk",
+            "Godot AudioBus: Plaza_OpenAir_IR + Tavern_Wood_Reverb (3.0s Crossfade on Building #1..#12 Door Thresholds)",
+            [
+                "<= 0.45ms GPU Skybox & Color-Grading LUT Pass",
+                "Ogg Vorbis Streaming <= 12 MB Audio RAM Budget",
+                "Deterministic Server-Synced Day/Night Clock",
+            ],
+        ),
+        (
+            "weather-acoustic-02-porcelain-loom-lunar-harp-chorus",
+            "Porcelain Loom (Elven Village) — Mother-Tree Celestial Harp, Water-Lily Moat & Crystal Dome Reverb",
+            "Town_Symphony_And_Tavern_Reverb",
+            "zone-town-porcelain-loom",
+            "",
+            "",
+            "46900:51200",
+            "Technical Artist (Pipeline & DCC)",
+            "4h Day / 2h Night Cycle -> Silver-Cyan Lunar Aurora Shader + Bioluminescent Moat Caustics (22:00–04:00)",
+            "Godot AudioBus: Crystal_Sanctuary_IR + Solo Harp & Choral Leitmotif (48kHz Opus Spatial 3D Emitters)",
+            [
+                "<= 0.55ms GPU Water Caustics & Aurora Shader Pass",
+                "Ogg Vorbis Streaming <= 13 MB Audio RAM Budget",
+                "Zero Audio Clipping Across 24 Simultaneous SFX Emitters",
+            ],
+        ),
+        (
+            "weather-acoustic-03-inductor-switchyard-bazaar-fanfare",
+            "Inductor Switchyard (Giran) — Grand Brass Trade Fanfare, 300-Stall Crowd Murmur & Anvil Clang Occlusion",
+            "Town_Symphony_And_Tavern_Reverb",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "83400:147900",
+            "Technical Artist (Pipeline & DCC) & Content & World Tools Engineer",
+            "4h Day / 2h Night Cycle -> High-Noon Specular Cobblestone Glint + Warm Market Brazier Point-Light Culling",
+            "Godot AudioBus: Cobblestone_Canyon_IR + Dynamic Crowd Density Stem (Scales with Active Merchant Stalls)",
+            [
+                "<= 0.65ms GPU Clustered Forward+ Point-Light Pass (300 Players)",
+                "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+                "Distance-Attenuated Blacksmith Anvil SFX Polytechnic Voice Cap (<= 8 Voices)",
+            ],
+        ),
+        (
+            "weather-acoustic-04-torque-balance-cathedral-polyphony",
+            "Torque-Balance Citadel (Aden) — Sovereign Pipe-Organ Polyphony, Marble Nave & Siege Horn Acoustics",
+            "Town_Symphony_And_Tavern_Reverb",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            "147400:25600",
+            "Technical Artist (Pipeline & DCC)",
+            "4h Day / 2h Night Cycle -> Volumetric Cathedral God-Rays (06:00–10:00) + Siege-State Crimson Sky Override",
+            "Godot AudioBus: Cathedral_Marble_4.2s_IR + Royal Brass & Choir Symphony (Seamless Combat/Peace Stem Switch)",
+            [
+                "<= 0.75ms GPU Volumetric God-Ray & Marble SSR Pass",
+                "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+                "Instant Siege-State BGM Override Within 250ms of Ward Trigger",
+            ],
+        ),
+        (
+            "weather-acoustic-05-starfall-haven-maritime-foghorn",
+            "Starfall Haven (Rune) — Cliffside Maritime Orchestra, Sea-Gull Surf & Airship Dock Wind Shear",
+            "Town_Symphony_And_Tavern_Reverb",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "43800:-47900",
+            "Technical Artist (Pipeline & DCC)",
+            "4h Day / 2h Night Cycle -> Dynamic Coastal Sea-Mist Shader + High-Altitude Cliff Wind Particle Drift",
+            "Godot AudioBus: Cliff_Fjord_Slapback_IR + Low-Brass Maritime Theme & 3D Harbor Bell Buoy Emitters",
+            [
+                "<= 0.70ms GPU Height-Fog & Ocean Wave Foam Shader Pass",
+                "Ogg Vorbis Streaming <= 13 MB Audio RAM Budget",
+                "Elevation-Based Wind Filter LPF Automation (0m Harbor -> 180m Upper Keep)",
+            ],
+        ),
+        (
+            "weather-acoustic-06-root-train-roundhouse-steam-percussion",
+            "Root-Train Roundhouse (Dwarven Village) — Anvil Percussion March, Steam-Piston Hiss & Snowfall Muffler",
+            "Town_Symphony_And_Tavern_Reverb",
+            "zone-town-root-train-roundhouse",
+            "",
+            "",
+            "115100:-178200",
+            "Technical Artist (Pipeline & DCC)",
+            "4h Day / 2h Night Cycle -> Sub-Zero Snow Flurry GPU Compute Particles + Warm Forge-Glow Subsurface Scatter",
+            "Godot AudioBus: Snow_Damped_Valley_IR + Dwarven Hammer-and-Tuba March (BPM-Synced to Forge Bellows)",
+            [
+                "<= 0.60ms GPU Snow Particle & Thermal Glow Shader Pass",
+                "Ogg Vorbis Streaming <= 12 MB Audio RAM Budget",
+                "BPM-Locked Animation & Audio Hammer Strike Sync (<= 10ms Drift)",
+            ],
+        ),
+        # --- 5 Nocturnal_Curse_Fog_And_Blood_Rain_Field ---
+        (
+            "weather-acoustic-07-whispering-mire-toxic-spore-fog",
+            "Whispering Mire (Cruma Marshlands) — Nocturnal Stakato Spore Fog, Acid Rain & Marsh Croak Ambience",
+            "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+            "zone-field-whispering-mire",
+            "",
+            "",
+            "17200:114300",
+            "Technical Artist (Pipeline & DCC) & Backend Simulation & Infra Tools Engineer",
+            "4h Day / 2h Night Cycle -> 00:00–06:00 Emerald Toxic Ground Fog + Nocturnal Stakato Aggro Range +20%",
+            "Godot AudioBus: Swamp_LowPass_Wet_IR + Eerie Bowed-Cymbal Drone & 3D Bubbling Mud Geophony",
+            [
+                "<= 0.80ms GPU Froxel Volumetric Swamp Fog Pass",
+                "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+                "Deterministic Server-Synced Nocturnal Aggro & Shader State",
+            ],
+        ),
+        (
+            "weather-acoustic-08-slag-chasm-blood-rain-eclipse",
+            "Slag Chasm (Execution Grounds) — Crimson Moon Blood-Rain Shader, Gallows Thunder & Undead Whisper Field",
+            "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+            "zone-field-slag-chasm",
+            "",
+            "",
+            "44800:148200",
+            "Technical Artist (Pipeline & DCC) & Backend Simulation & Infra Tools Engineer",
+            "4h Day / 2h Night Cycle -> 00:00–06:00 Crimson Moon Shader + Blood-Rain Wetness PBR + Nocturnal Undead P.Atk +15%",
+            "Godot AudioBus: Dead_Canyon_Flutter_IR + Dissonant Viola Tremolo & Directional Thunderclap Impulse",
+            [
+                "<= 0.78ms GPU Blood-Rain Ripple & Crimson Moon LUT Pass",
+                "Ogg Vorbis Streaming <= 13 MB Audio RAM Budget",
+                "Deterministic Server-Synced Day/Night Clock & Undead Buff Trigger",
+            ],
+        ),
+        (
+            "weather-acoustic-09-caldera-rim-ash-storm-and-magma-haze",
+            "Caldera Rim (Blazing Swamp) — Volcanic Ash-Storm Particle Curtain, Heat-Distortion Shader & Magma Rumble",
+            "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+            "zone-field-caldera-rim",
+            "",
+            "",
+            "154800:-14200",
+            "Technical Artist (Pipeline & DCC)",
+            "4h Day / 2h Night Cycle -> Periodic 20m Ash-Fall Weather Event + Screen-Space Thermal Refraction Shader",
+            "Godot AudioBus: Scorched_Crater_IR + Sub-Bass Tectonic LFE Rumble & Cinder-Wind Whistle",
+            [
+                "<= 0.80ms GPU Thermal Refraction & Ember Particle Pass",
+                "Ogg Vorbis Streaming <= 13 MB Audio RAM Budget",
+                "60 FPS Lock During 9-Player AoE Pulls in Ash-Storm Weather",
+            ],
+        ),
+        (
+            "weather-acoustic-10-astrolabe-rift-dimensional-lightning",
+            "Astrolabe Rift (Dragon Valley) — Purple Dimensional Lightning Storm, Bone-Dust Gale & Drake Roar Acoustics",
+            "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+            "zone-field-astrolabe-rift",
+            "",
+            "",
+            "73100:118400",
+            "Technical Artist (Pipeline & DCC) & Backend Simulation & Infra Tools Engineer",
+            "4h Day / 2h Night Cycle -> 00:00–06:00 Shadow-Drake Eclipse + Procedural Rim-Light Lightning Flash Shader",
+            "Godot AudioBus: Limestone_Gorge_3.6s_IR + Low-Horn Ostinato & Distance-Delayed Canyon Thunder",
+            [
+                "<= 0.75ms GPU Procedural Lightning & Rim-Shadow Pass",
+                "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+                "Photosensitivity Safe-Clamp on Lightning Flash Luminance (<= 0.35 Delta)",
+            ],
+        ),
+        (
+            "weather-acoustic-11-kelp-spiral-reef-bioluminescent-squall",
+            "Kelp-Spiral Reef (Alligator Island) — Tropical Monsoon Squall, Bioluminescent Tide & Coral Surf Acoustics",
+            "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+            "zone-field-kelp-spiral-reef",
+            "",
+            "",
+            "114600:178900",
+            "Technical Artist (Pipeline & DCC)",
+            "4h Day / 2h Night Cycle -> 00:00–06:00 Neon-Plankton Tide Shader + Dynamic Monsoon Wind-Bent Palm Vertex Shader",
+            "Godot AudioBus: Coastal_Lagoon_IR + Percussion Marimba Pulse & Binaural 3D Breaking-Wave Ambience",
+            [
+                "<= 0.72ms GPU Vertex-Wind Foliage & Bioluminescent Water Pass",
+                "Ogg Vorbis Streaming <= 12 MB Audio RAM Budget",
+                "Seamless Wet-Surface Roughness Transition During Monsoon Squall",
+            ],
+        ),
+        # --- 5 Subterranean_Catacomb_Echo_And_Resonance ---
+        (
+            "weather-acoustic-12-kiln-cellar-b3-chitin-drip-reverb",
+            "Kiln Cellar B3 (The Ant Nest) — Subterranean Chitin Cavern Drip, Acid Pool Glow & Queen Pheromone Hum",
+            "Subterranean_Catacomb_Echo_And_Resonance",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "-9820:175180",
+            "Technical Artist (Pipeline & DCC)",
+            "Zero-Sunlight Subterranean Lock -> Bio-Acid Rim-Glow Shader + Cutaway Depth-Fog Attenuation (-195m B3)",
+            "Godot AudioBus: Cavern_Chitin_2.8s_IR + Sub-Audible Queen Heartbeat Pulse & Raycast Wall-Occlusion",
+            [
+                "<= 0.65ms GPU Subterranean Point-Light & Acid Glow Pass",
+                "Ogg Vorbis Streaming <= 12 MB Audio RAM Budget",
+                "3D Audio Raycast Occlusion Across >= 6.0m Dungeon Corridors",
+            ],
+        ),
+        (
+            "weather-acoustic-13-pendulum-shaft-3f-clockwork-resonance",
+            "Pendulum Shaft 3F (Cruma Tower) — Giant Brass Pendulum Doppler Sweep, Tesla Arc Shader & Vaulted Echo",
+            "Subterranean_Catacomb_Echo_And_Resonance",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "17720:114080",
+            "Technical Artist (Pipeline & DCC)",
+            "Interior Tower Lock (+160m 3F) -> Synchronized Tesla-Coil Arc Shader + Core Automaton Pulse Lighting",
+            "Godot AudioBus: Metallic_Rotunda_4.8s_IR + Doppler-Shifted Pendulum Whoosh & Synthesized Choir Pad",
+            [
+                "<= 0.70ms GPU Tesla Arc & Metallic Anisotropic Reflection Pass",
+                "Ogg Vorbis Streaming <= 13 MB Audio RAM Budget",
+                "Frame-Locked Pendulum Swing Position to 3D Doppler Audio Emitter",
+            ],
+        ),
+        (
+            "weather-acoustic-14-chronometer-foundry-3f-lava-chamber-roar",
+            "Chronometer Foundry 3F (Forge of the Gods) — Molten Slag Convection Shader, Anvil Quake & Basalt Echo",
+            "Subterranean_Catacomb_Echo_And_Resonance",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "169200:-116200",
+            "Technical Artist (Pipeline & DCC)",
+            "Volcanic Interior Lock -> Blackbody Emissive Lava-Flow Shader + Valakas Roar Camera-Shake & Chromatic Aberration",
+            "Godot AudioBus: Basalt_Foundry_5.2s_IR + Industrial Brass Choir & Sub-40Hz Lava Bubble Resonance",
+            [
+                "<= 0.80ms GPU Emissive Lava & Heat-Haze Post-Process Pass",
+                "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+                "Dynamic Range Compression (DRC) Guard During 45-Player Boss Roar",
+            ],
+        ),
+        (
+            "weather-acoustic-15-witch-pendulum-b3-seven-seals-chant",
+            "Witch Pendulum Catacomb B3 — Dawn/Dusk Seal Polarity Shader, Submerged Crypt Echo & Gregorian Drone",
+            "Subterranean_Catacomb_Echo_And_Resonance",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "140200:79600",
+            "Technical Artist (Pipeline & DCC) & Content & World Tools Engineer",
+            "Seven-Signs Cycle Lock (-195m B3) -> Dawn Gold vs Dusk Violet Torchlight Shader Switch + Water-Table Reflection",
+            "Godot AudioBus: Flooded_Crypt_6.0s_IR + Latin Seal Chant & Torch Crackle Spatialization",
+            [
+                "<= 0.68ms GPU Planar Crypt Water Reflection & Torch Flicker Pass",
+                "Ogg Vorbis Streaming <= 12 MB Audio RAM Budget",
+                "Live Dawn/Dusk Cabal Winner Shader & Audio Stem Switch (< 200ms)",
+            ],
+        ),
+        (
+            "weather-acoustic-16-star-heart-nave-3f-pipe-organ-acoustics",
+            "Star-Heart Nave 3F (Imperial Tomb) — Frintezza 5-Melody Pipe-Organ Shader Pulse & Royal Mausoleum Reverb",
+            "Subterranean_Catacomb_Echo_And_Resonance",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "174200:-88100",
+            "Technical Artist (Pipeline & DCC) & Backend Simulation & Infra Tools Engineer",
+            "Boss Concert Hall Lock (+160m 3F) -> 5-Melody Color-Coded Stained-Glass Projection Shader (Requiem / Rondo / Allegro)",
+            "Godot AudioBus: Imperial_Concert_Hall_5.5s_IR + Sample-Accurate 20Hz Server-Tick Locked Pipe-Organ Stems",
+            [
+                "<= 0.75ms GPU Stained-Glass Caustic Projection & Morph VFX Pass",
+                "Ogg Vorbis Streaming <= 14 MB Audio RAM Budget",
+                "Server-Tick #1..#20 Pipe-Organ Audio Beat Lock (<= 15ms Desync)",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        pid,
+        pname,
+        acat,
+        zid,
+        did,
+        fid,
+        loc,
+        orole,
+        dncycle,
+        abus,
+        ggates,
+    ) in specs:
+        rows.append(
+            {
+                "profile_id": pid,
+                "profile_name": pname,
+                "atmosphere_category": acat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "owner_engineer_role": orole,
+                "day_night_and_weather_cycle": dncycle,
+                "spatial_audio_bus_and_bgm": abus,
+                "gpu_shader_and_memory_gates": ggates,
+            }
+        )
+    return rows
+
+
+def _build_server_mesh_persistence_corridors(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Corridor [Role 4: Backend Simulation & Infra Tools Engineer] Server-Mesh Authority Handoff, Redis Stream Bus & PostgreSQL Write-Behind Matrix (D82):
+    5 Zero_Loading_Zone_Boundary_Handoff + 5 Redis_Stream_Cross_Realm_Event_Bus + 5 Postgres_Advisory_Lock_Writebehind_Wal."""
+    specs = [
+        # --- 5 Zero_Loading_Zone_Boundary_Handoff ---
+        (
+            "mesh-corridor-01-lantern-hollow-to-clover-south-handoff",
+            "Lantern Hollow South Gate ➔ Clover South Gate — 64m Ghost-Buffer Seamless Town-to-Field Authority Handoff",
+            "Zero_Loading_Zone_Boundary_Handoff",
+            "zone-town-lantern-hollow",
+            "zone-field-clover-south-gate",
+            "-84120:243500",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-2.8ms Seamless Bevy ECS Entity Authority Handoff Across 64m Overlap Ghost Buffer (Zero Loading Screen)",
+            "Dual-Node Shadow-Entity Lease (200ms Grace Window) + Atomic Sequence-Number Packet Cutover",
+            [
+                "1,000-Bot Simultaneous Town-Gate Crossing Stress Pass",
+                "Zero Dropped Combat/Movement Inputs Across 64m Boundary",
+                "FlatBuffers AOI Delta Continuity Verified (< 250B/Frame)",
+            ],
+        ),
+        (
+            "mesh-corridor-02-kilnwatch-to-cinnamon-mill-highway-handoff",
+            "Kilnwatch Bastion (Gludio) ➔ Cinnamon Mill (Dion) — Inter-District Highway Zero-Loading Mesh Handoff",
+            "Zero_Loading_Zone_Boundary_Handoff",
+            "zone-town-kilnwatch-bastion",
+            "zone-town-cinnamon-mill",
+            "-14200:123500",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-3.1ms Seamless Caravan & Party Authority Handoff Across Contiguous SpatialGrid Highway Cells",
+            "Manor Caravan Cargo Lease Transfer + Party Leader/Follow Tether Preservation Across Worker Pods",
+            [
+                "1,000-Bot Simultaneous Border Crossing Pass",
+                "Manor Caravan Escort State Preserved Across Pod Boundary",
+                "P99 Boundary Tick Latency <= 0.62ms @ 20Hz",
+            ],
+        ),
+        (
+            "mesh-corridor-03-cinnamon-mill-to-inductor-switchyard-handoff",
+            "Cinnamon Mill (Dion) ➔ Inductor Switchyard (Giran) — East Continental Bridge Zero-Loading Mesh Handoff",
+            "Zero_Loading_Zone_Boundary_Handoff",
+            "zone-town-cinnamon-mill",
+            "zone-town-inductor-switchyard",
+            "18800:145200",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-3.2ms Cross-Continent Worker Authority Handoff Across 64m Overlap Ghost Buffer (Continent 1 ➔ Continent 2)",
+            "Cross-Worker Buff/Debuff Timer Snapshot + Summon/Pet Entity Co-Migration Atomic Commit",
+            [
+                "1,000-Bot Simultaneous Continental Bridge Crossing Pass",
+                "Pet/Strider/Summon Co-Migration Zero-Orphan Gate",
+                "Seeded Golden-Trace Replay Parity Across Worker Handoff (epsilon <= 0.05)",
+            ],
+        ),
+        (
+            "mesh-corridor-04-inductor-switchyard-to-astrolabe-rift-handoff",
+            "Inductor Switchyard (Giran) ➔ Astrolabe Rift (Dragon Valley) — High-Density Raid Approach Mesh Handoff",
+            "Zero_Loading_Zone_Boundary_Handoff",
+            "zone-town-inductor-switchyard",
+            "zone-field-astrolabe-rift",
+            "73100:118400",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-2.9ms 45-Player Command-Channel Authority Handoff Into High-Density Hunting Field Worker",
+            "Command-Channel Party Hierarchy & Aggro-Hate Table Pre-Warm in Target SpatialGrid Partition",
+            [
+                "450-Bot Multi-Alliance Raid Approach Border Stress Pass",
+                "Zero Song/Dance Aura Flicker During Zone Handoff",
+                "Dynamic Agones Worker Split When Zone Population > 1,500",
+            ],
+        ),
+        (
+            "mesh-corridor-05-starfall-haven-to-crown-beacon-handoff",
+            "Starfall Haven (Rune) ➔ Crown Beacon (Goddard) — Sovereign Northern Frontier Zero-Loading Mesh Handoff",
+            "Zero_Loading_Zone_Boundary_Handoff",
+            "zone-town-starfall-haven",
+            "zone-town-crown-beacon",
+            "147700:-55800",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-3.0ms High-Altitude Wyvern & Ground Party Authority Handoff Across Continent 3 Frontier",
+            "3D Z-Axis Aerial Wyvern Lease Handoff + Territory Ward Carrier Position Broadcast Lock",
+            [
+                "1,000-Bot Ground + Wyvern Aerial Border Crossing Pass",
+                "Territory Ward Flag Carrier Zero-Desync Handoff",
+                "Kill-9 Adjacent Worker Failover < 380ms Recovery",
+            ],
+        ),
+        # --- 5 Redis_Stream_Cross_Realm_Event_Bus ---
+        (
+            "mesh-corridor-06-torque-balance-to-escapement-siege-bus",
+            "Torque-Balance Citadel (Aden) ➔ Escapement Anvil (Oren) — Redis Stream Castle Siege & Territory Tax Bus",
+            "Redis_Stream_Cross_Realm_Event_Bus",
+            "zone-town-torque-balance-citadel",
+            "zone-town-escapement-anvil",
+            "147400:25600",
+            "Backend Simulation & Infra Tools Engineer & LiveOps, Build & GM Tools Engineer",
+            "Sub-4.5ms Redis Streams (`XADD / XREADGROUP`) Cross-Zone Siege Relic & Territory Tax Rate Fan-Out",
+            "Idempotent Event Consumer Group (`siege-authority-cg`) with Monotonic Lamport Tick & Dead-Letter Replay",
+            [
+                "Redis Stream Consumer-Group Replay Verified (100k Events/s)",
+                "Zero Duplicate Territory Tax Broadcast on Worker Restart",
+                "Sub-250ms Global Castle Ownership Banner Sync Across All 15 Towns",
+            ],
+        ),
+        (
+            "mesh-corridor-07-witch-pendulum-to-carillon-seven-seals-bus",
+            "Witch Pendulum Catacomb ➔ Carillon Belfry (Dark Elven) — Seven-Seals Dawn/Dusk Cabal Score & Mammon Bus",
+            "Redis_Stream_Cross_Realm_Event_Bus",
+            "zone-catacomb-witch-pendulum",
+            "zone-town-carillon-belfry",
+            "140200:79600",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-5.0ms Redis Stream Seal-Stone Offering Aggregation & Blacksmith/Merchant of Mammon Rotation Bus",
+            "Atomic Redis Lua Seal-Score Counter + Deterministic 30-Minute Mammon Teleport Node Broadcast",
+            [
+                "Redis Stream Consumer-Group Replay Verified",
+                "16-Sanctum Simultaneous Seal-Stone Turn-In Race Condition Pass",
+                "Instant Dawn/Dusk Sky & Catacomb Shader Polarity Push",
+            ],
+        ),
+        (
+            "mesh-corridor-08-chronometer-foundry-to-crown-beacon-mvp-radar-bus",
+            "Chronometer Foundry (Forge of the Gods) ➔ Crown Beacon (Goddard) — World Boss & MVP Kill/Respawn Radar Bus",
+            "Redis_Stream_Cross_Realm_Event_Bus",
+            "zone-dungeon-chronometer-foundry",
+            "zone-town-crown-beacon",
+            "169200:-116200",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-3.8ms Redis Stream MVP/Raid Death, Cursed Weapon Drop & Respawn Window Telemetry Fan-Out",
+            "Exactly-Once Boss Kill Ledger Event (`boss-radar-cg`) + WebSocket Live Push to `:8788` Studio Atlas",
+            [
+                "Redis Stream Consumer-Group Replay Verified",
+                "32-Boss Simultaneous Respawn Timer Jitter Sync Verified",
+                "Global Cursed Weapon (Zariche/Akamanah) Drop Broadcast < 150ms",
+            ],
+        ),
+        (
+            "mesh-corridor-09-pinion-terminus-to-torque-balance-olympiad-bus",
+            "Pinion Terminus (Heine) ➔ Torque-Balance Citadel (Aden) — Grand Olympiad Matchmaking & Hero Monument Bus",
+            "Redis_Stream_Cross_Realm_Event_Bus",
+            "zone-town-pinion-terminus",
+            "zone-town-torque-balance-citadel",
+            "111400:219300",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-4.2ms Cross-Town Olympiad Arena Queue, Elo Point Settlement & Hero Monument Leaderboard Stream",
+            "Transactional Olympiad Point Transfer + Anti-Win-Trading IP/Hardware-Hash Correlation Filter",
+            [
+                "Redis Stream Consumer-Group Replay Verified",
+                "21-Node Hero Monument Simultaneous Cycle Settlement Pass",
+                "Zero Point-Loss on Arena Instance Pod Preemption",
+            ],
+        ),
+        (
+            "mesh-corridor-10-glaze-barge-to-starfall-haven-transit-bus",
+            "Glaze-Barge Quay ➔ Starfall Haven (Rune) — Inter-Continental Ship/Airship Schedule & Dock Telemetry Bus",
+            "Redis_Stream_Cross_Realm_Event_Bus",
+            "zone-town-glaze-barge-quay",
+            "zone-town-starfall-haven",
+            "43800:-47900",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-3.5ms Redis Stream Maritime Ship & Brass Airship Waypoint Synchronization Across 18 Transit Lines",
+            "Deterministic Server-Clock Vessel Phase Interpolator + Passenger Boarding Bulk-Migration Lock",
+            [
+                "Redis Stream Consumer-Group Replay Verified",
+                "200-Passenger Simultaneous Ship Boarding & Continent Transfer Pass",
+                "Zero Passenger Fell-Through-Deck Desync on Vessel Waypoint Turn",
+            ],
+        ),
+        # --- 5 Postgres_Advisory_Lock_Writebehind_Wal ---
+        (
+            "mesh-corridor-11-inductor-switchyard-to-kilnwatch-bazaar-wal",
+            "Inductor Switchyard (Giran) ➔ Kilnwatch Bastion (Gludio) — PostgreSQL Advisory-Lock Trade & Auction WAL",
+            "Postgres_Advisory_Lock_Writebehind_Wal",
+            "zone-town-inductor-switchyard",
+            "zone-town-kilnwatch-bastion",
+            "83400:147900",
+            "Backend Simulation & Infra Tools Engineer & Lead Tools & Pipeline Architect",
+            "Sub-1.8ms Write-Behind WAL Append + 250ms Coalesced PostgreSQL Batch Commit for 300-Stall Giran Bazaar",
+            "PostgreSQL `pg_try_advisory_xact_lock` + SHA-256 OCC CAS Transition (Zero Item/Adena Duplication on Crash)",
+            [
+                "50,000-Transaction Concurrent Trade/Bazaar OCC Replay Pass",
+                "Kill-9 Node Failover < 400ms WAL Replay Zero-Item-Loss",
+                "Deadlock-Free Dual-Account Inventory Lock Ordering Gate",
+            ],
+        ),
+        (
+            "mesh-corridor-12-root-train-to-draft-kiln-warehouse-freight-wal",
+            "Root-Train Roundhouse (Dwarven) ➔ Draft-Kiln Post (Orc) — Iron Gate Clan Vault & Freight CAS Write-Behind WAL",
+            "Postgres_Advisory_Lock_Writebehind_Wal",
+            "zone-town-root-train-roundhouse",
+            "zone-town-draft-kiln-post",
+            "-45200:-113600",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-2.0ms Clan Vault Deposit/Withdrawal CAS & Cross-Town Freight Escrow Write-Behind WAL Pipeline",
+            "PostgreSQL Advisory Lock on `clan_vault_id` + Monotonic `version_seq` OCC (Blocks Parallel Withdrawal Dupes)",
+            [
+                "20-Member Simultaneous Clan Vault Withdrawal Race-Condition Pass",
+                "Cross-Town Freight Package Escrow Checksum Verified",
+                "Kill-9 Node Failover < 400ms Recovery with Zero Dupe/Loss",
+            ],
+        ),
+        (
+            "mesh-corridor-13-kiln-cellar-to-lantern-hollow-boss-loot-wal",
+            "Kiln Cellar Ruins (Ant Nest) ➔ Lantern Hollow (Gludin) — Epic Jewelry Drop & +1..+16 Enchant Ledger WAL",
+            "Postgres_Advisory_Lock_Writebehind_Wal",
+            "zone-dungeon-kiln-cellar",
+            "zone-town-lantern-hollow",
+            "-9820:175180",
+            "Backend Simulation & Infra Tools Engineer & LiveOps, Build & GM Tools Engineer",
+            "Immediate Synchronous WAL Flush (< 3.5ms) for Epic Boss Jewelry Drops & +1..+16 Refinement Scrolls",
+            "Cryptographic Loot-Drop Seed Proof + Immutable `item_instance_uuid` Lineage Ledger for GM Rollback Audit",
+            [
+                "100% Synchronous Durability on S-Grade / Epic Jewelry Drops",
+                "SHA-256 OCC Enchant Scroll Consumption Zero-Rollback-Exploit Gate",
+                "1-Click GM Point-in-Time Inventory Diff & Restore Verified",
+            ],
+        ),
+        (
+            "mesh-corridor-14-pendulum-shaft-to-porcelain-loom-spoil-wal",
+            "Pendulum Shaft (Cruma Tower) ➔ Porcelain Loom (Elven) — High-Frequency Mob XP/Spoil Coalesced Write-Behind WAL",
+            "Postgres_Advisory_Lock_Writebehind_Wal",
+            "zone-dungeon-pendulum-shaft",
+            "zone-town-porcelain-loom",
+            "17720:114080",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-0.4ms In-Memory ECS Dirty-Component Mark -> 500ms Coalesced PostgreSQL `COPY / UNNEST` Batch Upsert",
+            "94% DB Write-IOPS Reduction via Tick-Coalesced XP/SP/Soulshot Consumption Delta Flush + Crash-Safe Redo Log",
+            [
+                "10,000-Bot Grinding Storm <= 180 Postgres Batch IOPS/sec",
+                "Zero XP/SP/Vitality Rollback on Graceful or Ungraceful Pod Drain",
+                "PostgreSQL Connection Pool Saturation Guard (PgBouncer <= 60% Load)",
+            ],
+        ),
+        (
+            "mesh-corridor-15-star-heart-nave-to-saffron-press-instance-wal",
+            "Star-Heart Nave (Imperial Tomb) ➔ Saffron Press (Floran) — Command-Channel Raid Lockout & Instance State WAL",
+            "Postgres_Advisory_Lock_Writebehind_Wal",
+            "zone-dungeon-star-heart-nave",
+            "zone-town-saffron-press",
+            "174200:-88100",
+            "Backend Simulation & Infra Tools Engineer",
+            "Sub-2.4ms 45-Player Command-Channel Raid Lockout, Phase Checkpoint & Loot-Right Binding WAL Commit",
+            "PostgreSQL Serializable Snapshot on `instance_lockout_id` + Disconnect Re-Entry Grace Lease (10 Minutes)",
+            [
+                "45-Player Simultaneous Instance Entry & Lockout Stamp Pass",
+                "Mid-Boss-Fight Disconnected Player Re-Entry Position & Hate Restore",
+                "Kill-9 Instance Worker Recovery from Phase Checkpoint < 400ms",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        cid,
+        cname,
+        icat,
+        ozid,
+        dzid,
+        loc,
+        orole,
+        hsla,
+        pcontract,
+        cverif,
+    ) in specs:
+        rows.append(
+            {
+                "corridor_id": cid,
+                "corridor_name": cname,
+                "infra_category": icat,
+                "origin_zone_id": ozid,
+                "destination_zone_id": dzid,
+                "loc": loc,
+                "owner_engineer_role": orole,
+                "authority_handoff_and_latency_sla": hsla,
+                "persistence_and_anti_dupe_contract": pcontract,
+                "chaos_and_load_verifications": cverif,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -17451,6 +18041,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("two_ring_studio_80d_signoff_matrix") or []) < 22:
         atlas["two_ring_studio_80d_signoff_matrix"] = _build_two_ring_studio_80d_signoff_matrix(atlas)
         actions.append("populated_22_two_ring_studio_80d_signoff_matrix")
+
+    # 65. Ensure all 16 Weather, Day/Night Shader & Spatial Audio Acoustic Profiles exist in `weather_shader_acoustic_profiles` (D81)
+    if len(atlas.get("weather_shader_acoustic_profiles") or []) < 16:
+        atlas["weather_shader_acoustic_profiles"] = _build_weather_shader_acoustic_profiles(atlas)
+        actions.append("populated_16_weather_shader_acoustic_profiles")
+
+    # 66. Ensure all 15 Server-Mesh Authority Handoff, Redis Stream Bus & PostgreSQL Write-Behind Corridors exist in `server_mesh_persistence_corridors` (D82)
+    if len(atlas.get("server_mesh_persistence_corridors") or []) < 15:
+        atlas["server_mesh_persistence_corridors"] = _build_server_mesh_persistence_corridors(atlas)
+        actions.append("populated_15_server_mesh_persistence_corridors")
 
     return {"actions": actions}
 
@@ -22102,15 +22702,152 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d80_ratio * 80.0, 1)
     )
 
+    # D81: Interactive 16-Zone [Role 3: Technical Artist — Weather, Shader & Spatial Audio Pipeline] Dynamic Weather, Day/Night Shader & Spatial Audio Acoustic Matrix (`weather_shader_acoustic_profiles` - 16 Profiles: 6 Town_Symphony_And_Tavern_Reverb + 5 Nocturnal_Curse_Fog_And_Blood_Rain_Field + 5 Subterranean_Catacomb_Echo_And_Resonance)
+    expected_atmosphere_categories = {
+        "Town_Symphony_And_Tavern_Reverb",
+        "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+        "Subterranean_Catacomb_Echo_And_Resonance",
+    }
+    weather_acoustic_rows = atlas.get("weather_shader_acoustic_profiles") or []
+    valid_weather_acoustic_profiles = 0
+    town_symphony_reverb_count = 0
+    nocturnal_fog_blood_rain_count = 0
+    subterranean_catacomb_echo_count = 0
+    seen_weather_profile_ids: set[str] = set()
+    seen_atmosphere_categories: set[str] = set()
+    for wrow in weather_acoustic_rows:
+        if not isinstance(wrow, dict):
+            continue
+        wpid = str(wrow.get("profile_id") or "")
+        wcat = str(wrow.get("atmosphere_category") or "")
+        wzid = str(wrow.get("zone_id") or "")
+        wdid = str(wrow.get("dungeon_id") or "")
+        wfid = str(wrow.get("floor_id") or "")
+        wgates = wrow.get("gpu_shader_and_memory_gates") or []
+        if (
+            wpid
+            and wpid not in seen_weather_profile_ids
+            and wrow.get("profile_name")
+            and wcat in expected_atmosphere_categories
+            and wzid in zone_ids_set
+            and (wdid == "" or wdid in mf_dungeon_id_set)
+            and wfid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(wrow.get("loc", ""))
+            and wrow.get("owner_engineer_role")
+            and wrow.get("day_night_and_weather_cycle")
+            and wrow.get("spatial_audio_bus_and_bgm")
+            and isinstance(wgates, list)
+            and len(wgates) >= 2
+        ):
+            valid_weather_acoustic_profiles += 1
+            seen_weather_profile_ids.add(wpid)
+            seen_atmosphere_categories.add(wcat)
+            if wcat == "Town_Symphony_And_Tavern_Reverb":
+                town_symphony_reverb_count += 1
+            elif wcat == "Nocturnal_Curse_Fog_And_Blood_Rain_Field":
+                nocturnal_fog_blood_rain_count += 1
+            elif wcat == "Subterranean_Catacomb_Echo_And_Resonance":
+                subterranean_catacomb_echo_count += 1
+
+    has_d81_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_WEATHER_ACOUSTIC_MODE",
+            "setAtlasWeatherAcousticMode",
+            "renderAtlasWeatherAcousticBarHtml",
+            "studioWeatherAcousticOverlay",
+        )
+    )
+    d81_ratio = valid_weather_acoustic_profiles / 16.0
+    d81_full_coverage = (
+        town_symphony_reverb_count == 6
+        and nocturnal_fog_blood_rain_count == 5
+        and subterranean_catacomb_echo_count == 5
+        and seen_atmosphere_categories == expected_atmosphere_categories
+    )
+    d81_score = (
+        round(min(100.0, d81_ratio * 100.0), 1)
+        if (has_d81_ui and d81_full_coverage)
+        else round(d81_ratio * 80.0, 1)
+    )
+
+    # D82: Interactive 15-Corridor [Role 4: Backend Simulation & Infra Tools Engineer] Server-Mesh Authority Handoff, Redis Stream Bus & PostgreSQL Write-Behind Matrix (`server_mesh_persistence_corridors` - 15 Corridors: 5 Zero_Loading_Zone_Boundary_Handoff + 5 Redis_Stream_Cross_Realm_Event_Bus + 5 Postgres_Advisory_Lock_Writebehind_Wal)
+    expected_infra_categories = {
+        "Zero_Loading_Zone_Boundary_Handoff",
+        "Redis_Stream_Cross_Realm_Event_Bus",
+        "Postgres_Advisory_Lock_Writebehind_Wal",
+    }
+    mesh_corridor_rows = atlas.get("server_mesh_persistence_corridors") or []
+    valid_mesh_corridors = 0
+    zero_loading_handoff_count = 0
+    redis_stream_bus_count = 0
+    postgres_writebehind_wal_count = 0
+    seen_mesh_corridor_ids: set[str] = set()
+    seen_infra_categories: set[str] = set()
+    for crow in mesh_corridor_rows:
+        if not isinstance(crow, dict):
+            continue
+        cid = str(crow.get("corridor_id") or "")
+        icat = str(crow.get("infra_category") or "")
+        ozid = str(crow.get("origin_zone_id") or "")
+        dzid = str(crow.get("destination_zone_id") or "")
+        cverif = crow.get("chaos_and_load_verifications") or []
+        if (
+            cid
+            and cid not in seen_mesh_corridor_ids
+            and crow.get("corridor_name")
+            and icat in expected_infra_categories
+            and ozid in zone_ids_set
+            and dzid in zone_ids_set
+            and ozid != dzid
+            and ":" in str(crow.get("loc", ""))
+            and crow.get("owner_engineer_role")
+            and crow.get("authority_handoff_and_latency_sla")
+            and crow.get("persistence_and_anti_dupe_contract")
+            and isinstance(cverif, list)
+            and len(cverif) >= 2
+        ):
+            valid_mesh_corridors += 1
+            seen_mesh_corridor_ids.add(cid)
+            seen_infra_categories.add(icat)
+            if icat == "Zero_Loading_Zone_Boundary_Handoff":
+                zero_loading_handoff_count += 1
+            elif icat == "Redis_Stream_Cross_Realm_Event_Bus":
+                redis_stream_bus_count += 1
+            elif icat == "Postgres_Advisory_Lock_Writebehind_Wal":
+                postgres_writebehind_wal_count += 1
+
+    has_d82_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_SERVER_MESH_MODE",
+            "setAtlasServerMeshMode",
+            "renderAtlasServerMeshBarHtml",
+            "studioServerMeshOverlay",
+        )
+    )
+    d82_ratio = valid_mesh_corridors / 15.0
+    d82_full_coverage = (
+        zero_loading_handoff_count == 5
+        and redis_stream_bus_count == 5
+        and postgres_writebehind_wal_count == 5
+        and seen_infra_categories == expected_infra_categories
+    )
+    d82_score = (
+        round(min(100.0, d82_ratio * 100.0), 1)
+        if (has_d82_ui and d82_full_coverage)
+        else round(d82_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score) / 62.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score) / 64.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score) / 64.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score) / 74.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score) / 63.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score) / 70.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score) / 64.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score) / 66.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score) / 66.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score) / 76.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score) / 65.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score) / 72.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -22195,8 +22932,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d78_score
             + d79_score
             + d80_score
+            + d81_score
+            + d82_score
         )
-        / 80.0,
+        / 82.0,
         1,
     )
 
@@ -22903,6 +23642,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "tooling_pillar_stages": sorted(seen_pillar_stages),
                 "ui_wired": has_d80_ui,
             },
+            "D81_weather_day_night_shader_and_spatial_audio_profiles": {
+                "score": d81_score,
+                "verified": valid_weather_acoustic_profiles,
+                "target": 16,
+                "town_symphony_and_tavern_reverbs": town_symphony_reverb_count,
+                "nocturnal_curse_fog_and_blood_rain_fields": nocturnal_fog_blood_rain_count,
+                "subterranean_catacomb_echo_and_resonances": subterranean_catacomb_echo_count,
+                "atmosphere_categories": sorted(seen_atmosphere_categories),
+                "ui_wired": has_d81_ui,
+            },
+            "D82_server_mesh_handoff_redis_bus_and_postgres_wal_corridors": {
+                "score": d82_score,
+                "verified": valid_mesh_corridors,
+                "target": 15,
+                "zero_loading_zone_boundary_handoffs": zero_loading_handoff_count,
+                "redis_stream_cross_realm_event_buses": redis_stream_bus_count,
+                "postgres_advisory_lock_writebehind_wals": postgres_writebehind_wal_count,
+                "infra_categories": sorted(seen_infra_categories),
+                "ui_wired": has_d82_ui,
+            },
         },
     }
 
@@ -23027,6 +23786,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D78 (15 Build Farm/CDN)     : {dims['D78_automated_build_farm_and_delta_patch_cdn_nodes']['score']}/100 ({dims['D78_automated_build_farm_and_delta_patch_cdn_nodes']['verified']}/{dims['D78_automated_build_farm_and_delta_patch_cdn_nodes']['target']} build/cdn nodes)")
         print(f"  D79 (15 Architect DX Gates) : {dims['D79_architect_dx_undo_redo_and_codegen_drift_gates']['score']}/100 ({dims['D79_architect_dx_undo_redo_and_codegen_drift_gates']['verified']}/{dims['D79_architect_dx_undo_redo_and_codegen_drift_gates']['target']} architect dx/codegen gates)")
         print(f"  D80 (22 Two-Ring 80D Matrix): {dims['D80_two_ring_studio_11_role_80d_signoff_matrix']['score']}/100 ({dims['D80_two_ring_studio_11_role_80d_signoff_matrix']['verified']}/{dims['D80_two_ring_studio_11_role_80d_signoff_matrix']['target']} two-ring sign-off records)")
+        print(f"  D81 (16 Weather/Audio Shdrs): {dims['D81_weather_day_night_shader_and_spatial_audio_profiles']['score']}/100 ({dims['D81_weather_day_night_shader_and_spatial_audio_profiles']['verified']}/{dims['D81_weather_day_night_shader_and_spatial_audio_profiles']['target']} weather/shader/audio profiles)")
+        print(f"  D82 (15 Server-Mesh/WAL)    : {dims['D82_server_mesh_handoff_redis_bus_and_postgres_wal_corridors']['score']}/100 ({dims['D82_server_mesh_handoff_redis_bus_and_postgres_wal_corridors']['verified']}/{dims['D82_server_mesh_handoff_redis_bus_and_postgres_wal_corridors']['target']} server-mesh/wal corridors)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

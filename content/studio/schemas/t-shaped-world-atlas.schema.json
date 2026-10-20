@@ -395,6 +395,18 @@
       "maxItems": 22,
       "items": { "$ref": "#/$defs/twoRingStudio80dSignoffSpec" }
     },
+    "weather_shader_acoustic_profiles": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/weatherShaderAcousticProfileSpec" }
+    },
+    "server_mesh_persistence_corridors": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/serverMeshPersistenceCorridorSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -4345,6 +4357,89 @@
           "items": { "type": "string" }
         },
         "verdict_and_evidence": { "type": "string" }
+      }
+    },
+    "weatherShaderAcousticProfileSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_id",
+        "profile_name",
+        "atmosphere_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "owner_engineer_role",
+        "day_night_and_weather_cycle",
+        "spatial_audio_bus_and_bgm",
+        "gpu_shader_and_memory_gates"
+      ],
+      "properties": {
+        "profile_id": { "type": "string" },
+        "profile_name": { "type": "string" },
+        "atmosphere_category": {
+          "type": "string",
+          "enum": [
+            "Town_Symphony_And_Tavern_Reverb",
+            "Nocturnal_Curse_Fog_And_Blood_Rain_Field",
+            "Subterranean_Catacomb_Echo_And_Resonance"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "owner_engineer_role": { "type": "string" },
+        "day_night_and_weather_cycle": { "type": "string" },
+        "spatial_audio_bus_and_bgm": { "type": "string" },
+        "gpu_shader_and_memory_gates": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "serverMeshPersistenceCorridorSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "corridor_id",
+        "corridor_name",
+        "infra_category",
+        "origin_zone_id",
+        "destination_zone_id",
+        "loc",
+        "owner_engineer_role",
+        "authority_handoff_and_latency_sla",
+        "persistence_and_anti_dupe_contract",
+        "chaos_and_load_verifications"
+      ],
+      "properties": {
+        "corridor_id": { "type": "string" },
+        "corridor_name": { "type": "string" },
+        "infra_category": {
+          "type": "string",
+          "enum": [
+            "Zero_Loading_Zone_Boundary_Handoff",
+            "Redis_Stream_Cross_Realm_Event_Bus",
+            "Postgres_Advisory_Lock_Writebehind_Wal"
+          ]
+        },
+        "origin_zone_id": { "type": "string" },
+        "destination_zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "owner_engineer_role": { "type": "string" },
+        "authority_handoff_and_latency_sla": { "type": "string" },
+        "persistence_and_anti_dupe_contract": { "type": "string" },
+        "chaos_and_load_verifications": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
       }
     }
   }

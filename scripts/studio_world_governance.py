@@ -720,6 +720,8 @@ def validate_world_governance(
                 "buildFarmPatchCdnNodesCount": len(t_doc.get("build_farm_patch_cdn_nodes") or []),
                 "architectDxCodegenGatesCount": len(t_doc.get("architect_dx_codegen_gates") or []),
                 "twoRingStudio80dSignoffMatrixCount": len(t_doc.get("two_ring_studio_80d_signoff_matrix") or []),
+                "weatherShaderAcousticProfilesCount": len(t_doc.get("weather_shader_acoustic_profiles") or []),
+                "serverMeshPersistenceCorridorsCount": len(t_doc.get("server_mesh_persistence_corridors") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1814,6 +1816,48 @@ def validate_world_governance(
                 if tr_did and tr_did not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: two_ring_studio_80d_signoff_matrix '{tr_id}' references unknown dungeon_id '{tr_did}'"
+                    )
+
+            # Validate 16-Zone Dynamic Weather, Day/Night Shader & Spatial Audio Acoustic Matrix (D81)
+            weather_acoustic_profiles = t_doc.get("weather_shader_acoustic_profiles") or []
+            if weather_acoustic_profiles and len(weather_acoustic_profiles) != 16:
+                errors.append(
+                    f"GOV-10 violation: weather_shader_acoustic_profiles must have 16 weather/shader/acoustic profiles, got {len(weather_acoustic_profiles)}"
+                )
+            for wa_item in weather_acoustic_profiles:
+                if not isinstance(wa_item, dict):
+                    continue
+                wa_id = str(wa_item.get("profile_id", ""))
+                wa_zid = str(wa_item.get("zone_id", ""))
+                wa_did = str(wa_item.get("dungeon_id", ""))
+                if wa_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: weather_shader_acoustic_profiles '{wa_id}' references unknown zone_id '{wa_zid}'"
+                    )
+                if wa_did and wa_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: weather_shader_acoustic_profiles '{wa_id}' references unknown dungeon_id '{wa_did}'"
+                    )
+
+            # Validate 15-Corridor Server-Mesh Authority Handoff, Redis Stream Bus & PostgreSQL Write-Behind Matrix (D82)
+            mesh_corridors = t_doc.get("server_mesh_persistence_corridors") or []
+            if mesh_corridors and len(mesh_corridors) != 15:
+                errors.append(
+                    f"GOV-10 violation: server_mesh_persistence_corridors must have 15 server-mesh persistence corridors, got {len(mesh_corridors)}"
+                )
+            for mc_item in mesh_corridors:
+                if not isinstance(mc_item, dict):
+                    continue
+                mc_id = str(mc_item.get("corridor_id", ""))
+                mc_ozid = str(mc_item.get("origin_zone_id", ""))
+                mc_dzid = str(mc_item.get("destination_zone_id", ""))
+                if mc_ozid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: server_mesh_persistence_corridors '{mc_id}' references unknown origin_zone_id '{mc_ozid}'"
+                    )
+                if mc_dzid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: server_mesh_persistence_corridors '{mc_id}' references unknown destination_zone_id '{mc_dzid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

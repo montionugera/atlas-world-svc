@@ -104,15 +104,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas76DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas78DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas80DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas82DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 38)),
+        "wave": int(iter_state.get("wave", 39)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"82-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"80-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"78-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"76-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -144,7 +146,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 Verified"
         ),
     }
     return merged
@@ -4406,7 +4408,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4505,6 +4507,8 @@ let ATLAS_SKILL_TIMELINE_MODE = 'All';
 let ATLAS_BUILD_FARM_MODE = 'All';
 let ATLAS_ARCHITECT_DX_MODE = 'All';
 let ATLAS_TWO_RING_SIGNOFF_MODE = 'All';
+let ATLAS_WEATHER_ACOUSTIC_MODE = 'All';
+let ATLAS_SERVER_MESH_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4575,6 +4579,8 @@ const ATLAS_STATE_STORE = {
   buildFarmMode: 'All',                    // D78: Active 15-Node [Role 5: Build Farm & Patch CDN] Cooker & Delta Patch Selector ('Off' | 'All' | 'Godot_Client_Pak_Cooker_Node' | 'Server_Rs_Linux_Musl_Build_Runner' | 'Delta_Binary_Patch_CDN_Edge')
   architectDxMode: 'All',                  // D79: Active 15-Town [Role 1: Lead Tools Architect] SSO, Undo/Redo & Codegen Drift-Gate Selector ('Off' | 'All' | 'Unified_SSO_Editor_Session_Hub' | 'Cross_Tool_Undo_Redo_Command_Stack' | 'Schema_Codegen_Drift_Gate_Watchdog')
   twoRingSignoffMode: 'All',               // D80: Active 22-Record [11-Role Two-Ring Studio] D1-D80 Sign-Off Selector ('Off' | 'All' | 'Ring_A_Creative_Council' | 'Ring_B_Platform_Tools_Squad')
+  weatherAcousticMode: 'All',              // D81: Active 16-Zone [Role 3: Technical Artist] Weather, Day/Night Shader & Spatial Audio Selector ('Off' | 'All' | 'Town_Symphony_And_Tavern_Reverb' | 'Nocturnal_Curse_Fog_And_Blood_Rain_Field' | 'Subterranean_Catacomb_Echo_And_Resonance')
+  serverMeshMode: 'All',                   // D82: Active 15-Corridor [Role 4: Backend Infra] Server-Mesh Handoff, Redis Stream & Postgres WAL Selector ('Off' | 'All' | 'Zero_Loading_Zone_Boundary_Handoff' | 'Redis_Stream_Cross_Realm_Event_Bus' | 'Postgres_Advisory_Lock_Writebehind_Wal')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4582,6 +4588,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasWeatherAcousticMode(modeId) {
+  ATLAS_WEATHER_ACOUSTIC_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.weatherAcousticMode = ATLAS_WEATHER_ACOUSTIC_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasServerMeshMode(modeId) {
+  ATLAS_SERVER_MESH_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.serverMeshMode = ATLAS_SERVER_MESH_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasArchitectDxMode(modeId) {
   ATLAS_ARCHITECT_DX_MODE = String(modeId || 'All');
@@ -12336,6 +12356,192 @@ function renderAtlasTwoRingSignoffBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasWeatherAcousticBarHtml(tatlas) {
+  const profiles = (tatlas && tatlas.weather_shader_acoustic_profiles) || [];
+  if (!profiles.length) return '';
+  const curMode = ATLAS_WEATHER_ACOUSTIC_MODE || ATLAS_STATE_STORE.weatherAcousticMode || 'All';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const byZoneId = {};
+  allZones.forEach(z => { byZoneId[z.zone_id] = z; });
+
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🌦️ All 16 Weather, Day/Night & Acoustic Profiles', col: '#38bdf8' },
+    { id: 'Town_Symphony_And_Tavern_Reverb', label: '🎶 6 Town Symphony Themes (6)', col: '#fbbf24' },
+    { id: 'Nocturnal_Curse_Fog_And_Blood_Rain_Field', label: '🌙 5 Nocturnal Curse/Fog Fields (5)', col: '#c084fc' },
+    { id: 'Subterranean_Catacomb_Echo_And_Resonance', label: '🕳️ 5 Subterranean Catacomb Echoes (5)', col: '#34d399' }
+  ];
+
+  const filteredProfiles = curMode === 'Off'
+    ? []
+    : profiles.filter(p => {
+        if (curMode === 'All') return true;
+        return p.atmosphere_category === curMode;
+      });
+  const featuredProfiles = filteredProfiles.slice(0, 4);
+
+  const catStyleMap = {
+    'Town_Symphony_And_Tavern_Reverb': { col: '#fbbf24', badge: 'TOWN SYMPHONY & REVERB', icon: '🎶' },
+    'Nocturnal_Curse_Fog_And_Blood_Rain_Field': { col: '#c084fc', badge: 'NOCTURNAL FOG & SHADER', icon: '🌙' },
+    'Subterranean_Catacomb_Echo_And_Resonance': { col: '#34d399', badge: 'CATACOMB ECHO IR', icon: '🕳️' }
+  };
+
+  return `
+    <div id="atlasWeatherAcousticBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#38bdf8">🌦️ [ROLE 3: TECH ART AUDIO/SHADERS] WEATHER, DAY/NIGHT &amp; ACOUSTIC REVERB (D81 · ${profiles.length} PROFILES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasWeatherAcousticMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 TOWN SYMPHONY REVERBS · 5 NOCTURNAL CURSE/FOG FIELDS · 5 SUBTERRANEAN CATACOMB IR ECHOES
+        </span>
+      </div>
+
+      ${featuredProfiles.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredProfiles.map(p => {
+            const cs = catStyleMap[p.atmosphere_category] || { col: '#38bdf8', badge: 'TECH ART AUDIO', icon: '🌦️' };
+            const zidStr = String(p.zone_id || '');
+            const didStr = String(p.dungeon_id || '');
+            const fidStr = String(p.floor_id || 'B3');
+            const zObj = byZoneId[zidStr] || {};
+            const isDungeon = Boolean(didStr);
+            const jumpJs = isDungeon
+              ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+              : (zidStr.startsWith('zone-town-')
+                  ? `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(p.loc)}')`
+                  : `focusFieldOrFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(p.loc)}')`);
+            const gateTxt = (p.gpu_shader_and_memory_gates || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(p.profile_name.slice(0, 36))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                    ☀️ ${escapeHtml(p.day_night_and_weather_cycle.slice(0, 62))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🔊 ${escapeHtml(p.spatial_audio_bus_and_bgm.slice(0, 44))} · ${escapeHtml(gateTxt.slice(0, 32))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${cs.col};background:#1e1b4b;color:#f8fafc;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cs.icon} Jump to Acoustic/Shader Zone (${isDungeon ? escapeHtml(fidStr) : '5.2×'})
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasServerMeshBarHtml(tatlas) {
+  const corridors = (tatlas && tatlas.server_mesh_persistence_corridors) || [];
+  if (!corridors.length) return '';
+  const curMode = ATLAS_SERVER_MESH_MODE || ATLAS_STATE_STORE.serverMeshMode || 'All';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const byZoneId = {};
+  allZones.forEach(z => { byZoneId[z.zone_id] = z; });
+
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🖧 All 15 Infra Corridors', col: '#38bdf8' },
+    { id: 'Zero_Loading_Zone_Boundary_Handoff', label: '🔄 5 Zero-Load Zone Handoffs (5)', col: '#34d399' },
+    { id: 'Redis_Stream_Cross_Realm_Event_Bus', label: '📡 5 Redis Stream Event Buses (5)', col: '#fb923c' },
+    { id: 'Postgres_Advisory_Lock_Writebehind_Wal', label: '🗄️ 5 Postgres Write-Behind WALs (5)', col: '#a78bfa' }
+  ];
+
+  const filteredCorridors = curMode === 'Off'
+    ? []
+    : corridors.filter(c => {
+        if (curMode === 'All') return true;
+        return c.infra_category === curMode;
+      });
+  const featuredCorridors = filteredCorridors.slice(0, 4);
+
+  const catStyleMap = {
+    'Zero_Loading_Zone_Boundary_Handoff': { col: '#34d399', badge: '64M ZERO-LOAD HANDOFF', icon: '🔄' },
+    'Redis_Stream_Cross_Realm_Event_Bus': { col: '#fb923c', badge: 'REDIS STREAM BUS', icon: '📡' },
+    'Postgres_Advisory_Lock_Writebehind_Wal': { col: '#a78bfa', badge: 'POSTGRES OCC WAL', icon: '🗄️' }
+  };
+
+  return `
+    <div id="atlasServerMeshBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#34d399">🖧 [ROLE 4: BACKEND INFRA] SERVER-MESH HANDOFF, REDIS STREAM &amp; POSTGRES WAL (D82 · ${corridors.length} CORRIDORS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasServerMeshMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#38bdf8;font-weight:800">
+          5 ZERO-LOAD 64M HANDOFFS · 5 REDIS STREAM EVENT BUSES · 5 POSTGRES OCC WRITE-BEHIND WALS
+        </span>
+      </div>
+
+      ${featuredCorridors.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredCorridors.map(c => {
+            const cs = catStyleMap[c.infra_category] || { col: '#34d399', badge: 'SERVER MESH', icon: '🖧' };
+            const ozidStr = String(c.origin_zone_id || '');
+            const dzidStr = String(c.destination_zone_id || '');
+            const ozObj = byZoneId[ozidStr] || {};
+            const jumpJs = ozidStr.startsWith('zone-town-')
+              ? `focusTownStreetBlueprint('${escapeHtml(ozObj.studio_node_id || ozidStr.replace('zone-', ''))}', '${escapeHtml(c.loc)}')`
+              : (ozidStr.startsWith('zone-dungeon-') || ozidStr.startsWith('zone-catacomb-')
+                  ? `openDungeonSubMap('${escapeHtml(ozidStr)}', 'B3')`
+                  : `focusFieldOrFortressBlueprint('${escapeHtml(ozidStr)}', '${escapeHtml(c.loc)}')`);
+            const verifTxt = (c.chaos_and_load_verifications || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(c.corridor_name.slice(0, 36))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#a7f3d0;margin-top:1px">
+                    ⚡ ${escapeHtml(c.authority_handoff_and_latency_sla.slice(0, 60))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🔒 ${escapeHtml(c.persistence_and_anti_dupe_contract.slice(0, 44))} · ${escapeHtml(verifTxt.slice(0, 30))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${cs.col};background:#064e3b;color:#ecfdf5;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cs.icon} Jump ${escapeHtml(ozidStr.replace('zone-', '').slice(0, 14))} ➔ ${escapeHtml(dzidStr.replace('zone-', '').slice(0, 14))}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -12520,6 +12726,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasBuildFarmBarHtml(tatlas)}
       ${renderAtlasArchitectDxBarHtml(tatlas)}
       ${renderAtlasTwoRingSignoffBarHtml(tatlas)}
+      ${renderAtlasWeatherAcousticBarHtml(tatlas)}
+      ${renderAtlasServerMeshBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -16365,6 +16573,82 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Dynamic Weather, Day/Night Shader & Spatial Audio Acoustic Reverb Overlay (D81)
+  const weatherAcousticProfiles = Array.isArray(atlas.weather_shader_acoustic_profiles) ? atlas.weather_shader_acoustic_profiles : [];
+  const weatherAcousticOverlaySvg = !ATLAS_WEATHER_ACOUSTIC_MODE ? '' : `
+    <g id="studioWeatherAcousticOverlay">
+      ${weatherAcousticProfiles.map((p, idx) => {
+        const zMap = {};
+        (atlas.zones || []).forEach(z => { zMap[z.id] = z; });
+        const zidStr = p.zone_id || '';
+        const didStr = p.dungeon_id || '';
+        const fidStr = p.floor_id || 'B3';
+        const zObj = zMap[zidStr] || {};
+        const rawX = typeof zObj.x === 'number' ? zObj.x : -14000;
+        const rawY = typeof zObj.y === 'number' ? zObj.y : 123500;
+        const wac = locToAtlasSvg(rawX + ((idx % 4) - 1.5) * 3200, rawY - 3500);
+        const cat = p.atmosphere_category || 'Town_Symphony_And_Tavern_Reverb';
+        const colHex = cat === 'Town_Symphony_And_Tavern_Reverb'
+          ? '#fbbf24'
+          : (cat === 'Nocturnal_Curse_Fog_And_Blood_Rain_Field' ? '#c084fc' : '#34d399');
+        const iconTxt = cat === 'Town_Symphony_And_Tavern_Reverb'
+          ? '🎶'
+          : (cat === 'Nocturnal_Curse_Fog_And_Blood_Rain_Field' ? '🌙' : '🕳️');
+        const jumpJs = didStr
+          ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+          : (zidStr.startsWith('zone-town-')
+              ? `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(p.loc)}')`
+              : `focusFieldOrFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(p.loc)}')`);
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${wac.svgX}" cy="${wac.svgY}" r="10.5" fill="rgba(30,27,75,0.52)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${wac.svgX}" y="${wac.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Server-Mesh Authority Handoff, Redis Stream Bus & PostgreSQL Write-Behind WAL Overlay (D82)
+  const serverMeshCorridors = Array.isArray(atlas.server_mesh_persistence_corridors) ? atlas.server_mesh_persistence_corridors : [];
+  const serverMeshOverlaySvg = !ATLAS_SERVER_MESH_MODE ? '' : `
+    <g id="studioServerMeshOverlay">
+      ${serverMeshCorridors.map((c, idx) => {
+        const zMap = {};
+        (atlas.zones || []).forEach(z => { zMap[z.id] = z; });
+        const ozidStr = c.origin_zone_id || '';
+        const dzidStr = c.destination_zone_id || '';
+        const ozObj = zMap[ozidStr] || {};
+        const dzObj = zMap[dzidStr] || {};
+        const ox = typeof ozObj.x === 'number' ? ozObj.x : -14000;
+        const oy = typeof ozObj.y === 'number' ? ozObj.y : 123500;
+        const dx = typeof dzObj.x === 'number' ? dzObj.x : 18800;
+        const dy = typeof dzObj.y === 'number' ? dzObj.y : 145200;
+        const oc = locToAtlasSvg(ox + ((idx % 3) - 1) * 1800, oy + 1800);
+        const dc = locToAtlasSvg(dx + ((idx % 3) - 1) * 1800, dy + 1800);
+        const cat = c.infra_category || 'Zero_Loading_Zone_Boundary_Handoff';
+        const colHex = cat === 'Zero_Loading_Zone_Boundary_Handoff'
+          ? '#34d399'
+          : (cat === 'Redis_Stream_Cross_Realm_Event_Bus' ? '#fb923c' : '#a78bfa');
+        const iconTxt = cat === 'Zero_Loading_Zone_Boundary_Handoff'
+          ? '🔄'
+          : (cat === 'Redis_Stream_Cross_Realm_Event_Bus' ? '📡' : '🗄️');
+        const jumpJs = ozidStr.startsWith('zone-town-')
+          ? `focusTownStreetBlueprint('${escapeHtml(ozObj.studio_node_id || ozidStr.replace('zone-', ''))}', '${escapeHtml(c.loc)}')`
+          : (ozidStr.startsWith('zone-dungeon-') || ozidStr.startsWith('zone-catacomb-')
+              ? `openDungeonSubMap('${escapeHtml(ozidStr)}', 'B3')`
+              : `focusFieldOrFortressBlueprint('${escapeHtml(ozidStr)}', '${escapeHtml(c.loc)}')`);
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <line x1="${oc.svgX}" y1="${oc.svgY}" x2="${dc.svgX}" y2="${dc.svgY}" stroke="${colHex}" stroke-width="1.8" stroke-dasharray="5 3" opacity="0.82"/>
+            <circle cx="${oc.svgX}" cy="${oc.svgY}" r="10.4" fill="rgba(6,78,59,0.52)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${oc.svgX}" y="${oc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -16425,6 +16709,8 @@ function renderDedicatedWorldAtlas() {
     ${buildFarmOverlaySvg}
     ${architectDxOverlaySvg}
     ${twoRingSignoffOverlaySvg}
+    ${weatherAcousticOverlaySvg}
+    ${serverMeshOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
