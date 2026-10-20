@@ -666,6 +666,8 @@ def validate_world_governance(
                 "farmingEfficiencyProfilesCount": len(t_doc.get("farming_efficiency_profiles") or []),
                 "castleSiegeDomainsCount": len(t_doc.get("castle_siege_domains") or []),
                 "worldBossSpawnRadarCount": len(t_doc.get("world_boss_spawn_radar") or []),
+                "sevenSealsCompetitionsCount": len(t_doc.get("seven_seals_competitions") or []),
+                "manorEconomyRoutesCount": len(t_doc.get("manor_economy_routes") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -887,6 +889,44 @@ def validate_world_governance(
                 if bdid and bdid not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: world_boss_spawn_radar '{bid}' references unknown dungeon_id '{bdid}'"
+                    )
+
+            # Validate 16 Seven-Seals Dusk vs. Dawn Catacomb/Tower Competitions & Mammon Rotations (D27)
+            seven_seals = t_doc.get("seven_seals_competitions") or []
+            if seven_seals and len(seven_seals) != 16:
+                errors.append(f"GOV-10 violation: seven_seals_competitions must have 16 sanctums, got {len(seven_seals)}")
+            for ss_item in seven_seals:
+                if not isinstance(ss_item, dict):
+                    continue
+                cid = str(ss_item.get("competition_id", ""))
+                ss_did = str(ss_item.get("dungeon_id", ""))
+                if ss_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: seven_seals_competitions '{cid}' references unknown dungeon_id '{ss_did}'"
+                    )
+
+            # Validate 15-Town Manor Seed/Crop & Regional Caravan Trade Economy Routes (D28)
+            manor_routes = t_doc.get("manor_economy_routes") or []
+            if manor_routes and len(manor_routes) != 15:
+                errors.append(f"GOV-10 violation: manor_economy_routes must have 15 towns, got {len(manor_routes)}")
+            for mr_item in manor_routes:
+                if not isinstance(mr_item, dict):
+                    continue
+                mid = str(mr_item.get("manor_id", ""))
+                tzid = str(mr_item.get("town_zone_id", ""))
+                pszid = str(mr_item.get("parent_stronghold_zone_id", ""))
+                hfzid = str(mr_item.get("harvest_field_zone_id", ""))
+                if tzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: manor_economy_routes '{mid}' references unknown town_zone_id '{tzid}'"
+                    )
+                if pszid not in fort_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: manor_economy_routes '{mid}' references unknown parent_stronghold_zone_id '{pszid}'"
+                    )
+                if hfzid not in field_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: manor_economy_routes '{mid}' references unknown harvest_field_zone_id '{hfzid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

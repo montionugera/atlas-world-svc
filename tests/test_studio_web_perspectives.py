@@ -840,7 +840,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 26)
+        self.assertGreaterEqual(len(audit["dimensions"]), 26)
 
         d25 = audit["dimensions"]["D25_castle_siege_and_territory_tax_domains"]
         self.assertEqual(d25["score"], 100.0)
@@ -878,10 +878,89 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas26DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 26)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 26)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 26)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 26)
         self.assertIn("26-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave12_seven_seals_competitions_and_manor_economy_routes(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["sevenSealsCompetitionsCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["manorEconomyRoutesCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_SEVEN_SEALS_MODE",
+            "setAtlasSevenSealsMode(",
+            "renderAtlasSevenSealsBarHtml(",
+            "studioSevenSealsOverlay",
+            "ATLAS_MANOR_MODE",
+            "setAtlasManorMode(",
+            "renderAtlasManorEconomyBarHtml(",
+            "studioManorEconomyOverlay",
+            "28-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 12 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 28)
+
+        d27 = audit["dimensions"]["D27_seven_seals_and_mammon_rotation"]
+        self.assertEqual(d27["score"], 100.0)
+        self.assertEqual(d27["verified"], 16)
+        self.assertEqual(d27["target"], 16)
+        self.assertEqual(d27["catacomb_sanctums"], 8)
+        self.assertEqual(d27["tower_sanctums"], 8)
+        self.assertTrue(d27["ui_wired"])
+
+        d28 = audit["dimensions"]["D28_manor_seed_and_caravan_economy"]
+        self.assertEqual(d28["score"], 100.0)
+        self.assertEqual(d28["verified"], 15)
+        self.assertEqual(d28["target"], 15)
+        self.assertTrue(d28["ui_wired"])
+
+        competitions = atlas["seven_seals_competitions"]
+        self.assertEqual(len(competitions), 16)
+        self.assertEqual(sum(1 for c in competitions if c["sanctum_type"] == "Seal_Catacomb"), 8)
+        self.assertEqual(sum(1 for c in competitions if c["sanctum_type"] == "Ascendant_Necropolis_Tower"), 8)
+        self.assertEqual(
+            {c["seal_allegiance"] for c in competitions},
+            {"Sign_of_Avarice", "Sign_of_Gnosis", "Sign_of_Strife"},
+        )
+        self.assertEqual(
+            {c["controlling_cabal"] for c in competitions},
+            {"Lords_of_Dawn", "Revolutionaries_of_Dusk", "Contested_Equilibrium"},
+        )
+        self.assertEqual(
+            {c["mammon_visitor_npc"] for c in competitions},
+            {"Blacksmith_of_Mammon", "Merchant_of_Mammon"},
+        )
+
+        manors = atlas["manor_economy_routes"]
+        self.assertEqual(len(manors), 15)
+        self.assertEqual(
+            {m["caravan_route_risk"] for m in manors},
+            {"Low_Patrolled", "Medium_Bandit_Road", "High_Frontier_Ambush"},
+        )
+        self.assertTrue(
+            {"Enria", "Asofe", "Thons", "Oriharukon", "Synthetic Cokes"}.issubset(
+                {m["procure_reward_material"] for m in manors}
+            )
+        )
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas28DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 28)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 28)
+        self.assertIn("28-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

@@ -69,7 +69,7 @@ def compute_studio_self_evaluation() -> dict:
             }
             dims = iter_state["dimensions"]
     overall_atlas_score = float(iter_state.get("overall_score", 100.0))
-    dim_count = len(dims) or 26
+    dim_count = len(dims) or 28
     qs = dict(self_eval.get("qualityScorecard") or {})
     qs.setdefault("overallQualityScorePct", 100.0)
     qs["semanticZoomAtlas18DimensionScore"] = overall_atlas_score
@@ -77,20 +77,22 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas22DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas24DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas26DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas28DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 11)),
+        "wave": int(iter_state.get("wave", 12)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"28-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"26-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D26 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D28 Verified"
         ),
     }
     return merged
@@ -4352,7 +4354,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D26 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D28 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4397,6 +4399,8 @@ let ATLAS_ACTIVE_QUEST_ID = 'quest-ms-01-human';
 let ATLAS_FARMING_MODE = 'All';
 let ATLAS_SIEGE_DOMAIN_ID = 'All';
 let ATLAS_BOSS_RADAR_MODE = 'All';
+let ATLAS_SEVEN_SEALS_MODE = 'All';
+let ATLAS_MANOR_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4413,6 +4417,8 @@ const ATLAS_STATE_STORE = {
   farmingMode: 'All',                      // D24: Active Party & Farming Efficiency Heatmap ('Off' | 'All' | 'solo_grinding' | 'duo_spoil_scavenger' | 'full_9p_aoe_party' | 'clan_raid_force')
   siegeDomainId: 'All',                    // D25: Active Castle Siege & Territory Tax Domain ('Off' | 'All' | domain_id)
   bossRadarMode: 'All',                    // D26: Active World Boss & MVP Respawn Radar ('Off' | 'All' | 'DungeonMVP' | 'OverlandRaid')
+  sevenSealsMode: 'All',                   // D27: Active Seven-Seals & Mammon Rotation ('Off' | 'All' | 'Lords_of_Dawn' | 'Revolutionaries_of_Dusk' | 'Blacksmith_of_Mammon' | 'Merchant_of_Mammon')
+  manorMode: 'All',                        // D28: Active 15-Town Manor Seed & Caravan Economy ('Off' | 'All' | 'Low_Patrolled' | 'High_Frontier_Ambush')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4420,6 +4426,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasSevenSealsMode(modeId) {
+  ATLAS_SEVEN_SEALS_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.sevenSealsMode = ATLAS_SEVEN_SEALS_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasManorMode(modeId) {
+  ATLAS_MANOR_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.manorMode = ATLAS_MANOR_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasSiegeDomain(domainId) {
   ATLAS_SIEGE_DOMAIN_ID = String(domainId || 'All');
@@ -6795,6 +6815,179 @@ function renderAtlasBossRadarBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasSevenSealsBarHtml(tatlas) {
+  const ssList = (tatlas && tatlas.seven_seals_competitions) || [];
+  if (!ssList.length) return '';
+
+  const curMode = ATLAS_SEVEN_SEALS_MODE || ATLAS_STATE_STORE.sevenSealsMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '⚖️ All 16 Sanctums' },
+    { id: 'Lords_of_Dawn', label: '☀️ Lords of Dawn' },
+    { id: 'Revolutionaries_of_Dusk', label: '🌙 Revolutionaries of Dusk' },
+    { id: 'Blacksmith_of_Mammon', label: '⚒️ Blacksmith of Mammon' },
+    { id: 'Merchant_of_Mammon', label: '💰 Merchant of Mammon' }
+  ];
+
+  const filteredSanctums = curMode === 'Off'
+    ? []
+    : (curMode === 'Lords_of_Dawn' || curMode === 'Revolutionaries_of_Dusk'
+      ? ssList.filter(s => s.controlling_cabal === curMode)
+      : (curMode === 'Blacksmith_of_Mammon' || curMode === 'Merchant_of_Mammon'
+        ? ssList.filter(s => s.mammon_visitor_npc === curMode)
+        : ssList));
+
+  const featuredSanctums = filteredSanctums.slice(0, 4);
+
+  return `
+    <div id="atlasSevenSealsMammonBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1a1528;border:1px solid rgba(168,85,247,0.48)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#e9d5ff">⚖️ SEVEN-SEALS DUSK VS. DAWN &amp; MAMMON ROTATION (D27 · 16 SANCTUMS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasSevenSealsMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(168,85,247,0.45)'};background:${isAct ? '#6b21a8' : '#090d14'};color:${isAct ? '#ffffff' : '#e9d5ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          8 SEAL CATACOMBS + 8 ASCENDANT TOWERS · ANCIENT ADENA/HR &amp; MAMMON FLOOR TELEPORT
+        </span>
+      </div>
+
+      ${featuredSanctums.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:6px">
+          ${featuredSanctums.map(s => {
+            const isDawn = s.controlling_cabal === 'Lords_of_Dawn';
+            const isDusk = s.controlling_cabal === 'Revolutionaries_of_Dusk';
+            const cabalCol = isDawn ? '#fde047' : (isDusk ? '#c084fc' : '#38bdf8');
+            const isSmith = s.mammon_visitor_npc === 'Blacksmith_of_Mammon';
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cabalCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.4px;font-weight:900;color:#f8fafc">${s.sanctum_type === 'Seal_Catacomb' ? '🕳️' : '🗼'} ${escapeHtml(s.dungeon_name.split('(')[0].trim())}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cabalCol}">${escapeHtml(s.controlling_cabal)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.2px;color:#e9d5ff;margin-top:1px">
+                    🔱 ${escapeHtml(s.seal_allegiance)} · 💎 ${escapeHtml(s.seal_stone_tier)} · ${s.ancient_adena_per_hour.toLocaleString()} AA/hr
+                  </div>
+                  <div style="font-size:8.1px;color:#fde68a;margin-top:1px">
+                    ${isSmith ? '⚒️' : '💰'} <strong>${escapeHtml(s.mammon_visitor_npc)} (${escapeHtml(s.mammon_active_floor_id)}):</strong> ${escapeHtml(s.mammon_specialty_service)}
+                  </div>
+                </div>
+                <button type="button" onclick="openDungeonSubMap('${escapeHtml(s.dungeon_id)}', '${escapeHtml(s.mammon_active_floor_id)}')"
+                        style="margin-top:2px;padding:2px 6px;border-radius:4px;border:1px solid ${cabalCol};background:#3b0764;color:#ffffff;font-size:8.3px;font-weight:800;cursor:pointer;text-align:left">
+                  ${isSmith ? '⚒️' : '💰'} Teleport to ${escapeHtml(s.mammon_visitor_npc)} on Floor ${escapeHtml(s.mammon_active_floor_id)}
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasManorEconomyBarHtml(tatlas) {
+  const routes = (tatlas && tatlas.manor_economy_routes) || [];
+  if (!routes.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+    if (z.studio_node_id) zoneById[z.studio_node_id] = z;
+  });
+
+  const curMode = ATLAS_MANOR_MODE || ATLAS_STATE_STORE.manorMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🌾 All 15 Town Manors' },
+    { id: 'Low_Patrolled', label: '🛡️ Low-Risk Patrolled' },
+    { id: 'High_Frontier_Ambush', label: '🔥 Frontier High-Yield' }
+  ];
+
+  const filteredRoutes = curMode === 'Off'
+    ? []
+    : (curMode === 'Low_Patrolled'
+      ? routes.filter(r => r.caravan_route_risk === 'Low_Patrolled')
+      : (curMode === 'High_Frontier_Ambush'
+        ? routes.filter(r => r.caravan_route_risk === 'High_Frontier_Ambush' || r.caravan_route_risk === 'Medium_Bandit_Road')
+        : routes));
+
+  const featuredManors = filteredRoutes.slice(0, 4);
+
+  return `
+    <div id="atlasManorEconomyBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#162013;border:1px solid rgba(132,204,22,0.48)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#bef264">🌾 15-TOWN MANOR SEED/CROP &amp; CARAVAN TRADE ECONOMY (D28 · 15 MANORS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasManorMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(132,204,22,0.45)'};background:${isAct ? '#3f6212' : '#090d14'};color:${isAct ? '#ffffff' : '#d9f99d'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          TOWN MANOR STEWARD ➔ HUNTING FIELD CROP HARVEST ➔ PARENT STRONGHOLD VAULT
+        </span>
+      </div>
+
+      ${featuredManors.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px">
+          ${featuredManors.map(r => {
+            const tZone = zoneById[r.town_zone_id] || {};
+            const fZone = zoneById[r.harvest_field_zone_id] || {};
+            const sZone = zoneById[r.parent_stronghold_zone_id] || {};
+            const tNode = tZone.studio_node_id || r.town_zone_id;
+            const riskCol = r.caravan_route_risk === 'Low_Patrolled'
+              ? '#4ade80'
+              : (r.caravan_route_risk === 'Medium_Bandit_Road' ? '#fde047' : '#fb923c');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${riskCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.4px;font-weight:900;color:#f8fafc">🌾 ${escapeHtml(r.town_name.split('(')[0].trim())}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${riskCol}">${escapeHtml(r.caravan_route_risk)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.2px;color:#bef264;margin-top:1px">
+                    🌱 ${escapeHtml(r.seed_name)} ➔ ${escapeHtml(r.crop_name)} (${r.daily_crop_quota.toLocaleString()}/day)
+                  </div>
+                  <div style="font-size:8.1px;color:#fde68a;margin-top:1px">
+                    ⚒️ Reward: <strong>${escapeHtml(r.procure_reward_material)}</strong> · Field (${escapeHtml(r.harvest_level_band)})
+                  </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:2px">
+                  <button type="button" onclick="focusTownStreetBlueprint('${escapeHtml(tNode)}', '${escapeHtml(tZone.loc_coord || '')}')"
+                          style="padding:2px 5px;border-radius:4px;border:1px solid #fde047;background:#713f12;color:#fef08a;font-size:8px;font-weight:800;cursor:pointer">
+                    🏘️ Town
+                  </button>
+                  <button type="button" onclick="focusFieldTacticalBlueprint('${escapeHtml(r.harvest_field_zone_id)}', '${escapeHtml(fZone.loc_coord || '')}')"
+                          style="padding:2px 5px;border-radius:4px;border:1px solid #4ade80;background:#14532d;color:#dcfce7;font-size:8px;font-weight:800;cursor:pointer">
+                    🏕️ Harvest Field
+                  </button>
+                  <button type="button" onclick="focusFortressBlueprint('${escapeHtml(r.parent_stronghold_zone_id)}', '${escapeHtml(sZone.loc_coord || '')}')"
+                          style="padding:2px 5px;border-radius:4px;border:1px solid #fb923c;background:#7c2d12;color:#ffedd5;font-size:8px;font-weight:800;cursor:pointer">
+                    🏰 Castle Vault
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -6925,6 +7118,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasFarmingHeatmapBarHtml(tatlas)}
       ${renderAtlasSiegeDomainBarHtml(tatlas)}
       ${renderAtlasBossRadarBarHtml(tatlas)}
+      ${renderAtlasSevenSealsBarHtml(tatlas)}
+      ${renderAtlasManorEconomyBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -8977,12 +9172,70 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D27: Seven-Seals Dusk vs. Dawn Catacomb/Tower Competition & Mammon Rotation Overlay (`studioSevenSealsOverlay`)
+  const sevenSealsEntries = (tatlas && tatlas.seven_seals_competitions) || [];
+  const curSevenSealsMode = ATLAS_SEVEN_SEALS_MODE || ATLAS_STATE_STORE.sevenSealsMode || 'All';
+  const activeSevenSeals = curSevenSealsMode === 'Off'
+    ? []
+    : (curSevenSealsMode === 'Lords_of_Dawn' || curSevenSealsMode === 'Revolutionaries_of_Dusk'
+      ? sevenSealsEntries.filter(s => s.controlling_cabal === curSevenSealsMode)
+      : (curSevenSealsMode === 'Blacksmith_of_Mammon' || curSevenSealsMode === 'Merchant_of_Mammon'
+        ? sevenSealsEntries.filter(s => s.mammon_visitor_npc === curSevenSealsMode)
+        : sevenSealsEntries.slice(0, 10)));
+  const sevenSealsOverlaySvg = `
+    <g id="studioSevenSealsOverlay">
+      ${activeSevenSeals.map(s => {
+        const sc = clampWorldLocCoord(s.mammon_loc || '48550:248400');
+        const cabalCol = s.controlling_cabal === 'Lords_of_Dawn'
+          ? '#fde047'
+          : (s.controlling_cabal === 'Revolutionaries_of_Dusk' ? '#c084fc' : '#38bdf8');
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="openDungeonSubMap('${escapeHtml(s.dungeon_id)}', '${escapeHtml(s.mammon_active_floor_id)}')">
+            <circle cx="${sc.svgX}" cy="${sc.svgY}" r="12" fill="rgba(168,85,247,0.24)" stroke="${cabalCol}" stroke-width="1.8" stroke-dasharray="4 2"/>
+            <text x="${sc.svgX}" y="${sc.svgY + 3.5}" text-anchor="middle" font-size="9">${s.mammon_visitor_npc === 'Blacksmith_of_Mammon' ? '⚒️' : '💰'}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D28: 15-Town Manor Seed/Crop & Regional Caravan Trade Economy Overlay (`studioManorEconomyOverlay`)
+  const manorRoutes = (tatlas && tatlas.manor_economy_routes) || [];
+  const curManorMode = ATLAS_MANOR_MODE || ATLAS_STATE_STORE.manorMode || 'All';
+  const activeManorRoutes = curManorMode === 'Off'
+    ? []
+    : (curManorMode === 'Low_Patrolled'
+      ? manorRoutes.filter(r => r.caravan_route_risk === 'Low_Patrolled')
+      : (curManorMode === 'High_Frontier_Ambush'
+        ? manorRoutes.filter(r => r.caravan_route_risk !== 'Low_Patrolled')
+        : manorRoutes.slice(0, 8)));
+  const manorEconomyOverlaySvg = `
+    <g id="studioManorEconomyOverlay">
+      ${activeManorRoutes.map(r => {
+        const tz = allZonesById[r.town_zone_id];
+        const fz = allZonesById[r.harvest_field_zone_id];
+        const sz = allZonesById[r.parent_stronghold_zone_id];
+        if (!tz || !fz || !sz || !tz.loc_coord || !fz.loc_coord || !sz.loc_coord) return '';
+        const tc = clampWorldLocCoord(tz.loc_coord);
+        const fc = clampWorldLocCoord(fz.loc_coord);
+        const sc = clampWorldLocCoord(sz.loc_coord);
+        const riskCol = r.caravan_route_risk === 'Low_Patrolled' ? '#4ade80' : '#fde047';
+        return `
+          <line x1="${tc.svgX}" y1="${tc.svgY}" x2="${fc.svgX}" y2="${fc.svgY}" stroke="${riskCol}" stroke-width="1.8" stroke-dasharray="4 2" opacity="0.82" pointer-events="none"/>
+          <line x1="${fc.svgX}" y1="${fc.svgY}" x2="${sc.svgX}" y2="${sc.svgY}" stroke="#bef264" stroke-width="1.6" stroke-dasharray="3 3" opacity="0.76" pointer-events="none"/>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
     ${farmingEfficiencyOverlaySvg}
     ${castleSiegeDomainOverlaySvg}
     ${worldBossSpawnRadarOverlaySvg}
+    ${sevenSealsOverlaySvg}
+    ${manorEconomyOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

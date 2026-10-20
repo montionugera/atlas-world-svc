@@ -71,6 +71,18 @@
       "maxItems": 32,
       "items": { "$ref": "#/$defs/worldBossSpawnRadarSpec" }
     },
+    "seven_seals_competitions": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/sevenSealsCompetitionSpec" }
+    },
+    "manor_economy_routes": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/manorEconomyRouteSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -1746,6 +1758,89 @@
         "radar_status": {
           "type": "string",
           "enum": ["Window Open", "Respawning Soon", "Sanctum Active"]
+        }
+      }
+    },
+    "sevenSealsCompetitionSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "competition_id",
+        "dungeon_id",
+        "dungeon_name",
+        "sanctum_type",
+        "seal_allegiance",
+        "controlling_cabal",
+        "seal_stone_tier",
+        "ancient_adena_per_hour",
+        "mammon_visitor_npc",
+        "mammon_active_floor_id",
+        "mammon_loc",
+        "mammon_specialty_service"
+      ],
+      "properties": {
+        "competition_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "dungeon_name": { "type": "string" },
+        "sanctum_type": {
+          "type": "string",
+          "enum": ["Seal_Catacomb", "Ascendant_Necropolis_Tower"]
+        },
+        "seal_allegiance": {
+          "type": "string",
+          "enum": ["Sign_of_Avarice", "Sign_of_Gnosis", "Sign_of_Strife"]
+        },
+        "controlling_cabal": {
+          "type": "string",
+          "enum": ["Lords_of_Dawn", "Revolutionaries_of_Dusk", "Contested_Equilibrium"]
+        },
+        "seal_stone_tier": {
+          "type": "string",
+          "enum": ["Blue_Seal_Stone", "Green_Seal_Stone", "Red_Seal_Stone"]
+        },
+        "ancient_adena_per_hour": { "type": "integer", "minimum": 1000 },
+        "mammon_visitor_npc": {
+          "type": "string",
+          "enum": ["Blacksmith_of_Mammon", "Merchant_of_Mammon"]
+        },
+        "mammon_active_floor_id": {
+          "type": "string",
+          "enum": ["B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "mammon_loc": { "type": "string" },
+        "mammon_specialty_service": { "type": "string" }
+      }
+    },
+    "manorEconomyRouteSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manor_id",
+        "town_zone_id",
+        "town_name",
+        "parent_stronghold_zone_id",
+        "seed_name",
+        "crop_name",
+        "harvest_field_zone_id",
+        "harvest_level_band",
+        "daily_crop_quota",
+        "procure_reward_material",
+        "caravan_route_risk"
+      ],
+      "properties": {
+        "manor_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "parent_stronghold_zone_id": { "type": "string" },
+        "seed_name": { "type": "string" },
+        "crop_name": { "type": "string" },
+        "harvest_field_zone_id": { "type": "string" },
+        "harvest_level_band": { "type": "string" },
+        "daily_crop_quota": { "type": "integer", "minimum": 100 },
+        "procure_reward_material": { "type": "string" },
+        "caravan_route_risk": {
+          "type": "string",
+          "enum": ["Low_Patrolled", "Medium_Bandit_Road", "High_Frontier_Ambush"]
         }
       }
     }

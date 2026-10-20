@@ -2447,6 +2447,274 @@ def _build_world_boss_spawn_radar(atlas: dict[str, Any]) -> list[dict[str, Any]]
     return entries
 
 
+def _build_seven_seals_competitions(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 Seven-Seals Dusk vs. Dawn Catacomb/Tower Competitions & Mammon Rotation entries (8 Seal_Catacomb + 8 Ascendant_Necropolis_Tower) (D27)."""
+    mf_dungeons = atlas.get("multi_floor_dungeons") or []
+    catacomb_ids = {
+        "zone-catacomb-heretic-kiln",
+        "zone-catacomb-branded-bellows",
+        "zone-catacomb-apostate-dynamo",
+        "zone-catacomb-witch-pendulum",
+        "zone-catacomb-dark-omens-coral",
+        "zone-catacomb-forbidden-path-orrery",
+        "zone-dungeon-kiln-cellar",
+        "zone-dungeon-sunken-potter-hold",
+    }
+    seals = ("Sign_of_Avarice", "Sign_of_Gnosis", "Sign_of_Strife")
+    cabals = ("Lords_of_Dawn", "Revolutionaries_of_Dusk", "Contested_Equilibrium")
+    stone_tiers = ("Blue_Seal_Stone", "Green_Seal_Stone", "Red_Seal_Stone")
+    blacksmith_services = (
+        "Unseal A/S-Grade Armor & Bestow SA (Special Ability)",
+        "Upgrade C/B-Grade Weapons & Dual-Sword Masterwork Forging",
+        "Exchange Equivalent A-Grade Weapons & Bestow Focus/Haste/Acumen SA",
+        "Remove B/A-Grade Masterwork Seal & Reseal Ancient Cloak",
+    )
+    merchant_services = (
+        "Exchange Ancient Adena for Blessed Scrolls & Greater Henna Dyes",
+        "Purchase Soul Crystal Stages 7–10, Blank Scrolls & Gemstones A/S",
+        "Trade Blue/Green/Red Seal Stones for Ancient Adena & Dimensional Shards",
+        "Supply Greater Stat Dyes (+4 STR/DEX/INT/WIT) & Teleport Scrolls",
+    )
+
+    entries: list[dict[str, Any]] = []
+    for idx, dng in enumerate(mf_dungeons[:16]):
+        if not isinstance(dng, dict):
+            continue
+        did = str(dng.get("dungeon_id", ""))
+        dname = str(dng.get("name", did))
+        sanctum_type = "Seal_Catacomb" if did in catacomb_ids else "Ascendant_Necropolis_Tower"
+        seal_allegiance = seals[idx % len(seals)]
+        controlling_cabal = cabals[idx % len(cabals)]
+        seal_stone_tier = stone_tiers[idx % len(stone_tiers)]
+        ancient_adena_per_hour = 48000 + idx * 22500
+        is_blacksmith = (idx % 2) == 0
+        mammon_npc = "Blacksmith_of_Mammon" if is_blacksmith else "Merchant_of_Mammon"
+        floors = dng.get("floors") or []
+        chosen_fl = floors[1] if len(floors) >= 2 and (idx % 3 != 2) else (floors[-1] if floors else {})
+        default_fid = "2F" if dng.get("dungeon_kind") == "vertical_tower" else "B2"
+        mammon_floor_id = str(chosen_fl.get("floor_id") or default_fid)
+        bx, by = _parse_loc(str(dng.get("entrance_loc") or "48550:248400"))
+        mammon_loc = _fmt_loc(bx + 240 + idx * 15, by - 180 - idx * 15)
+        specialty = (
+            blacksmith_services[(idx // 2) % len(blacksmith_services)]
+            if is_blacksmith
+            else merchant_services[(idx // 2) % len(merchant_services)]
+        )
+        entries.append(
+            {
+                "competition_id": f"seven-seals-{idx + 1:02d}-{did.replace('zone-', '')}",
+                "dungeon_id": did,
+                "dungeon_name": dname,
+                "sanctum_type": sanctum_type,
+                "seal_allegiance": seal_allegiance,
+                "controlling_cabal": controlling_cabal,
+                "seal_stone_tier": seal_stone_tier,
+                "ancient_adena_per_hour": ancient_adena_per_hour,
+                "mammon_visitor_npc": mammon_npc,
+                "mammon_active_floor_id": mammon_floor_id,
+                "mammon_loc": mammon_loc,
+                "mammon_specialty_service": specialty,
+            }
+        )
+    return entries
+
+
+def _build_manor_economy_routes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Town Manor Seed/Crop & Regional Caravan Trade Economy Routes (D28)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_name_by_id = {
+        str(t.get("zone_id")): str(t.get("name", t.get("zone_id")))
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        (
+            "zone-town-lantern-hollow",
+            "zone-harbor-lantern-ferry-pier",
+            "Golden Clover Coda Seed",
+            "Golden Clover Coda",
+            "zone-field-clover-south-gate",
+            "Lv.1–12",
+            1800,
+            "Synthetic Cokes",
+            "Low_Patrolled",
+        ),
+        (
+            "zone-town-porcelain-loom",
+            "zone-harbor-glaze-barge-airship-dock",
+            "Celadon Dew-Lotus Seed",
+            "Celadon Dew-Lotus",
+            "zone-field-celadon-causeway",
+            "Lv.1–12",
+            1750,
+            "High-Grade Suede",
+            "Low_Patrolled",
+        ),
+        (
+            "zone-town-draft-kiln-post",
+            "zone-clanhall-kilnwatch-accord",
+            "Firebrick Slag-Spore Seed",
+            "Firebrick Slag-Coke",
+            "zone-field-firebrick-duct",
+            "Lv.1–15",
+            2100,
+            "Synthetic Cokes",
+            "Low_Patrolled",
+        ),
+        (
+            "zone-town-root-train-roundhouse",
+            "zone-fortress-floran-saffron",
+            "Amber Root-Resin Seed",
+            "Amber Root-Resin",
+            "zone-field-resin-arch-tunnel",
+            "Lv.1–12",
+            1950,
+            "Varnish of Purity",
+            "Low_Patrolled",
+        ),
+        (
+            "zone-town-carillon-belfry",
+            "zone-fortress-shanty-kiln",
+            "Acoustic Chime-Gourd Seed",
+            "Acoustic Chime-Gourd",
+            "zone-field-chime-pipe-colonnade",
+            "Lv.1–12",
+            1850,
+            "Thons",
+            "Low_Patrolled",
+        ),
+        (
+            "zone-town-cinnamon-mill",
+            "zone-harbor-lantern-ferry-pier",
+            "Cinnamon-Bark Sapling Seed",
+            "Cinnamon-Bark Sap",
+            "zone-field-cinnamon-bark-viaduct",
+            "Lv.1–10",
+            1600,
+            "Compound Braid",
+            "Low_Patrolled",
+        ),
+        (
+            "zone-town-kilnwatch-bastion",
+            "zone-clanhall-kilnwatch-accord",
+            "Hearth-Glaze Apricot Seed",
+            "Hearth-Glaze Apricot",
+            "zone-field-kiln-east-orchard",
+            "Lv.5–14",
+            3200,
+            "Asofe",
+            "Medium_Bandit_Road",
+        ),
+        (
+            "zone-town-glaze-barge-quay",
+            "zone-harbor-glaze-barge-airship-dock",
+            "Blue Cobalt Reed Seed",
+            "Blue Cobalt Reed",
+            "zone-field-cobalt-sandbar-ford",
+            "Lv.5–16",
+            2600,
+            "Thons",
+            "Medium_Bandit_Road",
+        ),
+        (
+            "zone-town-saffron-press",
+            "zone-fortress-floran-saffron",
+            "Imperial Saffron Crocus Seed",
+            "Imperial Saffron Crocus",
+            "zone-field-apricot-aqueduct-terrace",
+            "Lv.4–14",
+            2900,
+            "Asofe",
+            "Low_Patrolled",
+        ),
+        (
+            "zone-town-pinion-terminus",
+            "zone-fortress-dragonspine-cog",
+            "Brass-Spur Thistle Seed",
+            "Brass-Spur Thistle",
+            "zone-field-brass-spur-ridge",
+            "Lv.20–26",
+            3100,
+            "Enria",
+            "Medium_Bandit_Road",
+        ),
+        (
+            "zone-town-escapement-anvil",
+            "zone-clanhall-inductor-conclave",
+            "Verdigris Mercury-Pod Seed",
+            "Verdigris Mercury-Pod",
+            "zone-field-caldera-rim",
+            "Lv.25–30",
+            3400,
+            "Oriharukon",
+            "Medium_Bandit_Road",
+        ),
+        (
+            "zone-town-inductor-switchyard",
+            "zone-clanhall-inductor-conclave",
+            "Leyden Copper-Spore Seed",
+            "Leyden Copper-Spore",
+            "zone-field-leyden-causeway",
+            "Lv.30–40",
+            3800,
+            "Enria",
+            "High_Frontier_Ambush",
+        ),
+        (
+            "zone-town-starfall-haven",
+            "zone-fortress-cloud-halo",
+            "Astral Star-Kelp Seed",
+            "Astral Star-Kelp",
+            "zone-field-tether-causeway",
+            "Lv.40–48",
+            4100,
+            "Oriharukon",
+            "High_Frontier_Ambush",
+        ),
+        (
+            "zone-town-crown-beacon",
+            "zone-fortress-cloud-halo",
+            "Aurora Prism-Fruit Seed",
+            "Aurora Prism-Fruit",
+            "zone-field-aurora-tether",
+            "Lv.55–85",
+            4500,
+            "Enria",
+            "High_Frontier_Ambush",
+        ),
+        (
+            "zone-town-torque-balance-citadel",
+            "zone-clanhall-inductor-conclave",
+            "Tempered Mainspring Flax Seed",
+            "Tempered Mainspring Flax",
+            "zone-field-metronome-bridge",
+            "Lv.34–36",
+            3500,
+            "Asofe",
+            "High_Frontier_Ambush",
+        ),
+    ]
+    routes: list[dict[str, Any]] = []
+    for idx, (tzid, pszid, sname, cname, hfzid, hlband, quota, mat, risk) in enumerate(specs, start=1):
+        routes.append(
+            {
+                "manor_id": f"manor-{idx:02d}-{tzid.replace('zone-town-', '')}",
+                "town_zone_id": tzid,
+                "town_name": town_name_by_id.get(tzid, tzid),
+                "parent_stronghold_zone_id": pszid,
+                "seed_name": sname,
+                "crop_name": cname,
+                "harvest_field_zone_id": hfzid,
+                "harvest_level_band": hlband,
+                "daily_crop_quota": quota,
+                "procure_reward_material": mat,
+                "caravan_route_risk": risk,
+            }
+        )
+    return routes
+
+
 
 
 
@@ -3411,6 +3679,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
         atlas["world_boss_spawn_radar"] = _build_world_boss_spawn_radar(atlas)
         actions.append("populated_32_world_boss_spawn_radar")
 
+    # 11. Ensure all 16 Seven-Seals Dusk vs. Dawn Catacomb/Tower Competitions & Mammon Rotations exist in `seven_seals_competitions` (D27)
+    if len(atlas.get("seven_seals_competitions") or []) < 16:
+        atlas["seven_seals_competitions"] = _build_seven_seals_competitions(atlas)
+        actions.append("populated_16_seven_seals_competitions")
+
+    # 12. Ensure all 15 Town Manor Seed/Crop & Regional Caravan Trade Economy Routes exist in `manor_economy_routes` (D28)
+    if len(atlas.get("manor_economy_routes") or []) < 15:
+        atlas["manor_economy_routes"] = _build_manor_economy_routes(atlas)
+        actions.append("populated_15_manor_economy_routes")
+
     return {"actions": actions}
 
 
@@ -4293,15 +4571,150 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d26_ratio * 80.0, 1)
     )
 
+    # D27: Interactive Seven-Seals Dusk vs. Dawn Catacomb/Tower Competition & Mammon Rotation (`seven_seals_competitions` - 16 Sanctums = 8 Catacombs + 8 Towers)
+    expected_sanctum_types = {"Seal_Catacomb", "Ascendant_Necropolis_Tower"}
+    expected_seals = {"Sign_of_Avarice", "Sign_of_Gnosis", "Sign_of_Strife"}
+    expected_cabals = {"Lords_of_Dawn", "Revolutionaries_of_Dusk", "Contested_Equilibrium"}
+    expected_stone_tiers = {"Blue_Seal_Stone", "Green_Seal_Stone", "Red_Seal_Stone"}
+    expected_mammon_npcs = {"Blacksmith_of_Mammon", "Merchant_of_Mammon"}
+    seven_seals = atlas.get("seven_seals_competitions") or []
+    valid_seven_seals = 0
+    catacomb_sanctum_count = 0
+    tower_sanctum_count = 0
+    seen_ss_dungeons: set[str] = set()
+    seen_seals: set[str] = set()
+    seen_cabals: set[str] = set()
+    seen_stone_tiers: set[str] = set()
+    seen_mammon_npcs: set[str] = set()
+    for ss in seven_seals:
+        if not isinstance(ss, dict):
+            continue
+        cid = str(ss.get("competition_id") or "")
+        did = str(ss.get("dungeon_id") or "")
+        stype = str(ss.get("sanctum_type") or "")
+        salleg = str(ss.get("seal_allegiance") or "")
+        ccabal = str(ss.get("controlling_cabal") or "")
+        stier = str(ss.get("seal_stone_tier") or "")
+        aadena = ss.get("ancient_adena_per_hour")
+        mnpc = str(ss.get("mammon_visitor_npc") or "")
+        mfloor = str(ss.get("mammon_active_floor_id") or "")
+        if (
+            cid
+            and did in mf_dungeon_id_set
+            and did not in seen_ss_dungeons
+            and ss.get("dungeon_name")
+            and stype in expected_sanctum_types
+            and salleg in expected_seals
+            and ccabal in expected_cabals
+            and stier in expected_stone_tiers
+            and isinstance(aadena, int)
+            and aadena >= 1000
+            and mnpc in expected_mammon_npcs
+            and mfloor in ("B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(ss.get("mammon_loc", ""))
+            and ss.get("mammon_specialty_service")
+        ):
+            valid_seven_seals += 1
+            seen_ss_dungeons.add(did)
+            seen_seals.add(salleg)
+            seen_cabals.add(ccabal)
+            seen_stone_tiers.add(stier)
+            seen_mammon_npcs.add(mnpc)
+            if stype == "Seal_Catacomb":
+                catacomb_sanctum_count += 1
+            elif stype == "Ascendant_Necropolis_Tower":
+                tower_sanctum_count += 1
+
+    has_d27_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_SEVEN_SEALS_MODE",
+            "setAtlasSevenSealsMode",
+            "renderAtlasSevenSealsBarHtml",
+            "studioSevenSealsOverlay",
+        )
+    )
+    d27_ratio = valid_seven_seals / 16.0
+    d27_full_coverage = (
+        catacomb_sanctum_count == 8
+        and tower_sanctum_count == 8
+        and seen_seals == expected_seals
+        and seen_cabals == expected_cabals
+        and seen_stone_tiers == expected_stone_tiers
+        and seen_mammon_npcs == expected_mammon_npcs
+    )
+    d27_score = (
+        round(min(100.0, d27_ratio * 100.0), 1)
+        if (has_d27_ui and d27_full_coverage)
+        else round(d27_ratio * 80.0, 1)
+    )
+
+    # D28: Interactive 15-Town Manor Seed/Crop & Regional Caravan Trade Economy Overlay (`manor_economy_routes` - 15 Towns)
+    expected_caravan_risks = {"Low_Patrolled", "Medium_Bandit_Road", "High_Frontier_Ambush"}
+    manor_routes = atlas.get("manor_economy_routes") or []
+    valid_manor_routes = 0
+    seen_manor_towns: set[str] = set()
+    seen_caravan_risks: set[str] = set()
+    seen_reward_materials: set[str] = set()
+    for mr in manor_routes:
+        if not isinstance(mr, dict):
+            continue
+        mid = str(mr.get("manor_id") or "")
+        tzid = str(mr.get("town_zone_id") or "")
+        pszid = str(mr.get("parent_stronghold_zone_id") or "")
+        hfzid = str(mr.get("harvest_field_zone_id") or "")
+        quota = mr.get("daily_crop_quota")
+        mat = str(mr.get("procure_reward_material") or "")
+        crisk = str(mr.get("caravan_route_risk") or "")
+        if (
+            mid
+            and tzid in town_zone_id_set
+            and tzid not in seen_manor_towns
+            and mr.get("town_name")
+            and pszid in fort_zone_id_set
+            and mr.get("seed_name")
+            and mr.get("crop_name")
+            and hfzid in field_zone_id_set
+            and mr.get("harvest_level_band")
+            and isinstance(quota, int)
+            and quota >= 100
+            and mat
+            and crisk in expected_caravan_risks
+        ):
+            valid_manor_routes += 1
+            seen_manor_towns.add(tzid)
+            seen_caravan_risks.add(crisk)
+            seen_reward_materials.add(mat)
+
+    has_d28_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_MANOR_MODE",
+            "setAtlasManorMode",
+            "renderAtlasManorEconomyBarHtml",
+            "studioManorEconomyOverlay",
+        )
+    )
+    d28_ratio = valid_manor_routes / 15.0
+    d28_full_coverage = (
+        seen_caravan_risks == expected_caravan_risks
+        and {"Enria", "Asofe", "Thons", "Oriharukon", "Synthetic Cokes"}.issubset(seen_reward_materials)
+    )
+    d28_score = (
+        round(min(100.0, d28_ratio * 100.0), 1)
+        if (has_d28_ui and d28_full_coverage)
+        else round(d28_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score) / 8.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score) / 10.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score) / 13.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score) / 20.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score) / 9.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score) / 16.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score) / 10.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score) / 12.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score) / 14.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score) / 22.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score) / 11.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score) / 18.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -4332,8 +4745,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d24_score
             + d25_score
             + d26_score
+            + d27_score
+            + d28_score
         )
-        / 26.0,
+        / 28.0,
         1,
     )
 
@@ -4482,6 +4897,25 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "radar_statuses": sorted(seen_radar_statuses),
                 "ui_wired": has_d26_ui,
             },
+            "D27_seven_seals_and_mammon_rotation": {
+                "score": d27_score,
+                "verified": valid_seven_seals,
+                "target": 16,
+                "catacomb_sanctums": catacomb_sanctum_count,
+                "tower_sanctums": tower_sanctum_count,
+                "seals": sorted(seen_seals),
+                "cabals": sorted(seen_cabals),
+                "mammon_npcs": sorted(seen_mammon_npcs),
+                "ui_wired": has_d27_ui,
+            },
+            "D28_manor_seed_and_caravan_economy": {
+                "score": d28_score,
+                "verified": valid_manor_routes,
+                "target": 15,
+                "caravan_risks": sorted(seen_caravan_risks),
+                "reward_materials": sorted(seen_reward_materials),
+                "ui_wired": has_d28_ui,
+            },
         },
     }
 
@@ -4552,6 +4986,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D24 (40-Zone Farm Heatmap)  : {dims['D24_party_and_farming_efficiency_heatmap']['score']}/100 ({dims['D24_party_and_farming_efficiency_heatmap']['verified']}/{dims['D24_party_and_farming_efficiency_heatmap']['target']} combat zones)")
         print(f"  D25 (8 Castle Siege Domains): {dims['D25_castle_siege_and_territory_tax_domains']['score']}/100 ({dims['D25_castle_siege_and_territory_tax_domains']['verified']}/{dims['D25_castle_siege_and_territory_tax_domains']['target']} stronghold domains)")
         print(f"  D26 (32-Boss Respawn Radar) : {dims['D26_world_boss_and_mvp_spawn_radar']['score']}/100 ({dims['D26_world_boss_and_mvp_spawn_radar']['verified']}/{dims['D26_world_boss_and_mvp_spawn_radar']['target']} bosses)")
+        print(f"  D27 (16 Seven-Seals Mammon) : {dims['D27_seven_seals_and_mammon_rotation']['score']}/100 ({dims['D27_seven_seals_and_mammon_rotation']['verified']}/{dims['D27_seven_seals_and_mammon_rotation']['target']} sanctums)")
+        print(f"  D28 (15-Town Manor Economy) : {dims['D28_manor_seed_and_caravan_economy']['score']}/100 ({dims['D28_manor_seed_and_caravan_economy']['verified']}/{dims['D28_manor_seed_and_caravan_economy']['target']} town manors)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
