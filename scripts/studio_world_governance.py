@@ -714,6 +714,8 @@ def validate_world_governance(
                 "backendBotSwarmSimulationSectorsCount": len(t_doc.get("backend_bot_swarm_simulation_sectors") or []),
                 "liveopsGmControlAnchorsCount": len(t_doc.get("liveops_gm_control_anchors") or []),
                 "platformToolsSquadRegistryCount": len(t_doc.get("platform_tools_squad_registry") or []),
+                "dialogueLocalizationGraphsCount": len(t_doc.get("dialogue_localization_graphs") or []),
+                "spawnerLootBalancerSuitesCount": len(t_doc.get("spawner_loot_balancer_suites") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1692,6 +1694,48 @@ def validate_world_governance(
                 if tr_did and tr_did not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: platform_tools_squad_registry '{tr_id}' references unknown exemplar_dungeon_id '{tr_did}'"
+                    )
+
+            # Validate 18-Graph Branching Quest/Dialogue DAG & EN/TH Localization Validator Matrix (D75)
+            dialogue_graphs = t_doc.get("dialogue_localization_graphs") or []
+            if dialogue_graphs and len(dialogue_graphs) != 18:
+                errors.append(
+                    f"GOV-10 violation: dialogue_localization_graphs must have 18 dialogue/localization graphs, got {len(dialogue_graphs)}"
+                )
+            for dg_item in dialogue_graphs:
+                if not isinstance(dg_item, dict):
+                    continue
+                dg_id = str(dg_item.get("graph_id", ""))
+                dg_zid = str(dg_item.get("zone_id", ""))
+                dg_did = str(dg_item.get("dungeon_id", ""))
+                if dg_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: dialogue_localization_graphs '{dg_id}' references unknown zone_id '{dg_zid}'"
+                    )
+                if dg_did and dg_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: dialogue_localization_graphs '{dg_id}' references unknown dungeon_id '{dg_did}'"
+                    )
+
+            # Validate 16-Zone Visual Spawner Placement, Monte-Carlo Loot Balancer & Hot-Reload SSOT Write-Back Matrix (D76)
+            balancer_suites = t_doc.get("spawner_loot_balancer_suites") or []
+            if balancer_suites and len(balancer_suites) != 16:
+                errors.append(
+                    f"GOV-10 violation: spawner_loot_balancer_suites must have 16 spawner/loot balancer suites, got {len(balancer_suites)}"
+                )
+            for bs_suite in balancer_suites:
+                if not isinstance(bs_suite, dict):
+                    continue
+                bs_sid = str(bs_suite.get("suite_id", ""))
+                bs_szid = str(bs_suite.get("zone_id", ""))
+                bs_sdid = str(bs_suite.get("dungeon_id", ""))
+                if bs_szid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: spawner_loot_balancer_suites '{bs_sid}' references unknown zone_id '{bs_szid}'"
+                    )
+                if bs_sdid and bs_sdid not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: spawner_loot_balancer_suites '{bs_sid}' references unknown dungeon_id '{bs_sdid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

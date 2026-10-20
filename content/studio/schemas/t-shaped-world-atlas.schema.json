@@ -359,6 +359,18 @@
       "maxItems": 20,
       "items": { "$ref": "#/$defs/platformToolsSquadRegistrySpec" }
     },
+    "dialogue_localization_graphs": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": { "$ref": "#/$defs/dialogueLocalizationGraphSpec" }
+    },
+    "spawner_loot_balancer_suites": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/spawnerLootBalancerSuiteSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -4021,6 +4033,106 @@
           ]
         },
         "capabilities_and_ssot_hooks": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "dialogueLocalizationGraphSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "graph_id",
+        "graph_title",
+        "graph_category",
+        "race_id",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "dialogue_node_and_branch_count",
+        "i18n_key_prefix_and_parity",
+        "designer_dx_ergonomics",
+        "automated_graph_validators"
+      ],
+      "properties": {
+        "graph_id": { "type": "string" },
+        "graph_title": { "type": "string" },
+        "graph_category": {
+          "type": "string",
+          "enum": [
+            "Main_Story_Dialogue_DAG",
+            "Class_Trial_Branching_Tree",
+            "Racial_Lore_Localization_Bundle"
+          ]
+        },
+        "race_id": {
+          "type": "string",
+          "enum": [
+            "Human",
+            "Lunar",
+            "Ogre/Orc",
+            "Dwarf",
+            "Dark-Lunar",
+            "Furral"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "dialogue_node_and_branch_count": { "type": "string" },
+        "i18n_key_prefix_and_parity": { "type": "string" },
+        "designer_dx_ergonomics": { "type": "string" },
+        "automated_graph_validators": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "spawnerLootBalancerSuiteSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "suite_id",
+        "suite_name",
+        "balancer_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "owner_engineer_role",
+        "spawner_or_economy_simulation",
+        "ssot_writeback_protocol",
+        "protected_invariants"
+      ],
+      "properties": {
+        "suite_id": { "type": "string" },
+        "suite_name": { "type": "string" },
+        "balancer_category": {
+          "type": "string",
+          "enum": [
+            "Visual_Spawner_Leash_Editor",
+            "Monte_Carlo_Loot_Inflation_Balancer",
+            "Hot_Reload_SSOT_Writeback_Bridge"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "owner_engineer_role": { "type": "string" },
+        "spawner_or_economy_simulation": { "type": "string" },
+        "ssot_writeback_protocol": { "type": "string" },
+        "protected_invariants": {
           "type": "array",
           "minItems": 2,
           "items": { "type": "string" }

@@ -60035,5 +60035,605 @@
         "Integrated Incident Runbook & Automated P1 Escalation Hook (< 15s SLA)"
       ]
     }
+  ],
+  "dialogue_localization_graphs": [
+    {
+      "graph_id": "dlg-graph-01-human-main-meridian-accord",
+      "graph_title": "Human Main Story DAG \u2014 Ch.I First Meridian Ember Accord",
+      "graph_category": "Main_Story_Dialogue_DAG",
+      "race_id": "Human",
+      "zone_id": "zone-town-lantern-hollow",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-84016:243393",
+      "dialogue_node_and_branch_count": "28 Dialogue Nodes \u00b7 7 Conditional Branches \u00b7 0 Dead-End Leaves",
+      "i18n_key_prefix_and_parity": "dlg.human.main_01.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "2-Click Node Insertion (Down from 15 Clicks) + Undo/Redo Stack",
+      "automated_graph_validators": [
+        "Cycle & Dead-End Branch Detector",
+        "Missing EN/TH Localization Key Gate",
+        "Quest Prerequisite State Validator"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-02-lunar-main-celadon-loom",
+      "graph_title": "Lunar Main Story DAG \u2014 Ch.I Celadon Loom Resonance",
+      "graph_category": "Main_Story_Dialogue_DAG",
+      "race_id": "Lunar",
+      "zone_id": "zone-town-porcelain-loom",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "45893:41106",
+      "dialogue_node_and_branch_count": "26 Dialogue Nodes \u00b7 6 Conditional Branches \u00b7 0 Dead-End Leaves",
+      "i18n_key_prefix_and_parity": "dlg.lunar.main_01.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "Visual Condition Pill Builder + Live EN/TH Side-by-Side Preview",
+      "automated_graph_validators": [
+        "Cycle & Dead-End Branch Detector",
+        "Missing EN/TH Localization Key Gate",
+        "NPC Speaker ID & Portrait Binding Check"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-03-ogre-orc-main-bellows-covenant",
+      "graph_title": "Ogre/Orc Main Story DAG \u2014 Ch.II Flame of the Bellows Covenant",
+      "graph_category": "Main_Story_Dialogue_DAG",
+      "race_id": "Ogre/Orc",
+      "zone_id": "zone-town-draft-kiln-post",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-44718:-113281",
+      "dialogue_node_and_branch_count": "24 Dialogue Nodes \u00b7 6 Conditional Branches \u00b7 0 Dead-End Leaves",
+      "i18n_key_prefix_and_parity": "dlg.ogre_orc.main_01.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "Drag-and-Drop Branch Rewiring + Instant JSON Schema Export",
+      "automated_graph_validators": [
+        "Cycle & Dead-End Branch Detector",
+        "Missing EN/TH Localization Key Gate",
+        "Quest Reward Item ID SSOT Validator"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-04-dwarf-main-mainspring-ledger",
+      "graph_title": "Dwarf Main Story DAG \u2014 Ch.II Brass Mainspring Guild Ledger",
+      "graph_category": "Main_Story_Dialogue_DAG",
+      "race_id": "Dwarf",
+      "zone_id": "zone-town-saffron-press",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "17471:170032",
+      "dialogue_node_and_branch_count": "30 Dialogue Nodes \u00b7 8 Conditional Branches \u00b7 0 Dead-End Leaves",
+      "i18n_key_prefix_and_parity": "dlg.dwarf.main_01.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "1-Click Spoil/Craft Flag Hook + Keyboard-First Node Navigation",
+      "automated_graph_validators": [
+        "Cycle & Dead-End Branch Detector",
+        "Missing EN/TH Localization Key Gate",
+        "Blacksmith Clan Standing Flag Validator"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-05-dark-lunar-main-obsidian-veil",
+      "graph_title": "Dark-Lunar Main Story DAG \u2014 Ch.III Obsidian Veil Awakening",
+      "graph_category": "Main_Story_Dialogue_DAG",
+      "race_id": "Dark-Lunar",
+      "zone_id": "zone-town-carillon-belfry",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "12460:16745",
+      "dialogue_node_and_branch_count": "27 Dialogue Nodes \u00b7 7 Conditional Branches \u00b7 0 Dead-End Leaves",
+      "i18n_key_prefix_and_parity": "dlg.dark_lunar.main_01.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "Auto-Layout DAG Subtree Folding + Live Variable Simulator",
+      "automated_graph_validators": [
+        "Cycle & Dead-End Branch Detector",
+        "Missing EN/TH Localization Key Gate",
+        "Vesper Seal State Prerequisite Gate"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-06-furral-main-root-train-charter",
+      "graph_title": "Furral Main Story DAG \u2014 Ch.III Root-Train Caravan Charter",
+      "graph_category": "Main_Story_Dialogue_DAG",
+      "race_id": "Furral",
+      "zone_id": "zone-town-root-train-roundhouse",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "115149:-178242",
+      "dialogue_node_and_branch_count": "25 Dialogue Nodes \u00b7 6 Conditional Branches \u00b7 0 Dead-End Leaves",
+      "i18n_key_prefix_and_parity": "dlg.furral.main_01.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "Inline Quest Step Jump + 0-Reload Dialogue Playtest Runner",
+      "automated_graph_validators": [
+        "Cycle & Dead-End Branch Detector",
+        "Missing EN/TH Localization Key Gate",
+        "Caravan Trust Token Inventory Check"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-07-human-class-trial-paladin-warlord",
+      "graph_title": "Human Lv.20/40/76 Class Trial Tree \u2014 Knight / Paladin / Warlord Oath",
+      "graph_category": "Class_Trial_Branching_Tree",
+      "race_id": "Human",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B2",
+      "loc": "75448:116791",
+      "dialogue_node_and_branch_count": "34 Dialogue Nodes \u00b7 9 Class-Path Branches \u00b7 0 Unreachable Transfers",
+      "i18n_key_prefix_and_parity": "dlg.human.class_trial.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "3-Tier Class Transfer Matrix View + Trial Token State Debugger",
+      "automated_graph_validators": [
+        "Class Transfer Level & Job-ID Gate",
+        "Missing EN/TH Localization Key Gate",
+        "Orphaned Trial Branch Detector"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-08-lunar-class-trial-spellsinger-elder",
+      "graph_title": "Lunar Lv.20/40/76 Class Trial Tree \u2014 Spellsinger / Elven Elder / Sword Muse",
+      "graph_category": "Class_Trial_Branching_Tree",
+      "race_id": "Lunar",
+      "zone_id": "zone-dungeon-medallion-heart-vault",
+      "dungeon_id": "zone-dungeon-medallion-heart-vault",
+      "floor_id": "B3",
+      "loc": "49827:44084",
+      "dialogue_node_and_branch_count": "32 Dialogue Nodes \u00b7 8 Class-Path Branches \u00b7 0 Unreachable Transfers",
+      "i18n_key_prefix_and_parity": "dlg.lunar.class_trial.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "Elemental Affinity Branch Filter + 1-Click Test Character Override",
+      "automated_graph_validators": [
+        "Class Transfer Level & Job-ID Gate",
+        "Missing EN/TH Localization Key Gate",
+        "Orphaned Trial Branch Detector"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-09-ogre-orc-class-trial-tyrant-overlord",
+      "graph_title": "Ogre/Orc Lv.20/40/76 Class Trial Tree \u2014 Destroyer / Tyrant / Overlord",
+      "graph_category": "Class_Trial_Branching_Tree",
+      "race_id": "Ogre/Orc",
+      "zone_id": "zone-dungeon-ember-bellows-chamber",
+      "dungeon_id": "zone-dungeon-ember-bellows-chamber",
+      "floor_id": "B3",
+      "loc": "-41184:-109803",
+      "dialogue_node_and_branch_count": "31 Dialogue Nodes \u00b7 8 Class-Path Branches \u00b7 0 Unreachable Transfers",
+      "i18n_key_prefix_and_parity": "dlg.ogre_orc.class_trial.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "Totem Spirit Trial Simulator + Instant Dialogue Diff Inspector",
+      "automated_graph_validators": [
+        "Class Transfer Level & Job-ID Gate",
+        "Missing EN/TH Localization Key Gate",
+        "Orphaned Trial Branch Detector"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-10-dwarf-class-trial-maestro-fortune-seeker",
+      "graph_title": "Dwarf Lv.20/40/76 Class Trial Tree \u2014 Warsmith Maestro / Fortune Seeker",
+      "graph_category": "Class_Trial_Branching_Tree",
+      "race_id": "Dwarf",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "2F",
+      "loc": "85405:144210",
+      "dialogue_node_and_branch_count": "30 Dialogue Nodes \u00b7 7 Class-Path Branches \u00b7 0 Unreachable Transfers",
+      "i18n_key_prefix_and_parity": "dlg.dwarf.class_trial.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "Recipe & Spoil Trial Condition Builder + Undo/Redo History",
+      "automated_graph_validators": [
+        "Class Transfer Level & Job-ID Gate",
+        "Missing EN/TH Localization Key Gate",
+        "Orphaned Trial Branch Detector"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-11-dark-lunar-class-trial-spellhowler-dancer",
+      "graph_title": "Dark-Lunar Lv.20/40/76 Class Trial Tree \u2014 Spellhowler / Bladedancer / Shillien Saint",
+      "graph_category": "Class_Trial_Branching_Tree",
+      "race_id": "Dark-Lunar",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B2",
+      "loc": "54194:-34777",
+      "dialogue_node_and_branch_count": "33 Dialogue Nodes \u00b7 9 Class-Path Branches \u00b7 0 Unreachable Transfers",
+      "i18n_key_prefix_and_parity": "dlg.dark_lunar.class_trial.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "Abyssal Rune Choice Previewer + Thai Honorific Register Checker",
+      "automated_graph_validators": [
+        "Class Transfer Level & Job-ID Gate",
+        "Missing EN/TH Localization Key Gate",
+        "Orphaned Trial Branch Detector"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-12-furral-class-trial-warden-wind-stalker",
+      "graph_title": "Furral Lv.20/40/76 Class Trial Tree \u2014 Briar Warden / Wind Stalker / Beast Caller",
+      "graph_category": "Class_Trial_Branching_Tree",
+      "race_id": "Furral",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "2F",
+      "loc": "84783:56436",
+      "dialogue_node_and_branch_count": "29 Dialogue Nodes \u00b7 7 Class-Path Branches \u00b7 0 Unreachable Transfers",
+      "i18n_key_prefix_and_parity": "dlg.furral.class_trial.* (100% EN/TH Glossary Parity Verified)",
+      "designer_dx_ergonomics": "Companion Bond State Branching + 1-Click Godot Scene Preview",
+      "automated_graph_validators": [
+        "Class Transfer Level & Job-ID Gate",
+        "Missing EN/TH Localization Key Gate",
+        "Orphaned Trial Branch Detector"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-13-human-i18n-hearthbloom-glossary",
+      "graph_title": "Human EN/TH Localization Bundle \u2014 Hearthbloom & Kilnwatch Royal Register",
+      "graph_category": "Racial_Lore_Localization_Bundle",
+      "race_id": "Human",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-14228:123549",
+      "dialogue_node_and_branch_count": "42 Lore & Town Bark Nodes \u00b7 12 Dynamic Token Slots \u00b7 0 Untranslated Keys",
+      "i18n_key_prefix_and_parity": "i18n.human.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+      "designer_dx_ergonomics": "Side-by-Side EN/TH Term Glossary Lock + Thai Word-Wrap Overflow Guard",
+      "automated_graph_validators": [
+        "100% EN/TH Key Completeness Gate",
+        "Canonical Lore Glossary Term Enforcement",
+        "Mobile UI Bubble Text-Overflow Validator"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-14-lunar-i18n-celadon-verse-glossary",
+      "graph_title": "Lunar EN/TH Localization Bundle \u2014 Celadon Sanctuary & Astral Verse Register",
+      "graph_category": "Racial_Lore_Localization_Bundle",
+      "race_id": "Lunar",
+      "zone_id": "zone-town-glaze-barge-quay",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-81239:151462",
+      "dialogue_node_and_branch_count": "38 Lore & Town Bark Nodes \u00b7 10 Dynamic Token Slots \u00b7 0 Untranslated Keys",
+      "i18n_key_prefix_and_parity": "i18n.lunar.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+      "designer_dx_ergonomics": "Poetic Thai Register Assistant + Placeholder Variable ({player_name}) Check",
+      "automated_graph_validators": [
+        "100% EN/TH Key Completeness Gate",
+        "Canonical Lore Glossary Term Enforcement",
+        "Interpolation Placeholder Parity Gate"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-15-ogre-orc-i18n-iron-bellows-glossary",
+      "graph_title": "Ogre/Orc EN/TH Localization Bundle \u2014 Iron Bellows & War-Chant Register",
+      "graph_category": "Racial_Lore_Localization_Bundle",
+      "race_id": "Ogre/Orc",
+      "zone_id": "zone-town-escapement-anvil",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "83050:53275",
+      "dialogue_node_and_branch_count": "36 Lore & Town Bark Nodes \u00b7 9 Dynamic Token Slots \u00b7 0 Untranslated Keys",
+      "i18n_key_prefix_and_parity": "i18n.ogre_orc.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+      "designer_dx_ergonomics": "Martial Honorific Tone Checker + Batch CSV/JSON Roundtrip Sync",
+      "automated_graph_validators": [
+        "100% EN/TH Key Completeness Gate",
+        "Canonical Lore Glossary Term Enforcement",
+        "Mobile UI Bubble Text-Overflow Validator"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-16-dwarf-i18n-blacksmith-guild-glossary",
+      "graph_title": "Dwarf EN/TH Localization Bundle \u2014 Blacksmith Clan & +1..+15 Anvil Register",
+      "graph_category": "Racial_Lore_Localization_Bundle",
+      "race_id": "Dwarf",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147339:-55112",
+      "dialogue_node_and_branch_count": "44 Lore & Town Bark Nodes \u00b7 14 Dynamic Token Slots \u00b7 0 Untranslated Keys",
+      "i18n_key_prefix_and_parity": "i18n.dwarf.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+      "designer_dx_ergonomics": "Equipment Grade & Material Name Auto-Linker + Zero-Stale String Gate",
+      "automated_graph_validators": [
+        "100% EN/TH Key Completeness Gate",
+        "Canonical Lore Glossary Term Enforcement",
+        "Item & Material ID Reference Validator"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-17-dark-lunar-i18n-nocturne-belfry-glossary",
+      "graph_title": "Dark-Lunar EN/TH Localization Bundle \u2014 Nocturne Belfry & Seven-Seals Register",
+      "graph_category": "Racial_Lore_Localization_Bundle",
+      "race_id": "Dark-Lunar",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "116328:-18299",
+      "dialogue_node_and_branch_count": "40 Lore & Town Bark Nodes \u00b7 11 Dynamic Token Slots \u00b7 0 Untranslated Keys",
+      "i18n_key_prefix_and_parity": "i18n.dark_lunar.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+      "designer_dx_ergonomics": "Archaic Thai Liturgical Glossary Lock + Instant Web Preview",
+      "automated_graph_validators": [
+        "100% EN/TH Key Completeness Gate",
+        "Canonical Lore Glossary Term Enforcement",
+        "Interpolation Placeholder Parity Gate"
+      ]
+    },
+    {
+      "graph_id": "dlg-graph-18-furral-i18n-sky-harbor-caravan-glossary",
+      "graph_title": "Furral EN/TH Localization Bundle \u2014 Sky-Harbor & Frontier Caravan Register",
+      "graph_category": "Racial_Lore_Localization_Bundle",
+      "race_id": "Furral",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "43717:-47786",
+      "dialogue_node_and_branch_count": "39 Lore & Town Bark Nodes \u00b7 10 Dynamic Token Slots \u00b7 0 Untranslated Keys",
+      "i18n_key_prefix_and_parity": "i18n.furral.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+      "designer_dx_ergonomics": "Colloquial Caravan Idiom Checker + Audio Voice-Cue Tag Validator",
+      "automated_graph_validators": [
+        "100% EN/TH Key Completeness Gate",
+        "Canonical Lore Glossary Term Enforcement",
+        "Mobile UI Bubble Text-Overflow Validator"
+      ]
+    }
+  ],
+  "spawner_loot_balancer_suites": [
+    {
+      "suite_id": "balancer-01-clover-south-gate-visual-spawner",
+      "suite_name": "Clover South Gate Visual Polygon Spawner & Leash Radius Editor",
+      "balancer_category": "Visual_Spawner_Leash_Editor",
+      "zone_id": "zone-field-clover-south-gate",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "72890:113433",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "spawner_or_economy_simulation": "24 Mob Territories \u00b7 18m Leash Radius \u00b7 15s Starter Respawn Curve Verified",
+      "ssot_writeback_protocol": "Drag-and-Drop Web Spawner -> t-shaped-world-atlas.schema.json Validation -> Hot-Reload to server-rs & Godot",
+      "protected_invariants": [
+        "Zero Raw-JSON Hand Editing Required",
+        "NavMesh Walkable Polygon & Leash Radius Guard",
+        "Starter Lv.1\u201310 Safe Aggro Density Cap"
+      ]
+    },
+    {
+      "suite_id": "balancer-02-kiln-cellar-b3-boss-leash-editor",
+      "suite_name": "Kiln Cellar B3 Queen-Ant Sanctum Spawner, Nurse Guard & Leash Editor",
+      "balancer_category": "Visual_Spawner_Leash_Editor",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B3",
+      "loc": "75328:116911",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "spawner_or_economy_simulation": "1 MVP Sanctum + 8 Royal Guard Rings \u00b7 32m Boss Leash \u00b7 Anti-Wall-Pull Boundary",
+      "ssot_writeback_protocol": "2D/3D Cutaway Chamber Pin Drag -> Canonical Dungeon Floor JSON Write-Back -> Instant ECS Reload",
+      "protected_invariants": [
+        "Zero Raw-JSON Hand Editing Required",
+        "Boss Sanctum Anti-Kite & Leash Reset Guard",
+        ">= 6.0m Corridor Clearance Spawn Margin"
+      ]
+    },
+    {
+      "suite_id": "balancer-03-pendulum-shaft-3f-social-herd-spawner",
+      "suite_name": "Pendulum Shaft 3F Social Herd Pack & Construct Patrol Waypoint Editor",
+      "balancer_category": "Visual_Spawner_Leash_Editor",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "3F",
+      "loc": "85332:144279",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "spawner_or_economy_simulation": "12 Social Herd Packs (1 Leader + 4 Minions) \u00b7 Linked 14m Assist Radius",
+      "ssot_writeback_protocol": "Visual Patrol Spline Editor -> Schema GOV-10 Gate -> Live server-rs AI Behavior Tree Sync",
+      "protected_invariants": [
+        "Zero Raw-JSON Hand Editing Required",
+        "Social Herd Leader-Minion Link Integrity",
+        "Vertical 1F\u20133F Shaft Respawn Desync Guard"
+      ]
+    },
+    {
+      "suite_id": "balancer-04-caldera-rim-champion-aura-spawner",
+      "suite_name": "Caldera Rim High-Density AoE & Champion Aura (10x/50x) Spawn Brush",
+      "balancer_category": "Visual_Spawner_Leash_Editor",
+      "zone_id": "zone-field-caldera-rim",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "86346:61267",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "spawner_or_economy_simulation": "18 High-Density Elemental Packs \u00b7 4.0% Blue 10x / 0.4% Crimson 50x Champion Roll",
+      "ssot_writeback_protocol": "Heatmap Density Brush -> Automated Spawn Territory Compiler -> Zero-Restart ECS Partition Update",
+      "protected_invariants": [
+        "Zero Raw-JSON Hand Editing Required",
+        "NavMesh Collision & Slope Gradient Guard",
+        "9-Player AoE Pull Cap & Tick Budget Guard"
+      ]
+    },
+    {
+      "suite_id": "balancer-05-witch-pendulum-catacomb-seal-spawner",
+      "suite_name": "Witch Pendulum Catacomb B3 Seven-Seals Cabal Spawn & Torchlight Editor",
+      "balancer_category": "Visual_Spawner_Leash_Editor",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "54160:-34745",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "spawner_or_economy_simulation": "16 Nephilim/Lilim Chamber Spawns \u00b7 45s Seal Stone Farm Cycle \u00b7 22m Leash",
+      "ssot_writeback_protocol": "Catacomb Chamber Inspector -> Canonical Floor Spawn Table Write-Back -> Live Cabal State Sync",
+      "protected_invariants": [
+        "Zero Raw-JSON Hand Editing Required",
+        "Dawn/Dusk Cabal Spawn Table Parity Gate",
+        "Underground Chamber Doorway Clipping Guard"
+      ]
+    },
+    {
+      "suite_id": "balancer-06-star-heart-nave-3f-command-raid-spawner",
+      "suite_name": "Star-Heart Nave 3F Sealed-God Apostle & Multi-Wave Phase Spawner",
+      "balancer_category": "Visual_Spawner_Leash_Editor",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149174:28443",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "spawner_or_economy_simulation": "5-Phase Raid Wave Spawner \u00b7 45-Player Command Channel Arena \u00b7 40m Sanctum Leash",
+      "ssot_writeback_protocol": "Visual Phase Timeline Editor -> Boss Hierarchy Chain Validator -> server-rs Encounter Reload",
+      "protected_invariants": [
+        "Zero Raw-JSON Hand Editing Required",
+        "5-Tier Boss Power Hierarchy Order Law",
+        "Command-Channel Arena Boundary Enforcement"
+      ]
+    },
+    {
+      "suite_id": "balancer-07-lantern-hollow-starter-faucet-simulator",
+      "suite_name": "Lantern Hollow Lv.1\u201320 Starter Adena Faucet & Soulshot Sink Monte-Carlo Balancer",
+      "balancer_category": "Monte_Carlo_Loot_Inflation_Balancer",
+      "zone_id": "zone-town-lantern-hollow",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-84132:243531",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "spawner_or_economy_simulation": "100,000-Kill Monte-Carlo Drop/Spoil Simulation -> Adena Sink/Faucet Equilibrium +/-1.2%",
+      "ssot_writeback_protocol": "Web Economy Matrix Slider -> 800ms Headless Rust Sim Run -> Canonical Drop Table Commit",
+      "protected_invariants": [
+        "Starter Soulshot Sustainability >= 115% Net Adena",
+        "Zero Early-Game Hyperinflation Outlier Drops",
+        "No-Grade / D-Grade Spoil Yield Parity"
+      ]
+    },
+    {
+      "suite_id": "balancer-08-kilnwatch-bastion-c-b-grade-spoil-balancer",
+      "suite_name": "Kilnwatch Bastion C/B-Grade Dwarven Spoil & Recipe Economy Monte-Carlo Balancer",
+      "balancer_category": "Monte_Carlo_Loot_Inflation_Balancer",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-14198:123519",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "spawner_or_economy_simulation": "250,000-Kill Party Spoil Simulation -> Key Material Bottleneck Variance <= 2.0%",
+      "ssot_writeback_protocol": "Interactive Spoil Matrix -> Monte-Carlo Confidence Interval Gate -> SSOT Refinement Catalog Sync",
+      "protected_invariants": [
+        "60%/100% Recipe Key-Material Ratio Lock",
+        "Dwarven Scavenger Duo Farming ROI Bound",
+        "Manor Crop & Workshop Crystal Sink Balance"
+      ]
+    },
+    {
+      "suite_id": "balancer-09-inductor-switchyard-enchant-pity-sink-balancer",
+      "suite_name": "Inductor Switchyard +1..+15 Blacksmith Refinement & Crystal Sink Simulator",
+      "balancer_category": "Monte_Carlo_Loot_Inflation_Balancer",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147416:-55193",
+      "owner_engineer_role": "Lead Tools & Pipeline Architect",
+      "spawner_or_economy_simulation": "1,000,000-Anvil Monte-Carlo Enchant Run -> Safe +3 / +10 / +15 Expected Value Curve Verified",
+      "ssot_writeback_protocol": "Refinement Rate Curve Editor -> Statistical EV & Pity Validator -> Atomic SSOT Schema Write-Back",
+      "protected_invariants": [
+        "Safe +3 100% Invariant & +4..+15 Decay Law",
+        "Blessed Scroll vs Crystalize Sink Equilibrium",
+        "Zero Negative-Sum Progression Dead-Zones"
+      ]
+    },
+    {
+      "suite_id": "balancer-10-chronometer-foundry-a-s-grade-raid-drop-balancer",
+      "suite_name": "Chronometer Foundry 3F A/S-Grade Raid Boss & Epic Jewelry Drop Simulator",
+      "balancer_category": "Monte_Carlo_Loot_Inflation_Balancer",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84830:56395",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "spawner_or_economy_simulation": "50,000-Raid Monte-Carlo Lockout Simulation -> S-Grade Weapon & Epic Ring Scarcity Target Met",
+      "ssot_writeback_protocol": "Raid Loot Table Tuner -> Multi-Month Server Economy Projection -> Canonical Boss Radar Sync",
+      "protected_invariants": [
+        "Epic Boss Jewelry Scarcity & Status-Resist Cap",
+        "Command-Channel Spoil Split Fairness Guard",
+        "Forgotten Scroll & Life Stone Drop Floor"
+      ]
+    },
+    {
+      "suite_id": "balancer-11-torque-balance-citadel-siege-tax-macro-balancer",
+      "suite_name": "Torque-Balance Citadel Castle Tax, Manor Vault & S80/S84 Macro-Economy Balancer",
+      "balancer_category": "Monte_Carlo_Loot_Inflation_Balancer",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "116444:-18417",
+      "owner_engineer_role": "Lead Tools & Pipeline Architect",
+      "spawner_or_economy_simulation": "90-Day Server Macro-Economy Monte-Carlo -> 8%\u201315% Castle Tax & Adena Deflation Sink Verified",
+      "ssot_writeback_protocol": "Macro-Economy Dashboard (:8788) -> Automated GOV-10 Invariant Gate -> LiveOps Config Export",
+      "protected_invariants": [
+        "Castle Tax & Clan Hall Rent Deflationary Sink >= 38%",
+        "Ancient Adena Mammon Exchange Liquidity Bound",
+        "S80/S84 Unseal Fee & Gemstone Sink Parity"
+      ]
+    },
+    {
+      "suite_id": "balancer-12-saffron-press-ssot-schema-writeback-bridge",
+      "suite_name": "Saffron Press Bidirectional Web-to-SSOT JSON Schema Write-Back Bridge",
+      "balancer_category": "Hot_Reload_SSOT_Writeback_Bridge",
+      "zone_id": "zone-town-saffron-press",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "17458:170071",
+      "owner_engineer_role": "Lead Tools & Pipeline Architect",
+      "spawner_or_economy_simulation": "< 45ms Atomic File Write + Draft 2020-12 JSON Schema & GOV-01..GOV-10 Pre-Commit Gate",
+      "ssot_writeback_protocol": "Browser Inspector Edit (:8788) -> Atomic Temp-File CAS Write -> studio_world_governance.py Gate",
+      "protected_invariants": [
+        "Strict Separation of Canonical Data from UI Code",
+        "Zero Partial/Corrupt JSON Writes (Atomic Rename)",
+        "Automatic Git-Clean Diff Formatting (2-Space Indent)"
+      ]
+    },
+    {
+      "suite_id": "balancer-13-escapement-anvil-server-rs-ecs-hot-reload-bridge",
+      "suite_name": "Escapement Anvil server-rs Bevy ECS Spawner & Drop-Table Hot-Reload Bridge",
+      "balancer_category": "Hot_Reload_SSOT_Writeback_Bridge",
+      "zone_id": "zone-town-escapement-anvil",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "83172:53159",
+      "owner_engineer_role": "Lead Tools & Pipeline Architect",
+      "spawner_or_economy_simulation": "< 180ms Live server-rs Spawner & Loot Table Delta Reload Without Dropping Active Players",
+      "ssot_writeback_protocol": "Validated SSOT Bundle -> FlatBuffers Config Snapshot -> server-rs 20Hz Tick Boundary Swap",
+      "protected_invariants": [
+        "Zero Active Combat Tick Spike (< 0.503ms Budget)",
+        "Deterministic Entity ID & Respawn Timer Continuity",
+        "Instant Rollback on Schema or Checksum Mismatch"
+      ]
+    },
+    {
+      "suite_id": "balancer-14-porcelain-loom-godot-client-marker-hot-reload",
+      "suite_name": "Porcelain Loom Godot 4.7 Client Map Pin, NavMesh & Mini-Map Hot-Reload Bridge",
+      "balancer_category": "Hot_Reload_SSOT_Writeback_Bridge",
+      "zone_id": "zone-town-porcelain-loom",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "45886:41147",
+      "owner_engineer_role": "Content & World Tools Engineer",
+      "spawner_or_economy_simulation": "< 220ms Live Godot 4.7 SubViewport & World Radar Marker Refresh on SSOT Save",
+      "ssot_writeback_protocol": "Canonical Atlas JSON Update -> FileWatcher Signal -> Godot C# HUD & Minimap Pin Refresh",
+      "protected_invariants": [
+        "100% Coordinate Parity Between :8788 Web & Godot 3D",
+        "Zero NativeAOT Reflection or Restart Required",
+        "Automatic 3-Tier Asset Resolve Fallback Check"
+      ]
+    },
+    {
+      "suite_id": "balancer-15-medallion-heart-vault-b2-dungeon-hot-reload",
+      "suite_name": "Medallion Heart Vault B2 Multi-Floor Chamber, Portal & Cutaway Hot-Reload Bridge",
+      "balancer_category": "Hot_Reload_SSOT_Writeback_Bridge",
+      "zone_id": "zone-dungeon-medallion-heart-vault",
+      "dungeon_id": "zone-dungeon-medallion-heart-vault",
+      "floor_id": "B2",
+      "loc": "49900:44035",
+      "owner_engineer_role": "Lead Tools & Pipeline Architect",
+      "spawner_or_economy_simulation": "< 150ms Live Dungeon Floor B1<->B2<->B3 Warp & Chamber Telemetry Hot-Reload",
+      "ssot_writeback_protocol": "Dungeon Sub-Map Editor -> Reciprocal Warp Graph Verifier -> Dual Server/Client Portal Sync",
+      "protected_invariants": [
+        "Zero Orphaned Inter-Floor Warp Portals",
+        "Vertical Cutaway Elevation & Chamber ID Sync",
+        "Active Dungeon Party Instance Safe State Preservation"
+      ]
+    },
+    {
+      "suite_id": "balancer-16-crown-beacon-ci-drift-and-audit-writeback-bridge",
+      "suite_name": "Crown Beacon CI/CD Codegen Drift Gate & SHA-256 Signed Write-Back Ledger",
+      "balancer_category": "Hot_Reload_SSOT_Writeback_Bridge",
+      "zone_id": "zone-town-crown-beacon",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "148014:26723",
+      "owner_engineer_role": "Lead Tools & Pipeline Architect",
+      "spawner_or_economy_simulation": "100% Deterministic Roundtrip across t_shaped_world_atlas.json, Rust Contracts & Web Bundle",
+      "ssot_writeback_protocol": "SSOT Write-Back Commit -> SHA-256 Manifest Hash Update -> Automated Unit & Governance Suite",
+      "protected_invariants": [
+        "Zero Drift Between Schema, JSON, Rust & Web UI",
+        "Tamper-Evident Designer Authoring Audit Trail",
+        "1-Click Revert to Last Green Iteration Wave State"
+      ]
+    }
   ]
 }

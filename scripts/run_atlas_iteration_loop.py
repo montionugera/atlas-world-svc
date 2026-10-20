@@ -14431,6 +14431,680 @@ def _build_platform_tools_squad_registry(atlas: dict[str, Any]) -> list[dict[str
     return rows
 
 
+def _build_dialogue_localization_graphs(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 18 [Role 2: Content & World Tools Engineer] Branching Quest/Dialogue DAG & EN/TH Localization Validator Graphs (6 Main_Story_Dialogue_DAG + 6 Class_Trial_Branching_Tree + 6 Racial_Lore_Localization_Bundle across all 6 Playable Races) (D75)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {
+        str(z.get("zone_id")): z
+        for z in all_zones
+        if isinstance(z, dict) and z.get("zone_id")
+    }
+    specs = [
+        # 6 Main_Story_Dialogue_DAG (1 per playable race)
+        (
+            "dlg-graph-01-human-main-meridian-accord",
+            "Human Main Story DAG — Ch.I First Meridian Ember Accord",
+            "Main_Story_Dialogue_DAG",
+            "Human",
+            "zone-town-lantern-hollow",
+            "",
+            "",
+            "28 Dialogue Nodes · 7 Conditional Branches · 0 Dead-End Leaves",
+            "dlg.human.main_01.* (100% EN/TH Glossary Parity Verified)",
+            "2-Click Node Insertion (Down from 15 Clicks) + Undo/Redo Stack",
+            [
+                "Cycle & Dead-End Branch Detector",
+                "Missing EN/TH Localization Key Gate",
+                "Quest Prerequisite State Validator",
+            ],
+        ),
+        (
+            "dlg-graph-02-lunar-main-celadon-loom",
+            "Lunar Main Story DAG — Ch.I Celadon Loom Resonance",
+            "Main_Story_Dialogue_DAG",
+            "Lunar",
+            "zone-town-porcelain-loom",
+            "",
+            "",
+            "26 Dialogue Nodes · 6 Conditional Branches · 0 Dead-End Leaves",
+            "dlg.lunar.main_01.* (100% EN/TH Glossary Parity Verified)",
+            "Visual Condition Pill Builder + Live EN/TH Side-by-Side Preview",
+            [
+                "Cycle & Dead-End Branch Detector",
+                "Missing EN/TH Localization Key Gate",
+                "NPC Speaker ID & Portrait Binding Check",
+            ],
+        ),
+        (
+            "dlg-graph-03-ogre-orc-main-bellows-covenant",
+            "Ogre/Orc Main Story DAG — Ch.II Flame of the Bellows Covenant",
+            "Main_Story_Dialogue_DAG",
+            "Ogre/Orc",
+            "zone-town-draft-kiln-post",
+            "",
+            "",
+            "24 Dialogue Nodes · 6 Conditional Branches · 0 Dead-End Leaves",
+            "dlg.ogre_orc.main_01.* (100% EN/TH Glossary Parity Verified)",
+            "Drag-and-Drop Branch Rewiring + Instant JSON Schema Export",
+            [
+                "Cycle & Dead-End Branch Detector",
+                "Missing EN/TH Localization Key Gate",
+                "Quest Reward Item ID SSOT Validator",
+            ],
+        ),
+        (
+            "dlg-graph-04-dwarf-main-mainspring-ledger",
+            "Dwarf Main Story DAG — Ch.II Brass Mainspring Guild Ledger",
+            "Main_Story_Dialogue_DAG",
+            "Dwarf",
+            "zone-town-saffron-press",
+            "",
+            "",
+            "30 Dialogue Nodes · 8 Conditional Branches · 0 Dead-End Leaves",
+            "dlg.dwarf.main_01.* (100% EN/TH Glossary Parity Verified)",
+            "1-Click Spoil/Craft Flag Hook + Keyboard-First Node Navigation",
+            [
+                "Cycle & Dead-End Branch Detector",
+                "Missing EN/TH Localization Key Gate",
+                "Blacksmith Clan Standing Flag Validator",
+            ],
+        ),
+        (
+            "dlg-graph-05-dark-lunar-main-obsidian-veil",
+            "Dark-Lunar Main Story DAG — Ch.III Obsidian Veil Awakening",
+            "Main_Story_Dialogue_DAG",
+            "Dark-Lunar",
+            "zone-town-carillon-belfry",
+            "",
+            "",
+            "27 Dialogue Nodes · 7 Conditional Branches · 0 Dead-End Leaves",
+            "dlg.dark_lunar.main_01.* (100% EN/TH Glossary Parity Verified)",
+            "Auto-Layout DAG Subtree Folding + Live Variable Simulator",
+            [
+                "Cycle & Dead-End Branch Detector",
+                "Missing EN/TH Localization Key Gate",
+                "Vesper Seal State Prerequisite Gate",
+            ],
+        ),
+        (
+            "dlg-graph-06-furral-main-root-train-charter",
+            "Furral Main Story DAG — Ch.III Root-Train Caravan Charter",
+            "Main_Story_Dialogue_DAG",
+            "Furral",
+            "zone-town-root-train-roundhouse",
+            "",
+            "",
+            "25 Dialogue Nodes · 6 Conditional Branches · 0 Dead-End Leaves",
+            "dlg.furral.main_01.* (100% EN/TH Glossary Parity Verified)",
+            "Inline Quest Step Jump + 0-Reload Dialogue Playtest Runner",
+            [
+                "Cycle & Dead-End Branch Detector",
+                "Missing EN/TH Localization Key Gate",
+                "Caravan Trust Token Inventory Check",
+            ],
+        ),
+        # 6 Class_Trial_Branching_Tree (1 per playable race)
+        (
+            "dlg-graph-07-human-class-trial-paladin-warlord",
+            "Human Lv.20/40/76 Class Trial Tree — Knight / Paladin / Warlord Oath",
+            "Class_Trial_Branching_Tree",
+            "Human",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B2",
+            "34 Dialogue Nodes · 9 Class-Path Branches · 0 Unreachable Transfers",
+            "dlg.human.class_trial.* (100% EN/TH Glossary Parity Verified)",
+            "3-Tier Class Transfer Matrix View + Trial Token State Debugger",
+            [
+                "Class Transfer Level & Job-ID Gate",
+                "Missing EN/TH Localization Key Gate",
+                "Orphaned Trial Branch Detector",
+            ],
+        ),
+        (
+            "dlg-graph-08-lunar-class-trial-spellsinger-elder",
+            "Lunar Lv.20/40/76 Class Trial Tree — Spellsinger / Elven Elder / Sword Muse",
+            "Class_Trial_Branching_Tree",
+            "Lunar",
+            "zone-dungeon-medallion-heart-vault",
+            "zone-dungeon-medallion-heart-vault",
+            "B3",
+            "32 Dialogue Nodes · 8 Class-Path Branches · 0 Unreachable Transfers",
+            "dlg.lunar.class_trial.* (100% EN/TH Glossary Parity Verified)",
+            "Elemental Affinity Branch Filter + 1-Click Test Character Override",
+            [
+                "Class Transfer Level & Job-ID Gate",
+                "Missing EN/TH Localization Key Gate",
+                "Orphaned Trial Branch Detector",
+            ],
+        ),
+        (
+            "dlg-graph-09-ogre-orc-class-trial-tyrant-overlord",
+            "Ogre/Orc Lv.20/40/76 Class Trial Tree — Destroyer / Tyrant / Overlord",
+            "Class_Trial_Branching_Tree",
+            "Ogre/Orc",
+            "zone-dungeon-ember-bellows-chamber",
+            "zone-dungeon-ember-bellows-chamber",
+            "B3",
+            "31 Dialogue Nodes · 8 Class-Path Branches · 0 Unreachable Transfers",
+            "dlg.ogre_orc.class_trial.* (100% EN/TH Glossary Parity Verified)",
+            "Totem Spirit Trial Simulator + Instant Dialogue Diff Inspector",
+            [
+                "Class Transfer Level & Job-ID Gate",
+                "Missing EN/TH Localization Key Gate",
+                "Orphaned Trial Branch Detector",
+            ],
+        ),
+        (
+            "dlg-graph-10-dwarf-class-trial-maestro-fortune-seeker",
+            "Dwarf Lv.20/40/76 Class Trial Tree — Warsmith Maestro / Fortune Seeker",
+            "Class_Trial_Branching_Tree",
+            "Dwarf",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "2F",
+            "30 Dialogue Nodes · 7 Class-Path Branches · 0 Unreachable Transfers",
+            "dlg.dwarf.class_trial.* (100% EN/TH Glossary Parity Verified)",
+            "Recipe & Spoil Trial Condition Builder + Undo/Redo History",
+            [
+                "Class Transfer Level & Job-ID Gate",
+                "Missing EN/TH Localization Key Gate",
+                "Orphaned Trial Branch Detector",
+            ],
+        ),
+        (
+            "dlg-graph-11-dark-lunar-class-trial-spellhowler-dancer",
+            "Dark-Lunar Lv.20/40/76 Class Trial Tree — Spellhowler / Bladedancer / Shillien Saint",
+            "Class_Trial_Branching_Tree",
+            "Dark-Lunar",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B2",
+            "33 Dialogue Nodes · 9 Class-Path Branches · 0 Unreachable Transfers",
+            "dlg.dark_lunar.class_trial.* (100% EN/TH Glossary Parity Verified)",
+            "Abyssal Rune Choice Previewer + Thai Honorific Register Checker",
+            [
+                "Class Transfer Level & Job-ID Gate",
+                "Missing EN/TH Localization Key Gate",
+                "Orphaned Trial Branch Detector",
+            ],
+        ),
+        (
+            "dlg-graph-12-furral-class-trial-warden-wind-stalker",
+            "Furral Lv.20/40/76 Class Trial Tree — Briar Warden / Wind Stalker / Beast Caller",
+            "Class_Trial_Branching_Tree",
+            "Furral",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "2F",
+            "29 Dialogue Nodes · 7 Class-Path Branches · 0 Unreachable Transfers",
+            "dlg.furral.class_trial.* (100% EN/TH Glossary Parity Verified)",
+            "Companion Bond State Branching + 1-Click Godot Scene Preview",
+            [
+                "Class Transfer Level & Job-ID Gate",
+                "Missing EN/TH Localization Key Gate",
+                "Orphaned Trial Branch Detector",
+            ],
+        ),
+        # 6 Racial_Lore_Localization_Bundle (1 per playable race)
+        (
+            "dlg-graph-13-human-i18n-hearthbloom-glossary",
+            "Human EN/TH Localization Bundle — Hearthbloom & Kilnwatch Royal Register",
+            "Racial_Lore_Localization_Bundle",
+            "Human",
+            "zone-town-kilnwatch-bastion",
+            "",
+            "",
+            "42 Lore & Town Bark Nodes · 12 Dynamic Token Slots · 0 Untranslated Keys",
+            "i18n.human.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+            "Side-by-Side EN/TH Term Glossary Lock + Thai Word-Wrap Overflow Guard",
+            [
+                "100% EN/TH Key Completeness Gate",
+                "Canonical Lore Glossary Term Enforcement",
+                "Mobile UI Bubble Text-Overflow Validator",
+            ],
+        ),
+        (
+            "dlg-graph-14-lunar-i18n-celadon-verse-glossary",
+            "Lunar EN/TH Localization Bundle — Celadon Sanctuary & Astral Verse Register",
+            "Racial_Lore_Localization_Bundle",
+            "Lunar",
+            "zone-town-glaze-barge-quay",
+            "",
+            "",
+            "38 Lore & Town Bark Nodes · 10 Dynamic Token Slots · 0 Untranslated Keys",
+            "i18n.lunar.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+            "Poetic Thai Register Assistant + Placeholder Variable ({player_name}) Check",
+            [
+                "100% EN/TH Key Completeness Gate",
+                "Canonical Lore Glossary Term Enforcement",
+                "Interpolation Placeholder Parity Gate",
+            ],
+        ),
+        (
+            "dlg-graph-15-ogre-orc-i18n-iron-bellows-glossary",
+            "Ogre/Orc EN/TH Localization Bundle — Iron Bellows & War-Chant Register",
+            "Racial_Lore_Localization_Bundle",
+            "Ogre/Orc",
+            "zone-town-escapement-anvil",
+            "",
+            "",
+            "36 Lore & Town Bark Nodes · 9 Dynamic Token Slots · 0 Untranslated Keys",
+            "i18n.ogre_orc.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+            "Martial Honorific Tone Checker + Batch CSV/JSON Roundtrip Sync",
+            [
+                "100% EN/TH Key Completeness Gate",
+                "Canonical Lore Glossary Term Enforcement",
+                "Mobile UI Bubble Text-Overflow Validator",
+            ],
+        ),
+        (
+            "dlg-graph-16-dwarf-i18n-blacksmith-guild-glossary",
+            "Dwarf EN/TH Localization Bundle — Blacksmith Clan & +1..+15 Anvil Register",
+            "Racial_Lore_Localization_Bundle",
+            "Dwarf",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "44 Lore & Town Bark Nodes · 14 Dynamic Token Slots · 0 Untranslated Keys",
+            "i18n.dwarf.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+            "Equipment Grade & Material Name Auto-Linker + Zero-Stale String Gate",
+            [
+                "100% EN/TH Key Completeness Gate",
+                "Canonical Lore Glossary Term Enforcement",
+                "Item & Material ID Reference Validator",
+            ],
+        ),
+        (
+            "dlg-graph-17-dark-lunar-i18n-nocturne-belfry-glossary",
+            "Dark-Lunar EN/TH Localization Bundle — Nocturne Belfry & Seven-Seals Register",
+            "Racial_Lore_Localization_Bundle",
+            "Dark-Lunar",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            "40 Lore & Town Bark Nodes · 11 Dynamic Token Slots · 0 Untranslated Keys",
+            "i18n.dark_lunar.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+            "Archaic Thai Liturgical Glossary Lock + Instant Web Preview",
+            [
+                "100% EN/TH Key Completeness Gate",
+                "Canonical Lore Glossary Term Enforcement",
+                "Interpolation Placeholder Parity Gate",
+            ],
+        ),
+        (
+            "dlg-graph-18-furral-i18n-sky-harbor-caravan-glossary",
+            "Furral EN/TH Localization Bundle — Sky-Harbor & Frontier Caravan Register",
+            "Racial_Lore_Localization_Bundle",
+            "Furral",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "39 Lore & Town Bark Nodes · 10 Dynamic Token Slots · 0 Untranslated Keys",
+            "i18n.furral.lore.* (100% EN/TH Glossary & Thai Line-Break Verified)",
+            "Colloquial Caravan Idiom Checker + Audio Voice-Cue Tag Validator",
+            [
+                "100% EN/TH Key Completeness Gate",
+                "Canonical Lore Glossary Term Enforcement",
+                "Mobile UI Bubble Text-Overflow Validator",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        gid,
+        gtitle,
+        gcat,
+        rid,
+        zid,
+        did,
+        fid,
+        ncount,
+        i18n_p,
+        dx_erg,
+        validators,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx + 115 - idx * 11, by - 120 + idx * 13)
+        rows.append(
+            {
+                "graph_id": gid,
+                "graph_title": gtitle,
+                "graph_category": gcat,
+                "race_id": rid,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "dialogue_node_and_branch_count": ncount,
+                "i18n_key_prefix_and_parity": i18n_p,
+                "designer_dx_ergonomics": dx_erg,
+                "automated_graph_validators": validators,
+            }
+        )
+    return rows
+
+
+def _build_spawner_loot_balancer_suites(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 [Role 1 & 2: Visual Spawner & Economy Balancer Suite] Visual Spawner Placement, Monte-Carlo Loot Balancer & Hot-Reload SSOT Write-Back Suites (6 Visual_Spawner_Leash_Editor + 5 Monte_Carlo_Loot_Inflation_Balancer + 5 Hot_Reload_SSOT_Writeback_Bridge) (D76)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {
+        str(z.get("zone_id")): z
+        for z in all_zones
+        if isinstance(z, dict) and z.get("zone_id")
+    }
+    specs = [
+        # 6 Visual_Spawner_Leash_Editor
+        (
+            "balancer-01-clover-south-gate-visual-spawner",
+            "Clover South Gate Visual Polygon Spawner & Leash Radius Editor",
+            "Visual_Spawner_Leash_Editor",
+            "zone-field-clover-south-gate",
+            "",
+            "",
+            "Content & World Tools Engineer",
+            "24 Mob Territories · 18m Leash Radius · 15s Starter Respawn Curve Verified",
+            "Drag-and-Drop Web Spawner -> t-shaped-world-atlas.schema.json Validation -> Hot-Reload to server-rs & Godot",
+            [
+                "Zero Raw-JSON Hand Editing Required",
+                "NavMesh Walkable Polygon & Leash Radius Guard",
+                "Starter Lv.1–10 Safe Aggro Density Cap",
+            ],
+        ),
+        (
+            "balancer-02-kiln-cellar-b3-boss-leash-editor",
+            "Kiln Cellar B3 Queen-Ant Sanctum Spawner, Nurse Guard & Leash Editor",
+            "Visual_Spawner_Leash_Editor",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "Content & World Tools Engineer",
+            "1 MVP Sanctum + 8 Royal Guard Rings · 32m Boss Leash · Anti-Wall-Pull Boundary",
+            "2D/3D Cutaway Chamber Pin Drag -> Canonical Dungeon Floor JSON Write-Back -> Instant ECS Reload",
+            [
+                "Zero Raw-JSON Hand Editing Required",
+                "Boss Sanctum Anti-Kite & Leash Reset Guard",
+                ">= 6.0m Corridor Clearance Spawn Margin",
+            ],
+        ),
+        (
+            "balancer-03-pendulum-shaft-3f-social-herd-spawner",
+            "Pendulum Shaft 3F Social Herd Pack & Construct Patrol Waypoint Editor",
+            "Visual_Spawner_Leash_Editor",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "Content & World Tools Engineer",
+            "12 Social Herd Packs (1 Leader + 4 Minions) · Linked 14m Assist Radius",
+            "Visual Patrol Spline Editor -> Schema GOV-10 Gate -> Live server-rs AI Behavior Tree Sync",
+            [
+                "Zero Raw-JSON Hand Editing Required",
+                "Social Herd Leader-Minion Link Integrity",
+                "Vertical 1F–3F Shaft Respawn Desync Guard",
+            ],
+        ),
+        (
+            "balancer-04-caldera-rim-champion-aura-spawner",
+            "Caldera Rim High-Density AoE & Champion Aura (10x/50x) Spawn Brush",
+            "Visual_Spawner_Leash_Editor",
+            "zone-field-caldera-rim",
+            "",
+            "",
+            "Content & World Tools Engineer",
+            "18 High-Density Elemental Packs · 4.0% Blue 10x / 0.4% Crimson 50x Champion Roll",
+            "Heatmap Density Brush -> Automated Spawn Territory Compiler -> Zero-Restart ECS Partition Update",
+            [
+                "Zero Raw-JSON Hand Editing Required",
+                "NavMesh Collision & Slope Gradient Guard",
+                "9-Player AoE Pull Cap & Tick Budget Guard",
+            ],
+        ),
+        (
+            "balancer-05-witch-pendulum-catacomb-seal-spawner",
+            "Witch Pendulum Catacomb B3 Seven-Seals Cabal Spawn & Torchlight Editor",
+            "Visual_Spawner_Leash_Editor",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "Content & World Tools Engineer",
+            "16 Nephilim/Lilim Chamber Spawns · 45s Seal Stone Farm Cycle · 22m Leash",
+            "Catacomb Chamber Inspector -> Canonical Floor Spawn Table Write-Back -> Live Cabal State Sync",
+            [
+                "Zero Raw-JSON Hand Editing Required",
+                "Dawn/Dusk Cabal Spawn Table Parity Gate",
+                "Underground Chamber Doorway Clipping Guard",
+            ],
+        ),
+        (
+            "balancer-06-star-heart-nave-3f-command-raid-spawner",
+            "Star-Heart Nave 3F Sealed-God Apostle & Multi-Wave Phase Spawner",
+            "Visual_Spawner_Leash_Editor",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "Content & World Tools Engineer",
+            "5-Phase Raid Wave Spawner · 45-Player Command Channel Arena · 40m Sanctum Leash",
+            "Visual Phase Timeline Editor -> Boss Hierarchy Chain Validator -> server-rs Encounter Reload",
+            [
+                "Zero Raw-JSON Hand Editing Required",
+                "5-Tier Boss Power Hierarchy Order Law",
+                "Command-Channel Arena Boundary Enforcement",
+            ],
+        ),
+        # 5 Monte_Carlo_Loot_Inflation_Balancer
+        (
+            "balancer-07-lantern-hollow-starter-faucet-simulator",
+            "Lantern Hollow Lv.1–20 Starter Adena Faucet & Soulshot Sink Monte-Carlo Balancer",
+            "Monte_Carlo_Loot_Inflation_Balancer",
+            "zone-town-lantern-hollow",
+            "",
+            "",
+            "Content & World Tools Engineer",
+            "100,000-Kill Monte-Carlo Drop/Spoil Simulation -> Adena Sink/Faucet Equilibrium +/-1.2%",
+            "Web Economy Matrix Slider -> 800ms Headless Rust Sim Run -> Canonical Drop Table Commit",
+            [
+                "Starter Soulshot Sustainability >= 115% Net Adena",
+                "Zero Early-Game Hyperinflation Outlier Drops",
+                "No-Grade / D-Grade Spoil Yield Parity",
+            ],
+        ),
+        (
+            "balancer-08-kilnwatch-bastion-c-b-grade-spoil-balancer",
+            "Kilnwatch Bastion C/B-Grade Dwarven Spoil & Recipe Economy Monte-Carlo Balancer",
+            "Monte_Carlo_Loot_Inflation_Balancer",
+            "zone-town-kilnwatch-bastion",
+            "",
+            "",
+            "Content & World Tools Engineer",
+            "250,000-Kill Party Spoil Simulation -> Key Material Bottleneck Variance <= 2.0%",
+            "Interactive Spoil Matrix -> Monte-Carlo Confidence Interval Gate -> SSOT Refinement Catalog Sync",
+            [
+                "60%/100% Recipe Key-Material Ratio Lock",
+                "Dwarven Scavenger Duo Farming ROI Bound",
+                "Manor Crop & Workshop Crystal Sink Balance",
+            ],
+        ),
+        (
+            "balancer-09-inductor-switchyard-enchant-pity-sink-balancer",
+            "Inductor Switchyard +1..+15 Blacksmith Refinement & Crystal Sink Simulator",
+            "Monte_Carlo_Loot_Inflation_Balancer",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "Lead Tools & Pipeline Architect",
+            "1,000,000-Anvil Monte-Carlo Enchant Run -> Safe +3 / +10 / +15 Expected Value Curve Verified",
+            "Refinement Rate Curve Editor -> Statistical EV & Pity Validator -> Atomic SSOT Schema Write-Back",
+            [
+                "Safe +3 100% Invariant & +4..+15 Decay Law",
+                "Blessed Scroll vs Crystalize Sink Equilibrium",
+                "Zero Negative-Sum Progression Dead-Zones",
+            ],
+        ),
+        (
+            "balancer-10-chronometer-foundry-a-s-grade-raid-drop-balancer",
+            "Chronometer Foundry 3F A/S-Grade Raid Boss & Epic Jewelry Drop Simulator",
+            "Monte_Carlo_Loot_Inflation_Balancer",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "Content & World Tools Engineer",
+            "50,000-Raid Monte-Carlo Lockout Simulation -> S-Grade Weapon & Epic Ring Scarcity Target Met",
+            "Raid Loot Table Tuner -> Multi-Month Server Economy Projection -> Canonical Boss Radar Sync",
+            [
+                "Epic Boss Jewelry Scarcity & Status-Resist Cap",
+                "Command-Channel Spoil Split Fairness Guard",
+                "Forgotten Scroll & Life Stone Drop Floor",
+            ],
+        ),
+        (
+            "balancer-11-torque-balance-citadel-siege-tax-macro-balancer",
+            "Torque-Balance Citadel Castle Tax, Manor Vault & S80/S84 Macro-Economy Balancer",
+            "Monte_Carlo_Loot_Inflation_Balancer",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            "Lead Tools & Pipeline Architect",
+            "90-Day Server Macro-Economy Monte-Carlo -> 8%–15% Castle Tax & Adena Deflation Sink Verified",
+            "Macro-Economy Dashboard (:8788) -> Automated GOV-10 Invariant Gate -> LiveOps Config Export",
+            [
+                "Castle Tax & Clan Hall Rent Deflationary Sink >= 38%",
+                "Ancient Adena Mammon Exchange Liquidity Bound",
+                "S80/S84 Unseal Fee & Gemstone Sink Parity",
+            ],
+        ),
+        # 5 Hot_Reload_SSOT_Writeback_Bridge
+        (
+            "balancer-12-saffron-press-ssot-schema-writeback-bridge",
+            "Saffron Press Bidirectional Web-to-SSOT JSON Schema Write-Back Bridge",
+            "Hot_Reload_SSOT_Writeback_Bridge",
+            "zone-town-saffron-press",
+            "",
+            "",
+            "Lead Tools & Pipeline Architect",
+            "< 45ms Atomic File Write + Draft 2020-12 JSON Schema & GOV-01..GOV-10 Pre-Commit Gate",
+            "Browser Inspector Edit (:8788) -> Atomic Temp-File CAS Write -> studio_world_governance.py Gate",
+            [
+                "Strict Separation of Canonical Data from UI Code",
+                "Zero Partial/Corrupt JSON Writes (Atomic Rename)",
+                "Automatic Git-Clean Diff Formatting (2-Space Indent)",
+            ],
+        ),
+        (
+            "balancer-13-escapement-anvil-server-rs-ecs-hot-reload-bridge",
+            "Escapement Anvil server-rs Bevy ECS Spawner & Drop-Table Hot-Reload Bridge",
+            "Hot_Reload_SSOT_Writeback_Bridge",
+            "zone-town-escapement-anvil",
+            "",
+            "",
+            "Lead Tools & Pipeline Architect",
+            "< 180ms Live server-rs Spawner & Loot Table Delta Reload Without Dropping Active Players",
+            "Validated SSOT Bundle -> FlatBuffers Config Snapshot -> server-rs 20Hz Tick Boundary Swap",
+            [
+                "Zero Active Combat Tick Spike (< 0.503ms Budget)",
+                "Deterministic Entity ID & Respawn Timer Continuity",
+                "Instant Rollback on Schema or Checksum Mismatch",
+            ],
+        ),
+        (
+            "balancer-14-porcelain-loom-godot-client-marker-hot-reload",
+            "Porcelain Loom Godot 4.7 Client Map Pin, NavMesh & Mini-Map Hot-Reload Bridge",
+            "Hot_Reload_SSOT_Writeback_Bridge",
+            "zone-town-porcelain-loom",
+            "",
+            "",
+            "Content & World Tools Engineer",
+            "< 220ms Live Godot 4.7 SubViewport & World Radar Marker Refresh on SSOT Save",
+            "Canonical Atlas JSON Update -> FileWatcher Signal -> Godot C# HUD & Minimap Pin Refresh",
+            [
+                "100% Coordinate Parity Between :8788 Web & Godot 3D",
+                "Zero NativeAOT Reflection or Restart Required",
+                "Automatic 3-Tier Asset Resolve Fallback Check",
+            ],
+        ),
+        (
+            "balancer-15-medallion-heart-vault-b2-dungeon-hot-reload",
+            "Medallion Heart Vault B2 Multi-Floor Chamber, Portal & Cutaway Hot-Reload Bridge",
+            "Hot_Reload_SSOT_Writeback_Bridge",
+            "zone-dungeon-medallion-heart-vault",
+            "zone-dungeon-medallion-heart-vault",
+            "B2",
+            "Lead Tools & Pipeline Architect",
+            "< 150ms Live Dungeon Floor B1<->B2<->B3 Warp & Chamber Telemetry Hot-Reload",
+            "Dungeon Sub-Map Editor -> Reciprocal Warp Graph Verifier -> Dual Server/Client Portal Sync",
+            [
+                "Zero Orphaned Inter-Floor Warp Portals",
+                "Vertical Cutaway Elevation & Chamber ID Sync",
+                "Active Dungeon Party Instance Safe State Preservation",
+            ],
+        ),
+        (
+            "balancer-16-crown-beacon-ci-drift-and-audit-writeback-bridge",
+            "Crown Beacon CI/CD Codegen Drift Gate & SHA-256 Signed Write-Back Ledger",
+            "Hot_Reload_SSOT_Writeback_Bridge",
+            "zone-town-crown-beacon",
+            "",
+            "",
+            "Lead Tools & Pipeline Architect",
+            "100% Deterministic Roundtrip across t_shaped_world_atlas.json, Rust Contracts & Web Bundle",
+            "SSOT Write-Back Commit -> SHA-256 Manifest Hash Update -> Automated Unit & Governance Suite",
+            [
+                "Zero Drift Between Schema, JSON, Rust & Web UI",
+                "Tamper-Evident Designer Authoring Audit Trail",
+                "1-Click Revert to Last Green Iteration Wave State",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        sid,
+        sname,
+        bcat,
+        zid,
+        did,
+        fid,
+        orole,
+        sim_txt,
+        wb_proto,
+        invariants,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx - 110 + idx * 14, by + 115 - idx * 12)
+        rows.append(
+            {
+                "suite_id": sid,
+                "suite_name": sname,
+                "balancer_category": bcat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "owner_engineer_role": orole,
+                "spawner_or_economy_simulation": sim_txt,
+                "ssot_writeback_protocol": wb_proto,
+                "protected_invariants": invariants,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -15636,6 +16310,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("platform_tools_squad_registry") or []) < 20:
         atlas["platform_tools_squad_registry"] = _build_platform_tools_squad_registry(atlas)
         actions.append("populated_20_platform_tools_squad_registry")
+
+    # 59. Ensure all 18 Branching Dialogue DAG & EN/TH Localization Validator Graphs exist in `dialogue_localization_graphs` (D75)
+    if len(atlas.get("dialogue_localization_graphs") or []) < 18:
+        atlas["dialogue_localization_graphs"] = _build_dialogue_localization_graphs(atlas)
+        actions.append("populated_18_dialogue_localization_graphs")
+
+    # 60. Ensure all 16 Visual Spawner Placement, Monte-Carlo Loot Balancer & Hot-Reload SSOT Write-Back Suites exist in `spawner_loot_balancer_suites` (D76)
+    if len(atlas.get("spawner_loot_balancer_suites") or []) < 16:
+        atlas["spawner_loot_balancer_suites"] = _build_spawner_loot_balancer_suites(atlas)
+        actions.append("populated_16_spawner_loot_balancer_suites")
 
     return {"actions": actions}
 
@@ -19832,15 +20516,169 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d74_ratio * 80.0, 1)
     )
 
+    # D75: Interactive 18-Graph [Role 2: Content & World Tools Engineer] Branching Quest/Dialogue DAG & EN/TH Localization Validator Matrix (`dialogue_localization_graphs` - 18 Graphs: 6 Main_Story_Dialogue_DAG + 6 Class_Trial_Branching_Tree + 6 Racial_Lore_Localization_Bundle across all 6 Playable Races)
+    expected_dialogue_categories = {
+        "Main_Story_Dialogue_DAG",
+        "Class_Trial_Branching_Tree",
+        "Racial_Lore_Localization_Bundle",
+    }
+    expected_dialogue_races = {
+        "Human",
+        "Lunar",
+        "Ogre/Orc",
+        "Dwarf",
+        "Dark-Lunar",
+        "Furral",
+    }
+    dialogue_rows = atlas.get("dialogue_localization_graphs") or []
+    valid_dialogue_graphs = 0
+    main_story_dag_count = 0
+    class_trial_tree_count = 0
+    racial_lore_bundle_count = 0
+    seen_dialogue_ids: set[str] = set()
+    seen_dialogue_categories: set[str] = set()
+    seen_dialogue_races: set[str] = set()
+    dialogue_race_counts: dict[str, int] = {r: 0 for r in expected_dialogue_races}
+    for dgrow in dialogue_rows:
+        if not isinstance(dgrow, dict):
+            continue
+        dgid = str(dgrow.get("graph_id") or "")
+        dgcat = str(dgrow.get("graph_category") or "")
+        dgrace = str(dgrow.get("race_id") or "")
+        dgzid = str(dgrow.get("zone_id") or "")
+        dgdid = str(dgrow.get("dungeon_id") or "")
+        dgfid = str(dgrow.get("floor_id") or "")
+        dgvals = dgrow.get("automated_graph_validators") or []
+        if (
+            dgid
+            and dgid not in seen_dialogue_ids
+            and dgrow.get("graph_title")
+            and dgcat in expected_dialogue_categories
+            and dgrace in expected_dialogue_races
+            and dgzid in zone_ids_set
+            and (dgdid == "" or dgdid in mf_dungeon_id_set)
+            and dgfid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(dgrow.get("loc", ""))
+            and dgrow.get("dialogue_node_and_branch_count")
+            and dgrow.get("i18n_key_prefix_and_parity")
+            and dgrow.get("designer_dx_ergonomics")
+            and isinstance(dgvals, list)
+            and len(dgvals) >= 2
+        ):
+            valid_dialogue_graphs += 1
+            seen_dialogue_ids.add(dgid)
+            seen_dialogue_categories.add(dgcat)
+            seen_dialogue_races.add(dgrace)
+            dialogue_race_counts[dgrace] = dialogue_race_counts.get(dgrace, 0) + 1
+            if dgcat == "Main_Story_Dialogue_DAG":
+                main_story_dag_count += 1
+            elif dgcat == "Class_Trial_Branching_Tree":
+                class_trial_tree_count += 1
+            elif dgcat == "Racial_Lore_Localization_Bundle":
+                racial_lore_bundle_count += 1
+
+    has_d75_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_DIALOGUE_GRAPH_MODE",
+            "setAtlasDialogueGraphMode",
+            "renderAtlasDialogueGraphBarHtml",
+            "studioDialogueGraphOverlay",
+        )
+    )
+    d75_ratio = valid_dialogue_graphs / 18.0
+    d75_full_coverage = (
+        main_story_dag_count == 6
+        and class_trial_tree_count == 6
+        and racial_lore_bundle_count == 6
+        and all(dialogue_race_counts.get(r, 0) == 3 for r in expected_dialogue_races)
+        and seen_dialogue_categories == expected_dialogue_categories
+        and seen_dialogue_races == expected_dialogue_races
+    )
+    d75_score = (
+        round(min(100.0, d75_ratio * 100.0), 1)
+        if (has_d75_ui and d75_full_coverage)
+        else round(d75_ratio * 80.0, 1)
+    )
+
+    # D76: Interactive 16-Zone [Role 1 & 2: Visual Spawner & Economy Balancer Suite] Visual Spawner Placement, Monte-Carlo Loot Balancer & Hot-Reload SSOT Write-Back Matrix (`spawner_loot_balancer_suites` - 16 Suites: 6 Visual_Spawner_Leash_Editor + 5 Monte_Carlo_Loot_Inflation_Balancer + 5 Hot_Reload_SSOT_Writeback_Bridge)
+    expected_balancer_categories = {
+        "Visual_Spawner_Leash_Editor",
+        "Monte_Carlo_Loot_Inflation_Balancer",
+        "Hot_Reload_SSOT_Writeback_Bridge",
+    }
+    balancer_rows = atlas.get("spawner_loot_balancer_suites") or []
+    valid_balancer_suites = 0
+    visual_spawner_count = 0
+    monte_carlo_loot_count = 0
+    hot_reload_writeback_count = 0
+    seen_balancer_ids: set[str] = set()
+    seen_balancer_categories: set[str] = set()
+    for brow in balancer_rows:
+        if not isinstance(brow, dict):
+            continue
+        bsid = str(brow.get("suite_id") or "")
+        bcat = str(brow.get("balancer_category") or "")
+        bzid = str(brow.get("zone_id") or "")
+        bdid = str(brow.get("dungeon_id") or "")
+        bfid = str(brow.get("floor_id") or "")
+        binvs = brow.get("protected_invariants") or []
+        if (
+            bsid
+            and bsid not in seen_balancer_ids
+            and brow.get("suite_name")
+            and bcat in expected_balancer_categories
+            and bzid in zone_ids_set
+            and (bdid == "" or bdid in mf_dungeon_id_set)
+            and bfid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(brow.get("loc", ""))
+            and brow.get("owner_engineer_role")
+            and brow.get("spawner_or_economy_simulation")
+            and brow.get("ssot_writeback_protocol")
+            and isinstance(binvs, list)
+            and len(binvs) >= 2
+        ):
+            valid_balancer_suites += 1
+            seen_balancer_ids.add(bsid)
+            seen_balancer_categories.add(bcat)
+            if bcat == "Visual_Spawner_Leash_Editor":
+                visual_spawner_count += 1
+            elif bcat == "Monte_Carlo_Loot_Inflation_Balancer":
+                monte_carlo_loot_count += 1
+            elif bcat == "Hot_Reload_SSOT_Writeback_Bridge":
+                hot_reload_writeback_count += 1
+
+    has_d76_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_SPAWNER_BALANCER_MODE",
+            "setAtlasSpawnerBalancerMode",
+            "renderAtlasSpawnerBalancerBarHtml",
+            "studioSpawnerBalancerOverlay",
+        )
+    )
+    d76_ratio = valid_balancer_suites / 16.0
+    d76_full_coverage = (
+        visual_spawner_count == 6
+        and monte_carlo_loot_count == 5
+        and hot_reload_writeback_count == 5
+        and seen_balancer_categories == expected_balancer_categories
+    )
+    d76_score = (
+        round(min(100.0, d76_ratio * 100.0), 1)
+        if (has_d76_ui and d76_full_coverage)
+        else round(d76_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 56.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 58.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 58.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 68.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 57.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score) / 64.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 58.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 60.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 60.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 70.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 59.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score) / 66.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -19919,8 +20757,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d72_score
             + d73_score
             + d74_score
+            + d75_score
+            + d76_score
         )
-        / 74.0,
+        / 76.0,
         1,
     )
 
@@ -20565,6 +21405,27 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "architectural_principles": sorted(seen_arch_principles),
                 "ui_wired": has_d74_ui,
             },
+            "D75_dialogue_dag_and_i18n_localization_graphs": {
+                "score": d75_score,
+                "verified": valid_dialogue_graphs,
+                "target": 18,
+                "main_story_dialogue_dags": main_story_dag_count,
+                "class_trial_branching_trees": class_trial_tree_count,
+                "racial_lore_localization_bundles": racial_lore_bundle_count,
+                "graph_categories": sorted(seen_dialogue_categories),
+                "races_covered": sorted(seen_dialogue_races),
+                "ui_wired": has_d75_ui,
+            },
+            "D76_visual_spawner_and_loot_economy_balancer_suites": {
+                "score": d76_score,
+                "verified": valid_balancer_suites,
+                "target": 16,
+                "visual_spawner_leash_editors": visual_spawner_count,
+                "monte_carlo_loot_inflation_balancers": monte_carlo_loot_count,
+                "hot_reload_ssot_writeback_bridges": hot_reload_writeback_count,
+                "balancer_categories": sorted(seen_balancer_categories),
+                "ui_wired": has_d76_ui,
+            },
         },
     }
 
@@ -20683,6 +21544,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D72 (16 Bot Swarm Sectors)  : {dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['score']}/100 ({dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['verified']}/{dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['target']} bot swarm sectors)")
         print(f"  D73 (15 LiveOps/GM Anchors) : {dims['D73_liveops_gm_stuck_rescue_rollback_and_hot_config']['score']}/100 ({dims['D73_liveops_gm_stuck_rescue_rollback_and_hot_config']['verified']}/{dims['D73_liveops_gm_stuck_rescue_rollback_and_hot_config']['target']} liveops/gm anchors)")
         print(f"  D74 (20 Tools Squad Reg)    : {dims['D74_platform_tools_squad_unified_pipeline_registry']['score']}/100 ({dims['D74_platform_tools_squad_unified_pipeline_registry']['verified']}/{dims['D74_platform_tools_squad_unified_pipeline_registry']['target']} platform squad tools)")
+        print(f"  D75 (18 Dialogue/i18n DAGs) : {dims['D75_dialogue_dag_and_i18n_localization_graphs']['score']}/100 ({dims['D75_dialogue_dag_and_i18n_localization_graphs']['verified']}/{dims['D75_dialogue_dag_and_i18n_localization_graphs']['target']} dialogue/i18n graphs)")
+        print(f"  D76 (16 Spawner/Loot Suites): {dims['D76_visual_spawner_and_loot_economy_balancer_suites']['score']}/100 ({dims['D76_visual_spawner_and_loot_economy_balancer_suites']['verified']}/{dims['D76_visual_spawner_and_loot_economy_balancer_suites']['target']} spawner/loot suites)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

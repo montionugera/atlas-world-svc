@@ -2962,7 +2962,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 74)
+        self.assertGreaterEqual(len(audit["dimensions"]), 74)
 
         d73 = audit["dimensions"]["D73_liveops_gm_stuck_rescue_rollback_and_hot_config"]
         self.assertEqual(d73["score"], 100.0)
@@ -3054,10 +3054,111 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas74DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 74)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 74)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 74)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 74)
         self.assertIn("74-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave36_dialogue_localization_graphs_and_spawner_loot_balancer_suites(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["dialogueLocalizationGraphsCount"], 18)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["spawnerLootBalancerSuitesCount"], 16)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_DIALOGUE_GRAPH_MODE",
+            "setAtlasDialogueGraphMode",
+            "renderAtlasDialogueGraphBarHtml",
+            "studioDialogueGraphOverlay",
+            "Main_Story_Dialogue_DAG",
+            "Class_Trial_Branching_Tree",
+            "Racial_Lore_Localization_Bundle",
+            "ATLAS_SPAWNER_BALANCER_MODE",
+            "setAtlasSpawnerBalancerMode",
+            "renderAtlasSpawnerBalancerBarHtml",
+            "studioSpawnerBalancerOverlay",
+            "Visual_Spawner_Leash_Editor",
+            "Monte_Carlo_Loot_Inflation_Balancer",
+            "Hot_Reload_SSOT_Writeback_Bridge",
+            "76-Dimension Semantic-Zoom Atlas Score",
+            "D1–D76 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 36 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 76)
+
+        d75 = audit["dimensions"]["D75_dialogue_dag_and_i18n_localization_graphs"]
+        self.assertEqual(d75["score"], 100.0)
+        self.assertEqual(d75["verified"], 18)
+        self.assertEqual(d75["target"], 18)
+        self.assertEqual(d75["main_story_dialogue_dags"], 6)
+        self.assertEqual(d75["class_trial_branching_trees"], 6)
+        self.assertEqual(d75["racial_lore_localization_bundles"], 6)
+        self.assertEqual(
+            set(d75["graph_categories"]),
+            {
+                "Main_Story_Dialogue_DAG",
+                "Class_Trial_Branching_Tree",
+                "Racial_Lore_Localization_Bundle",
+            },
+        )
+        self.assertEqual(
+            set(d75["races_covered"]),
+            {"Human", "Lunar", "Ogre/Orc", "Dwarf", "Dark-Lunar", "Furral"},
+        )
+        self.assertTrue(d75["ui_wired"])
+
+        d76 = audit["dimensions"]["D76_visual_spawner_and_loot_economy_balancer_suites"]
+        self.assertEqual(d76["score"], 100.0)
+        self.assertEqual(d76["verified"], 16)
+        self.assertEqual(d76["target"], 16)
+        self.assertEqual(d76["visual_spawner_leash_editors"], 6)
+        self.assertEqual(d76["monte_carlo_loot_inflation_balancers"], 5)
+        self.assertEqual(d76["hot_reload_ssot_writeback_bridges"], 5)
+        self.assertEqual(
+            set(d76["balancer_categories"]),
+            {
+                "Visual_Spawner_Leash_Editor",
+                "Monte_Carlo_Loot_Inflation_Balancer",
+                "Hot_Reload_SSOT_Writeback_Bridge",
+            },
+        )
+        self.assertTrue(d76["ui_wired"])
+
+        graphs = atlas["dialogue_localization_graphs"]
+        self.assertEqual(len(graphs), 18)
+        self.assertEqual(sum(1 for g in graphs if g["graph_category"] == "Main_Story_Dialogue_DAG"), 6)
+        self.assertEqual(sum(1 for g in graphs if g["graph_category"] == "Class_Trial_Branching_Tree"), 6)
+        self.assertEqual(sum(1 for g in graphs if g["graph_category"] == "Racial_Lore_Localization_Bundle"), 6)
+        for race in ("Human", "Lunar", "Ogre/Orc", "Dwarf", "Dark-Lunar", "Furral"):
+            self.assertEqual(sum(1 for g in graphs if g["race_id"] == race), 3)
+        for g in graphs:
+            self.assertGreaterEqual(len(g["automated_graph_validators"]), 2)
+
+        suites = atlas["spawner_loot_balancer_suites"]
+        self.assertEqual(len(suites), 16)
+        self.assertEqual(sum(1 for s in suites if s["balancer_category"] == "Visual_Spawner_Leash_Editor"), 6)
+        self.assertEqual(sum(1 for s in suites if s["balancer_category"] == "Monte_Carlo_Loot_Inflation_Balancer"), 5)
+        self.assertEqual(sum(1 for s in suites if s["balancer_category"] == "Hot_Reload_SSOT_Writeback_Bridge"), 5)
+        for s in suites:
+            self.assertGreaterEqual(len(s["protected_invariants"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas76DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 76)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 76)
+        self.assertIn("76-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
