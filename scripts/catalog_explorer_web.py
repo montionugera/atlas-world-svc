@@ -69,7 +69,7 @@ def compute_studio_self_evaluation() -> dict:
             }
             dims = iter_state["dimensions"]
     overall_atlas_score = float(iter_state.get("overall_score", 100.0))
-    dim_count = len(dims) or 30
+    dim_count = len(dims) or 32
     qs = dict(self_eval.get("qualityScorecard") or {})
     qs.setdefault("overallQualityScorePct", 100.0)
     qs["semanticZoomAtlas18DimensionScore"] = overall_atlas_score
@@ -79,22 +79,24 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas26DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas28DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas30DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas32DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 13)),
+        "wave": int(iter_state.get("wave", 14)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"32-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"30-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"28-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"26-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D30 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D32 Verified"
         ),
     }
     return merged
@@ -4356,7 +4358,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D30 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D32 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4405,6 +4407,8 @@ let ATLAS_SEVEN_SEALS_MODE = 'All';
 let ATLAS_MANOR_MODE = 'All';
 let ATLAS_OLYMPIAD_MODE = 'All';
 let ATLAS_TRANSIT_MODE = 'All';
+let ATLAS_SOUL_CRYSTAL_MODE = 'All';
+let ATLAS_FISHING_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4425,6 +4429,8 @@ const ATLAS_STATE_STORE = {
   manorMode: 'All',                        // D28: Active 15-Town Manor Seed & Caravan Economy ('Off' | 'All' | 'Low_Patrolled' | 'High_Frontier_Ambush')
   olympiadMode: 'All',                     // D29: Active Subclass, Noblesse & Olympiad Network ('Off' | 'All' | 'Subclass_Mimir_Sanctum' | 'Noblesse_Barakiel_Shrine' | 'Olympiad_Monument')
   transitMode: 'All',                      // D30: Active Inter-Continental Transit ('Off' | 'All' | 'Maritime_Ship' | 'Brass_Airship' | 'Gatekeeper_Trunk')
+  soulCrystalMode: 'All',                  // D31: Active Soul Crystal (SA) Stage 1-13 Selector ('Off' | 'All' | 'Crimson_Red' | 'Verdant_Green' | 'Azure_Blue' | 'Stage_11_to_13_S_Grade_Boss')
+  fishingMode: 'All',                      // D32: Active Fishing Guild & Hot Springs Selector ('Off' | 'All' | 'Maritime_Harbor_Pier' | 'Luminous_Night_Lake' | 'Thermal_Hot_Spring')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4432,6 +4438,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasSoulCrystalMode(modeId) {
+  ATLAS_SOUL_CRYSTAL_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.soulCrystalMode = ATLAS_SOUL_CRYSTAL_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasFishingMode(modeId) {
+  ATLAS_FISHING_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.fishingMode = ATLAS_FISHING_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasOlympiadMode(modeId) {
   ATLAS_OLYMPIAD_MODE = String(modeId || 'All');
@@ -7204,6 +7224,209 @@ function renderAtlasTransitLinesBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasSoulCrystalBarHtml(tatlas) {
+  const stages = (tatlas && tatlas.soul_crystal_resonance_stages) || [];
+  if (!stages.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+    if (z.studio_node_id) zoneById[z.studio_node_id] = z;
+  });
+
+  const curMode = ATLAS_SOUL_CRYSTAL_MODE || ATLAS_STATE_STORE.soulCrystalMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '💎 All 18 Stages' },
+    { id: 'Crimson_Red', label: '🔴 Crimson Red' },
+    { id: 'Verdant_Green', label: '🟢 Verdant Green' },
+    { id: 'Azure_Blue', label: '🔵 Azure Blue' },
+    { id: 'Stage_11_to_13_S_Grade_Boss', label: '👑 Stage 11–13 Boss Sanctums' }
+  ];
+
+  const filteredStages = curMode === 'Off'
+    ? []
+    : (curMode === 'All'
+      ? stages
+      : (curMode === 'Stage_11_to_13_S_Grade_Boss'
+        ? stages.filter(s => s.stage_band === 'Stage_11_to_13_S_Grade_Boss')
+        : stages.filter(s => s.crystal_color === curMode)));
+
+  const featuredStages = curMode === 'All'
+    ? [
+        ...stages.filter(s => s.crystal_color === 'Crimson_Red').slice(0, 1),
+        ...stages.filter(s => s.crystal_color === 'Verdant_Green').slice(0, 1),
+        ...stages.filter(s => s.crystal_color === 'Azure_Blue').slice(0, 1),
+        ...stages.filter(s => s.stage_band === 'Stage_11_to_13_S_Grade_Boss').slice(0, 1)
+      ]
+    : filteredStages.slice(0, 4);
+
+  return `
+    <div id="atlasSoulCrystalBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#201228;border:1px solid rgba(232,121,249,0.52)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#f5d0fe">💎 SOUL CRYSTAL (SA) STAGE 1–13 RESONANCE &amp; BOSS ABSORPTION MATRIX (D31 · 18 STAGES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasSoulCrystalMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(232,121,249,0.45)'};background:${isAct ? '#86198f' : '#090d14'};color:${isAct ? '#ffffff' : '#f5d0fe'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 CRIMSON RED + 6 VERDANT GREEN + 6 AZURE BLUE · STAGE 1–13 SPECIAL ABILITIES &amp; BOSS ABSORPTION
+        </span>
+      </div>
+
+      ${featuredStages.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px">
+          ${featuredStages.map(s => {
+            const vZone = zoneById[s.vendor_town_zone_id] || {};
+            const vNode = vZone.studio_node_id || s.vendor_town_zone_id;
+            const vLoc = vZone.loc_coord || '-84120:243500';
+            const isRed = s.crystal_color === 'Crimson_Red';
+            const isGreen = s.crystal_color === 'Verdant_Green';
+            const colHex = isRed ? '#f87171' : (isGreen ? '#4ade80' : '#38bdf8');
+            const colIcon = isRed ? '🔴' : (isGreen ? '🟢' : '🔵');
+            const absJump = s.absorption_dungeon_id
+              ? `openDungeonSubMap('${escapeHtml(s.absorption_dungeon_id)}', '${escapeHtml(s.absorption_floor_id || 'B3')}')`
+              : `focusFieldTacticalBlueprint('${escapeHtml(s.absorption_zone_id)}', '${escapeHtml(s.absorption_loc)}')`;
+            const absLabel = s.absorption_dungeon_id
+              ? `👑 Warp to ${escapeHtml(s.absorption_floor_id || 'B3')} Boss Sanctum`
+              : `⚔️ Zoom to Absorption Field (4.8×)`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${colHex};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${colIcon} ${escapeHtml(s.crystal_stage_id)} [${escapeHtml(s.weapon_grade_unlocked)}]</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${colHex}">${s.resonance_chance_pct}% Absorb</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#f5d0fe;margin-top:1px">
+                    🎯 ${escapeHtml(s.absorption_target_name.slice(0, 52))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ✨ <strong>SA:</strong> ${escapeHtml((s.special_abilities || []).join(' · '))}
+                  </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px">
+                  <button type="button" onclick="focusTownStreetBlueprint('${escapeHtml(vNode)}', '${escapeHtml(vLoc)}')"
+                          style="padding:2px 6px;border-radius:4px;border:1px solid #fde047;background:#4a044e;color:#fef08a;font-size:8px;font-weight:800;cursor:pointer">
+                    ⚒️ Town Blacksmith
+                  </button>
+                  <button type="button" onclick="${absJump}"
+                          style="padding:2px 6px;border-radius:4px;border:1px solid ${colHex};background:#1e1b4b;color:#e0e7ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${absLabel}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasFishingSanctuaryBarHtml(tatlas) {
+  const sanctuaries = (tatlas && tatlas.fishing_guild_sanctuaries) || [];
+  if (!sanctuaries.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+    if (z.studio_node_id) zoneById[z.studio_node_id] = z;
+  });
+
+  const curMode = ATLAS_FISHING_MODE || ATLAS_STATE_STORE.fishingMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🎣 All 16 Sanctuaries' },
+    { id: 'Maritime_Harbor_Pier', label: '⚓ 6 Maritime Piers' },
+    { id: 'Luminous_Night_Lake', label: '🌙 5 Nocturnal Luminous Lakes' },
+    { id: 'Thermal_Hot_Spring', label: '♨️ 5 Thermal Hot Springs' }
+  ];
+
+  const filteredSanctuaries = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? sanctuaries : sanctuaries.filter(s => s.water_category === curMode));
+
+  const featuredSanctuaries = curMode === 'All'
+    ? [
+        ...sanctuaries.filter(s => s.water_category === 'Maritime_Harbor_Pier').slice(0, 2),
+        ...sanctuaries.filter(s => s.water_category === 'Luminous_Night_Lake').slice(0, 1),
+        ...sanctuaries.filter(s => s.water_category === 'Thermal_Hot_Spring').slice(0, 1)
+      ]
+    : filteredSanctuaries.slice(0, 4);
+
+  const buildSanctuaryJumpJs = (s) => {
+    const z = zoneById[s.zone_id] || {};
+    if (z.category === 'starting_town' || z.category === 'castle_or_hub_town') {
+      return `focusTownStreetBlueprint('${escapeHtml(z.studio_node_id || s.zone_id)}', '${escapeHtml(s.dock_loc)}')`;
+    }
+    if (z.category === 'harbor' || z.category === 'clan_hall' || z.category === 'fortress') {
+      return `focusFortressBlueprint('${escapeHtml(s.zone_id)}', '${escapeHtml(s.dock_loc)}')`;
+    }
+    return `focusFieldTacticalBlueprint('${escapeHtml(s.zone_id)}', '${escapeHtml(s.dock_loc)}')`;
+  };
+
+  return `
+    <div id="atlasFishingSanctuaryBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0a2229;border:1px solid rgba(45,212,191,0.52)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#5eead4">🎣 FISHING GUILD, HOT SPRINGS &amp; LUMINOUS NIGHT-BAIT SANCTUARIES (D32 · 16 SANCTUARIES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasFishingMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(45,212,191,0.45)'};background:${isAct ? '#0f766e' : '#090d14'};color:${isAct ? '#ffffff' : '#99f6e4'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 MARITIME HARBOR PIERS + 5 NOCTURNAL LUMINOUS LAKES + 5 THERMAL HOT SPRINGS
+        </span>
+      </div>
+
+      ${featuredSanctuaries.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px">
+          ${featuredSanctuaries.map(s => {
+            const isPier = s.water_category === 'Maritime_Harbor_Pier';
+            const isLake = s.water_category === 'Luminous_Night_Lake';
+            const catCol = isPier ? '#38bdf8' : (isLake ? '#a78bfa' : '#fb923c');
+            const catIcon = isPier ? '⚓' : (isLake ? '🌙' : '♨️');
+            const jumpJs = buildSanctuaryJumpJs(s);
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(s.sanctuary_name.slice(0, 38))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(s.active_time_window)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#99f6e4;margin-top:1px">
+                    👤 ${escapeHtml(s.guild_master_npc)} · Lure: ${escapeHtml(s.recommended_lure.slice(0, 38))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🎁 <strong>Catch:</strong> ${escapeHtml(s.primary_catch_reward.slice(0, 62))}
+                  </div>
+                </div>
+                <button type="button" onclick="${jumpJs}"
+                        style="margin-top:2px;padding:2px 6px;border-radius:4px;border:1px solid ${catCol};background:#134e4a;color:#ccfbf1;font-size:8.2px;font-weight:800;cursor:pointer;text-align:left">
+                  ${catIcon} Jump to Sanctuary Dock / Pool
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -7338,6 +7561,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasManorEconomyBarHtml(tatlas)}
       ${renderAtlasOlympiadNetworkBarHtml(tatlas)}
       ${renderAtlasTransitLinesBarHtml(tatlas)}
+      ${renderAtlasSoulCrystalBarHtml(tatlas)}
+      ${renderAtlasFishingSanctuaryBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -9505,6 +9730,71 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D31: Soul Crystal (SA) Stage 1–13 Resonance & Boss Absorption Matrix Overlay (`studioSoulCrystalResonanceOverlay`)
+  const soulCrystalStages = (tatlas && tatlas.soul_crystal_resonance_stages) || [];
+  const curSoulCrystalMode = ATLAS_SOUL_CRYSTAL_MODE || ATLAS_STATE_STORE.soulCrystalMode || 'All';
+  const activeSoulCrystalStages = curSoulCrystalMode === 'Off'
+    ? []
+    : (curSoulCrystalMode === 'All'
+      ? soulCrystalStages.slice(0, 12)
+      : (curSoulCrystalMode === 'Stage_11_to_13_S_Grade_Boss'
+        ? soulCrystalStages.filter(s => s.stage_band === 'Stage_11_to_13_S_Grade_Boss')
+        : soulCrystalStages.filter(s => s.crystal_color === curSoulCrystalMode)));
+  const soulCrystalOverlaySvg = `
+    <g id="studioSoulCrystalResonanceOverlay">
+      ${activeSoulCrystalStages.map(s => {
+        const vZone = allZonesById[s.vendor_town_zone_id] || {};
+        const vc = clampWorldLocCoord(vZone.loc_coord || '-84120:243500');
+        const ac = clampWorldLocCoord(s.absorption_loc || '75410:116820');
+        const isRed = s.crystal_color === 'Crimson_Red';
+        const isGreen = s.crystal_color === 'Verdant_Green';
+        const colHex = isRed ? '#f87171' : (isGreen ? '#4ade80' : '#38bdf8');
+        const clickJs = s.absorption_dungeon_id
+          ? `openDungeonSubMap('${escapeHtml(s.absorption_dungeon_id)}', '${escapeHtml(s.absorption_floor_id || 'B3')}')`
+          : `focusFieldTacticalBlueprint('${escapeHtml(s.absorption_zone_id)}', '${escapeHtml(s.absorption_loc)}')`;
+        return `
+          <line x1="${vc.svgX}" y1="${vc.svgY}" x2="${ac.svgX}" y2="${ac.svgY}" stroke="${colHex}" stroke-width="1.8" stroke-dasharray="4 3" opacity="0.82" pointer-events="none"/>
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${clickJs}">
+            <circle cx="${ac.svgX}" cy="${ac.svgY}" r="9.5" fill="rgba(134,25,143,0.28)" stroke="${colHex}" stroke-width="1.8"/>
+            <text x="${ac.svgX}" y="${ac.svgY + 3.2}" text-anchor="middle" font-size="8">💎</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D32: Fishing Guild, Hot Springs & Luminous Night-Bait Sanctuary Overlay (`studioFishingSanctuaryOverlay`)
+  const fishingSanctuaries = (tatlas && tatlas.fishing_guild_sanctuaries) || [];
+  const curFishingMode = ATLAS_FISHING_MODE || ATLAS_STATE_STORE.fishingMode || 'All';
+  const activeFishingSanctuaries = curFishingMode === 'Off'
+    ? []
+    : (curFishingMode === 'All'
+      ? fishingSanctuaries
+      : fishingSanctuaries.filter(s => s.water_category === curFishingMode));
+  const fishingSanctuaryOverlaySvg = `
+    <g id="studioFishingSanctuaryOverlay">
+      ${activeFishingSanctuaries.map(s => {
+        const sc = clampWorldLocCoord(s.dock_loc || '-96200:258400');
+        const isPier = s.water_category === 'Maritime_Harbor_Pier';
+        const isLake = s.water_category === 'Luminous_Night_Lake';
+        const colHex = isPier ? '#38bdf8' : (isLake ? '#a78bfa' : '#fb923c');
+        const iconTxt = isPier ? '⚓' : (isLake ? '🌙' : '♨️');
+        const z = allZonesById[s.zone_id] || {};
+        const clickJs = (z.category === 'starting_town' || z.category === 'castle_or_hub_town')
+          ? `focusTownStreetBlueprint('${escapeHtml(z.studio_node_id || s.zone_id)}', '${escapeHtml(s.dock_loc)}')`
+          : ((z.category === 'harbor' || z.category === 'clan_hall' || z.category === 'fortress')
+            ? `focusFortressBlueprint('${escapeHtml(s.zone_id)}', '${escapeHtml(s.dock_loc)}')`
+            : `focusFieldTacticalBlueprint('${escapeHtml(s.zone_id)}', '${escapeHtml(s.dock_loc)}')`);
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${clickJs}">
+            <circle cx="${sc.svgX}" cy="${sc.svgY}" r="10.5" fill="rgba(15,118,110,0.28)" stroke="${colHex}" stroke-width="1.8" stroke-dasharray="3 2"/>
+            <text x="${sc.svgX}" y="${sc.svgY + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -9515,6 +9805,8 @@ function renderDedicatedWorldAtlas() {
     ${manorEconomyOverlaySvg}
     ${noblesseOlympiadOverlaySvg}
     ${intercontinentalTransitOverlaySvg}
+    ${soulCrystalOverlaySvg}
+    ${fishingSanctuaryOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

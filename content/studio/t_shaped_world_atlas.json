@@ -49347,5 +49347,527 @@
       "ticket_cost_adena": 18000,
       "vessel_or_gatekeeper_name": "Gatekeeper Ilyana \u21c4 Grand Gatekeeper Eliza"
     }
+  ],
+  "soul_crystal_resonance_stages": [
+    {
+      "crystal_stage_id": "sa-crimson-01-stage-1-to-3",
+      "crystal_color": "Crimson_Red",
+      "stage_band": "Stage_1_to_5_C_Grade",
+      "weapon_grade_unlocked": "C-Grade",
+      "special_abilities": [
+        "Focus (+64 Crit Rate)",
+        "Haste (+7% Atk Spd)",
+        "Critical Damage (+165 P.Atk on Crit)"
+      ],
+      "vendor_town_zone_id": "zone-town-lantern-hollow",
+      "absorption_target_name": "Kiln Cellar Slag Brood-Matron & Cinder Weaver (Lv.32-38)",
+      "absorption_zone_id": "zone-dungeon-kiln-cellar",
+      "absorption_dungeon_id": "zone-dungeon-kiln-cellar",
+      "absorption_floor_id": "B2",
+      "absorption_loc": "75620:116940",
+      "resonance_chance_pct": 65,
+      "shatter_rule": "Safe Resonance (0% Crystal Shatter Risk on Failure)"
+    },
+    {
+      "crystal_stage_id": "sa-crimson-02-stage-4-to-5",
+      "crystal_color": "Crimson_Red",
+      "stage_band": "Stage_1_to_5_C_Grade",
+      "weapon_grade_unlocked": "C-Grade",
+      "special_abilities": [
+        "Focus (+78 Crit Rate)",
+        "Haste (+8% Atk Spd)",
+        "Anger (+15% P.Atk / -15% Max HP)"
+      ],
+      "vendor_town_zone_id": "zone-town-kilnwatch-bastion",
+      "absorption_target_name": "Cinder Apron Magma Drake & Vitrified Slag Gargoyle (Lv.42-48)",
+      "absorption_zone_id": "zone-field-cinder-apron",
+      "absorption_dungeon_id": "",
+      "absorption_floor_id": "",
+      "absorption_loc": "-6180:132040",
+      "resonance_chance_pct": 48,
+      "shatter_rule": "Low Volatility (5% Crack Risk above Stage 4)"
+    },
+    {
+      "crystal_stage_id": "sa-crimson-03-stage-6-to-8",
+      "crystal_color": "Crimson_Red",
+      "stage_band": "Stage_6_to_10_B_A_Grade",
+      "weapon_grade_unlocked": "B-Grade",
+      "special_abilities": [
+        "Focus (+92 Crit Rate)",
+        "Haste (+9% Atk Spd)",
+        "Rsk. Focus (+118 Crit below 60% HP)"
+      ],
+      "vendor_town_zone_id": "zone-town-pinion-terminus",
+      "absorption_target_name": "Pendulum Weight Shaft Automaton Centurion (Lv.52-58)",
+      "absorption_zone_id": "zone-dungeon-pendulum-shaft",
+      "absorption_dungeon_id": "zone-dungeon-pendulum-shaft",
+      "absorption_floor_id": "3F",
+      "absorption_loc": "85620:144380",
+      "resonance_chance_pct": 36,
+      "shatter_rule": "Moderate Resonance Volatility (10% Shatter Risk if target not Soul-Drained)"
+    },
+    {
+      "crystal_stage_id": "sa-crimson-04-stage-9-to-10",
+      "crystal_color": "Crimson_Red",
+      "stage_band": "Stage_6_to_10_B_A_Grade",
+      "weapon_grade_unlocked": "A-Grade",
+      "special_abilities": [
+        "Focus (+108 Crit Rate)",
+        "Haste (+10% Atk Spd)",
+        "Critical Bleed (35% DoT on Crit)"
+      ],
+      "vendor_town_zone_id": "zone-town-escapement-anvil",
+      "absorption_target_name": "Mainspring Caldera Rim Ash-Titan & Doom Knight (Lv.64-70)",
+      "absorption_zone_id": "zone-field-caldera-rim",
+      "absorption_dungeon_id": "",
+      "absorption_floor_id": "",
+      "absorption_loc": "86640:61420",
+      "resonance_chance_pct": 28,
+      "shatter_rule": "High Resonance Volatility (12% Shatter Risk; Last-Hit Party Absorption)"
+    },
+    {
+      "crystal_stage_id": "sa-crimson-05-stage-11-to-12",
+      "crystal_color": "Crimson_Red",
+      "stage_band": "Stage_11_to_13_S_Grade_Boss",
+      "weapon_grade_unlocked": "S-Grade",
+      "special_abilities": [
+        "Focus (+134 Crit Rate)",
+        "Haste (+11% Atk Spd)",
+        "HP Drain (4% Vampiric Melee Absorb)"
+      ],
+      "vendor_town_zone_id": "zone-town-inductor-switchyard",
+      "absorption_target_name": "Chronometer Foundry MVP Apostle Krono-Vanguard (Lv.78 Raid Sanctum)",
+      "absorption_zone_id": "zone-dungeon-chronometer-foundry",
+      "absorption_dungeon_id": "zone-dungeon-chronometer-foundry",
+      "absorption_floor_id": "3F",
+      "absorption_loc": "85040:56620",
+      "resonance_chance_pct": 100,
+      "shatter_rule": "Guaranteed Raid Party Resonance (0% Shatter on MVP Sanctum Kill)"
+    },
+    {
+      "crystal_stage_id": "sa-crimson-06-stage-13-apex",
+      "crystal_color": "Crimson_Red",
+      "stage_band": "Stage_11_to_13_S_Grade_Boss",
+      "weapon_grade_unlocked": "S-Grade",
+      "special_abilities": [
+        "Focus (+152 Crit Rate)",
+        "Haste (+12% Atk Spd)",
+        "Crt. Damage (+365 Apex S-Grade P.Atk)"
+      ],
+      "vendor_town_zone_id": "zone-town-crown-beacon",
+      "absorption_target_name": "Catacomb of the Forbidden Architect Path MVP Ember-Archon (Lv.85 Sanctum)",
+      "absorption_zone_id": "zone-catacomb-forbidden-path-orrery",
+      "absorption_dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "absorption_floor_id": "B3",
+      "absorption_loc": "18640:-64020",
+      "resonance_chance_pct": 22,
+      "shatter_rule": "Apex Grand-Boss Resonance (15% Shatter Risk or Full Party Stage 12->13 Promotion)"
+    },
+    {
+      "crystal_stage_id": "sa-verdant-01-stage-1-to-3",
+      "crystal_color": "Verdant_Green",
+      "stage_band": "Stage_1_to_5_C_Grade",
+      "weapon_grade_unlocked": "C-Grade",
+      "special_abilities": [
+        "Acumen (+15% Cast Spd)",
+        "Empower (+45 M.Atk)",
+        "Magic Power (+12% MP Cost / +18% M.Atk)"
+      ],
+      "vendor_town_zone_id": "zone-town-porcelain-loom",
+      "absorption_target_name": "Medallion Heart Vault Celadon Golem & Oracle Shade (Lv.30-36)",
+      "absorption_zone_id": "zone-dungeon-medallion-heart-vault",
+      "absorption_dungeon_id": "zone-dungeon-medallion-heart-vault",
+      "absorption_floor_id": "B2",
+      "absorption_loc": "49980:44280",
+      "resonance_chance_pct": 65,
+      "shatter_rule": "Safe Resonance (0% Crystal Shatter Risk on Failure)"
+    },
+    {
+      "crystal_stage_id": "sa-verdant-02-stage-4-to-5",
+      "crystal_color": "Verdant_Green",
+      "stage_band": "Stage_1_to_5_C_Grade",
+      "weapon_grade_unlocked": "C-Grade",
+      "special_abilities": [
+        "Acumen (+15% Cast Spd)",
+        "Mana Up (+30% Max MP)",
+        "Conversion (+40% Max MP / -40% Max HP)"
+      ],
+      "vendor_town_zone_id": "zone-town-glaze-barge-quay",
+      "absorption_target_name": "Sunken Potter Hold Abyssal Siren & Brine Prelate (Lv.40-46)",
+      "absorption_zone_id": "zone-dungeon-sunken-potter-hold",
+      "absorption_dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "absorption_floor_id": "B3",
+      "absorption_loc": "-78180:149420",
+      "resonance_chance_pct": 50,
+      "shatter_rule": "Low Volatility (5% Crack Risk above Stage 4)"
+    },
+    {
+      "crystal_stage_id": "sa-verdant-03-stage-6-to-8",
+      "crystal_color": "Verdant_Green",
+      "stage_band": "Stage_6_to_10_B_A_Grade",
+      "weapon_grade_unlocked": "B-Grade",
+      "special_abilities": [
+        "Acumen (+15% Cast Spd)",
+        "Magic Silence (10% Silence on Cast)",
+        "Quick Recovery (-15% Skill Reuse)"
+      ],
+      "vendor_town_zone_id": "zone-town-saffron-press",
+      "absorption_target_name": "Catacomb of the Branded Bellows Nephilim Arch-Seer (Lv.54-60)",
+      "absorption_zone_id": "zone-catacomb-branded-bellows",
+      "absorption_dungeon_id": "zone-catacomb-branded-bellows",
+      "absorption_floor_id": "B3",
+      "absorption_loc": "112640:18420",
+      "resonance_chance_pct": 35,
+      "shatter_rule": "Moderate Resonance Volatility (10% Shatter Risk if target not Soul-Drained)"
+    },
+    {
+      "crystal_stage_id": "sa-verdant-04-stage-9-to-10",
+      "crystal_color": "Verdant_Green",
+      "stage_band": "Stage_6_to_10_B_A_Grade",
+      "weapon_grade_unlocked": "A-Grade",
+      "special_abilities": [
+        "Acumen (+15% Cast Spd)",
+        "Empower (+85 M.Atk)",
+        "Magic Paralyze (8% Anchor Proc)"
+      ],
+      "vendor_town_zone_id": "zone-town-torque-balance-citadel",
+      "absorption_target_name": "Leyden Capacitor Causeway Arc-Tesla Construct (Lv.64-72)",
+      "absorption_zone_id": "zone-field-leyden-causeway",
+      "absorption_dungeon_id": "",
+      "absorption_floor_id": "",
+      "absorption_loc": "141420:-48380",
+      "resonance_chance_pct": 26,
+      "shatter_rule": "High Resonance Volatility (12% Shatter Risk; Last-Hit Party Absorption)"
+    },
+    {
+      "crystal_stage_id": "sa-verdant-05-stage-11-to-12",
+      "crystal_color": "Verdant_Green",
+      "stage_band": "Stage_11_to_13_S_Grade_Boss",
+      "weapon_grade_unlocked": "S-Grade",
+      "special_abilities": [
+        "Acumen (+15% Cast Spd)",
+        "Empower (+125 M.Atk)",
+        "MP Regeneration (+18% Clarity Recovery)"
+      ],
+      "vendor_town_zone_id": "zone-town-starfall-haven",
+      "absorption_target_name": "Catacomb of the Astral Witch MVP Vesper-Hierophant (Lv.78 Sanctum)",
+      "absorption_zone_id": "zone-catacomb-witch-pendulum",
+      "absorption_dungeon_id": "zone-catacomb-witch-pendulum",
+      "absorption_floor_id": "B3",
+      "absorption_loc": "54420:-34580",
+      "resonance_chance_pct": 100,
+      "shatter_rule": "Guaranteed Raid Party Resonance (0% Shatter on MVP Sanctum Kill)"
+    },
+    {
+      "crystal_stage_id": "sa-verdant-06-stage-13-apex",
+      "crystal_color": "Verdant_Green",
+      "stage_band": "Stage_11_to_13_S_Grade_Boss",
+      "weapon_grade_unlocked": "S-Grade",
+      "special_abilities": [
+        "Acumen (+15% Cast Spd)",
+        "Empower (+165 Apex S-Grade M.Atk)",
+        "Mysticumen (+15% Cast Spd & +60 M.Atk)"
+      ],
+      "vendor_town_zone_id": "zone-town-crown-beacon",
+      "absorption_target_name": "Star-Heart Tower of Insolence Celestial Archon Baium-Analog (Lv.84 Sanctum)",
+      "absorption_zone_id": "zone-dungeon-star-heart-nave",
+      "absorption_dungeon_id": "zone-dungeon-star-heart-nave",
+      "absorption_floor_id": "3F",
+      "absorption_loc": "149440:28620",
+      "resonance_chance_pct": 20,
+      "shatter_rule": "Apex Grand-Boss Resonance (15% Shatter Risk or Full Party Stage 12->13 Promotion)"
+    },
+    {
+      "crystal_stage_id": "sa-azure-01-stage-1-to-3",
+      "crystal_color": "Azure_Blue",
+      "stage_band": "Stage_1_to_5_C_Grade",
+      "weapon_grade_unlocked": "C-Grade",
+      "special_abilities": [
+        "Health (+25% Max HP)",
+        "Guidance (+6 Accuracy)",
+        "Evasion (+6 Dodge Rating)"
+      ],
+      "vendor_town_zone_id": "zone-town-root-train-roundhouse",
+      "absorption_target_name": "Sap-Heart Abandoned Mines Deep-vein Drevanul (Lv.32-38)",
+      "absorption_zone_id": "zone-dungeon-sap-heart-cistern",
+      "absorption_dungeon_id": "zone-dungeon-sap-heart-cistern",
+      "absorption_floor_id": "B2",
+      "absorption_loc": "119620:-173980",
+      "resonance_chance_pct": 65,
+      "shatter_rule": "Safe Resonance (0% Crystal Shatter Risk on Failure)"
+    },
+    {
+      "crystal_stage_id": "sa-azure-02-stage-4-to-5",
+      "crystal_color": "Azure_Blue",
+      "stage_band": "Stage_1_to_5_C_Grade",
+      "weapon_grade_unlocked": "C-Grade",
+      "special_abilities": [
+        "Health (+25% Max HP)",
+        "Critical Stun (22% Stun on Crit)",
+        "Miser (-20% Soulshot Consumption)"
+      ],
+      "vendor_town_zone_id": "zone-town-draft-kiln-post",
+      "absorption_target_name": "Ember Bellows Cave of Trials Obsidian Tyrant (Lv.42-48)",
+      "absorption_zone_id": "zone-dungeon-ember-bellows-chamber",
+      "absorption_dungeon_id": "zone-dungeon-ember-bellows-chamber",
+      "absorption_floor_id": "B3",
+      "absorption_loc": "-40980:-109580",
+      "resonance_chance_pct": 48,
+      "shatter_rule": "Low Volatility (5% Crack Risk above Stage 4)"
+    },
+    {
+      "crystal_stage_id": "sa-azure-03-stage-6-to-8",
+      "crystal_color": "Azure_Blue",
+      "stage_band": "Stage_6_to_10_B_A_Grade",
+      "weapon_grade_unlocked": "B-Grade",
+      "special_abilities": [
+        "Health (+25% Max HP)",
+        "QR-Shot (-12% Bow Reuse)",
+        "Cheap Shot (28% 1-MP Arrow Proc)"
+      ],
+      "vendor_town_zone_id": "zone-town-carillon-belfry",
+      "absorption_target_name": "Necropolis of Worship & Dynamo Seal Lilim Paladin (Lv.54-60)",
+      "absorption_zone_id": "zone-catacomb-apostate-dynamo",
+      "absorption_dungeon_id": "zone-catacomb-apostate-dynamo",
+      "absorption_floor_id": "B3",
+      "absorption_loc": "150040:-50980",
+      "resonance_chance_pct": 34,
+      "shatter_rule": "Moderate Resonance Volatility (10% Shatter Risk if target not Soul-Drained)"
+    },
+    {
+      "crystal_stage_id": "sa-azure-04-stage-9-to-10",
+      "crystal_color": "Azure_Blue",
+      "stage_band": "Stage_6_to_10_B_A_Grade",
+      "weapon_grade_unlocked": "A-Grade",
+      "special_abilities": [
+        "Health (+25% Max HP)",
+        "Guidance (+8 Accuracy)",
+        "Critical Slow (30% Hamstring on Crit)"
+      ],
+      "vendor_town_zone_id": "zone-town-cinnamon-mill",
+      "absorption_target_name": "Aurora Tether Span Star-Forged Watcher (Lv.66-74)",
+      "absorption_zone_id": "zone-field-aurora-tether",
+      "absorption_dungeon_id": "",
+      "absorption_floor_id": "",
+      "absorption_loc": "152620:31440",
+      "resonance_chance_pct": 25,
+      "shatter_rule": "High Resonance Volatility (12% Shatter Risk; Last-Hit Party Absorption)"
+    },
+    {
+      "crystal_stage_id": "sa-azure-05-stage-11-to-12",
+      "crystal_color": "Azure_Blue",
+      "stage_band": "Stage_11_to_13_S_Grade_Boss",
+      "weapon_grade_unlocked": "S-Grade",
+      "special_abilities": [
+        "Health (+25% Max HP)",
+        "Critical Stun (32% S-Grade Polearm Stun)",
+        "HP Regeneration (+24 HP/tick)"
+      ],
+      "vendor_town_zone_id": "zone-town-starfall-haven",
+      "absorption_target_name": "Necropolis of Deep Devotion MVP Thalassa-Leviathan (Lv.79 Sanctum)",
+      "absorption_zone_id": "zone-catacomb-dark-omens-coral",
+      "absorption_dungeon_id": "zone-catacomb-dark-omens-coral",
+      "absorption_floor_id": "B3",
+      "absorption_loc": "38640:-28680",
+      "resonance_chance_pct": 100,
+      "shatter_rule": "Guaranteed Raid Party Resonance (0% Shatter on MVP Sanctum Kill)"
+    },
+    {
+      "crystal_stage_id": "sa-azure-06-stage-13-apex",
+      "crystal_color": "Azure_Blue",
+      "stage_band": "Stage_11_to_13_S_Grade_Boss",
+      "weapon_grade_unlocked": "S-Grade",
+      "special_abilities": [
+        "Health (+25% Max HP)",
+        "Guidance (+10 Apex Accuracy)",
+        "Fortitude (+30% Max HP & Shield Block)"
+      ],
+      "vendor_town_zone_id": "zone-town-crown-beacon",
+      "absorption_target_name": "Catacomb of the Heretic Kiln Awakened Dragon-Apostle Antharas-Analog (Lv.85 Sanctum)",
+      "absorption_zone_id": "zone-catacomb-heretic-kiln",
+      "absorption_dungeon_id": "zone-catacomb-heretic-kiln",
+      "absorption_floor_id": "B3",
+      "absorption_loc": "20040:173620",
+      "resonance_chance_pct": 18,
+      "shatter_rule": "Apex Grand-Boss Resonance (15% Shatter Risk or Full Party Stage 12->13 Promotion)"
+    }
+  ],
+  "fishing_guild_sanctuaries": [
+    {
+      "sanctuary_id": "fishing-pier-01-lantern-ferry",
+      "sanctuary_name": "Lantern Hollow South Ferry Deep-Sea Breakwater Pier",
+      "water_category": "Maritime_Harbor_Pier",
+      "zone_id": "zone-harbor-lantern-ferry-pier",
+      "dock_loc": "-96020:258580",
+      "guild_master_npc": "Fishing Guild Member Perelin",
+      "recommended_lure": "Green Colored Lure (High-Grade) & Fishing Shot (No-Grade..C)",
+      "active_time_window": "24h All-Day",
+      "primary_catch_reward": "Proof of Catching a Fish (Warehouse & Common Craft Recipe Slot Expansion)"
+    },
+    {
+      "sanctuary_id": "fishing-pier-02-glaze-barge-harbor",
+      "sanctuary_name": "Glaze-Barge Maritime & Airship Harbor Angler Jetty",
+      "water_category": "Maritime_Harbor_Pier",
+      "zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "dock_loc": "-89180:155380",
+      "guild_master_npc": "Fishing Guild Member Bleaker",
+      "recommended_lure": "Purple Colored Lure (Fat Fish) & B-Grade Fishing Shot",
+      "active_time_window": "24h All-Day",
+      "primary_catch_reward": "Proof of Catching a Fish (Inventory & Trade Slot Expansion Books)"
+    },
+    {
+      "sanctuary_id": "fishing-pier-03-glaze-barge-quay",
+      "sanctuary_name": "Glaze-Barge River Quay Merchant Angler Wharf",
+      "water_category": "Maritime_Harbor_Pier",
+      "zone_id": "zone-town-glaze-barge-quay",
+      "dock_loc": "-80980:151580",
+      "guild_master_npc": "Fishing Guild Member Cyan",
+      "recommended_lure": "Yellow Colored Lure (Nimble Fish) & C-Grade Fishing Shot",
+      "active_time_window": "24h All-Day",
+      "primary_catch_reward": "Pirate Treasure Map Chest, Fish Oil & Greater Fish Oil Crafting Materials"
+    },
+    {
+      "sanctuary_id": "fishing-pier-04-pinion-terminus",
+      "sanctuary_name": "Pinion Terminus Steppe Seawall & Lock Pier",
+      "water_category": "Maritime_Harbor_Pier",
+      "zone_id": "zone-town-pinion-terminus",
+      "dock_loc": "82620:148780",
+      "guild_master_npc": "Fishing Guild Member Pamfus",
+      "recommended_lure": "Green High-Grade Lure & B-Grade Fishing Shot",
+      "active_time_window": "24h All-Day",
+      "primary_catch_reward": "Proof of Catching a Fish (Dwarven Recipe Book & Private Store Slot Expansion)"
+    },
+    {
+      "sanctuary_id": "fishing-pier-05-starfall-sky-harbor",
+      "sanctuary_name": "Starfall Haven Cloud-Basin Cascade Dock",
+      "water_category": "Maritime_Harbor_Pier",
+      "zone_id": "zone-town-starfall-haven",
+      "dock_loc": "44020:-47720",
+      "guild_master_npc": "Fishing Guild Member Hilgendorf",
+      "recommended_lure": "Prize-Winning Fishing Lure & A-Grade Fishing Shot",
+      "active_time_window": "24h All-Day",
+      "primary_catch_reward": "Shiny Fish Gem, Monocle Hair Accessory & A-Grade Hair Pin Materials"
+    },
+    {
+      "sanctuary_id": "fishing-pier-06-kelp-spiral-shoals",
+      "sanctuary_name": "Kelp Spiral Undertide Reef Coral Outrigger Pier",
+      "water_category": "Maritime_Harbor_Pier",
+      "zone_id": "zone-field-kelp-spiral-reef",
+      "dock_loc": "-52180:-138420",
+      "guild_master_npc": "Fishing Guild Master Klaus",
+      "recommended_lure": "Abyssal Purple Lure & S-Grade Fishing Shot",
+      "active_time_window": "24h All-Day",
+      "primary_catch_reward": "Ancient Pirate King's Treasure Chest & S-Grade Fish Scale Gemstones"
+    },
+    {
+      "sanctuary_id": "fishing-lake-01-whispering-mire",
+      "sanctuary_name": "Whispering Teapot Mire Nocturnal Bioluminescent Lagoon",
+      "water_category": "Luminous_Night_Lake",
+      "zone_id": "zone-field-whispering-mire",
+      "dock_loc": "-68180:228620",
+      "guild_master_npc": "Fishing Guild Member Mishini",
+      "recommended_lure": "Luminous Lure (Green Nocturnal) & Night-Glow Bait",
+      "active_time_window": "00:00\u201306:00 Nocturnal Luminous",
+      "primary_catch_reward": "High-Grade Nocturnal Nimble Fish (Zero-Miss NightBite Bonus) & Pearl Scales"
+    },
+    {
+      "sanctuary_id": "fishing-lake-02-cobalt-sandbar",
+      "sanctuary_name": "Cobalt Sandbar River Delta Moonlit Estuary",
+      "water_category": "Luminous_Night_Lake",
+      "zone_id": "zone-field-cobalt-sandbar-ford",
+      "dock_loc": "-73980:143020",
+      "guild_master_npc": "Fishing Guild Member O'Fulle",
+      "recommended_lure": "Luminous Lure (Yellow Nocturnal) & C-Grade Fishing Shot",
+      "active_time_window": "00:00\u201306:00 Nocturnal Luminous",
+      "primary_catch_reward": "Moonlit Fat Fish Chest, Black Pearl Ring Material & Proof of Catching a Fish"
+    },
+    {
+      "sanctuary_id": "fishing-lake-03-chime-pipe-marsh",
+      "sanctuary_name": "Chime-Pipe Colonnade Starlight Mirror Pool",
+      "water_category": "Luminous_Night_Lake",
+      "zone_id": "zone-field-chime-pipe-colonnade",
+      "dock_loc": "19120:24320",
+      "guild_master_npc": "Fishing Guild Member Willie",
+      "recommended_lure": "Luminous Lure (Purple Nocturnal) & B-Grade Fishing Shot",
+      "active_time_window": "00:00\u201306:00 Nocturnal Luminous",
+      "primary_catch_reward": "Nocturnal Ugly Fish Vault, Party Mask & Cat Ear Hair Accessory Blueprint"
+    },
+    {
+      "sanctuary_id": "fishing-lake-04-siphon-canal",
+      "sanctuary_name": "Verdigris Siphon Mercury-Glow Reservoir Lake",
+      "water_category": "Luminous_Night_Lake",
+      "zone_id": "zone-field-siphon-sluice",
+      "dock_loc": "64420:35020",
+      "guild_master_npc": "Fishing Guild Member Lanosco",
+      "recommended_lure": "Luminous Lure (High-Grade Green) & A-Grade Fishing Shot",
+      "active_time_window": "00:00\u201306:00 Nocturnal Luminous",
+      "primary_catch_reward": "Quicksilver Nocturnal Coelacanth & Proof of Catching a Fish (Max Inventory Cap)"
+    },
+    {
+      "sanctuary_id": "fishing-lake-05-aurora-astral-basin",
+      "sanctuary_name": "Aurora Tether Astral Lady-of-the-Lake Sanctuary",
+      "water_category": "Luminous_Night_Lake",
+      "zone_id": "zone-field-aurora-tether",
+      "dock_loc": "152640:31420",
+      "guild_master_npc": "Fishing Guild Member Linneaus",
+      "recommended_lure": "Luminous Lure (Masterwork Purple) & S-Grade Fishing Shot",
+      "active_time_window": "00:00\u201306:00 Nocturnal Luminous",
+      "primary_catch_reward": "Starlight Leviathan Fry, Romantic Chapeau & Feathered Hat Craft Tokens"
+    },
+    {
+      "sanctuary_id": "fishing-spring-01-caldera-sulfur",
+      "sanctuary_name": "Mainspring Caldera Rim Sulfur & Malaria Geyser Pools",
+      "water_category": "Thermal_Hot_Spring",
+      "zone_id": "zone-field-caldera-rim",
+      "dock_loc": "86620:61380",
+      "guild_master_npc": "Hot Springs Chef Jeremy & Guild Master Berix",
+      "recommended_lure": "Hot Springs Rainbow Lure & Thermal Mineral Bait",
+      "active_time_window": "Thermal Mist Cycle",
+      "primary_catch_reward": "Hot Springs Malaria Lv.4 (+16% Cast Spd / -8% MP Cost) & Rainbow Trout"
+    },
+    {
+      "sanctuary_id": "fishing-spring-02-ginger-steam-bath",
+      "sanctuary_name": "Ginger-Steam Aqueduct Thermal Mineral Terrace",
+      "water_category": "Thermal_Hot_Spring",
+      "zone_id": "zone-field-ginger-aqueduct-bridge",
+      "dock_loc": "-106580:59620",
+      "guild_master_npc": "Fishing Guild Member Kiki",
+      "recommended_lure": "Spiced Thermal Lure & C-Grade Fishing Shot",
+      "active_time_window": "Thermal Mist Cycle",
+      "primary_catch_reward": "Hot Springs Cholera Lv.4 (+10 Accuracy / +120 Crit Rate) & Ginger Carp"
+    },
+    {
+      "sanctuary_id": "fishing-spring-03-firebrick-fumarole",
+      "sanctuary_name": "Firebrick Bellows Geothermal Fumarole Basin",
+      "water_category": "Thermal_Hot_Spring",
+      "zone_id": "zone-field-firebrick-duct",
+      "dock_loc": "-38980:-105180",
+      "guild_master_npc": "Fishing Guild Member Batidae",
+      "recommended_lure": "Volcanic Slag Lure & B-Grade Fishing Shot",
+      "active_time_window": "Thermal Mist Cycle",
+      "primary_catch_reward": "Hot Springs Flu Lv.4 (+8% Atk Spd) & Magma-Scale Char Chest"
+    },
+    {
+      "sanctuary_id": "fishing-spring-04-slag-chasm-vent",
+      "sanctuary_name": "Vitrified Slag Chasm Boiling Mineral Baths",
+      "water_category": "Thermal_Hot_Spring",
+      "zone_id": "zone-field-slag-chasm",
+      "dock_loc": "25020:136420",
+      "guild_master_npc": "Fishing Guild Member Evert",
+      "recommended_lure": "Obsidian Thermal Lure & B-Grade Fishing Shot",
+      "active_time_window": "Thermal Mist Cycle",
+      "primary_catch_reward": "Hot Springs Rheumatism Lv.4 (+12 Evasion) & Mineral Cure Spring Water"
+    },
+    {
+      "sanctuary_id": "fishing-spring-05-orrery-nebula-spa",
+      "sanctuary_name": "The Orrery Bridge Celestial Thermal Mist Sanctuary",
+      "water_category": "Thermal_Hot_Spring",
+      "zone_id": "zone-field-orrery-bridge",
+      "dock_loc": "-28180:-107980",
+      "guild_master_npc": "Fishing Guild Grandmaster Santiago",
+      "recommended_lure": "Celestial Mist Lure & S-Grade Fishing Shot",
+      "active_time_window": "Thermal Mist Cycle",
+      "primary_catch_reward": "Ice Queen Freya's Frozen Rose Nectar, Hot Springs Malaria Lv.4 & Golden Koi"
+    }
   ]
 }

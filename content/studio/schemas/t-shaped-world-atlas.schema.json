@@ -95,6 +95,18 @@
       "maxItems": 18,
       "items": { "$ref": "#/$defs/intercontinentalTransitLineSpec" }
     },
+    "soul_crystal_resonance_stages": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": { "$ref": "#/$defs/soulCrystalResonanceStageSpec" }
+    },
+    "fishing_guild_sanctuaries": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/fishingGuildSanctuarySpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -1921,6 +1933,100 @@
         "departure_interval": { "type": "string" },
         "ticket_cost_adena": { "type": "integer", "minimum": 0 },
         "vessel_or_gatekeeper_name": { "type": "string" }
+      }
+    },
+    "soulCrystalResonanceStageSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "crystal_stage_id",
+        "crystal_color",
+        "stage_band",
+        "weapon_grade_unlocked",
+        "special_abilities",
+        "vendor_town_zone_id",
+        "absorption_target_name",
+        "absorption_zone_id",
+        "absorption_dungeon_id",
+        "absorption_floor_id",
+        "absorption_loc",
+        "resonance_chance_pct",
+        "shatter_rule"
+      ],
+      "properties": {
+        "crystal_stage_id": { "type": "string" },
+        "crystal_color": {
+          "type": "string",
+          "enum": ["Crimson_Red", "Verdant_Green", "Azure_Blue"]
+        },
+        "stage_band": {
+          "type": "string",
+          "enum": [
+            "Stage_1_to_5_C_Grade",
+            "Stage_6_to_10_B_A_Grade",
+            "Stage_11_to_13_S_Grade_Boss"
+          ]
+        },
+        "weapon_grade_unlocked": {
+          "type": "string",
+          "enum": ["C-Grade", "B-Grade", "A-Grade", "S-Grade"]
+        },
+        "special_abilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "vendor_town_zone_id": { "type": "string" },
+        "absorption_target_name": { "type": "string" },
+        "absorption_zone_id": { "type": "string" },
+        "absorption_dungeon_id": { "type": "string" },
+        "absorption_floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "absorption_loc": { "type": "string" },
+        "resonance_chance_pct": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "shatter_rule": { "type": "string" }
+      }
+    },
+    "fishingGuildSanctuarySpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sanctuary_id",
+        "sanctuary_name",
+        "water_category",
+        "zone_id",
+        "dock_loc",
+        "guild_master_npc",
+        "recommended_lure",
+        "active_time_window",
+        "primary_catch_reward"
+      ],
+      "properties": {
+        "sanctuary_id": { "type": "string" },
+        "sanctuary_name": { "type": "string" },
+        "water_category": {
+          "type": "string",
+          "enum": [
+            "Maritime_Harbor_Pier",
+            "Luminous_Night_Lake",
+            "Thermal_Hot_Spring"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dock_loc": { "type": "string" },
+        "guild_master_npc": { "type": "string" },
+        "recommended_lure": { "type": "string" },
+        "active_time_window": {
+          "type": "string",
+          "enum": [
+            "24h All-Day",
+            "00:00–06:00 Nocturnal Luminous",
+            "Thermal Mist Cycle"
+          ]
+        },
+        "primary_catch_reward": { "type": "string" }
       }
     }
   }

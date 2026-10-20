@@ -670,6 +670,8 @@ def validate_world_governance(
                 "manorEconomyRoutesCount": len(t_doc.get("manor_economy_routes") or []),
                 "noblesseOlympiadNetworkCount": len(t_doc.get("noblesse_olympiad_network") or []),
                 "intercontinentalTransitLinesCount": len(t_doc.get("intercontinental_transit_lines") or []),
+                "soulCrystalResonanceStagesCount": len(t_doc.get("soul_crystal_resonance_stages") or []),
+                "fishingGuildSanctuariesCount": len(t_doc.get("fishing_guild_sanctuaries") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -967,6 +969,44 @@ def validate_world_governance(
                 if dest_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: intercontinental_transit_lines '{tid}' references unknown destination_zone_id '{dest_zid}'"
+                    )
+
+            # Validate 18 Soul Crystal (SA) Stage 1-13 Resonance & Boss Absorption Entries (D31)
+            soul_crystals = t_doc.get("soul_crystal_resonance_stages") or []
+            if soul_crystals and len(soul_crystals) != 18:
+                errors.append(f"GOV-10 violation: soul_crystal_resonance_stages must have 18 entries, got {len(soul_crystals)}")
+            for sc_item in soul_crystals:
+                if not isinstance(sc_item, dict):
+                    continue
+                sc_id = str(sc_item.get("crystal_stage_id", ""))
+                vtown = str(sc_item.get("vendor_town_zone_id", ""))
+                azone = str(sc_item.get("absorption_zone_id", ""))
+                adng = str(sc_item.get("absorption_dungeon_id", ""))
+                if vtown not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: soul_crystal_resonance_stages '{sc_id}' references unknown vendor_town_zone_id '{vtown}'"
+                    )
+                if azone not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: soul_crystal_resonance_stages '{sc_id}' references unknown absorption_zone_id '{azone}'"
+                    )
+                if adng and adng not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: soul_crystal_resonance_stages '{sc_id}' references unknown absorption_dungeon_id '{adng}'"
+                    )
+
+            # Validate 16 Fishing Guild, Hot Springs & Luminous Night-Bait Sanctuaries (D32)
+            fishing_sanctuaries = t_doc.get("fishing_guild_sanctuaries") or []
+            if fishing_sanctuaries and len(fishing_sanctuaries) != 16:
+                errors.append(f"GOV-10 violation: fishing_guild_sanctuaries must have 16 sanctuaries, got {len(fishing_sanctuaries)}")
+            for fs_item in fishing_sanctuaries:
+                if not isinstance(fs_item, dict):
+                    continue
+                fs_id = str(fs_item.get("sanctuary_id", ""))
+                fs_zid = str(fs_item.get("zone_id", ""))
+                if fs_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: fishing_guild_sanctuaries '{fs_id}' references unknown zone_id '{fs_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

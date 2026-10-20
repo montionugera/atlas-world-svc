@@ -989,7 +989,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 30)
+        self.assertGreaterEqual(len(audit["dimensions"]), 30)
 
         d29 = audit["dimensions"]["D29_noblesse_and_olympiad_monument_network"]
         self.assertEqual(d29["score"], 100.0)
@@ -1031,10 +1031,96 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas30DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 30)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 30)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 30)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 30)
         self.assertIn("30-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave14_soul_crystal_resonance_stages_and_fishing_guild_sanctuaries(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["soulCrystalResonanceStagesCount"], 18)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["fishingGuildSanctuariesCount"], 16)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_SOUL_CRYSTAL_MODE",
+            "setAtlasSoulCrystalMode(",
+            "renderAtlasSoulCrystalBarHtml(",
+            "studioSoulCrystalResonanceOverlay",
+            "ATLAS_FISHING_MODE",
+            "setAtlasFishingMode(",
+            "renderAtlasFishingSanctuaryBarHtml(",
+            "studioFishingSanctuaryOverlay",
+            "32-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 14 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 32)
+
+        d31 = audit["dimensions"]["D31_soul_crystal_resonance_and_boss_absorption"]
+        self.assertEqual(d31["score"], 100.0)
+        self.assertEqual(d31["verified"], 18)
+        self.assertEqual(d31["target"], 18)
+        self.assertEqual(d31["crimson_red_stages"], 6)
+        self.assertEqual(d31["verdant_green_stages"], 6)
+        self.assertEqual(d31["azure_blue_stages"], 6)
+        self.assertTrue(d31["ui_wired"])
+
+        d32 = audit["dimensions"]["D32_fishing_guild_and_hot_springs_sanctuaries"]
+        self.assertEqual(d32["score"], 100.0)
+        self.assertEqual(d32["verified"], 16)
+        self.assertEqual(d32["target"], 16)
+        self.assertEqual(d32["maritime_piers"], 6)
+        self.assertEqual(d32["luminous_lakes"], 5)
+        self.assertEqual(d32["thermal_hot_springs"], 5)
+        self.assertTrue(d32["ui_wired"])
+
+        soul_crystals = atlas["soul_crystal_resonance_stages"]
+        self.assertEqual(len(soul_crystals), 18)
+        self.assertEqual(sum(1 for s in soul_crystals if s["crystal_color"] == "Crimson_Red"), 6)
+        self.assertEqual(sum(1 for s in soul_crystals if s["crystal_color"] == "Verdant_Green"), 6)
+        self.assertEqual(sum(1 for s in soul_crystals if s["crystal_color"] == "Azure_Blue"), 6)
+        self.assertEqual(
+            {s["crystal_color"] for s in soul_crystals},
+            {"Crimson_Red", "Verdant_Green", "Azure_Blue"},
+        )
+        self.assertEqual(
+            {s["stage_band"] for s in soul_crystals},
+            {"Stage_1_to_5_C_Grade", "Stage_6_to_10_B_A_Grade", "Stage_11_to_13_S_Grade_Boss"},
+        )
+        self.assertEqual(
+            {s["weapon_grade_unlocked"] for s in soul_crystals},
+            {"C-Grade", "B-Grade", "A-Grade", "S-Grade"},
+        )
+
+        fishing_sanctuaries = atlas["fishing_guild_sanctuaries"]
+        self.assertEqual(len(fishing_sanctuaries), 16)
+        self.assertEqual(sum(1 for f in fishing_sanctuaries if f["water_category"] == "Maritime_Harbor_Pier"), 6)
+        self.assertEqual(sum(1 for f in fishing_sanctuaries if f["water_category"] == "Luminous_Night_Lake"), 5)
+        self.assertEqual(sum(1 for f in fishing_sanctuaries if f["water_category"] == "Thermal_Hot_Spring"), 5)
+        self.assertEqual(
+            {f["water_category"] for f in fishing_sanctuaries},
+            {"Maritime_Harbor_Pier", "Luminous_Night_Lake", "Thermal_Hot_Spring"},
+        )
+        self.assertEqual(
+            {f["active_time_window"] for f in fishing_sanctuaries},
+            {"24h All-Day", "00:00–06:00 Nocturnal Luminous", "Thermal Mist Cycle"},
+        )
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas32DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 32)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 32)
+        self.assertIn("32-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

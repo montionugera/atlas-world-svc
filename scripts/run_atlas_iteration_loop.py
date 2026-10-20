@@ -3056,6 +3056,520 @@ def _build_intercontinental_transit_lines(atlas: dict[str, Any]) -> list[dict[st
     return lines
 
 
+def _build_soul_crystal_resonance_stages(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 18 Soul Crystal (SA) Stage 1-13 Resonance & Boss Absorption Entries (6 Crimson_Red + 6 Verdant_Green + 6 Azure_Blue) (D31)."""
+    specs = [
+        # 6 Crimson_Red Stages (Stage 1->3, Stage 4->5, Stage 6->8, Stage 9->10, Stage 11->12, Stage 13)
+        (
+            "sa-crimson-01-stage-1-to-3",
+            "Crimson_Red",
+            "Stage_1_to_5_C_Grade",
+            "C-Grade",
+            ["Focus (+64 Crit Rate)", "Haste (+7% Atk Spd)", "Critical Damage (+165 P.Atk on Crit)"],
+            "zone-town-lantern-hollow",
+            "Kiln Cellar Slag Brood-Matron & Cinder Weaver (Lv.32-38)",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B2",
+            "75620:116940",
+            65,
+            "Safe Resonance (0% Crystal Shatter Risk on Failure)",
+        ),
+        (
+            "sa-crimson-02-stage-4-to-5",
+            "Crimson_Red",
+            "Stage_1_to_5_C_Grade",
+            "C-Grade",
+            ["Focus (+78 Crit Rate)", "Haste (+8% Atk Spd)", "Anger (+15% P.Atk / -15% Max HP)"],
+            "zone-town-kilnwatch-bastion",
+            "Cinder Apron Magma Drake & Vitrified Slag Gargoyle (Lv.42-48)",
+            "zone-field-cinder-apron",
+            "",
+            "",
+            "-6180:132040",
+            48,
+            "Low Volatility (5% Crack Risk above Stage 4)",
+        ),
+        (
+            "sa-crimson-03-stage-6-to-8",
+            "Crimson_Red",
+            "Stage_6_to_10_B_A_Grade",
+            "B-Grade",
+            ["Focus (+92 Crit Rate)", "Haste (+9% Atk Spd)", "Rsk. Focus (+118 Crit below 60% HP)"],
+            "zone-town-pinion-terminus",
+            "Pendulum Weight Shaft Automaton Centurion (Lv.52-58)",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "85620:144380",
+            36,
+            "Moderate Resonance Volatility (10% Shatter Risk if target not Soul-Drained)",
+        ),
+        (
+            "sa-crimson-04-stage-9-to-10",
+            "Crimson_Red",
+            "Stage_6_to_10_B_A_Grade",
+            "A-Grade",
+            ["Focus (+108 Crit Rate)", "Haste (+10% Atk Spd)", "Critical Bleed (35% DoT on Crit)"],
+            "zone-town-escapement-anvil",
+            "Mainspring Caldera Rim Ash-Titan & Doom Knight (Lv.64-70)",
+            "zone-field-caldera-rim",
+            "",
+            "",
+            "86640:61420",
+            28,
+            "High Resonance Volatility (12% Shatter Risk; Last-Hit Party Absorption)",
+        ),
+        (
+            "sa-crimson-05-stage-11-to-12",
+            "Crimson_Red",
+            "Stage_11_to_13_S_Grade_Boss",
+            "S-Grade",
+            ["Focus (+134 Crit Rate)", "Haste (+11% Atk Spd)", "HP Drain (4% Vampiric Melee Absorb)"],
+            "zone-town-inductor-switchyard",
+            "Chronometer Foundry MVP Apostle Krono-Vanguard (Lv.78 Raid Sanctum)",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "85040:56620",
+            100,
+            "Guaranteed Raid Party Resonance (0% Shatter on MVP Sanctum Kill)",
+        ),
+        (
+            "sa-crimson-06-stage-13-apex",
+            "Crimson_Red",
+            "Stage_11_to_13_S_Grade_Boss",
+            "S-Grade",
+            ["Focus (+152 Crit Rate)", "Haste (+12% Atk Spd)", "Crt. Damage (+365 Apex S-Grade P.Atk)"],
+            "zone-town-crown-beacon",
+            "Catacomb of the Forbidden Architect Path MVP Ember-Archon (Lv.85 Sanctum)",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "18640:-64020",
+            22,
+            "Apex Grand-Boss Resonance (15% Shatter Risk or Full Party Stage 12->13 Promotion)",
+        ),
+        # 6 Verdant_Green Stages
+        (
+            "sa-verdant-01-stage-1-to-3",
+            "Verdant_Green",
+            "Stage_1_to_5_C_Grade",
+            "C-Grade",
+            ["Acumen (+15% Cast Spd)", "Empower (+45 M.Atk)", "Magic Power (+12% MP Cost / +18% M.Atk)"],
+            "zone-town-porcelain-loom",
+            "Medallion Heart Vault Celadon Golem & Oracle Shade (Lv.30-36)",
+            "zone-dungeon-medallion-heart-vault",
+            "zone-dungeon-medallion-heart-vault",
+            "B2",
+            "49980:44280",
+            65,
+            "Safe Resonance (0% Crystal Shatter Risk on Failure)",
+        ),
+        (
+            "sa-verdant-02-stage-4-to-5",
+            "Verdant_Green",
+            "Stage_1_to_5_C_Grade",
+            "C-Grade",
+            ["Acumen (+15% Cast Spd)", "Mana Up (+30% Max MP)", "Conversion (+40% Max MP / -40% Max HP)"],
+            "zone-town-glaze-barge-quay",
+            "Sunken Potter Hold Abyssal Siren & Brine Prelate (Lv.40-46)",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B3",
+            "-78180:149420",
+            50,
+            "Low Volatility (5% Crack Risk above Stage 4)",
+        ),
+        (
+            "sa-verdant-03-stage-6-to-8",
+            "Verdant_Green",
+            "Stage_6_to_10_B_A_Grade",
+            "B-Grade",
+            ["Acumen (+15% Cast Spd)", "Magic Silence (10% Silence on Cast)", "Quick Recovery (-15% Skill Reuse)"],
+            "zone-town-saffron-press",
+            "Catacomb of the Branded Bellows Nephilim Arch-Seer (Lv.54-60)",
+            "zone-catacomb-branded-bellows",
+            "zone-catacomb-branded-bellows",
+            "B3",
+            "112640:18420",
+            35,
+            "Moderate Resonance Volatility (10% Shatter Risk if target not Soul-Drained)",
+        ),
+        (
+            "sa-verdant-04-stage-9-to-10",
+            "Verdant_Green",
+            "Stage_6_to_10_B_A_Grade",
+            "A-Grade",
+            ["Acumen (+15% Cast Spd)", "Empower (+85 M.Atk)", "Magic Paralyze (8% Anchor Proc)"],
+            "zone-town-torque-balance-citadel",
+            "Leyden Capacitor Causeway Arc-Tesla Construct (Lv.64-72)",
+            "zone-field-leyden-causeway",
+            "",
+            "",
+            "141420:-48380",
+            26,
+            "High Resonance Volatility (12% Shatter Risk; Last-Hit Party Absorption)",
+        ),
+        (
+            "sa-verdant-05-stage-11-to-12",
+            "Verdant_Green",
+            "Stage_11_to_13_S_Grade_Boss",
+            "S-Grade",
+            ["Acumen (+15% Cast Spd)", "Empower (+125 M.Atk)", "MP Regeneration (+18% Clarity Recovery)"],
+            "zone-town-starfall-haven",
+            "Catacomb of the Astral Witch MVP Vesper-Hierophant (Lv.78 Sanctum)",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "54420:-34580",
+            100,
+            "Guaranteed Raid Party Resonance (0% Shatter on MVP Sanctum Kill)",
+        ),
+        (
+            "sa-verdant-06-stage-13-apex",
+            "Verdant_Green",
+            "Stage_11_to_13_S_Grade_Boss",
+            "S-Grade",
+            ["Acumen (+15% Cast Spd)", "Empower (+165 Apex S-Grade M.Atk)", "Mysticumen (+15% Cast Spd & +60 M.Atk)"],
+            "zone-town-crown-beacon",
+            "Star-Heart Tower of Insolence Celestial Archon Baium-Analog (Lv.84 Sanctum)",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "149440:28620",
+            20,
+            "Apex Grand-Boss Resonance (15% Shatter Risk or Full Party Stage 12->13 Promotion)",
+        ),
+        # 6 Azure_Blue Stages
+        (
+            "sa-azure-01-stage-1-to-3",
+            "Azure_Blue",
+            "Stage_1_to_5_C_Grade",
+            "C-Grade",
+            ["Health (+25% Max HP)", "Guidance (+6 Accuracy)", "Evasion (+6 Dodge Rating)"],
+            "zone-town-root-train-roundhouse",
+            "Sap-Heart Abandoned Mines Deep-vein Drevanul (Lv.32-38)",
+            "zone-dungeon-sap-heart-cistern",
+            "zone-dungeon-sap-heart-cistern",
+            "B2",
+            "119620:-173980",
+            65,
+            "Safe Resonance (0% Crystal Shatter Risk on Failure)",
+        ),
+        (
+            "sa-azure-02-stage-4-to-5",
+            "Azure_Blue",
+            "Stage_1_to_5_C_Grade",
+            "C-Grade",
+            ["Health (+25% Max HP)", "Critical Stun (22% Stun on Crit)", "Miser (-20% Soulshot Consumption)"],
+            "zone-town-draft-kiln-post",
+            "Ember Bellows Cave of Trials Obsidian Tyrant (Lv.42-48)",
+            "zone-dungeon-ember-bellows-chamber",
+            "zone-dungeon-ember-bellows-chamber",
+            "B3",
+            "-40980:-109580",
+            48,
+            "Low Volatility (5% Crack Risk above Stage 4)",
+        ),
+        (
+            "sa-azure-03-stage-6-to-8",
+            "Azure_Blue",
+            "Stage_6_to_10_B_A_Grade",
+            "B-Grade",
+            ["Health (+25% Max HP)", "QR-Shot (-12% Bow Reuse)", "Cheap Shot (28% 1-MP Arrow Proc)"],
+            "zone-town-carillon-belfry",
+            "Necropolis of Worship & Dynamo Seal Lilim Paladin (Lv.54-60)",
+            "zone-catacomb-apostate-dynamo",
+            "zone-catacomb-apostate-dynamo",
+            "B3",
+            "150040:-50980",
+            34,
+            "Moderate Resonance Volatility (10% Shatter Risk if target not Soul-Drained)",
+        ),
+        (
+            "sa-azure-04-stage-9-to-10",
+            "Azure_Blue",
+            "Stage_6_to_10_B_A_Grade",
+            "A-Grade",
+            ["Health (+25% Max HP)", "Guidance (+8 Accuracy)", "Critical Slow (30% Hamstring on Crit)"],
+            "zone-town-cinnamon-mill",
+            "Aurora Tether Span Star-Forged Watcher (Lv.66-74)",
+            "zone-field-aurora-tether",
+            "",
+            "",
+            "152620:31440",
+            25,
+            "High Resonance Volatility (12% Shatter Risk; Last-Hit Party Absorption)",
+        ),
+        (
+            "sa-azure-05-stage-11-to-12",
+            "Azure_Blue",
+            "Stage_11_to_13_S_Grade_Boss",
+            "S-Grade",
+            ["Health (+25% Max HP)", "Critical Stun (32% S-Grade Polearm Stun)", "HP Regeneration (+24 HP/tick)"],
+            "zone-town-starfall-haven",
+            "Necropolis of Deep Devotion MVP Thalassa-Leviathan (Lv.79 Sanctum)",
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-dark-omens-coral",
+            "B3",
+            "38640:-28680",
+            100,
+            "Guaranteed Raid Party Resonance (0% Shatter on MVP Sanctum Kill)",
+        ),
+        (
+            "sa-azure-06-stage-13-apex",
+            "Azure_Blue",
+            "Stage_11_to_13_S_Grade_Boss",
+            "S-Grade",
+            ["Health (+25% Max HP)", "Guidance (+10 Apex Accuracy)", "Fortitude (+30% Max HP & Shield Block)"],
+            "zone-town-crown-beacon",
+            "Catacomb of the Heretic Kiln Awakened Dragon-Apostle Antharas-Analog (Lv.85 Sanctum)",
+            "zone-catacomb-heretic-kiln",
+            "zone-catacomb-heretic-kiln",
+            "B3",
+            "20040:173620",
+            18,
+            "Apex Grand-Boss Resonance (15% Shatter Risk or Full Party Stage 12->13 Promotion)",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        cid,
+        ccolor,
+        sband,
+        wgrade,
+        sabilities,
+        vtown,
+        atarget,
+        azone,
+        adng,
+        afloor,
+        aloc,
+        rchance,
+        srule,
+    ) in specs:
+        rows.append(
+            {
+                "crystal_stage_id": cid,
+                "crystal_color": ccolor,
+                "stage_band": sband,
+                "weapon_grade_unlocked": wgrade,
+                "special_abilities": sabilities,
+                "vendor_town_zone_id": vtown,
+                "absorption_target_name": atarget,
+                "absorption_zone_id": azone,
+                "absorption_dungeon_id": adng,
+                "absorption_floor_id": afloor,
+                "absorption_loc": aloc,
+                "resonance_chance_pct": rchance,
+                "shatter_rule": srule,
+            }
+        )
+    return rows
+
+
+def _build_fishing_guild_sanctuaries(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 Fishing Guild, Hot Springs & Luminous Night-Bait Sanctuaries (6 Maritime_Harbor_Pier + 5 Luminous_Night_Lake + 5 Thermal_Hot_Spring) (D32)."""
+    specs = [
+        # 6 Maritime_Harbor_Pier
+        (
+            "fishing-pier-01-lantern-ferry",
+            "Lantern Hollow South Ferry Deep-Sea Breakwater Pier",
+            "Maritime_Harbor_Pier",
+            "zone-harbor-lantern-ferry-pier",
+            "-96020:258580",
+            "Fishing Guild Member Perelin",
+            "Green Colored Lure (High-Grade) & Fishing Shot (No-Grade..C)",
+            "24h All-Day",
+            "Proof of Catching a Fish (Warehouse & Common Craft Recipe Slot Expansion)",
+        ),
+        (
+            "fishing-pier-02-glaze-barge-harbor",
+            "Glaze-Barge Maritime & Airship Harbor Angler Jetty",
+            "Maritime_Harbor_Pier",
+            "zone-harbor-glaze-barge-airship-dock",
+            "-89180:155380",
+            "Fishing Guild Member Bleaker",
+            "Purple Colored Lure (Fat Fish) & B-Grade Fishing Shot",
+            "24h All-Day",
+            "Proof of Catching a Fish (Inventory & Trade Slot Expansion Books)",
+        ),
+        (
+            "fishing-pier-03-glaze-barge-quay",
+            "Glaze-Barge River Quay Merchant Angler Wharf",
+            "Maritime_Harbor_Pier",
+            "zone-town-glaze-barge-quay",
+            "-80980:151580",
+            "Fishing Guild Member Cyan",
+            "Yellow Colored Lure (Nimble Fish) & C-Grade Fishing Shot",
+            "24h All-Day",
+            "Pirate Treasure Map Chest, Fish Oil & Greater Fish Oil Crafting Materials",
+        ),
+        (
+            "fishing-pier-04-pinion-terminus",
+            "Pinion Terminus Steppe Seawall & Lock Pier",
+            "Maritime_Harbor_Pier",
+            "zone-town-pinion-terminus",
+            "82620:148780",
+            "Fishing Guild Member Pamfus",
+            "Green High-Grade Lure & B-Grade Fishing Shot",
+            "24h All-Day",
+            "Proof of Catching a Fish (Dwarven Recipe Book & Private Store Slot Expansion)",
+        ),
+        (
+            "fishing-pier-05-starfall-sky-harbor",
+            "Starfall Haven Cloud-Basin Cascade Dock",
+            "Maritime_Harbor_Pier",
+            "zone-town-starfall-haven",
+            "44020:-47720",
+            "Fishing Guild Member Hilgendorf",
+            "Prize-Winning Fishing Lure & A-Grade Fishing Shot",
+            "24h All-Day",
+            "Shiny Fish Gem, Monocle Hair Accessory & A-Grade Hair Pin Materials",
+        ),
+        (
+            "fishing-pier-06-kelp-spiral-shoals",
+            "Kelp Spiral Undertide Reef Coral Outrigger Pier",
+            "Maritime_Harbor_Pier",
+            "zone-field-kelp-spiral-reef",
+            "-52180:-138420",
+            "Fishing Guild Master Klaus",
+            "Abyssal Purple Lure & S-Grade Fishing Shot",
+            "24h All-Day",
+            "Ancient Pirate King's Treasure Chest & S-Grade Fish Scale Gemstones",
+        ),
+        # 5 Luminous_Night_Lake
+        (
+            "fishing-lake-01-whispering-mire",
+            "Whispering Teapot Mire Nocturnal Bioluminescent Lagoon",
+            "Luminous_Night_Lake",
+            "zone-field-whispering-mire",
+            "-68180:228620",
+            "Fishing Guild Member Mishini",
+            "Luminous Lure (Green Nocturnal) & Night-Glow Bait",
+            "00:00–06:00 Nocturnal Luminous",
+            "High-Grade Nocturnal Nimble Fish (Zero-Miss NightBite Bonus) & Pearl Scales",
+        ),
+        (
+            "fishing-lake-02-cobalt-sandbar",
+            "Cobalt Sandbar River Delta Moonlit Estuary",
+            "Luminous_Night_Lake",
+            "zone-field-cobalt-sandbar-ford",
+            "-73980:143020",
+            "Fishing Guild Member O'Fulle",
+            "Luminous Lure (Yellow Nocturnal) & C-Grade Fishing Shot",
+            "00:00–06:00 Nocturnal Luminous",
+            "Moonlit Fat Fish Chest, Black Pearl Ring Material & Proof of Catching a Fish",
+        ),
+        (
+            "fishing-lake-03-chime-pipe-marsh",
+            "Chime-Pipe Colonnade Starlight Mirror Pool",
+            "Luminous_Night_Lake",
+            "zone-field-chime-pipe-colonnade",
+            "19120:24320",
+            "Fishing Guild Member Willie",
+            "Luminous Lure (Purple Nocturnal) & B-Grade Fishing Shot",
+            "00:00–06:00 Nocturnal Luminous",
+            "Nocturnal Ugly Fish Vault, Party Mask & Cat Ear Hair Accessory Blueprint",
+        ),
+        (
+            "fishing-lake-04-siphon-canal",
+            "Verdigris Siphon Mercury-Glow Reservoir Lake",
+            "Luminous_Night_Lake",
+            "zone-field-siphon-sluice",
+            "64420:35020",
+            "Fishing Guild Member Lanosco",
+            "Luminous Lure (High-Grade Green) & A-Grade Fishing Shot",
+            "00:00–06:00 Nocturnal Luminous",
+            "Quicksilver Nocturnal Coelacanth & Proof of Catching a Fish (Max Inventory Cap)",
+        ),
+        (
+            "fishing-lake-05-aurora-astral-basin",
+            "Aurora Tether Astral Lady-of-the-Lake Sanctuary",
+            "Luminous_Night_Lake",
+            "zone-field-aurora-tether",
+            "152640:31420",
+            "Fishing Guild Member Linneaus",
+            "Luminous Lure (Masterwork Purple) & S-Grade Fishing Shot",
+            "00:00–06:00 Nocturnal Luminous",
+            "Starlight Leviathan Fry, Romantic Chapeau & Feathered Hat Craft Tokens",
+        ),
+        # 5 Thermal_Hot_Spring
+        (
+            "fishing-spring-01-caldera-sulfur",
+            "Mainspring Caldera Rim Sulfur & Malaria Geyser Pools",
+            "Thermal_Hot_Spring",
+            "zone-field-caldera-rim",
+            "86620:61380",
+            "Hot Springs Chef Jeremy & Guild Master Berix",
+            "Hot Springs Rainbow Lure & Thermal Mineral Bait",
+            "Thermal Mist Cycle",
+            "Hot Springs Malaria Lv.4 (+16% Cast Spd / -8% MP Cost) & Rainbow Trout",
+        ),
+        (
+            "fishing-spring-02-ginger-steam-bath",
+            "Ginger-Steam Aqueduct Thermal Mineral Terrace",
+            "Thermal_Hot_Spring",
+            "zone-field-ginger-aqueduct-bridge",
+            "-106580:59620",
+            "Fishing Guild Member Kiki",
+            "Spiced Thermal Lure & C-Grade Fishing Shot",
+            "Thermal Mist Cycle",
+            "Hot Springs Cholera Lv.4 (+10 Accuracy / +120 Crit Rate) & Ginger Carp",
+        ),
+        (
+            "fishing-spring-03-firebrick-fumarole",
+            "Firebrick Bellows Geothermal Fumarole Basin",
+            "Thermal_Hot_Spring",
+            "zone-field-firebrick-duct",
+            "-38980:-105180",
+            "Fishing Guild Member Batidae",
+            "Volcanic Slag Lure & B-Grade Fishing Shot",
+            "Thermal Mist Cycle",
+            "Hot Springs Flu Lv.4 (+8% Atk Spd) & Magma-Scale Char Chest",
+        ),
+        (
+            "fishing-spring-04-slag-chasm-vent",
+            "Vitrified Slag Chasm Boiling Mineral Baths",
+            "Thermal_Hot_Spring",
+            "zone-field-slag-chasm",
+            "25020:136420",
+            "Fishing Guild Member Evert",
+            "Obsidian Thermal Lure & B-Grade Fishing Shot",
+            "Thermal Mist Cycle",
+            "Hot Springs Rheumatism Lv.4 (+12 Evasion) & Mineral Cure Spring Water",
+        ),
+        (
+            "fishing-spring-05-orrery-nebula-spa",
+            "The Orrery Bridge Celestial Thermal Mist Sanctuary",
+            "Thermal_Hot_Spring",
+            "zone-field-orrery-bridge",
+            "-28180:-107980",
+            "Fishing Guild Grandmaster Santiago",
+            "Celestial Mist Lure & S-Grade Fishing Shot",
+            "Thermal Mist Cycle",
+            "Ice Queen Freya's Frozen Rose Nectar, Hot Springs Malaria Lv.4 & Golden Koi",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for sid, sname, wcat, zid, dloc, npc, lure, twindow, reward in specs:
+        rows.append(
+            {
+                "sanctuary_id": sid,
+                "sanctuary_name": sname,
+                "water_category": wcat,
+                "zone_id": zid,
+                "dock_loc": dloc,
+                "guild_master_npc": npc,
+                "recommended_lure": lure,
+                "active_time_window": twindow,
+                "primary_catch_reward": reward,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -4039,6 +4553,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("intercontinental_transit_lines") or []) < 18:
         atlas["intercontinental_transit_lines"] = _build_intercontinental_transit_lines(atlas)
         actions.append("populated_18_intercontinental_transit_lines")
+
+    # 15. Ensure all 18 Soul Crystal (SA) Stage 1-13 Resonance & Boss Absorption Entries exist in `soul_crystal_resonance_stages` (D31)
+    if len(atlas.get("soul_crystal_resonance_stages") or []) < 18:
+        atlas["soul_crystal_resonance_stages"] = _build_soul_crystal_resonance_stages(atlas)
+        actions.append("populated_18_soul_crystal_resonance_stages")
+
+    # 16. Ensure all 16 Fishing Guild, Hot Springs & Luminous Night-Bait Sanctuaries exist in `fishing_guild_sanctuaries` (D32)
+    if len(atlas.get("fishing_guild_sanctuaries") or []) < 16:
+        atlas["fishing_guild_sanctuaries"] = _build_fishing_guild_sanctuaries(atlas)
+        actions.append("populated_16_fishing_guild_sanctuaries")
 
     return {"actions": actions}
 
@@ -5186,15 +5710,171 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d30_ratio * 80.0, 1)
     )
 
+    # D31: Interactive Soul Crystal (SA) Stage 1-13 Resonance & Boss Absorption Matrix (`soul_crystal_resonance_stages` - 18 Stages = 6 Crimson_Red + 6 Verdant_Green + 6 Azure_Blue)
+    expected_crystal_colors = {"Crimson_Red", "Verdant_Green", "Azure_Blue"}
+    expected_stage_bands = {
+        "Stage_1_to_5_C_Grade",
+        "Stage_6_to_10_B_A_Grade",
+        "Stage_11_to_13_S_Grade_Boss",
+    }
+    expected_weapon_grades = {"C-Grade", "B-Grade", "A-Grade", "S-Grade"}
+    soul_crystals = atlas.get("soul_crystal_resonance_stages") or []
+    valid_soul_crystals = 0
+    crimson_red_count = 0
+    verdant_green_count = 0
+    azure_blue_count = 0
+    seen_crystal_ids: set[str] = set()
+    seen_crystal_colors: set[str] = set()
+    seen_stage_bands: set[str] = set()
+    seen_weapon_grades: set[str] = set()
+    for sc in soul_crystals:
+        if not isinstance(sc, dict):
+            continue
+        cid = str(sc.get("crystal_stage_id") or "")
+        ccolor = str(sc.get("crystal_color") or "")
+        sband = str(sc.get("stage_band") or "")
+        wgrade = str(sc.get("weapon_grade_unlocked") or "")
+        sabilities = sc.get("special_abilities") or []
+        vtown = str(sc.get("vendor_town_zone_id") or "")
+        azone = str(sc.get("absorption_zone_id") or "")
+        adng = str(sc.get("absorption_dungeon_id") or "")
+        afloor = str(sc.get("absorption_floor_id") or "")
+        rchance = sc.get("resonance_chance_pct")
+        if (
+            cid
+            and cid not in seen_crystal_ids
+            and ccolor in expected_crystal_colors
+            and sband in expected_stage_bands
+            and wgrade in expected_weapon_grades
+            and isinstance(sabilities, list)
+            and len(sabilities) >= 1
+            and vtown in town_zone_id_set
+            and sc.get("absorption_target_name")
+            and azone in zone_ids_set
+            and (adng == "" or adng in mf_dungeon_id_set)
+            and afloor in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(sc.get("absorption_loc", ""))
+            and isinstance(rchance, int)
+            and 1 <= rchance <= 100
+            and sc.get("shatter_rule")
+        ):
+            valid_soul_crystals += 1
+            seen_crystal_ids.add(cid)
+            seen_crystal_colors.add(ccolor)
+            seen_stage_bands.add(sband)
+            seen_weapon_grades.add(wgrade)
+            if ccolor == "Crimson_Red":
+                crimson_red_count += 1
+            elif ccolor == "Verdant_Green":
+                verdant_green_count += 1
+            elif ccolor == "Azure_Blue":
+                azure_blue_count += 1
+
+    has_d31_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_SOUL_CRYSTAL_MODE",
+            "setAtlasSoulCrystalMode",
+            "renderAtlasSoulCrystalBarHtml",
+            "studioSoulCrystalResonanceOverlay",
+        )
+    )
+    d31_ratio = valid_soul_crystals / 18.0
+    d31_full_coverage = (
+        crimson_red_count == 6
+        and verdant_green_count == 6
+        and azure_blue_count == 6
+        and seen_crystal_colors == expected_crystal_colors
+        and seen_stage_bands == expected_stage_bands
+        and seen_weapon_grades == expected_weapon_grades
+    )
+    d31_score = (
+        round(min(100.0, d31_ratio * 100.0), 1)
+        if (has_d31_ui and d31_full_coverage)
+        else round(d31_ratio * 80.0, 1)
+    )
+
+    # D32: Interactive Fishing Guild, Hot Springs & Luminous Night-Bait Sanctuary Overlay (`fishing_guild_sanctuaries` - 16 Sanctuaries = 6 Maritime_Harbor_Pier + 5 Luminous_Night_Lake + 5 Thermal_Hot_Spring)
+    expected_water_categories = {
+        "Maritime_Harbor_Pier",
+        "Luminous_Night_Lake",
+        "Thermal_Hot_Spring",
+    }
+    expected_time_windows = {
+        "24h All-Day",
+        "00:00–06:00 Nocturnal Luminous",
+        "Thermal Mist Cycle",
+    }
+    fishing_sanctuaries = atlas.get("fishing_guild_sanctuaries") or []
+    valid_fishing_sanctuaries = 0
+    maritime_pier_count = 0
+    luminous_lake_count = 0
+    thermal_spring_count = 0
+    seen_sanctuary_ids: set[str] = set()
+    seen_water_categories: set[str] = set()
+    seen_time_windows: set[str] = set()
+    for fs in fishing_sanctuaries:
+        if not isinstance(fs, dict):
+            continue
+        sid = str(fs.get("sanctuary_id") or "")
+        wcat = str(fs.get("water_category") or "")
+        fzid = str(fs.get("zone_id") or "")
+        twindow = str(fs.get("active_time_window") or "")
+        if (
+            sid
+            and sid not in seen_sanctuary_ids
+            and fs.get("sanctuary_name")
+            and wcat in expected_water_categories
+            and fzid in zone_ids_set
+            and ":" in str(fs.get("dock_loc", ""))
+            and fs.get("guild_master_npc")
+            and fs.get("recommended_lure")
+            and twindow in expected_time_windows
+            and fs.get("primary_catch_reward")
+        ):
+            valid_fishing_sanctuaries += 1
+            seen_sanctuary_ids.add(sid)
+            seen_water_categories.add(wcat)
+            seen_time_windows.add(twindow)
+            if wcat == "Maritime_Harbor_Pier":
+                maritime_pier_count += 1
+            elif wcat == "Luminous_Night_Lake":
+                luminous_lake_count += 1
+            elif wcat == "Thermal_Hot_Spring":
+                thermal_spring_count += 1
+
+    has_d32_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_FISHING_MODE",
+            "setAtlasFishingMode",
+            "renderAtlasFishingSanctuaryBarHtml",
+            "studioFishingSanctuaryOverlay",
+        )
+    )
+    d32_ratio = valid_fishing_sanctuaries / 16.0
+    d32_full_coverage = (
+        maritime_pier_count == 6
+        and luminous_lake_count == 5
+        and thermal_spring_count == 5
+        and seen_water_categories == expected_water_categories
+        and seen_time_windows == expected_time_windows
+    )
+    d32_score = (
+        round(min(100.0, d32_ratio * 100.0), 1)
+        if (has_d32_ui and d32_full_coverage)
+        else round(d32_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score) / 12.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score) / 14.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score) / 15.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score) / 24.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score) / 13.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score) / 20.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score) / 14.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score) / 16.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score) / 16.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score) / 26.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score) / 15.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score) / 22.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -5229,8 +5909,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d28_score
             + d29_score
             + d30_score
+            + d31_score
+            + d32_score
         )
-        / 30.0,
+        / 32.0,
         1,
     )
 
@@ -5418,6 +6100,29 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "transit_modes": sorted(seen_transit_modes),
                 "ui_wired": has_d30_ui,
             },
+            "D31_soul_crystal_resonance_and_boss_absorption": {
+                "score": d31_score,
+                "verified": valid_soul_crystals,
+                "target": 18,
+                "crimson_red_stages": crimson_red_count,
+                "verdant_green_stages": verdant_green_count,
+                "azure_blue_stages": azure_blue_count,
+                "crystal_colors": sorted(seen_crystal_colors),
+                "stage_bands": sorted(seen_stage_bands),
+                "weapon_grades": sorted(seen_weapon_grades),
+                "ui_wired": has_d31_ui,
+            },
+            "D32_fishing_guild_and_hot_springs_sanctuaries": {
+                "score": d32_score,
+                "verified": valid_fishing_sanctuaries,
+                "target": 16,
+                "maritime_piers": maritime_pier_count,
+                "luminous_lakes": luminous_lake_count,
+                "thermal_hot_springs": thermal_spring_count,
+                "water_categories": sorted(seen_water_categories),
+                "time_windows": sorted(seen_time_windows),
+                "ui_wired": has_d32_ui,
+            },
         },
     }
 
@@ -5492,6 +6197,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D28 (15-Town Manor Economy) : {dims['D28_manor_seed_and_caravan_economy']['score']}/100 ({dims['D28_manor_seed_and_caravan_economy']['verified']}/{dims['D28_manor_seed_and_caravan_economy']['target']} town manors)")
         print(f"  D29 (21 Olympiad/Noblesse)  : {dims['D29_noblesse_and_olympiad_monument_network']['score']}/100 ({dims['D29_noblesse_and_olympiad_monument_network']['verified']}/{dims['D29_noblesse_and_olympiad_monument_network']['target']} heroic nodes)")
         print(f"  D30 (18 Transit Corridors)  : {dims['D30_intercontinental_transit_network']['score']}/100 ({dims['D30_intercontinental_transit_network']['verified']}/{dims['D30_intercontinental_transit_network']['target']} transit lines)")
+        print(f"  D31 (18 Soul Crystal Stages): {dims['D31_soul_crystal_resonance_and_boss_absorption']['score']}/100 ({dims['D31_soul_crystal_resonance_and_boss_absorption']['verified']}/{dims['D31_soul_crystal_resonance_and_boss_absorption']['target']} resonance stages)")
+        print(f"  D32 (16 Fishing/Hot Springs): {dims['D32_fishing_guild_and_hot_springs_sanctuaries']['score']}/100 ({dims['D32_fishing_guild_and_hot_springs_sanctuaries']['verified']}/{dims['D32_fishing_guild_and_hot_springs_sanctuaries']['target']} sanctuaries)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
