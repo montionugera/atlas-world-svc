@@ -110,15 +110,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas88DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas90DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas92DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas94DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 44)),
+        "wave": int(iter_state.get("wave", 45)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"94-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"92-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"90-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"88-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -156,7 +158,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 Verified"
         ),
     }
     return merged
@@ -4418,7 +4420,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4529,6 +4531,8 @@ let ATLAS_QA_SUITES_MODE = 'All';
 let ATLAS_STUDIO_90D_MODE = 'All';
 let ATLAS_FACTION_DISPOSITION_MODE = 'All';
 let ATLAS_AUCTION_ESCROW_MODE = 'All';
+let ATLAS_WORLD_INCURSION_MODE = 'All';
+let ATLAS_CLAN_TREASURY_MODE = 'All';
 let SELECTED_ANTI_BOT_SENTINEL_ID = '';
 let SELECTED_GODOT_STORYBOOK_PREFAB_ID = '';
 let SELECTED_NAVMESH_SECTOR_ID = '';
@@ -4539,6 +4543,8 @@ let SELECTED_QA_SUITE_ID = '';
 let SELECTED_STUDIO_90D_LEDGER_ID = '';
 let SELECTED_FACTION_DISPOSITION_ID = '';
 let SELECTED_CROSS_REALM_ESCROW_ID = '';
+let SELECTED_WORLD_INCURSION_ID = '';
+let SELECTED_CLAN_TREASURY_ID = '';
 let ANTI_BOT_SENTINELS = [];
 let GODOT_STORYBOOK_PREFABS = [];
 let NAVMESH_OBSTACLE_SECTORS = [];
@@ -4549,6 +4555,8 @@ let AUTOMATED_QA_SUITES = [];
 let STUDIO_90D_LEDGER = [];
 let FACTION_DISPOSITIONS = [];
 let CROSS_REALM_ESCROWS = [];
+let WORLD_INVASION_INCURSIONS = [];
+let CLAN_TREASURY_LEDGERS = [];
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4631,6 +4639,8 @@ const ATLAS_STATE_STORE = {
   studio90dMode: 'All',                    // D90: Active 22-Record [90D Grand Studio Architecture Milestone] 11-Role Master Sign-Off & Telemetry Ledger Selector
   factionDispositionMode: 'All',           // D91: Active 16-Record [Role 2: Content & World Tools] Dynamic Faction Reputation, NPC Disposition & Town Guard Hostility Selector
   auctionEscrowMode: 'All',                // D92: Active 15-Town [Role 4: Backend Infra] Cross-Realm Auction House, Escrow Settlement & Price-Circuit-Breaker Selector
+  worldIncursionMode: 'All',               // D93: Active 16-Record [Role 2: Content & World Tools] Dynamic World Boss Invasion, Rift Incursion & Public Quest Selector
+  clanTreasuryMode: 'All',                 // D94: Active 15-Town [Role 4: Backend Infra] Guild / Clan Treasury Ledger, Siege Mercenary Payroll & Tax Dividend Selector
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4638,6 +4648,54 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasWorldIncursionMode(modeId) {
+  ATLAS_WORLD_INCURSION_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.worldIncursionMode = ATLAS_WORLD_INCURSION_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectWorldInvasionIncursion(incursionId) {
+  SELECTED_WORLD_INCURSION_ID = String(incursionId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  WORLD_INVASION_INCURSIONS = tatlas.world_invasion_incursions || [];
+  const item = WORLD_INVASION_INCURSIONS.find(i => i.incursion_id === SELECTED_WORLD_INCURSION_ID);
+  if (item) {
+    if (item.dungeon_id) {
+      openDungeonSubMap(item.dungeon_id, 'B2');
+      return;
+    }
+    if (String(item.zone_id || '').startsWith('zone-town-')) {
+      focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+      return;
+    }
+    focusFieldOrFortressBlueprint(item.zone_id, `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasClanTreasuryMode(modeId) {
+  ATLAS_CLAN_TREASURY_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.clanTreasuryMode = ATLAS_CLAN_TREASURY_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectClanTreasuryLedger(treasuryId) {
+  SELECTED_CLAN_TREASURY_ID = String(treasuryId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  CLAN_TREASURY_LEDGERS = tatlas.clan_treasury_payroll_ledgers || [];
+  const item = CLAN_TREASURY_LEDGERS.find(t => t.treasury_id === SELECTED_CLAN_TREASURY_ID);
+  if (item) {
+    focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
 
 function setAtlasFactionDispositionMode(modeId) {
   ATLAS_FACTION_DISPOSITION_MODE = String(modeId || 'All');
@@ -13496,6 +13554,138 @@ function renderAtlasAuctionEscrowBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasWorldIncursionBarHtml(tatlas) {
+  WORLD_INVASION_INCURSIONS = (tatlas && tatlas.world_invasion_incursions) || [];
+  if (!WORLD_INVASION_INCURSIONS.length) return '';
+  const curMode = ATLAS_WORLD_INCURSION_MODE || ATLAS_STATE_STORE.worldIncursionMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '☄️ World Incursions (16)', col: '#ef4444' },
+    { id: '3-Phase Zone Public Quest', label: '⚡ 3-Phase Public Quests (4)', col: '#f97316' },
+    { id: 'Roaming World-Boss Vanguard', label: '🐉 Roaming Boss Vanguards (4)', col: '#dc2626' },
+    { id: 'Town Perimeter Defense Event', label: '🛡️ Town Perimeter Sieges (4)', col: '#ef4444' },
+    { id: 'Abyssal Rift Sky-Tear', label: '🌌 Abyssal Rift Sky-Tears (4)', col: '#a855f7' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : WORLD_INVASION_INCURSIONS.filter(i => curMode === 'All' || i.incursion_category === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasWorldIncursionBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#ef4444">☄️ [ROLE 2: CONTENT &amp; WORLD TOOLS] DYNAMIC WORLD BOSS INVASION, RIFT INCURSION &amp; ZONE-WIDE EMERGENCY QUEST MATRIX (D93 · ${WORLD_INVASION_INCURSIONS.length} INCURSIONS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasWorldIncursionMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fecaca;font-weight:800">
+          3-PHASE PUBLIC QUEST · 15–120 PLAYERS · WEIGHTED DPS/HEAL/CC/REVIVE · MYTHIC CHESTS
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(i => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(i.accent || '#ef4444')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">☄️ ${escapeHtml(i.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(i.accent || '#ef4444')}">[Min ${i.min_participating_players}p]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#fecaca;margin-top:1px">
+                  ${escapeHtml(i.incursion_category)} · Sky: ${escapeHtml(i.dynamic_skybox_override)}
+                </div>
+                <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                  🎁 ${escapeHtml(i.reward_chest_tiers)} · ${escapeHtml(i.contribution_scoring_rule)}
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectWorldInvasionIncursion('${escapeHtml(i.incursion_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(i.accent || '#ef4444')};background:#7f1d1d;color:#fee2e2;font-size:8px;font-weight:800;cursor:pointer">
+                  ☄️ Inspect World Incursion (${escapeHtml(i.incursion_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasClanTreasuryBarHtml(tatlas) {
+  CLAN_TREASURY_LEDGERS = (tatlas && tatlas.clan_treasury_payroll_ledgers) || [];
+  if (!CLAN_TREASURY_LEDGERS.length) return '';
+  const curMode = ATLAS_CLAN_TREASURY_MODE || ATLAS_STATE_STORE.clanTreasuryMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🏦 Clan Treasury & Payroll (15)', col: '#eab308' },
+    { id: 'Sovereign Castle Tax Vault', label: '👑 Castle Tax Vaults (4)', col: '#eab308' },
+    { id: 'Fortress & Territory Mercenary Escrow', label: '⚔️ Mercenary Escrows (3)', col: '#facc15' },
+    { id: 'Clan Hall Auction & Upkeep Ledger', label: '🏛️ Clan Hall Upkeep (3)', col: '#f59e0b' },
+    { id: 'Starter Academy Stipend Pool', label: '🎓 Academy Stipends (5)', col: '#10b981' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : CLAN_TREASURY_LEDGERS.filter(t => curMode === 'All' || t.treasury_tier === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasClanTreasuryBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#eab308">🏦 [ROLE 4: BACKEND INFRA] GUILD / CLAN TREASURY LEDGER, SIEGE MERCENARY PAYROLL &amp; TAX DIVIDEND AUDIT MATRIX (D94 · ${CLAN_TREASURY_LEDGERS.length} TOWNS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasClanTreasuryMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fef08a;font-weight:800">
+          2-OF-3 MULTISIG · MERCENARY KILL/GATE/WARD SPLIT · 25–1,850M ADENA/WK · 90–365D AUDIT
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(t => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(t.accent || '#eab308')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🏦 ${escapeHtml(t.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(t.accent || '#eab308')}">[${t.weekly_tax_yield_adena_m}M/wk]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#fef08a;margin-top:1px">
+                  ${escapeHtml(t.treasury_tier)} · ${escapeHtml(t.multisig_withdrawal_policy)}
+                </div>
+                <div style="font-size:8px;color:#a7f3d0;margin-top:1px">
+                  ⚔️ ${escapeHtml(t.mercenary_payout_formula)} · Audit: ${t.audit_trail_retention_days}d
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectClanTreasuryLedger('${escapeHtml(t.treasury_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(t.accent || '#eab308')};background:#713f12;color:#fef9c3;font-size:8px;font-weight:800;cursor:pointer">
+                  🏦 Inspect Clan Treasury (${escapeHtml(t.treasury_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -13692,6 +13882,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasStudio90dLedgerBarHtml(tatlas)}
       ${renderAtlasFactionDispositionBarHtml(tatlas)}
       ${renderAtlasAuctionEscrowBarHtml(tatlas)}
+      ${renderAtlasWorldIncursionBarHtml(tatlas)}
+      ${renderAtlasClanTreasuryBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -17875,6 +18067,54 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Dynamic World Boss Invasion, Rift Incursion & Zone-Wide Emergency Quest Matrix Overlay (D93)
+  const worldInvasionIncursionRecords = Array.isArray(atlas.world_invasion_incursions) ? atlas.world_invasion_incursions : [];
+  const worldIncursionOverlaySvg = !ATLAS_WORLD_INCURSION_MODE ? '' : `
+    <g id="studioWorldIncursionOverlay">
+      ${worldInvasionIncursionRecords.map((w, idx) => {
+        const wx = typeof w.world_x === 'number' ? w.world_x : 530;
+        const wy = typeof w.world_y === 'number' ? w.world_y : 270;
+        const colHex = w.accent || '#f43f5e';
+        const icat = w.incursion_category || 'Abyssal Rift Tear Assault';
+        const iconTxt = icat === 'Abyssal Rift Tear Assault'
+          ? '☄️'
+          : (icat === 'Titan World-Boss Roaming March'
+              ? '🐉'
+              : (icat === 'Faction Border Siege Vanguard' ? '🛡️' : '⚡'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectWorldInvasionIncursion('${escapeHtml(w.incursion_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.4" fill="rgba(136,19,55,0.62)" stroke="${escapeHtml(colHex)}" stroke-width="2.0"/>
+            <text x="${wx}" y="${wy + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Guild / Clan Treasury Ledger, Siege Mercenary Payroll & Tax Dividend Audit Matrix Overlay (D94)
+  const clanTreasuryLedgerRecords = Array.isArray(atlas.clan_treasury_payroll_ledgers) ? atlas.clan_treasury_payroll_ledgers : [];
+  const clanTreasuryOverlaySvg = !ATLAS_CLAN_TREASURY_MODE ? '' : `
+    <g id="studioClanTreasuryOverlay">
+      ${clanTreasuryLedgerRecords.map((l, idx) => {
+        const wx = typeof l.world_x === 'number' ? l.world_x : 540;
+        const wy = typeof l.world_y === 'number' ? l.world_y : 280;
+        const colHex = l.accent || '#eab308';
+        const ltier = l.ledger_tier || 'Sovereign Castle Tax Vault';
+        const iconTxt = ltier === 'Sovereign Castle Tax Vault'
+          ? '👑'
+          : (ltier === 'Fortress Mercenary Payroll Escrow'
+              ? '⚔️'
+              : (ltier === 'Clan Hall Raid Dividend Pool' ? '💎' : '📜'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectClanTreasuryLedger('${escapeHtml(l.ledger_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.4" fill="rgba(113,63,18,0.62)" stroke="${escapeHtml(colHex)}" stroke-width="2.0"/>
+            <text x="${wx}" y="${wy + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -17947,6 +18187,8 @@ function renderDedicatedWorldAtlas() {
     ${studio90dMasterLedgerOverlaySvg}
     ${factionDispositionOverlaySvg}
     ${crossRealmEscrowOverlaySvg}
+    ${worldIncursionOverlaySvg}
+    ${clanTreasuryOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

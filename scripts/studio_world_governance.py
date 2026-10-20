@@ -732,6 +732,8 @@ def validate_world_governance(
                 "studio90dMasterLedgerCount": len(t_doc.get("studio_90d_master_ledger") or []),
                 "factionReputationDispositionsCount": len(t_doc.get("faction_reputation_dispositions") or []),
                 "crossRealmAuctionEscrowsCount": len(t_doc.get("cross_realm_auction_escrows") or []),
+                "worldInvasionIncursionsCount": len(t_doc.get("world_invasion_incursions") or []),
+                "clanTreasuryPayrollLedgersCount": len(t_doc.get("clan_treasury_payroll_ledgers") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -2053,6 +2055,43 @@ def validate_world_governance(
                 if ae_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: cross_realm_auction_escrows '{ae_id}' references unknown zone_id '{ae_zid}'"
+                    )
+
+            # Validate 16-Record Dynamic World Boss Invasion, Rift Incursion & Zone-Wide Emergency Quest Matrix (D93)
+            world_incursions = t_doc.get("world_invasion_incursions") or []
+            if world_incursions and len(world_incursions) < 16:
+                errors.append(
+                    f"GOV-10 violation: world_invasion_incursions must have at least 16 records, got {len(world_incursions)}"
+                )
+            for wi_item in world_incursions:
+                if not isinstance(wi_item, dict):
+                    continue
+                wi_id = str(wi_item.get("incursion_id", ""))
+                wi_zid = str(wi_item.get("zone_id", ""))
+                wi_did = str(wi_item.get("dungeon_id", ""))
+                if wi_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: world_invasion_incursions '{wi_id}' references unknown zone_id '{wi_zid}'"
+                    )
+                if wi_did and wi_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: world_invasion_incursions '{wi_id}' references unknown dungeon_id '{wi_did}'"
+                    )
+
+            # Validate 15-Record Guild / Clan Treasury Ledger, Siege Mercenary Payroll & Tax Dividend Audit Matrix (D94)
+            clan_treasuries = t_doc.get("clan_treasury_payroll_ledgers") or []
+            if clan_treasuries and len(clan_treasuries) < 15:
+                errors.append(
+                    f"GOV-10 violation: clan_treasury_payroll_ledgers must have at least 15 records, got {len(clan_treasuries)}"
+                )
+            for ct_item in clan_treasuries:
+                if not isinstance(ct_item, dict):
+                    continue
+                ct_id = str(ct_item.get("treasury_id", ""))
+                ct_zid = str(ct_item.get("zone_id", ""))
+                if ct_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: clan_treasury_payroll_ledgers '{ct_id}' references unknown zone_id '{ct_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

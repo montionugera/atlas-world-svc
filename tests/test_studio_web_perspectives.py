@@ -3864,7 +3864,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 92)
+        self.assertGreaterEqual(len(audit["dimensions"]), 92)
 
         d91 = audit["dimensions"]["D91_dynamic_faction_reputation_npc_disposition_and_guard_hostility_matrix"]
         self.assertEqual(d91["score"], 100.0)
@@ -3938,10 +3938,132 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas92DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 92)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 92)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 92)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 92)
         self.assertIn("92-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave45_world_invasion_incursions_and_clan_treasury_ledgers(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["worldInvasionIncursionsCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["clanTreasuryPayrollLedgersCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "WORLD_INVASION_INCURSIONS",
+            "CLAN_TREASURY_LEDGERS",
+            "ATLAS_WORLD_INCURSION_MODE",
+            "ATLAS_CLAN_TREASURY_MODE",
+            "setAtlasWorldIncursionMode",
+            "setAtlasClanTreasuryMode",
+            "selectWorldInvasionIncursion",
+            "selectClanTreasuryLedger",
+            "renderAtlasWorldIncursionBarHtml",
+            "renderAtlasClanTreasuryBarHtml",
+            "studioWorldIncursionOverlay",
+            "studioClanTreasuryOverlay",
+            "☄️ World Incursions (16)",
+            "🏦 Clan Treasury & Payroll (15)",
+            "94-Dimension Semantic-Zoom Atlas Score",
+            "D1–D94 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 45 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 94)
+
+        d93 = audit["dimensions"]["D93_dynamic_world_boss_invasion_rift_incursion_and_public_quest_matrix"]
+        self.assertEqual(d93["score"], 100.0)
+        self.assertEqual(d93["verified"], 16)
+        self.assertEqual(d93["target"], 16)
+        self.assertTrue(d93["ui_wired"])
+
+        d94 = audit["dimensions"]["D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix"]
+        self.assertEqual(d94["score"], 100.0)
+        self.assertEqual(d94["verified"], 15)
+        self.assertEqual(d94["target"], 15)
+        self.assertTrue(d94["ui_wired"])
+
+        incursions = atlas["world_invasion_incursions"]
+        self.assertEqual(len(incursions), 16)
+        for i_row in incursions:
+            self.assertIn(
+                i_row["incursion_category"],
+                {
+                    "3-Phase Zone Public Quest",
+                    "Roaming World-Boss Vanguard",
+                    "Town Perimeter Defense Event",
+                    "Abyssal Rift Sky-Tear",
+                },
+            )
+            self.assertEqual(
+                i_row["phase_progression"],
+                "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            )
+            self.assertGreaterEqual(i_row["min_participating_players"], 15)
+            self.assertLessEqual(i_row["min_participating_players"], 120)
+            self.assertEqual(
+                i_row["contribution_scoring_rule"],
+                "DPS + Healing + CC + Revive Weighted Ledger",
+            )
+            self.assertIn(
+                i_row["dynamic_skybox_override"],
+                {
+                    "Blood-Moon Crimson Fog",
+                    "Abyssal Violet Eclipse",
+                    "Volcanic Ash & Ember Storm",
+                    "Arcane Golden Aurora",
+                },
+            )
+            self.assertEqual(
+                i_row["reward_chest_tiers"],
+                "Bronze / Silver / Gold / Sovereign Mythic",
+            )
+
+        ledgers = atlas["clan_treasury_payroll_ledgers"]
+        self.assertEqual(len(ledgers), 15)
+        for l_row in ledgers:
+            self.assertIn(
+                l_row["treasury_tier"],
+                {
+                    "Sovereign Castle Tax Vault",
+                    "Fortress & Territory Mercenary Escrow",
+                    "Clan Hall Auction & Upkeep Ledger",
+                    "Starter Academy Stipend Pool",
+                },
+            )
+            self.assertIn(
+                l_row["multisig_withdrawal_policy"],
+                {
+                    "Sovereign + 2 Royal Guards 2-of-3",
+                    "Clan Leader + Vice-Leader Dual Sign",
+                    "Automated Post-Siege Smart Split",
+                },
+            )
+            self.assertEqual(
+                l_row["mercenary_payout_formula"],
+                "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            )
+            self.assertGreaterEqual(l_row["weekly_tax_yield_adena_m"], 25)
+            self.assertLessEqual(l_row["weekly_tax_yield_adena_m"], 1850)
+            self.assertGreaterEqual(l_row["audit_trail_retention_days"], 90)
+            self.assertLessEqual(l_row["audit_trail_retention_days"], 365)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas94DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 94)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 94)
+        self.assertIn("94-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

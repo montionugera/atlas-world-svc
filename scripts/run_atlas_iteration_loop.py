@@ -20036,6 +20036,599 @@ def inject_cross_realm_auction_escrows(atlas: dict[str, Any]) -> list[dict[str, 
     return rows
 
 
+def _build_world_invasion_incursions(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Record [Role 2: Content & World Tools — Dynamic World Boss Invasion, Rift Incursion & Zone-Wide Emergency Quest Matrix] (D93)."""
+    specs = [
+        (
+            "world-incursion-01-gludio-akamanah-blood-moon-siege",
+            "Gludio Akamanah Blood-Moon Siege — Southern Gate Demonic Vanguard & Obelisk Ward",
+            "zone-town-kilnwatch-bastion",
+            "town-kilnwatch-bastion",
+            "",
+            "Town Perimeter Defense Event",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            45,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Blood-Moon Crimson Fog",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            492,
+            378,
+            "#ef4444",
+            "Blood-Sword Akamanah vanguard assaults Gludio southern drawbridge; defending all 3 gate obelisks spawns Blood-Moon Herald with C/B-Grade Blessed scrolls.",
+        ),
+        (
+            "world-incursion-02-dion-cruma-automaton-outbreak",
+            "Dion Cruma Automaton Outbreak — Marshland Core Overdrive & Titan Golem March",
+            "zone-field-cinder-apron",
+            "town-saffron-press-village",
+            "zone-dungeon-pendulum-shaft",
+            "3-Phase Zone Public Quest",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            40,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Arcane Golden Aurora",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            516,
+            406,
+            "#f97316",
+            "Rogue Porta, Excuro, and Krator automatons surge out of Cruma Tower into Dion marshlands until players overload 3 Ancient Titan Capacitors.",
+        ),
+        (
+            "world-incursion-03-giran-antharas-tremor-vanguard",
+            "Giran Antharas Tremor Vanguard — Dragon Valley Behemoth Stampede & Canyon Barricade",
+            "zone-field-leyden-causeway",
+            "town-pinion-terminus",
+            "zone-dungeon-chronometer-foundry",
+            "Roaming World-Boss Vanguard",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            85,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Volcanic Ash & Ember Storm",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            602,
+            356,
+            "#dc2626",
+            "Seismic tremors from Antharas Lair drive Cave Howlers and Drake Vanguards toward Giran Trade Corridor; 85+ raiders required to break the Behemoth scale shield.",
+        ),
+        (
+            "world-incursion-04-oren-ivory-tower-mana-breach",
+            "Oren Ivory Tower Mana Breach — Crater Star-Stone Singularity & Arcane Anomaly",
+            "zone-town-escapement-anvil",
+            "town-escapement-anvil",
+            "",
+            "Abyssal Rift Sky-Tear",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            50,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Arcane Golden Aurora",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            592,
+            296,
+            "#a855f7",
+            "Unstable Nebula tear above Oren & Ivory Tower rains enchanted Shrieking Golems; mages channeling dispel beams earn bonus Forgotten Scroll chest rolls.",
+        ),
+        (
+            "world-incursion-05-aden-shilen-apostle-eclipse",
+            "Aden Shilen Apostle Eclipse — Cemetery Seal Rupture & Imperial Gate Defense",
+            "zone-field-orrery-bridge",
+            "town-crown-beacon-citadel",
+            "zone-catacomb-forbidden-path-orrery",
+            "Abyssal Rift Sky-Tear",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            110,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Abyssal Violet Eclipse",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            664,
+            272,
+            "#a855f7",
+            "Seven Signs Seal of Shilen eclipse darkens Aden Cemetery and Forbidden Gateway, summoning Apostle Doom Knights and S80 Dynasty relic chests.",
+        ),
+        (
+            "world-incursion-06-goddard-valakas-magma-surge",
+            "Goddard Valakas Magma Surge — Blazing Swamp Pyroclastic Rift & Klein's Ward",
+            "zone-town-inductor-switchyard",
+            "town-inductor-switchyard",
+            "zone-dungeon-star-heart-nave",
+            "Roaming World-Boss Vanguard",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            95,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Volcanic Ash & Ember Storm",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            658,
+            190,
+            "#dc2626",
+            "Lava vents from Forge of the Gods erupt around Goddard outer bastions; Fire Attribute 150+ resistance needed during Phase 3 Lavasaurus Alpha spawn.",
+        ),
+        (
+            "world-incursion-07-rune-pagan-undead-procession",
+            "Rune Pagan Undead Procession — Forest of the Dead Blood Moon & Triol High-Altar March",
+            "zone-town-starfall-haven",
+            "town-starfall-haven",
+            "zone-catacomb-dark-omens-coral",
+            "Town Perimeter Defense Event",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            75,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Blood-Moon Crimson Fog",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            546,
+            208,
+            "#ef4444",
+            "Nocturnal procession of Eilhalder von Hellmann and Triol Believers marches from Forest of the Dead to Rune Cliffside Lift.",
+        ),
+        (
+            "world-incursion-08-gludin-pirate-armada-landing",
+            "Gludin Pirate Armada Landing — Zaken's Ghost Fleet Bombardment & Harbor Pier Defense",
+            "zone-harbor-glaze-barge-airship-dock",
+            "town-glaze-barge-quay",
+            "",
+            "Town Perimeter Defense Event",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            35,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Blood-Moon Crimson Fog",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            416,
+            404,
+            "#f97316",
+            "Devil's Isle spectral galleons beach at Gludin Harbor Pier; players man harbor ballistas and repel Vale Master boarding parties.",
+        ),
+        (
+            "world-incursion-09-hunters-valley-wyvern-stampede",
+            "Hunters Valley Wyvern Stampede — Enchanted Valley Sky-Tear & Winged Behemoth Hunt",
+            "zone-field-tether-causeway",
+            "town-torque-balance-citadel",
+            "",
+            "Roaming World-Boss Vanguard",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            55,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Arcane Golden Aurora",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            626,
+            236,
+            "#f97316",
+            "Frenzied Guardian Wyverns and Karul Bugbears descend on Hunters Valley passes; Hunter Guild net-ballista CC awards bonus Gold/Mythic contribution.",
+        ),
+        (
+            "world-incursion-10-talking-island-elpy-king-mutiny",
+            "Talking Island Elpy King Mutiny — Obelisk of Victory Beginner Public Quest & Golem Breach",
+            "zone-field-clover-south-gate",
+            "town-lantern-hollow",
+            "zone-dungeon-kiln-cellar",
+            "3-Phase Zone Public Quest",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            15,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Arcane Golden Aurora",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            456,
+            438,
+            "#f97316",
+            "Starter-friendly Lv.1-20 emergency public quest outside Talking Island and Elven Ruins teaching 3-phase contribution scoring and group revives.",
+        ),
+        (
+            "world-incursion-11-elven-forest-shadow-spore-blight",
+            "Elven Forest Shadow Spore Blight — Sea of Spores Orfen Mycelium Creep & Mother Tree Ward",
+            "zone-field-celadon-causeway",
+            "town-porcelain-loom-sanctuary",
+            "zone-dungeon-medallion-heart-vault",
+            "3-Phase Zone Public Quest",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            25,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Abyssal Violet Eclipse",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            540,
+            286,
+            "#a855f7",
+            "Corrupted Rotting Tree spores drift across the Neutral Zone toward Elven Glade; healers cleansing Mother Tree Saplings earn 2.0x contribution weight.",
+        ),
+        (
+            "world-incursion-12-dark-elven-swampland-marsh-horror",
+            "Dark Elven Swampland Marsh Horror — Black Rock Marsh Stakato & Lesser Demon Rift",
+            "zone-field-chime-pipe-colonnade",
+            "town-carillon-hearth-belfry",
+            "zone-dungeon-ceramic-resonator-crypt",
+            "Abyssal Rift Sky-Tear",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            25,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Abyssal Violet Eclipse",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            504,
+            260,
+            "#a855f7",
+            "School of Dark Arts ritual backfire opens an umbral rift in Swampland; sealing 3 Blood Obelisks summons Marsh Horror Rahha.",
+        ),
+        (
+            "world-incursion-13-orc-plateau-immortal-flame-warband",
+            "Orc Plateau Immortal Flame Warband — Cave of Trials Maraku Werewolf & Frost Lord Raid",
+            "zone-field-firebrick-duct",
+            "town-draft-kiln-post",
+            "zone-dungeon-ember-bellows-chamber",
+            "Town Perimeter Defense Event",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            30,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Volcanic Ash & Ember Storm",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            466,
+            138,
+            "#dc2626",
+            "Traitorous Maraku Chieftains and Kasha Bears storm the Immortal Plateau flame brazier; defending Pa'agrio's Brazier grants tribal war chests.",
+        ),
+        (
+            "world-incursion-14-dwarven-mithril-mine-earthworm-tremor",
+            "Dwarven Mithril Mine Earthworm Tremor — Trasken Larva Eruption & Strip-Mine Defense",
+            "zone-field-resin-arch-tunnel",
+            "town-root-train-roundhouse",
+            "zone-dungeon-sap-heart-cistern",
+            "Roaming World-Boss Vanguard",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            35,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Volcanic Ash & Ember Storm",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            616,
+            88,
+            "#dc2626",
+            "Subterranean Earthworm Trasken spawns breach Western Mining Zone tunnels; Dwarven Siege Golem summons deal 3x structural damage to burrowing carapaces.",
+        ),
+        (
+            "world-incursion-15-kamael-nornil-clockwork-rebellion",
+            "Kamael Nornil Clockwork Rebellion — Spicula Zero Overclock & Hills of Gold Siege",
+            "zone-field-cinnamon-bark-viaduct",
+            "town-cinnamon-mill-haven",
+            "zone-dungeon-spice-kiln-cellar",
+            "3-Phase Zone Public Quest",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            20,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Arcane Golden Aurora",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            386,
+            302,
+            "#ef4444",
+            "Nornil's Garden Mother Nornil security golems go rogue across Hills of Gold; Soul-Absorbing Kamael skills disable overclocked shields.",
+        ),
+        (
+            "world-incursion-16-hellbound-beleth-sandstorm-incursion",
+            "Hellbound Beleth Sandstorm Incursion — Steel Citadel Demon Legion & Oasis Megalith Siege",
+            "zone-field-aurora-tether",
+            "town-torque-balance-citadel",
+            "",
+            "Abyssal Rift Sky-Tear",
+            "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn",
+            120,
+            "DPS + Healing + CC + Revive Weighted Ledger",
+            "Blood-Moon Crimson Fog",
+            "Bronze / Silver / Gold / Sovereign Mythic",
+            474,
+            470,
+            "#ef4444",
+            "Endgame 120-player zone-wide sandstorm incursion across Hellbound Quarry & Oasis; holding Enchanted Megaliths spawns Beleth's Shadow Darion.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        iid,
+        title,
+        zid,
+        tid,
+        duid,
+        icat,
+        pprog,
+        minp,
+        crule,
+        sky,
+        chests,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "incursion_id": iid,
+                "title": title,
+                "zone_id": zid,
+                "town_id": tid,
+                "dungeon_id": duid,
+                "incursion_category": icat,
+                "phase_progression": pprog,
+                "min_participating_players": minp,
+                "contribution_scoring_rule": crule,
+                "dynamic_skybox_override": sky,
+                "reward_chest_tiers": chests,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_world_invasion_incursions(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_world_invasion_incursions(atlas)
+    atlas["world_invasion_incursions"] = rows
+    return rows
+
+
+def _build_clan_treasury_payroll_ledgers(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Record [Role 4: Backend Infra — Guild / Clan Treasury Ledger, Siege Mercenary Payroll & Tax Dividend Audit Matrix] (D94)."""
+    specs = [
+        (
+            "clan-treasury-01-talking-island",
+            "Talking Island (Lantern Hollow) — Cedric's Academy Cadet Stipend & Starter Pledge Vault",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Starter Academy Stipend Pool",
+            "Clan Leader + Vice-Leader Dual Sign",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            25,
+            90,
+            452,
+            436,
+            "#10b981",
+            "Automates D-Grade Oath Armor academy graduation stipends and 1,000 CRP milestone payouts with 90-day immutable ledger audit trails.",
+        ),
+        (
+            "clan-treasury-02-elven-village",
+            "Elven Village (Porcelain Loom) — Asterios Mother Tree Sanctuary Tithe & Academy Escrow",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "Starter Academy Stipend Pool",
+            "Clan Leader + Vice-Leader Dual Sign",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            32,
+            120,
+            538,
+            292,
+            "#10b981",
+            "Disburses Elven Fortress dungeon-clear bounties and Royal Guard/Order of Knights academy stipends under dual-signature clan governance.",
+        ),
+        (
+            "clan-treasury-03-dark-elven-village",
+            "Dark Elven Village (Carillon Belfry) — Tetrarch Thifiell Blood-Pledge Upkeep & Stipend Vault",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "Starter Academy Stipend Pool",
+            "Clan Leader + Vice-Leader Dual Sign",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            34,
+            120,
+            512,
+            266,
+            "#f59e0b",
+            "Tracks Shilen Blood-Pledge academy graduation rewards and School of Dark Arts mercenary escort splits.",
+        ),
+        (
+            "clan-treasury-04-orc-village",
+            "Orc Village (Draft-Kiln Post) — Kakai Flame-Tribe War Chest & Vanguard Stipend Ledger",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Starter Academy Stipend Pool",
+            "Automated Post-Siege Smart Split",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            30,
+            90,
+            462,
+            136,
+            "#eab308",
+            "Automated post-battle smart split distributing Immortal Plateau warband spoils across Orc Raider and Monk academy recruits.",
+        ),
+        (
+            "clan-treasury-05-dwarven-village",
+            "Dwarven Village (Root-Train Roundhouse) — Iron Gate Guild Dividend & Clan Hall Upkeep Vault",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Clan Hall Auction & Upkeep Ledger",
+            "Clan Leader + Vice-Leader Dual Sign",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            145,
+            180,
+            622,
+            82,
+            "#facc15",
+            "Manages Bronze Key & Black Anvil guild profit-sharing dividends, weekly Clan Hall rent auto-debit, and Siege Golem fuel escrows.",
+        ),
+        (
+            "clan-treasury-06-kamael-village",
+            "Kamael Village (Cinnamon-Mill Haven) — Kekropus Crimson Hiresword & Academy Stipend Pool",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "Starter Academy Stipend Pool",
+            "Automated Post-Siege Smart Split",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            28,
+            90,
+            382,
+            300,
+            "#10b981",
+            "Instant smart-contract stipend pool rewarding Isle of Souls Kamael academy graduates and Nornil's Garden party assists.",
+        ),
+        (
+            "clan-treasury-07-gludin-village",
+            "Gludin Village (Glaze-Barge Quay) — Maritime Clan Hall Auction & Southern Fortress Escrow",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Clan Hall Auction & Upkeep Ledger",
+            "Clan Leader + Vice-Leader Dual Sign",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            210,
+            180,
+            422,
+            402,
+            "#f59e0b",
+            "Holds 7-day refundable Adena bid deposits for Gludin Harbor luxury Clan Halls and automated weekly teleport/buff upkeep deductions.",
+        ),
+        (
+            "clan-treasury-08-gludio-town",
+            "Town of Gludio (Kilnwatch Bastion) — Gludio Castle Tax Vault & Shanty Fortress Mercenary Payroll",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Sovereign Castle Tax Vault",
+            "Sovereign + 2 Royal Guards 2-of-3",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            420,
+            240,
+            492,
+            376,
+            "#eab308",
+            "Collects Gludio 10% NPC shop & Manor seed taxes, requiring 2-of-3 multisig approval from the Castle Lord and Royal Guard Captains for withdrawals.",
+        ),
+        (
+            "clan-treasury-09-dion-town",
+            "Town of Dion (Saffron Press) — Dion Castle Tax Vault & Partisan Hideout Mercenary Escrow",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "Fortress & Territory Mercenary Escrow",
+            "Automated Post-Siege Smart Split",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            380,
+            210,
+            522,
+            416,
+            "#facc15",
+            "Escrows pre-siege mercenary bounties for Dion Castle and Floran Fortress, paying out automatically by verified Swoop Cannon & Gate-Damage telemetry.",
+        ),
+        (
+            "clan-treasury-10-giran-castle-town",
+            "Giran Castle Town (Pinion Terminus) — Sovereign Trade Tax Vault & Mercenary Dividend Treasury",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Sovereign Castle Tax Vault",
+            "Sovereign + 2 Royal Guards 2-of-3",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            1650,
+            365,
+            588,
+            398,
+            "#eab308",
+            "Continental highest-volume tax vault yielding 1,650M Adena/week from Giran market turnover with 365-day forensic audit retention.",
+        ),
+        (
+            "clan-treasury-11-oren-town",
+            "Town of Oren (Escapement Anvil) — Oren Castle Border Tax & Antharas Fortress Hiresword Ledger",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Fortress & Territory Mercenary Escrow",
+            "Automated Post-Siege Smart Split",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            540,
+            270,
+            590,
+            302,
+            "#f59e0b",
+            "Distributes Blood Oath & Knight's Epaulette mercenary shares across Oren Castle and Ivory Tower border fortresses.",
+        ),
+        (
+            "clan-treasury-12-hunters-village",
+            "Hunters Village (Torque-Balance Citadel) — Hunter Guild Clan Hall Upkeep & Raid Bounty Escrow",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Clan Hall Auction & Upkeep Ledger",
+            "Clan Leader + Vice-Leader Dual Sign",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            260,
+            180,
+            622,
+            232,
+            "#facc15",
+            "Settles Enchanted Valley and Aden border Clan Hall leases plus Command Channel raid healer/tank subsidy pools.",
+        ),
+        (
+            "clan-treasury-13-aden-imperial-capital",
+            "Town of Aden (Crown-Beacon Citadel) — Imperial Sovereign Treasury & 9-Territory Ward Dividend Vault",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "Sovereign Castle Tax Vault",
+            "Sovereign + 2 Royal Guards 2-of-3",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            1850,
+            365,
+            656,
+            278,
+            "#eab308",
+            "Supreme Imperial Castle vault aggregating 1,850M Adena/week in sovereign tributes, Territory Ward bonuses, and Devastated Castle siege payrolls.",
+        ),
+        (
+            "clan-treasury-14-goddard-town",
+            "Town of Goddard (Inductor Switchyard) — Goddard Castle Tax Vault & Rainbow Springs Chateau Ledger",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Fortress & Territory Mercenary Escrow",
+            "Sovereign + 2 Royal Guards 2-of-3",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            1120,
+            365,
+            656,
+            196,
+            "#f59e0b",
+            "Audits Goddard Castle high-grade forge taxes, Hot Springs Chateau siege decrees, and Valakas expedition clan alliance dividends.",
+        ),
+        (
+            "clan-treasury-15-rune-township",
+            "Rune Township (Starfall Haven) — Rune Castle Sovereign Vault & Fortress of the Dead Payroll",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "Sovereign Castle Tax Vault",
+            "Sovereign + 2 Royal Guards 2-of-3",
+            "Kill/Assist + Gate-Damage + Ward-Hold Share",
+            1280,
+            365,
+            552,
+            202,
+            "#facc15",
+            "Secures northern Elmore and Gracia dock tariffs under 2-of-3 Royal Guard hardware-token multisig and automated post-siege mercenary splits.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        trid,
+        title,
+        tid,
+        zid,
+        ttier,
+        msig,
+        mpay,
+        wyield,
+        retdays,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "treasury_id": trid,
+                "title": title,
+                "town_id": tid,
+                "zone_id": zid,
+                "treasury_tier": ttier,
+                "multisig_withdrawal_policy": msig,
+                "mercenary_payout_formula": mpay,
+                "weekly_tax_yield_adena_m": wyield,
+                "audit_trail_retention_days": retdays,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_clan_treasury_payroll_ledgers(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_clan_treasury_payroll_ledgers(atlas)
+    atlas["clan_treasury_payroll_ledgers"] = rows
+    return rows
+
+
 
 
 
@@ -21331,6 +21924,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("cross_realm_auction_escrows") or []) < 15:
         inject_cross_realm_auction_escrows(atlas)
         actions.append("populated_15_cross_realm_auction_escrows")
+
+    # 77. Ensure all 16 Dynamic World Boss Invasion, Rift Incursion & Zone-Wide Emergency Quest Matrix records exist in `world_invasion_incursions` (D93)
+    if len(atlas.get("world_invasion_incursions") or []) < 16:
+        inject_world_invasion_incursions(atlas)
+        actions.append("populated_16_world_invasion_incursions")
+
+    # 78. Ensure all 15 Guild / Clan Treasury Ledger, Siege Mercenary Payroll & Tax Dividend Audit Matrix records exist in `clan_treasury_payroll_ledgers` (D94)
+    if len(atlas.get("clan_treasury_payroll_ledgers") or []) < 15:
+        inject_clan_treasury_payroll_ledgers(atlas)
+        actions.append("populated_15_clan_treasury_payroll_ledgers")
 
     return {"actions": actions}
 
@@ -26159,15 +26762,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d92_eval = score_d92_cross_realm_auction_escrows(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
     d92_score = d92_eval["score"]
 
+    # D93: Interactive 16-Record [Role 2: Content & World Tools — Dynamic World Boss Invasion, Rift Incursion & Zone-Wide Emergency Quest Matrix] (`world_invasion_incursions` - 16 Incursions)
+    d93_eval = score_d93_world_invasion_incursions(atlas, zone_ids_set=zone_ids_set, mf_dungeon_id_set=mf_dungeon_id_set, web_txt=web_txt)
+    d93_score = d93_eval["score"]
+
+    # D94: Interactive 15-Record [Role 4: Backend Infra — Guild / Clan Treasury Ledger, Siege Mercenary Payroll & Tax Dividend Audit Matrix] (`clan_treasury_payroll_ledgers` - 15 Ledgers)
+    d94_eval = score_d94_clan_treasury_payroll_ledgers(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d94_score = d94_eval["score"]
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 74.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 76.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 76.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 86.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 75.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score) / 82.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 76.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 78.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 78.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 88.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 77.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 84.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -26264,8 +26875,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d90_score
             + d91_score
             + d92_score
+            + d93_score
+            + d94_score
         )
-        / 92.0,
+        / 94.0,
         1,
     )
 
@@ -27002,7 +27615,209 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D90_two_ring_11_role_studio_90d_master_signoff_ledger": d90_eval,
             "D91_dynamic_faction_reputation_npc_disposition_and_guard_hostility_matrix": d91_eval,
             "D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix": d92_eval,
+            "D93_dynamic_world_boss_invasion_rift_incursion_and_public_quest_matrix": d93_eval,
+            "D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix": d94_eval,
         },
+    }
+
+
+def score_d93_world_invasion_incursions(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    mf_dungeon_id_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if mf_dungeon_id_set is None:
+        mf_dungeon_id_set = {
+            str(d.get("dungeon_id"))
+            for d in (atlas.get("multi_floor_dungeons") or [])
+            if isinstance(d, dict) and d.get("dungeon_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_categories = {
+        "3-Phase Zone Public Quest",
+        "Roaming World-Boss Vanguard",
+        "Town Perimeter Defense Event",
+        "Abyssal Rift Sky-Tear",
+    }
+    expected_skyboxes = {
+        "Blood-Moon Crimson Fog",
+        "Abyssal Violet Eclipse",
+        "Volcanic Ash & Ember Storm",
+        "Arcane Golden Aurora",
+    }
+    rows = atlas.get("world_invasion_incursions") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_cats: set[str] = set()
+    seen_skyboxes: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        iid = str(row.get("incursion_id") or "")
+        zid = str(row.get("zone_id") or "")
+        duid = str(row.get("dungeon_id") or "")
+        icat = str(row.get("incursion_category") or "")
+        pprog = str(row.get("phase_progression") or "")
+        minp = int(row.get("min_participating_players") or 0)
+        crule = str(row.get("contribution_scoring_rule") or "")
+        sky = str(row.get("dynamic_skybox_override") or "")
+        chests = str(row.get("reward_chest_tiers") or "")
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            iid
+            and iid not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and row.get("town_id")
+            and (not duid or duid in mf_dungeon_id_set)
+            and icat in expected_categories
+            and pprog == "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn"
+            and 15 <= minp <= 120
+            and crule == "DPS + Healing + CC + Revive Weighted Ledger"
+            and sky in expected_skyboxes
+            and chests == "Bronze / Silver / Gold / Sovereign Mythic"
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#ef4444", "#f97316", "#dc2626", "#a855f7")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(iid)
+            seen_cats.add(icat)
+            seen_skyboxes.add(sky)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_WORLD_INCURSION_MODE",
+            "setAtlasWorldIncursionMode",
+            "selectWorldInvasionIncursion",
+            "renderAtlasWorldIncursionBarHtml",
+            "studioWorldIncursionOverlay",
+        )
+    )
+    ratio = valid_count / 16.0
+    full_cov = valid_count == 16 and seen_cats == expected_categories and seen_skyboxes == expected_skyboxes
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 16,
+        "incursion_categories": sorted(seen_cats),
+        "dynamic_skyboxes": sorted(seen_skyboxes),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d94_clan_treasury_payroll_ledgers(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_tiers = {
+        "Sovereign Castle Tax Vault",
+        "Fortress & Territory Mercenary Escrow",
+        "Clan Hall Auction & Upkeep Ledger",
+        "Starter Academy Stipend Pool",
+    }
+    expected_policies = {
+        "Sovereign + 2 Royal Guards 2-of-3",
+        "Clan Leader + Vice-Leader Dual Sign",
+        "Automated Post-Siege Smart Split",
+    }
+    rows = atlas.get("clan_treasury_payroll_ledgers") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_towns: set[str] = set()
+    seen_tiers: set[str] = set()
+    seen_policies: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        trid = str(row.get("treasury_id") or "")
+        tid = str(row.get("town_id") or "")
+        zid = str(row.get("zone_id") or "")
+        ttier = str(row.get("treasury_tier") or "")
+        msig = str(row.get("multisig_withdrawal_policy") or "")
+        mpay = str(row.get("mercenary_payout_formula") or "")
+        wyield = int(row.get("weekly_tax_yield_adena_m") or 0)
+        retdays = int(row.get("audit_trail_retention_days") or 0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            trid
+            and trid not in seen_ids
+            and row.get("title")
+            and tid
+            and tid not in seen_towns
+            and zid in zone_ids_set
+            and ttier in expected_tiers
+            and msig in expected_policies
+            and mpay == "Kill/Assist + Gate-Damage + Ward-Hold Share"
+            and 25 <= wyield <= 1850
+            and 90 <= retdays <= 365
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#eab308", "#facc15", "#f59e0b", "#10b981")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(trid)
+            seen_towns.add(tid)
+            seen_tiers.add(ttier)
+            seen_policies.add(msig)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_CLAN_TREASURY_MODE",
+            "setAtlasClanTreasuryMode",
+            "selectClanTreasuryLedger",
+            "renderAtlasClanTreasuryBarHtml",
+            "studioClanTreasuryOverlay",
+        )
+    )
+    ratio = valid_count / 15.0
+    full_cov = valid_count == 15 and seen_tiers == expected_tiers and seen_policies == expected_policies
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 15,
+        "treasury_tiers": sorted(seen_tiers),
+        "multisig_policies": sorted(seen_policies),
+        "ui_wired": has_ui,
     }
 
 
@@ -28019,7 +28834,7 @@ def evaluate_80d_atlas(whc: dict[str, Any] | None = None, atlas: dict[str, Any] 
     if atlas is None:
         atlas = json.loads(ATLAS_PATH.read_text(encoding="utf-8"))
     res = audit_world_atlas(whc, atlas)
-    res["wave"] = 44
+    res["wave"] = 45
     return res
 
 
@@ -28155,6 +28970,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D90 (22 90D Master Ledger)  : {dims['D90_two_ring_11_role_studio_90d_master_signoff_ledger']['score']}/100 ({dims['D90_two_ring_11_role_studio_90d_master_signoff_ledger']['verified']}/{dims['D90_two_ring_11_role_studio_90d_master_signoff_ledger']['target']} 90d studio sign-off records)")
         print(f"  D91 (16 Faction Dispositions): {dims['D91_dynamic_faction_reputation_npc_disposition_and_guard_hostility_matrix']['score']}/100 ({dims['D91_dynamic_faction_reputation_npc_disposition_and_guard_hostility_matrix']['verified']}/{dims['D91_dynamic_faction_reputation_npc_disposition_and_guard_hostility_matrix']['target']} faction reputation dispositions)")
         print(f"  D92 (15 Auction Escrows)    : {dims['D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix']['score']}/100 ({dims['D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix']['verified']}/{dims['D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix']['target']} cross-realm auction escrows)")
+        print(f"  D93 (16 World Incursions)   : {dims['D93_dynamic_world_boss_invasion_rift_incursion_and_public_quest_matrix']['score']}/100 ({dims['D93_dynamic_world_boss_invasion_rift_incursion_and_public_quest_matrix']['verified']}/{dims['D93_dynamic_world_boss_invasion_rift_incursion_and_public_quest_matrix']['target']} world invasion incursions)")
+        print(f"  D94 (15 Clan Treasuries)    : {dims['D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix']['score']}/100 ({dims['D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix']['verified']}/{dims['D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix']['target']} clan treasury payroll ledgers)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

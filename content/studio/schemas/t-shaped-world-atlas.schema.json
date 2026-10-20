@@ -467,6 +467,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/crossRealmAuctionEscrowSpec" }
     },
+    "world_invasion_incursions": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/worldInvasionIncursionSpec" }
+    },
+    "clan_treasury_payroll_ledgers": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/clanTreasuryPayrollLedgerSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -5294,6 +5306,155 @@
         "accent": {
           "type": "string",
           "enum": ["#14b8a6", "#2dd4bf", "#0d9488", "#38bdf8"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "worldInvasionIncursionSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "incursion_id",
+        "title",
+        "zone_id",
+        "town_id",
+        "dungeon_id",
+        "incursion_category",
+        "phase_progression",
+        "min_participating_players",
+        "contribution_scoring_rule",
+        "dynamic_skybox_override",
+        "reward_chest_tiers",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "incursion_id": { "type": "string" },
+        "title": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "town_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "incursion_category": {
+          "type": "string",
+          "enum": [
+            "3-Phase Zone Public Quest",
+            "Roaming World-Boss Vanguard",
+            "Town Perimeter Defense Event",
+            "Abyssal Rift Sky-Tear"
+          ]
+        },
+        "phase_progression": {
+          "type": "string",
+          "const": "Phase 1 Scout Waves -> Phase 2 Obelisk Siege -> Phase 3 Commander Spawn"
+        },
+        "min_participating_players": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 120
+        },
+        "contribution_scoring_rule": {
+          "type": "string",
+          "const": "DPS + Healing + CC + Revive Weighted Ledger"
+        },
+        "dynamic_skybox_override": {
+          "type": "string",
+          "enum": [
+            "Blood-Moon Crimson Fog",
+            "Abyssal Violet Eclipse",
+            "Volcanic Ash & Ember Storm",
+            "Arcane Golden Aurora"
+          ]
+        },
+        "reward_chest_tiers": {
+          "type": "string",
+          "const": "Bronze / Silver / Gold / Sovereign Mythic"
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#ef4444", "#f97316", "#dc2626", "#a855f7"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "clanTreasuryPayrollLedgerSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "treasury_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "treasury_tier",
+        "multisig_withdrawal_policy",
+        "mercenary_payout_formula",
+        "weekly_tax_yield_adena_m",
+        "audit_trail_retention_days",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "treasury_id": { "type": "string" },
+        "title": { "type": "string" },
+        "town_id": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "treasury_tier": {
+          "type": "string",
+          "enum": [
+            "Sovereign Castle Tax Vault",
+            "Fortress & Territory Mercenary Escrow",
+            "Clan Hall Auction & Upkeep Ledger",
+            "Starter Academy Stipend Pool"
+          ]
+        },
+        "multisig_withdrawal_policy": {
+          "type": "string",
+          "enum": [
+            "Sovereign + 2 Royal Guards 2-of-3",
+            "Clan Leader + Vice-Leader Dual Sign",
+            "Automated Post-Siege Smart Split"
+          ]
+        },
+        "mercenary_payout_formula": {
+          "type": "string",
+          "const": "Kill/Assist + Gate-Damage + Ward-Hold Share"
+        },
+        "weekly_tax_yield_adena_m": {
+          "type": "integer",
+          "minimum": 25,
+          "maximum": 1850
+        },
+        "audit_trail_retention_days": {
+          "type": "integer",
+          "minimum": 90,
+          "maximum": 365
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#eab308", "#facc15", "#f59e0b", "#10b981"]
         },
         "notes": { "type": "string" }
       }
