@@ -83,6 +83,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/manorEconomyRouteSpec" }
     },
+    "noblesse_olympiad_network": {
+      "type": "array",
+      "minItems": 21,
+      "maxItems": 21,
+      "items": { "$ref": "#/$defs/noblesseOlympiadNodeSpec" }
+    },
+    "intercontinental_transit_lines": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": { "$ref": "#/$defs/intercontinentalTransitLineSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -1842,6 +1854,73 @@
           "type": "string",
           "enum": ["Low_Patrolled", "Medium_Bandit_Road", "High_Frontier_Ambush"]
         }
+      }
+    },
+    "noblesseOlympiadNodeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "node_name",
+        "node_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "min_level",
+        "npc_steward_name",
+        "ritual_requirement",
+        "heroic_reward"
+      ],
+      "properties": {
+        "node_id": { "type": "string" },
+        "node_name": { "type": "string" },
+        "node_category": {
+          "type": "string",
+          "enum": ["Olympiad_Monument", "Subclass_Mimir_Sanctum", "Noblesse_Barakiel_Shrine"]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "min_level": { "type": "integer", "minimum": 70, "maximum": 99 },
+        "npc_steward_name": { "type": "string" },
+        "ritual_requirement": { "type": "string" },
+        "heroic_reward": { "type": "string" }
+      }
+    },
+    "intercontinentalTransitLineSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transit_id",
+        "route_name",
+        "transit_mode",
+        "origin_zone_id",
+        "origin_loc",
+        "destination_zone_id",
+        "destination_loc",
+        "departure_interval",
+        "ticket_cost_adena",
+        "vessel_or_gatekeeper_name"
+      ],
+      "properties": {
+        "transit_id": { "type": "string" },
+        "route_name": { "type": "string" },
+        "transit_mode": {
+          "type": "string",
+          "enum": ["Maritime_Ship", "Brass_Airship", "Gatekeeper_Trunk"]
+        },
+        "origin_zone_id": { "type": "string" },
+        "origin_loc": { "type": "string" },
+        "destination_zone_id": { "type": "string" },
+        "destination_loc": { "type": "string" },
+        "departure_interval": { "type": "string" },
+        "ticket_cost_adena": { "type": "integer", "minimum": 0 },
+        "vessel_or_gatekeeper_name": { "type": "string" }
       }
     }
   }

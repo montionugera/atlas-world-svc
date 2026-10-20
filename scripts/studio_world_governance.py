@@ -668,6 +668,8 @@ def validate_world_governance(
                 "worldBossSpawnRadarCount": len(t_doc.get("world_boss_spawn_radar") or []),
                 "sevenSealsCompetitionsCount": len(t_doc.get("seven_seals_competitions") or []),
                 "manorEconomyRoutesCount": len(t_doc.get("manor_economy_routes") or []),
+                "noblesseOlympiadNetworkCount": len(t_doc.get("noblesse_olympiad_network") or []),
+                "intercontinentalTransitLinesCount": len(t_doc.get("intercontinental_transit_lines") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -927,6 +929,44 @@ def validate_world_governance(
                 if hfzid not in field_zone_ids:
                     errors.append(
                         f"GOV-10 violation: manor_economy_routes '{mid}' references unknown harvest_field_zone_id '{hfzid}'"
+                    )
+
+            # Validate 21 Subclass, Noblesse & Grand Olympiad Monument Network Nodes (D29)
+            olympiad_nodes = t_doc.get("noblesse_olympiad_network") or []
+            if olympiad_nodes and len(olympiad_nodes) != 21:
+                errors.append(f"GOV-10 violation: noblesse_olympiad_network must have 21 nodes, got {len(olympiad_nodes)}")
+            for on_item in olympiad_nodes:
+                if not isinstance(on_item, dict):
+                    continue
+                nid = str(on_item.get("node_id", ""))
+                ozid = str(on_item.get("zone_id", ""))
+                odid = str(on_item.get("dungeon_id", ""))
+                if ozid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: noblesse_olympiad_network '{nid}' references unknown zone_id '{ozid}'"
+                    )
+                if odid and odid not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: noblesse_olympiad_network '{nid}' references unknown dungeon_id '{odid}'"
+                    )
+
+            # Validate 18 Inter-Continental Maritime Ship, Airship & Gatekeeper Transit Lines (D30)
+            transit_lines = t_doc.get("intercontinental_transit_lines") or []
+            if transit_lines and len(transit_lines) != 18:
+                errors.append(f"GOV-10 violation: intercontinental_transit_lines must have 18 routes, got {len(transit_lines)}")
+            for tl_item in transit_lines:
+                if not isinstance(tl_item, dict):
+                    continue
+                tid = str(tl_item.get("transit_id", ""))
+                orig_zid = str(tl_item.get("origin_zone_id", ""))
+                dest_zid = str(tl_item.get("destination_zone_id", ""))
+                if orig_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: intercontinental_transit_lines '{tid}' references unknown origin_zone_id '{orig_zid}'"
+                    )
+                if dest_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: intercontinental_transit_lines '{tid}' references unknown destination_zone_id '{dest_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

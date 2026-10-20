@@ -69,7 +69,7 @@ def compute_studio_self_evaluation() -> dict:
             }
             dims = iter_state["dimensions"]
     overall_atlas_score = float(iter_state.get("overall_score", 100.0))
-    dim_count = len(dims) or 28
+    dim_count = len(dims) or 30
     qs = dict(self_eval.get("qualityScorecard") or {})
     qs.setdefault("overallQualityScorePct", 100.0)
     qs["semanticZoomAtlas18DimensionScore"] = overall_atlas_score
@@ -78,21 +78,23 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas24DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas26DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas28DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas30DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 12)),
+        "wave": int(iter_state.get("wave", 13)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"30-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"28-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"26-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D28 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D30 Verified"
         ),
     }
     return merged
@@ -4354,7 +4356,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D28 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D30 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4401,6 +4403,8 @@ let ATLAS_SIEGE_DOMAIN_ID = 'All';
 let ATLAS_BOSS_RADAR_MODE = 'All';
 let ATLAS_SEVEN_SEALS_MODE = 'All';
 let ATLAS_MANOR_MODE = 'All';
+let ATLAS_OLYMPIAD_MODE = 'All';
+let ATLAS_TRANSIT_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4419,6 +4423,8 @@ const ATLAS_STATE_STORE = {
   bossRadarMode: 'All',                    // D26: Active World Boss & MVP Respawn Radar ('Off' | 'All' | 'DungeonMVP' | 'OverlandRaid')
   sevenSealsMode: 'All',                   // D27: Active Seven-Seals & Mammon Rotation ('Off' | 'All' | 'Lords_of_Dawn' | 'Revolutionaries_of_Dusk' | 'Blacksmith_of_Mammon' | 'Merchant_of_Mammon')
   manorMode: 'All',                        // D28: Active 15-Town Manor Seed & Caravan Economy ('Off' | 'All' | 'Low_Patrolled' | 'High_Frontier_Ambush')
+  olympiadMode: 'All',                     // D29: Active Subclass, Noblesse & Olympiad Network ('Off' | 'All' | 'Subclass_Mimir_Sanctum' | 'Noblesse_Barakiel_Shrine' | 'Olympiad_Monument')
+  transitMode: 'All',                      // D30: Active Inter-Continental Transit ('Off' | 'All' | 'Maritime_Ship' | 'Brass_Airship' | 'Gatekeeper_Trunk')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4426,6 +4432,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasOlympiadMode(modeId) {
+  ATLAS_OLYMPIAD_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.olympiadMode = ATLAS_OLYMPIAD_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasTransitMode(modeId) {
+  ATLAS_TRANSIT_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.transitMode = ATLAS_TRANSIT_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasSevenSealsMode(modeId) {
   ATLAS_SEVEN_SEALS_MODE = String(modeId || 'All');
@@ -6988,6 +7008,202 @@ function renderAtlasManorEconomyBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasOlympiadNetworkBarHtml(tatlas) {
+  const nodes = (tatlas && tatlas.noblesse_olympiad_network) || [];
+  if (!nodes.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+    if (z.studio_node_id) zoneById[z.studio_node_id] = z;
+  });
+
+  const curMode = ATLAS_OLYMPIAD_MODE || ATLAS_STATE_STORE.olympiadMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🏆 All 21 Nodes' },
+    { id: 'Subclass_Mimir_Sanctum', label: '🧪 Subclass Sanctums' },
+    { id: 'Noblesse_Barakiel_Shrine', label: '👑 Noblesse Shrines' },
+    { id: 'Olympiad_Monument', label: '🏛️ 15 Olympiad Monuments' }
+  ];
+
+  const filteredNodes = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? nodes : nodes.filter(n => n.node_category === curMode));
+
+  const featuredNodes = curMode === 'All'
+    ? [
+        ...nodes.filter(n => n.node_category === 'Subclass_Mimir_Sanctum').slice(0, 1),
+        ...nodes.filter(n => n.node_category === 'Noblesse_Barakiel_Shrine').slice(0, 1),
+        ...nodes.filter(n => n.node_category === 'Olympiad_Monument').slice(0, 2)
+      ]
+    : filteredNodes.slice(0, 4);
+
+  return `
+    <div id="atlasOlympiadNetworkBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#231b10;border:1px solid rgba(250,204,21,0.52)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fef08a">🏆 SUBCLASS, NOBLESSE &amp; GRAND OLYMPIAD MONUMENT NETWORK (D29 · 21 NODES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasOlympiadMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(250,204,21,0.45)'};background:${isAct ? '#a16207' : '#090d14'};color:${isAct ? '#ffffff' : '#fef08a'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          15 TOWN HERO MONUMENTS + 3 MIMIR SUBCLASS SANCTUMS (B3/3F) + 3 BARAKIEL NOBLESSE SHRINES
+        </span>
+      </div>
+
+      ${featuredNodes.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px">
+          ${featuredNodes.map(n => {
+            const zObj = zoneById[n.zone_id] || {};
+            const tNode = zObj.studio_node_id || n.zone_id;
+            const isSub = n.node_category === 'Subclass_Mimir_Sanctum';
+            const isNob = n.node_category === 'Noblesse_Barakiel_Shrine';
+            const catCol = isSub ? '#c084fc' : (isNob ? '#38bdf8' : '#fde047');
+            const catIcon = isSub ? '🧪' : (isNob ? '👑' : '🏛️');
+            const jumpAction = n.dungeon_id
+              ? `openDungeonSubMap('${escapeHtml(n.dungeon_id)}', '${escapeHtml(n.floor_id || '3F')}')`
+              : (isNob
+                ? `focusFieldTacticalBlueprint('${escapeHtml(n.zone_id)}', '${escapeHtml(n.loc)}')`
+                : `focusTownStreetBlueprint('${escapeHtml(tNode)}', '${escapeHtml(n.loc)}')`);
+            const jumpLabel = n.dungeon_id
+              ? `🧪 Warp to Floor ${escapeHtml(n.floor_id || '3F')} Sanctum`
+              : (isNob ? '👑 Zoom to Noblesse Field Shrine (4.8×)' : '🏛️ Zoom to Town Hero Monument (5.2×)');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(n.node_name.slice(0, 38))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">Lv.${n.min_level}+</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fef08a;margin-top:1px">
+                    👤 ${escapeHtml(n.npc_steward_name)} · ${escapeHtml(n.ritual_requirement.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#bae6fd;margin-top:1px">
+                    🎁 <strong>Reward:</strong> ${escapeHtml(n.heroic_reward)}
+                  </div>
+                </div>
+                <button type="button" onclick="${jumpAction}"
+                        style="margin-top:2px;padding:2px 6px;border-radius:4px;border:1px solid ${catCol};background:#422006;color:#fef9c3;font-size:8.2px;font-weight:800;cursor:pointer;text-align:left">
+                  ${jumpLabel}
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasTransitLinesBarHtml(tatlas) {
+  const lines = (tatlas && tatlas.intercontinental_transit_lines) || [];
+  if (!lines.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+    if (z.studio_node_id) zoneById[z.studio_node_id] = z;
+  });
+
+  const curMode = ATLAS_TRANSIT_MODE || ATLAS_STATE_STORE.transitMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '⛵ All 18 Transit Lines' },
+    { id: 'Maritime_Ship', label: '⛵ 6 Maritime Ships' },
+    { id: 'Brass_Airship', label: '飞 6 Brass Airships' },
+    { id: 'Gatekeeper_Trunk', label: '🌀 6 Gatekeeper Trunks' }
+  ];
+
+  const filteredLines = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? lines : lines.filter(l => l.transit_mode === curMode));
+
+  const featuredLines = curMode === 'All'
+    ? [
+        ...lines.filter(l => l.transit_mode === 'Maritime_Ship').slice(0, 2),
+        ...lines.filter(l => l.transit_mode === 'Brass_Airship').slice(0, 1),
+        ...lines.filter(l => l.transit_mode === 'Gatekeeper_Trunk').slice(0, 1)
+      ]
+    : filteredLines.slice(0, 4);
+
+  const buildZoneJumpJs = (zid, loc) => {
+    const z = zoneById[zid] || {};
+    if (z.category === 'starting_town' || z.category === 'castle_or_hub_town') {
+      return `focusTownStreetBlueprint('${escapeHtml(z.studio_node_id || zid)}', '${escapeHtml(loc)}')`;
+    }
+    if (z.category === 'harbor' || z.category === 'clan_hall' || z.category === 'fortress') {
+      return `focusFortressBlueprint('${escapeHtml(zid)}', '${escapeHtml(loc)}')`;
+    }
+    return `focusFieldTacticalBlueprint('${escapeHtml(zid)}', '${escapeHtml(loc)}')`;
+  };
+
+  return `
+    <div id="atlasTransitLinesBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0e1d2b;border:1px solid rgba(56,189,248,0.52)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#7dd3fc">⛵ MARITIME SHIP, AIRSHIP &amp; GATEKEEPER TRANSIT SELECTOR (D30 · 18 LINES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasTransitMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.45)'};background:${isAct ? '#0369a1' : '#090d14'};color:${isAct ? '#ffffff' : '#bae6fd'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 MARITIME HARBOR SHIPS + 6 SKY-DOCK BRASS AIRSHIPS + 6 CAPITAL GATEKEEPER TRUNKS
+        </span>
+      </div>
+
+      ${featuredLines.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px">
+          ${featuredLines.map(l => {
+            const isShip = l.transit_mode === 'Maritime_Ship';
+            const isAir = l.transit_mode === 'Brass_Airship';
+            const modeCol = isShip ? '#38bdf8' : (isAir ? '#f59e0b' : '#c084fc');
+            const modeIcon = isShip ? '⛵' : (isAir ? '飞' : '🌀');
+            const origJump = buildZoneJumpJs(l.origin_zone_id, l.origin_loc);
+            const destJump = buildZoneJumpJs(l.destination_zone_id, l.destination_loc);
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${modeCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${modeIcon} ${escapeHtml(l.route_name.slice(0, 42))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${modeCol}">${escapeHtml(l.departure_interval)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                    🧭 ${escapeHtml(l.vessel_or_gatekeeper_name)} · Fare: ${l.ticket_cost_adena.toLocaleString()} Adena
+                  </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${origJump}"
+                          style="padding:2px 6px;border-radius:4px;border:1px solid ${modeCol};background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    ⚓ Origin Dock/Town
+                  </button>
+                  <button type="button" onclick="${destJump}"
+                          style="padding:2px 6px;border-radius:4px;border:1px solid #fde047;background:#1e3a8a;color:#fef08a;font-size:8px;font-weight:800;cursor:pointer">
+                    🎯 Destination Dock/Town
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -7120,6 +7336,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasBossRadarBarHtml(tatlas)}
       ${renderAtlasSevenSealsBarHtml(tatlas)}
       ${renderAtlasManorEconomyBarHtml(tatlas)}
+      ${renderAtlasOlympiadNetworkBarHtml(tatlas)}
+      ${renderAtlasTransitLinesBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -9228,6 +9446,65 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D29: Subclass, Noblesse & Grand Olympiad Monument Network Overlay (`studioNoblesseOlympiadOverlay`)
+  const olympiadNodes = (tatlas && tatlas.noblesse_olympiad_network) || [];
+  const curOlympiadMode = ATLAS_OLYMPIAD_MODE || ATLAS_STATE_STORE.olympiadMode || 'All';
+  const activeOlympiadNodes = curOlympiadMode === 'Off'
+    ? []
+    : (curOlympiadMode === 'All'
+      ? olympiadNodes.slice(0, 12)
+      : olympiadNodes.filter(n => n.node_category === curOlympiadMode));
+  const noblesseOlympiadOverlaySvg = `
+    <g id="studioNoblesseOlympiadOverlay">
+      ${activeOlympiadNodes.map(n => {
+        const nc = clampWorldLocCoord(n.loc || '-84120:243500');
+        const isSub = n.node_category === 'Subclass_Mimir_Sanctum';
+        const isNob = n.node_category === 'Noblesse_Barakiel_Shrine';
+        const strokeCol = isSub ? '#c084fc' : (isNob ? '#38bdf8' : '#fde047');
+        const iconTxt = isSub ? '🧪' : (isNob ? '👑' : '🏆');
+        const zObj = allZonesById[n.zone_id] || {};
+        const tNode = zObj.studio_node_id || n.zone_id;
+        const clickJs = n.dungeon_id
+          ? `openDungeonSubMap('${escapeHtml(n.dungeon_id)}', '${escapeHtml(n.floor_id || '3F')}')`
+          : (isNob
+            ? `focusFieldTacticalBlueprint('${escapeHtml(n.zone_id)}', '${escapeHtml(n.loc)}')`
+            : `focusTownStreetBlueprint('${escapeHtml(tNode)}', '${escapeHtml(n.loc)}')`);
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${clickJs}">
+            <circle cx="${nc.svgX}" cy="${nc.svgY}" r="11" fill="rgba(250,204,21,0.22)" stroke="${strokeCol}" stroke-width="1.8" stroke-dasharray="3 2"/>
+            <text x="${nc.svgX}" y="${nc.svgY + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D30: Inter-Continental Maritime Ship, Airship & Gatekeeper Transit Overlay (`studioIntercontinentalTransitOverlay`)
+  const transitLines = (tatlas && tatlas.intercontinental_transit_lines) || [];
+  const curTransitMode = ATLAS_TRANSIT_MODE || ATLAS_STATE_STORE.transitMode || 'All';
+  const activeTransitLines = curTransitMode === 'Off'
+    ? []
+    : (curTransitMode === 'All'
+      ? transitLines
+      : transitLines.filter(l => l.transit_mode === curTransitMode));
+  const intercontinentalTransitOverlaySvg = `
+    <g id="studioIntercontinentalTransitOverlay">
+      ${activeTransitLines.map(l => {
+        const oc = clampWorldLocCoord(l.origin_loc || '-84120:243500');
+        const dc = clampWorldLocCoord(l.destination_loc || '82400:148600');
+        const isShip = l.transit_mode === 'Maritime_Ship';
+        const isAir = l.transit_mode === 'Brass_Airship';
+        const lineCol = isShip ? '#38bdf8' : (isAir ? '#f59e0b' : '#c084fc');
+        const dashPat = isShip ? '6 3' : (isAir ? '8 4' : '3 3');
+        const midX = Math.round((oc.svgX + dc.svgX) / 2);
+        const midY = Math.round((oc.svgY + dc.svgY) / 2 - (isAir ? 26 : (isShip ? -18 : 12)));
+        return `
+          <path d="M ${oc.svgX} ${oc.svgY} Q ${midX} ${midY} ${dc.svgX} ${dc.svgY}" fill="none" stroke="${lineCol}" stroke-width="2" stroke-dasharray="${dashPat}" opacity="0.85" pointer-events="none"/>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -9236,6 +9513,8 @@ function renderDedicatedWorldAtlas() {
     ${worldBossSpawnRadarOverlaySvg}
     ${sevenSealsOverlaySvg}
     ${manorEconomyOverlaySvg}
+    ${noblesseOlympiadOverlaySvg}
+    ${intercontinentalTransitOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

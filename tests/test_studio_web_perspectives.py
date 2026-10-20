@@ -910,7 +910,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 28)
+        self.assertGreaterEqual(len(audit["dimensions"]), 28)
 
         d27 = audit["dimensions"]["D27_seven_seals_and_mammon_rotation"]
         self.assertEqual(d27["score"], 100.0)
@@ -957,10 +957,84 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas28DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 28)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 28)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 28)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 28)
         self.assertIn("28-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave13_noblesse_olympiad_network_and_intercontinental_transit_lines(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["noblesseOlympiadNetworkCount"], 21)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["intercontinentalTransitLinesCount"], 18)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_OLYMPIAD_MODE",
+            "setAtlasOlympiadMode(",
+            "renderAtlasOlympiadNetworkBarHtml(",
+            "studioNoblesseOlympiadOverlay",
+            "ATLAS_TRANSIT_MODE",
+            "setAtlasTransitMode(",
+            "renderAtlasTransitLinesBarHtml(",
+            "studioIntercontinentalTransitOverlay",
+            "30-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 13 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 30)
+
+        d29 = audit["dimensions"]["D29_noblesse_and_olympiad_monument_network"]
+        self.assertEqual(d29["score"], 100.0)
+        self.assertEqual(d29["verified"], 21)
+        self.assertEqual(d29["target"], 21)
+        self.assertEqual(d29["olympiad_monuments"], 15)
+        self.assertEqual(d29["subclass_sanctums"], 3)
+        self.assertEqual(d29["noblesse_shrines"], 3)
+        self.assertTrue(d29["ui_wired"])
+
+        d30 = audit["dimensions"]["D30_intercontinental_transit_network"]
+        self.assertEqual(d30["score"], 100.0)
+        self.assertEqual(d30["verified"], 18)
+        self.assertEqual(d30["target"], 18)
+        self.assertEqual(d30["maritime_ships"], 6)
+        self.assertEqual(d30["brass_airships"], 6)
+        self.assertEqual(d30["gatekeeper_trunks"], 6)
+        self.assertTrue(d30["ui_wired"])
+
+        olympiad_nodes = atlas["noblesse_olympiad_network"]
+        self.assertEqual(len(olympiad_nodes), 21)
+        self.assertEqual(sum(1 for n in olympiad_nodes if n["node_category"] == "Olympiad_Monument"), 15)
+        self.assertEqual(sum(1 for n in olympiad_nodes if n["node_category"] == "Subclass_Mimir_Sanctum"), 3)
+        self.assertEqual(sum(1 for n in olympiad_nodes if n["node_category"] == "Noblesse_Barakiel_Shrine"), 3)
+        self.assertEqual(
+            {n["node_category"] for n in olympiad_nodes},
+            {"Olympiad_Monument", "Subclass_Mimir_Sanctum", "Noblesse_Barakiel_Shrine"},
+        )
+
+        transit_lines = atlas["intercontinental_transit_lines"]
+        self.assertEqual(len(transit_lines), 18)
+        self.assertEqual(sum(1 for t in transit_lines if t["transit_mode"] == "Maritime_Ship"), 6)
+        self.assertEqual(sum(1 for t in transit_lines if t["transit_mode"] == "Brass_Airship"), 6)
+        self.assertEqual(sum(1 for t in transit_lines if t["transit_mode"] == "Gatekeeper_Trunk"), 6)
+        self.assertEqual(
+            {t["transit_mode"] for t in transit_lines},
+            {"Maritime_Ship", "Brass_Airship", "Gatekeeper_Trunk"},
+        )
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas30DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 30)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 30)
+        self.assertIn("30-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

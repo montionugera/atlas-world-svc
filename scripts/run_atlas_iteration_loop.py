@@ -2715,6 +2715,347 @@ def _build_manor_economy_routes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
     return routes
 
 
+def _build_noblesse_olympiad_network(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 21 Subclass, Noblesse & Grand Olympiad Monument Network Nodes (15 Town Olympiad Monuments + 3 Subclass Sanctums + 3 Noblesse Shrines) (D29)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    nodes: list[dict[str, Any]] = []
+    for idx, t in enumerate(all_towns[:15], start=1):
+        if not isinstance(t, dict):
+            continue
+        tzid = str(t.get("zone_id", ""))
+        tname = str(t.get("name", tzid)).split("(")[0].strip()
+        bx, by = _parse_loc(str(t.get("loc_coord") or "-84120:243500"))
+        mon_loc = _fmt_loc(bx + 180 + idx * 12, by - 140 - idx * 10)
+        nodes.append(
+            {
+                "node_id": f"olympiad-monument-{idx:02d}-{tzid.replace('zone-town-', '')}",
+                "node_name": f"{tname} Grand Olympiad Monument of Heroes",
+                "node_category": "Olympiad_Monument",
+                "zone_id": tzid,
+                "dungeon_id": "",
+                "floor_id": "",
+                "loc": mon_loc,
+                "min_level": 76,
+                "npc_steward_name": f"Grand Olympiad Manager & Monument of Heroes (#{idx})",
+                "ritual_requirement": "Noblesse Status + 3rd Class Awakening (Lv.76+) & Olympiad Points",
+                "heroic_reward": "Wings of Destiny Circlet, Infinity Hero Weapons & Noblesse Gate Pass",
+            }
+        )
+
+    sanctum_specs = [
+        (
+            "subclass-sanctum-01-chronometer-mimir",
+            "Chronometer Foundry Alchemical Urn of Mimir (B3/3F Subclass Sanctum)",
+            "Subclass_Mimir_Sanctum",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "85120:56180",
+            75,
+            "Magister Ladd & Alchemical Urn of Mimir",
+            "Fate's Whisper (Cabrio/Hallate/Kernon/Golkonda Insignias) + Pure Silver & True Gold",
+            "Mimir's Elixir & Subclass Awakening Slot Unlock (Lv.75 Dual-Class Mastery)",
+        ),
+        (
+            "subclass-sanctum-02-star-heart-baium",
+            "Star-Heart Tower of Insolence Celestial Sanctum (3F Subclass Trial)",
+            "Subclass_Mimir_Sanctum",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "149520:28140",
+            75,
+            "Grand Magister Kaspar & Blooded Fabric Reliquary",
+            " dip Pipette Knife in Celestial Archon Blood on 3F Apex Sanctum",
+            "Star-Tempered Subclass Certificate & Emergent Skill Tome",
+        ),
+        (
+            "subclass-sanctum-03-forbidden-orrery-crucible",
+            "Catacomb of the Forbidden Architect Path Subclass Crucible (B3)",
+            "Subclass_Mimir_Sanctum",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "18720:-64480",
+            76,
+            "Alchemist Wesley & Void-Quicksilver Crucible",
+            "Combine Blood Fire, Pure Silver & True Gold at B3 Abyssal Flame",
+            "Sacred Subclass Seal & Certified Dual-Awakening Aura",
+        ),
+        (
+            "noblesse-shrine-01-caldera-barakiel",
+            "Mainspring Caldera Shrine of Flame-Splendor Barakiel",
+            "Noblesse_Barakiel_Shrine",
+            "zone-field-caldera-rim",
+            "",
+            "",
+            "86780:60940",
+            75,
+            "Lady of the Lake & Caradine's Envoy",
+            "Possessor of a Precious Soul Pt. 1–4 + Defeat Flame of Splendor Barakiel (Lv.75 Subclass)",
+            "Noblesse Tiara, Blessing of Noblesse Buff Retention & Olympiad Eligibility",
+        ),
+        (
+            "noblesse-shrine-02-aurora-lady-of-the-lake",
+            "Aurora Tether Astral Spring of the Lady of the Lake",
+            "Noblesse_Barakiel_Shrine",
+            "zone-field-aurora-tether",
+            "",
+            "",
+            "152740:30920",
+            76,
+            "Matriarch Caradine & Astral Goddess Evaluation",
+            "Deliver Rain Song Staff of Barakiel & Starstone of Goddess Eva",
+            "Exalted Noblesse Investiture & Summon/Teleport Mastery",
+        ),
+        (
+            "noblesse-shrine-03-orrery-splendor-altar",
+            "Orrery Sky-Span Altar of Splendor & Sovereign Lineage",
+            "Noblesse_Barakiel_Shrine",
+            "zone-field-orrery-bridge",
+            "",
+            "",
+            "-28080:-108460",
+            78,
+            "High Steward Ossian & Herald of Splendor",
+            "Vanquish Guardians of Splendor & Seal the Sovereign Starlight Relic",
+            "Sovereign Noblesse Crest & Grand Olympiad Heroic Ascension Right",
+        ),
+    ]
+    for nid, nname, ncat, zid, did, fid, loc, min_lv, steward, req, rew in sanctum_specs:
+        nodes.append(
+            {
+                "node_id": nid,
+                "node_name": nname,
+                "node_category": ncat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "min_level": min_lv,
+                "npc_steward_name": steward,
+                "ritual_requirement": req,
+                "heroic_reward": rew,
+            }
+        )
+    return nodes
+
+
+def _build_intercontinental_transit_lines(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 18 Inter-Continental Maritime Ship, Airship & Gatekeeper Transit Lines (6 Maritime_Ship + 6 Brass_Airship + 6 Gatekeeper_Trunk) (D30)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    loc_by_zid: dict[str, str] = {}
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            for z in entries:
+                if isinstance(z, dict) and z.get("zone_id"):
+                    loc_by_zid[str(z["zone_id"])] = str(z.get("loc_coord") or "-84120:243500")
+
+    specs = [
+        # 6 Maritime_Ship Routes
+        (
+            "transit-ship-01-lantern-to-glaze-quay",
+            "Lantern Hollow South Ferry ➔ Glaze-Barge Maritime Harbor",
+            "Maritime_Ship",
+            "zone-harbor-lantern-ferry-pier",
+            "zone-harbor-glaze-barge-airship-dock",
+            "Every 10m",
+            1500,
+            "Wharf Manager Firon · S.S. Hearthbloom Queen",
+        ),
+        (
+            "transit-ship-02-glaze-harbor-to-pinion",
+            "Glaze-Barge Maritime Dock ➔ Pinion Terminus Steppe Pier (C01➔C02)",
+            "Maritime_Ship",
+            "zone-harbor-glaze-barge-airship-dock",
+            "zone-town-pinion-terminus",
+            "Every 12m",
+            4800,
+            "Wharf Manager Clancy · Ironclad Packet Giran-Tide",
+        ),
+        (
+            "transit-ship-03-lantern-ferry-to-cinnamon",
+            "Lantern Hollow Ferry Pier ➔ Cinnamon-Mill Spice Wharf",
+            "Maritime_Ship",
+            "zone-harbor-lantern-ferry-pier",
+            "zone-town-cinnamon-mill",
+            "Every 8m",
+            1200,
+            "Wharf Manager Ned · Spice Clipper Talking-Isle",
+        ),
+        (
+            "transit-ship-04-glaze-quay-to-kelp-reef",
+            "Glaze-Barge Quay ➔ Kelp Spiral Undertide Reef (C01➔C03 Sea Route)",
+            "Maritime_Ship",
+            "zone-town-glaze-barge-quay",
+            "zone-field-kelp-spiral-reef",
+            "Every 15m",
+            8500,
+            "Captain Bathis · Abyssal Galleon Rune-Star",
+        ),
+        (
+            "transit-ship-05-siphon-canal-to-starfall",
+            "Verdigris Siphon Canal Lock ➔ Starfall Haven Sea-Lift (C02➔C03)",
+            "Maritime_Ship",
+            "zone-field-siphon-sluice",
+            "zone-town-starfall-haven",
+            "Every 15m",
+            9200,
+            "Wharf Manager Volter · Mercury Barge Heine-Pride",
+        ),
+        (
+            "transit-ship-06-root-train-to-cobalt-ford",
+            "Root-Train Roundhouse Dock ➔ Cobalt Sandbar Delta Ferry",
+            "Maritime_Ship",
+            "zone-town-root-train-roundhouse",
+            "zone-field-cobalt-sandbar-ford",
+            "Every 10m",
+            2200,
+            "Dwarven Ferryman Bolter · Steam-Tug Mithril-Keel",
+        ),
+        # 6 Brass_Airship Routes
+        (
+            "transit-airship-01-glaze-dock-to-starfall",
+            "Glaze-Barge Airship Sky-Dock ➔ Starfall Haven Sky-Harbor (C01➔C03)",
+            "Brass_Airship",
+            "zone-harbor-glaze-barge-airship-dock",
+            "zone-town-starfall-haven",
+            "Every 12m",
+            12500,
+            "Airship Controller Tolonis · Brass Zeppelin Keucereus-I",
+        ),
+        (
+            "transit-airship-02-pinion-to-starfall",
+            "Pinion Terminus Sky-Mast ➔ Starfall Haven Cloud-Dock (C02➔C03)",
+            "Brass_Airship",
+            "zone-town-pinion-terminus",
+            "zone-town-starfall-haven",
+            "Every 10m",
+            9800,
+            "Sky-Navigator Lekon · Aether Frigate Gracia-Wind",
+        ),
+        (
+            "transit-airship-03-inductor-to-crown-beacon",
+            "Inductor Switchyard Sky-Spire ➔ Crown-Beacon Imperial Mooring (C02➔C03)",
+            "Brass_Airship",
+            "zone-town-inductor-switchyard",
+            "zone-town-crown-beacon",
+            "Every 15m",
+            14500,
+            "High Navigator Dilios · Dreadnought Airship Chronos-Wing",
+        ),
+        (
+            "transit-airship-04-starfall-to-cloud-halo",
+            "Starfall Haven Sky-Harbor ➔ Cloud-Mountain Fortress Citadel",
+            "Brass_Airship",
+            "zone-town-starfall-haven",
+            "zone-fortress-cloud-halo",
+            "Every 8m",
+            6400,
+            "Flight Master Ishuma · Sky-Cutter Aurora-V",
+        ),
+        (
+            "transit-airship-05-crown-beacon-to-orrery",
+            "Crown-Beacon Citadel ➔ The Orrery Astral Sky-Span",
+            "Brass_Airship",
+            "zone-town-crown-beacon",
+            "zone-field-orrery-bridge",
+            "Every 10m",
+            11000,
+            "Astral PilotNemo · Starlight Dirigible Helios-Arc",
+        ),
+        (
+            "transit-airship-06-torque-citadel-to-dragonspine",
+            "Torque-Balance Citadel ➔ Dragonspine Cog Sky-Fortress",
+            "Brass_Airship",
+            "zone-town-torque-balance-citadel",
+            "zone-fortress-dragonspine-cog",
+            "Every 10m",
+            7600,
+            "Blacksmith Flight-Engineer Rooney · Gyro-Galleon Vulcan-II",
+        ),
+        # 6 Gatekeeper_Trunk Routes
+        (
+            "transit-gk-01-lantern-to-kilnwatch",
+            "Lantern Hollow Village ➔ Town of Kilnwatch Bastion (C01 Mainline Trunk)",
+            "Gatekeeper_Trunk",
+            "zone-town-lantern-hollow",
+            "zone-town-kilnwatch-bastion",
+            "Instant Teleport",
+            3400,
+            "Gatekeeper Richlin ⇄ Gatekeeper Trisha",
+        ),
+        (
+            "transit-gk-02-kilnwatch-to-pinion",
+            "Town of Kilnwatch Bastion ➔ Pinion Terminus Township (C01➔C02 Trunk)",
+            "Gatekeeper_Trunk",
+            "zone-town-kilnwatch-bastion",
+            "zone-town-pinion-terminus",
+            "Instant Teleport",
+            6800,
+            "Gatekeeper Trisha ⇄ Gatekeeper Clarissa",
+        ),
+        (
+            "transit-gk-03-pinion-to-escapement",
+            "Pinion Terminus Township ➔ Town of Escapement Anvil (C02 Core Trunk)",
+            "Gatekeeper_Trunk",
+            "zone-town-pinion-terminus",
+            "zone-town-escapement-anvil",
+            "Instant Teleport",
+            5200,
+            "Gatekeeper Clarissa ⇄ Gatekeeper Valentina",
+        ),
+        (
+            "transit-gk-04-escapement-to-inductor",
+            "Town of Escapement Anvil ➔ Town of Inductor Switchyard (C02 Capital Trunk)",
+            "Gatekeeper_Trunk",
+            "zone-town-escapement-anvil",
+            "zone-town-inductor-switchyard",
+            "Instant Teleport",
+            7900,
+            "Gatekeeper Valentina ⇄ Gatekeeper Bella",
+        ),
+        (
+            "transit-gk-05-inductor-to-starfall",
+            "Town of Inductor Switchyard ➔ Starfall Haven Township (C02➔C03 Trunk)",
+            "Gatekeeper_Trunk",
+            "zone-town-inductor-switchyard",
+            "zone-town-starfall-haven",
+            "Instant Teleport",
+            14000,
+            "Gatekeeper Bella ⇄ Gatekeeper Ilyana",
+        ),
+        (
+            "transit-gk-06-starfall-to-crown-beacon",
+            "Starfall Haven Township ➔ Town of Crown-Beacon Citadel (C03 Imperial Trunk)",
+            "Gatekeeper_Trunk",
+            "zone-town-starfall-haven",
+            "zone-town-crown-beacon",
+            "Instant Teleport",
+            18000,
+            "Gatekeeper Ilyana ⇄ Grand Gatekeeper Eliza",
+        ),
+    ]
+    lines: list[dict[str, Any]] = []
+    for tid, rname, tmode, ozid, dzid, interval, cost, vessel in specs:
+        lines.append(
+            {
+                "transit_id": tid,
+                "route_name": rname,
+                "transit_mode": tmode,
+                "origin_zone_id": ozid,
+                "origin_loc": loc_by_zid.get(ozid, "-84120:243500"),
+                "destination_zone_id": dzid,
+                "destination_loc": loc_by_zid.get(dzid, "82400:148600"),
+                "departure_interval": interval,
+                "ticket_cost_adena": cost,
+                "vessel_or_gatekeeper_name": vessel,
+            }
+        )
+    return lines
+
+
 
 
 
@@ -3688,6 +4029,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("manor_economy_routes") or []) < 15:
         atlas["manor_economy_routes"] = _build_manor_economy_routes(atlas)
         actions.append("populated_15_manor_economy_routes")
+
+    # 13. Ensure all 21 Subclass, Noblesse & Grand Olympiad Monument Network Nodes exist in `noblesse_olympiad_network` (D29)
+    if len(atlas.get("noblesse_olympiad_network") or []) < 21:
+        atlas["noblesse_olympiad_network"] = _build_noblesse_olympiad_network(atlas)
+        actions.append("populated_21_noblesse_olympiad_network")
+
+    # 14. Ensure all 18 Inter-Continental Maritime Ship, Airship & Gatekeeper Transit Lines exist in `intercontinental_transit_lines` (D30)
+    if len(atlas.get("intercontinental_transit_lines") or []) < 18:
+        atlas["intercontinental_transit_lines"] = _build_intercontinental_transit_lines(atlas)
+        actions.append("populated_18_intercontinental_transit_lines")
 
     return {"actions": actions}
 
@@ -4706,15 +5057,144 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d28_ratio * 80.0, 1)
     )
 
+    # D29: Interactive Subclass, Noblesse & Grand Olympiad Monument Network (`noblesse_olympiad_network` - 21 Nodes = 15 Town Monuments + 6 Subclass/Noblesse Sanctums)
+    expected_olympiad_categories = {"Olympiad_Monument", "Subclass_Mimir_Sanctum", "Noblesse_Barakiel_Shrine"}
+    olympiad_nodes = atlas.get("noblesse_olympiad_network") or []
+    valid_olympiad_nodes = 0
+    olympiad_monument_count = 0
+    subclass_sanctum_count = 0
+    noblesse_shrine_count = 0
+    seen_olympiad_node_ids: set[str] = set()
+    seen_olympiad_categories: set[str] = set()
+    for on in olympiad_nodes:
+        if not isinstance(on, dict):
+            continue
+        nid = str(on.get("node_id") or "")
+        ncat = str(on.get("node_category") or "")
+        ozid = str(on.get("zone_id") or "")
+        odid = str(on.get("dungeon_id") or "")
+        ofid = str(on.get("floor_id") or "")
+        min_lv = on.get("min_level")
+        if (
+            nid
+            and nid not in seen_olympiad_node_ids
+            and on.get("node_name")
+            and ncat in expected_olympiad_categories
+            and ozid in zone_ids_set
+            and (odid == "" or odid in mf_dungeon_id_set)
+            and ofid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(on.get("loc", ""))
+            and isinstance(min_lv, int)
+            and 70 <= min_lv <= 99
+            and on.get("npc_steward_name")
+            and on.get("ritual_requirement")
+            and on.get("heroic_reward")
+        ):
+            valid_olympiad_nodes += 1
+            seen_olympiad_node_ids.add(nid)
+            seen_olympiad_categories.add(ncat)
+            if ncat == "Olympiad_Monument" and ozid in town_zone_id_set and odid == "":
+                olympiad_monument_count += 1
+            elif ncat == "Subclass_Mimir_Sanctum" and odid != "" and ofid in ("B3", "3F"):
+                subclass_sanctum_count += 1
+            elif ncat == "Noblesse_Barakiel_Shrine" and ozid in field_zone_id_set and odid == "":
+                noblesse_shrine_count += 1
+
+    has_d29_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_OLYMPIAD_MODE",
+            "setAtlasOlympiadMode",
+            "renderAtlasOlympiadNetworkBarHtml",
+            "studioNoblesseOlympiadOverlay",
+        )
+    )
+    d29_ratio = valid_olympiad_nodes / 21.0
+    d29_full_coverage = (
+        olympiad_monument_count == 15
+        and subclass_sanctum_count == 3
+        and noblesse_shrine_count == 3
+        and seen_olympiad_categories == expected_olympiad_categories
+    )
+    d29_score = (
+        round(min(100.0, d29_ratio * 100.0), 1)
+        if (has_d29_ui and d29_full_coverage)
+        else round(d29_ratio * 80.0, 1)
+    )
+
+    # D30: Interactive Inter-Continental Maritime Ship, Airship & Gatekeeper Transit Overlay (`intercontinental_transit_lines` - 18 Routes = 6 Maritime_Ship + 6 Brass_Airship + 6 Gatekeeper_Trunk)
+    expected_transit_modes = {"Maritime_Ship", "Brass_Airship", "Gatekeeper_Trunk"}
+    transit_lines = atlas.get("intercontinental_transit_lines") or []
+    valid_transit_lines = 0
+    maritime_ship_count = 0
+    brass_airship_count = 0
+    gatekeeper_trunk_count = 0
+    seen_transit_ids: set[str] = set()
+    seen_transit_modes: set[str] = set()
+    for tl in transit_lines:
+        if not isinstance(tl, dict):
+            continue
+        tid = str(tl.get("transit_id") or "")
+        tmode = str(tl.get("transit_mode") or "")
+        orig_zid = str(tl.get("origin_zone_id") or "")
+        dest_zid = str(tl.get("destination_zone_id") or "")
+        tcost = tl.get("ticket_cost_adena")
+        if (
+            tid
+            and tid not in seen_transit_ids
+            and tl.get("route_name")
+            and tmode in expected_transit_modes
+            and orig_zid in zone_ids_set
+            and dest_zid in zone_ids_set
+            and orig_zid != dest_zid
+            and ":" in str(tl.get("origin_loc", ""))
+            and ":" in str(tl.get("destination_loc", ""))
+            and tl.get("departure_interval")
+            and isinstance(tcost, int)
+            and tcost >= 0
+            and tl.get("vessel_or_gatekeeper_name")
+        ):
+            valid_transit_lines += 1
+            seen_transit_ids.add(tid)
+            seen_transit_modes.add(tmode)
+            if tmode == "Maritime_Ship":
+                maritime_ship_count += 1
+            elif tmode == "Brass_Airship":
+                brass_airship_count += 1
+            elif tmode == "Gatekeeper_Trunk":
+                gatekeeper_trunk_count += 1
+
+    has_d30_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_TRANSIT_MODE",
+            "setAtlasTransitMode",
+            "renderAtlasTransitLinesBarHtml",
+            "studioIntercontinentalTransitOverlay",
+        )
+    )
+    d30_ratio = valid_transit_lines / 18.0
+    d30_full_coverage = (
+        maritime_ship_count == 6
+        and brass_airship_count == 6
+        and gatekeeper_trunk_count == 6
+        and seen_transit_modes == expected_transit_modes
+    )
+    d30_score = (
+        round(min(100.0, d30_ratio * 100.0), 1)
+        if (has_d30_ui and d30_full_coverage)
+        else round(d30_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score) / 10.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score) / 12.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score) / 14.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score) / 22.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score) / 11.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score) / 18.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score) / 12.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score) / 14.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score) / 15.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score) / 24.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score) / 13.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score) / 20.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -4747,8 +5227,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d26_score
             + d27_score
             + d28_score
+            + d29_score
+            + d30_score
         )
-        / 28.0,
+        / 30.0,
         1,
     )
 
@@ -4916,6 +5398,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "reward_materials": sorted(seen_reward_materials),
                 "ui_wired": has_d28_ui,
             },
+            "D29_noblesse_and_olympiad_monument_network": {
+                "score": d29_score,
+                "verified": valid_olympiad_nodes,
+                "target": 21,
+                "olympiad_monuments": olympiad_monument_count,
+                "subclass_sanctums": subclass_sanctum_count,
+                "noblesse_shrines": noblesse_shrine_count,
+                "node_categories": sorted(seen_olympiad_categories),
+                "ui_wired": has_d29_ui,
+            },
+            "D30_intercontinental_transit_network": {
+                "score": d30_score,
+                "verified": valid_transit_lines,
+                "target": 18,
+                "maritime_ships": maritime_ship_count,
+                "brass_airships": brass_airship_count,
+                "gatekeeper_trunks": gatekeeper_trunk_count,
+                "transit_modes": sorted(seen_transit_modes),
+                "ui_wired": has_d30_ui,
+            },
         },
     }
 
@@ -4988,6 +5490,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D26 (32-Boss Respawn Radar) : {dims['D26_world_boss_and_mvp_spawn_radar']['score']}/100 ({dims['D26_world_boss_and_mvp_spawn_radar']['verified']}/{dims['D26_world_boss_and_mvp_spawn_radar']['target']} bosses)")
         print(f"  D27 (16 Seven-Seals Mammon) : {dims['D27_seven_seals_and_mammon_rotation']['score']}/100 ({dims['D27_seven_seals_and_mammon_rotation']['verified']}/{dims['D27_seven_seals_and_mammon_rotation']['target']} sanctums)")
         print(f"  D28 (15-Town Manor Economy) : {dims['D28_manor_seed_and_caravan_economy']['score']}/100 ({dims['D28_manor_seed_and_caravan_economy']['verified']}/{dims['D28_manor_seed_and_caravan_economy']['target']} town manors)")
+        print(f"  D29 (21 Olympiad/Noblesse)  : {dims['D29_noblesse_and_olympiad_monument_network']['score']}/100 ({dims['D29_noblesse_and_olympiad_monument_network']['verified']}/{dims['D29_noblesse_and_olympiad_monument_network']['target']} heroic nodes)")
+        print(f"  D30 (18 Transit Corridors)  : {dims['D30_intercontinental_transit_network']['score']}/100 ({dims['D30_intercontinental_transit_network']['verified']}/{dims['D30_intercontinental_transit_network']['target']} transit lines)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
