@@ -407,6 +407,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/serverMeshPersistenceCorridorSpec" }
     },
+    "anti_bot_economy_sentinels": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/antiBotEconomySentinelSpec" }
+    },
+    "godot_storybook_prefab_nodes": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/godotStorybookPrefabNodeSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -4440,6 +4452,160 @@
           "minItems": 2,
           "items": { "type": "string" }
         }
+      }
+    },
+    "antiBotEconomySentinelSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sentinel_id",
+        "title",
+        "zone_id",
+        "town_id",
+        "dungeon_id",
+        "category",
+        "entropy_threshold_bits",
+        "rmt_graph_centrality_max",
+        "challenge_action",
+        "false_positive_guard_pct",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "sentinel_id": { "type": "string" },
+        "title": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "town_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "category": {
+          "type": "string",
+          "enum": [
+            "Macro Pathing Entropy",
+            "RMT Trade-Graph Ring",
+            "Packet-Injection Speedhack",
+            "Gold-Sink Inflation Spike",
+            "Bot-Train Party Healer Loop"
+          ]
+        },
+        "entropy_threshold_bits": {
+          "type": "number",
+          "minimum": 1.8,
+          "maximum": 4.2
+        },
+        "rmt_graph_centrality_max": {
+          "type": "number",
+          "minimum": 0.65,
+          "maximum": 0.95
+        },
+        "challenge_action": {
+          "type": "string",
+          "enum": [
+            "Invisible Nav-Jitter Probe",
+            "Dynamic Rune Captcha",
+            "Shadow-Drop Table Quarantine",
+            "Escrow Trade Freeze",
+            "GM Audit Escalation"
+          ]
+        },
+        "false_positive_guard_pct": {
+          "type": "number",
+          "minimum": 99.85,
+          "maximum": 99.99
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#f43f5e", "#fb7185", "#e11d48", "#f97316"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "godotStorybookPrefabNodeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prefab_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "godot_scene_uri",
+        "kitbash_category",
+        "submesh_count",
+        "collision_shape_type",
+        "baked_lightmap_texel_density",
+        "webp_preview_uri",
+        "hot_reload_latency_ms",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "prefab_id": { "type": "string" },
+        "title": { "type": "string" },
+        "town_id": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "godot_scene_uri": { "type": "string" },
+        "kitbash_category": {
+          "type": "string",
+          "enum": [
+            "Town Plaza & Fountain",
+            "Blacksmith Forge & Anvil",
+            "Gatekeeper Obelisk",
+            "Castle Curtain Wall",
+            "Underground Dungeon Portal"
+          ]
+        },
+        "submesh_count": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 24
+        },
+        "collision_shape_type": {
+          "type": "string",
+          "enum": [
+            "ConcavePolygonShape3D",
+            "ConvexPolygonShape3D",
+            "BoxShape3D + NavMeshObstacle3D"
+          ]
+        },
+        "baked_lightmap_texel_density": {
+          "type": "number",
+          "minimum": 8.0,
+          "maximum": 32.0
+        },
+        "webp_preview_uri": { "type": "string" },
+        "hot_reload_latency_ms": {
+          "type": "number",
+          "minimum": 18,
+          "maximum": 65
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#38bdf8", "#60a5fa", "#818cf8", "#2dd4bf"]
+        },
+        "notes": { "type": "string" }
       }
     }
   }

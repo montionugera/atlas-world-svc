@@ -105,15 +105,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas78DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas80DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas82DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas84DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 39)),
+        "wave": int(iter_state.get("wave", 40)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"84-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"82-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"80-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"78-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -146,7 +148,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 Verified"
         ),
     }
     return merged
@@ -4408,7 +4410,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4509,6 +4511,12 @@ let ATLAS_ARCHITECT_DX_MODE = 'All';
 let ATLAS_TWO_RING_SIGNOFF_MODE = 'All';
 let ATLAS_WEATHER_ACOUSTIC_MODE = 'All';
 let ATLAS_SERVER_MESH_MODE = 'All';
+let ATLAS_ANTI_BOT_MODE = 'All';
+let ATLAS_GODOT_STORYBOOK_MODE = 'All';
+let SELECTED_ANTI_BOT_SENTINEL_ID = '';
+let SELECTED_GODOT_STORYBOOK_PREFAB_ID = '';
+let ANTI_BOT_SENTINELS = [];
+let GODOT_STORYBOOK_PREFABS = [];
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4581,6 +4589,8 @@ const ATLAS_STATE_STORE = {
   twoRingSignoffMode: 'All',               // D80: Active 22-Record [11-Role Two-Ring Studio] D1-D80 Sign-Off Selector ('Off' | 'All' | 'Ring_A_Creative_Council' | 'Ring_B_Platform_Tools_Squad')
   weatherAcousticMode: 'All',              // D81: Active 16-Zone [Role 3: Technical Artist] Weather, Day/Night Shader & Spatial Audio Selector ('Off' | 'All' | 'Town_Symphony_And_Tavern_Reverb' | 'Nocturnal_Curse_Fog_And_Blood_Rain_Field' | 'Subterranean_Catacomb_Echo_And_Resonance')
   serverMeshMode: 'All',                   // D82: Active 15-Corridor [Role 4: Backend Infra] Server-Mesh Handoff, Redis Stream & Postgres WAL Selector ('Off' | 'All' | 'Zero_Loading_Zone_Boundary_Handoff' | 'Redis_Stream_Cross_Realm_Event_Bus' | 'Postgres_Advisory_Lock_Writebehind_Wal')
+  antiBotMode: 'All',                      // D83: Active 16-Node [Role 5: LiveOps & CS Portal] Anti-Bot / RMT Telemetry & Economy Anomaly Sentinel Selector
+  godotStorybookMode: 'All',               // D84: Active 15-Node [Role 2 + Role 3: Godot Tool-Scene Storybook] 3D Kitbash Prefab Inspector Selector
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4588,6 +4598,54 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasAntiBotMode(modeId) {
+  ATLAS_ANTI_BOT_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.antiBotMode = ATLAS_ANTI_BOT_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectAntiBotSentinel(sentinelId) {
+  SELECTED_ANTI_BOT_SENTINEL_ID = String(sentinelId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  ANTI_BOT_SENTINELS = tatlas.anti_bot_economy_sentinels || [];
+  const item = ANTI_BOT_SENTINELS.find(s => s.sentinel_id === SELECTED_ANTI_BOT_SENTINEL_ID);
+  if (item) {
+    if (item.dungeon_id) {
+      openDungeonSubMap(item.dungeon_id, 'B2');
+      return;
+    }
+    if (String(item.zone_id || '').startsWith('zone-town-')) {
+      focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+      return;
+    }
+    focusFieldOrFortressBlueprint(item.zone_id, `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasGodotStorybookMode(modeId) {
+  ATLAS_GODOT_STORYBOOK_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.godotStorybookMode = ATLAS_GODOT_STORYBOOK_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectGodotStorybookPrefab(prefabId) {
+  SELECTED_GODOT_STORYBOOK_PREFAB_ID = String(prefabId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  GODOT_STORYBOOK_PREFABS = tatlas.godot_storybook_prefab_nodes || [];
+  const item = GODOT_STORYBOOK_PREFABS.find(p => p.prefab_id === SELECTED_GODOT_STORYBOOK_PREFAB_ID);
+  if (item) {
+    focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
 
 function setAtlasWeatherAcousticMode(modeId) {
   ATLAS_WEATHER_ACOUSTIC_MODE = String(modeId || 'All');
@@ -12542,6 +12600,140 @@ function renderAtlasServerMeshBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasAntiBotSentinelBarHtml(tatlas) {
+  ANTI_BOT_SENTINELS = (tatlas && tatlas.anti_bot_economy_sentinels) || [];
+  if (!ANTI_BOT_SENTINELS.length) return '';
+  const curMode = ATLAS_ANTI_BOT_MODE || ATLAS_STATE_STORE.antiBotMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🕵️ Anti-Bot & RMT Sentinel (16)', col: '#f43f5e' },
+    { id: 'Macro Pathing Entropy', label: '🤖 Macro Pathing Entropy (4)', col: '#fb7185' },
+    { id: 'RMT Trade-Graph Ring', label: '🕸️ RMT Trade-Graph Ring (3)', col: '#f97316' },
+    { id: 'Packet-Injection Speedhack', label: '⚡ Packet Speedhack (3)', col: '#e11d48' },
+    { id: 'Gold-Sink Inflation Spike', label: '📈 Gold-Sink Inflation Spike (3)', col: '#f43f5e' },
+    { id: 'Bot-Train Party Healer Loop', label: '⛓️ Bot-Train Healer Loop (3)', col: '#fb7185' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : ANTI_BOT_SENTINELS.filter(s => curMode === 'All' || s.category === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasAntiBotSentinelBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#f43f5e">🕵️ [ROLE 5: LIVEOPS &amp; CS PORTAL] ANTI-BOT / RMT TELEMETRY &amp; ECONOMY SENTINELS (D83 · ${ANTI_BOT_SENTINELS.length} SENTINELS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasAntiBotMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fda4af;font-weight:800">
+          SHANNON ENTROPY 1.8–4.2 BITS · PAGERANK RMT GRAPH CENTRALITY · 99.85%–99.99% FALSE-POSITIVE GUARD
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(s => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(s.accent || '#f43f5e')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🕵️ ${escapeHtml(s.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(s.accent || '#f43f5e')}">[${escapeHtml(s.category)}]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#fecdd3;margin-top:1px">
+                  🛡️ ${escapeHtml(s.challenge_action)} · Entropy ≤ ${s.entropy_threshold_bits}b · RMT ≤ ${s.rmt_graph_centrality_max} · Guard ${s.false_positive_guard_pct}%
+                </div>
+                <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                  ${escapeHtml(s.notes.slice(0, 76))}
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectAntiBotSentinel('${escapeHtml(s.sentinel_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(s.accent || '#f43f5e')};background:#4c0519;color:#ffe4e6;font-size:8px;font-weight:800;cursor:pointer">
+                  🕵️ Inspect Sentinel (${escapeHtml(s.sentinel_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasGodotStorybookBarHtml(tatlas) {
+  GODOT_STORYBOOK_PREFABS = (tatlas && tatlas.godot_storybook_prefab_nodes) || [];
+  if (!GODOT_STORYBOOK_PREFABS.length) return '';
+  const curMode = ATLAS_GODOT_STORYBOOK_MODE || ATLAS_STATE_STORE.godotStorybookMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🧱 Godot 3D Storybook (15)', col: '#38bdf8' },
+    { id: 'Town Plaza & Fountain', label: '⛲ Town Plaza & Fountain (3)', col: '#38bdf8' },
+    { id: 'Blacksmith Forge & Anvil', label: '⚒️ Blacksmith Forge & Anvil (3)', col: '#60a5fa' },
+    { id: 'Gatekeeper Obelisk', label: '🌀 Gatekeeper Obelisk (3)', col: '#2dd4bf' },
+    { id: 'Castle Curtain Wall', label: '🏰 Castle Curtain Wall (3)', col: '#818cf8' },
+    { id: 'Underground Dungeon Portal', label: '🕳️ Underground Dungeon Portal (3)', col: '#60a5fa' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : GODOT_STORYBOOK_PREFABS.filter(p => curMode === 'All' || p.kitbash_category === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasGodotStorybookBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#38bdf8">🧱 [ROLE 2 + ROLE 3: GODOT TOOL-SCENE STORYBOOK] 3D KITBASH PREFAB INSPECTOR (D84 · ${GODOT_STORYBOOK_PREFABS.length} PREFABS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasGodotStorybookMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#bae6fd;font-weight:800">
+          15 TOWN/DUNGEON .TSCN KITBASH PREFABS · 4–24 SUBMESHES · LIGHTMAP 8–32 TEXELS/M · HOT-RELOAD ≤ 65MS
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(p => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(p.accent || '#38bdf8')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🧱 ${escapeHtml(p.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(p.accent || '#38bdf8')}">[${escapeHtml(p.kitbash_category)}]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                  📐 ${escapeHtml(p.godot_scene_uri)} · ${p.submesh_count} Submeshes · ${escapeHtml(p.collision_shape_type)}
+                </div>
+                <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                  💡 Lightmap ${p.baked_lightmap_texel_density} tx/m · ⚡ Hot-Reload ${p.hot_reload_latency_ms}ms · 🖼️ ${escapeHtml(p.webp_preview_uri)}
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectGodotStorybookPrefab('${escapeHtml(p.prefab_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(p.accent || '#38bdf8')};background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                  🧱 Inspect 3D Prefab (${escapeHtml(p.prefab_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -12728,6 +12920,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasTwoRingSignoffBarHtml(tatlas)}
       ${renderAtlasWeatherAcousticBarHtml(tatlas)}
       ${renderAtlasServerMeshBarHtml(tatlas)}
+      ${renderAtlasAntiBotSentinelBarHtml(tatlas)}
+      ${renderAtlasGodotStorybookBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -16649,6 +16843,76 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Anti-Bot / RMT Telemetry, Macro Captcha & Economy Anomaly Sentinel Matrix Overlay (D83)
+  const antiBotSentinelRecords = Array.isArray(atlas.anti_bot_economy_sentinels) ? atlas.anti_bot_economy_sentinels : [];
+  const antiBotSentinelOverlaySvg = !ATLAS_ANTI_BOT_MODE ? '' : `
+    <g id="studioAntiBotSentinelOverlay">
+      ${antiBotSentinelRecords.map((s, idx) => {
+        const zMap = {};
+        (atlas.zones || []).forEach(z => { zMap[z.id] = z; });
+        const zidStr = s.zone_id || '';
+        const didStr = s.dungeon_id || '';
+        const fidStr = s.floor_id || 'B3';
+        const zObj = zMap[zidStr] || {};
+        const wx = typeof s.world_x === 'number' ? s.world_x : (typeof zObj.x === 'number' ? zObj.x : -14000);
+        const wy = typeof s.world_y === 'number' ? s.world_y : (typeof zObj.y === 'number' ? zObj.y : 123500);
+        const abc = locToAtlasSvg(wx + ((idx % 4) - 1.5) * 2600, wy - 2800);
+        const cat = s.sentinel_category || 'Field_Macro_Bot_Captcha_Trap';
+        const colHex = cat === 'Field_Macro_Bot_Captcha_Trap'
+          ? '#f87171'
+          : (cat === 'Dungeon_Teleport_Speedhack_Interdictor' ? '#fb923c' : '#f43f5e');
+        const iconTxt = cat === 'Field_Macro_Bot_Captcha_Trap'
+          ? '🤖'
+          : (cat === 'Dungeon_Teleport_Speedhack_Interdictor' ? '⚡' : '💸');
+        const jumpJs = didStr
+          ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+          : (zidStr.startsWith('zone-town-')
+              ? `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`
+              : `focusFieldOrFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`);
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${abc.svgX}" cy="${abc.svgY}" r="10.4" fill="rgba(127,29,29,0.52)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${abc.svgX}" y="${abc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Godot Tool-Scene Storybook & 3D Kitbash Prefab Inspector Matrix Overlay (D84)
+  const godotStorybookRecords = Array.isArray(atlas.godot_storybook_prefab_nodes) ? atlas.godot_storybook_prefab_nodes : [];
+  const godotStorybookOverlaySvg = !ATLAS_GODOT_STORYBOOK_MODE ? '' : `
+    <g id="studioGodotStorybookOverlay">
+      ${godotStorybookRecords.map((p, idx) => {
+        const zMap = {};
+        (atlas.zones || []).forEach(z => { zMap[z.id] = z; });
+        const zidStr = p.zone_id || '';
+        const zObj = zMap[zidStr] || {};
+        const wx = typeof p.world_x === 'number' ? p.world_x : (typeof zObj.x === 'number' ? zObj.x : -14000);
+        const wy = typeof p.world_y === 'number' ? p.world_y : (typeof zObj.y === 'number' ? zObj.y : 123500);
+        const gsc = locToAtlasSvg(wx + ((idx % 3) - 1) * 2800, wy + 2900);
+        const cat = p.prefab_category || 'Town_Kitbash_Building_Prefab';
+        const colHex = cat === 'Town_Kitbash_Building_Prefab'
+          ? '#818cf8'
+          : (cat === 'Dungeon_Modular_Vault_Tile_Kit' ? '#38bdf8' : '#a78bfa');
+        const iconTxt = cat === 'Town_Kitbash_Building_Prefab'
+          ? '🏛️'
+          : (cat === 'Dungeon_Modular_Vault_Tile_Kit' ? '🧱' : '✨');
+        const jumpJs = zidStr.startsWith('zone-town-')
+          ? `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(p.loc)}')`
+          : (zidStr.startsWith('zone-dungeon-') || zidStr.startsWith('zone-catacomb-')
+              ? `openDungeonSubMap('${escapeHtml(zidStr)}', 'B3')`
+              : `focusFieldOrFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(p.loc)}')`);
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${gsc.svgX}" cy="${gsc.svgY}" r="10.4" fill="rgba(30,27,75,0.52)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${gsc.svgX}" y="${gsc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -16711,6 +16975,8 @@ function renderDedicatedWorldAtlas() {
     ${twoRingSignoffOverlaySvg}
     ${weatherAcousticOverlaySvg}
     ${serverMeshOverlaySvg}
+    ${antiBotSentinelOverlaySvg}
+    ${godotStorybookOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

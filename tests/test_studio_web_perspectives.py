@@ -3388,7 +3388,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 82)
+        self.assertGreaterEqual(len(audit["dimensions"]), 82)
 
         d81 = audit["dimensions"]["D81_weather_day_night_shader_and_spatial_audio_profiles"]
         self.assertEqual(d81["score"], 100.0)
@@ -3442,10 +3442,87 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas82DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 82)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 82)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 82)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 82)
         self.assertIn("82-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave40_anti_bot_sentinels_and_godot_storybook_prefabs(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["antiBotEconomySentinelsCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["godotStorybookPrefabNodesCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ANTI_BOT_SENTINELS",
+            "GODOT_STORYBOOK_PREFABS",
+            "ATLAS_ANTI_BOT_MODE",
+            "ATLAS_GODOT_STORYBOOK_MODE",
+            "setAtlasAntiBotMode",
+            "setAtlasGodotStorybookMode",
+            "selectAntiBotSentinel",
+            "selectGodotStorybookPrefab",
+            "renderAtlasAntiBotSentinelBarHtml",
+            "renderAtlasGodotStorybookBarHtml",
+            "studioAntiBotSentinelOverlay",
+            "studioGodotStorybookOverlay",
+            "🕵️ Anti-Bot & RMT Sentinel (16)",
+            "🧱 Godot 3D Storybook (15)",
+            "84-Dimension Semantic-Zoom Atlas Score",
+            "D1–D84 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 40 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 84)
+
+        d83 = audit["dimensions"]["D83_anti_bot_rmt_telemetry_and_economy_sentinel_matrix"]
+        self.assertEqual(d83["score"], 100.0)
+        self.assertEqual(d83["verified"], 16)
+        self.assertEqual(d83["target"], 16)
+        self.assertTrue(d83["ui_wired"])
+
+        d84 = audit["dimensions"]["D84_godot_tool_scene_storybook_and_3d_prefab_inspector_matrix"]
+        self.assertEqual(d84["score"], 100.0)
+        self.assertEqual(d84["verified"], 15)
+        self.assertEqual(d84["target"], 15)
+        self.assertTrue(d84["ui_wired"])
+
+        sentinels = atlas["anti_bot_economy_sentinels"]
+        self.assertEqual(len(sentinels), 16)
+        for s in sentinels:
+            self.assertGreaterEqual(s["entropy_threshold_bits"], 1.8)
+            self.assertLessEqual(s["entropy_threshold_bits"], 4.2)
+            self.assertGreaterEqual(s["rmt_graph_centrality_max"], 0.65)
+            self.assertLessEqual(s["rmt_graph_centrality_max"], 0.95)
+            self.assertGreaterEqual(s["false_positive_guard_pct"], 99.85)
+            self.assertLessEqual(s["false_positive_guard_pct"], 99.99)
+
+        prefabs = atlas["godot_storybook_prefab_nodes"]
+        self.assertEqual(len(prefabs), 15)
+        for p in prefabs:
+            self.assertTrue(p["godot_scene_uri"].startswith("res://scenes/storybook/"))
+            self.assertTrue(p["godot_scene_uri"].endswith(".tscn"))
+            self.assertTrue(p["webp_preview_uri"].startswith("assets/storybook-previews/"))
+            self.assertTrue(p["webp_preview_uri"].endswith(".webp"))
+            self.assertGreaterEqual(p["submesh_count"], 4)
+            self.assertLessEqual(p["submesh_count"], 24)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas84DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 84)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 84)
+        self.assertIn("84-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

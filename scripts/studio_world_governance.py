@@ -722,6 +722,8 @@ def validate_world_governance(
                 "twoRingStudio80dSignoffMatrixCount": len(t_doc.get("two_ring_studio_80d_signoff_matrix") or []),
                 "weatherShaderAcousticProfilesCount": len(t_doc.get("weather_shader_acoustic_profiles") or []),
                 "serverMeshPersistenceCorridorsCount": len(t_doc.get("server_mesh_persistence_corridors") or []),
+                "antiBotEconomySentinelsCount": len(t_doc.get("anti_bot_economy_sentinels") or []),
+                "godotStorybookPrefabNodesCount": len(t_doc.get("godot_storybook_prefab_nodes") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1858,6 +1860,43 @@ def validate_world_governance(
                 if mc_dzid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: server_mesh_persistence_corridors '{mc_id}' references unknown destination_zone_id '{mc_dzid}'"
+                    )
+
+            # Validate 16-Node Anti-Bot / RMT Telemetry, Macro Captcha & Economy Anomaly Sentinel Matrix (D83)
+            anti_bot_sentinels = t_doc.get("anti_bot_economy_sentinels") or []
+            if anti_bot_sentinels and len(anti_bot_sentinels) < 16:
+                errors.append(
+                    f"GOV-10 violation: anti_bot_economy_sentinels must have at least 16 sentinels, got {len(anti_bot_sentinels)}"
+                )
+            for ab_item in anti_bot_sentinels:
+                if not isinstance(ab_item, dict):
+                    continue
+                ab_id = str(ab_item.get("sentinel_id", ""))
+                ab_zid = str(ab_item.get("zone_id", ""))
+                ab_did = str(ab_item.get("dungeon_id", ""))
+                if ab_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: anti_bot_economy_sentinels '{ab_id}' references unknown zone_id '{ab_zid}'"
+                    )
+                if ab_did and ab_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: anti_bot_economy_sentinels '{ab_id}' references unknown dungeon_id '{ab_did}'"
+                    )
+
+            # Validate 15-Node Godot Tool-Scene Storybook & 3D Kitbash Prefab Inspector Matrix (D84)
+            godot_storybook_prefabs = t_doc.get("godot_storybook_prefab_nodes") or []
+            if godot_storybook_prefabs and len(godot_storybook_prefabs) < 15:
+                errors.append(
+                    f"GOV-10 violation: godot_storybook_prefab_nodes must have at least 15 prefabs, got {len(godot_storybook_prefabs)}"
+                )
+            for gp_item in godot_storybook_prefabs:
+                if not isinstance(gp_item, dict):
+                    continue
+                gp_id = str(gp_item.get("prefab_id", ""))
+                gp_zid = str(gp_item.get("zone_id", ""))
+                if gp_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: godot_storybook_prefab_nodes '{gp_id}' references unknown zone_id '{gp_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)
