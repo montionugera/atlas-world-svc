@@ -115,15 +115,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas98DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas100DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas102DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas104DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 49)),
+        "wave": int(iter_state.get("wave", 50)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"104-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"102-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"100-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"98-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -166,7 +168,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 · D1–D96 · D1–D98 · D1–D100 · D1–D102 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 · D1–D96 · D1–D98 · D1–D100 · D1–D102 · D1–D104 Verified"
         ),
     }
     return merged
@@ -4428,7 +4430,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">102-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 100-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 98-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified · D1–D98 Verified · D1–D100 Verified · D1–D102 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">104-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 102-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 100-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 98-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified · D1–D98 Verified · D1–D100 Verified · D1–D102 Verified · D1–D104 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4549,6 +4551,8 @@ let ATLAS_HOT_RELOAD_BRIDGE_MODE = 'All';
 let ATLAS_CENTENNIAL_100D_MODE = 'All';
 let ATLAS_NOCTURNAL_AFFIX_MODE = 'All';
 let ATLAS_COMBAT_REPLAY_MODE = 'All';
+let ATLAS_LORE_CODEX_MODE = 'All';
+let ATLAS_PHYSICS_BIOME_MODE = 'All';
 let SELECTED_ANTI_BOT_SENTINEL_ID = '';
 let SELECTED_GODOT_STORYBOOK_PREFAB_ID = '';
 let SELECTED_NAVMESH_SECTOR_ID = '';
@@ -4569,6 +4573,8 @@ let SELECTED_CROSS_TOOL_BRIDGE_ID = '';
 let SELECTED_CENTENNIAL_100D_CHARTER_ID = '';
 let SELECTED_NOCTURNAL_AFFIX_SPAWN_ID = '';
 let SELECTED_DETERMINISTIC_COMBAT_REPLAY_ID = '';
+let SELECTED_ARCHAEOLOGICAL_CODEX_ID = '';
+let SELECTED_DESTRUCTIBLE_PHYSICS_BIOME_ID = '';
 let ANTI_BOT_SENTINELS = [];
 let GODOT_STORYBOOK_PREFABS = [];
 let NAVMESH_OBSTACLE_SECTORS = [];
@@ -4589,6 +4595,8 @@ let CROSS_TOOL_BRIDGES = [];
 let CENTENNIAL_100D_CHARTERS = [];
 let NOCTURNAL_AFFIX_SPAWNS = [];
 let DETERMINISTIC_COMBAT_REPLAYS = [];
+let ARCHAEOLOGICAL_CODICES = [];
+let DESTRUCTIBLE_PHYSICS_BIOMES = [];
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4681,6 +4689,8 @@ const ATLAS_STATE_STORE = {
   centennial100dMode: 'All',               // D100: Active 22-Charter [100D Centennial Studio Milestone] Two-Ring 11-Role Grand Centennial Sign-Off & Guided Tour Selector
   nocturnalAffixMode: 'All',               // D101: Active 16-Spawn [Role 2: Content & World Tools] Dynamic World Weather-Triggered Rare Spawns & Eclipse Affix Selector
   combatReplayMode: 'All',                 // D102: Active 15-Sector [Role 4: Backend Infra] Deterministic Combat Replay Verifier & BLAKE3 Tick Hash Selector
+  loreCodexMode: 'All',                    // D103: Active 16-Codex [Role 2: Content & World Tools] Dynamic World Lore Codex, Relic Excavation & Bestiary Mastery Selector
+  physicsBiomeMode: 'All',                 // D104: Active 15-Biome [Role 3: Technical Artist] Procedural Foliage Wind-Field, Water Ripple & Destructible Physics Selector
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4688,6 +4698,50 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasLoreCodexMode(modeId) {
+  ATLAS_LORE_CODEX_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.loreCodexMode = ATLAS_LORE_CODEX_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectArchaeologicalCodex(codexId) {
+  SELECTED_ARCHAEOLOGICAL_CODEX_ID = String(codexId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  ARCHAEOLOGICAL_CODICES = tatlas.archaeological_lore_codices || [];
+  const item = ARCHAEOLOGICAL_CODICES.find(c => c.codex_id === SELECTED_ARCHAEOLOGICAL_CODEX_ID);
+  if (item) {
+    if (String(item.zone_id || '').startsWith('zone-town-')) {
+      focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+      return;
+    }
+    focusFieldOrFortressBlueprint(item.zone_id, `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasPhysicsBiomeMode(modeId) {
+  ATLAS_PHYSICS_BIOME_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.physicsBiomeMode = ATLAS_PHYSICS_BIOME_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectDestructiblePhysicsBiome(biomeId) {
+  SELECTED_DESTRUCTIBLE_PHYSICS_BIOME_ID = String(biomeId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  DESTRUCTIBLE_PHYSICS_BIOMES = tatlas.destructible_physics_biomes || [];
+  const item = DESTRUCTIBLE_PHYSICS_BIOMES.find(b => b.physics_biome_id === SELECTED_DESTRUCTIBLE_PHYSICS_BIOME_ID);
+  if (item) {
+    focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
 
 function setAtlasNocturnalAffixMode(modeId) {
   ATLAS_NOCTURNAL_AFFIX_MODE = String(modeId || 'All');
@@ -14499,6 +14553,170 @@ function renderAtlasCombatReplayBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasLoreCodexBarHtml(tatlas) {
+  const codices = Array.isArray(tatlas && tatlas.archaeological_lore_codices) ? tatlas.archaeological_lore_codices : [];
+  if (!codices.length) return '';
+  const isAct = !!ATLAS_LORE_CODEX_MODE;
+  const selId = SELECTED_ARCHAEOLOGICAL_CODEX_ID || (codices[0] && codices[0].codex_id) || 'lore-codex-01-talking-island-elven-ruins-stele';
+  const activeCodex = codices.find(c => c.codex_id === selId) || codices[0];
+
+  return `
+    <div id="atlasLoreCodexBar" style="display:flex;flex-direction:column;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fbbf24">🏺 D103 DYNAMIC WORLD LORE CODEX, ARCHAEOLOGICAL RELIC EXCAVATION &amp; BESTIARY MASTERY MATRIX:</span>
+          <button type="button" onclick="setAtlasLoreCodexMode(!ATLAS_LORE_CODEX_MODE)"
+                  style="min-height:26px;padding:3px 10px;border-radius:7px;font-size:10px;font-weight:900;cursor:pointer;border:1.5px solid ${isAct ? '#fde047' : 'rgba(245,158,11,0.55)'};background:${isAct ? '#92400e' : '#0f172a'};color:${isAct ? '#ffffff' : '#fde68a'}">
+            🏺 Lore &amp; Relics (16) ${isAct ? '● ACTIVE' : '○ OFF'}
+          </button>
+          <span style="font-size:10px;color:#cbd5e1;font-weight:700">
+            16 Ancient Dig Sites &amp; Steles · Giant Blueprints / Elmoreden Chronicles / Bestiary Compendiums · Account-Wide Passive Mastery
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          ${codices.slice(0, 6).map(c => {
+            const cSel = isAct && c.codex_id === (activeCodex && activeCodex.codex_id);
+            const colHex = c.accent || '#f59e0b';
+            return `
+              <button type="button" onclick="selectArchaeologicalCodex('${escapeHtml(c.codex_id)}')"
+                      style="min-height:23px;padding:2px 7px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${cSel ? '#fde047' : colHex};background:${cSel ? '#78350f' : '#090d14'};color:${cSel ? '#ffffff' : '#fde68a'}">
+                🏺 ${escapeHtml((c.title || c.codex_id).split('—')[0].trim())} (${escapeHtml(String(c.excavation_fragments_required))} frags)
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      ${isAct && activeCodex ? `
+        <div style="padding:8px 10px;border-radius:8px;background:rgba(120,53,15,0.42);border:1px solid rgba(245,158,11,0.45);display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+              <span style="font-size:11px;font-weight:900;color:#fde68a">🏺 ${escapeHtml(activeCodex.title)}</span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#fde047;border:1px solid rgba(250,204,21,0.4)">
+                Category: ${escapeHtml(activeCodex.codex_category)} · Fragments: ${escapeHtml(String(activeCodex.excavation_fragments_required))}
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#34d399;border:1px solid rgba(52,211,153,0.4)">
+                Passive: ${escapeHtml(activeCodex.account_wide_passive_bonus)}
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#38bdf8;border:1px solid rgba(56,189,248,0.4)">
+                Audiobook: ${escapeHtml(String(activeCodex.voiced_audiobook_duration_sec))}s · ${escapeHtml(activeCodex.decipher_skill_check)}
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button type="button" onclick="openTownDetail('${escapeHtml(activeBridgeOrTownId(activeCodex.town_id))}')"
+                      style="min-height:22px;padding:2px 8px;border-radius:5px;border:1px solid #f59e0b;background:#78350f;color:#fef3c7;font-size:9.5px;font-weight:800;cursor:pointer">
+                🏛️ Scholar Town: ${escapeHtml(activeCodex.town_id)}
+              </button>
+            </div>
+          </div>
+          <div style="font-size:10px;color:#e2e8f0;line-height:1.4">
+            <strong style="color:#fde047">Excavation Site:</strong> <span class="mono" style="color:#38bdf8">${escapeHtml(activeCodex.zone_id)} / ${escapeHtml(activeCodex.dungeon_id)}</span>
+            · <strong style="color:#fde68a">Codex Summary:</strong> ${escapeHtml(activeCodex.notes)}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:5px">
+            ${codices.map(c => {
+              const isCardSel = c.codex_id === activeCodex.codex_id;
+              return `
+                <div onclick="selectArchaeologicalCodex('${escapeHtml(c.codex_id)}')"
+                     style="padding:5px 7px;border-radius:6px;cursor:pointer;background:${isCardSel ? 'rgba(245,158,11,0.26)' : 'rgba(9,13,20,0.85)'};border:1px solid ${isCardSel ? '#fde047' : 'rgba(245,158,11,0.3)'};display:flex;flex-direction:column;gap:2px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.5px;font-weight:800;color:#f8fafc">${escapeHtml((c.title || c.codex_id).split('—')[0].trim())}</span>
+                    <span class="mono" style="font-size:8.5px;color:#fde68a">${escapeHtml(String(c.excavation_fragments_required))}f · ${escapeHtml(String(c.voiced_audiobook_duration_sec))}s</span>
+                  </div>
+                  <div class="mono" style="font-size:8.5px;color:#cbd5e1">
+                    ${escapeHtml(c.account_wide_passive_bonus)}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasPhysicsBiomeBarHtml(tatlas) {
+  const biomes = Array.isArray(tatlas && tatlas.destructible_physics_biomes) ? tatlas.destructible_physics_biomes : [];
+  if (!biomes.length) return '';
+  const isAct = !!ATLAS_PHYSICS_BIOME_MODE;
+  const selId = SELECTED_DESTRUCTIBLE_PHYSICS_BIOME_ID || (biomes[0] && biomes[0].physics_biome_id) || 'physics-biome-01-talking-island';
+  const activeBiome = biomes.find(b => b.physics_biome_id === selId) || biomes[0];
+
+  return `
+    <div id="atlasPhysicsBiomeBar" style="display:flex;flex-direction:column;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#22d3ee">🌊 D104 PROCEDURAL FOLIAGE WIND-FIELD, INTERACTIVE WATER RIPPLE &amp; DESTRUCTIBLE ENVIRONMENT PHYSICS MATRIX:</span>
+          <button type="button" onclick="setAtlasPhysicsBiomeMode(!ATLAS_PHYSICS_BIOME_MODE)"
+                  style="min-height:26px;padding:3px 10px;border-radius:7px;font-size:10px;font-weight:900;cursor:pointer;border:1.5px solid ${isAct ? '#fde047' : 'rgba(6,182,212,0.55)'};background:${isAct ? '#155e75' : '#0f172a'};color:${isAct ? '#ffffff' : '#a5f3fc'}">
+            🌊 Physics &amp; Wind (15) ${isAct ? '● ACTIVE' : '○ OFF'}
+          </button>
+          <span style="font-size:10px;color:#cbd5e1;font-weight:700">
+            15 Town &amp; Combat Physics Biomes · Voronoi Siege Fracture / SWE Water Wakes / 4-Octave Wind Shader / Jolt Debris Pools
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          ${biomes.slice(0, 6).map(b => {
+            const bSel = isAct && b.physics_biome_id === (activeBiome && activeBiome.physics_biome_id);
+            const colHex = b.accent || '#06b6d4';
+            return `
+              <button type="button" onclick="selectDestructiblePhysicsBiome('${escapeHtml(b.physics_biome_id)}')"
+                      style="min-height:23px;padding:2px 7px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${bSel ? '#fde047' : colHex};background:${bSel ? '#164e63' : '#090d14'};color:${bSel ? '#ffffff' : '#a5f3fc'}">
+                🌊 ${escapeHtml((b.title || b.physics_biome_id).split('—')[0].trim())} (${escapeHtml(String(b.cpu_physics_step_budget_ms))}ms)
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      ${isAct && activeBiome ? `
+        <div style="padding:8px 10px;border-radius:8px;background:rgba(22,78,99,0.42);border:1px solid rgba(6,182,212,0.45);display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+              <span style="font-size:11px;font-weight:900;color:#a5f3fc">🌊 ${escapeHtml(activeBiome.title)}</span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#fde047;border:1px solid rgba(250,204,21,0.4)">
+                Tier: ${escapeHtml(activeBiome.physics_interaction_tier)} · Rigidbodies: ${escapeHtml(String(activeBiome.jolt_physics_rigidbodies_cap))}
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#38bdf8;border:1px solid rgba(56,189,248,0.4)">
+                Water RT: ${escapeHtml(activeBiome.water_ripple_rt_resolution)} · Wind Octaves: ${escapeHtml(String(activeBiome.foliage_wind_octave_layers))}
+              </span>
+              <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:5px;background:#090d14;color:#34d399;border:1px solid rgba(52,211,153,0.4)">
+                CPU Budget: ${escapeHtml(String(activeBiome.cpu_physics_step_budget_ms))} ms · Fade: ${escapeHtml(String(activeBiome.debris_despawn_fade_sec))}s
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button type="button" onclick="openTownDetail('${escapeHtml(activeBridgeOrTownId(activeBiome.town_id))}')"
+                      style="min-height:22px;padding:2px 8px;border-radius:5px;border:1px solid #06b6d4;background:#164e63;color:#cffafe;font-size:9.5px;font-weight:800;cursor:pointer">
+                🏛️ Inspect ${escapeHtml(activeBiome.town_id)}
+              </button>
+            </div>
+          </div>
+          <div style="font-size:10px;color:#e2e8f0;line-height:1.4">
+            <strong style="color:#fde047">Biome Zone:</strong> <span class="mono" style="color:#38bdf8">${escapeHtml(activeBiome.zone_id)}</span>
+            · <strong style="color:#a5f3fc">Tech-Art Solver Notes:</strong> ${escapeHtml(activeBiome.notes)}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:5px">
+            ${biomes.map(b => {
+              const isCardSel = b.physics_biome_id === activeBiome.physics_biome_id;
+              return `
+                <div onclick="selectDestructiblePhysicsBiome('${escapeHtml(b.physics_biome_id)}')"
+                     style="padding:5px 7px;border-radius:6px;cursor:pointer;background:${isCardSel ? 'rgba(6,182,212,0.26)' : 'rgba(9,13,20,0.85)'};border:1px solid ${isCardSel ? '#fde047' : 'rgba(6,182,212,0.3)'};display:flex;flex-direction:column;gap:2px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.5px;font-weight:800;color:#f8fafc">${escapeHtml((b.title || b.physics_biome_id).split('—')[0].trim())}</span>
+                    <span class="mono" style="font-size:8.5px;color:#a5f3fc">${escapeHtml(String(b.jolt_physics_rigidbodies_cap))}rb · ${escapeHtml(String(b.cpu_physics_step_budget_ms))}ms</span>
+                  </div>
+                  <div class="mono" style="font-size:8.5px;color:#cbd5e1">
+                    ${escapeHtml(b.physics_interaction_tier)}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -14705,6 +14923,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasCentennial100dBarHtml(tatlas)}
       ${renderAtlasNocturnalAffixBarHtml(tatlas)}
       ${renderAtlasCombatReplayBarHtml(tatlas)}
+      ${renderAtlasLoreCodexBarHtml(tatlas)}
+      ${renderAtlasPhysicsBiomeBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -19112,6 +19332,46 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Dynamic World Lore Codex, Archaeological Relic Excavation & Bestiary Mastery Matrix Overlay (D103)
+  const archaeologicalLoreCodexRecords = Array.isArray(atlas.archaeological_lore_codices) ? atlas.archaeological_lore_codices : [];
+  const archaeologicalLoreCodicesOverlaySvg = !ATLAS_LORE_CODEX_MODE ? '' : `
+    <g id="studioArchaeologicalLoreCodicesOverlay">
+      ${archaeologicalLoreCodexRecords.map((c) => {
+        const wx = typeof c.world_x === 'number' ? c.world_x : 540;
+        const wy = typeof c.world_y === 'number' ? c.world_y : 295;
+        const colHex = c.accent || '#f59e0b';
+        const cat = c.codex_category || '';
+        const iconTxt = cat.includes('Giant') ? '⚙️' : (cat.includes('Elmoreden') ? '📜' : (cat.includes('Bestiary') ? '🦁' : '🏺'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectArchaeologicalCodex('${escapeHtml(c.codex_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.6" fill="rgba(120,53,15,0.78)" stroke="${escapeHtml(colHex)}" stroke-width="2.1"/>
+            <text x="${wx}" y="${wy + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Procedural Foliage Wind-Field, Interactive Water Ripple & Destructible Environment Physics Matrix Overlay (D104)
+  const destructiblePhysicsBiomeRecords = Array.isArray(atlas.destructible_physics_biomes) ? atlas.destructible_physics_biomes : [];
+  const destructiblePhysicsBiomesOverlaySvg = !ATLAS_PHYSICS_BIOME_MODE ? '' : `
+    <g id="studioDestructiblePhysicsBiomesOverlay">
+      ${destructiblePhysicsBiomeRecords.map((b) => {
+        const wx = typeof b.world_x === 'number' ? b.world_x : 540;
+        const wy = typeof b.world_y === 'number' ? b.world_y : 295;
+        const colHex = b.accent || '#06b6d4';
+        const tier = b.physics_interaction_tier || '';
+        const iconTxt = tier.includes('SWE') ? '🌊' : (tier.includes('Voronoi') ? '💥' : (tier.includes('Wind') ? '🍃' : '🪨'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectDestructiblePhysicsBiome('${escapeHtml(b.physics_biome_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.6" fill="rgba(8,51,68,0.78)" stroke="${escapeHtml(colHex)}" stroke-width="2.1"/>
+            <text x="${wx}" y="${wy + 3.5}" text-anchor="middle" font-size="8.5">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -19194,6 +19454,8 @@ function renderDedicatedWorldAtlas() {
     ${centennial100dChartersOverlaySvg}
     ${nocturnalAffixSpawnsOverlaySvg}
     ${deterministicCombatReplaysOverlaySvg}
+    ${archaeologicalLoreCodicesOverlaySvg}
+    ${destructiblePhysicsBiomesOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

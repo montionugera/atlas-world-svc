@@ -742,6 +742,8 @@ def validate_world_governance(
                 "centennial100dStudioChartersCount": len(t_doc.get("centennial_100d_studio_charters") or []),
                 "nocturnalWeatherAffixSpawnsCount": len(t_doc.get("nocturnal_weather_affix_spawns") or []),
                 "deterministicCombatReplaysCount": len(t_doc.get("deterministic_combat_replays") or []),
+                "archaeologicalLoreCodicesCount": len(t_doc.get("archaeological_lore_codices") or []),
+                "destructiblePhysicsBiomesCount": len(t_doc.get("destructible_physics_biomes") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -2228,6 +2230,38 @@ def validate_world_governance(
                 if cr_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: deterministic_combat_replays '{cr_id}' references unknown zone_id '{cr_zid}'"
+                    )
+
+            # Validate 16-Record Dynamic World Lore Codex, Archaeological Relic Excavation & Bestiary Mastery Matrix (D103)
+            lore_codices = t_doc.get("archaeological_lore_codices") or []
+            if lore_codices and len(lore_codices) < 16:
+                errors.append(
+                    f"GOV-10 violation: archaeological_lore_codices must have at least 16 records, got {len(lore_codices)}"
+                )
+            for lc_item in lore_codices:
+                if not isinstance(lc_item, dict):
+                    continue
+                lc_id = str(lc_item.get("codex_id", ""))
+                lc_zid = str(lc_item.get("zone_id", ""))
+                if lc_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: archaeological_lore_codices '{lc_id}' references unknown zone_id '{lc_zid}'"
+                    )
+
+            # Validate 15-Record Procedural Foliage Wind-Field, Interactive Water Ripple & Destructible Environment Physics Matrix (D104)
+            physics_biomes = t_doc.get("destructible_physics_biomes") or []
+            if physics_biomes and len(physics_biomes) < 15:
+                errors.append(
+                    f"GOV-10 violation: destructible_physics_biomes must have at least 15 records, got {len(physics_biomes)}"
+                )
+            for pb_item in physics_biomes:
+                if not isinstance(pb_item, dict):
+                    continue
+                pb_id = str(pb_item.get("physics_biome_id", ""))
+                pb_zid = str(pb_item.get("zone_id", ""))
+                if pb_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: destructible_physics_biomes '{pb_id}' references unknown zone_id '{pb_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

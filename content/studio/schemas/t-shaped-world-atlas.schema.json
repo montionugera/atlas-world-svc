@@ -527,6 +527,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/deterministicCombatReplaySpec" }
     },
+    "archaeological_lore_codices": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/archaeologicalLoreCodexSpec" }
+    },
+    "destructible_physics_biomes": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/destructiblePhysicsBiomeSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -6136,6 +6148,154 @@
         "accent": {
           "type": "string",
           "enum": ["#10b981", "#34d399", "#14b8a6", "#60a5fa"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "archaeologicalLoreCodexSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "codex_id",
+        "title",
+        "zone_id",
+        "town_id",
+        "dungeon_id",
+        "codex_category",
+        "excavation_fragments_required",
+        "decipher_skill_check",
+        "account_wide_passive_bonus",
+        "voiced_audiobook_duration_sec",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "codex_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "zone_id": { "type": "string", "minLength": 1 },
+        "town_id": { "type": "string", "minLength": 1 },
+        "dungeon_id": { "type": "string", "minLength": 1 },
+        "codex_category": {
+          "type": "string",
+          "enum": [
+            "Giant's Era Technological Blueprint",
+            "Elmoreden Imperial Chronicle",
+            "Bestiary Anatomy & Weakness Compendium",
+            "Primordial God Fragment Excavation"
+          ]
+        },
+        "excavation_fragments_required": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 25
+        },
+        "decipher_skill_check": {
+          "type": "string",
+          "const": "Archaeology Lv.1..Lv.10 + Dwarven/Elven Lexicon"
+        },
+        "account_wide_passive_bonus": {
+          "type": "string",
+          "enum": [
+            "+2% Giant/Automaton DMG",
+            "+3% Undead/Demon Mitigation",
+            "+5% Spoil/Herb Discovery Rate",
+            "+15 Max Weight & Inventory Slot"
+          ]
+        },
+        "voiced_audiobook_duration_sec": {
+          "type": "integer",
+          "minimum": 45,
+          "maximum": 210
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#f59e0b", "#fbbf24", "#a855f7", "#38bdf8"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "destructiblePhysicsBiomeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physics_biome_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "physics_interaction_tier",
+        "jolt_physics_rigidbodies_cap",
+        "water_ripple_rt_resolution",
+        "foliage_wind_octave_layers",
+        "debris_despawn_fade_sec",
+        "cpu_physics_step_budget_ms",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "physics_biome_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "town_id": { "type": "string", "minLength": 1 },
+        "zone_id": { "type": "string", "minLength": 1 },
+        "physics_interaction_tier": {
+          "type": "string",
+          "enum": [
+            "Voronoi Siege Wall Fracture",
+            "Vertex-Shader Wind & Grass Bend Field",
+            "SWE Shallow-Water Wake & Splash Solver",
+            "Shockwave Prop Scatter & Debris Pool"
+          ]
+        },
+        "jolt_physics_rigidbodies_cap": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 512
+        },
+        "water_ripple_rt_resolution": {
+          "type": "string",
+          "enum": ["256x256", "512x512", "1024x1024"]
+        },
+        "foliage_wind_octave_layers": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 4
+        },
+        "debris_despawn_fade_sec": {
+          "type": "number",
+          "minimum": 4.5,
+          "maximum": 18.0
+        },
+        "cpu_physics_step_budget_ms": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 2.4
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#10b981", "#34d399", "#06b6d4", "#38bdf8"]
         },
         "notes": { "type": "string" }
       }

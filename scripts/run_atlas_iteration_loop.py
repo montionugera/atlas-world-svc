@@ -23105,6 +23105,581 @@ def inject_deterministic_combat_replays(atlas: dict[str, Any]) -> list[dict[str,
     return rows
 
 
+def _build_archaeological_lore_codices(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Record [Role 2: Content & World Tools — Dynamic World Lore Codex, Archaeological Relic Excavation & Bestiary Mastery Matrix] (D103)."""
+    specs = [
+        (
+            "lore-codex-01-talking-island-elven-ruins-stele",
+            "Talking Island Elven Ruins Stele — Einhovant's First Chronomancy Tablet",
+            "zone-field-clover-south-gate",
+            "town-lantern-hollow",
+            "zone-dungeon-kiln-cellar",
+            "Elmoreden Imperial Chronicle",
+            8,
+            "+5% Spoil/Herb Discovery Rate",
+            65,
+            462,
+            452,
+            "#f59e0b",
+            "Excavated beneath Talking Island's submerged Elven Ruins; chronicles Magician Einhovant's treaty with the Human apprentices.",
+        ),
+        (
+            "lore-codex-02-elven-fortress-underground-library",
+            "Elven Fortress Underground Library — Mother Tree Starlight Herb Compendium",
+            "zone-field-celadon-causeway",
+            "town-porcelain-loom-sanctuary",
+            "zone-dungeon-medallion-heart-vault",
+            "Bestiary Anatomy & Weakness Compendium",
+            10,
+            "+5% Spoil/Herb Discovery Rate",
+            80,
+            552,
+            304,
+            "#fbbf24",
+            "Catalogs subterranean dryad flora, orc besieger armor weak points, and ancient Elven silver-forging formulas.",
+        ),
+        (
+            "lore-codex-03-dark-elven-school-of-dark-arts-obelisk",
+            "Dark Elven School of Dark Arts Obelisk — Dasparion's Forbidden Black Magic Stele",
+            "zone-field-cinnamon-bark-viaduct",
+            "town-carillon-hearth-belfry",
+            "zone-dungeon-ceramic-resonator-crypt",
+            "Primordial God Fragment Excavation",
+            12,
+            "+3% Undead/Demon Mitigation",
+            95,
+            512,
+            266,
+            "#a855f7",
+            "Inscribed in archaic Dark-Lunar glyphs detailing Dasparion's pact and Shilen's first shadow rift below the Dark Forest.",
+        ),
+        (
+            "lore-codex-04-orc-cave-of-trials-ancestral-totem",
+            "Orc Cave of Trials Ancestral Totem — Pa'agrio's Six-Tribe Flame Pillar",
+            "zone-field-firebrick-duct",
+            "town-draft-kiln-post",
+            "zone-dungeon-ember-bellows-chamber",
+            "Primordial God Fragment Excavation",
+            9,
+            "+15 Max Weight & Inventory Slot",
+            75,
+            464,
+            136,
+            "#f59e0b",
+            "Basalt totem in the Cave of Trials recording the war chants of Hestui, Atuba, Neruga, Urutu, Duda-Mara, and Gandi.",
+        ),
+        (
+            "lore-codex-05-dwarven-abandoned-coal-mines-titan-tablet",
+            "Dwarven Abandoned Coal Mines Titan Tablet — Maphr's Star-Metal Geode Ledger",
+            "zone-field-resin-arch-tunnel",
+            "town-root-train-roundhouse",
+            "zone-dungeon-sap-heart-cistern",
+            "Giant's Era Technological Blueprint",
+            14,
+            "+15 Max Weight & Inventory Slot",
+            110,
+            634,
+            96,
+            "#38bdf8",
+            "Dwarven Guild excavation revealing Lesser Giant steam-drill schematics and Oriharukon vein maps across the Spine Mountains.",
+        ),
+        (
+            "lore-codex-06-kamael-nornil-garden-genesis-archive",
+            "Kamael Nornil Garden Genesis Archive — Mimir's Spicula Soul-Seed Cylinder",
+            "zone-field-kelp-spiral-reef",
+            "town-cinnamon-mill-haven",
+            "zone-dungeon-spice-kiln-cellar",
+            "Giant's Era Technological Blueprint",
+            16,
+            "+2% Giant/Automaton DMG",
+            135,
+            384,
+            314,
+            "#38bdf8",
+            "Holographic brass cylinder inside Nornil's Garden preserving Mother Nornil's genetic synthesis records for the Kamael Metusela.",
+        ),
+        (
+            "lore-codex-07-cruma-tower-giants-core-rosetta-slab",
+            "Cruma Tower Giant's Core Rosetta Slab — Core Automaton Neural Schematic",
+            "zone-field-cinder-apron",
+            "town-saffron-press-village",
+            "zone-dungeon-pendulum-shaft",
+            "Giant's Era Technological Blueprint",
+            18,
+            "+2% Giant/Automaton DMG",
+            150,
+            532,
+            418,
+            "#38bdf8",
+            "Bilingual Giant-to-Dwarven Rosetta Slab allowing scholars to decode Porta, Excuro, Mordeo, and Core's harmonic shield frequencies.",
+        ),
+        (
+            "lore-codex-08-ant-nest-queens-fossilized-amber-chamber",
+            "Ant Nest Queen's Fossilized Amber Chamber — Wasteland Chitin & Pheromone Atlas",
+            "zone-field-cobalt-sandbar-ford",
+            "town-kilnwatch-bastion",
+            "zone-dungeon-kiln-cellar",
+            "Bestiary Anatomy & Weakness Compendium",
+            11,
+            "+5% Spoil/Herb Discovery Rate",
+            85,
+            492,
+            392,
+            "#fbbf24",
+            "Fossilized amber steles in the Wasteland Ant Nest mapping Royal Guard pheromone trails and Nurse Ant regeneration glands.",
+        ),
+        (
+            "lore-codex-09-dragon-valley-shilens-first-breath-crater",
+            "Dragon Valley Shilen's First Breath Crater — Antharas Brood Anatomy Compendium",
+            "zone-field-leyden-causeway",
+            "town-pinion-terminus",
+            "zone-dungeon-chronometer-foundry",
+            "Bestiary Anatomy & Weakness Compendium",
+            20,
+            "+3% Undead/Demon Mitigation",
+            165,
+            606,
+            388,
+            "#a855f7",
+            "Charred dragonbone steles in Dragon Valley detailing Malruk Succubus, Drake, and Cave Keeper scale seam vulnerabilities.",
+        ),
+        (
+            "lore-codex-10-tower-of-insolence-baiums-architectural-blueprint",
+            "Tower of Insolence Baium's Architectural Blueprint — 14-Floor Star-Piercer Plan",
+            "zone-field-caldera-rim",
+            "town-escapement-anvil",
+            "zone-dungeon-star-heart-nave",
+            "Elmoreden Imperial Chronicle",
+            22,
+            "+2% Giant/Automaton DMG",
+            185,
+            584,
+            302,
+            "#f59e0b",
+            "Emperor Baium's personal architectural plates for the 14-story Tower of Insolence and its Dimensional Vortex conduits.",
+        ),
+        (
+            "lore-codex-11-imperial-tomb-elmoreden-royal-genealogy-crypt",
+            "Imperial Tomb Elmoreden Royal Genealogy Crypt — Frintezza & Shunaiman Dynasty Scroll",
+            "zone-field-aurora-tether",
+            "town-inductor-switchyard",
+            "zone-catacomb-forbidden-path-orrery",
+            "Elmoreden Imperial Chronicle",
+            19,
+            "+3% Undead/Demon Mitigation",
+            160,
+            672,
+            218,
+            "#f59e0b",
+            "Royal sarcophagus rubbings in the Four Sepulchers tracing Emperor Shunaiman's Seven Seals to Prince Frintezza's pact.",
+        ),
+        (
+            "lore-codex-12-forge-of-the-gods-vulcans-primordial-anvil",
+            "Forge of the Gods Vulcan's Primordial Anvil — Valakas Flame-Runed Slag Tablet",
+            "zone-field-ginger-aqueduct-bridge",
+            "town-inductor-switchyard",
+            "zone-catacomb-branded-bellows",
+            "Primordial God Fragment Excavation",
+            24,
+            "+15 Max Weight & Inventory Slot",
+            195,
+            654,
+            196,
+            "#fbbf24",
+            "Molten obsidian tablets recovered near Roach's anvil in the Lower Level of Forge of the Gods, unlocking S-Grade fire-forge lore.",
+        ),
+        (
+            "lore-codex-13-monastery-of-silence-solinas-illuminated-gospel",
+            "Monastery of Silence Solina's Illuminated Gospel — Einhasad's Seventh Grail Manuscript",
+            "zone-field-whispering-mire",
+            "town-starfall-haven",
+            "zone-catacomb-witch-pendulum",
+            "Elmoreden Imperial Chronicle",
+            17,
+            "+3% Undead/Demon Mitigation",
+            145,
+            552,
+            204,
+            "#a855f7",
+            "Gold-leaf monastic manuscript preserved in Saintess Solina's inner sanctum, detailing Anakim's sacred light seal.",
+        ),
+        (
+            "lore-codex-14-pagan-temple-triols-blood-runed-altar",
+            "Pagan Temple Triol's Blood-Runed Altar — Andreas van Halter Demonology Grimoire",
+            "zone-field-tether-causeway",
+            "town-starfall-haven",
+            "zone-catacomb-dark-omens-coral",
+            "Primordial God Fragment Excavation",
+            21,
+            "+3% Undead/Demon Mitigation",
+            175,
+            568,
+            216,
+            "#a855f7",
+            "Deciphers the blood-sacrificial mirror locks of Pagan Temple and the anatomical weak points of Triol's High Priests.",
+        ),
+        (
+            "lore-codex-15-primeval-isle-lost-elrokian-dinosaur-bonebed",
+            "Primeval Isle Lost Elrokian Dinosaur Bonebed — Sailren & Tyrannosaur Fossil Matrix",
+            "zone-field-siphon-sluice",
+            "town-starfall-haven",
+            "zone-dungeon-sunken-potter-hold",
+            "Bestiary Anatomy & Weakness Compendium",
+            15,
+            "+5% Spoil/Herb Discovery Rate",
+            125,
+            532,
+            454,
+            "#fbbf24",
+            "Prehistoric bonebed cataloged with Asamah's Elrokian hunters, revealing Gazkh capture traps and Sailren's venom sacs.",
+        ),
+        (
+            "lore-codex-16-hellbound-beleths-astral-astrolabe",
+            "Hellbound Beleth's Astral Astrolabe — Tully's Workshop Planar Calculators",
+            "zone-field-metronome-bridge",
+            "town-crown-beacon-citadel",
+            "zone-catacomb-apostate-dynamo",
+            "Giant's Era Technological Blueprint",
+            25,
+            "+2% Giant/Automaton DMG",
+            210,
+            658,
+            292,
+            "#38bdf8",
+            "Masterwork brass astrolabe excavated from Steel Citadel's Tower of Naia, decoding Beleth's shadow-clone astral coordinates.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        cid,
+        title,
+        zid,
+        tid,
+        did,
+        cat,
+        frags,
+        bonus,
+        dur_sec,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "codex_id": cid,
+                "title": title,
+                "zone_id": zid,
+                "town_id": tid,
+                "dungeon_id": did,
+                "codex_category": cat,
+                "excavation_fragments_required": frags,
+                "decipher_skill_check": "Archaeology Lv.1..Lv.10 + Dwarven/Elven Lexicon",
+                "account_wide_passive_bonus": bonus,
+                "voiced_audiobook_duration_sec": dur_sec,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_archaeological_lore_codices(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_archaeological_lore_codices(atlas)
+    atlas["archaeological_lore_codices"] = rows
+    return rows
+
+
+def _build_destructible_physics_biomes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Record [Role 3: Technical Artist — Procedural Foliage Wind-Field, Interactive Water Ripple & Destructible Environment Physics Matrix] (D104)."""
+    specs = [
+        (
+            "physics-biome-01-talking-island",
+            "Talking Island (Lantern Hollow) — Coastal Reed Wind-Field & Surf Wake Solver",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "SWE Shallow-Water Wake & Splash Solver",
+            128,
+            "512x512",
+            3,
+            6.5,
+            1.1,
+            454,
+            448,
+            "#06b6d4",
+            "Simulates shallow-water surf wakes along Talking Island Harbor piers and 3-octave coastal reed wind bending.",
+        ),
+        (
+            "physics-biome-02-elven-village",
+            "Elven Village (Porcelain Loom) — Mother Tree Canopy Wind & Mirror Pond Ripple Field",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "Vertex-Shader Wind & Grass Bend Field",
+            96,
+            "512x512",
+            4,
+            8.0,
+            1.0,
+            542,
+            294,
+            "#10b981",
+            "4-octave harmonic vertex-shader wind field swaying Elven willow fronds and interactive lotus pond ripples.",
+        ),
+        (
+            "physics-biome-03-dark-elven-village",
+            "Dark Elven Village (Carillon Belfry) — Bioluminescent Spore-Fern & Swamp Wake Solver",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "SWE Shallow-Water Wake & Splash Solver",
+            128,
+            "512x512",
+            3,
+            7.5,
+            1.2,
+            522,
+            276,
+            "#38bdf8",
+            "Interactive shallow-water solver for Dark Elven Swampland crossings paired with reactive bioluminescent fern displacement.",
+        ),
+        (
+            "physics-biome-04-orc-village",
+            "Orc Village (Draft-Kiln Post) — Immortal Plateau Shockwave Crate & Totem Scatter Pool",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Shockwave Prop Scatter & Debris Pool",
+            256,
+            "256x256",
+            2,
+            10.0,
+            1.4,
+            474,
+            146,
+            "#34d399",
+            "Jolt Physics rigid-body pool scattering training dummies, braziers, and weapon racks when Tyrant shockwaves detonate.",
+        ),
+        (
+            "physics-biome-05-dwarven-village",
+            "Dwarven Village (Root-Train Roundhouse) — Mithril Mine Cart & Ore-Crate Fracture Pool",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Shockwave Prop Scatter & Debris Pool",
+            320,
+            "256x256",
+            2,
+            12.0,
+            1.6,
+            624,
+            86,
+            "#10b981",
+            "Handles destructible ore barrels, Siege Golem anvil shockwaves, and frozen snowdrift displacement across Spine Mountain passes.",
+        ),
+        (
+            "physics-biome-06-kamael-village",
+            "Kamael Village (Cinnamon-Mill Haven) — Isle of Souls Gust Vortex & Wing-Impulse Field",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "Vertex-Shader Wind & Grass Bend Field",
+            160,
+            "512x512",
+            4,
+            6.0,
+            1.1,
+            394,
+            304,
+            "#34d399",
+            "Couples Kamael Rush-Impact directional impulse cones into the 4-octave grass and banner cloth vertex shader.",
+        ),
+        (
+            "physics-biome-07-gludin-village",
+            "Gludin Village (Glaze-Barge Quay) — Harbor Ship-Wake SWE & Dock Barrel Scatter Solver",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "SWE Shallow-Water Wake & Splash Solver",
+            192,
+            "1024x1024",
+            3,
+            8.5,
+            1.3,
+            424,
+            414,
+            "#06b6d4",
+            "High-resolution 1024x1024 Shallow-Water Equation (SWE) harbor wake render target with floating cargo crate buoyancy.",
+        ),
+        (
+            "physics-biome-08-gludio-town",
+            "Town of Gludio (Kilnwatch Bastion) — Castle Outer Curtain Wall Voronoi Fracture Matrix",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Voronoi Siege Wall Fracture",
+            384,
+            "512x512",
+            3,
+            14.0,
+            1.9,
+            502,
+            380,
+            "#10b981",
+            "Pre-scored 64-cell Voronoi masonry fracture chunks for Gludio Castle gates and battlements under Swoop Cannon bombardment.",
+        ),
+        (
+            "physics-biome-09-dion-town",
+            "Town of Dion (Saffron Press) — Pastoral Wheat-Field Wind & Floran Millstream Solver",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "Vertex-Shader Wind & Grass Bend Field",
+            192,
+            "512x512",
+            4,
+            7.0,
+            1.2,
+            524,
+            428,
+            "#34d399",
+            "Renders rolling 4-octave wind waves across Dion's golden wheat pastures and Floran Agricultural waterwheel splashes.",
+        ),
+        (
+            "physics-biome-10-giran-castle-town",
+            "Giran Castle Town (Pinion Terminus) — Siege Bridge Voronoi Fracture & Canyon Gust Field",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Voronoi Siege Wall Fracture",
+            448,
+            "512x512",
+            3,
+            15.5,
+            2.1,
+            590,
+            402,
+            "#38bdf8",
+            "Governs 448 Jolt rigid-body masonry shards during Giran Castle siege breaches with dithered alpha despawn fade.",
+        ),
+        (
+            "physics-biome-11-oren-town",
+            "Town of Oren (Escapement Anvil) — Sea of Spores Wind-Shear & Fortress Barricade Fracture",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Shockwave Prop Scatter & Debris Pool",
+            288,
+            "512x512",
+            3,
+            11.0,
+            1.5,
+            602,
+            314,
+            "#06b6d4",
+            "Simulates destructible wooden palisades along Oren's borderlands and spore-stalk bending under elemental vortex blasts.",
+        ),
+        (
+            "physics-biome-12-hunters-village",
+            "Hunters Village (Torque-Balance Citadel) — Enchanted Waterfall Splash & Timber Scatter",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "SWE Shallow-Water Wake & Splash Solver",
+            224,
+            "1024x1024",
+            4,
+            9.5,
+            1.4,
+            634,
+            236,
+            "#34d399",
+            "Combines 1024x1024 waterfall plunge-pool ripple heightfields with destructible hunter watchtowers and log traps.",
+        ),
+        (
+            "physics-biome-13-aden-imperial-capital",
+            "Town of Aden (Crown-Beacon Citadel) — Imperial Colonnade Voronoi Siege Fracture Matrix",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "Voronoi Siege Wall Fracture",
+            512,
+            "1024x1024",
+            4,
+            18.0,
+            2.4,
+            660,
+            282,
+            "#10b981",
+            "Flagship 512-rigidbody Voronoi destruction profile for Aden Castle's twin defensive rings and throne-approach statues.",
+        ),
+        (
+            "physics-biome-14-goddard-town",
+            "Town of Goddard (Inductor Switchyard) — Hot Springs Geyser Ripple & Volcanic Rock Scatter",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Shockwave Prop Scatter & Debris Pool",
+            384,
+            "512x512",
+            3,
+            13.5,
+            1.8,
+            668,
+            208,
+            "#38bdf8",
+            " Couples thermal geyser ripple rings with basalt boulder shatter physics across Goddard's volcanic approaches.",
+        ),
+        (
+            "physics-biome-15-rune-township",
+            "Rune Township (Starfall Haven) — Cliffside Gale Wind-Field & Sky-Bridge Voronoi Fracture",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "Voronoi Siege Wall Fracture",
+            448,
+            "1024x1024",
+            4,
+            16.0,
+            2.2,
+            556,
+            206,
+            "#06b6d4",
+            "High-altitude 4-octave gale wind field bending Swamp of Screams marsh reeds alongside Rune Castle bridge fracture physics.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        bid,
+        title,
+        tid,
+        zid,
+        tier,
+        rb_cap,
+        rt_res,
+        wind_oct,
+        fade_sec,
+        cpu_ms,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "physics_biome_id": bid,
+                "title": title,
+                "town_id": tid,
+                "zone_id": zid,
+                "physics_interaction_tier": tier,
+                "jolt_physics_rigidbodies_cap": rb_cap,
+                "water_ripple_rt_resolution": rt_res,
+                "foliage_wind_octave_layers": wind_oct,
+                "debris_despawn_fade_sec": fade_sec,
+                "cpu_physics_step_budget_ms": cpu_ms,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_destructible_physics_biomes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_destructible_physics_biomes(atlas)
+    atlas["destructible_physics_biomes"] = rows
+    return rows
+
+
 
 
 
@@ -24450,6 +25025,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("deterministic_combat_replays") or []) < 15:
         inject_deterministic_combat_replays(atlas)
         actions.append("populated_15_deterministic_combat_replays")
+
+    # 87. Ensure all 16 Dynamic World Lore Codex, Archaeological Relic Excavation & Bestiary Mastery Matrix records exist in `archaeological_lore_codices` (D103)
+    if len(atlas.get("archaeological_lore_codices") or []) < 16:
+        inject_archaeological_lore_codices(atlas)
+        actions.append("populated_16_archaeological_lore_codices")
+
+    # 88. Ensure all 15 Procedural Foliage Wind-Field, Interactive Water Ripple & Destructible Environment Physics Matrix records exist in `destructible_physics_biomes` (D104)
+    if len(atlas.get("destructible_physics_biomes") or []) < 15:
+        inject_destructible_physics_biomes(atlas)
+        actions.append("populated_15_destructible_physics_biomes")
 
     return {"actions": actions}
 
@@ -29320,15 +29905,25 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d102_eval = score_d102_deterministic_combat_replays(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
     d102_score = d102_eval["score"]
 
+    # D103: Interactive 16-Record [Role 2: Content & World Tools — Dynamic World Lore Codex, Archaeological Relic Excavation & Bestiary Mastery Matrix] (`archaeological_lore_codices` - 16 Excavation Sites)
+    d103_eval = score_d103_archaeological_lore_codices(
+        atlas, zone_ids_set=zone_ids_set, mf_dungeon_id_set=mf_dungeon_id_set, web_txt=web_txt
+    )
+    d103_score = d103_eval["score"]
+
+    # D104: Interactive 15-Record [Role 3: Technical Artist — Procedural Foliage Wind-Field, Interactive Water Ripple & Destructible Environment Physics Matrix] (`destructible_physics_biomes` - 15 Physics Biomes)
+    d104_eval = score_d104_destructible_physics_biomes(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d104_score = d104_eval["score"]
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 84.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 86.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0 and d99_score == 100.0 and d100_score == 100.0 and d101_score == 100.0 and d102_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 86.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 96.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 85.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 92.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 86.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 88.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0 and d99_score == 100.0 and d100_score == 100.0 and d101_score == 100.0 and d102_score == 100.0 and d103_score == 100.0 and d104_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 88.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 98.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 87.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score + d103_score + d104_score) / 94.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -29435,8 +30030,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d100_score
             + d101_score
             + d102_score
+            + d103_score
+            + d104_score
         )
-        / 102.0,
+        / 104.0,
         1,
     )
 
@@ -30183,7 +30780,204 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix": d100_eval,
             "D101_nocturnal_weather_triggered_rare_spawns_and_eclipse_affix_matrix": d101_eval,
             "D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix": d102_eval,
+            "D103_archaeological_relic_excavation_lore_codex_and_bestiary_matrix": d103_eval,
+            "D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix": d104_eval,
         },
+    }
+
+
+def score_d103_archaeological_lore_codices(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    mf_dungeon_id_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if mf_dungeon_id_set is None:
+        mf_dungeon_id_set = {
+            str(d.get("dungeon_id"))
+            for d in (atlas.get("multi_floor_dungeons") or [])
+            if isinstance(d, dict) and d.get("dungeon_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_categories = {
+        "Giant's Era Technological Blueprint",
+        "Elmoreden Imperial Chronicle",
+        "Bestiary Anatomy & Weakness Compendium",
+        "Primordial God Fragment Excavation",
+    }
+    expected_bonuses = {
+        "+2% Giant/Automaton DMG",
+        "+3% Undead/Demon Mitigation",
+        "+5% Spoil/Herb Discovery Rate",
+        "+15 Max Weight & Inventory Slot",
+    }
+    rows = atlas.get("archaeological_lore_codices") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_cats: set[str] = set()
+    seen_bonuses: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        cid = str(row.get("codex_id") or "")
+        zid = str(row.get("zone_id") or "")
+        did = str(row.get("dungeon_id") or "")
+        cat = str(row.get("codex_category") or "")
+        frags = int(row.get("excavation_fragments_required") or 0)
+        chk = str(row.get("decipher_skill_check") or "")
+        bon = str(row.get("account_wide_passive_bonus") or "")
+        dur = int(row.get("voiced_audiobook_duration_sec") or 0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            cid
+            and cid not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and row.get("town_id")
+            and (did == "" or did in mf_dungeon_id_set)
+            and cat in expected_categories
+            and 5 <= frags <= 25
+            and chk == "Archaeology Lv.1..Lv.10 + Dwarven/Elven Lexicon"
+            and bon in expected_bonuses
+            and 45 <= dur <= 210
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#f59e0b", "#fbbf24", "#a855f7", "#38bdf8")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(cid)
+            seen_cats.add(cat)
+            seen_bonuses.add(bon)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_LORE_CODEX_MODE",
+            "setAtlasLoreCodexMode",
+            "selectArchaeologicalCodex",
+            "renderAtlasLoreCodexBarHtml",
+            "studioArchaeologicalLoreCodicesOverlay",
+        )
+    )
+    ratio = valid_count / 16.0
+    full_cov = (
+        valid_count == 16
+        and seen_cats == expected_categories
+        and seen_bonuses == expected_bonuses
+    )
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 16,
+        "codex_categories": sorted(seen_cats),
+        "passive_bonuses": sorted(seen_bonuses),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d104_destructible_physics_biomes(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_tiers = {
+        "Voronoi Siege Wall Fracture",
+        "Vertex-Shader Wind & Grass Bend Field",
+        "SWE Shallow-Water Wake & Splash Solver",
+        "Shockwave Prop Scatter & Debris Pool",
+    }
+    expected_res = {"256x256", "512x512", "1024x1024"}
+    rows = atlas.get("destructible_physics_biomes") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_tiers: set[str] = set()
+    seen_res: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        bid = str(row.get("physics_biome_id") or "")
+        zid = str(row.get("zone_id") or "")
+        tier = str(row.get("physics_interaction_tier") or "")
+        rb_cap = int(row.get("jolt_physics_rigidbodies_cap") or 0)
+        rt_res = str(row.get("water_ripple_rt_resolution") or "")
+        octs = int(row.get("foliage_wind_octave_layers") or 0)
+        fade_s = float(row.get("debris_despawn_fade_sec") or 0.0)
+        cpu_ms = float(row.get("cpu_physics_step_budget_ms") or 0.0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            bid
+            and bid not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and row.get("town_id")
+            and tier in expected_tiers
+            and 64 <= rb_cap <= 512
+            and rt_res in expected_res
+            and 2 <= octs <= 4
+            and 4.5 <= fade_s <= 18.0
+            and 0.8 <= cpu_ms <= 2.4
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#10b981", "#34d399", "#06b6d4", "#38bdf8")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(bid)
+            seen_tiers.add(tier)
+            seen_res.add(rt_res)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_PHYSICS_BIOME_MODE",
+            "setAtlasPhysicsBiomeMode",
+            "selectDestructiblePhysicsBiome",
+            "renderAtlasPhysicsBiomeBarHtml",
+            "studioDestructiblePhysicsBiomesOverlay",
+        )
+    )
+    ratio = valid_count / 15.0
+    full_cov = valid_count == 15 and seen_tiers == expected_tiers and seen_res == expected_res
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 15,
+        "physics_interaction_tiers": sorted(seen_tiers),
+        "ui_wired": has_ui,
     }
 
 
@@ -32198,7 +32992,7 @@ def evaluate_80d_atlas(whc: dict[str, Any] | None = None, atlas: dict[str, Any] 
     if atlas is None:
         atlas = json.loads(ATLAS_PATH.read_text(encoding="utf-8"))
     res = audit_world_atlas(whc, atlas)
-    res["wave"] = 49
+    res["wave"] = 50
     return res
 
 
@@ -32316,7 +33110,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D72 (16 Bot Swarm Sectors)  : {dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['score']}/100 ({dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['verified']}/{dims['D72_backend_bot_swarm_and_spatial_simulation_sectors']['target']} bot swarm sectors)")
         print(f"  D73 (15 LiveOps/GM Anchors) : {dims['D73_liveops_gm_stuck_rescue_rollback_and_hot_config']['score']}/100 ({dims['D73_liveops_gm_stuck_rescue_rollback_and_hot_config']['verified']}/{dims['D73_liveops_gm_stuck_rescue_rollback_and_hot_config']['target']} liveops/gm anchors)")
         print(f"  D74 (20 Tools Squad Reg)    : {dims['D74_platform_tools_squad_unified_pipeline_registry']['score']}/100 ({dims['D74_platform_tools_squad_unified_pipeline_registry']['verified']}/{dims['D74_platform_tools_squad_unified_pipeline_registry']['target']} platform squad tools)")
-        print(f"  D75 (18 Dialogue/i18n DAGs) : {dims['D75_dialogue_dag_and_i18n_localization_graphs']['score']}/100 ({dims['D75_dialogue_dag_and_i18n_localization_graphs']['verified']}/{dims['D75_dialogue_dag_and_i18n_localization_graphs']['target']} dialogue/i18n graphs)")
+        print(f"  D75 (18 Dialogue/i18n DAGs) : {dims['D75_dialogue_dag_and_i18n_localization_graphs']['score']}/100 ({dims['D75_dialogue_dag_and_i18n_localization_graphs']['verified']}/{dims['D75_dialogue_dag_and_i18n_localization_graphs']['verified']}/{dims['D75_dialogue_dag_and_i18n_localization_graphs']['target']} dialogue/i18n graphs)")
         print(f"  D76 (16 Spawner/Loot Suites): {dims['D76_visual_spawner_and_loot_economy_balancer_suites']['score']}/100 ({dims['D76_visual_spawner_and_loot_economy_balancer_suites']['verified']}/{dims['D76_visual_spawner_and_loot_economy_balancer_suites']['target']} spawner/loot suites)")
         print(f"  D77 (16 Skill Timelines)    : {dims['D77_combat_skill_timeline_and_boss_telegraph_profiles']['score']}/100 ({dims['D77_combat_skill_timeline_and_boss_telegraph_profiles']['verified']}/{dims['D77_combat_skill_timeline_and_boss_telegraph_profiles']['target']} skill timelines)")
         print(f"  D78 (15 Build Farm/CDN)     : {dims['D78_automated_build_farm_and_delta_patch_cdn_nodes']['score']}/100 ({dims['D78_automated_build_farm_and_delta_patch_cdn_nodes']['verified']}/{dims['D78_automated_build_farm_and_delta_patch_cdn_nodes']['target']} build/cdn nodes)")
@@ -32344,6 +33138,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D100 (22 100D Charters)     : {dims['D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix']['score']}/100 ({dims['D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix']['verified']}/{dims['D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix']['target']} 100D centennial studio charters)")
         print(f"  D101 (16 Nocturnal Affixes) : {dims['D101_nocturnal_weather_triggered_rare_spawns_and_eclipse_affix_matrix']['score']}/100 ({dims['D101_nocturnal_weather_triggered_rare_spawns_and_eclipse_affix_matrix']['verified']}/{dims['D101_nocturnal_weather_triggered_rare_spawns_and_eclipse_affix_matrix']['target']} nocturnal weather affix spawns)")
         print(f"  D102 (15 Combat Replays)    : {dims['D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix']['score']}/100 ({dims['D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix']['verified']}/{dims['D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix']['target']} deterministic combat replay sectors)")
+        print(f"  D103 (16 Lore Codices)      : {dims['D103_archaeological_relic_excavation_lore_codex_and_bestiary_matrix']['score']}/100 ({dims['D103_archaeological_relic_excavation_lore_codex_and_bestiary_matrix']['verified']}/{dims['D103_archaeological_relic_excavation_lore_codex_and_bestiary_matrix']['target']} archaeological lore codex sites)")
+        print(f"  D104 (15 Physics Biomes)    : {dims['D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix']['score']}/100 ({dims['D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix']['verified']}/{dims['D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix']['target']} destructible physics biomes)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

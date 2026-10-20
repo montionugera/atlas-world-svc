@@ -4456,9 +4456,9 @@ class TestStudioWebPerspectives(unittest.TestCase):
         whc = bundle["worldHistoryAndConcept"]
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.evaluate_80d_atlas(whc, atlas)
-        self.assertEqual(audit["wave"], 49)
+        self.assertGreaterEqual(audit["wave"], 49)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 102)
+        self.assertGreaterEqual(len(audit["dimensions"]), 102)
 
         d101 = audit["dimensions"]["D101_nocturnal_weather_triggered_rare_spawns_and_eclipse_affix_matrix"]
         self.assertEqual(d101["score"], 100.0)
@@ -4535,10 +4535,125 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas102DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 102)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 102)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 102)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 102)
         self.assertIn("102-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave50_archaeological_codices_and_destructible_physics_biomes(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        t_summary = report["summary"]["tShapedAtlasSummary"]
+        self.assertEqual(t_summary["archaeologicalLoreCodicesCount"], 16)
+        self.assertEqual(t_summary["destructiblePhysicsBiomesCount"], 15)
+
+        index_html = web.INDEX_HTML
+        for token in (
+            "ATLAS_LORE_CODEX_MODE",
+            "ARCHAEOLOGICAL_CODICES",
+            "setAtlasLoreCodexMode",
+            "selectArchaeologicalCodex",
+            "renderAtlasLoreCodexBarHtml",
+            "studioArchaeologicalLoreCodicesOverlay",
+            "ATLAS_PHYSICS_BIOME_MODE",
+            "DESTRUCTIBLE_PHYSICS_BIOMES",
+            "setAtlasPhysicsBiomeMode",
+            "selectDestructiblePhysicsBiome",
+            "renderAtlasPhysicsBiomeBarHtml",
+            "studioDestructiblePhysicsBiomesOverlay",
+            "🏺 Lore &amp; Relics (16)",
+            "🌊 Physics &amp; Wind (15)",
+            "104-Dimension Semantic-Zoom Atlas Score",
+            "D1–D104 Verified",
+        ):
+            self.assertIn(token, index_html)
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.evaluate_80d_atlas(whc, atlas)
+        self.assertEqual(audit["wave"], 50)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 104)
+
+        d103 = audit["dimensions"]["D103_archaeological_relic_excavation_lore_codex_and_bestiary_matrix"]
+        self.assertEqual(d103["score"], 100.0)
+        self.assertEqual(d103["verified"], 16)
+        self.assertEqual(d103["target"], 16)
+        self.assertTrue(d103["ui_wired"])
+
+        d104 = audit["dimensions"]["D104_procedural_foliage_wind_water_ripple_and_destructible_physics_matrix"]
+        self.assertEqual(d104["score"], 100.0)
+        self.assertEqual(d104["verified"], 15)
+        self.assertEqual(d104["target"], 15)
+        self.assertTrue(d104["ui_wired"])
+
+        codices = atlas["archaeological_lore_codices"]
+        self.assertEqual(len(codices), 16)
+        expected_categories = {
+            "Giant's Era Technological Blueprint",
+            "Elmoreden Imperial Chronicle",
+            "Bestiary Anatomy & Weakness Compendium",
+            "Primordial God Fragment Excavation",
+        }
+        expected_bonuses = {
+            "+2% Giant/Automaton DMG",
+            "+3% Undead/Demon Mitigation",
+            "+5% Spoil/Herb Discovery Rate",
+            "+15 Max Weight & Inventory Slot",
+        }
+        seen_categories = set()
+        seen_bonuses = set()
+        for c_row in codices:
+            self.assertIn(c_row["codex_category"], expected_categories)
+            seen_categories.add(c_row["codex_category"])
+            self.assertIn(c_row["account_wide_passive_bonus"], expected_bonuses)
+            seen_bonuses.add(c_row["account_wide_passive_bonus"])
+            self.assertEqual(c_row["decipher_skill_check"], "Archaeology Lv.1..Lv.10 + Dwarven/Elven Lexicon")
+            self.assertGreaterEqual(c_row["excavation_fragments_required"], 5)
+            self.assertLessEqual(c_row["excavation_fragments_required"], 25)
+            self.assertGreaterEqual(c_row["voiced_audiobook_duration_sec"], 45)
+            self.assertLessEqual(c_row["voiced_audiobook_duration_sec"], 210)
+        self.assertEqual(seen_categories, expected_categories)
+        self.assertEqual(seen_bonuses, expected_bonuses)
+
+        biomes = atlas["destructible_physics_biomes"]
+        self.assertEqual(len(biomes), 15)
+        expected_tiers = {
+            "Voronoi Siege Wall Fracture",
+            "Vertex-Shader Wind & Grass Bend Field",
+            "SWE Shallow-Water Wake & Splash Solver",
+            "Shockwave Prop Scatter & Debris Pool",
+        }
+        expected_resolutions = {"256x256", "512x512", "1024x1024"}
+        seen_tiers = set()
+        seen_resolutions = set()
+        for b_row in biomes:
+            self.assertIn(b_row["physics_interaction_tier"], expected_tiers)
+            seen_tiers.add(b_row["physics_interaction_tier"])
+            self.assertIn(b_row["water_ripple_rt_resolution"], expected_resolutions)
+            seen_resolutions.add(b_row["water_ripple_rt_resolution"])
+            self.assertGreaterEqual(b_row["jolt_physics_rigidbodies_cap"], 64)
+            self.assertLessEqual(b_row["jolt_physics_rigidbodies_cap"], 512)
+            self.assertGreaterEqual(b_row["foliage_wind_octave_layers"], 2)
+            self.assertLessEqual(b_row["foliage_wind_octave_layers"], 4)
+            self.assertGreaterEqual(b_row["debris_despawn_fade_sec"], 4.5)
+            self.assertLessEqual(b_row["debris_despawn_fade_sec"], 18.0)
+            self.assertGreaterEqual(b_row["cpu_physics_step_budget_ms"], 0.8)
+            self.assertLessEqual(b_row["cpu_physics_step_budget_ms"], 2.4)
+        self.assertEqual(seen_tiers, expected_tiers)
+        self.assertEqual(seen_resolutions, expected_resolutions)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas104DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 104)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 104)
+        self.assertIn("104-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
