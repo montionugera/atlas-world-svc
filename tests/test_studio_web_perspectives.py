@@ -544,6 +544,57 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(d16["target"], 63)
         self.assertTrue(d16["ui_wired"])
 
+    def test_wave7_travel_route_calculator_dungeon_room_inspector_and_telemetry(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+
+        html = web.INDEX_HTML
+        for token in (
+            "computeShortestAtlasZonePath",
+            "setAtlasRouteEndpoints",
+            "ATLAS_ROUTE_FROM_ID",
+            "ATLAS_ROUTE_TO_ID",
+            "selectDungeonRoomPoi",
+            "Gludin Village ➔ The Ant Nest",
+            "Gludin Village ➔ Town of Dion",
+            "Town of Dion ➔ Cruma Tower",
+            "Town of Oren ➔ Tower of Insolence",
+            "18-Dimension Semantic-Zoom Atlas Score",
+            "studioTravelItineraryPanel",
+        ):
+            self.assertIn(token, html, f"Missing Wave 7 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 18)
+
+        d17 = audit["dimensions"]["D17_travel_route_and_gatekeeper_calculator"]
+        self.assertEqual(d17["score"], 100.0)
+        self.assertEqual(d17["verified"], 6 * 63)
+        self.assertEqual(d17["target"], 6 * 63)
+        self.assertTrue(d17["ui_wired"])
+        for starter_id, count in d17["starter_reachability"].items():
+            self.assertEqual(count, 63, f"Starter {starter_id} only reached {count}/63 zones")
+
+        d18 = audit["dimensions"]["D18_dungeon_room_inspector_and_telemetry"]
+        self.assertEqual(d18["score"], 100.0)
+        self.assertEqual(d18["clickable_chambers"], d18["total_chambers"])
+        self.assertGreaterEqual(d18["clickable_chambers"], 96)
+        self.assertEqual(d18["clickable_spawns"], d18["total_spawns"])
+        self.assertTrue(d18["telemetry_wired"])
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas18DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 18)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 18)
+        self.assertIn("18-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
 
 if __name__ == "__main__":
     unittest.main()

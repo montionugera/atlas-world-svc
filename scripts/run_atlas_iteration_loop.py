@@ -2041,15 +2041,101 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     )
     d16_score = round(min(100.0, (d16_verified_zones / 63.0) * 100.0), 1) if has_d16_ui else round((d16_verified_zones / 63.0) * 80.0, 1)
 
+    # D17: Interactive Point-to-Point Travel Route & Gatekeeper Calculator (BFS reachability across all 63 zones from all 6 Starter Towns)
+    zone_ids_set = {str(z.get("zone_id")) for z in all_zones if isinstance(z, dict) and z.get("zone_id")}
+    adj_graph: dict[str, set[str]] = {zid: set() for zid in zone_ids_set}
+    for z in all_zones:
+        if not isinstance(z, dict):
+            continue
+        u = str(z.get("zone_id") or "")
+        if u not in adj_graph:
+            continue
+        for nb in z.get("connected_zone_ids") or []:
+            v = str(nb)
+            if v in adj_graph:
+                adj_graph[u].add(v)
+                adj_graph[v].add(u)
+
+    starter_zone_ids = [
+        str(z.get("zone_id"))
+        for z in starting_towns
+        if isinstance(z, dict) and str(z.get("zone_id")) in adj_graph
+    ]
+    starter_reachability: dict[str, int] = {}
+    reachable_pairs = 0
+    target_pairs = max(1, len(starter_zone_ids) * len(zone_ids_set))
+    for st_id in starter_zone_ids:
+        visited_bfs = {st_id}
+        queue_bfs = [st_id]
+        while queue_bfs:
+            cur_u = queue_bfs.pop(0)
+            for nxt_v in adj_graph.get(cur_u, set()):
+                if nxt_v not in visited_bfs:
+                    visited_bfs.add(nxt_v)
+                    queue_bfs.append(nxt_v)
+        starter_reachability[st_id] = len(visited_bfs)
+        reachable_pairs += len(visited_bfs)
+
+    has_d17_ui = all(
+        tok in web_txt
+        for tok in (
+            "computeShortestAtlasZonePath",
+            "setAtlasRouteEndpoints",
+            "ATLAS_ROUTE_FROM_ID",
+            "ATLAS_ROUTE_TO_ID",
+            "Gludin Village ➔ The Ant Nest",
+            "Gludin Village ➔ Town of Dion",
+            "Town of Dion ➔ Cruma Tower",
+            "Town of Oren ➔ Tower of Insolence",
+        )
+    )
+    d17_ratio = reachable_pairs / float(max(1, 6 * 63))
+    d17_score = round(min(100.0, d17_ratio * 100.0), 1) if has_d17_ui else round(d17_ratio * 80.0, 1)
+
+    # D18: Clickable Dungeon Room/Chamber Inspector & Product Owner Self-Evaluation Telemetry Integration
+    clickable_chambers = 0
+    total_chambers = 0
+    clickable_spawns = 0
+    total_spawns = 0
+    for d in mf_dungeons:
+        for fl in d.get("floors") or []:
+            if not isinstance(fl, dict):
+                continue
+            for rm in fl.get("rooms") or []:
+                if isinstance(rm, dict):
+                    total_chambers += 1
+                    if rm.get("room_id") and rm.get("name") and float(rm.get("corridor_width_meters", 0.0)) >= 6.0 and len(rm.get("key_mobs") or []) >= 1:
+                        clickable_chambers += 1
+            for sp in fl.get("spawns") or []:
+                if isinstance(sp, dict):
+                    total_spawns += 1
+                    if sp.get("npc_id") and sp.get("name") and len(sp.get("refinement_drops") or []) >= 1:
+                        clickable_spawns += 1
+
+    has_d18_ui_and_telemetry = all(
+        tok in web_txt
+        for tok in (
+            "selectDungeonRoomPoi",
+            "compute_studio_self_evaluation",
+            "18-Dimension Semantic-Zoom Atlas Score",
+            "/api/studio/self-evaluation",
+        )
+    )
+    d18_data_ratio = (
+        (clickable_chambers / float(max(1, total_chambers))) * 0.5
+        + (clickable_spawns / float(max(1, total_spawns))) * 0.5
+    )
+    d18_score = round(min(100.0, d18_data_ratio * 100.0), 1) if has_d18_ui_and_telemetry else round(d18_data_ratio * 80.0, 1)
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
         "Aesthetic": round((d5_score + d11_score + d12_score + d15_score) / 4.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score) / 5.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score) / 6.0, 1),
         "Narrative": 100.0 if len(whc.get("historical_epochs") or []) >= 4 else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score) / 6.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score) / 10.0, 1),
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score) / 7.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score) / 12.0, 1),
         "Fantasy": round((d1_score + d9_score + d11_score + d15_score) / 4.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score) / 7.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score) / 9.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -2070,8 +2156,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d14_score
             + d15_score
             + d16_score
+            + d17_score
+            + d18_score
         )
-        / 16.0,
+        / 18.0,
         1,
     )
 
@@ -2143,6 +2231,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "groups": d16_groups,
                 "ui_wired": has_d16_ui,
             },
+            "D17_travel_route_and_gatekeeper_calculator": {
+                "score": d17_score,
+                "verified": reachable_pairs,
+                "target": target_pairs,
+                "starter_reachability": starter_reachability,
+                "ui_wired": has_d17_ui,
+            },
+            "D18_dungeon_room_inspector_and_telemetry": {
+                "score": d18_score,
+                "clickable_chambers": clickable_chambers,
+                "total_chambers": total_chambers,
+                "clickable_spawns": clickable_spawns,
+                "total_spawns": total_spawns,
+                "verified": clickable_chambers + clickable_spawns,
+                "target": total_chambers + total_spawns,
+                "telemetry_wired": has_d18_ui_and_telemetry,
+            },
         },
     }
 
@@ -2203,6 +2308,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D14 (Spawn & Spoil Matrix)  : {dims['D14_spawn_and_refinement_spoil_matrix']['score']}/100 ({dims['D14_spawn_and_refinement_spoil_matrix']['verified_dungeons']}/{dims['D14_spawn_and_refinement_spoil_matrix']['target_dungeons']} dungeons · {dims['D14_spawn_and_refinement_spoil_matrix']['verified_fields']}/{dims['D14_spawn_and_refinement_spoil_matrix']['target_fields']} fields)")
         print(f"  D15 (Archetype Raster Maps) : {dims['D15_archetype_raster_plates']['score']}/100 ({dims['D15_archetype_raster_plates']['verified']}/{dims['D15_archetype_raster_plates']['target']} raster plates)")
         print(f"  D16 (63-Zone Map Directory) : {dims['D16_unified_connected_map_directory']['score']}/100 ({dims['D16_unified_connected_map_directory']['verified']}/{dims['D16_unified_connected_map_directory']['target']} zones)")
+        print(f"  D17 (BFS Route Calculator)  : {dims['D17_travel_route_and_gatekeeper_calculator']['score']}/100 ({dims['D17_travel_route_and_gatekeeper_calculator']['verified']}/{dims['D17_travel_route_and_gatekeeper_calculator']['target']} starter->zone pairs)")
+        print(f"  D18 (Chamber & Telemetry)   : {dims['D18_dungeon_room_inspector_and_telemetry']['score']}/100 ({dims['D18_dungeon_room_inspector_and_telemetry']['clickable_chambers']}/{dims['D18_dungeon_room_inspector_and_telemetry']['total_chambers']} chambers · {dims['D18_dungeon_room_inspector_and_telemetry']['clickable_spawns']}/{dims['D18_dungeon_room_inspector_and_telemetry']['total_spawns']} spawns)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
