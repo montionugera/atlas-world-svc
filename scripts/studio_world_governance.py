@@ -736,6 +736,8 @@ def validate_world_governance(
                 "clanTreasuryPayrollLedgersCount": len(t_doc.get("clan_treasury_payroll_ledgers") or []),
                 "playerHousingTrophyEstatesCount": len(t_doc.get("player_housing_trophy_estates") or []),
                 "globalCdnWebrtcRelaysCount": len(t_doc.get("global_cdn_webrtc_relays") or []),
+                "caravanTradeRoutesCount": len(t_doc.get("caravan_trade_routes") or []),
+                "localizationVoiceoverBanksCount": len(t_doc.get("localization_voiceover_banks") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -2126,6 +2128,38 @@ def validate_world_governance(
                 if cr_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: global_cdn_webrtc_relays '{cr_id}' references unknown zone_id '{cr_zid}'"
+                    )
+
+            # Validate 16-Record Dynamic Caravan Trade Routes, Bandit Ambush Escorts & Regional Commodity Arbitrage Matrix (D97)
+            caravan_routes = t_doc.get("caravan_trade_routes") or []
+            if caravan_routes and len(caravan_routes) < 16:
+                errors.append(
+                    f"GOV-10 violation: caravan_trade_routes must have at least 16 records, got {len(caravan_routes)}"
+                )
+            for ct_item in caravan_routes:
+                if not isinstance(ct_item, dict):
+                    continue
+                ct_id = str(ct_item.get("caravan_id", ""))
+                ct_zid = str(ct_item.get("zone_id", ""))
+                if ct_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: caravan_trade_routes '{ct_id}' references unknown zone_id '{ct_zid}'"
+                    )
+
+            # Validate 15-Record Automated Localization Voice-Over (EN/TH/JP/KR), Lip-Sync Phoneme & Subtitle Timing Matrix (D98)
+            vo_banks = t_doc.get("localization_voiceover_banks") or []
+            if vo_banks and len(vo_banks) < 15:
+                errors.append(
+                    f"GOV-10 violation: localization_voiceover_banks must have at least 15 records, got {len(vo_banks)}"
+                )
+            for vb_item in vo_banks:
+                if not isinstance(vb_item, dict):
+                    continue
+                vb_id = str(vb_item.get("vo_bank_id", ""))
+                vb_zid = str(vb_item.get("zone_id", ""))
+                if vb_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: localization_voiceover_banks '{vb_id}' references unknown zone_id '{vb_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

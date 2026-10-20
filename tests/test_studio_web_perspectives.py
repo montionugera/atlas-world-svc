@@ -4101,7 +4101,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 96)
+        self.assertGreaterEqual(len(audit["dimensions"]), 96)
 
         d95 = audit["dimensions"]["D95_player_housing_citadel_customization_and_boss_trophy_matrix"]
         self.assertEqual(d95["score"], 100.0)
@@ -4175,10 +4175,125 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas96DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 96)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 96)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 96)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 96)
         self.assertIn("96-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave47_caravan_trade_routes_and_localization_voiceover_banks(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["caravanTradeRoutesCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["localizationVoiceoverBanksCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "CARAVAN_TRADE_ROUTES",
+            "LOCALIZATION_VO_BANKS",
+            "ATLAS_CARAVAN_ROUTES_MODE",
+            "ATLAS_LOCALIZATION_VO_MODE",
+            "setAtlasCaravanRoutesMode",
+            "setAtlasLocalizationVoMode",
+            "selectCaravanTradeRoute",
+            "selectLocalizationVoBank",
+            "renderAtlasCaravanRoutesBarHtml",
+            "renderAtlasLocalizationVoBarHtml",
+            "studioCaravanTradeRoutesOverlay",
+            "studioLocalizationVoBanksOverlay",
+            "🐪 Caravan Trade (16)",
+            "🎙️ VO & Lip-Sync (15)",
+            "98-Dimension Semantic-Zoom Atlas Score",
+            "D1–D98 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 47 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 98)
+
+        d97 = audit["dimensions"]["D97_dynamic_caravan_trade_routes_bandit_ambush_and_arbitrage_matrix"]
+        self.assertEqual(d97["score"], 100.0)
+        self.assertEqual(d97["verified"], 16)
+        self.assertEqual(d97["target"], 16)
+        self.assertTrue(d97["ui_wired"])
+
+        d98 = audit["dimensions"]["D98_automated_localization_voiceover_lipsync_and_subtitle_matrix"]
+        self.assertEqual(d98["score"], 100.0)
+        self.assertEqual(d98["verified"], 15)
+        self.assertEqual(d98["target"], 15)
+        self.assertTrue(d98["ui_wired"])
+
+        routes = atlas["caravan_trade_routes"]
+        self.assertEqual(len(routes), 16)
+        for c_row in routes:
+            self.assertIn(
+                c_row["route_category"],
+                {
+                    "Armored Bullion Wagon",
+                    "Pack-Strider Express",
+                    "Smuggler Night-Run",
+                    "Airship Bulk Charter",
+                },
+            )
+            self.assertIn(
+                c_row["specialty_commodity"],
+                {
+                    "Mithril Ingot Crates",
+                    "Dragonbone Relics",
+                    "Elven Starlight Elixir",
+                    "Volcanic Sulfur Barrels",
+                    "Ancient Adena Bullion",
+                },
+            )
+            self.assertEqual(c_row["bandit_ambush_tier"], "Low Risk 1-Star .. Extreme Risk 5-Star")
+            self.assertGreaterEqual(c_row["escort_guard_slots"], 2)
+            self.assertLessEqual(c_row["escort_guard_slots"], 12)
+            self.assertGreaterEqual(c_row["arbitrage_margin_pct"], 18.0)
+            self.assertLessEqual(c_row["arbitrage_margin_pct"], 65.0)
+            self.assertGreaterEqual(c_row["transit_duration_min"], 8)
+            self.assertLessEqual(c_row["transit_duration_min"], 35)
+
+        vo_banks = atlas["localization_voiceover_banks"]
+        self.assertEqual(len(vo_banks), 15)
+        for v_row in vo_banks:
+            self.assertIn(
+                v_row["dialect_register"],
+                {
+                    "Royal High Aden Court",
+                    "Archaic Elven Lyric",
+                    "Dwarven Forge Guild Slang",
+                    "Frontier Harbor Maritime",
+                    "Sacred Temple Liturgical",
+                },
+            )
+            self.assertEqual(v_row["supported_locales"], ["en-US", "th-TH", "ja-JP", "ko-KR"])
+            self.assertGreaterEqual(v_row["voiced_line_count"], 180)
+            self.assertLessEqual(v_row["voiced_line_count"], 950)
+            self.assertIn(
+                v_row["lipsync_viseme_solver"],
+                {
+                    "15-Viseme Oculus + Jaw-Bone Curve",
+                    "22-Phoneme Facial BlendShape",
+                    "Real-Time Opus Envelope Follower",
+                },
+            )
+            self.assertEqual(v_row["thai_line_break_validator"], "ICU Dictionary + Zero-Orphan Rule Pass")
+            self.assertGreaterEqual(v_row["opus_bank_size_mb"], 12.5)
+            self.assertLessEqual(v_row["opus_bank_size_mb"], 68.0)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas98DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 98)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 98)
+        self.assertIn("98-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

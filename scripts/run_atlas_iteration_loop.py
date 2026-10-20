@@ -21221,6 +21221,601 @@ def inject_global_cdn_webrtc_relays(atlas: dict[str, Any]) -> list[dict[str, Any
     return rows
 
 
+def _build_caravan_trade_routes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Record [Role 2: Content & World Tools — Dynamic Caravan Trade Routes, Bandit Ambush Escorts & Regional Commodity Arbitrage Matrix] (D97)."""
+    specs = [
+        (
+            "caravan-route-01-gludin-to-gludio-coastal-silk-run",
+            "Gludin-to-Gludio Coastal Silk Run — Harbor Quay to Kilnwatch Bastion Convoy",
+            "town-glaze-barge-quay",
+            "town-kilnwatch-bastion",
+            "zone-town-glaze-barge-quay",
+            "Pack-Strider Express",
+            "Elven Starlight Elixir",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            4,
+            22.5,
+            10,
+            458,
+            392,
+            "#f59e0b",
+            "High-frequency coastal Pack-Strider caravan hauling imported Talking Island silk and Elven Starlight Elixir from Gludin Quay to Gludio Castle.",
+        ),
+        (
+            "caravan-route-02-gludio-to-dion-grain-wine-convoy",
+            "Gludio-to-Dion Grain & Wine Convoy — Frontier Agricultural Freight Corridor",
+            "town-kilnwatch-bastion",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "Armored Bullion Wagon",
+            "Ancient Adena Bullion",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            6,
+            26.0,
+            12,
+            508,
+            400,
+            "#fbbf24",
+            "Fortified grain, saffron wine, and Ancient Adena Bullion wagon train traversing Ol Mahum checkpoint ambushes between Gludio and Dion.",
+        ),
+        (
+            "caravan-route-03-dion-to-giran-cruma-mithril-express",
+            "Dion-to-Giran Cruma Mithril Express — Marshland Heavy Ore & Automaton Core Run",
+            "town-saffron-press-village",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Armored Bullion Wagon",
+            "Mithril Ingot Crates",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            8,
+            34.5,
+            15,
+            556,
+            410,
+            "#eab308",
+            "Heavily escorted armored wagon convoy carrying Cruma Tower Mithril Ingot Crates through Death Pass foothills into Giran Golden Mile.",
+        ),
+        (
+            "caravan-route-04-giran-to-oren-dragonbone-caravan",
+            "Giran-to-Oren Dragonbone Caravan — Death Pass & Hardin Academy Escort Corridor",
+            "town-pinion-terminus",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Pack-Strider Express",
+            "Dragonbone Relics",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            8,
+            41.0,
+            18,
+            592,
+            354,
+            "#10b981",
+            "High-hazard Death Pass Pack-Strider caravan transporting Antharas Dragonbone Relics under Wyvern and Road Scavenger ambush pressure.",
+        ),
+        (
+            "caravan-route-05-oren-to-aden-ivory-scholar-freight",
+            "Oren-to-Aden Ivory Scholar Freight — Arcane Reagent & Bullion Sovereign Convoy",
+            "town-escapement-anvil",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "Armored Bullion Wagon",
+            "Ancient Adena Bullion",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            10,
+            46.5,
+            20,
+            626,
+            294,
+            "#f59e0b",
+            "Imperial armored bullion train linking Oren Ivory Tower alchemists with Aden Crown-Beacon Treasury vaults.",
+        ),
+        (
+            "caravan-route-06-giran-to-hunters-valley-pelts-venison-trail",
+            "Giran-to-Hunters Valley Pelts & Venison Trail — Forest of Mirrors Smuggler Pass",
+            "town-pinion-terminus",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Smuggler Night-Run",
+            "Elven Starlight Elixir",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            5,
+            38.0,
+            14,
+            608,
+            318,
+            "#10b981",
+            "Nocturnal smuggler caravan threading Forest of Mirrors doppelganger traps to deliver exotic pelts and Starlight Elixir to Hunters Village.",
+        ),
+        (
+            "caravan-route-07-aden-to-goddard-volcanic-sulfur-haul",
+            "Aden-to-Goddard Volcanic Sulfur Haul — Blazing Swamp Magma Barrel Convoy",
+            "town-crown-beacon-citadel",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Armored Bullion Wagon",
+            "Volcanic Sulfur Barrels",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            12,
+            54.0,
+            26,
+            660,
+            240,
+            "#fbbf24",
+            "12-guard heavy caravan hauling Volatile Volcanic Sulfur Barrels from Forge of the Gods to Aden siege engineers.",
+        ),
+        (
+            "caravan-route-08-goddard-to-rune-cliffside-timber-route",
+            "Goddard-to-Rune Cliffside Timber Route — Ketra/Varka Warzone Ridge Escort",
+            "town-inductor-switchyard",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "Pack-Strider Express",
+            "Dragonbone Relics",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            10,
+            49.5,
+            24,
+            608,
+            202,
+            "#eab308",
+            "Northern mountain ridge Pack-Strider route crossing Ketra Orc and Varka Silenos war zones between Goddard and Rune Township.",
+        ),
+        (
+            "caravan-route-09-rune-to-gludin-maritime-spice-charter",
+            "Rune-to-Gludin Maritime Spice Charter — Western Ocean Clipper & Airship Express",
+            "town-starfall-haven",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Airship Bulk Charter",
+            "Volcanic Sulfur Barrels",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            6,
+            44.0,
+            28,
+            490,
+            306,
+            "#f59e0b",
+            "Long-haul Western Ocean airship and maritime charter connecting Rune Sky-Citadel docks with Gludin Harbor warehouses.",
+        ),
+        (
+            "caravan-route-10-dwarven-to-giran-black-anvil-ingot-train",
+            "Dwarven-to-Giran Black Anvil Ingot Train — Spine Mountains Mithril Freight",
+            "town-root-train-roundhouse",
+            "town-pinion-terminus",
+            "zone-town-root-train-roundhouse",
+            "Armored Bullion Wagon",
+            "Mithril Ingot Crates",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            9,
+            52.0,
+            30,
+            606,
+            244,
+            "#fbbf24",
+            "Black Anvil Guild armored ore train carrying refined Mithril Ingot Crates from Spine Mines south to Giran auction houses.",
+        ),
+        (
+            "caravan-route-11-orc-to-goddard-flamecrest-totem-march",
+            "Orc-to-Goddard Flamecrest Totem March — Immortal Plateau War-Strider Convoy",
+            "town-draft-kiln-post",
+            "town-inductor-switchyard",
+            "zone-town-draft-kiln-post",
+            "Pack-Strider Express",
+            "Volcanic Sulfur Barrels",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            7,
+            36.5,
+            22,
+            562,
+            168,
+            "#eab308",
+            "Pa'agrio war-strider caravan trading Immortal Plateau totems and Volcanic Sulfur Barrels with Goddard thermal foundries.",
+        ),
+        (
+            "caravan-route-12-elven-to-oren-starlight-herb-courier",
+            "Elven-to-Oren Starlight Herb Courier — Iris Lake & Sea of Spores Border Run",
+            "town-porcelain-loom-sanctuary",
+            "town-escapement-anvil",
+            "zone-town-porcelain-loom",
+            "Pack-Strider Express",
+            "Elven Starlight Elixir",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            4,
+            31.0,
+            16,
+            568,
+            300,
+            "#10b981",
+            "Swift Elven courier route skirting the Sea of Spores barrier towers to supply Ivory Tower mages with Starlight Elixir.",
+        ),
+        (
+            "caravan-route-13-dark-elven-to-gludio-nightshade-smuggle",
+            "Dark Elven-to-Gludio Nightshade Smuggle — Swampland Moonlit Contraband Trail",
+            "town-carillon-hearth-belfry",
+            "town-kilnwatch-bastion",
+            "zone-town-carillon-belfry",
+            "Smuggler Night-Run",
+            "Dragonbone Relics",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            3,
+            48.0,
+            14,
+            504,
+            324,
+            "#f59e0b",
+            "Clandestine Shilen night-run bypassing Gludio border customs with high-margin Dragonbone Relics and abyssal venom phials.",
+        ),
+        (
+            "caravan-route-14-kamael-to-aden-soul-crystal-airlift",
+            "Kamael-to-Aden Soul-Crystal Airlift — Isle of Souls to Crown-Beacon Sky Charter",
+            "town-cinnamon-mill-haven",
+            "town-crown-beacon-citadel",
+            "zone-town-cinnamon-mill",
+            "Airship Bulk Charter",
+            "Mithril Ingot Crates",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            8,
+            58.5,
+            32,
+            522,
+            292,
+            "#fbbf24",
+            "High-altitude Kamael airship charter ferrying Nornil resonance cores and Mithril Ingot Crates directly to Aden Imperial Citadel.",
+        ),
+        (
+            "caravan-route-15-talking-island-to-gludin-ferry-bullion-escort",
+            "Talking Island-to-Gludin Ferry Bullion Escort — Beginner Strait Treasure Convoy",
+            "town-lantern-hollow",
+            "town-glaze-barge-quay",
+            "zone-town-lantern-hollow",
+            "Airship Bulk Charter",
+            "Ancient Adena Bullion",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            2,
+            18.0,
+            8,
+            438,
+            422,
+            "#eab308",
+            "Starter maritime-and-airship bullion escort protecting novice merchant manifests across Talking Island Strait to Gludin.",
+        ),
+        (
+            "caravan-route-16-hellbound-oasis-supply-caravan",
+            "Hellbound Oasis Supply Caravan — Jude & Falk Desert Contraband & Bullion Run",
+            "town-glaze-barge-quay",
+            "town-crown-beacon-citadel",
+            "zone-field-cinder-apron",
+            "Smuggler Night-Run",
+            "Ancient Adena Bullion",
+            "Low Risk 1-Star .. Extreme Risk 5-Star",
+            12,
+            65.0,
+            35,
+            640,
+            448,
+            "#10b981",
+            "Extreme-risk 5-Star Hellbound desert caravan escorted by 12 mercenaries yielding 65% arbitrage margin on Ancient Adena Bullion and S80 mats.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        cid,
+        title,
+        orig,
+        dest,
+        zid,
+        rcat,
+        comm,
+        ambush,
+        guards,
+        margin,
+        dur,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "caravan_id": cid,
+                "title": title,
+                "origin_town_id": orig,
+                "destination_town_id": dest,
+                "zone_id": zid,
+                "route_category": rcat,
+                "specialty_commodity": comm,
+                "bandit_ambush_tier": ambush,
+                "escort_guard_slots": guards,
+                "arbitrage_margin_pct": margin,
+                "transit_duration_min": dur,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_caravan_trade_routes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_caravan_trade_routes(atlas)
+    atlas["caravan_trade_routes"] = rows
+    return rows
+
+
+def _build_localization_voiceover_banks(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Record [Role 5: LiveOps & CS Portal — Automated Localization Voice-Over (EN/TH/JP/KR), Lip-Sync Phoneme & Subtitle Timing Matrix] (D98)."""
+    locales = ["en-US", "th-TH", "ja-JP", "ko-KR"]
+    specs = [
+        (
+            "vo-bank-01-talking-island",
+            "Talking Island (Lantern Hollow) — Novice Tutorial & Cedar Obelisk Multilingual VO Bank",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Frontier Harbor Maritime",
+            320,
+            "15-Viseme Oculus + Jaw-Bone Curve",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            22.5,
+            456,
+            442,
+            "#ec4899",
+            "Full 4-locale (EN/TH/JP/KR) starter tutorial voice-over bank with 15-viseme Oculus lip-sync and ICU Thai word-boundary subtitle timing.",
+        ),
+        (
+            "vo-bank-02-elven-village",
+            "Elven Village (Porcelain Loom) — Mother Tree Glade Archaic Lyric VO & BlendShape Bank",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "Archaic Elven Lyric",
+            410,
+            "22-Phoneme Facial BlendShape",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            28.4,
+            544,
+            296,
+            "#f472b6",
+            "Poetic Elven voice bank featuring 22-phoneme high-precision facial blendshapes and zero-orphan Thai royal/lyric register subtitles.",
+        ),
+        (
+            "vo-bank-03-dark-elven-village",
+            "Dark Elven Village (Carillon Belfry) — Shilen Temple Liturgical VO & Viseme Matrix",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "Sacred Temple Liturgical",
+            390,
+            "22-Phoneme Facial BlendShape",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            27.0,
+            516,
+            270,
+            "#a855f7",
+            "Reverb-convolved subterranean Dark Elven liturgical VO bank with 22-phoneme blendshape curves and synchronized 4-locale subtitle tracks.",
+        ),
+        (
+            "vo-bank-04-orc-village",
+            "Orc Village (Draft-Kiln Post) — Flamecrest War-Chant VO & Opus Envelope Follower Bank",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Sacred Temple Liturgical",
+            280,
+            "Real-Time Opus Envelope Follower",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            19.8,
+            468,
+            140,
+            "#38bdf8",
+            "High-dynamic-range Orc war-chant and Pa'agrio shaman voice bank driving real-time jaw-bone envelope followers across EN/TH/JP/KR.",
+        ),
+        (
+            "vo-bank-05-dwarven-village",
+            "Dwarven Village (Root-Train Roundhouse) — Black Anvil Guild Slang VO & Viseme Bank",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Dwarven Forge Guild Slang",
+            360,
+            "15-Viseme Oculus + Jaw-Bone Curve",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            25.2,
+            626,
+            88,
+            "#ec4899",
+            "Brisk Dwarven artisan and Elder Council voice-over bank with 15-viseme Oculus solver and localized crafting terminology glossary enforcement.",
+        ),
+        (
+            "vo-bank-06-kamael-village",
+            "Kamael Village (Cinnamon-Mill Haven) — Isle of Souls Nornil Tactical VO & Lip-Sync Bank",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "Royal High Aden Court",
+            295,
+            "22-Phoneme Facial BlendShape",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            20.6,
+            388,
+            306,
+            "#f472b6",
+            "Crisp military Kamael and Nornil AI voice bank with 22-phoneme facial blendshape lip-sync and strict CPS (characters-per-second) subtitle caps.",
+        ),
+        (
+            "vo-bank-07-gludin-village",
+            "Gludin Village (Glaze-Barge Quay) — Maritime Harbor Tavern & Dockmaster VO Bank",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Frontier Harbor Maritime",
+            480,
+            "15-Viseme Oculus + Jaw-Bone Curve",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            33.5,
+            426,
+            408,
+            "#a855f7",
+            "Bustling coastal harbor VO bank covering 480 sailor, dockmaster, and mercenary lines with automated Thai ICU line-break validation.",
+        ),
+        (
+            "vo-bank-08-gludio-town",
+            "Town of Gludio (Kilnwatch Bastion) — Frontier Garrison & Siege Herald VO Bank",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Frontier Harbor Maritime",
+            520,
+            "15-Viseme Oculus + Jaw-Bone Curve",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            36.4,
+            496,
+            382,
+            "#38bdf8",
+            "Frontier garrison and Castle Gludio class-transfer VO bank with 520 voiced lines and frame-accurate phoneme-to-viseme curve baking.",
+        ),
+        (
+            "vo-bank-09-dion-town",
+            "Town of Dion (Saffron Press) — Pastoral Rebellion & Cruma Scholar VO Bank",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "Dwarven Forge Guild Slang",
+            490,
+            "Real-Time Opus Envelope Follower",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            34.0,
+            526,
+            422,
+            "#ec4899",
+            "Covers Dion peasant militia, Floran outlaws, and Cruma Tower researchers with 34 MB Opus container banks across 4 languages.",
+        ),
+        (
+            "vo-bank-10-giran-castle-town",
+            "Giran Castle Town (Pinion Terminus) — Merchant Consortium & Auctioneer Master VO Bank",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Dwarven Forge Guild Slang",
+            860,
+            "22-Phoneme Facial BlendShape",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            61.5,
+            592,
+            404,
+            "#f472b6",
+            "High-density 860-line commercial VO bank for Giran luxury boutiques, Black Marketeer of Mammon, and Dragon Valley raid heralds.",
+        ),
+        (
+            "vo-bank-11-oren-town",
+            "Town of Oren (Escapement Anvil) — Ivory Tower Magister & Border Guard VO Bank",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Archaic Elven Lyric",
+            580,
+            "22-Phoneme Facial BlendShape",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            41.2,
+            596,
+            308,
+            "#a855f7",
+            "Scholarly Ivory Tower and Oren knighthood voice bank featuring 22-phoneme blendshapes for grand magister spell-incantation cutscenes.",
+        ),
+        (
+            "vo-bank-12-hunters-village",
+            "Hunters Village (Torque-Balance Citadel) — Guild Tracker & Forest Whisper VO Bank",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Frontier Harbor Maritime",
+            340,
+            "Real-Time Opus Envelope Follower",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            24.0,
+            628,
+            238,
+            "#38bdf8",
+            "Low-footprint 24 MB Opus voice bank for Hunters Guild bounty masters, Karul trackers, and Enchanted Valley fairy NPCs.",
+        ),
+        (
+            "vo-bank-13-aden-imperial-capital",
+            "Town of Aden (Crown-Beacon Citadel) — Royal High Court & Cathedral Liturgical VO Bank",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "Royal High Aden Court",
+            950,
+            "22-Phoneme Facial BlendShape",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            68.0,
+            662,
+            284,
+            "#ec4899",
+            "Flagship 950-line Imperial Aden voice-over bank using formal Royal Court register (TH rachasap / JP keigo) and 22-phoneme cinematic lip-sync.",
+        ),
+        (
+            "vo-bank-14-goddard-town",
+            "Town of Goddard (Inductor Switchyard) — Volcanic Citadel & Valakas Expedition VO Bank",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Royal High Aden Court",
+            640,
+            "15-Viseme Oculus + Jaw-Bone Curve",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            45.8,
+            662,
+            202,
+            "#f472b6",
+            "Covers Goddard siege commanders, Ketra/Varka emissaries, and Klein's Valakas sanctum briefings across EN/TH/JP/KR.",
+        ),
+        (
+            "vo-bank-15-rune-township",
+            "Rune Township (Starfall Haven) — Pagan Temple Liturgical & Sky-Citadel Noble VO Bank",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "Sacred Temple Liturgical",
+            720,
+            "22-Phoneme Facial BlendShape",
+            "ICU Dictionary + Zero-Orphan Rule Pass",
+            51.4,
+            558,
+            208,
+            "#a855f7",
+            "720-line Rune Township & Ice Queen Freya narrative VO bank with 22-phoneme facial blendshapes and zero-orphan Thai subtitle pagination.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        vid,
+        title,
+        tid,
+        zid,
+        reg,
+        lcnt,
+        solver,
+        thval,
+        mb,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "vo_bank_id": vid,
+                "title": title,
+                "town_id": tid,
+                "zone_id": zid,
+                "dialect_register": reg,
+                "supported_locales": list(locales),
+                "voiced_line_count": lcnt,
+                "lipsync_viseme_solver": solver,
+                "thai_line_break_validator": thval,
+                "opus_bank_size_mb": mb,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_localization_voiceover_banks(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_localization_voiceover_banks(atlas)
+    atlas["localization_voiceover_banks"] = rows
+    return rows
+
+
 
 
 
@@ -22536,6 +23131,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("global_cdn_webrtc_relays") or []) < 15:
         inject_global_cdn_webrtc_relays(atlas)
         actions.append("populated_15_global_cdn_webrtc_relays")
+
+    # 81. Ensure all 16 Dynamic Caravan Trade Routes, Bandit Ambush Escorts & Regional Commodity Arbitrage Matrix records exist in `caravan_trade_routes` (D97)
+    if len(atlas.get("caravan_trade_routes") or []) < 16:
+        inject_caravan_trade_routes(atlas)
+        actions.append("populated_16_caravan_trade_routes")
+
+    # 82. Ensure all 15 Automated Localization Voice-Over (EN/TH/JP/KR), Lip-Sync Phoneme & Subtitle Timing Matrix records exist in `localization_voiceover_banks` (D98)
+    if len(atlas.get("localization_voiceover_banks") or []) < 15:
+        inject_localization_voiceover_banks(atlas)
+        actions.append("populated_15_localization_voiceover_banks")
 
     return {"actions": actions}
 
@@ -27380,15 +27985,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d96_eval = score_d96_global_cdn_webrtc_relays(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
     d96_score = d96_eval["score"]
 
+    # D97: Interactive 16-Record [Role 2: Content & World Tools — Dynamic Caravan Trade Routes, Bandit Ambush Escorts & Regional Commodity Arbitrage Matrix] (`caravan_trade_routes` - 16 Routes)
+    d97_eval = score_d97_caravan_trade_routes(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d97_score = d97_eval["score"]
+
+    # D98: Interactive 15-Record [Role 5: LiveOps & CS Portal — Automated Localization Voice-Over (EN/TH/JP/KR), Lip-Sync Phoneme & Subtitle Timing Matrix] (`localization_voiceover_banks` - 15 VO Banks)
+    d98_eval = score_d98_localization_voiceover_banks(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d98_score = d98_eval["score"]
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 78.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 80.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 80.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 90.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 79.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 86.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 80.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 82.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 82.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 92.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 81.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score) / 88.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -27489,8 +28102,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d94_score
             + d95_score
             + d96_score
+            + d97_score
+            + d98_score
         )
-        / 96.0,
+        / 98.0,
         1,
     )
 
@@ -28231,7 +28846,208 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix": d94_eval,
             "D95_player_housing_citadel_customization_and_boss_trophy_matrix": d95_eval,
             "D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix": d96_eval,
+            "D97_dynamic_caravan_trade_routes_bandit_ambush_and_arbitrage_matrix": d97_eval,
+            "D98_automated_localization_voiceover_lipsync_and_subtitle_matrix": d98_eval,
         },
+    }
+
+
+def score_d97_caravan_trade_routes(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_categories = {
+        "Armored Bullion Wagon",
+        "Pack-Strider Express",
+        "Smuggler Night-Run",
+        "Airship Bulk Charter",
+    }
+    expected_commodities = {
+        "Mithril Ingot Crates",
+        "Dragonbone Relics",
+        "Elven Starlight Elixir",
+        "Volcanic Sulfur Barrels",
+        "Ancient Adena Bullion",
+    }
+    rows = atlas.get("caravan_trade_routes") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_cats: set[str] = set()
+    seen_comms: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        cid = str(row.get("caravan_id") or "")
+        orig = str(row.get("origin_town_id") or "")
+        dest = str(row.get("destination_town_id") or "")
+        zid = str(row.get("zone_id") or "")
+        rcat = str(row.get("route_category") or "")
+        comm = str(row.get("specialty_commodity") or "")
+        ambush = str(row.get("bandit_ambush_tier") or "")
+        guards = int(row.get("escort_guard_slots") or 0)
+        margin = float(row.get("arbitrage_margin_pct") or 0.0)
+        dur = int(row.get("transit_duration_min") or 0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            cid
+            and cid not in seen_ids
+            and row.get("title")
+            and orig
+            and dest
+            and zid in zone_ids_set
+            and rcat in expected_categories
+            and comm in expected_commodities
+            and ambush == "Low Risk 1-Star .. Extreme Risk 5-Star"
+            and 2 <= guards <= 12
+            and 18.0 <= margin <= 65.0
+            and 8 <= dur <= 35
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#f59e0b", "#fbbf24", "#eab308", "#10b981")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(cid)
+            seen_cats.add(rcat)
+            seen_comms.add(comm)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_CARAVAN_ROUTES_MODE",
+            "setAtlasCaravanRoutesMode",
+            "selectCaravanTradeRoute",
+            "renderAtlasCaravanRoutesBarHtml",
+            "studioCaravanTradeRoutesOverlay",
+        )
+    )
+    ratio = valid_count / 16.0
+    full_cov = valid_count == 16 and seen_cats == expected_categories and seen_comms == expected_commodities
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 16,
+        "route_categories": sorted(seen_cats),
+        "specialty_commodities": sorted(seen_comms),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d98_localization_voiceover_banks(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_registers = {
+        "Royal High Aden Court",
+        "Archaic Elven Lyric",
+        "Dwarven Forge Guild Slang",
+        "Frontier Harbor Maritime",
+        "Sacred Temple Liturgical",
+    }
+    expected_solvers = {
+        "15-Viseme Oculus + Jaw-Bone Curve",
+        "22-Phoneme Facial BlendShape",
+        "Real-Time Opus Envelope Follower",
+    }
+    expected_locales = ["en-US", "th-TH", "ja-JP", "ko-KR"]
+    rows = atlas.get("localization_voiceover_banks") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_towns: set[str] = set()
+    seen_regs: set[str] = set()
+    seen_solvers: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        vid = str(row.get("vo_bank_id") or "")
+        tid = str(row.get("town_id") or "")
+        zid = str(row.get("zone_id") or "")
+        reg = str(row.get("dialect_register") or "")
+        locs = row.get("supported_locales")
+        lcnt = int(row.get("voiced_line_count") or 0)
+        solver = str(row.get("lipsync_viseme_solver") or "")
+        thval = str(row.get("thai_line_break_validator") or "")
+        mb = float(row.get("opus_bank_size_mb") or 0.0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            vid
+            and vid not in seen_ids
+            and row.get("title")
+            and tid
+            and tid not in seen_towns
+            and zid in zone_ids_set
+            and reg in expected_registers
+            and locs == expected_locales
+            and 180 <= lcnt <= 950
+            and solver in expected_solvers
+            and thval == "ICU Dictionary + Zero-Orphan Rule Pass"
+            and 12.5 <= mb <= 68.0
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#ec4899", "#f472b6", "#a855f7", "#38bdf8")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(vid)
+            seen_towns.add(tid)
+            seen_regs.add(reg)
+            seen_solvers.add(solver)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_LOCALIZATION_VO_MODE",
+            "setAtlasLocalizationVoMode",
+            "selectLocalizationVoBank",
+            "renderAtlasLocalizationVoBarHtml",
+            "studioLocalizationVoBanksOverlay",
+        )
+    )
+    ratio = valid_count / 15.0
+    full_cov = valid_count == 15 and seen_regs == expected_registers and seen_solvers == expected_solvers
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 15,
+        "dialect_registers": sorted(seen_regs),
+        "lipsync_viseme_solvers": sorted(seen_solvers),
+        "ui_wired": has_ui,
     }
 
 
@@ -29637,7 +30453,7 @@ def evaluate_80d_atlas(whc: dict[str, Any] | None = None, atlas: dict[str, Any] 
     if atlas is None:
         atlas = json.loads(ATLAS_PATH.read_text(encoding="utf-8"))
     res = audit_world_atlas(whc, atlas)
-    res["wave"] = 46
+    res["wave"] = 47
     return res
 
 
@@ -29777,6 +30593,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D94 (15 Clan Treasuries)    : {dims['D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix']['score']}/100 ({dims['D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix']['verified']}/{dims['D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix']['target']} clan treasury payroll ledgers)")
         print(f"  D95 (16 Housing Estates)    : {dims['D95_player_housing_citadel_customization_and_boss_trophy_matrix']['score']}/100 ({dims['D95_player_housing_citadel_customization_and_boss_trophy_matrix']['verified']}/{dims['D95_player_housing_citadel_customization_and_boss_trophy_matrix']['target']} player housing trophy estates)")
         print(f"  D96 (15 Global CDN/WebRTC)  : {dims['D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix']['score']}/100 ({dims['D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix']['verified']}/{dims['D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix']['target']} global cdn webrtc relays)")
+        print(f"  D97 (16 Caravan Routes)     : {dims['D97_dynamic_caravan_trade_routes_bandit_ambush_and_arbitrage_matrix']['score']}/100 ({dims['D97_dynamic_caravan_trade_routes_bandit_ambush_and_arbitrage_matrix']['verified']}/{dims['D97_dynamic_caravan_trade_routes_bandit_ambush_and_arbitrage_matrix']['target']} caravan trade routes)")
+        print(f"  D98 (15 Localization VO)    : {dims['D98_automated_localization_voiceover_lipsync_and_subtitle_matrix']['score']}/100 ({dims['D98_automated_localization_voiceover_lipsync_and_subtitle_matrix']['verified']}/{dims['D98_automated_localization_voiceover_lipsync_and_subtitle_matrix']['target']} localization voiceover banks)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

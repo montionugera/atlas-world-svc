@@ -491,6 +491,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/globalCdnWebrtcRelaySpec" }
     },
+    "caravan_trade_routes": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/caravanTradeRouteSpec" }
+    },
+    "localization_voiceover_banks": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/localizationVoiceoverBankSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -5623,6 +5635,169 @@
         "accent": {
           "type": "string",
           "enum": ["#38bdf8", "#60a5fa", "#818cf8", "#2dd4bf"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "caravanTradeRouteSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caravan_id",
+        "title",
+        "origin_town_id",
+        "destination_town_id",
+        "zone_id",
+        "route_category",
+        "specialty_commodity",
+        "bandit_ambush_tier",
+        "escort_guard_slots",
+        "arbitrage_margin_pct",
+        "transit_duration_min",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "caravan_id": { "type": "string" },
+        "title": { "type": "string" },
+        "origin_town_id": { "type": "string" },
+        "destination_town_id": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "route_category": {
+          "type": "string",
+          "enum": [
+            "Armored Bullion Wagon",
+            "Pack-Strider Express",
+            "Smuggler Night-Run",
+            "Airship Bulk Charter"
+          ]
+        },
+        "specialty_commodity": {
+          "type": "string",
+          "enum": [
+            "Mithril Ingot Crates",
+            "Dragonbone Relics",
+            "Elven Starlight Elixir",
+            "Volcanic Sulfur Barrels",
+            "Ancient Adena Bullion"
+          ]
+        },
+        "bandit_ambush_tier": {
+          "type": "string",
+          "const": "Low Risk 1-Star .. Extreme Risk 5-Star"
+        },
+        "escort_guard_slots": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 12
+        },
+        "arbitrage_margin_pct": {
+          "type": "number",
+          "minimum": 18.0,
+          "maximum": 65.0
+        },
+        "transit_duration_min": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 35
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#f59e0b", "#fbbf24", "#eab308", "#10b981"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "localizationVoiceoverBankSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "vo_bank_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "dialect_register",
+        "supported_locales",
+        "voiced_line_count",
+        "lipsync_viseme_solver",
+        "thai_line_break_validator",
+        "opus_bank_size_mb",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "vo_bank_id": { "type": "string" },
+        "title": { "type": "string" },
+        "town_id": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "dialect_register": {
+          "type": "string",
+          "enum": [
+            "Royal High Aden Court",
+            "Archaic Elven Lyric",
+            "Dwarven Forge Guild Slang",
+            "Frontier Harbor Maritime",
+            "Sacred Temple Liturgical"
+          ]
+        },
+        "supported_locales": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "string",
+            "enum": ["en-US", "th-TH", "ja-JP", "ko-KR"]
+          }
+        },
+        "voiced_line_count": {
+          "type": "integer",
+          "minimum": 180,
+          "maximum": 950
+        },
+        "lipsync_viseme_solver": {
+          "type": "string",
+          "enum": [
+            "15-Viseme Oculus + Jaw-Bone Curve",
+            "22-Phoneme Facial BlendShape",
+            "Real-Time Opus Envelope Follower"
+          ]
+        },
+        "thai_line_break_validator": {
+          "type": "string",
+          "const": "ICU Dictionary + Zero-Orphan Rule Pass"
+        },
+        "opus_bank_size_mb": {
+          "type": "number",
+          "minimum": 12.5,
+          "maximum": 68.0
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#ec4899", "#f472b6", "#a855f7", "#38bdf8"]
         },
         "notes": { "type": "string" }
       }

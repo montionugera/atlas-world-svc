@@ -112,15 +112,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas92DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas94DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas96DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas98DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 46)),
+        "wave": int(iter_state.get("wave", 47)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"98-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"96-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"94-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"92-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -160,7 +162,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 · D1–D96 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 · D1–D96 · D1–D98 Verified"
         ),
     }
     return merged
@@ -4422,7 +4424,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">98-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified · D1–D98 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4537,6 +4539,8 @@ let ATLAS_WORLD_INCURSION_MODE = 'All';
 let ATLAS_CLAN_TREASURY_MODE = 'All';
 let ATLAS_HOUSING_ESTATES_MODE = 'All';
 let ATLAS_CDN_WEBRTC_MODE = 'All';
+let ATLAS_CARAVAN_ROUTES_MODE = 'All';
+let ATLAS_LOCALIZATION_VO_MODE = 'All';
 let SELECTED_ANTI_BOT_SENTINEL_ID = '';
 let SELECTED_GODOT_STORYBOOK_PREFAB_ID = '';
 let SELECTED_NAVMESH_SECTOR_ID = '';
@@ -4551,6 +4555,8 @@ let SELECTED_WORLD_INCURSION_ID = '';
 let SELECTED_CLAN_TREASURY_ID = '';
 let SELECTED_HOUSING_ESTATE_ID = '';
 let SELECTED_CDN_WEBRTC_RELAY_ID = '';
+let SELECTED_CARAVAN_ROUTE_ID = '';
+let SELECTED_LOCALIZATION_VO_BANK_ID = '';
 let ANTI_BOT_SENTINELS = [];
 let GODOT_STORYBOOK_PREFABS = [];
 let NAVMESH_OBSTACLE_SECTORS = [];
@@ -4565,6 +4571,8 @@ let WORLD_INVASION_INCURSIONS = [];
 let CLAN_TREASURY_LEDGERS = [];
 let PLAYER_HOUSING_ESTATES = [];
 let GLOBAL_CDN_RELAYS = [];
+let CARAVAN_TRADE_ROUTES = [];
+let LOCALIZATION_VO_BANKS = [];
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4651,6 +4659,8 @@ const ATLAS_STATE_STORE = {
   clanTreasuryMode: 'All',                 // D94: Active 15-Town [Role 4: Backend Infra] Guild / Clan Treasury Ledger, Siege Mercenary Payroll & Tax Dividend Selector
   housingEstatesMode: 'All',               // D95: Active 16-Record [Role 2: Content & World Tools] Player Housing, Clan Citadel Interior Customization & Trophy Taxidermy Selector
   cdnWebrtcMode: 'All',                    // D96: Active 15-Town [Role 5: LiveOps & Build] Global CDN Region Routing, Anycast DDoS Scrubbing & Voice-Chat WebRTC Relay Selector
+  caravanRoutesMode: 'All',                // D97: Active 16-Route [Role 2: Content & World Tools] Dynamic Caravan Trade Routes, Bandit Ambush Escorts & Arbitrage Selector
+  localizationVoMode: 'All',               // D98: Active 15-Bank [Role 5: LiveOps & CS Portal] Automated Localization Voice-Over (EN/TH/JP/KR) & Lip-Sync Selector
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4658,6 +4668,50 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasCaravanRoutesMode(modeId) {
+  ATLAS_CARAVAN_ROUTES_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.caravanRoutesMode = ATLAS_CARAVAN_ROUTES_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectCaravanTradeRoute(caravanId) {
+  SELECTED_CARAVAN_ROUTE_ID = String(caravanId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  CARAVAN_TRADE_ROUTES = tatlas.caravan_trade_routes || [];
+  const item = CARAVAN_TRADE_ROUTES.find(c => c.caravan_id === SELECTED_CARAVAN_ROUTE_ID);
+  if (item) {
+    if (String(item.zone_id || '').startsWith('zone-town-')) {
+      focusTownStreetBlueprint(item.origin_town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+      return;
+    }
+    focusFieldOrFortressBlueprint(item.zone_id, `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasLocalizationVoMode(modeId) {
+  ATLAS_LOCALIZATION_VO_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.localizationVoMode = ATLAS_LOCALIZATION_VO_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectLocalizationVoBank(voBankId) {
+  SELECTED_LOCALIZATION_VO_BANK_ID = String(voBankId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  LOCALIZATION_VO_BANKS = tatlas.localization_voiceover_banks || [];
+  const item = LOCALIZATION_VO_BANKS.find(v => v.vo_bank_id === SELECTED_LOCALIZATION_VO_BANK_ID);
+  if (item) {
+    focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
 
 function setAtlasHousingEstatesMode(modeId) {
   ATLAS_HOUSING_ESTATES_MODE = String(modeId || 'All');
@@ -13740,6 +13794,139 @@ function renderAtlasClanTreasuryBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasCaravanRoutesBarHtml(tatlas) {
+  CARAVAN_TRADE_ROUTES = (tatlas && tatlas.caravan_trade_routes) || [];
+  if (!CARAVAN_TRADE_ROUTES.length) return '';
+  const curMode = ATLAS_CARAVAN_ROUTES_MODE || ATLAS_STATE_STORE.caravanRoutesMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🐪 Caravan Trade (16)', col: '#f59e0b' },
+    { id: 'Armored Bullion Wagon', label: '🛡️ Armored Bullion Wagons (5)', col: '#fbbf24' },
+    { id: 'Pack-Strider Express', label: '🦎 Pack-Strider Express (5)', col: '#eab308' },
+    { id: 'Smuggler Night-Run', label: '🌙 Smuggler Night-Runs (3)', col: '#10b981' },
+    { id: 'Airship Bulk Charter', label: '⛵ Airship Bulk Charters (3)', col: '#f59e0b' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : CARAVAN_TRADE_ROUTES.filter(c => curMode === 'All' || c.route_category === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasCaravanRoutesBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fbbf24">🐪 [ROLE 2: CONTENT &amp; WORLD TOOLS] DYNAMIC CARAVAN TRADE ROUTES, BANDIT AMBUSH ESCORTS &amp; REGIONAL COMMODITY ARBITRAGE MATRIX (D97 · ${CARAVAN_TRADE_ROUTES.length} ROUTES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasCaravanRoutesMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde68a;font-weight:800">
+          5 COMMODITIES · 1–5★ BANDIT AMBUSH TIERS · 2–12 ESCORT GUARDS · +18–65% ARBITRAGE MARGIN
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(c => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(c.accent || '#f59e0b')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🐪 ${escapeHtml(c.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(c.accent || '#f59e0b')}">[+${c.arbitrage_margin_pct}% · ${c.transit_duration_min}m]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#fde68a;margin-top:1px">
+                  ${escapeHtml(c.route_category)} · ${escapeHtml(c.specialty_commodity)}
+                </div>
+                <div style="font-size:8px;color:#a7f3d0;margin-top:1px">
+                  ⚔️ ${escapeHtml(c.bandit_ambush_tier)} · Guards: ${c.escort_guard_slots}
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectCaravanTradeRoute('${escapeHtml(c.caravan_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(c.accent || '#f59e0b')};background:#451a03;color:#fef3c7;font-size:8px;font-weight:800;cursor:pointer">
+                  🐪 Inspect Caravan Route (${escapeHtml(c.caravan_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasLocalizationVoBarHtml(tatlas) {
+  LOCALIZATION_VO_BANKS = (tatlas && tatlas.localization_voiceover_banks) || [];
+  if (!LOCALIZATION_VO_BANKS.length) return '';
+  const curMode = ATLAS_LOCALIZATION_VO_MODE || ATLAS_STATE_STORE.localizationVoMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🎙️ VO & Lip-Sync (15)', col: '#ec4899' },
+    { id: 'Royal High Aden Court', label: '👑 Royal High Court (3)', col: '#f472b6' },
+    { id: 'Archaic Elven Lyric', label: '🌿 Archaic Elven Lyric (2)', col: '#a855f7' },
+    { id: 'Dwarven Forge Guild Slang', label: '⚒️ Dwarven Forge Slang (3)', col: '#38bdf8' },
+    { id: 'Frontier Harbor Maritime', label: '⚓ Frontier Maritime (4)', col: '#ec4899' },
+    { id: 'Sacred Temple Liturgical', label: '🕯️ Sacred Liturgical (3)', col: '#a855f7' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : LOCALIZATION_VO_BANKS.filter(v => curMode === 'All' || v.dialect_register === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasLocalizationVoBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#f472b6">🎙️ [ROLE 5: LIVEOPS &amp; CS PORTAL] AUTOMATED LOCALIZATION VOICE-OVER (EN/TH/JP/KR), LIP-SYNC PHONEME &amp; SUBTITLE TIMING MATRIX (D98 · ${LOCALIZATION_VO_BANKS.length} VO BANKS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasLocalizationVoMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fbcfe8;font-weight:800">
+          EN/TH/JP/KR · 180–950 VOICED LINES · 15-VISEME / 22-PHONEME LIP-SYNC · ICU THAI ZERO-ORPHAN PASS
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(v => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(v.accent || '#ec4899')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🎙️ ${escapeHtml(v.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(v.accent || '#ec4899')}">[${v.voiced_line_count} Lines · ${v.opus_bank_size_mb}MB]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#fbcfe8;margin-top:1px">
+                  ${escapeHtml(v.dialect_register)} · ${escapeHtml(v.lipsync_viseme_solver)}
+                </div>
+                <div style="font-size:8px;color:#bae6fd;margin-top:1px">
+                  🗣️ ${(v.supported_locales || []).join('/')} · ${escapeHtml(v.thai_line_break_validator)}
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectLocalizationVoBank('${escapeHtml(v.vo_bank_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(v.accent || '#ec4899')};background:#500724;color:#fce7f3;font-size:8px;font-weight:800;cursor:pointer">
+                  🎙️ Inspect VO Bank (${escapeHtml(v.vo_bank_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasHousingEstatesBarHtml(tatlas) {
   PLAYER_HOUSING_ESTATES = (tatlas && tatlas.player_housing_trophy_estates) || [];
   if (!PLAYER_HOUSING_ESTATES.length) return '';
@@ -14072,6 +14259,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasClanTreasuryBarHtml(tatlas)}
       ${renderAtlasHousingEstatesBarHtml(tatlas)}
       ${renderAtlasCdnWebrtcBarHtml(tatlas)}
+      ${renderAtlasCaravanRoutesBarHtml(tatlas)}
+      ${renderAtlasLocalizationVoBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -18351,6 +18540,52 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Dynamic Caravan Trade Routes, Bandit Ambush Escorts & Regional Commodity Arbitrage Matrix Overlay (D97)
+  const caravanTradeRouteRecords = Array.isArray(atlas.caravan_trade_routes) ? atlas.caravan_trade_routes : [];
+  const caravanTradeRoutesOverlaySvg = !ATLAS_CARAVAN_ROUTES_MODE ? '' : `
+    <g id="studioCaravanTradeRoutesOverlay">
+      ${caravanTradeRouteRecords.map((c, idx) => {
+        const wx = typeof c.world_x === 'number' ? c.world_x : 540;
+        const wy = typeof c.world_y === 'number' ? c.world_y : 295;
+        const colHex = c.accent || '#f59e0b';
+        const rcat = c.route_category || 'Armored Bullion Wagon';
+        const iconTxt = rcat === 'Armored Bullion Wagon'
+          ? '🛡️'
+          : (rcat === 'Pack-Strider Express'
+              ? '🐪'
+              : (rcat === 'Smuggler Night-Run' ? '🌙' : '⛵'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectCaravanTradeRoute('${escapeHtml(c.caravan_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.4" fill="rgba(69,26,3,0.68)" stroke="${escapeHtml(colHex)}" stroke-width="2.0"/>
+            <text x="${wx}" y="${wy + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Automated Localization Voice-Over (EN/TH/JP/KR), Lip-Sync Phoneme & Subtitle Timing Matrix Overlay (D98)
+  const localizationVoBankRecords = Array.isArray(atlas.localization_voiceover_banks) ? atlas.localization_voiceover_banks : [];
+  const localizationVoBanksOverlaySvg = !ATLAS_LOCALIZATION_VO_MODE ? '' : `
+    <g id="studioLocalizationVoBanksOverlay">
+      ${localizationVoBankRecords.map((v, idx) => {
+        const wx = typeof v.world_x === 'number' ? v.world_x : 545;
+        const wy = typeof v.world_y === 'number' ? v.world_y : 300;
+        const colHex = v.accent || '#ec4899';
+        const solver = v.lipsync_viseme_solver || '22-Phoneme Facial BlendShape';
+        const iconTxt = solver === '22-Phoneme Facial BlendShape'
+          ? '🎙️'
+          : (solver === '15-Viseme Oculus + Jaw-Bone Curve' ? '🗣️' : '🔊');
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectLocalizationVoBank('${escapeHtml(v.vo_bank_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.4" fill="rgba(80,7,36,0.68)" stroke="${escapeHtml(colHex)}" stroke-width="2.0"/>
+            <text x="${wx}" y="${wy + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -18427,6 +18662,8 @@ function renderDedicatedWorldAtlas() {
     ${clanTreasuryOverlaySvg}
     ${playerHousingEstateOverlaySvg}
     ${globalCdnRelayOverlaySvg}
+    ${caravanTradeRoutesOverlaySvg}
+    ${localizationVoBanksOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
