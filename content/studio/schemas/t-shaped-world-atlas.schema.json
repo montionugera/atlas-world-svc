@@ -419,6 +419,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/godotStorybookPrefabNodeSpec" }
     },
+    "navmesh_obstacle_sectors": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/navmeshObstacleSectorSpec" }
+    },
+    "liveops_event_flag_nodes": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/liveopsEventFlagNodeSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -4604,6 +4616,166 @@
         "accent": {
           "type": "string",
           "enum": ["#38bdf8", "#60a5fa", "#818cf8", "#2dd4bf"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "navmeshObstacleSectorSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "navmesh_id",
+        "title",
+        "zone_id",
+        "town_id",
+        "dungeon_id",
+        "sector_type",
+        "recast_cell_size_m",
+        "agent_step_height_m",
+        "agent_max_slope_deg",
+        "dynamic_obstacle_count",
+        "raycast_los_budget_us",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "navmesh_id": { "type": "string" },
+        "title": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "town_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "sector_type": {
+          "type": "string",
+          "enum": [
+            "Dynamic Siege Gate Obstacle",
+            "Vertical Jump-Link & Drop Ledge",
+            "Boss Room Seal Door",
+            "Multi-Layer Bridge Recast Tile"
+          ]
+        },
+        "recast_cell_size_m": {
+          "type": "number",
+          "minimum": 0.15,
+          "maximum": 0.35
+        },
+        "agent_step_height_m": {
+          "type": "number",
+          "minimum": 0.40,
+          "maximum": 0.75
+        },
+        "agent_max_slope_deg": {
+          "type": "number",
+          "minimum": 38.0,
+          "maximum": 55.0
+        },
+        "dynamic_obstacle_count": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 18
+        },
+        "raycast_los_budget_us": {
+          "type": "number",
+          "minimum": 45,
+          "maximum": 220
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#10b981", "#34d399", "#059669", "#14b8a6"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "liveopsEventFlagNodeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_flag_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "event_category",
+        "flag_key",
+        "rollout_pct",
+        "exp_sp_multiplier",
+        "drop_spoil_multiplier",
+        "zero_restart_propagation_ms",
+        "rollback_trigger_rule",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "event_flag_id": { "type": "string" },
+        "title": { "type": "string" },
+        "town_id": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "event_category": {
+          "type": "string",
+          "enum": [
+            "Seasonal World Festival",
+            "Dynamic EXP / Drop Multiplier",
+            "Canary Feature Flag Rollout",
+            "Emergency Drop-Table Kill-Switch"
+          ]
+        },
+        "flag_key": {
+          "type": "string",
+          "pattern": "^liveops\\.(festival|rates|canary)\\.[a-z0-9_]+$"
+        },
+        "rollout_pct": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 100
+        },
+        "exp_sp_multiplier": {
+          "type": "number",
+          "minimum": 1.0,
+          "maximum": 2.5
+        },
+        "drop_spoil_multiplier": {
+          "type": "number",
+          "minimum": 1.0,
+          "maximum": 2.0
+        },
+        "zero_restart_propagation_ms": {
+          "type": "number",
+          "minimum": 12,
+          "maximum": 85
+        },
+        "rollback_trigger_rule": {
+          "type": "string",
+          "enum": [
+            "Adena Mint Velocity > 15%/hr",
+            "Server Tick p99 > 45ms",
+            "Loot Exploit Anomaly > 3 sigma"
+          ]
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#f59e0b", "#fbbf24", "#eab308", "#f97316"]
         },
         "notes": { "type": "string" }
       }

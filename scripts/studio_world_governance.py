@@ -724,6 +724,8 @@ def validate_world_governance(
                 "serverMeshPersistenceCorridorsCount": len(t_doc.get("server_mesh_persistence_corridors") or []),
                 "antiBotEconomySentinelsCount": len(t_doc.get("anti_bot_economy_sentinels") or []),
                 "godotStorybookPrefabNodesCount": len(t_doc.get("godot_storybook_prefab_nodes") or []),
+                "navmeshObstacleSectorsCount": len(t_doc.get("navmesh_obstacle_sectors") or []),
+                "liveopsEventFlagNodesCount": len(t_doc.get("liveops_event_flag_nodes") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1897,6 +1899,43 @@ def validate_world_governance(
                 if gp_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: godot_storybook_prefab_nodes '{gp_id}' references unknown zone_id '{gp_zid}'"
+                    )
+
+            # Validate 16-Node NavMesh 3D Pathfinding, Jump-Link & Dynamic Door/Bridge Obstacle Matrix (D85)
+            navmesh_sectors = t_doc.get("navmesh_obstacle_sectors") or []
+            if navmesh_sectors and len(navmesh_sectors) < 16:
+                errors.append(
+                    f"GOV-10 violation: navmesh_obstacle_sectors must have at least 16 sectors, got {len(navmesh_sectors)}"
+                )
+            for nm_item in navmesh_sectors:
+                if not isinstance(nm_item, dict):
+                    continue
+                nm_id = str(nm_item.get("navmesh_id", ""))
+                nm_zid = str(nm_item.get("zone_id", ""))
+                nm_did = str(nm_item.get("dungeon_id", ""))
+                if nm_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: navmesh_obstacle_sectors '{nm_id}' references unknown zone_id '{nm_zid}'"
+                    )
+                if nm_did and nm_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: navmesh_obstacle_sectors '{nm_id}' references unknown dungeon_id '{nm_did}'"
+                    )
+
+            # Validate 15-Node Seasonal World Event, Double-EXP / Drop Hot-Config & Feature Flag Rollout Matrix (D86)
+            liveops_flag_nodes = t_doc.get("liveops_event_flag_nodes") or []
+            if liveops_flag_nodes and len(liveops_flag_nodes) < 15:
+                errors.append(
+                    f"GOV-10 violation: liveops_event_flag_nodes must have at least 15 nodes, got {len(liveops_flag_nodes)}"
+                )
+            for lf_item in liveops_flag_nodes:
+                if not isinstance(lf_item, dict):
+                    continue
+                lf_id = str(lf_item.get("event_flag_id", ""))
+                lf_zid = str(lf_item.get("zone_id", ""))
+                if lf_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: liveops_event_flag_nodes '{lf_id}' references unknown zone_id '{lf_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

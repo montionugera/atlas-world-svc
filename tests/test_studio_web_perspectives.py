@@ -3483,7 +3483,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 84)
+        self.assertGreaterEqual(len(audit["dimensions"]), 84)
 
         d83 = audit["dimensions"]["D83_anti_bot_rmt_telemetry_and_economy_sentinel_matrix"]
         self.assertEqual(d83["score"], 100.0)
@@ -3519,10 +3519,97 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas84DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 84)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 84)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 84)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 84)
         self.assertIn("84-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave41_navmesh_obstacles_and_liveops_event_flags(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["navmeshObstacleSectorsCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["liveopsEventFlagNodesCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "NAVMESH_OBSTACLE_SECTORS",
+            "LIVEOPS_EVENT_FLAGS",
+            "ATLAS_NAVMESH_MODE",
+            "ATLAS_LIVEOPS_FLAGS_MODE",
+            "setAtlasNavmeshMode",
+            "setAtlasLiveopsFlagsMode",
+            "selectNavmeshObstacleSector",
+            "selectLiveopsEventFlag",
+            "renderAtlasNavmeshObstacleBarHtml",
+            "renderAtlasLiveopsEventFlagsBarHtml",
+            "studioNavmeshObstacleOverlay",
+            "studioLiveopsEventFlagsOverlay",
+            "🧭 3D NavMesh & Doors (16)",
+            "🎪 LiveOps Event Flags (15)",
+            "86-Dimension Semantic-Zoom Atlas Score",
+            "D1–D86 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 41 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 86)
+
+        d85 = audit["dimensions"]["D85_navmesh_3d_pathfinding_jump_link_and_dynamic_obstacle_matrix"]
+        self.assertEqual(d85["score"], 100.0)
+        self.assertEqual(d85["verified"], 16)
+        self.assertEqual(d85["target"], 16)
+        self.assertTrue(d85["ui_wired"])
+
+        d86 = audit["dimensions"]["D86_liveops_seasonal_event_hot_config_and_feature_flag_matrix"]
+        self.assertEqual(d86["score"], 100.0)
+        self.assertEqual(d86["verified"], 15)
+        self.assertEqual(d86["target"], 15)
+        self.assertTrue(d86["ui_wired"])
+
+        sectors = atlas["navmesh_obstacle_sectors"]
+        self.assertEqual(len(sectors), 16)
+        for s in sectors:
+            self.assertGreaterEqual(s["recast_cell_size_m"], 0.15)
+            self.assertLessEqual(s["recast_cell_size_m"], 0.35)
+            self.assertGreaterEqual(s["agent_step_height_m"], 0.40)
+            self.assertLessEqual(s["agent_step_height_m"], 0.75)
+            self.assertGreaterEqual(s["agent_max_slope_deg"], 38.0)
+            self.assertLessEqual(s["agent_max_slope_deg"], 55.0)
+            self.assertGreaterEqual(s["dynamic_obstacle_count"], 2)
+            self.assertLessEqual(s["dynamic_obstacle_count"], 18)
+            self.assertGreaterEqual(s["raycast_los_budget_us"], 45)
+            self.assertLessEqual(s["raycast_los_budget_us"], 220)
+
+        flags = atlas["liveops_event_flag_nodes"]
+        self.assertEqual(len(flags), 15)
+        for f in flags:
+            self.assertTrue(
+                f["flag_key"].startswith(("liveops.festival.", "liveops.rates.", "liveops.canary.")),
+                f"Unexpected flag_key prefix: {f['flag_key']}",
+            )
+            self.assertGreaterEqual(f["rollout_pct"], 10)
+            self.assertLessEqual(f["rollout_pct"], 100)
+            self.assertGreaterEqual(f["exp_sp_multiplier"], 1.0)
+            self.assertLessEqual(f["exp_sp_multiplier"], 2.5)
+            self.assertGreaterEqual(f["drop_spoil_multiplier"], 1.0)
+            self.assertLessEqual(f["drop_spoil_multiplier"], 2.0)
+            self.assertGreaterEqual(f["zero_restart_propagation_ms"], 12)
+            self.assertLessEqual(f["zero_restart_propagation_ms"], 85)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas86DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 86)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 86)
+        self.assertIn("86-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

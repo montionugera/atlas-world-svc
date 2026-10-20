@@ -17415,6 +17415,633 @@ def inject_godot_storybook_prefab_nodes(atlas: dict[str, Any]) -> list[dict[str,
     return rows
 
 
+def _build_navmesh_obstacle_sectors(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Node [Role 4: Backend Infra — NavMesh 3D Pathfinding, Jump-Link & Dynamic Door/Bridge Obstacle Matrix] (D85)."""
+    specs = [
+        (
+            "navmesh-01-giran-castle-drawbridge",
+            "Giran Castle Drawbridge (Pinion Terminus) — Multi-Layer Siege Moat & Dynamic Drawbridge Recast Tile",
+            "zone-town-pinion-terminus",
+            "town-pinion-terminus",
+            "",
+            "Multi-Layer Bridge Recast Tile",
+            0.20,
+            0.55,
+            45.0,
+            8,
+            95,
+            572,
+            378,
+            "#10b981",
+            "Dual-deck Recast/Detour bridge tile supporting simultaneous walk-over siege assault and under-bridge moat swimming with dynamic drawbridge state toggling.",
+        ),
+        (
+            "navmesh-02-aden-throne-inner-gate",
+            "Aden Throne Inner Gate (Crown-Beacon Citadel) — Sovereign Sanctum Portcullis & Breach Obstacle",
+            "zone-town-crown-beacon",
+            "town-crown-beacon-citadel",
+            "",
+            "Dynamic Siege Gate Obstacle",
+            0.18,
+            0.50,
+            42.0,
+            14,
+            120,
+            664,
+            262,
+            "#34d399",
+            "Real-time Detour dtTileCache cylinder/box obstacle slicing when Siege Golem or Swoop Cannon breaches the inner throne portcullis (< 2.5ms tile rebuild).",
+        ),
+        (
+            "navmesh-03-rune-cliffside-lift",
+            "Rune Cliffside Lift (Starfall Haven) — Vertical Sky-Harbor Elevator & Bi-Directional Off-Mesh Jump-Link",
+            "zone-town-starfall-haven",
+            "town-starfall-haven",
+            "",
+            "Vertical Jump-Link & Drop Ledge",
+            0.22,
+            0.60,
+            48.0,
+            6,
+            85,
+            538,
+            188,
+            "#059669",
+            "Synchronizes Bevy ECS 20Hz platform elevation keyframes with Detour off-mesh links connecting lower harbor docks to the upper citadel plaza.",
+        ),
+        (
+            "navmesh-04-goddard-lava-causeway",
+            "Goddard Lava Causeway (Inductor Switchyard) — Basalt Span & Thermal Vent Multi-Layer Bridge Tile",
+            "zone-town-inductor-switchyard",
+            "town-inductor-switchyard",
+            "",
+            "Multi-Layer Bridge Recast Tile",
+            0.25,
+            0.65,
+            50.0,
+            10,
+            110,
+            662,
+            184,
+            "#14b8a6",
+            "Separates upper basalt siege causeway poly-spans from lower magma trench hazards with server-authoritative Z-height raycast LOS clamping.",
+        ),
+        (
+            "navmesh-05-cruma-tower-elevator-shaft",
+            "Cruma Tower Elevator Shaft (Pendulum Shaft) — 1F–3F Vertical Core Drop-Ledge & Portal Jump-Links",
+            "zone-dungeon-pendulum-shaft",
+            "town-kilnwatch-bastion",
+            "zone-dungeon-pendulum-shaft",
+            "Vertical Jump-Link & Drop Ledge",
+            0.16,
+            0.45,
+            40.0,
+            6,
+            75,
+            468,
+            326,
+            "#10b981",
+            "Prevents Z-axis aggro bleed across Cruma 1F/2F/3F stacked floors and validates one-way drop ledges around Core's inner sanctum ring.",
+        ),
+        (
+            "navmesh-06-ant-nest-queen-chamber-barrier",
+            "Ant Nest Queen Chamber Barrier (Kiln Cellar) — Royal Brood Chitin Seal Door & Acid Moat Obstacle",
+            "zone-dungeon-kiln-cellar",
+            "town-glaze-barge-quay",
+            "zone-dungeon-kiln-cellar",
+            "Boss Room Seal Door",
+            0.20,
+            0.50,
+            44.0,
+            9,
+            105,
+            392,
+            402,
+            "#34d399",
+            "Locks Queen Ant B3 boss chamber entrance polygon flags upon raid combat engagement and enforcesLv.40+ raid barrier knockback vectors.",
+        ),
+        (
+            "navmesh-07-tower-of-insolence-spiral-jump-links",
+            "Tower of Insolence Spiral Jump-Links (Star-Heart Nave) — 14-Floor Helical Stair & Broken Ledge Matrix",
+            "zone-dungeon-star-heart-nave",
+            "town-crown-beacon-citadel",
+            "zone-dungeon-star-heart-nave",
+            "Vertical Jump-Link & Drop Ledge",
+            0.15,
+            0.45,
+            42.0,
+            12,
+            165,
+            748,
+            204,
+            "#059669",
+            "High-precision 0.15m voxel cell mesh along helical outer stairwells with anti-fall edge flanges and Baium 14F stone-statue awakening door seal.",
+        ),
+        (
+            "navmesh-08-antharas-lair-cavern-bridge",
+            "Antharas Lair Cavern Bridge (Leyden Causeway) — DVC Chasm Span & Lair Heart Seal Portal Tile",
+            "zone-field-leyden-causeway",
+            "town-pinion-terminus",
+            "",
+            "Multi-Layer Bridge Recast Tile",
+            0.28,
+            0.65,
+            52.0,
+            11,
+            140,
+            654,
+            352,
+            "#14b8a6",
+            "Handles 200-player Command Channel pathing across narrow Dragon Valley stone bridges without crowd-steering oscillation or cliff clipping.",
+        ),
+        (
+            "navmesh-09-valakas-lava-jump-stones",
+            "Valakas Lava Jump-Stones (Caldera Rim) — Hall of Flames Stepping-Stone Jump-Links & Magma Gate",
+            "zone-field-caldera-rim",
+            "town-inductor-switchyard",
+            "",
+            "Vertical Jump-Link & Drop Ledge",
+            0.24,
+            0.70,
+            54.0,
+            15,
+            180,
+            792,
+            136,
+            "#10b981",
+            "Connects volcanic basalt stepping-stones across Forge of the Gods lava rivers using Parabolic Jump-Link arcs and Klein's Floating Stone checks.",
+        ),
+        (
+            "navmesh-10-pagan-temple-blood-door",
+            "Pagan Temple Blood Door (Witch Pendulum) — Anteroom Sacrifice Gate & Triol High-Altar Seal Door",
+            "zone-catacomb-witch-pendulum",
+            "town-starfall-haven",
+            "zone-catacomb-witch-pendulum",
+            "Boss Room Seal Door",
+            0.16,
+            0.42,
+            39.0,
+            8,
+            68,
+            556,
+            174,
+            "#34d399",
+            "Key-gated Detour poly-flag door filter (`DOOR_FLAG_PAGAN_KEY`) blocking server movement packets and monster LOS until Anteroom/Chapel keys unlock.",
+        ),
+        (
+            "navmesh-11-imperial-tomb-four-sepulchers-gate",
+            "Imperial Tomb Four Sepulchers Gate (Chronometer Foundry) — 55-Minute Wave Door & Halisha Seal Matrix",
+            "zone-dungeon-chronometer-foundry",
+            "town-inductor-switchyard",
+            "zone-dungeon-chronometer-foundry",
+            "Boss Room Seal Door",
+            0.18,
+            0.48,
+            41.0,
+            16,
+            130,
+            818,
+            162,
+            "#059669",
+            "Coordinates 4 parallel Sepulcher Viscount/Baron/Duke/Marquis room doors with atomic party-key consumption and dynamic flame-trap obstacles.",
+        ),
+        (
+            "navmesh-12-monastery-of-silence-library-secret-wall",
+            "Monastery of Silence Library Secret Wall (Tether Causeway) — Rotating Bookcase & Solina Sanctum Seal",
+            "zone-field-tether-causeway",
+            "town-starfall-haven",
+            "",
+            "Boss Room Seal Door",
+            0.20,
+            0.46,
+            40.0,
+            5,
+            62,
+            592,
+            148,
+            "#14b8a6",
+            "Toggles secret library wall NavMesh polygons and Holy Grail puzzle bridges while enforcing 3D spell-raycast occlusion through stone bookshelves.",
+        ),
+        (
+            "navmesh-13-gludio-castle-moat-gate",
+            "Gludio Castle Moat Gate (Kilnwatch Bastion) — Outer Curtain Wall Portcullis & Siege Ram Obstacle",
+            "zone-town-kilnwatch-bastion",
+            "town-kilnwatch-bastion",
+            "",
+            "Dynamic Siege Gate Obstacle",
+            0.22,
+            0.52,
+            44.0,
+            12,
+            92,
+            494,
+            366,
+            "#10b981",
+            "Supports destructible outer/inner castle gates and deployable Clan Headquarters flag obstacles with 20Hz archer parapet LOS validation.",
+        ),
+        (
+            "navmesh-14-oren-skybridge",
+            "Oren Skybridge (Escapement Anvil) — Ivory Tower Crater Archway & Multi-Tier Viaduct Recast Tile",
+            "zone-town-escapement-anvil",
+            "town-escapement-anvil",
+            "",
+            "Multi-Layer Bridge Recast Tile",
+            0.20,
+            0.50,
+            43.0,
+            4,
+            55,
+            592,
+            292,
+            "#34d399",
+            "Three-layer vertical Recast tile spanning the Ivory Tower lower elemental crater, mid-level research promenade, and upper skybridge span.",
+        ),
+        (
+            "navmesh-15-hellbound-citadel-iron-gate",
+            "Hellbound Citadel Iron Gate (Brass-Spur Ridge) — Steel Citadel Siege Door & Tully Workshop Hatch",
+            "zone-field-brass-spur-ridge",
+            "town-torque-balance-citadel",
+            "",
+            "Dynamic Siege Gate Obstacle",
+            0.26,
+            0.60,
+            49.0,
+            18,
+            210,
+            532,
+            312,
+            "#059669",
+            "Stage-gated dynamic obstacle matrix unlocking Oasis, Ancient Temple Remnants, and Steel Citadel portals as Continental Trust advances.",
+        ),
+        (
+            "navmesh-16-fortress-of-the-dead-drawbridge",
+            "Fortress of the Dead Drawbridge (Cloud-Halo Fortress) — Ballista Rampart Gate & Nocturnal Undead Bridge",
+            "zone-fortress-cloud-halo",
+            "town-starfall-haven",
+            "",
+            "Dynamic Siege Gate Obstacle",
+            0.24,
+            0.58,
+            46.0,
+            7,
+            88,
+            564,
+            124,
+            "#14b8a6",
+            "Links fortress control room barracks, flagpole roof deck, and drawbridge moat with dynamic day/night Lidia von Hellmann raid barricade switching.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        nid,
+        title,
+        zid,
+        tid,
+        did,
+        stype,
+        csz,
+        steph,
+        mslope,
+        ocount,
+        los_us,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "navmesh_id": nid,
+                "title": title,
+                "zone_id": zid,
+                "town_id": tid,
+                "dungeon_id": did,
+                "sector_type": stype,
+                "recast_cell_size_m": csz,
+                "agent_step_height_m": steph,
+                "agent_max_slope_deg": mslope,
+                "dynamic_obstacle_count": ocount,
+                "raycast_los_budget_us": los_us,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_navmesh_obstacle_sectors(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_navmesh_obstacle_sectors(atlas)
+    atlas["navmesh_obstacle_sectors"] = rows
+    return rows
+
+
+def _build_liveops_event_flag_nodes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Node [Role 5: LiveOps & Build — Seasonal World Event, Double-EXP / Drop Hot-Config & Feature Flag Rollout Matrix] (D86)."""
+    specs = [
+        (
+            "liveops-flag-01-talking-island-newbie-festival",
+            "Talking Island (Lantern Hollow) — First Meridian Newbie Boost & Seasonal Lantern Festival Flag",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Seasonal World Festival",
+            "liveops.festival.lantern_hollow_newbie_bloom",
+            100,
+            2.0,
+            1.5,
+            18,
+            "Adena Mint Velocity > 15%/hr",
+            448,
+            436,
+            "#f59e0b",
+            "Zero-restart seasonal festival NPC spawn & starter Lv.1-20 2.0x EXP/SP aura propagated via Redis PubSub in 18ms.",
+        ),
+        (
+            "liveops-flag-02-elven-mother-tree-harvest",
+            "Elven Village (Porcelain Loom) — Star-Loom Nectar Harvest & Herb Drop Multiplier Hot-Config",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "Dynamic EXP / Drop Multiplier",
+            "liveops.rates.elven_nectar_herb_multiplier",
+            100,
+            1.5,
+            1.8,
+            22,
+            "Loot Exploit Anomaly > 3 sigma",
+            538,
+            294,
+            "#fbbf24",
+            "Dynamically scales Ground Herb & Elemental Stone drop tables across Elven Forest without dropping active party combat ticks.",
+        ),
+        (
+            "liveops-flag-03-dark-elven-blood-moon-canary",
+            "Dark Elven Village (Carillon Belfry) — Shilen Blood-Moon Shader & AI Aggro Canary Feature Flag",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "Canary Feature Flag Rollout",
+            "liveops.canary.dark_lunar_blood_moon_ai_v2",
+            25,
+            1.25,
+            1.25,
+            28,
+            "Server Tick p99 > 45ms",
+            512,
+            268,
+            "#eab308",
+            "25% progressive canary rollout of nocturnal ambush AI behavior in Swampland & School of Dark Arts with automatic tick-budget circuit breaker.",
+        ),
+        (
+            "liveops-flag-04-orc-flame-solstice-rates",
+            "Orc Village (Draft-Kiln Post) — Pa'agrio Immortal Solstice Double-EXP & Raid Vitality Hot-Config",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Dynamic EXP / Drop Multiplier",
+            "liveops.rates.orc_immortal_solstice_boost",
+            100,
+            2.5,
+            1.5,
+            19,
+            "Adena Mint Velocity > 15%/hr",
+            462,
+            136,
+            "#f97316",
+            "Weekend 2.5x EXP/SP & 1.5x Spoil multiplier across Immortal Plateau and Cave of Trials with real-time inflation guardrail.",
+        ),
+        (
+            "liveops-flag-05-dwarven-mithril-spoil-killswitch",
+            "Dwarven Village (Root-Train Roundhouse) — Maphr Masterwork Spoil & Recipe Drop-Table Kill-Switch",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Emergency Drop-Table Kill-Switch",
+            "liveops.canary.dwarven_spoil_table_circuit_breaker",
+            100,
+            1.0,
+            1.2,
+            14,
+            "Loot Exploit Anomaly > 3 sigma",
+            622,
+            82,
+            "#f59e0b",
+            "Sub-15ms emergency drop-table circuit breaker capable of clamping anomalous recipe/material sweep yields without realm restart.",
+        ),
+        (
+            "liveops-flag-06-kamael-soul-convergence-canary",
+            "Kamael Village (Cinnamon-Mill Haven) — Nornil Soul-Absorption & Subclass Canary Feature Flag",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "Canary Feature Flag Rollout",
+            "liveops.canary.kamael_nornil_instance_scaler",
+            50,
+            1.4,
+            1.3,
+            31,
+            "Server Tick p99 > 45ms",
+            382,
+            300,
+            "#fbbf24",
+            "50% canary traffic split for dynamic Nornil's Garden instance worker auto-scaling with p99 frame-time rollback trigger.",
+        ),
+        (
+            "liveops-flag-07-gludin-harbor-regatta-festival",
+            "Gludin Village (Glaze-Barge Quay) — Maritime Regatta & Fishing Luminous Bait World Festival",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Seasonal World Festival",
+            "liveops.festival.gludin_maritime_regatta_event",
+            100,
+            1.6,
+            1.75,
+            24,
+            "Adena Mint Velocity > 15%/hr",
+            422,
+            402,
+            "#eab308",
+            "Activates harbor firework emitters, special Proof of Catching Fish exchange tiers, and Queen Ant B3 weekend chest bonus.",
+        ),
+        (
+            "liveops-flag-08-gludio-siege-mercenary-canary",
+            "Town of Gludio (Kilnwatch Bastion) — Cross-Race Siege Mercenary Contract Canary Flag",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Canary Feature Flag Rollout",
+            "liveops.canary.gludio_mercenary_territory_contract",
+            35,
+            1.3,
+            1.2,
+            29,
+            "Server Tick p99 > 45ms",
+            492,
+            376,
+            "#f97316",
+            "35% guild cohort rollout for anonymous Territory War mercenary cloak contracts with instant revert if siege tick exceeds 45ms.",
+        ),
+        (
+            "liveops-flag-09-dion-seven-signs-festival",
+            "Town of Dion (Saffron Press) — Harvest Moon & Seven-Signs Seal Stone Double-Drop Hot-Config",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "Dynamic EXP / Drop Multiplier",
+            "liveops.rates.dion_catacomb_seal_stone_surge",
+            100,
+            1.8,
+            2.0,
+            21,
+            "Adena Mint Velocity > 15%/hr",
+            522,
+            416,
+            "#f59e0b",
+            "Doubles Blue/Green/Red Seal Stone drop rates inside Heretic & Branded Catacombs while capping Ancient Adena conversion velocity.",
+        ),
+        (
+            "liveops-flag-10-giran-bazaar-tax-killswitch",
+            "Giran Castle Town (Pinion Terminus) — 300-Stall Bazaar Escrow & Luxury Auction Kill-Switch Flag",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Emergency Drop-Table Kill-Switch",
+            "liveops.canary.giran_bazaar_escrow_killswitch",
+            100,
+            1.0,
+            1.0,
+            12,
+            "Adena Mint Velocity > 15%/hr",
+            588,
+            398,
+            "#fbbf24",
+            "12ms hot-config switch to freeze high-value private store & Luxury Shop crystal exchanges if macro inflation exceeds 15%/hr.",
+        ),
+        (
+            "liveops-flag-11-oren-ivory-arcane-festival",
+            "Town of Oren (Escapement Anvil) — Ivory Tower Star-Fall & Enchant Scroll Event Festival",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Seasonal World Festival",
+            "liveops.festival.oren_ivory_nebula_concord",
+            100,
+            1.75,
+            1.6,
+            26,
+            "Loot Exploit Anomaly > 3 sigma",
+            590,
+            302,
+            "#eab308",
+            "Spawns Master Yogi / Alchemist event sanctums in Oren Plaza with live probability curve telemetry for +4..+16 staff events.",
+        ),
+        (
+            "liveops-flag-12-hunters-valley-rare-hunt-rates",
+            "Hunters Village (Torque-Balance Citadel) — Enchanted Valley Champion Mob & Rare Spoil Multiplier",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Dynamic EXP / Drop Multiplier",
+            "liveops.rates.hunters_champion_aura_frequency",
+            80,
+            2.2,
+            1.9,
+            34,
+            "Loot Exploit Anomaly > 3 sigma",
+            622,
+            232,
+            "#f97316",
+            "Boosts Blue (10x) & Crimson (50x) Champion Mob spawn weights across Enchanted Valley and Forest of Mirrors.",
+        ),
+        (
+            "liveops-flag-13-aden-imperial-coronation-festival",
+            "Town of Aden (Crown-Beacon Citadel) — High-Halo Imperial Coronation & Olympiad Grand Festival",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "Seasonal World Festival",
+            "liveops.festival.aden_imperial_coronation_jubilee",
+            100,
+            2.0,
+            1.75,
+            20,
+            "Adena Mint Velocity > 15%/hr",
+            656,
+            278,
+            "#f59e0b",
+            "Continental capital celebration activating Cathedral choir audio, Nevit's Blessing hourglass extension, and zero-tax castle teleports.",
+        ),
+        (
+            "liveops-flag-14-goddard-forge-unseal-killswitch",
+            "Town of Goddard (Inductor Switchyard) — Valakas/Antharas Epic Drop & S80 Unseal Kill-Switch",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Emergency Drop-Table Kill-Switch",
+            "liveops.canary.goddard_epic_raid_loot_guard",
+            100,
+            1.2,
+            1.1,
+            16,
+            "Loot Exploit Anomaly > 3 sigma",
+            656,
+            196,
+            "#fbbf24",
+            "Guards high-tier Forge of the Gods & Imperial Tomb S-Grade drop tables with automated 3-sigma anomaly quarantine.",
+        ),
+        (
+            "liveops-flag-15-rune-citadel-seed-canary",
+            "Rune Township (Starfall Haven) — Gracia Seed Cycle & Hellbound Trust Canary Rollout Flag",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "Canary Feature Flag Rollout",
+            "liveops.canary.rune_seed_hellbound_dynamic_pacing",
+            15,
+            1.5,
+            1.4,
+            42,
+            "Server Tick p99 > 45ms",
+            552,
+            202,
+            "#eab308",
+            "15% canary test of dynamic Seed of Infinity/Destruction stage transition thresholds and Pagan Temple key drop pacing.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        fid,
+        title,
+        tid,
+        zid,
+        ecat,
+        fkey,
+        rpct,
+        expm,
+        dropm,
+        propms,
+        rrule,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "event_flag_id": fid,
+                "title": title,
+                "town_id": tid,
+                "zone_id": zid,
+                "event_category": ecat,
+                "flag_key": fkey,
+                "rollout_pct": rpct,
+                "exp_sp_multiplier": expm,
+                "drop_spoil_multiplier": dropm,
+                "zero_restart_propagation_ms": propms,
+                "rollback_trigger_rule": rrule,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_liveops_event_flag_nodes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_liveops_event_flag_nodes(atlas)
+    atlas["liveops_event_flag_nodes"] = rows
+    return rows
+
+
 
 
 
@@ -18670,6 +19297,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("godot_storybook_prefab_nodes") or []) < 15:
         inject_godot_storybook_prefab_nodes(atlas)
         actions.append("populated_15_godot_storybook_prefab_nodes")
+
+    # 69. Ensure all 16 NavMesh 3D Pathfinding, Jump-Link & Dynamic Door/Bridge Obstacle Sectors exist in `navmesh_obstacle_sectors` (D85)
+    if len(atlas.get("navmesh_obstacle_sectors") or []) < 16:
+        inject_navmesh_obstacle_sectors(atlas)
+        actions.append("populated_16_navmesh_obstacle_sectors")
+
+    # 70. Ensure all 15 LiveOps Seasonal Event, Double-EXP / Drop Hot-Config & Feature Flag Nodes exist in `liveops_event_flag_nodes` (D86)
+    if len(atlas.get("liveops_event_flag_nodes") or []) < 15:
+        inject_liveops_event_flag_nodes(atlas)
+        actions.append("populated_15_liveops_event_flag_nodes")
 
     return {"actions": actions}
 
@@ -23466,15 +24103,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d84_eval = score_d84_godot_storybook_prefab_nodes(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
     d84_score = d84_eval["score"]
 
+    # D85: Interactive 16-Node [Role 4: Backend Infra — NavMesh 3D Pathfinding, Jump-Link & Dynamic Door/Bridge Obstacle Matrix] (`navmesh_obstacle_sectors` - 16 Sectors)
+    d85_eval = score_d85_navmesh_obstacle_sectors(atlas, zone_ids_set=zone_ids_set, mf_dungeon_id_set=mf_dungeon_id_set, web_txt=web_txt)
+    d85_score = d85_eval["score"]
+
+    # D86: Interactive 15-Node [Role 5: LiveOps & Build — Seasonal World Event, Double-EXP / Drop Hot-Config & Feature Flag Rollout Matrix] (`liveops_event_flag_nodes` - 15 Event Flag Nodes)
+    d86_eval = score_d86_liveops_event_flag_nodes(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d86_score = d86_eval["score"]
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score) / 66.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score) / 68.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score) / 68.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score) / 78.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score) / 67.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score) / 74.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score) / 68.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score) / 70.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score) / 70.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score) / 80.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score) / 69.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score) / 76.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -23563,8 +24208,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d82_score
             + d83_score
             + d84_score
+            + d85_score
+            + d86_score
         )
-        / 84.0,
+        / 86.0,
         1,
     )
 
@@ -24293,6 +24940,8 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             },
             "D83_anti_bot_rmt_telemetry_and_economy_sentinel_matrix": d83_eval,
             "D84_godot_tool_scene_storybook_and_3d_prefab_inspector_matrix": d84_eval,
+            "D85_navmesh_3d_pathfinding_jump_link_and_dynamic_obstacle_matrix": d85_eval,
+            "D86_liveops_seasonal_event_hot_config_and_feature_flag_matrix": d86_eval,
         },
     }
 
@@ -24500,12 +25149,205 @@ def score_d84_godot_storybook_prefab_nodes(
     }
 
 
+def score_d85_navmesh_obstacle_sectors(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    mf_dungeon_id_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if mf_dungeon_id_set is None:
+        mf_dungeon_id_set = {
+            str(d.get("dungeon_id"))
+            for d in (atlas.get("multi_floor_dungeons") or [])
+            if isinstance(d, dict) and d.get("dungeon_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_types = {
+        "Dynamic Siege Gate Obstacle",
+        "Vertical Jump-Link & Drop Ledge",
+        "Boss Room Seal Door",
+        "Multi-Layer Bridge Recast Tile",
+    }
+    rows = atlas.get("navmesh_obstacle_sectors") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_types: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        nid = str(row.get("navmesh_id") or "")
+        zid = str(row.get("zone_id") or "")
+        did = str(row.get("dungeon_id") or "")
+        stype = str(row.get("sector_type") or "")
+        csz = float(row.get("recast_cell_size_m") or 0.0)
+        steph = float(row.get("agent_step_height_m") or 0.0)
+        mslope = float(row.get("agent_max_slope_deg") or 0.0)
+        ocount = int(row.get("dynamic_obstacle_count") or 0)
+        los_us = float(row.get("raycast_los_budget_us") or 0.0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            nid
+            and nid not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and row.get("town_id")
+            and (did == "" or did in mf_dungeon_id_set)
+            and stype in expected_types
+            and 0.15 <= csz <= 0.35
+            and 0.40 <= steph <= 0.75
+            and 38.0 <= mslope <= 55.0
+            and 2 <= ocount <= 18
+            and 45 <= los_us <= 220
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#10b981", "#34d399", "#059669", "#14b8a6")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(nid)
+            seen_types.add(stype)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_NAVMESH_MODE",
+            "setAtlasNavmeshMode",
+            "selectNavmeshObstacleSector",
+            "renderAtlasNavmeshObstacleBarHtml",
+            "studioNavmeshObstacleOverlay",
+        )
+    )
+    ratio = valid_count / 16.0
+    full_cov = valid_count == 16 and seen_types == expected_types
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 16,
+        "sector_types": sorted(seen_types),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d86_liveops_event_flag_nodes(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_categories = {
+        "Seasonal World Festival",
+        "Dynamic EXP / Drop Multiplier",
+        "Canary Feature Flag Rollout",
+        "Emergency Drop-Table Kill-Switch",
+    }
+    expected_rules = {
+        "Adena Mint Velocity > 15%/hr",
+        "Server Tick p99 > 45ms",
+        "Loot Exploit Anomaly > 3 sigma",
+    }
+    rows = atlas.get("liveops_event_flag_nodes") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_cats: set[str] = set()
+    seen_rules: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        fid = str(row.get("event_flag_id") or "")
+        zid = str(row.get("zone_id") or "")
+        ecat = str(row.get("event_category") or "")
+        fkey = str(row.get("flag_key") or "")
+        rpct = float(row.get("rollout_pct") or 0.0)
+        expm = float(row.get("exp_sp_multiplier") or 0.0)
+        dropm = float(row.get("drop_spoil_multiplier") or 0.0)
+        propms = float(row.get("zero_restart_propagation_ms") or 0.0)
+        rrule = str(row.get("rollback_trigger_rule") or "")
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            fid
+            and fid not in seen_ids
+            and row.get("title")
+            and row.get("town_id")
+            and zid in zone_ids_set
+            and ecat in expected_categories
+            and fkey.startswith(("liveops.festival.", "liveops.rates.", "liveops.canary."))
+            and 10 <= rpct <= 100
+            and 1.0 <= expm <= 2.5
+            and 1.0 <= dropm <= 2.0
+            and 12 <= propms <= 85
+            and rrule in expected_rules
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#f59e0b", "#fbbf24", "#eab308", "#f97316")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(fid)
+            seen_cats.add(ecat)
+            seen_rules.add(rrule)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_LIVEOPS_FLAGS_MODE",
+            "setAtlasLiveopsFlagsMode",
+            "selectLiveopsEventFlag",
+            "renderAtlasLiveopsEventFlagsBarHtml",
+            "studioLiveopsEventFlagsOverlay",
+        )
+    )
+    ratio = valid_count / 15.0
+    full_cov = valid_count == 15 and seen_cats == expected_categories and seen_rules == expected_rules
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 15,
+        "event_categories": sorted(seen_cats),
+        "rollback_trigger_rules": sorted(seen_rules),
+        "ui_wired": has_ui,
+    }
+
+
 def evaluate_80d_atlas(whc: dict[str, Any] | None = None, atlas: dict[str, Any] | None = None) -> dict[str, Any]:
     if whc is None:
         whc = json.loads(WHC_PATH.read_text(encoding="utf-8"))
     if atlas is None:
         atlas = json.loads(ATLAS_PATH.read_text(encoding="utf-8"))
-    return audit_world_atlas(whc, atlas)
+    res = audit_world_atlas(whc, atlas)
+    res["wave"] = 41
+    return res
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -24632,6 +25474,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D82 (15 Server-Mesh/WAL)    : {dims['D82_server_mesh_handoff_redis_bus_and_postgres_wal_corridors']['score']}/100 ({dims['D82_server_mesh_handoff_redis_bus_and_postgres_wal_corridors']['verified']}/{dims['D82_server_mesh_handoff_redis_bus_and_postgres_wal_corridors']['target']} server-mesh/wal corridors)")
         print(f"  D83 (16 Anti-Bot Sentinels) : {dims['D83_anti_bot_rmt_telemetry_and_economy_sentinel_matrix']['score']}/100 ({dims['D83_anti_bot_rmt_telemetry_and_economy_sentinel_matrix']['verified']}/{dims['D83_anti_bot_rmt_telemetry_and_economy_sentinel_matrix']['target']} anti-bot/rmt sentinels)")
         print(f"  D84 (15 Godot 3D Storybook) : {dims['D84_godot_tool_scene_storybook_and_3d_prefab_inspector_matrix']['score']}/100 ({dims['D84_godot_tool_scene_storybook_and_3d_prefab_inspector_matrix']['verified']}/{dims['D84_godot_tool_scene_storybook_and_3d_prefab_inspector_matrix']['target']} godot 3d storybook prefabs)")
+        print(f"  D85 (16 3D NavMesh/Doors)   : {dims['D85_navmesh_3d_pathfinding_jump_link_and_dynamic_obstacle_matrix']['score']}/100 ({dims['D85_navmesh_3d_pathfinding_jump_link_and_dynamic_obstacle_matrix']['verified']}/{dims['D85_navmesh_3d_pathfinding_jump_link_and_dynamic_obstacle_matrix']['target']} navmesh obstacle sectors)")
+        print(f"  D86 (15 LiveOps Event Flags): {dims['D86_liveops_seasonal_event_hot_config_and_feature_flag_matrix']['score']}/100 ({dims['D86_liveops_seasonal_event_hot_config_and_feature_flag_matrix']['verified']}/{dims['D86_liveops_seasonal_event_hot_config_and_feature_flag_matrix']['target']} liveops event flag nodes)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
