@@ -323,6 +323,18 @@
       "maxItems": 24,
       "items": { "$ref": "#/$defs/eightHourCouncilSignoffSpec" }
     },
+    "champion_mob_herd_grounds": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/championMobHerdGroundSpec" }
+    },
+    "dualsword_craft_unseal_forges": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/dualswordCraftUnsealForgeSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -3724,6 +3736,87 @@
         },
         "signoff_verdict": { "type": "string" },
         "architectural_proof_note": { "type": "string" }
+      }
+    },
+    "championMobHerdGroundSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ground_id",
+        "ground_name",
+        "champion_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "signature_champion_mob",
+        "level_bracket",
+        "hp_and_xp_multiplier",
+        "spoil_and_drop_jackpot"
+      ],
+      "properties": {
+        "ground_id": { "type": "string" },
+        "ground_name": { "type": "string" },
+        "champion_category": {
+          "type": "string",
+          "enum": [
+            "Blue_Aura_10x_Champion_Field",
+            "Crimson_Aura_50x_Champion_Sanctum",
+            "Social_Herd_Leader_Pack_Ground"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "signature_champion_mob": { "type": "string" },
+        "level_bracket": { "type": "string" },
+        "hp_and_xp_multiplier": { "type": "string" },
+        "spoil_and_drop_jackpot": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "dualswordCraftUnsealForgeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "forge_id",
+        "town_zone_id",
+        "town_name",
+        "dualsword_tier_category",
+        "blacksmith_or_maestro_npc",
+        "anvil_loc",
+        "signature_dualsword_pairings",
+        "stamp_and_purity_cost",
+        "plus_four_enchant_passive"
+      ],
+      "properties": {
+        "forge_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "dualsword_tier_category": {
+          "type": "string",
+          "enum": [
+            "Starter_C_B_Dualsword_Anvil",
+            "A_S_Grade_Craft_Stamp_Forge",
+            "Maestro_Ishuma_S80_S84_Unseal_Dock"
+          ]
+        },
+        "blacksmith_or_maestro_npc": { "type": "string" },
+        "anvil_loc": { "type": "string" },
+        "signature_dualsword_pairings": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "stamp_and_purity_cost": { "type": "string" },
+        "plus_four_enchant_passive": { "type": "string" }
       }
     }
   }
