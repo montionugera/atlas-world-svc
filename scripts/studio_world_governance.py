@@ -726,6 +726,8 @@ def validate_world_governance(
                 "godotStorybookPrefabNodesCount": len(t_doc.get("godot_storybook_prefab_nodes") or []),
                 "navmeshObstacleSectorsCount": len(t_doc.get("navmesh_obstacle_sectors") or []),
                 "liveopsEventFlagNodesCount": len(t_doc.get("liveops_event_flag_nodes") or []),
+                "cinematicCameraRailsCount": len(t_doc.get("cinematic_camera_rails") or []),
+                "clientGpuVramBudgetsCount": len(t_doc.get("client_gpu_vram_budgets") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1936,6 +1938,43 @@ def validate_world_governance(
                 if lf_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: liveops_event_flag_nodes '{lf_id}' references unknown zone_id '{lf_zid}'"
+                    )
+
+            # Validate 16-Rail In-Game Cutscene Camera Rail, Boss Intro Cinematics & Story Trigger Matrix (D87)
+            cinematic_rails = t_doc.get("cinematic_camera_rails") or []
+            if cinematic_rails and len(cinematic_rails) < 16:
+                errors.append(
+                    f"GOV-10 violation: cinematic_camera_rails must have at least 16 rails, got {len(cinematic_rails)}"
+                )
+            for cr_item in cinematic_rails:
+                if not isinstance(cr_item, dict):
+                    continue
+                cr_id = str(cr_item.get("rail_id", ""))
+                cr_zid = str(cr_item.get("zone_id", ""))
+                cr_did = str(cr_item.get("dungeon_id", ""))
+                if cr_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: cinematic_camera_rails '{cr_id}' references unknown zone_id '{cr_zid}'"
+                    )
+                if cr_did and cr_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: cinematic_camera_rails '{cr_id}' references unknown dungeon_id '{cr_did}'"
+                    )
+
+            # Validate 15-Town Client GPU Frame-Time Profiler, Draw-Call Instancing & VRAM Pool Budget Matrix (D88)
+            gpu_budgets = t_doc.get("client_gpu_vram_budgets") or []
+            if gpu_budgets and len(gpu_budgets) < 15:
+                errors.append(
+                    f"GOV-10 violation: client_gpu_vram_budgets must have at least 15 budgets, got {len(gpu_budgets)}"
+                )
+            for gb_item in gpu_budgets:
+                if not isinstance(gb_item, dict):
+                    continue
+                gb_id = str(gb_item.get("gpu_budget_id", ""))
+                gb_zid = str(gb_item.get("zone_id", ""))
+                if gb_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: client_gpu_vram_budgets '{gb_id}' references unknown zone_id '{gb_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

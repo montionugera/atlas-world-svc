@@ -431,6 +431,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/liveopsEventFlagNodeSpec" }
     },
+    "cinematic_camera_rails": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/cinematicCameraRailSpec" }
+    },
+    "client_gpu_vram_budgets": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/clientGpuVramBudgetSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -4776,6 +4788,174 @@
         "accent": {
           "type": "string",
           "enum": ["#f59e0b", "#fbbf24", "#eab308", "#f97316"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "cinematicCameraRailSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rail_id",
+        "title",
+        "zone_id",
+        "town_id",
+        "dungeon_id",
+        "cinematic_category",
+        "spline_keyframe_count",
+        "duration_sec",
+        "fov_curve_deg",
+        "letterbox_aspect",
+        "skippable_party_vote",
+        "audio_ducking_db",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "rail_id": { "type": "string" },
+        "title": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "town_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "cinematic_category": {
+          "type": "string",
+          "enum": [
+            "Raid Boss Awakening Intro",
+            "Town First-Arrival Flythrough",
+            "Main Quest Story Revelation",
+            "Castle Siege Breach Sequence"
+          ]
+        },
+        "spline_keyframe_count": {
+          "type": "integer",
+          "minimum": 6,
+          "maximum": 28
+        },
+        "duration_sec": {
+          "type": "number",
+          "minimum": 6.5,
+          "maximum": 24.0
+        },
+        "fov_curve_deg": {
+          "type": "string",
+          "enum": ["35->55", "45->70", "60->40", "50->65"]
+        },
+        "letterbox_aspect": {
+          "type": "string",
+          "enum": ["2.39:1 Anamorphic", "2.00:1 Univisium", "1.85:1 Flat"]
+        },
+        "skippable_party_vote": {
+          "type": "string",
+          "enum": [
+            "Instant Solo Skip",
+            "Party Majority Vote >= 60%",
+            "First-Kill Mandatory Then Auto-Skip"
+          ]
+        },
+        "audio_ducking_db": {
+          "type": "number",
+          "minimum": -12.0,
+          "maximum": -6.0
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#ec4899", "#f472b6", "#db2777", "#a855f7"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "clientGpuVramBudgetSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gpu_budget_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "profile_tier",
+        "max_draw_calls_per_frame",
+        "multimesh_instanced_props",
+        "vram_pool_cap_mb",
+        "target_frame_time_ms",
+        "occlusion_culling_mode",
+        "shader_uber_variants",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "gpu_budget_id": { "type": "string" },
+        "title": { "type": "string" },
+        "town_id": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "profile_tier": {
+          "type": "string",
+          "enum": [
+            "200-Player Siege Ultra Crowd",
+            "150-Merchant Town Market",
+            "Dense Foliage & Water Shader Hub",
+            "Volumetric Lava & Particle Sanctuary"
+          ]
+        },
+        "max_draw_calls_per_frame": {
+          "type": "integer",
+          "minimum": 450,
+          "maximum": 1400
+        },
+        "multimesh_instanced_props": {
+          "type": "integer",
+          "minimum": 120,
+          "maximum": 850
+        },
+        "vram_pool_cap_mb": {
+          "type": "integer",
+          "minimum": 512,
+          "maximum": 1536
+        },
+        "target_frame_time_ms": {
+          "type": "number",
+          "minimum": 8.3,
+          "maximum": 16.6
+        },
+        "occlusion_culling_mode": {
+          "type": "string",
+          "enum": [
+            "Rasterizer Portal + HZ-Buffer",
+            "PVS Baked Cell Matrix",
+            "Distance + Frustum Cone"
+          ]
+        },
+        "shader_uber_variants": {
+          "type": "integer",
+          "minimum": 12,
+          "maximum": 48
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#06b6d4", "#22d3ee", "#0891b2", "#38bdf8"]
         },
         "notes": { "type": "string" }
       }

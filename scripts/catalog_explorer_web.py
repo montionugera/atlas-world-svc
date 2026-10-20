@@ -107,15 +107,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas82DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas84DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas86DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas88DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 41)),
+        "wave": int(iter_state.get("wave", 42)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"88-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"86-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"84-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"82-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -150,7 +152,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 Verified"
         ),
     }
     return merged
@@ -4412,7 +4414,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4517,14 +4519,20 @@ let ATLAS_ANTI_BOT_MODE = 'All';
 let ATLAS_GODOT_STORYBOOK_MODE = 'All';
 let ATLAS_NAVMESH_MODE = 'All';
 let ATLAS_LIVEOPS_FLAGS_MODE = 'All';
+let ATLAS_CINEMATIC_RAILS_MODE = 'All';
+let ATLAS_GPU_BUDGET_MODE = 'All';
 let SELECTED_ANTI_BOT_SENTINEL_ID = '';
 let SELECTED_GODOT_STORYBOOK_PREFAB_ID = '';
 let SELECTED_NAVMESH_SECTOR_ID = '';
 let SELECTED_LIVEOPS_FLAG_ID = '';
+let SELECTED_CINEMATIC_RAIL_ID = '';
+let SELECTED_GPU_BUDGET_ID = '';
 let ANTI_BOT_SENTINELS = [];
 let GODOT_STORYBOOK_PREFABS = [];
 let NAVMESH_OBSTACLE_SECTORS = [];
 let LIVEOPS_EVENT_FLAGS = [];
+let CINEMATIC_CAMERA_RAILS = [];
+let CLIENT_GPU_BUDGETS = [];
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4601,6 +4609,8 @@ const ATLAS_STATE_STORE = {
   godotStorybookMode: 'All',               // D84: Active 15-Node [Role 2 + Role 3: Godot Tool-Scene Storybook] 3D Kitbash Prefab Inspector Selector
   navmeshMode: 'All',                      // D85: Active 16-Node [Role 4: Backend Infra] NavMesh 3D Pathfinding, Jump-Link & Dynamic Door/Bridge Obstacle Selector
   liveopsFlagsMode: 'All',                 // D86: Active 15-Node [Role 5: LiveOps & Build] Seasonal World Event, Double-EXP / Drop Hot-Config & Feature Flag Selector
+  cinematicRailsMode: 'All',               // D87: Active 16-Rail [Role 2: Content & World Tools] In-Game Cutscene Camera Rail, Boss Intro Cinematics & Story Trigger Selector
+  gpuBudgetMode: 'All',                    // D88: Active 15-Town [Role 3: Technical Artist] Client GPU Frame-Time Profiler, Draw-Call Instancing & VRAM Pool Budget Selector
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4698,6 +4708,54 @@ function selectLiveopsEventFlag(flagId) {
   const tatlas = sp.tShapedWorldAtlas || {};
   LIVEOPS_EVENT_FLAGS = tatlas.liveops_event_flag_nodes || [];
   const item = LIVEOPS_EVENT_FLAGS.find(f => f.event_flag_id === SELECTED_LIVEOPS_FLAG_ID);
+  if (item) {
+    focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasCinematicRailsMode(modeId) {
+  ATLAS_CINEMATIC_RAILS_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.cinematicRailsMode = ATLAS_CINEMATIC_RAILS_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectCinematicCameraRail(railId) {
+  SELECTED_CINEMATIC_RAIL_ID = String(railId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  CINEMATIC_CAMERA_RAILS = tatlas.cinematic_camera_rails || [];
+  const item = CINEMATIC_CAMERA_RAILS.find(r => r.rail_id === SELECTED_CINEMATIC_RAIL_ID);
+  if (item) {
+    if (item.dungeon_id) {
+      openDungeonSubMap(item.dungeon_id, 'B3');
+      return;
+    }
+    if (String(item.zone_id || '').startsWith('zone-town-')) {
+      focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+      return;
+    }
+    focusFieldOrFortressBlueprint(item.zone_id, `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasGpuBudgetMode(modeId) {
+  ATLAS_GPU_BUDGET_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.gpuBudgetMode = ATLAS_GPU_BUDGET_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectClientGpuBudget(budgetId) {
+  SELECTED_GPU_BUDGET_ID = String(budgetId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  CLIENT_GPU_BUDGETS = tatlas.client_gpu_vram_budgets || [];
+  const item = CLIENT_GPU_BUDGETS.find(b => b.gpu_budget_id === SELECTED_GPU_BUDGET_ID);
   if (item) {
     focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
     return;
@@ -12924,6 +12982,138 @@ function renderAtlasLiveopsEventFlagsBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasCinematicCameraRailsBarHtml(tatlas) {
+  CINEMATIC_CAMERA_RAILS = (tatlas && tatlas.cinematic_camera_rails) || [];
+  if (!CINEMATIC_CAMERA_RAILS.length) return '';
+  const curMode = ATLAS_CINEMATIC_RAILS_MODE || ATLAS_STATE_STORE.cinematicRailsMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🎬 Cutscene Camera Rails (16)', col: '#ec4899' },
+    { id: 'Raid Boss Awakening Intro', label: '🐉 Boss Awakening Intro (9)', col: '#ec4899' },
+    { id: 'Town First-Arrival Flythrough', label: '🏰 Town Arrival Flythrough (2)', col: '#f472b6' },
+    { id: 'Main Quest Story Revelation', label: '📜 Main Quest Revelation (3)', col: '#db2777' },
+    { id: 'Castle Siege Breach Sequence', label: '⚔️ Siege Breach Cam (2)', col: '#a855f7' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : CINEMATIC_CAMERA_RAILS.filter(r => curMode === 'All' || r.cinematic_category === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasCinematicCameraRailsBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#ec4899">🎬 [ROLE 2: CONTENT &amp; WORLD TOOLS] IN-GAME CUTSCENE CAMERA RAIL, BOSS INTRO CINEMATICS &amp; STORY TRIGGER MATRIX (D87 · ${CINEMATIC_CAMERA_RAILS.length} RAILS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasCinematicRailsMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fbcfe8;font-weight:800">
+          CATMULL-ROM 6–28 KEYFRAMES · 6.5–24.0S · ANAMORPHIC 2.39:1 · PARTY SKIP GOVERNANCE
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(r => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(r.accent || '#ec4899')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🎬 ${escapeHtml(r.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(r.accent || '#ec4899')}">[${escapeHtml(r.cinematic_category)}]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#fbcfe8;margin-top:1px">
+                  🎞️ ${r.spline_keyframe_count} Keyframes · ${r.duration_sec}s · FOV ${escapeHtml(r.fov_curve_deg)}° · ${escapeHtml(r.letterbox_aspect)} · Duck ${r.audio_ducking_db}dB
+                </div>
+                <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                  ⏭️ ${escapeHtml(r.skippable_party_vote)} — ${escapeHtml(r.notes.slice(0, 56))}
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectCinematicCameraRail('${escapeHtml(r.rail_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(r.accent || '#ec4899')};background:#831843;color:#fce7f3;font-size:8px;font-weight:800;cursor:pointer">
+                  🎬 Inspect Camera Rail (${escapeHtml(r.rail_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasClientGpuBudgetsBarHtml(tatlas) {
+  CLIENT_GPU_BUDGETS = (tatlas && tatlas.client_gpu_vram_budgets) || [];
+  if (!CLIENT_GPU_BUDGETS.length) return '';
+  const curMode = ATLAS_GPU_BUDGET_MODE || ATLAS_STATE_STORE.gpuBudgetMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🖥️ GPU & VRAM Budgets (15)', col: '#06b6d4' },
+    { id: '200-Player Siege Ultra Crowd', label: '⚔️ 200p Siege Crowd (3)', col: '#06b6d4' },
+    { id: '150-Merchant Town Market', label: '🏪 150-Stall Market (3)', col: '#22d3ee' },
+    { id: 'Dense Foliage & Water Shader Hub', label: '🌿 Foliage & Water Hub (5)', col: '#0891b2' },
+    { id: 'Volumetric Lava & Particle Sanctuary', label: '🌋 Volumetric & Particle (4)', col: '#38bdf8' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : CLIENT_GPU_BUDGETS.filter(b => curMode === 'All' || b.profile_tier === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasClientGpuBudgetsBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#06b6d4">🖥️ [ROLE 3: TECHNICAL ARTIST] CLIENT GPU FRAME-TIME PROFILER, DRAW-CALL INSTANCING &amp; VRAM POOL BUDGET MATRIX (D88 · ${CLIENT_GPU_BUDGETS.length} HUBS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasGpuBudgetMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#a5f3fc;font-weight:800">
+          DRAW CALLS 450–1400 · MULTIMESH 120–850 · VRAM 512–1536MB · FRAME TIME 8.3–16.6MS
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(b => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(b.accent || '#06b6d4')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🖥️ ${escapeHtml(b.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(b.accent || '#06b6d4')}">[${escapeHtml(b.profile_tier)}]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#a5f3fc;margin-top:1px">
+                  📊 ${b.max_draw_calls_per_frame} Draws · ${b.multimesh_instanced_props} MultiMesh · ${b.vram_pool_cap_mb}MB VRAM · ${b.target_frame_time_ms}ms
+                </div>
+                <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                  🔭 ${escapeHtml(b.occlusion_culling_mode)} (${b.shader_uber_variants} Uber-Variants) — ${escapeHtml(b.notes.slice(0, 48))}
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectClientGpuBudget('${escapeHtml(b.gpu_budget_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(b.accent || '#06b6d4')};background:#164e63;color:#cffafe;font-size:8px;font-weight:800;cursor:pointer">
+                  🖥️ Inspect GPU Budget (${escapeHtml(b.gpu_budget_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -13114,6 +13304,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasGodotStorybookBarHtml(tatlas)}
       ${renderAtlasNavmeshObstacleBarHtml(tatlas)}
       ${renderAtlasLiveopsEventFlagsBarHtml(tatlas)}
+      ${renderAtlasCinematicCameraRailsBarHtml(tatlas)}
+      ${renderAtlasClientGpuBudgetsBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -17158,6 +17350,54 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // In-Game Cutscene Camera Rail, Boss Intro Cinematics & Story Trigger Matrix Overlay (D87)
+  const cinematicRailRecords = Array.isArray(atlas.cinematic_camera_rails) ? atlas.cinematic_camera_rails : [];
+  const cinematicRailsOverlaySvg = !ATLAS_CINEMATIC_RAILS_MODE ? '' : `
+    <g id="studioCinematicRailsOverlay">
+      ${cinematicRailRecords.map((r, idx) => {
+        const wx = typeof r.world_x === 'number' ? r.world_x : 520;
+        const wy = typeof r.world_y === 'number' ? r.world_y : 310;
+        const colHex = r.accent || '#ec4899';
+        const ccat = r.cinematic_category || 'Raid Boss Awakening Intro';
+        const iconTxt = ccat === 'Raid Boss Awakening Intro'
+          ? '🐉'
+          : (ccat === 'Town First-Arrival Flythrough'
+              ? '🏰'
+              : (ccat === 'Main Quest Story Revelation' ? '📜' : '⚔️'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectCinematicCameraRail('${escapeHtml(r.rail_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.4" fill="rgba(131,24,67,0.58)" stroke="${escapeHtml(colHex)}" stroke-width="2.0"/>
+            <text x="${wx}" y="${wy + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Client GPU Frame-Time Profiler, Draw-Call Instancing & VRAM Pool Budget Matrix Overlay (D88)
+  const clientGpuBudgetRecords = Array.isArray(atlas.client_gpu_vram_budgets) ? atlas.client_gpu_vram_budgets : [];
+  const clientGpuBudgetOverlaySvg = !ATLAS_GPU_BUDGET_MODE ? '' : `
+    <g id="studioClientGpuBudgetOverlay">
+      ${clientGpuBudgetRecords.map((b, idx) => {
+        const wx = typeof b.world_x === 'number' ? b.world_x : 510;
+        const wy = typeof b.world_y === 'number' ? b.world_y : 290;
+        const colHex = b.accent || '#06b6d4';
+        const ptier = b.profile_tier || '200-Player Siege Ultra Crowd';
+        const iconTxt = ptier === '200-Player Siege Ultra Crowd'
+          ? '⚔️'
+          : (ptier === '150-Merchant Town Market'
+              ? '🏪'
+              : (ptier === 'Dense Foliage & Water Shader Hub' ? '🌿' : '🌋'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectClientGpuBudget('${escapeHtml(b.gpu_budget_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.4" fill="rgba(22,78,99,0.58)" stroke="${escapeHtml(colHex)}" stroke-width="2.0"/>
+            <text x="${wx}" y="${wy + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -17224,6 +17464,8 @@ function renderDedicatedWorldAtlas() {
     ${godotStorybookOverlaySvg}
     ${navmeshObstacleOverlaySvg}
     ${liveopsEventFlagsOverlaySvg}
+    ${cinematicRailsOverlaySvg}
+    ${clientGpuBudgetOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

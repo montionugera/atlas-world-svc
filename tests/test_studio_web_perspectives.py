@@ -3560,7 +3560,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 86)
+        self.assertGreaterEqual(len(audit["dimensions"]), 86)
 
         d85 = audit["dimensions"]["D85_navmesh_3d_pathfinding_jump_link_and_dynamic_obstacle_matrix"]
         self.assertEqual(d85["score"], 100.0)
@@ -3606,10 +3606,127 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas86DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 86)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 86)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 86)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 86)
         self.assertIn("86-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave42_cinematic_camera_rails_and_client_gpu_vram_budgets(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["cinematicCameraRailsCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["clientGpuVramBudgetsCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "CINEMATIC_CAMERA_RAILS",
+            "CLIENT_GPU_BUDGETS",
+            "ATLAS_CINEMATIC_RAILS_MODE",
+            "ATLAS_GPU_BUDGET_MODE",
+            "setAtlasCinematicRailsMode",
+            "setAtlasGpuBudgetMode",
+            "selectCinematicCameraRail",
+            "selectClientGpuBudget",
+            "renderAtlasCinematicCameraRailsBarHtml",
+            "renderAtlasClientGpuBudgetsBarHtml",
+            "studioCinematicRailsOverlay",
+            "studioClientGpuBudgetOverlay",
+            "🎬 Cutscene Camera Rails (16)",
+            "🖥️ GPU & VRAM Budgets (15)",
+            "88-Dimension Semantic-Zoom Atlas Score",
+            "D1–D88 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 42 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 88)
+
+        d87 = audit["dimensions"]["D87_in_game_cutscene_camera_rail_and_boss_intro_cinematic_matrix"]
+        self.assertEqual(d87["score"], 100.0)
+        self.assertEqual(d87["verified"], 16)
+        self.assertEqual(d87["target"], 16)
+        self.assertTrue(d87["ui_wired"])
+
+        d88 = audit["dimensions"]["D88_client_gpu_frame_time_draw_call_instancing_and_vram_budget_matrix"]
+        self.assertEqual(d88["score"], 100.0)
+        self.assertEqual(d88["verified"], 15)
+        self.assertEqual(d88["target"], 15)
+        self.assertTrue(d88["ui_wired"])
+
+        rails = atlas["cinematic_camera_rails"]
+        self.assertEqual(len(rails), 16)
+        for r in rails:
+            self.assertIn(
+                r["cinematic_category"],
+                {
+                    "Raid Boss Awakening Intro",
+                    "Town First-Arrival Flythrough",
+                    "Main Quest Story Revelation",
+                    "Castle Siege Breach Sequence",
+                },
+            )
+            self.assertGreaterEqual(r["spline_keyframe_count"], 6)
+            self.assertLessEqual(r["spline_keyframe_count"], 28)
+            self.assertGreaterEqual(r["duration_sec"], 6.5)
+            self.assertLessEqual(r["duration_sec"], 24.0)
+            self.assertIn(r["fov_curve_deg"], {"35->55", "45->70", "60->40", "50->65"})
+            self.assertIn(r["letterbox_aspect"], {"2.39:1 Anamorphic", "2.00:1 Univisium", "1.85:1 Flat"})
+            self.assertIn(
+                r["skippable_party_vote"],
+                {
+                    "Instant Solo Skip",
+                    "Party Majority Vote >= 60%",
+                    "First-Kill Mandatory Then Auto-Skip",
+                },
+            )
+            self.assertGreaterEqual(r["audio_ducking_db"], -12.0)
+            self.assertLessEqual(r["audio_ducking_db"], -6.0)
+
+        budgets = atlas["client_gpu_vram_budgets"]
+        self.assertEqual(len(budgets), 15)
+        for b in budgets:
+            self.assertIn(
+                b["profile_tier"],
+                {
+                    "200-Player Siege Ultra Crowd",
+                    "150-Merchant Town Market",
+                    "Dense Foliage & Water Shader Hub",
+                    "Volumetric Lava & Particle Sanctuary",
+                },
+            )
+            self.assertGreaterEqual(b["max_draw_calls_per_frame"], 450)
+            self.assertLessEqual(b["max_draw_calls_per_frame"], 1400)
+            self.assertGreaterEqual(b["multimesh_instanced_props"], 120)
+            self.assertLessEqual(b["multimesh_instanced_props"], 850)
+            self.assertGreaterEqual(b["vram_pool_cap_mb"], 512)
+            self.assertLessEqual(b["vram_pool_cap_mb"], 1536)
+            self.assertGreaterEqual(b["target_frame_time_ms"], 8.3)
+            self.assertLessEqual(b["target_frame_time_ms"], 16.6)
+            self.assertIn(
+                b["occlusion_culling_mode"],
+                {
+                    "Rasterizer Portal + HZ-Buffer",
+                    "PVS Baked Cell Matrix",
+                    "Distance + Frustum Cone",
+                },
+            )
+            self.assertGreaterEqual(b["shader_uber_variants"], 12)
+            self.assertLessEqual(b["shader_uber_variants"], 48)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas88DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 88)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 88)
+        self.assertIn("88-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
