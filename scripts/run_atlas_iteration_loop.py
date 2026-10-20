@@ -2133,6 +2133,321 @@ def _build_farming_efficiency_profiles(atlas: dict[str, Any]) -> list[dict[str, 
     return profiles
 
 
+def _build_castle_siege_domains(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 8 canonical Castle Siege, Territory Tax & Clan Hall Domains matching the 8 harbors/clanhalls/forts (D25)."""
+    return [
+        {
+            "domain_id": "domain-harbor-lantern-ferry",
+            "stronghold_zone_id": "zone-harbor-lantern-ferry-pier",
+            "stronghold_name": "Lantern Hollow South Ferry Harbor",
+            "continent_id": "continent-01-hearthbloom-basin",
+            "domain_tier": "Harbor_Stronghold",
+            "vassal_town_ids": [
+                "zone-town-lantern-hollow",
+                "zone-town-cinnamon-mill",
+            ],
+            "vassal_hunting_zone_ids": [
+                "zone-field-clover-south-gate",
+                "zone-field-cinnamon-bark-viaduct",
+                "zone-field-whispering-mire",
+            ],
+            "tax_rate_pct": 8,
+            "siege_window_utc": "Saturday 16:00–18:00 UTC (Bi-Weekly Maritime Tariff Siege)",
+            "artifact_altar_loc": "-96200:258400",
+            "outer_gate_loc": "-95840:258140",
+            "manor_specialty_crop": "Golden Clover Coda & Cinnamon-Bark Sap",
+            "ruling_npc_faction": "Neutral Adventure Guild Maritime Customs Charter",
+        },
+        {
+            "domain_id": "domain-harbor-glaze-barge-airship",
+            "stronghold_zone_id": "zone-harbor-glaze-barge-airship-dock",
+            "stronghold_name": "Glaze-Barge Maritime & Airship Harbor",
+            "continent_id": "continent-01-hearthbloom-basin",
+            "domain_tier": "Harbor_Stronghold",
+            "vassal_town_ids": [
+                "zone-town-glaze-barge-quay",
+                "zone-town-porcelain-loom",
+            ],
+            "vassal_hunting_zone_ids": [
+                "zone-field-cobalt-sandbar-ford",
+                "zone-field-celadon-causeway",
+                "zone-field-ginger-aqueduct-bridge",
+            ],
+            "tax_rate_pct": 9,
+            "siege_window_utc": "Saturday 18:00–20:00 UTC (Bi-Weekly Airship Berth Siege)",
+            "artifact_altar_loc": "-89400:155200",
+            "outer_gate_loc": "-89040:154940",
+            "manor_specialty_crop": "Celadon Dew-Lotus & Blue Cobalt Reed",
+            "ruling_npc_faction": "Glaze-Barge Sky-Quay Admiralty",
+        },
+        {
+            "domain_id": "domain-clanhall-kilnwatch-accord",
+            "stronghold_zone_id": "zone-clanhall-kilnwatch-accord",
+            "stronghold_name": "Kilnwatch Bastion Guild Clan Halls (6-Race Accord Quarters)",
+            "continent_id": "continent-01-hearthbloom-basin",
+            "domain_tier": "Regional_Castle",
+            "vassal_town_ids": [
+                "zone-town-kilnwatch-bastion",
+                "zone-town-draft-kiln-post",
+            ],
+            "vassal_hunting_zone_ids": [
+                "zone-field-kiln-east-orchard",
+                "zone-field-firebrick-duct",
+                "zone-field-slag-chasm",
+            ],
+            "tax_rate_pct": 10,
+            "siege_window_utc": "Sunday 14:00–16:00 UTC (6-Race Convergence Castle Siege)",
+            "artifact_altar_loc": "-13800:124100",
+            "outer_gate_loc": "-13440:123840",
+            "manor_specialty_crop": "Hearth-Glaze Apricot & Firebrick Slag-Coke",
+            "ruling_npc_faction": "Kilnwatch Six-Race Accord Council",
+        },
+        {
+            "domain_id": "domain-clanhall-inductor-conclave",
+            "stronghold_zone_id": "zone-clanhall-inductor-conclave",
+            "stronghold_name": "Inductor Switchyard Blacksmith & Guild Clan Halls",
+            "continent_id": "continent-02-clockwork-steppe",
+            "domain_tier": "Capital_Citadel",
+            "vassal_town_ids": [
+                "zone-town-inductor-switchyard",
+                "zone-town-escapement-anvil",
+                "zone-town-torque-balance-citadel",
+            ],
+            "vassal_hunting_zone_ids": [
+                "zone-field-leyden-causeway",
+                "zone-field-caldera-rim",
+                "zone-field-metronome-bridge",
+                "zone-field-spiral-wormway-ramp",
+            ],
+            "tax_rate_pct": 14,
+            "siege_window_utc": "Sunday 18:00–20:00 UTC (Steppe Capital Citadel Siege)",
+            "artifact_altar_loc": "148100:-54800",
+            "outer_gate_loc": "148460:-55060",
+            "manor_specialty_crop": "Leyden Copper-Spore & Tempered Mainspring Flax",
+            "ruling_npc_faction": "Blacksmith Clan Grand Anvil Directorate",
+        },
+        {
+            "domain_id": "domain-fortress-shanty-kiln",
+            "stronghold_zone_id": "zone-fortress-shanty-kiln",
+            "stronghold_name": "Cinder-Apron Borderland Fortress",
+            "continent_id": "continent-01-hearthbloom-basin",
+            "domain_tier": "Border_Fortress",
+            "vassal_town_ids": [
+                "zone-town-kilnwatch-bastion",
+                "zone-town-carillon-belfry",
+            ],
+            "vassal_hunting_zone_ids": [
+                "zone-field-cinder-apron",
+                "zone-field-chime-pipe-colonnade",
+            ],
+            "tax_rate_pct": 11,
+            "siege_window_utc": "Friday 20:00–21:00 UTC (72h Borderland Garrison Skirmish)",
+            "artifact_altar_loc": "-5200:134200",
+            "outer_gate_loc": "-4840:133940",
+            "manor_specialty_crop": "Ash-Cinder Rye & Acoustic Chime-Gourd",
+            "ruling_npc_faction": "Cinder-Apron Vanguard Wardens",
+        },
+        {
+            "domain_id": "domain-fortress-floran-saffron",
+            "stronghold_zone_id": "zone-fortress-floran-saffron",
+            "stronghold_name": "Saffron Agricultural Fortress",
+            "continent_id": "continent-01-hearthbloom-basin",
+            "domain_tier": "Regional_Castle",
+            "vassal_town_ids": [
+                "zone-town-saffron-press",
+                "zone-town-root-train-roundhouse",
+            ],
+            "vassal_hunting_zone_ids": [
+                "zone-field-apricot-aqueduct-terrace",
+                "zone-field-resin-arch-tunnel",
+            ],
+            "tax_rate_pct": 10,
+            "siege_window_utc": "Saturday 14:00–16:00 UTC (Manor Harvest Tax Siege)",
+            "artifact_altar_loc": "18100:168400",
+            "outer_gate_loc": "18460:168140",
+            "manor_specialty_crop": "Imperial Saffron Crocus & Amber Root-Resin",
+            "ruling_npc_faction": "Saffron Manor Freeholders & Tontatta Factor Guild",
+        },
+        {
+            "domain_id": "domain-fortress-dragonspine-cog",
+            "stronghold_zone_id": "zone-fortress-dragonspine-cog",
+            "stronghold_name": "Brass-Spur Dragonspine Fortress",
+            "continent_id": "continent-02-clockwork-steppe",
+            "domain_tier": "Border_Fortress",
+            "vassal_town_ids": [
+                "zone-town-pinion-terminus",
+                "zone-town-escapement-anvil",
+            ],
+            "vassal_hunting_zone_ids": [
+                "zone-field-brass-spur-ridge",
+                "zone-field-astrolabe-rift",
+                "zone-field-siphon-sluice",
+            ],
+            "tax_rate_pct": 12,
+            "siege_window_utc": "Friday 21:00–22:00 UTC (72h Continental Ridge Fortress Siege)",
+            "artifact_altar_loc": "91200:136800",
+            "outer_gate_loc": "91560:136540",
+            "manor_specialty_crop": "Verdigris Mercury-Pod & Brass-Spur Thistle",
+            "ruling_npc_faction": "Dragonspine Gear-Watch Legion",
+        },
+        {
+            "domain_id": "domain-fortress-cloud-halo",
+            "stronghold_zone_id": "zone-fortress-cloud-halo",
+            "stronghold_name": "Starfall Cloud-Mountain Fortress",
+            "continent_id": "continent-03-shattered-halo",
+            "domain_tier": "Capital_Citadel",
+            "vassal_town_ids": [
+                "zone-town-starfall-haven",
+                "zone-town-crown-beacon",
+            ],
+            "vassal_hunting_zone_ids": [
+                "zone-field-tether-causeway",
+                "zone-field-aurora-tether",
+                "zone-field-orrery-bridge",
+                "zone-field-kelp-spiral-reef",
+            ],
+            "tax_rate_pct": 15,
+            "siege_window_utc": "Sunday 20:00–22:00 UTC (Grand High-Halo Imperial Citadel Siege)",
+            "artifact_altar_loc": "46200:-45100",
+            "outer_gate_loc": "46560:-45360",
+            "manor_specialty_crop": "Astral Star-Kelp & Aurora Prism-Fruit",
+            "ruling_npc_faction": "High-Halo Sovereign Astral Order",
+        },
+    ]
+
+
+def _build_world_boss_spawn_radar(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 32 high-value World Boss & MVP Respawn Radar entries (16 Dungeon MVPs on B3/3F + 16 Overland/Fortress Raid & Mini-Bosses) (D26)."""
+    mf_dungeons = atlas.get("multi_floor_dungeons") or []
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    forts_list = zdir.get("harbors_clanhalls_and_forts") or []
+    fields_list = zdir.get("fields_and_hunting_areas") or []
+
+    statuses = ("Window Open", "Respawning Soon", "Sanctum Active")
+    entries: list[dict[str, Any]] = []
+
+    # Part 1: 16 Dungeon MVP Bosses on B3 / 3F
+    mvp_windows = (
+        "12h ± 2h",
+        "18h ± 3h",
+        "24h ± 4h",
+        "36h ± 4h",
+        "48h ± 6h",
+    )
+    for idx, dng in enumerate(mf_dungeons[:16]):
+        if not isinstance(dng, dict):
+            continue
+        did = str(dng.get("dungeon_id", ""))
+        floors = dng.get("floors") or []
+        f_last = floors[-1] if floors else {}
+        fid = str(f_last.get("floor_id") or ("3F" if dng.get("dungeon_kind") == "vertical_tower" else "B3"))
+        spawns = f_last.get("spawns") or []
+        mvps = [s for s in spawns if isinstance(s, dict) and s.get("entity_type") == "MVP"]
+        mvp_row = mvps[0] if mvps else (spawns[0] if spawns else {})
+        b_name = str(mvp_row.get("name") or f"[MVP] {dng.get('name', did)} Sanctum Apostle")
+        b_lv = max(1, min(99, int(mvp_row.get("level") or 30)))
+        b_loc = str(mvp_row.get("loc_coord") or dng.get("entrance_loc") or "53100:242600")
+        drops = mvp_row.get("refinement_drops") or ["Divine Apostle Anvil Core", "Architect Seal Crest"]
+        top_drop = f"{drops[0]} · {drops[1]}" if len(drops) >= 2 else str(drops[0])
+        cc_size = (
+            "18–27 Players (2–3 Parties)"
+            if b_lv <= 25
+            else ("27–45 Players (3–5 Parties)" if b_lv <= 55 else "45–90 Players (5–10 Command Channel Parties)")
+        )
+        entries.append(
+            {
+                "boss_id": f"radar-mvp-{idx + 1:02d}-{did.replace('zone-', '')}",
+                "boss_name": b_name,
+                "boss_category": "MVP",
+                "level": b_lv,
+                "zone_id": did,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": b_loc,
+                "respawn_window": mvp_windows[idx % len(mvp_windows)],
+                "command_channel_size": cc_size,
+                "top_reward_drop": top_drop,
+                "radar_status": statuses[idx % len(statuses)],
+            }
+        )
+
+    # Part 2A: 8 Fortress / Harbor / Clan Hall Overland Raid Bosses
+    for idx, fort in enumerate(forts_list[:8]):
+        if not isinstance(fort, dict):
+            continue
+        zid = str(fort.get("zone_id", ""))
+        fbp = fort.get("fortress_blueprint") or {}
+        st_list = fbp.get("spawn_territories") or []
+        raids = [s for s in st_list if isinstance(s, dict) and s.get("entity_type") == "Raid"]
+        r_row = raids[0] if raids else (st_list[0] if st_list else {})
+        b_name = str(r_row.get("mob_name") or f"[Raid Boss] {fort.get('name', zid)} Siege Commander")
+        b_lv = max(1, min(99, int(r_row.get("level") or 25)))
+        b_loc = str(r_row.get("loc_coord") or fort.get("loc_coord") or "-5200:134200")
+        drops = r_row.get("refinement_drops") or ["Blood Alliance", "Blessed Weapon Enchant"]
+        top_drop = f"{drops[0]} · {drops[1]}" if len(drops) >= 2 else str(drops[0])
+        entries.append(
+            {
+                "boss_id": f"radar-fort-raid-{idx + 1:02d}-{zid.replace('zone-', '')}",
+                "boss_name": b_name,
+                "boss_category": "Raid",
+                "level": b_lv,
+                "zone_id": zid,
+                "dungeon_id": "",
+                "floor_id": "",
+                "loc": b_loc,
+                "respawn_window": "8h ± 1h (Siege Garrison Window)",
+                "command_channel_size": "18–36 Players (2–4 Clan Parties)",
+                "top_reward_drop": top_drop,
+                "radar_status": statuses[(idx + 1) % len(statuses)],
+            }
+        )
+
+    # Part 2B: 8 Overland Field Hunting Area Raid & Mini-Bosses (4 Raid + 4 Mini-Boss)
+    selected_fields = [
+        fields_list[0],   # Clover South-Gate
+        fields_list[3],   # Firebrick Bellows Duct
+        fields_list[10],  # Cinder Apron Viaduct
+        fields_list[11],  # Brass-Spur Gear Ridge
+        fields_list[12],  # Mainspring Caldera Rim
+        fields_list[13],  # Leyden Capacitor Causeway
+        fields_list[14],  # Star-Tether Causeway
+        fields_list[15],  # Aurora Tether Span
+    ]
+    for idx, fld in enumerate(selected_fields):
+        if not isinstance(fld, dict):
+            continue
+        zid = str(fld.get("zone_id", ""))
+        ftb = fld.get("field_tactical_blueprint") or {}
+        st_list = ftb.get("spawn_territories") or []
+        want_cat = "Raid" if idx >= 4 else "Mini-Boss"
+        matches = [s for s in st_list if isinstance(s, dict) and s.get("entity_type") == want_cat]
+        s_row = matches[0] if matches else (st_list[0] if st_list else {})
+        b_name = str(s_row.get("mob_name") or f"[{want_cat}] {fld.get('name', zid)} Warden")
+        b_lv = max(1, min(99, int(s_row.get("level") or 20)))
+        b_loc = str(s_row.get("loc_coord") or fld.get("loc_coord") or "72986:113330")
+        drops = s_row.get("refinement_drops") or ["Blessed Weapon Enchant Scroll", "Seal-Stone Cluster"]
+        top_drop = f"{drops[0]} · {drops[1]}" if len(drops) >= 2 else str(drops[0])
+        entries.append(
+            {
+                "boss_id": f"radar-field-{idx + 1:02d}-{zid.replace('zone-', '')}",
+                "boss_name": b_name,
+                "boss_category": want_cat,
+                "level": b_lv,
+                "zone_id": zid,
+                "dungeon_id": "",
+                "floor_id": "",
+                "loc": b_loc,
+                "respawn_window": "6h ± 1h" if want_cat == "Raid" else "2h ± 15m (Field Patrol)",
+                "command_channel_size": "9–18 Players (1–2 Parties)" if want_cat == "Raid" else "4–9 Players (1 Full Party)",
+                "top_reward_drop": top_drop,
+                "radar_status": statuses[(idx + 2) % len(statuses)],
+            }
+        )
+
+    return entries
+
+
+
 
 
 def _resolve_town_layout_archetype(zone_entry: dict[str, Any], idx: int) -> str:
@@ -3086,6 +3401,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
         atlas["farming_efficiency_profiles"] = _build_farming_efficiency_profiles(atlas)
         actions.append("populated_40_farming_efficiency_profiles")
 
+    # 9. Ensure all 8 Castle Siege, Territory Tax & Clan Hall Domains exist in `castle_siege_domains` (D25)
+    if len(atlas.get("castle_siege_domains") or []) < 8:
+        atlas["castle_siege_domains"] = _build_castle_siege_domains(atlas)
+        actions.append("populated_8_castle_siege_domains")
+
+    # 10. Ensure all 32 World Boss & MVP Respawn Radar Entries exist in `world_boss_spawn_radar` (D26)
+    if len(atlas.get("world_boss_spawn_radar") or []) < 32:
+        atlas["world_boss_spawn_radar"] = _build_world_boss_spawn_radar(atlas)
+        actions.append("populated_32_world_boss_spawn_radar")
+
     return {"actions": actions}
 
 
@@ -3832,15 +4157,151 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d24_ratio * 80.0, 1)
     )
 
+    # D25: Interactive Castle Siege, Territory Tax & Clan Hall Domain Overlay (`castle_siege_domains` - 8 Stronghold Domains)
+    expected_domain_tiers = {"Capital_Citadel", "Regional_Castle", "Border_Fortress", "Harbor_Stronghold"}
+    fort_zone_id_set = {
+        str(h.get("zone_id"))
+        for h in forts_list
+        if isinstance(h, dict) and h.get("zone_id")
+    }
+    field_zone_id_set = {
+        str(f.get("zone_id"))
+        for f in fields_list
+        if isinstance(f, dict) and f.get("zone_id")
+    }
+    continent_id_set = {
+        str(c.get("continent_id"))
+        for c in (atlas.get("t_breadth_continents") or [])
+        if isinstance(c, dict) and c.get("continent_id")
+    }
+    siege_domains = atlas.get("castle_siege_domains") or []
+    valid_siege_domains = 0
+    seen_stronghold_ids: set[str] = set()
+    seen_domain_tiers: set[str] = set()
+    for sd in siege_domains:
+        if not isinstance(sd, dict):
+            continue
+        szid = str(sd.get("stronghold_zone_id") or "")
+        dtier = str(sd.get("domain_tier") or "")
+        vt_ids = sd.get("vassal_town_ids") or []
+        vh_ids = sd.get("vassal_hunting_zone_ids") or []
+        tax_pct = sd.get("tax_rate_pct")
+        if (
+            sd.get("domain_id")
+            and szid in fort_zone_id_set
+            and szid not in seen_stronghold_ids
+            and sd.get("stronghold_name")
+            and str(sd.get("continent_id") or "") in continent_id_set
+            and dtier in expected_domain_tiers
+            and len(vt_ids) >= 1
+            and all(str(vt) in town_zone_id_set for vt in vt_ids)
+            and len(vh_ids) >= 1
+            and all(str(vh) in field_zone_id_set for vh in vh_ids)
+            and isinstance(tax_pct, int)
+            and 5 <= tax_pct <= 25
+            and sd.get("siege_window_utc")
+            and ":" in str(sd.get("artifact_altar_loc", ""))
+            and ":" in str(sd.get("outer_gate_loc", ""))
+            and sd.get("manor_specialty_crop")
+            and sd.get("ruling_npc_faction")
+        ):
+            valid_siege_domains += 1
+            seen_stronghold_ids.add(szid)
+            seen_domain_tiers.add(dtier)
+
+    has_d25_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_SIEGE_DOMAIN_ID",
+            "setAtlasSiegeDomain",
+            "renderAtlasSiegeDomainBarHtml",
+            "studioCastleSiegeDomainOverlay",
+        )
+    )
+    d25_ratio = valid_siege_domains / 8.0
+    d25_full_coverage = seen_domain_tiers == expected_domain_tiers
+    d25_score = (
+        round(min(100.0, d25_ratio * 100.0), 1)
+        if (has_d25_ui and d25_full_coverage)
+        else round(d25_ratio * 80.0, 1)
+    )
+
+    # D26: Interactive World Boss & MVP Respawn Radar / Command-Channel Telemetry (`world_boss_spawn_radar` - 32 Bosses = 16 Dungeon MVPs + 16 Overland Raids/Mini-Bosses)
+    expected_boss_categories = {"MVP", "Raid", "Mini-Boss"}
+    expected_radar_statuses = {"Window Open", "Respawning Soon", "Sanctum Active"}
+    boss_radar = atlas.get("world_boss_spawn_radar") or []
+    valid_boss_radar = 0
+    dungeon_mvp_radar_count = 0
+    overland_boss_radar_count = 0
+    seen_boss_ids: set[str] = set()
+    seen_boss_categories: set[str] = set()
+    seen_radar_statuses: set[str] = set()
+    for br in boss_radar:
+        if not isinstance(br, dict):
+            continue
+        bid = str(br.get("boss_id") or "")
+        bcat = str(br.get("boss_category") or "")
+        bzid = str(br.get("zone_id") or "")
+        bdid = str(br.get("dungeon_id") or "")
+        bfid = str(br.get("floor_id") or "")
+        rstat = str(br.get("radar_status") or "")
+        blv = br.get("level")
+        if (
+            bid
+            and bid not in seen_boss_ids
+            and br.get("boss_name")
+            and bcat in expected_boss_categories
+            and isinstance(blv, int)
+            and 1 <= blv <= 99
+            and bzid in zone_ids_set
+            and (bdid == "" or bdid in mf_dungeon_id_set)
+            and bfid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(br.get("loc", ""))
+            and br.get("respawn_window")
+            and br.get("command_channel_size")
+            and br.get("top_reward_drop")
+            and rstat in expected_radar_statuses
+        ):
+            valid_boss_radar += 1
+            seen_boss_ids.add(bid)
+            seen_boss_categories.add(bcat)
+            seen_radar_statuses.add(rstat)
+            if bdid != "" and bfid in ("B3", "3F") and bcat == "MVP":
+                dungeon_mvp_radar_count += 1
+            elif bdid == "" and bfid == "" and bcat in ("Raid", "Mini-Boss"):
+                overland_boss_radar_count += 1
+
+    has_d26_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_BOSS_RADAR_MODE",
+            "setAtlasBossRadarMode",
+            "renderAtlasBossRadarBarHtml",
+            "studioWorldBossSpawnRadarOverlay",
+        )
+    )
+    d26_ratio = valid_boss_radar / 32.0
+    d26_full_coverage = (
+        dungeon_mvp_radar_count == 16
+        and overland_boss_radar_count == 16
+        and seen_boss_categories == expected_boss_categories
+        and seen_radar_statuses == expected_radar_statuses
+    )
+    d26_score = (
+        round(min(100.0, d26_ratio * 100.0), 1)
+        if (has_d26_ui and d26_full_coverage)
+        else round(d26_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score) / 7.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score) / 9.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score) / 11.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score) / 18.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score) / 7.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score) / 14.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score) / 8.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score) / 10.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score) / 13.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score) / 20.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score) / 9.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score) / 16.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -3869,8 +4330,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d22_score
             + d23_score
             + d24_score
+            + d25_score
+            + d26_score
         )
-        / 24.0,
+        / 26.0,
         1,
     )
 
@@ -4002,6 +4465,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "spoil_grades": sorted(seen_spoil_grades),
                 "ui_wired": has_d24_ui,
             },
+            "D25_castle_siege_and_territory_tax_domains": {
+                "score": d25_score,
+                "verified": valid_siege_domains,
+                "target": 8,
+                "domain_tiers": sorted(seen_domain_tiers),
+                "ui_wired": has_d25_ui,
+            },
+            "D26_world_boss_and_mvp_spawn_radar": {
+                "score": d26_score,
+                "verified": valid_boss_radar,
+                "target": 32,
+                "dungeon_mvp_count": dungeon_mvp_radar_count,
+                "overland_boss_count": overland_boss_radar_count,
+                "boss_categories": sorted(seen_boss_categories),
+                "radar_statuses": sorted(seen_radar_statuses),
+                "ui_wired": has_d26_ui,
+            },
         },
     }
 
@@ -4070,6 +4550,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D22 (PiP World Radar Map)   : {dims['D22_pip_world_radar_minimap_in_zoomed_views']['score']}/100 ({dims['D22_pip_world_radar_minimap_in_zoomed_views']['verified']}/{dims['D22_pip_world_radar_minimap_in_zoomed_views']['target']} checks)")
         print(f"  D23 (3-Track Quest Trials)  : {dims['D23_quest_trial_chains_and_class_transfers']['score']}/100 ({dims['D23_quest_trial_chains_and_class_transfers']['verified']}/{dims['D23_quest_trial_chains_and_class_transfers']['target']} quests)")
         print(f"  D24 (40-Zone Farm Heatmap)  : {dims['D24_party_and_farming_efficiency_heatmap']['score']}/100 ({dims['D24_party_and_farming_efficiency_heatmap']['verified']}/{dims['D24_party_and_farming_efficiency_heatmap']['target']} combat zones)")
+        print(f"  D25 (8 Castle Siege Domains): {dims['D25_castle_siege_and_territory_tax_domains']['score']}/100 ({dims['D25_castle_siege_and_territory_tax_domains']['verified']}/{dims['D25_castle_siege_and_territory_tax_domains']['target']} stronghold domains)")
+        print(f"  D26 (32-Boss Respawn Radar) : {dims['D26_world_boss_and_mvp_spawn_radar']['score']}/100 ({dims['D26_world_boss_and_mvp_spawn_radar']['verified']}/{dims['D26_world_boss_and_mvp_spawn_radar']['target']} bosses)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

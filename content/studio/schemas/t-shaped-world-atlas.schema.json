@@ -59,6 +59,18 @@
       "maxItems": 40,
       "items": { "$ref": "#/$defs/farmingEfficiencyProfileSpec" }
     },
+    "castle_siege_domains": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": { "$ref": "#/$defs/castleSiegeDomainSpec" }
+    },
+    "world_boss_spawn_radar": {
+      "type": "array",
+      "minItems": 32,
+      "maxItems": 32,
+      "items": { "$ref": "#/$defs/worldBossSpawnRadarSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -1644,6 +1656,97 @@
         "key_spoil_material": { "type": "string" },
         "mob_pack_density": { "type": "string" },
         "elemental_weakness": { "type": "string" }
+      }
+    },
+    "castleSiegeDomainSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain_id",
+        "stronghold_zone_id",
+        "stronghold_name",
+        "continent_id",
+        "domain_tier",
+        "vassal_town_ids",
+        "vassal_hunting_zone_ids",
+        "tax_rate_pct",
+        "siege_window_utc",
+        "artifact_altar_loc",
+        "outer_gate_loc",
+        "manor_specialty_crop",
+        "ruling_npc_faction"
+      ],
+      "properties": {
+        "domain_id": { "type": "string" },
+        "stronghold_zone_id": { "type": "string" },
+        "stronghold_name": { "type": "string" },
+        "continent_id": { "type": "string" },
+        "domain_tier": {
+          "type": "string",
+          "enum": [
+            "Capital_Citadel",
+            "Regional_Castle",
+            "Border_Fortress",
+            "Harbor_Stronghold"
+          ]
+        },
+        "vassal_town_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "vassal_hunting_zone_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "tax_rate_pct": { "type": "integer", "minimum": 5, "maximum": 25 },
+        "siege_window_utc": { "type": "string" },
+        "artifact_altar_loc": { "type": "string" },
+        "outer_gate_loc": { "type": "string" },
+        "manor_specialty_crop": { "type": "string" },
+        "ruling_npc_faction": { "type": "string" }
+      }
+    },
+    "worldBossSpawnRadarSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "boss_id",
+        "boss_name",
+        "boss_category",
+        "level",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "respawn_window",
+        "command_channel_size",
+        "top_reward_drop",
+        "radar_status"
+      ],
+      "properties": {
+        "boss_id": { "type": "string" },
+        "boss_name": { "type": "string" },
+        "boss_category": {
+          "type": "string",
+          "enum": ["MVP", "Raid", "Mini-Boss"]
+        },
+        "level": { "type": "integer", "minimum": 1, "maximum": 99 },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "respawn_window": { "type": "string" },
+        "command_channel_size": { "type": "string" },
+        "top_reward_drop": { "type": "string" },
+        "radar_status": {
+          "type": "string",
+          "enum": ["Window Open", "Respawning Soon", "Sanctum Active"]
+        }
       }
     }
   }

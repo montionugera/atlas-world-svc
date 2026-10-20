@@ -664,6 +664,8 @@ def validate_world_governance(
                 "bossHierarchyChainsCount": len(t_doc.get("boss_hierarchy_chains") or []),
                 "questTrialChainsCount": len(t_doc.get("quest_trial_chains") or []),
                 "farmingEfficiencyProfilesCount": len(t_doc.get("farming_efficiency_profiles") or []),
+                "castleSiegeDomainsCount": len(t_doc.get("castle_siege_domains") or []),
+                "worldBossSpawnRadarCount": len(t_doc.get("world_boss_spawn_radar") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -832,6 +834,59 @@ def validate_world_governance(
                 if fp_zid not in drop_zone_ids:
                     errors.append(
                         f"GOV-10 violation: farming_efficiency_profiles references unknown combat zone_id '{fp_zid}'"
+                    )
+
+            # Validate 8 Castle Siege, Territory Tax & Clan Hall Domains (D25)
+            fort_zone_ids = {
+                str(z.get("zone_id", ""))
+                for z in (zdir.get("harbors_clanhalls_and_forts") or [])
+                if isinstance(z, dict) and z.get("zone_id")
+            }
+            field_zone_ids = {
+                str(z.get("zone_id", ""))
+                for z in (zdir.get("fields_and_hunting_areas") or [])
+                if isinstance(z, dict) and z.get("zone_id")
+            }
+            siege_domains = t_doc.get("castle_siege_domains") or []
+            if siege_domains and len(siege_domains) != 8:
+                errors.append(f"GOV-10 violation: castle_siege_domains must have 8 domains, got {len(siege_domains)}")
+            for s_dom in siege_domains:
+                if not isinstance(s_dom, dict):
+                    continue
+                did = str(s_dom.get("domain_id", ""))
+                szid = str(s_dom.get("stronghold_zone_id", ""))
+                if szid not in fort_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: castle_siege_domains '{did}' references unknown stronghold_zone_id '{szid}'"
+                    )
+                for vt_id in s_dom.get("vassal_town_ids") or []:
+                    if str(vt_id) not in town_zone_ids:
+                        errors.append(
+                            f"GOV-10 violation: castle_siege_domains '{did}' references unknown vassal_town_id '{vt_id}'"
+                        )
+                for vh_id in s_dom.get("vassal_hunting_zone_ids") or []:
+                    if str(vh_id) not in field_zone_ids:
+                        errors.append(
+                            f"GOV-10 violation: castle_siege_domains '{did}' references unknown vassal_hunting_zone_id '{vh_id}'"
+                        )
+
+            # Validate 32 World Boss & Dungeon MVP Respawn Radar Entries (D26)
+            boss_radar = t_doc.get("world_boss_spawn_radar") or []
+            if boss_radar and len(boss_radar) != 32:
+                errors.append(f"GOV-10 violation: world_boss_spawn_radar must have 32 bosses, got {len(boss_radar)}")
+            for b_rad in boss_radar:
+                if not isinstance(b_rad, dict):
+                    continue
+                bid = str(b_rad.get("boss_id", ""))
+                bzid = str(b_rad.get("zone_id", ""))
+                bdid = str(b_rad.get("dungeon_id", ""))
+                if bzid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: world_boss_spawn_radar '{bid}' references unknown zone_id '{bzid}'"
+                    )
+                if bdid and bdid not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: world_boss_spawn_radar '{bid}' references unknown dungeon_id '{bdid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

@@ -768,7 +768,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 24)
+        self.assertGreaterEqual(len(audit["dimensions"]), 24)
 
         d23 = audit["dimensions"]["D23_quest_trial_chains_and_class_transfers"]
         self.assertEqual(d23["score"], 100.0)
@@ -808,10 +808,80 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas24DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 24)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 24)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 24)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 24)
         self.assertIn("24-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave11_castle_siege_domains_and_world_boss_spawn_radar(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["castleSiegeDomainsCount"], 8)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["worldBossSpawnRadarCount"], 32)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_SIEGE_DOMAIN_ID",
+            "setAtlasSiegeDomain(",
+            "renderAtlasSiegeDomainBarHtml(",
+            "studioCastleSiegeDomainOverlay",
+            "ATLAS_BOSS_RADAR_MODE",
+            "setAtlasBossRadarMode(",
+            "renderAtlasBossRadarBarHtml(",
+            "studioWorldBossSpawnRadarOverlay",
+            "26-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 11 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 26)
+
+        d25 = audit["dimensions"]["D25_castle_siege_and_territory_tax_domains"]
+        self.assertEqual(d25["score"], 100.0)
+        self.assertEqual(d25["verified"], 8)
+        self.assertEqual(d25["target"], 8)
+        self.assertTrue(d25["ui_wired"])
+
+        d26 = audit["dimensions"]["D26_world_boss_and_mvp_spawn_radar"]
+        self.assertEqual(d26["score"], 100.0)
+        self.assertEqual(d26["verified"], 32)
+        self.assertEqual(d26["target"], 32)
+        self.assertEqual(d26["dungeon_mvp_count"], 16)
+        self.assertEqual(d26["overland_boss_count"], 16)
+        self.assertTrue(d26["ui_wired"])
+
+        domains = atlas["castle_siege_domains"]
+        self.assertEqual(len(domains), 8)
+        self.assertEqual(
+            {d["domain_tier"] for d in domains},
+            {"Capital_Citadel", "Regional_Castle", "Border_Fortress", "Harbor_Stronghold"},
+        )
+        for d in domains:
+            self.assertGreaterEqual(len(d["vassal_town_ids"]), 1)
+            self.assertGreaterEqual(len(d["vassal_hunting_zone_ids"]), 1)
+            self.assertTrue(8 <= d["tax_rate_pct"] <= 15)
+
+        radar = atlas["world_boss_spawn_radar"]
+        self.assertEqual(len(radar), 32)
+        self.assertEqual(sum(1 for b in radar if b["dungeon_id"] != "" and b["boss_category"] == "MVP"), 16)
+        self.assertEqual(sum(1 for b in radar if b["dungeon_id"] == "" and b["boss_category"] in ("Raid", "Mini-Boss")), 16)
+        self.assertEqual(
+            {b["radar_status"] for b in radar},
+            {"Window Open", "Respawning Soon", "Sanctum Active"},
+        )
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas26DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 26)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 26)
+        self.assertIn("26-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

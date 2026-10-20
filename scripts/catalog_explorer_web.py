@@ -69,26 +69,28 @@ def compute_studio_self_evaluation() -> dict:
             }
             dims = iter_state["dimensions"]
     overall_atlas_score = float(iter_state.get("overall_score", 100.0))
-    dim_count = len(dims) or 24
+    dim_count = len(dims) or 26
     qs = dict(self_eval.get("qualityScorecard") or {})
     qs.setdefault("overallQualityScorePct", 100.0)
     qs["semanticZoomAtlas18DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas20DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas22DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas24DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas26DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 10)),
+        "wave": int(iter_state.get("wave", 11)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"26-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D24 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D26 Verified"
         ),
     }
     return merged
@@ -4350,7 +4352,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D24 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D26 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4393,6 +4395,8 @@ let ATLAS_BOSS_GOD_ID = 'god-sola-hearth-weaver';
 let ATLAS_QUEST_TRACK = 'All';
 let ATLAS_ACTIVE_QUEST_ID = 'quest-ms-01-human';
 let ATLAS_FARMING_MODE = 'All';
+let ATLAS_SIEGE_DOMAIN_ID = 'All';
+let ATLAS_BOSS_RADAR_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4407,6 +4411,8 @@ const ATLAS_STATE_STORE = {
   questTrack: 'All',                       // D23: Active Quest Track ('All' | 'main_story' | 'class_transfer' | 'racial_heritage')
   activeQuestId: 'quest-ms-01-human',      // D23: Active 3-Track Quest & Class Transfer Chain
   farmingMode: 'All',                      // D24: Active Party & Farming Efficiency Heatmap ('Off' | 'All' | 'solo_grinding' | 'duo_spoil_scavenger' | 'full_9p_aoe_party' | 'clan_raid_force')
+  siegeDomainId: 'All',                    // D25: Active Castle Siege & Territory Tax Domain ('Off' | 'All' | domain_id)
+  bossRadarMode: 'All',                    // D26: Active World Boss & MVP Respawn Radar ('Off' | 'All' | 'DungeonMVP' | 'OverlandRaid')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4414,6 +4420,27 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasSiegeDomain(domainId) {
+  ATLAS_SIEGE_DOMAIN_ID = String(domainId || 'All');
+  ATLAS_STATE_STORE.siegeDomainId = ATLAS_SIEGE_DOMAIN_ID;
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const domains = tatlas.castle_siege_domains || [];
+  const activeDom = domains.find(d => d.domain_id === ATLAS_SIEGE_DOMAIN_ID || d.stronghold_zone_id === ATLAS_SIEGE_DOMAIN_ID);
+  if (activeDom && activeDom.artifact_altar_loc) {
+    STUDIO_MAP_LOC = clampWorldLocCoord(activeDom.artifact_altar_loc);
+  }
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasBossRadarMode(modeId) {
+  ATLAS_BOSS_RADAR_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.bossRadarMode = ATLAS_BOSS_RADAR_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasQuestTrack(trackId) {
   ATLAS_QUEST_TRACK = String(trackId || 'All');
@@ -4951,6 +4978,10 @@ function resetAtlasFilters() {
   ATLAS_STATE_STORE.questTrack = 'All';
   ATLAS_FARMING_MODE = 'All';
   ATLAS_STATE_STORE.farmingMode = 'All';
+  ATLAS_SIEGE_DOMAIN_ID = 'All';
+  ATLAS_STATE_STORE.siegeDomainId = 'All';
+  ATLAS_BOSS_RADAR_MODE = 'All';
+  ATLAS_STATE_STORE.bossRadarMode = 'All';
   ATLAS_OMNI_SEARCH_QUERY = '';
   ATLAS_STATE_STORE.omniSearchQuery = '';
   ATLAS_STATE_STORE.toastMessage = '';
@@ -6565,6 +6596,205 @@ function renderAtlasFarmingHeatmapBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasSiegeDomainBarHtml(tatlas) {
+  const domains = (tatlas && tatlas.castle_siege_domains) || [];
+  if (!domains.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+    if (z.studio_node_id) zoneById[z.studio_node_id] = z;
+  });
+
+  const curDomId = ATLAS_SIEGE_DOMAIN_ID || ATLAS_STATE_STORE.siegeDomainId || 'All';
+  const activeDom = domains.find(d => d.domain_id === curDomId || d.stronghold_zone_id === curDomId) || domains[0];
+
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🏰 All 8 Domains' }
+  ];
+
+  const vassalTowns = (activeDom.vassal_town_ids || []).map(tid => zoneById[tid] || { zone_id: tid, name: tid });
+  const vassalFields = (activeDom.vassal_hunting_zone_ids || []).map(fid => zoneById[fid] || { zone_id: fid, name: fid });
+
+  return `
+    <div id="atlasCastleSiegeDomainBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#23131b;border:1px solid rgba(251,146,60,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fb923c">🏰 CASTLE SIEGE, TERRITORY TAX &amp; CLAN HALL DOMAIN OVERLAY (D25 · 8 STRONGHOLDS):</span>
+          ${modePills.map(mp => {
+            const isAct = curDomId === mp.id;
+            return `
+              <button type="button" onclick="setAtlasSiegeDomain('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(251,146,60,0.45)'};background:${isAct ? '#c2410c' : '#090d14'};color:${isAct ? '#ffffff' : '#fed7aa'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+          <select aria-label="Select Individual Castle Siege or Clan Hall Domain" onchange="setAtlasSiegeDomain(this.value)"
+                  style="height:24px;padding:1px 7px;border-radius:6px;background:#090d14;color:#fde047;border:1px solid rgba(251,146,60,0.55);font-size:9.6px;font-weight:800;cursor:pointer">
+            <option value="All" ${curDomId === 'All' ? 'selected' : ''}>— Inspect Individual Stronghold (8) —</option>
+            ${domains.map(d => {
+              const sel = (d.domain_id === curDomId || d.stronghold_zone_id === curDomId) ? 'selected' : '';
+              return `<option value="${escapeHtml(d.domain_id)}" ${sel}>[${escapeHtml(d.domain_tier)} · ${d.tax_rate_pct}% Tax] ${escapeHtml(d.stronghold_name)}</option>`;
+            }).join('')}
+          </select>
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          STRONGHOLD ➔ VASSAL TOWNS &amp; TAXED HUNTING GROUNDS · MANOR CROPS &amp; SIEGE WINDOWS
+        </span>
+      </div>
+
+      ${curDomId !== 'Off' ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px;align-items:stretch">
+          <div style="padding:6px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid #fb923c;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+            <div>
+              <div class="mono" style="font-size:8.6px;font-weight:900;color:#fb923c">
+                🛡️ ${escapeHtml(activeDom.domain_tier)} · ${activeDom.tax_rate_pct}% TERRITORY TAX
+              </div>
+              <div style="font-size:9.8px;font-weight:900;color:#f8fafc;margin-top:2px">${escapeHtml(activeDom.stronghold_name)}</div>
+              <div class="mono" style="font-size:8.3px;color:#cbd5e1;margin-top:1px">
+                ⏰ ${escapeHtml(activeDom.siege_window_utc)} · Altar loc=${escapeHtml(activeDom.artifact_altar_loc)}
+              </div>
+              <div style="font-size:8.2px;color:#fde68a;margin-top:1px">
+                🌾 Manor: ${escapeHtml(activeDom.manor_specialty_crop)} · 👑 ${escapeHtml(activeDom.ruling_npc_faction)}
+              </div>
+            </div>
+            <button type="button" onclick="focusFortressBlueprint('${escapeHtml(activeDom.stronghold_zone_id)}', '${escapeHtml(activeDom.artifact_altar_loc)}')"
+                    style="padding:3px 7px;border-radius:5px;border:1px solid #fb923c;background:#7c2d12;color:#ffedd5;font-size:8.6px;font-weight:900;cursor:pointer;text-align:left">
+              🏰 Open Stronghold Tactical Blueprint (4.8×): ${escapeHtml(activeDom.stronghold_name.split('(')[0].trim())}
+            </button>
+          </div>
+
+          <div style="padding:6px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid #fde047;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+            <div>
+              <div class="mono" style="font-size:8.6px;font-weight:900;color:#fde047">
+                🏘️ VASSAL TAX TOWNS (${vassalTowns.length}) · ${activeDom.tax_rate_pct}% SHOP &amp; ANVIL TARIFF
+              </div>
+              <div style="font-size:8.6px;color:#e2e8f0;margin-top:2px">
+                ${vassalTowns.map(vt => escapeHtml((vt.name || vt.zone_id).split('(')[0].trim())).join(' · ')}
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              ${vassalTowns.map(vt => {
+                const tNodeId = vt.studio_node_id || vt.zone_id;
+                const tShort = (vt.name || vt.zone_id).split('(')[0].trim();
+                return `
+                  <button type="button" onclick="focusTownStreetBlueprint('${escapeHtml(tNodeId)}', '${escapeHtml(vt.loc_coord || '')}')"
+                          style="padding:2px 6px;border-radius:4px;border:1px solid #fde047;background:#713f12;color:#fef08a;font-size:8.3px;font-weight:800;cursor:pointer">
+                    🏘️ Warp ${escapeHtml(tShort)} (5.2×)
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <div style="padding:6px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid #34d399;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+            <div>
+              <div class="mono" style="font-size:8.6px;font-weight:900;color:#34d399">
+                🏕️ TAXED HUNTING &amp; MANOR GROUNDS (${vassalFields.length})
+              </div>
+              <div style="font-size:8.6px;color:#e2e8f0;margin-top:2px">
+                ${vassalFields.map(vf => escapeHtml((vf.name || vf.zone_id).split('(')[0].trim())).join(' · ')}
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              ${vassalFields.slice(0, 3).map(vf => {
+                const fShort = (vf.name || vf.zone_id).split('(')[0].trim();
+                return `
+                  <button type="button" onclick="focusFieldTacticalBlueprint('${escapeHtml(vf.zone_id)}', '${escapeHtml(vf.loc_coord || '')}')"
+                          style="padding:2px 6px;border-radius:4px;border:1px solid #34d399;background:#064e3b;color:#d1fae5;font-size:8.3px;font-weight:800;cursor:pointer">
+                    🏕️ ${escapeHtml(fShort)}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasBossRadarBarHtml(tatlas) {
+  const radarList = (tatlas && tatlas.world_boss_spawn_radar) || [];
+  if (!radarList.length) return '';
+
+  const curMode = ATLAS_BOSS_RADAR_MODE || ATLAS_STATE_STORE.bossRadarMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '📡 All 32 Bosses' },
+    { id: 'DungeonMVP', label: '👑 16 Dungeon MVPs (B3/3F)' },
+    { id: 'OverlandRaid', label: '🔥 16 Overland Raids & Mini-Bosses' }
+  ];
+
+  const filteredBosses = curMode === 'Off'
+    ? []
+    : (curMode === 'DungeonMVP'
+      ? radarList.filter(b => b.dungeon_id && b.boss_category === 'MVP')
+      : (curMode === 'OverlandRaid'
+        ? radarList.filter(b => !b.dungeon_id)
+        : radarList));
+
+  const featuredCards = filteredBosses.slice(0, 4);
+
+  return `
+    <div id="atlasWorldBossRadarBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1e112a;border:1px solid rgba(244,63,94,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fb7185">📡 MVP &amp; RAID RESPAWN RADAR / COMMAND-CHANNEL TELEMETRY (D26 · 32 BOSSES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasBossRadarMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(244,63,94,0.45)'};background:${isAct ? '#be123c' : '#090d14'};color:${isAct ? '#ffffff' : '#fecdd3'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          16 B3/3F SANCTUM MVPS + 16 OVERLAND/FORTRESS RAIDS · COMMAND CHANNEL &amp; RESPAWN WINDOWS
+        </span>
+      </div>
+
+      ${featuredCards.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px">
+          ${featuredCards.map(b => {
+            const isDng = Boolean(b.dungeon_id);
+            const jumpJs = isDng
+              ? `openDungeonSubMap('${escapeHtml(b.dungeon_id)}', '${escapeHtml(b.floor_id || 'B3')}')`
+              : `focusFieldTacticalBlueprint('${escapeHtml(b.zone_id)}', '${escapeHtml(b.loc)}')`;
+            const statusCol = b.radar_status === 'Window Open'
+              ? '#34d399'
+              : (b.radar_status === 'Sanctum Active' ? '#fde047' : '#fb923c');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${isDng ? '#f43f5e' : '#f97316'};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.4px;font-weight:900;color:#f8fafc">${isDng ? '👑' : '🔥'} ${escapeHtml(b.boss_name.slice(0, 32))} (Lv.${b.level})</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${statusCol}">${escapeHtml(b.radar_status)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.2px;color:#fda4af;margin-top:1px">
+                    ⏱️ ${escapeHtml(b.respawn_window)} · 👥 ${escapeHtml(b.command_channel_size)}
+                  </div>
+                  <div style="font-size:8.1px;color:#cbd5e1;margin-top:1px">
+                    💎 ${escapeHtml(b.top_reward_drop)} · loc=${escapeHtml(b.loc)}
+                  </div>
+                </div>
+                <button type="button" onclick="${jumpJs}"
+                        style="margin-top:2px;padding:2px 6px;border-radius:4px;border:1px solid ${isDng ? '#f43f5e' : '#fb923c'};background:${isDng ? '#881337' : '#7c2d12'};color:#ffffff;font-size:8.3px;font-weight:800;cursor:pointer;text-align:left">
+                  ${isDng ? `🕳️ Teleport to ${escapeHtml(b.floor_id)} Boss Sanctum` : `⚔️ Teleport to Raid loc=${escapeHtml(b.loc)}`}
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -6693,6 +6923,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasBossHierarchyChainBarHtml(tatlas)}
       ${renderAtlasQuestTrialOverlayBarHtml(tatlas)}
       ${renderAtlasFarmingHeatmapBarHtml(tatlas)}
+      ${renderAtlasSiegeDomainBarHtml(tatlas)}
+      ${renderAtlasBossRadarBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -8680,10 +8912,77 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D25: Castle Siege, Territory Tax & Clan Hall Domain Overlay (`studioCastleSiegeDomainOverlay`)
+  const siegeDomains = (tatlas && tatlas.castle_siege_domains) || [];
+  const curSiegeDomId = ATLAS_SIEGE_DOMAIN_ID || ATLAS_STATE_STORE.siegeDomainId || 'All';
+  const activeSiegeDomains = curSiegeDomId === 'Off'
+    ? []
+    : (curSiegeDomId === 'All'
+      ? siegeDomains
+      : siegeDomains.filter(sd => sd.domain_id === curSiegeDomId || sd.stronghold_zone_id === curSiegeDomId));
+  const castleSiegeDomainOverlaySvg = `
+    <g id="studioCastleSiegeDomainOverlay">
+      ${activeSiegeDomains.map(sd => {
+        const shCoord = clampWorldLocCoord(sd.artifact_altar_loc || '-13800:124100');
+        const townLinks = (sd.vassal_town_ids || []).map(tid => {
+          const tz = allZonesById[tid];
+          if (!tz || !tz.loc_coord) return '';
+          const tc = clampWorldLocCoord(tz.loc_coord);
+          return `<line x1="${shCoord.svgX}" y1="${shCoord.svgY}" x2="${tc.svgX}" y2="${tc.svgY}" stroke="#fb923c" stroke-width="2.2" stroke-dasharray="5 3" opacity="0.88" pointer-events="none"/>`;
+        }).join('');
+        const huntLinks = (sd.vassal_hunting_zone_ids || []).slice(0, 2).map(hid => {
+          const hz = allZonesById[hid];
+          if (!hz || !hz.loc_coord) return '';
+          const hc = clampWorldLocCoord(hz.loc_coord);
+          return `<line x1="${shCoord.svgX}" y1="${shCoord.svgY}" x2="${hc.svgX}" y2="${hc.svgY}" stroke="#fdba74" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.72" pointer-events="none"/>`;
+        }).join('');
+        return `
+          ${townLinks}
+          ${huntLinks}
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="focusFortressBlueprint('${escapeHtml(sd.stronghold_zone_id)}', '${escapeHtml(sd.artifact_altar_loc)}')">
+            <circle cx="${shCoord.svgX}" cy="${shCoord.svgY}" r="13" fill="rgba(251,146,60,0.26)" stroke="#fb923c" stroke-width="2"/>
+            <text x="${shCoord.svgX}" y="${shCoord.svgY - 16}" text-anchor="middle" fill="#fed7aa" font-size="7.4" font-weight="900" font-family="monospace">
+              🏰 ${sd.tax_rate_pct}% TAX
+            </text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D26: World Boss & MVP Respawn Radar Overlay (`studioWorldBossSpawnRadarOverlay`)
+  const bossRadarEntries = (tatlas && tatlas.world_boss_spawn_radar) || [];
+  const curBossRadarMode = ATLAS_BOSS_RADAR_MODE || ATLAS_STATE_STORE.bossRadarMode || 'All';
+  const activeRadarBosses = curBossRadarMode === 'Off'
+    ? []
+    : (curBossRadarMode === 'DungeonMVP'
+      ? bossRadarEntries.filter(b => b.dungeon_id && b.boss_category === 'MVP').slice(0, 10)
+      : (curBossRadarMode === 'OverlandRaid'
+        ? bossRadarEntries.filter(b => !b.dungeon_id).slice(0, 10)
+        : bossRadarEntries.slice(0, 10)));
+  const worldBossSpawnRadarOverlaySvg = `
+    <g id="studioWorldBossSpawnRadarOverlay">
+      ${activeRadarBosses.map(b => {
+        const bc = clampWorldLocCoord(b.loc || '53100:242600');
+        const isDng = Boolean(b.dungeon_id);
+        const clickAct = isDng
+          ? `openDungeonSubMap('${escapeHtml(b.dungeon_id)}', '${escapeHtml(b.floor_id || 'B3')}')`
+          : `focusFieldTacticalBlueprint('${escapeHtml(b.zone_id)}', '${escapeHtml(b.loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${clickAct}">
+            <circle cx="${bc.svgX}" cy="${bc.svgY}" r="11" fill="rgba(244,63,94,0.24)" stroke="#f43f5e" stroke-width="1.6" stroke-dasharray="2 2"/>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
     ${farmingEfficiencyOverlaySvg}
+    ${castleSiegeDomainOverlaySvg}
+    ${worldBossSpawnRadarOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
