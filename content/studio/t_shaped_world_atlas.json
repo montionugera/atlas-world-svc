@@ -834,7 +834,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "polygonal_walled_keep"
         }
       },
       {
@@ -1524,7 +1525,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "radial_moat_sanctuary"
         }
       },
       {
@@ -2214,7 +2216,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "schematic_grid_blueprint"
         }
       },
       {
@@ -2904,7 +2907,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "harbor_fortress_plaza"
         }
       },
       {
@@ -3594,7 +3598,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "radial_moat_sanctuary"
         }
       },
       {
@@ -4284,7 +4289,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "harbor_fortress_plaza"
         }
       }
     ],
@@ -4977,7 +4983,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "schematic_grid_blueprint"
         }
       },
       {
@@ -5667,7 +5674,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "harbor_fortress_plaza"
         }
       },
       {
@@ -6356,7 +6364,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "harbor_fortress_plaza"
         }
       },
       {
@@ -7046,7 +7055,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "schematic_grid_blueprint"
         }
       },
       {
@@ -7736,7 +7746,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "schematic_grid_blueprint"
         }
       },
       {
@@ -8426,7 +8437,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "schematic_grid_blueprint"
         }
       },
       {
@@ -9115,7 +9127,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "harbor_fortress_plaza"
         }
       },
       {
@@ -9804,7 +9817,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "radial_moat_sanctuary"
         }
       },
       {
@@ -10494,7 +10508,8 @@
                 "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
               }
             ]
-          }
+          },
+          "layout_archetype": "schematic_grid_blueprint"
         }
       }
     ],
@@ -18395,7 +18410,8 @@
               "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
             }
           ]
-        }
+        },
+        "layout_archetype": "polygonal_walled_keep"
       }
     },
     "deep_field_zone": {
@@ -19900,7 +19916,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-113090:235126"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] Kiln-Shell Patrol Captain"
         },
         {
           "floor_id": "B2",
@@ -20048,7 +20066,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-113090:235126"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] Flooded Cistern Leviathan-Spawn"
         },
         {
           "floor_id": "B3",
@@ -20183,7 +20203,9 @@
               "respawn_sec": 7200,
               "loc_coord": "53100:242600"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Queen Ant Ash-Brood Sovereign"
         }
       ]
     },
@@ -20346,7 +20368,9 @@
               "respawn_sec": 7200,
               "loc_coord": "85800:143800"
             }
-          ]
+          ],
+          "floor_elevation_meters": 20,
+          "boss_tier_highlight": "1F Entry Vestibule \u00b7 [Mini-Boss] Counterweight Warden Mordeo"
         },
         {
           "floor_id": "2F",
@@ -20481,7 +20505,9 @@
               "respawn_sec": 7200,
               "loc_coord": "85800:143800"
             }
-          ]
+          ],
+          "floor_elevation_meters": 85,
+          "boss_tier_highlight": "2F Mid-Sanctum \u00b7 [Raid Boss] Catherok the Pendulum Colossus"
         },
         {
           "floor_id": "3F",
@@ -20616,7 +20642,9 @@
               "respawn_sec": 10800,
               "loc_coord": "17724:108150"
             }
-          ]
+          ],
+          "floor_elevation_meters": 160,
+          "boss_tier_highlight": "3F Core Sanctum \u00b7 [MVP] Core \u2014 Architect's Prime Governor"
         }
       ]
     },
@@ -20760,7 +20788,9 @@
               "respawn_sec": 7200,
               "loc_coord": "85200:56000"
             }
-          ]
+          ],
+          "floor_elevation_meters": 20,
+          "boss_tier_highlight": "1F Entry Vestibule \u00b7 [Mini-Boss] Anvil Overseer Vulk"
         },
         {
           "floor_id": "2F",
@@ -20894,7 +20924,9 @@
               "respawn_sec": 7200,
               "loc_coord": "85200:56000"
             }
-          ]
+          ],
+          "floor_elevation_meters": 85,
+          "boss_tier_highlight": "2F Mid-Sanctum \u00b7 [Raid Boss] Death Lord Hallate's Vanguard"
         },
         {
           "floor_id": "3F",
@@ -21028,7 +21060,9 @@
               "respawn_sec": 14400,
               "loc_coord": "115180:15900"
             }
-          ]
+          ],
+          "floor_elevation_meters": 160,
+          "boss_tier_highlight": "3F Core Sanctum \u00b7 [MVP] Sovereign Chronometer Aethelgard"
         }
       ]
     },
@@ -21172,7 +21206,9 @@
               "respawn_sec": 7200,
               "loc_coord": "50760:43260"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -21306,7 +21342,9 @@
               "respawn_sec": 7200,
               "loc_coord": "51360:42660"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -21440,7 +21478,9 @@
               "respawn_sec": 7200,
               "loc_coord": "51960:42060"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Medallion Heart Fortress B3 Apostle Sovereign"
         }
       ]
     },
@@ -21584,7 +21624,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-40240:-110640"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -21718,7 +21760,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-39640:-111240"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -21852,7 +21896,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-39040:-111840"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Ember Bellows Cave of Trials B3 Apostle Sovereign"
         }
       ]
     },
@@ -21996,7 +22042,9 @@
               "respawn_sec": 7200,
               "loc_coord": "120360:-175040"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -22130,7 +22178,9 @@
               "respawn_sec": 7200,
               "loc_coord": "120960:-175640"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -22264,7 +22314,9 @@
               "respawn_sec": 7200,
               "loc_coord": "121560:-176240"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Sap-Heart Abandoned Mines B3 Apostle Sovereign"
         }
       ]
     },
@@ -22408,7 +22460,9 @@
               "respawn_sec": 7200,
               "loc_coord": "16160:18560"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -22542,7 +22596,9 @@
               "respawn_sec": 7200,
               "loc_coord": "16760:17960"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -22676,7 +22732,9 @@
               "respawn_sec": 7200,
               "loc_coord": "17360:17360"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Ceramic Resonator School of Dark Arts B3 Apostle Sovereign"
         }
       ]
     },
@@ -22820,7 +22878,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-114440:48260"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -22954,7 +23014,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-113840:47660"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -23088,7 +23150,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-113240:47060"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Spice-Kiln Nornil's Cave B3 Apostle Sovereign"
         }
       ]
     },
@@ -23232,7 +23296,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-77440:148360"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -23366,7 +23432,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-76840:147760"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -23500,7 +23568,9 @@
               "respawn_sec": 7200,
               "loc_coord": "-76240:147160"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Sunken Potter Hold B3 Apostle Sovereign"
         }
       ]
     },
@@ -23644,7 +23714,9 @@
               "respawn_sec": 7200,
               "loc_coord": "150160:27560"
             }
-          ]
+          ],
+          "floor_elevation_meters": 20,
+          "boss_tier_highlight": "1F Entry Vestibule \u00b7 [Mini-Boss] 1F Gate Overseer"
         },
         {
           "floor_id": "2F",
@@ -23778,7 +23850,9 @@
               "respawn_sec": 7200,
               "loc_coord": "150760:26960"
             }
-          ]
+          ],
+          "floor_elevation_meters": 85,
+          "boss_tier_highlight": "2F Mid-Sanctum \u00b7 [Raid Boss] 2F Seal Warden"
         },
         {
           "floor_id": "3F",
@@ -23912,7 +23986,9 @@
               "respawn_sec": 7200,
               "loc_coord": "151360:26360"
             }
-          ]
+          ],
+          "floor_elevation_meters": 160,
+          "boss_tier_highlight": "3F Core Sanctum \u00b7 [MVP] Star-Heart Tower of Insolence 3F Apostle Sovereign"
         }
       ]
     },
@@ -24056,7 +24132,9 @@
               "respawn_sec": 7200,
               "loc_coord": "20760:172560"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -24190,7 +24268,9 @@
               "respawn_sec": 7200,
               "loc_coord": "21360:171960"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -24324,7 +24404,9 @@
               "respawn_sec": 7200,
               "loc_coord": "21960:171360"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Catacomb of the Heretic Kiln B3 Apostle Sovereign"
         }
       ]
     },
@@ -24468,7 +24550,9 @@
               "respawn_sec": 7200,
               "loc_coord": "113360:17360"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -24602,7 +24686,9 @@
               "respawn_sec": 7200,
               "loc_coord": "113960:16760"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -24736,7 +24822,9 @@
               "respawn_sec": 7200,
               "loc_coord": "114560:16160"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Catacomb of the Branded Bellows B3 Apostle Sovereign"
         }
       ]
     },
@@ -24880,7 +24968,9 @@
               "respawn_sec": 7200,
               "loc_coord": "150760:-52040"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -25014,7 +25104,9 @@
               "respawn_sec": 7200,
               "loc_coord": "151360:-52640"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -25148,7 +25240,9 @@
               "respawn_sec": 7200,
               "loc_coord": "151960:-53240"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Necropolis of Worship & Dynamo Seal B3 Apostle Sovereign"
         }
       ]
     },
@@ -25292,7 +25386,9 @@
               "respawn_sec": 7200,
               "loc_coord": "55160:-35640"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -25426,7 +25522,9 @@
               "respawn_sec": 7200,
               "loc_coord": "55760:-36240"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -25560,7 +25658,9 @@
               "respawn_sec": 7200,
               "loc_coord": "56360:-36840"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Catacomb of the Astral Witch B3 Apostle Sovereign"
         }
       ]
     },
@@ -25704,7 +25804,9 @@
               "respawn_sec": 7200,
               "loc_coord": "39360:-29740"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -25838,7 +25940,9 @@
               "respawn_sec": 7200,
               "loc_coord": "39960:-30340"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -25972,7 +26076,9 @@
               "respawn_sec": 7200,
               "loc_coord": "40560:-30940"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Necropolis of Deep Devotion B3 Apostle Sovereign"
         }
       ]
     },
@@ -26116,7 +26222,9 @@
               "respawn_sec": 7200,
               "loc_coord": "19360:-65040"
             }
-          ]
+          ],
+          "floor_elevation_meters": -45,
+          "boss_tier_highlight": "B1 Entry Vestibule \u00b7 [Mini-Boss] B1 Gate Overseer"
         },
         {
           "floor_id": "B2",
@@ -26250,7 +26358,9 @@
               "respawn_sec": 7200,
               "loc_coord": "19960:-65640"
             }
-          ]
+          ],
+          "floor_elevation_meters": -110,
+          "boss_tier_highlight": "B2 Mid-Sanctum \u00b7 [Raid Boss] B2 Seal Warden"
         },
         {
           "floor_id": "B3",
@@ -26384,7 +26494,9 @@
               "respawn_sec": 7200,
               "loc_coord": "20560:-66240"
             }
-          ]
+          ],
+          "floor_elevation_meters": -195,
+          "boss_tier_highlight": "B3 Core Sanctum \u00b7 [MVP] Catacomb of the Forbidden Architect Path B3 Apostle Sovereign"
         }
       ]
     }
@@ -27196,7 +27308,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "polygonal_walled_keep"
     },
     {
       "zone_id": "zone-town-porcelain-loom",
@@ -27863,7 +27976,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "radial_moat_sanctuary"
     },
     {
       "zone_id": "zone-town-draft-kiln-post",
@@ -28530,7 +28644,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "schematic_grid_blueprint"
     },
     {
       "zone_id": "zone-town-root-train-roundhouse",
@@ -29197,7 +29312,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "harbor_fortress_plaza"
     },
     {
       "zone_id": "zone-town-carillon-belfry",
@@ -29864,7 +29980,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "radial_moat_sanctuary"
     },
     {
       "zone_id": "zone-town-cinnamon-mill",
@@ -30531,7 +30648,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "harbor_fortress_plaza"
     },
     {
       "zone_id": "zone-town-kilnwatch-bastion",
@@ -31198,7 +31316,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "schematic_grid_blueprint"
     },
     {
       "zone_id": "zone-town-glaze-barge-quay",
@@ -31865,7 +31984,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "harbor_fortress_plaza"
     },
     {
       "zone_id": "zone-town-saffron-press",
@@ -32532,7 +32652,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "harbor_fortress_plaza"
     },
     {
       "zone_id": "zone-town-pinion-terminus",
@@ -33199,7 +33320,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "schematic_grid_blueprint"
     },
     {
       "zone_id": "zone-town-escapement-anvil",
@@ -33866,7 +33988,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "schematic_grid_blueprint"
     },
     {
       "zone_id": "zone-town-inductor-switchyard",
@@ -34533,7 +34656,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "schematic_grid_blueprint"
     },
     {
       "zone_id": "zone-town-starfall-haven",
@@ -35200,7 +35324,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "harbor_fortress_plaza"
     },
     {
       "zone_id": "zone-town-crown-beacon",
@@ -35867,7 +35992,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "radial_moat_sanctuary"
     },
     {
       "zone_id": "zone-town-torque-balance-citadel",
@@ -36534,7 +36660,8 @@
             "used_for_tiers": "+13 to +15 Apex God-Anvil Refinement"
           }
         ]
-      }
+      },
+      "layout_archetype": "schematic_grid_blueprint"
     }
   ],
   "field_tactical_blueprints": [

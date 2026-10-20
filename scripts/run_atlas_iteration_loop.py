@@ -752,6 +752,47 @@ def _synthesize_shop_and_refinement_catalog(zone_entry: dict[str, Any], idx: int
 
 
 
+def _resolve_town_layout_archetype(zone_entry: dict[str, Any], idx: int) -> str:
+    zid = str(zone_entry.get("zone_id", "")).lower()
+    tname = str(zone_entry.get("name", "")).lower()
+    analog = str(zone_entry.get("l2_reference_analog", "")).lower()
+    affinity = str(zone_entry.get("race_or_seal_affinity", "")).lower()
+    if any(k in zid or k in tname or k in analog or k in affinity for k in ("porcelain-loom", "carillon-belfry", "elven", "dark elf", "lunar", "dark_lunar", "crown-beacon")):
+        return "radial_moat_sanctuary"
+    if any(k in zid or k in tname or k in analog for k in ("escapement-anvil", "pinion-terminus", "inductor-switchyard", "torque-balance", "oren", "giran", "goddard")):
+        return "schematic_grid_blueprint"
+    if any(k in zid or k in tname or k in analog for k in ("glaze-barge", "saffron-press", "starfall-haven", "cinnamon-mill", "harbor", "quay", "port", "floran", "rune", "kamael")):
+        return "harbor_fortress_plaza"
+    archetypes = (
+        "polygonal_walled_keep",
+        "radial_moat_sanctuary",
+        "schematic_grid_blueprint",
+        "harbor_fortress_plaza",
+    )
+    return archetypes[(idx - 1) % len(archetypes)]
+
+
+def _resolve_floor_elevation_and_boss_highlight(
+    is_tower: bool,
+    floor_index: int,
+    floor_id: str,
+    spawns: list[dict[str, Any]],
+) -> tuple[int, str]:
+    elev_map_tower = {1: 20, 2: 85, 3: 160}
+    elev_map_under = {1: -45, 2: -110, 3: -195}
+    elev = elev_map_tower.get(floor_index, 20 * floor_index) if is_tower else elev_map_under.get(floor_index, -45 * floor_index)
+    mvp_name = next((str(s.get("name", "")) for s in spawns if isinstance(s, dict) and s.get("entity_type") == "MVP"), "")
+    raid_name = next((str(s.get("name", "")) for s in spawns if isinstance(s, dict) and s.get("entity_type") in ("Raid", "RaidBoss")), "")
+    mini_name = next((str(s.get("name", "")) for s in spawns if isinstance(s, dict) and s.get("entity_type") == "Mini-Boss"), "")
+    if floor_index == 1:
+        highlight = f"{floor_id} Entry Vestibule · {mini_name or 'Gate Overseer (Mini-Boss)'}"
+    elif floor_index == 2:
+        highlight = f"{floor_id} Mid-Sanctum · {raid_name or 'Regional Seal Warden (Raid Boss)'}"
+    else:
+        highlight = f"{floor_id} Core Sanctum · {mvp_name or 'Apostle Sovereign (MVP God-Subordinate)'}"
+    return elev, highlight
+
+
 def _synthesize_town_blueprint(zone_entry: dict[str, Any], idx: int) -> dict[str, Any]:
     zid = str(zone_entry.get("zone_id", f"zone-town-{idx}"))
     snid = str(zone_entry.get("studio_node_id", f"town-{idx}"))
@@ -825,6 +866,7 @@ def _synthesize_town_blueprint(zone_entry: dict[str, Any], idx: int) -> dict[str
     return {
         "zone_id": zid,
         "studio_node_id": snid,
+        "layout_archetype": _resolve_town_layout_archetype(zone_entry, idx),
         "archetype_subtitle": f"{tname} ({analog})",
         "race_spawn_point": {
             "race_key": affinity,
@@ -1017,10 +1059,13 @@ def _synthesize_multifloor_dungeon(zone_entry: dict[str, Any], idx: int) -> dict
             },
         ]
 
+        elev_m, boss_hl = _resolve_floor_elevation_and_boss_highlight(is_tower, f_i, fid, spawns)
         floors.append(
             {
                 "floor_id": fid,
                 "floor_index": f_i,
+                "floor_elevation_meters": elev_m,
+                "boss_tier_highlight": boss_hl,
                 "name": f"{fid} — {dname.split('(')[0].strip()} ({lv_str})",
                 "level_range": lv_str,
                 "rooms": [
@@ -1440,6 +1485,7 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if isinstance(deep_tb, dict):
         deep_tb.setdefault("zone_id", deep_town.get("zone_id", "zone-town-lantern-hollow"))
         deep_tb.setdefault("studio_node_id", deep_town.get("studio_node_id", "town-lantern-hollow"))
+        deep_tb.setdefault("layout_archetype", "polygonal_walled_keep")
         deep_tb.setdefault(
             "race_spawn_point",
             {
@@ -1474,10 +1520,12 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if starting_towns and isinstance(deep_tb, dict):
         if "town_blueprint" not in starting_towns[0]:
             starting_towns[0]["town_blueprint"] = deep_tb
-        elif isinstance(starting_towns[0].get("town_blueprint"), dict) and "shop_and_refinement_catalog" not in starting_towns[0]["town_blueprint"]:
-            starting_towns[0]["town_blueprint"]["shop_and_refinement_catalog"] = deep_tb["shop_and_refinement_catalog"]
+        elif isinstance(starting_towns[0].get("town_blueprint"), dict):
+            starting_towns[0]["town_blueprint"].setdefault("layout_archetype", deep_tb.get("layout_archetype", "polygonal_walled_keep"))
+            if "shop_and_refinement_catalog" not in starting_towns[0]["town_blueprint"]:
+                starting_towns[0]["town_blueprint"]["shop_and_refinement_catalog"] = deep_tb["shop_and_refinement_catalog"]
 
-    # 2. Expand next unbuilt Town Blueprint among the 6 Starting Towns + 9 Castle/Hub Towns, and ensure D10 shop_and_refinement_catalog
+    # 2. Expand next unbuilt Town Blueprint among the 6 Starting Towns + 9 Castle/Hub Towns, and ensure D10 shop_and_refinement_catalog & D11 layout_archetype
     all_towns = starting_towns + hub_towns
     for idx, t_entry in enumerate(all_towns, start=1):
         if "town_blueprint" not in t_entry:
@@ -1485,9 +1533,20 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
             t_entry["t_depth_status"] = "t_deep_validated"
             actions.append(f"expanded_town_blueprint:{t_entry['zone_id']}")
             break
-        elif isinstance(t_entry.get("town_blueprint"), dict) and "shop_and_refinement_catalog" not in t_entry["town_blueprint"]:
-            t_entry["town_blueprint"]["shop_and_refinement_catalog"] = _synthesize_shop_and_refinement_catalog(t_entry, idx)
-            actions.append(f"populated_shop_and_refinement_catalog:{t_entry['zone_id']}")
+        elif isinstance(t_entry.get("town_blueprint"), dict):
+            tb_cur = t_entry["town_blueprint"]
+            if "shop_and_refinement_catalog" not in tb_cur:
+                tb_cur["shop_and_refinement_catalog"] = _synthesize_shop_and_refinement_catalog(t_entry, idx)
+                actions.append(f"populated_shop_and_refinement_catalog:{t_entry['zone_id']}")
+            expected_arch = _resolve_town_layout_archetype(t_entry, idx)
+            if tb_cur.get("layout_archetype") not in (
+                "radial_moat_sanctuary",
+                "polygonal_walled_keep",
+                "schematic_grid_blueprint",
+                "harbor_fortress_plaza",
+            ):
+                tb_cur["layout_archetype"] = expected_arch
+                actions.append(f"populated_town_layout_archetype:{t_entry['zone_id']}:{expected_arch}")
 
     # Mirror all built town_blueprints into root `town_blueprints` array for fast lookup
     atlas["town_blueprints"] = [t["town_blueprint"] for t in all_towns if isinstance(t.get("town_blueprint"), dict)]
@@ -1514,6 +1573,7 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
                 actions.append(f"completed_spawn_tiers:{dkey}")
 
     for d_idx, mf in enumerate(mf_list, start=1):
+        is_tower_mf = mf.get("dungeon_kind") == "vertical_tower"
         for fl in mf.get("floors") or []:
             if isinstance(fl.get("spawns"), list):
                 if _ensure_spawn_tiers_in_table(
@@ -1523,6 +1583,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
                     mf.get("entrance_loc", "48550:248400"),
                 ):
                     actions.append(f"completed_floor_spawns:{mf['dungeon_id']}:{fl.get('floor_id')}")
+            elev_m, boss_hl = _resolve_floor_elevation_and_boss_highlight(
+                is_tower_mf,
+                int(fl.get("floor_index", 1)),
+                str(fl.get("floor_id", "B1")),
+                fl.get("spawns") or [],
+            )
+            if "floor_elevation_meters" not in fl or "boss_tier_highlight" not in fl:
+                fl["floor_elevation_meters"] = elev_m
+                fl["boss_tier_highlight"] = boss_hl
+                actions.append(f"populated_floor_elevation:{mf['dungeon_id']}:{fl.get('floor_id')}:{elev_m}m")
 
     # 5. Ensure all 24 Field Hunting Areas exist in `fields_and_hunting_areas`
     fields_list: list[dict[str, Any]] = zdir.setdefault("fields_and_hunting_areas", [])
@@ -1731,20 +1801,65 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             valid_shop_catalogs += 1
     d10_score = round((valid_shop_catalogs / float(target_towns)) * 100.0, 1)
 
+    # D11: 4 Distinct Town Architectural Layout Geometries (`layout_archetype` across 15 Towns)
+    valid_archetypes_set = {
+        "radial_moat_sanctuary",
+        "polygonal_walled_keep",
+        "schematic_grid_blueprint",
+        "harbor_fortress_plaza",
+    }
+    town_archetypes_seen: set[str] = set()
+    valid_town_archetypes = 0
+    for t in all_towns:
+        tb = t.get("town_blueprint") or {}
+        arch = tb.get("layout_archetype")
+        if arch in valid_archetypes_set:
+            valid_town_archetypes += 1
+            town_archetypes_seen.add(str(arch))
+    d11_score = round((valid_town_archetypes / float(target_towns)) * 100.0, 1) if len(town_archetypes_seen) == 4 else round((valid_town_archetypes / float(target_towns)) * 75.0, 1)
+
+    # D12: Multi-Floor Underground vs. Vertical Tower Cutaway Diagram (`floor_elevation_meters` & `boss_tier_highlight` across 16 Dungeons)
+    valid_dungeon_cutaways = 0
+    for d in mf_dungeons:
+        dkind = d.get("dungeon_kind")
+        floors = d.get("floors") or []
+        if len(floors) >= 3 and all(
+            isinstance(fl, dict)
+            and isinstance(fl.get("floor_elevation_meters"), int)
+            and ((dkind == "vertical_tower" and fl.get("floor_elevation_meters", 0) > 0) or (dkind == "underground_labyrinth" and fl.get("floor_elevation_meters", 0) < 0))
+            and bool(fl.get("boss_tier_highlight"))
+            for fl in floors
+        ):
+            valid_dungeon_cutaways += 1
+    d12_score = round((valid_dungeon_cutaways / float(target_dungeons)) * 100.0, 1)
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": d5_score,
+        "Aesthetic": round((d5_score + d11_score + d12_score) / 3.0, 1),
         "Continuity": round((d1_score + d5_score + d9_score) / 3.0, 1),
         "Narrative": 100.0 if len(whc.get("historical_epochs") or []) >= 4 else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score) / 4.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score) / 5.0, 1),
-        "Fantasy": round((d1_score + d9_score) / 2.0, 1),
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score) / 5.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score) / 7.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score) / 3.0, 1),
         "Submission": round((d2_score + d4_score + d7_score + d10_score) / 4.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
-        (d1_score + d2_score + d3_score + d4_score + d5_score + d6_score + d7_score + d8_score + d9_score + d10_score)
-        / 10.0,
+        (
+            d1_score
+            + d2_score
+            + d3_score
+            + d4_score
+            + d5_score
+            + d6_score
+            + d7_score
+            + d8_score
+            + d9_score
+            + d10_score
+            + d11_score
+            + d12_score
+        )
+        / 12.0,
         1,
     )
 
@@ -1770,6 +1885,17 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D8_fortress_harbor_clanhall_blueprints": {"score": d8_score, "verified": valid_fort_bps, "target": target_forts},
             "D9_race_growth_routes": {"score": d9_score, "verified": len(valid_routes), "target": 6},
             "D10_shop_and_refinement_catalogs": {"score": d10_score, "verified": valid_shop_catalogs, "target": target_towns},
+            "D11_town_layout_archetypes": {
+                "score": d11_score,
+                "verified": valid_town_archetypes,
+                "target": target_towns,
+                "distinct_archetypes": sorted(town_archetypes_seen),
+            },
+            "D12_dungeon_vertical_cutaways": {
+                "score": d12_score,
+                "verified": valid_dungeon_cutaways,
+                "target": target_dungeons,
+            },
         },
     }
 
@@ -1824,6 +1950,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D8  (8 Fortress Blueprints) : {dims['D8_fortress_harbor_clanhall_blueprints']['score']}/100 ({dims['D8_fortress_harbor_clanhall_blueprints']['verified']}/{dims['D8_fortress_harbor_clanhall_blueprints']['target']})")
         print(f"  D9  (6-Race Growth Routes)  : {dims['D9_race_growth_routes']['score']}/100 ({dims['D9_race_growth_routes']['verified']}/{dims['D9_race_growth_routes']['target']})")
         print(f"  D10 (Shop & +1..+15 Refine) : {dims['D10_shop_and_refinement_catalogs']['score']}/100 ({dims['D10_shop_and_refinement_catalogs']['verified']}/{dims['D10_shop_and_refinement_catalogs']['target']})")
+        print(f"  D11 (4 Town Archetypes)     : {dims['D11_town_layout_archetypes']['score']}/100 ({dims['D11_town_layout_archetypes']['verified']}/{dims['D11_town_layout_archetypes']['target']})")
+        print(f"  D12 (Dungeon Cutaway Elev)  : {dims['D12_dungeon_vertical_cutaways']['score']}/100 ({dims['D12_dungeon_vertical_cutaways']['verified']}/{dims['D12_dungeon_vertical_cutaways']['target']})")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

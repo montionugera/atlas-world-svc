@@ -367,6 +367,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "layout_archetype",
         "archetype_subtitle",
         "wall_polygon_pct",
         "gates",
@@ -378,6 +379,15 @@
       "properties": {
         "zone_id": { "type": "string" },
         "studio_node_id": { "type": "string" },
+        "layout_archetype": {
+          "type": "string",
+          "enum": [
+            "radial_moat_sanctuary",
+            "polygonal_walled_keep",
+            "schematic_grid_blueprint",
+            "harbor_fortress_plaza"
+          ]
+        },
         "archetype_subtitle": { "type": "string" },
         "race_spawn_point": {
           "type": "object",
@@ -751,6 +761,8 @@
             "required": [
               "floor_id",
               "floor_index",
+              "floor_elevation_meters",
+              "boss_tier_highlight",
               "name",
               "level_range",
               "rooms",
@@ -760,6 +772,8 @@
             "properties": {
               "floor_id": { "type": "string" },
               "floor_index": { "type": "integer" },
+              "floor_elevation_meters": { "type": "integer" },
+              "boss_tier_highlight": { "type": "string" },
               "name": { "type": "string" },
               "level_range": { "type": "string" },
               "rooms": {

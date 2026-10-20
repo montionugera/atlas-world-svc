@@ -4270,12 +4270,19 @@ const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
   levelBand: 'All',      // 'All' | '1-20' | '21-40' | '41-60' | '61-80' | '81-99'
   raceGrowthRoute: 'All', // 'All' | 'Human' | 'Lunar' | 'Ogre/Orc' | 'Dwarf' | 'Dark-Lunar' | 'Furral'
+  townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
   activeTownId: 'town-lantern-hollow',
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setTownBlueprintMode(mode) {
+  ATLAS_STATE_STORE.townBlueprintMode = mode === 'schematic' ? 'schematic' : 'parchment';
+  writeUrlState(false);
+  render();
+}
 
 function resolveNearestZoneFromPanAndLoc(
   zoomVal = STUDIO_MAP_ZOOM,
@@ -5453,6 +5460,102 @@ function renderAtlasFilterBarHtml(matchCount) {
   `;
 }
 
+function renderDungeonVerticalCutawaySvg(dng, activeFloor) {
+  const floors = dng.floors || [];
+  const isTower = dng.dungeon_kind === 'vertical_tower';
+  const orderedFloors = isTower ? floors.slice().reverse() : floors.slice();
+  const panelX = 768;
+  const panelY = 50;
+  const panelW = 258;
+  const panelH = 420;
+  const shaftX = panelX + 38;
+
+  const surfaceOrRoofBanner = isTower ? `
+    <g style="cursor:pointer" onclick="switchDungeonFloor('${escapeHtml((floors[floors.length - 1] && floors[floors.length - 1].floor_id) || '3F')}')">
+      <rect x="${panelX + 12}" y="${panelY + 34}" width="${panelW - 24}" height="24" rx="5" fill="#1e3a8a" stroke="#fde047" stroke-width="1.4"/>
+      <text x="${panelX + panelW / 2}" y="${panelY + 49}" text-anchor="middle" fill="#fde047" font-size="8.8" font-weight="900" font-family="monospace">
+        🗼 3F ROOFTOP APEX (+160m) ⬆ 2F ⬆ 1F
+      </text>
+    </g>
+  ` : `
+    <g style="cursor:pointer" onclick="exitDungeonSubMap('${escapeHtml(dng.entrance_loc || '')}')">
+      <rect x="${panelX + 12}" y="${panelY + 34}" width="${panelW - 24}" height="24" rx="5" fill="#064e3b" stroke="#34d399" stroke-width="1.4"/>
+      <text x="${panelX + panelW / 2}" y="${panelY + 49}" text-anchor="middle" fill="#ecfdf5" font-size="8.8" font-weight="900" font-family="monospace">
+        🌲 SURFACE ENTRANCE (0m) ➔ B1 ➔ B2 ➔ B3
+      </text>
+    </g>
+  `;
+
+  const floorSlabsSvg = orderedFloors.map((fl, idx) => {
+    const slabY = panelY + 72 + idx * 102;
+    const isCur = fl.floor_id === activeFloor.floor_id;
+    const elevVal = typeof fl.floor_elevation_meters === 'number'
+      ? (fl.floor_elevation_meters > 0 ? `+${fl.floor_elevation_meters}m` : `${fl.floor_elevation_meters}m`)
+      : (isTower ? `+${fl.floor_index * 55}m` : `-${fl.floor_index * 60}m`);
+    const bossHl = fl.boss_tier_highlight || `${fl.floor_id} Sanctum (${fl.level_range})`;
+    const isBossFloor = fl.floor_id === 'B3' || fl.floor_id === '3F' || fl.floor_index === 3;
+    const strokeCol = isCur ? '#fde047' : (isBossFloor ? '#f59e0b' : '#c084fc');
+    const bgFill = isCur
+      ? (isTower ? 'rgba(30,64,175,0.95)' : 'rgba(107,33,168,0.95)')
+      : 'rgba(15,23,42,0.92)';
+    const nextFloor = orderedFloors[idx + 1];
+    const warpShaftSvg = nextFloor ? `
+      <g style="cursor:pointer" onclick="switchDungeonFloor('${escapeHtml(nextFloor.floor_id)}')">
+        <line x1="${shaftX}" y1="${slabY + 68}" x2="${shaftX}" y2="${slabY + 102}" stroke="#38bdf8" stroke-width="4" stroke-dasharray="4 3"/>
+        <circle cx="${shaftX}" cy="${slabY + 85}" r="9" fill="#0f172a" stroke="#fde047" stroke-width="1.5"/>
+        <text x="${shaftX}" y="${slabY + 88}" text-anchor="middle" fill="#fde047" font-size="9" font-weight="900">${isTower ? '⬆' : '⬇'}</text>
+      </g>
+    ` : '';
+
+    return `
+      <g data-poi-clickable="1" style="cursor:pointer" onclick="switchDungeonFloor('${escapeHtml(fl.floor_id)}')">
+        <rect x="${panelX + 12}" y="${slabY}" width="${panelW - 24}" height="68" rx="8" fill="${bgFill}" stroke="${strokeCol}" stroke-width="${isCur ? 2.5 : 1.4}"/>
+        <circle cx="${shaftX}" cy="${slabY + 22}" r="12" fill="${isCur ? '#eab308' : '#1e293b'}" stroke="#ffffff" stroke-width="1.5"/>
+        <text x="${shaftX}" y="${slabY + 26}" text-anchor="middle" fill="${isCur ? '#0f172a' : '#fde047'}" font-size="9.5" font-weight="900" font-family="monospace">${escapeHtml(fl.floor_id)}</text>
+        <text x="${panelX + 58}" y="${slabY + 19}" fill="#ffffff" font-size="9.5" font-weight="900" font-family="monospace">
+          ${escapeHtml(fl.floor_id)} (${escapeHtml(elevVal)}) · ${escapeHtml(fl.level_range)}
+        </text>
+        <text x="${panelX + 58}" y="${slabY + 34}" fill="${isCur ? '#fde047' : '#cbd5e1'}" font-size="8.2" font-weight="800" font-family="monospace">
+          ${escapeHtml(bossHl.slice(0, 30))}
+        </text>
+        <text x="${panelX + 58}" y="${slabY + 49}" fill="#93c5fd" font-size="8" font-family="monospace">
+          ${(fl.rooms || []).length} Chambers · ${(fl.warp_points || []).length} Warps · Click to Jump
+        </text>
+        ${isCur ? `<rect x="${panelX + panelW - 64}" y="${slabY + 6}" width="46" height="15" rx="4" fill="#fde047"/><text x="${panelX + panelW - 41}" y="${slabY + 16}" text-anchor="middle" fill="#0f172a" font-size="7.5" font-weight="900" font-family="monospace">ACTIVE</text>` : ''}
+      </g>
+      ${warpShaftSvg}
+    `;
+  }).join('');
+
+  const bottomExitBanner = isTower ? `
+    <g style="cursor:pointer" onclick="exitDungeonSubMap('${escapeHtml(dng.entrance_loc || '')}')">
+      <rect x="${panelX + 12}" y="${panelY + panelH - 36}" width="${panelW - 24}" height="24" rx="5" fill="#064e3b" stroke="#34d399" stroke-width="1.4"/>
+      <text x="${panelX + panelW / 2}" y="${panelY + panelH - 21}" text-anchor="middle" fill="#ecfdf5" font-size="8.5" font-weight="900" font-family="monospace">
+        🚪 GROUND LEVEL BASE (0m) · Overland Exit
+      </text>
+    </g>
+  ` : `
+    <g style="cursor:pointer" onclick="switchDungeonFloor('B3')">
+      <rect x="${panelX + 12}" y="${panelY + panelH - 36}" width="${panelW - 24}" height="24" rx="5" fill="#451a03" stroke="#f59e0b" stroke-width="1.4"/>
+      <text x="${panelX + panelW / 2}" y="${panelY + panelH - 21}" text-anchor="middle" fill="#fde047" font-size="8.5" font-weight="900" font-family="monospace">
+        👑 B3 ABYSSAL MVP SANCTUM (-195m)
+      </text>
+    </g>
+  `;
+
+  return `
+    <g id="dungeonVerticalCutawayDiagram">
+      <rect x="${panelX}" y="${panelY}" width="${panelW}" height="${panelH}" rx="12" fill="rgba(9,11,19,0.94)" stroke="${isTower ? '#38bdf8' : '#c084fc'}" stroke-width="2" filter="url(#cartoDropShadow)"/>
+      <text x="${panelX + panelW / 2}" y="${panelY + 20}" text-anchor="middle" fill="#fde047" font-size="9.5" font-weight="900" font-family="monospace">
+        ${isTower ? '🗼 VERTICAL TOWER CUTAWAY (1F⬆2F⬆3F)' : '🕳️ UNDERGROUND DESCENT CUTAWAY (B1⬇B2⬇B3)'}
+      </text>
+      ${surfaceOrRoofBanner}
+      ${floorSlabsSvg}
+      ${bottomExitBanner}
+    </g>
+  `;
+}
+
 function renderDungeonSubMapAtlas(dng, tatlas) {
   const floors = dng.floors || [];
   const activeFloor = floors.find(f => f.floor_id === ATLAS_STATE_STORE.activeFloorId) || floors[0] || { floor_id: 'B1', name: 'Floor 1', rooms: [], warp_points: [], spawns: [] };
@@ -5595,13 +5698,18 @@ function renderDungeonSubMapAtlas(dng, tatlas) {
     </g>
   ` : '';
 
+  const cutawaySvg = renderDungeonVerticalCutawaySvg(dng, activeFloor);
+
   const svgInnerHtml = `
     <rect x="0" y="0" width="1040" height="500" fill="${isTower ? '#0d1528' : '#120b1d'}"/>
     <image href="/studio-maps/d01_dungeon_radar_map.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.28"/>
-    ${corridorLinesSvg}
-    ${roomsSvg}
-    ${spawnsSvg}
-    ${warpsSvg}
+    <g transform="translate(-85, 0) scale(0.84, 1)">
+      ${corridorLinesSvg}
+      ${roomsSvg}
+      ${spawnsSvg}
+      ${warpsSvg}
+    </g>
+    ${cutawaySvg}
     ${toastSvg}
   `;
 
@@ -5653,11 +5761,183 @@ function renderDungeonSubMapAtlas(dng, tatlas) {
   });
 }
 
+function renderTownArchetypeBackdropSvg(layoutArchetype, wallPts) {
+  if (layoutArchetype === 'radial_moat_sanctuary') {
+    // Screenshot 3: Dark Elven / Elven Village with concentric water moat + 4 causeway bridges + central octagon
+    return `
+      <g id="townArchetypeRadialMoatSanctuary" pointer-events="none">
+        <rect x="0" y="0" width="1040" height="500" fill="#10212b"/>
+        <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.24"/>
+        <!-- Outer & Inner Concentric Water Moats -->
+        <ellipse cx="520" cy="250" rx="430" ry="215" fill="#0c4a6e" stroke="#38bdf8" stroke-width="4"/>
+        <ellipse cx="520" cy="250" rx="355" ry="172" fill="#1e293b" stroke="#7dd3fc" stroke-width="3" stroke-dasharray="10 6"/>
+        <ellipse cx="520" cy="250" rx="285" ry="138" fill="#083344" stroke="#22d3ee" stroke-width="2.5"/>
+        <!-- 4 Cardinal Stone Causeway Bridges across the Moat -->
+        <rect x="492" y="20" width="56" height="460" fill="#334155" stroke="#eab308" stroke-width="2"/>
+        <rect x="75" y="226" width="890" height="48" fill="#334155" stroke="#eab308" stroke-width="2"/>
+        <!-- Central Sacred Octagon Sanctuary -->
+        <polygon points="440,145 600,145 665,205 665,295 600,355 440,355 375,295 375,205"
+                 fill="rgba(15,23,42,0.92)" stroke="#fde047" stroke-width="4" stroke-linejoin="round"/>
+        <circle cx="520" cy="250" r="64" fill="rgba(6,182,212,0.18)" stroke="#67e8f9" stroke-width="2" stroke-dasharray="5 4"/>
+      </g>
+    `;
+  }
+  if (layoutArchetype === 'harbor_fortress_plaza') {
+    // Coastal Harbor / Maritime Pier Town with Sea-Gate, 3 Wooden Timber Piers & Breakwater Wall
+    return `
+      <g id="townArchetypeHarborFortressPlaza" pointer-events="none">
+        <rect x="0" y="0" width="1040" height="500" fill="#1a2e26"/>
+        <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.26"/>
+        <!-- Southern & Western Coastal Harbor Bay Water -->
+        <path d="M 0,340 Q 280,320 540,360 T 1040,335 L 1040,500 L 0,500 Z" fill="#0369a1" stroke="#38bdf8" stroke-width="3"/>
+        <path d="M 0,375 Q 320,355 620,390 T 1040,370" fill="none" stroke="#bae6fd" stroke-width="1.5" stroke-dasharray="10 6"/>
+        <!-- 3 Harbor Timber Piers & Sea-Gate Quay -->
+        <rect x="210" y="335" width="44" height="125" rx="4" fill="#78350f" stroke="#f59e0b" stroke-width="2"/>
+        <rect x="498" y="345" width="48" height="135" rx="4" fill="#78350f" stroke="#fde047" stroke-width="2.5"/>
+        <rect x="760" y="335" width="44" height="125" rx="4" fill="#78350f" stroke="#f59e0b" stroke-width="2"/>
+        <text x="522" y="472" text-anchor="middle" fill="#bae6fd" font-size="9.5" font-weight="900" font-family="monospace">⚓ HARBOR SEA-GATE &amp; MARITIME QUAY PIERS</text>
+        <polygon points="140,60 900,60 930,220 880,355 160,355 110,220"
+                 fill="rgba(30,41,59,0.78)" stroke="#fb923c" stroke-width="4.5" stroke-linejoin="round"/>
+      </g>
+    `;
+  }
+  if (layoutArchetype === 'schematic_grid_blueprint') {
+    // Screenshot 5: Oren by Cheese Crisp Architectural Grid Corridor Backdrop
+    return `
+      <g id="townArchetypeSchematicGrid" pointer-events="none">
+        <rect x="0" y="0" width="1040" height="500" fill="#18202c"/>
+        <polygon points="110,48 930,48 930,452 110,452" fill="rgba(15,23,42,0.88)" stroke="#94a3b8" stroke-width="4"/>
+        <rect x="132" y="66" width="776" height="368" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="8 4"/>
+        <!-- Architectural Staircases on N/S/E/W Corridors -->
+        <g stroke="#cbd5e1" stroke-width="1.5">
+          <line x1="495" y1="50" x2="545" y2="50"/><line x1="495" y1="56" x2="545" y2="56"/><line x1="495" y1="62" x2="545" y2="62"/>
+          <line x1="495" y1="438" x2="545" y2="438"/><line x1="495" y1="444" x2="545" y2="444"/><line x1="495" y1="450" x2="545" y2="450"/>
+        </g>
+      </g>
+    `;
+  }
+  // Default: "polygonal_walled_keep" (Screenshot 4 Gludin / Talking Island with hexagonal stone wall + river bridge + north temple)
+  return `
+    <g id="townArchetypePolygonalWalledKeep" pointer-events="none">
+      <rect x="0" y="0" width="1040" height="500" fill="#233729"/>
+      <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.32"/>
+      <!-- Exterior River Channel & Southern Stone Bridge (Screenshot 4 Gludin / Talking Island style) -->
+      <path d="M 0,435 Q 290,415 520,445 T 1040,425" fill="none" stroke="#0284c7" stroke-width="28"/>
+      <path d="M 0,435 Q 290,415 520,445 T 1040,425" fill="none" stroke="#7dd3fc" stroke-width="2" stroke-dasharray="8 6"/>
+      <rect x="488" y="416" width="64" height="48" rx="4" fill="#475569" stroke="#fde047" stroke-width="2"/>
+      <!-- North Temple Sanctuary Terrace -->
+      <rect x="370" y="42" width="300" height="72" rx="6" fill="rgba(30,41,59,0.9)" stroke="#eab308" stroke-width="2.5"/>
+      <polygon points="${wallPts}" fill="rgba(30,41,59,0.74)" stroke="#eab308" stroke-width="5" stroke-linejoin="round"/>
+    </g>
+  `;
+}
+
+function renderOrenSchematicBlueprintSvg(bp, townNode, visibleMarks, spawnPinSvg) {
+  // Screenshot 5: "Oren by Cheese" Architectural CAD Schematic with crisp room blocks, stairs, 1..12 numbered rooms, colored NPC dots & right-hand numbered legend
+  const mapW = 750;
+  const scaleX = px => Math.round((px / 100) * mapW);
+  const scaleY = py => Math.round((py / 100) * 500);
+  const npcByBldg = {};
+  (bp.npc_roster || []).forEach(n => {
+    npcByBldg[n.building_number] = n;
+  });
+
+  const schematicStreetsSvg = (bp.streets || []).map(st => {
+    const pts = (st.path_pct || []).map(([px, py]) => `${scaleX(px)},${scaleY(py)}`).join(' ');
+    const sw = Math.max(12, Math.round((st.width_meters || 12) * 1.5));
+    return `
+      <g pointer-events="none">
+        <polyline points="${pts}" fill="none" stroke="#090d14" stroke-width="${sw + 6}" stroke-linecap="square"/>
+        <polyline points="${pts}" fill="none" stroke="#475569" stroke-width="${sw}" stroke-linecap="square"/>
+        <polyline points="${pts}" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+      </g>
+    `;
+  }).join('');
+
+  const schematicRoomsSvg = (bp.buildings || []).map(b => {
+    const bx = scaleX(b.x_pct);
+    const by = scaleY(b.y_pct);
+    const bw = Math.max(54, scaleX(b.w_pct));
+    const bh = Math.max(38, scaleY(b.h_pct));
+    const npc = npcByBldg[b.building_number] || {};
+    const dotCol = npc.color_hex || '#eab308';
+    const bldgCatalogTab = b.building_number === 7 ? 'equip_shop' : (b.building_number === 8 ? 'consumable_shop' : (b.building_number === 3 ? 'blacksmith' : 'all'));
+    const poiBldg = {
+      title: `${b.name} (Oren by Cheese Schematic #${b.building_number})`,
+      category: `Architectural Room #${b.building_number} · ${npc.name || ''} (${npc.role_title || ''})`,
+      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+      hoursOrStatus: `SCHEMATIC ROOM #${b.building_number} · NPC: ${npc.name || 'Resident'}`,
+      summary: b.function || 'Town service building and artisan counter.',
+      address: `Room #${b.building_number} · ${bp.archetype_subtitle}`,
+      coordinates: `loc=${npc.loc_coord || ''} · Archetype: ${bp.layout_archetype || 'schematic_grid_blueprint'}`,
+      scaleSpecs: `Doorway: 2.15m × 1.60m · Counter: 0.58m · Step Riser: 0.14m`,
+      inspectId: (townNode && townNode.id) || 'town-lantern-hollow',
+      shopAndRefinementCatalog: bp.shop_and_refinement_catalog || null,
+      activeCatalogTab: bldgCatalogTab,
+      connections: [{ label: `🏛️ ${b.function}`, badge: `#${b.building_number}` }]
+    };
+    return `
+      <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiBldg, svgX: bx + Math.round(bw / 2), svgY: by + Math.round(bh / 2) })}', event)">
+        <!-- Crisp Architectural CAD Room Block with Double Wall & Stair Ticks -->
+        <rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="#263142" stroke="#e2e8f0" stroke-width="2"/>
+        <rect x="${bx + 3}" y="${by + 3}" width="${bw - 6}" height="${bh - 6}" fill="#1b2432" stroke="#64748b" stroke-width="1"/>
+        <!-- Doorway Cutout + Architectural Stair Ticks -->
+        <rect x="${bx + Math.round(bw / 2) - 8}" y="${by + bh - 4}" width="16" height="6" fill="#475569" stroke="#fde047" stroke-width="0.9"/>
+        <!-- Color-coded NPC Dot inside Room (Oren by Cheese style) -->
+        <circle cx="${bx + bw - 12}" cy="${by + 12}" r="6.5" fill="${dotCol}" stroke="#ffffff" stroke-width="1.5"/>
+        <!-- Large Bold Room Number 1..12 -->
+        <text x="${bx + 14}" y="${by + 18}" fill="#ffffff" font-size="12" font-weight="900" font-family="monospace">${b.building_number}</text>
+        <text x="${bx + Math.round(bw / 2)}" y="${by + Math.round(bh / 2) + 8}" text-anchor="middle" fill="#cbd5e1" font-size="8.2" font-weight="800" font-family="monospace">
+          ${escapeHtml(b.name.replace(/^[0-9]+\.\s*/, '').slice(0, 16))}
+        </text>
+      </g>
+    `;
+  }).join('');
+
+  // Right-hand Numbered 1..12 Legend Sidebar inside the SVG (Screenshot 5 "Oren by Cheese")
+  const sidebarSvg = `
+    <g id="orenByCheeseSchematicLegend">
+      <rect x="762" y="14" width="264" height="472" rx="8" fill="#0d131d" stroke="#fde047" stroke-width="1.8"/>
+      <text x="894" y="34" text-anchor="middle" fill="#fde047" font-size="10.5" font-weight="900" font-family="monospace">
+        📐 "OREN BY CHEESE" SCHEMATIC
+      </text>
+      <text x="894" y="48" text-anchor="middle" fill="#94a3b8" font-size="8.2" font-weight="700" font-family="monospace">
+        NUMBERED ROOMS 1..12 &amp; COLORED NPC DOTS
+      </text>
+      ${(bp.npc_roster || []).map((npc, idx) => {
+        const ry = 62 + idx * 33;
+        return `
+          <g style="cursor:pointer" onclick="STUDIO_MAP_LOC=clampWorldLocCoord('${escapeHtml(npc.loc_coord)}'); render();">
+            <rect x="772" y="${ry}" width="244" height="28" rx="4" fill="#161f2e" stroke="rgba(255,255,255,0.1)"/>
+            <circle cx="786" cy="${ry + 14}" r="6" fill="${npc.color_hex}" stroke="#ffffff" stroke-width="1.2"/>
+            <text x="798" y="${ry + 13}" fill="#fde047" font-size="9" font-weight="900" font-family="monospace">
+              #${npc.building_number} ${escapeHtml(npc.name.slice(0, 24))}
+            </text>
+            <text x="798" y="${ry + 24}" fill="#cbd5e1" font-size="7.8" font-family="monospace">
+              ${escapeHtml(npc.role_title.slice(0, 28))} (${escapeHtml(npc.role_category)})
+            </text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  return `
+    <rect x="0" y="0" width="1040" height="500" fill="#111722"/>
+    <polygon points="48,28 730,28 730,472 48,472" fill="#1b2230" stroke="#94a3b8" stroke-width="4"/>
+    ${schematicStreetsSvg}
+    ${schematicRoomsSvg}
+    ${sidebarSvg}
+  `;
+}
+
 function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
   const bp = getTownBlueprintData(townNode, tatlas);
   const allTowns = getAllAtlasTownEntries(tatlas);
   const activeTownId = (townNode && (townNode.id || townNode.studio_node_id || townNode.zone_id)) || bp.studio_node_id || ATLAS_STATE_STORE.activeTownId || 'town-lantern-hollow';
   const fFilter = ATLAS_STATE_STORE.filter;
+  const layoutArchetype = bp.layout_archetype || 'polygonal_walled_keep';
+  const isSchematicMode = ATLAS_STATE_STORE.townBlueprintMode === 'schematic';
   const wallPts = (bp.wall_polygon_pct || []).map(([px, py]) => `${Math.round((px / 100) * 1040)},${Math.round((py / 100) * 500)}`).join(' ');
 
   const streetsSvg = (bp.streets || []).map(st => {
@@ -5823,26 +6103,40 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
     </div>
   `;
 
-  const svgInnerHtml = `
-    <rect x="0" y="0" width="1040" height="500" fill="#1e3a2f"/>
-    <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.32"/>
-    <polygon points="${wallPts}" fill="rgba(30,41,59,0.72)" stroke="#eab308" stroke-width="5" stroke-linejoin="round"/>
-    ${streetsSvg}
-    ${buildingsSvg}
-    ${marksSvg}
-    ${gatesSvg}
-    ${spawnPinSvg}
-  `;
+  const archetypeLabels = {
+    radial_moat_sanctuary: '🌊 Radial Moat Sanctuary (Screenshot 3 Dark Elven / Elven Village)',
+    polygonal_walled_keep: '🏰 Polygonal Walled Keep (Screenshot 4 Gludin / Talking Island)',
+    schematic_grid_blueprint: '📐 Architectural Grid Blueprint (Screenshot 5 "Oren by Cheese")',
+    harbor_fortress_plaza: '⚓ Coastal Harbor & Fortress Plaza (Pier & Sea-Gate Archetype)'
+  };
+  const activeArchetypeLabel = archetypeLabels[layoutArchetype] || archetypeLabels.polygonal_walled_keep;
+
+  const svgInnerHtml = isSchematicMode
+    ? renderOrenSchematicBlueprintSvg(bp, townNode, visibleMarks, spawnPinSvg)
+    : `
+      ${renderTownArchetypeBackdropSvg(layoutArchetype, wallPts)}
+      ${streetsSvg}
+      ${buildingsSvg}
+      ${marksSvg}
+      ${gatesSvg}
+      ${spawnPinSvg}
+      <g pointer-events="none">
+        <rect x="16" y="432" width="380" height="24" rx="6" fill="rgba(15,23,42,0.92)" stroke="#fde047" stroke-width="1.2"/>
+        <text x="206" y="448" text-anchor="middle" fill="#fde047" font-size="9" font-weight="900" font-family="monospace">
+          ARCHETYPE: ${escapeHtml(layoutArchetype.toUpperCase())}
+        </text>
+      </g>
+    `;
 
   const defaultPoi = {
     title: bp.archetype_subtitle,
-    category: 'Tier 3 Semantic Zoom (4.5×–12.0×) · Walled Town Street, Building & Service-Mark Blueprint',
+    category: `Tier 3 Semantic Zoom (4.5×–12.0×) · ${activeArchetypeLabel}`,
     thumb: '/thumbs/buildings/tower_round_roof_a.webp',
-    hoursOrStatus: `7 SERVICE MARKS · 12 NUMBERED BUILDINGS & NPCS · +1..+15 REFINEMENT ANVILS`,
+    hoursOrStatus: `ARCHETYPE: ${layoutArchetype.toUpperCase()} · 7 SERVICE MARKS · 12 BUILDINGS & NPCS`,
     summary: 'Click any ⚔️ Equip Shop, 🧪 Consumable Shop, or ⚒️ Refinement & Blacksmith on the Town Blueprint to inspect concrete Shop Stock (Weapons, Armor, Potions) and +1 to +15 Refinement Anvil Rates & Material Spoils.',
     address: bp.archetype_subtitle,
     coordinates: `Zoom: ${STUDIO_MAP_ZOOM.toFixed(2)}× · loc=${STUDIO_MAP_LOC.x}:${STUDIO_MAP_LOC.y}`,
-    scaleSpecs: `Main Meridian Avenue: 14.0m · Crossway: 12.5m · Ring: 6.0m · Shop Counters: 0.58m`,
+    scaleSpecs: `Layout Archetype: ${layoutArchetype} · Main Avenue: 14.0m · Crossway: 12.5m · Shop Counters: 0.58m`,
     inspectId: (townNode && townNode.id) || 'town-lantern-hollow',
     shopAndRefinementCatalog: bp.shop_and_refinement_catalog || null,
     activeCatalogTab: 'all',
@@ -5861,9 +6155,20 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
             style="min-height:28px;padding:4px 9px;border-radius:7px;font-size:11px;font-weight:900;cursor:pointer;border:1.5px solid #4ade80;background:#064e3b;color:#ecfdf5">
       ${allTowns.map(t => {
         const sel = (t.studio_node_id === activeTownId || t.zone_id === activeTownId) ? 'selected' : '';
-        return `<option value="${escapeHtml(t.studio_node_id)}|${escapeHtml(t.loc_coord || '')}" ${sel}>🏰 ${escapeHtml(t.name)}</option>`;
+        const tArch = (t.town_blueprint && t.town_blueprint.layout_archetype) || 'polygonal_walled_keep';
+        return `<option value="${escapeHtml(t.studio_node_id)}|${escapeHtml(t.loc_coord || '')}" ${sel}>🏰 ${escapeHtml(t.name)} [${escapeHtml(tArch)}]</option>`;
       }).join('')}
     </select>
+    <div style="display:inline-flex;background:#0f172a;padding:2px;border-radius:8px;border:1.5px solid #fde047">
+      <button type="button" onclick="setTownBlueprintMode('parchment')"
+              style="min-height:24px;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:900;cursor:pointer;border:none;background:${!isSchematicMode ? '#d97706' : 'transparent'};color:${!isSchematicMode ? '#ffffff' : '#cbd5e1'}">
+        📜 Parchment Town Map (Screenshots 3 &amp; 4)
+      </button>
+      <button type="button" onclick="setTownBlueprintMode('schematic')"
+              style="min-height:24px;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:900;cursor:pointer;border:none;background:${isSchematicMode ? '#2563eb' : 'transparent'};color:${isSchematicMode ? '#ffffff' : '#cbd5e1'}">
+        📐 Architectural Schematic ("Oren by Cheese" Screenshot 5)
+      </button>
+    </div>
     <button type="button" onclick="openDungeonSubMap('${escapeHtml(linkedDngId)}')"
             style="min-height:28px;padding:5px 11px;border-radius:7px;font-size:11px;font-weight:900;cursor:pointer;border:1.5px solid #e9d5ff;background:#7e22ce;color:#ffffff">
       🕳️ Warp to Connected Dungeon (${escapeHtml(linkedDngId)}) ➔

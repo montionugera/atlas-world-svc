@@ -572,6 +572,30 @@ def validate_world_governance(
                     if isinstance(t, dict)
                     and isinstance((t.get("town_blueprint") or {}).get("shop_and_refinement_catalog"), dict)
                 ),
+                "townLayoutArchetypesCount": sum(
+                    1
+                    for t in ((zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or []))
+                    if isinstance(t, dict)
+                    and (t.get("town_blueprint") or {}).get("layout_archetype")
+                    in (
+                        "radial_moat_sanctuary",
+                        "polygonal_walled_keep",
+                        "schematic_grid_blueprint",
+                        "harbor_fortress_plaza",
+                    )
+                ),
+                "dungeonVerticalCutawaysCount": sum(
+                    1
+                    for d in mf_dungeons
+                    if isinstance(d, dict)
+                    and len(d.get("floors") or []) >= 3
+                    and all(
+                        isinstance(fl, dict)
+                        and isinstance(fl.get("floor_elevation_meters"), int)
+                        and bool(fl.get("boss_tier_highlight"))
+                        for fl in (d.get("floors") or [])
+                    )
+                ),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):

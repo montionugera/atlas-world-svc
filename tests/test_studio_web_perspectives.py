@@ -370,6 +370,65 @@ class TestStudioWebPerspectives(unittest.TestCase):
             self.assertEqual(len(cat["refinement_anvil_rates"]), 5)
             self.assertGreaterEqual(len(cat["blacksmith_material_spoils"]), 3)
 
+    def test_wave4_town_layout_archetypes_schematic_toggle_and_vertical_cutaway(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["townLayoutArchetypesCount"], 15)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["dungeonVerticalCutawaysCount"], 16)
+
+        html = web.INDEX_HTML
+        for token in (
+            "setTownBlueprintMode",
+            "renderTownArchetypeBackdropSvg",
+            "renderOrenSchematicBlueprintSvg",
+            "renderDungeonVerticalCutawaySvg",
+            "Parchment Town Map (Screenshots 3 &amp; 4)",
+            'Architectural Schematic ("Oren by Cheese" Screenshot 5)',
+            "VERTICAL TOWER CUTAWAY",
+            "UNDERGROUND DESCENT CUTAWAY",
+            "radial_moat_sanctuary",
+            "polygonal_walled_keep",
+            "schematic_grid_blueprint",
+            "harbor_fortress_plaza",
+        ):
+            self.assertIn(token, html, f"Missing Wave 4 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(audit["dimensions"]["D11_town_layout_archetypes"]["score"], 100.0)
+        self.assertEqual(audit["dimensions"]["D11_town_layout_archetypes"]["verified"], 15)
+        self.assertEqual(audit["dimensions"]["D12_dungeon_vertical_cutaways"]["score"], 100.0)
+        self.assertEqual(audit["dimensions"]["D12_dungeon_vertical_cutaways"]["verified"], 16)
+
+        zdir = atlas["t_breadth_zone_directory"]
+        all_towns = zdir["starting_towns"] + zdir["other_castle_and_hub_towns"]
+        archetypes_seen = {t["town_blueprint"]["layout_archetype"] for t in all_towns}
+        self.assertEqual(
+            archetypes_seen,
+            {
+                "radial_moat_sanctuary",
+                "polygonal_walled_keep",
+                "schematic_grid_blueprint",
+                "harbor_fortress_plaza",
+            },
+        )
+
+        for dng in atlas["multi_floor_dungeons"]:
+            is_tower = dng["dungeon_kind"] == "vertical_tower"
+            for fl in dng["floors"]:
+                elev = fl["floor_elevation_meters"]
+                self.assertIsInstance(elev, int)
+                if is_tower:
+                    self.assertGreater(elev, 0)
+                else:
+                    self.assertLess(elev, 0)
+                self.assertTrue(fl["boss_tier_highlight"])
+
 
 if __name__ == "__main__":
     unittest.main()
