@@ -22544,6 +22544,567 @@ def inject_centennial_100d_studio_charters(atlas: dict[str, Any]) -> list[dict[s
     return rows
 
 
+def _build_nocturnal_weather_affix_spawns(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Record [Role 2: Content & World Tools — Dynamic World Weather-Triggered Rare Spawns, Nocturnal Hunt & Eclipse Affix Matrix] (D101)."""
+    specs = [
+        (
+            "nocturnal-affix-01-execution-grounds-guillotine-wraith",
+            "Execution Grounds Midnight Guillotine Wraith — Blood-Fog Spectral Executioner",
+            "zone-field-brass-spur-ridge",
+            "town-saffron-press-village",
+            "zone-dungeon-pendulum-shaft",
+            "Midnight 00:00-04:00 Game-Time + Blood Fog",
+            "Nocturnal Frenzy +35% ASPD",
+            "Moonshadow Essence",
+            25,
+            6,
+            548,
+            416,
+            "#8b5cf6",
+            "Materializes at the Execution Grounds gallows only during 00:00–04:00 Blood Fog with +35% ASPD Nocturnal Frenzy.",
+        ),
+        (
+            "nocturnal-affix-02-sea-of-spores-myconid-sovereign",
+            "Sea of Spores Acid-Rain Myconid Sovereign — Barometric Spore-Cloud Elder",
+            "zone-field-caldera-rim",
+            "town-escapement-anvil",
+            "zone-dungeon-star-heart-nave",
+            "Thunderstorm + Barometric Drop",
+            "Storm-Charged Chain Lightning Aura",
+            "Stormforged Dragon Scale",
+            30,
+            8,
+            572,
+            318,
+            "#a78bfa",
+            "Awakens beneath Oren's Sea of Spores barrier towers when barometric pressure drops during acid thunderstorms.",
+        ),
+        (
+            "nocturnal-affix-03-dragon-valley-lightning-drake-lord",
+            "Dragon Valley Lightning-Storm Drake Lord — Tempest Apex Wyvern Vanguard",
+            "zone-field-leyden-causeway",
+            "town-pinion-terminus",
+            "zone-dungeon-chronometer-foundry",
+            "Thunderstorm + Barometric Drop",
+            "Storm-Charged Chain Lightning Aura",
+            "Stormforged Dragon Scale",
+            20,
+            9,
+            612,
+            378,
+            "#38bdf8",
+            "Descends onto Leyden Capacitor Causeway in Dragon Valley during peak lightning storms, arcing chain lightning across 9-player parties.",
+        ),
+        (
+            "nocturnal-affix-04-cruma-marsh-blood-fog-leech-monarch",
+            "Cruma Marsh Blood-Fog Leech Monarch — Crimson Miasma Marsh Apex",
+            "zone-field-cinder-apron",
+            "town-saffron-press-village",
+            "zone-dungeon-pendulum-shaft",
+            "Midnight 00:00-04:00 Game-Time + Blood Fog",
+            "Nocturnal Frenzy +35% ASPD",
+            "Moonshadow Essence",
+            35,
+            5,
+            516,
+            408,
+            "#ec4899",
+            "Surfaces from Cruma Marshlands sinkholes during midnight Blood Fog to siphon party vitality unless interrupted.",
+        ),
+        (
+            "nocturnal-affix-05-forest-of-the-dead-vampire-duke",
+            "Forest of the Dead Full-Moon Vampire Duke — Von Hellmann Nocturnal Liege",
+            "zone-field-tether-causeway",
+            "town-starfall-haven",
+            "zone-catacomb-dark-omens-coral",
+            "Full Moon + Zero Torchlight Radius",
+            "Eclipse Shadow-Cloak True-Sight Required",
+            "Abyssal Eclipse Shard",
+            20,
+            9,
+            576,
+            198,
+            "#8b5cf6",
+            "Stalks Cursed Village ruins in Rune's Forest of the Dead under a Full Moon; requires Spectral True-Sight torches to break shadow-cloak.",
+        ),
+        (
+            "nocturnal-affix-06-blazing-swamp-ash-storm-magma-golem",
+            "Blazing Swamp Ash-Storm Magma Golem — Pyroclastic Obsidian Colossus",
+            "zone-field-aurora-tether",
+            "town-crown-beacon-citadel",
+            "zone-dungeon-star-heart-nave",
+            "Volcanic Ashfall + Magma Surge",
+            "Frostbite Armor-Shatter Pulse",
+            "Abyssal Eclipse Shard",
+            30,
+            12,
+            648,
+            246,
+            "#ec4899",
+            "Coalesces from Blazing Swamp lava vents during volcanic ashfalls, pulsing thermal thermal-shock waves that shatter heavy armor.",
+        ),
+        (
+            "nocturnal-affix-07-frozen-labyrinth-blizzard-wendigo-alpha",
+            "Frozen Labyrinth Blizzard Wendigo Alpha — Whiteout Frost-Howl Pack Sovereign",
+            "zone-field-ginger-aqueduct-bridge",
+            "town-inductor-switchyard",
+            "zone-dungeon-sap-heart-cistern",
+            "Thunderstorm + Barometric Drop",
+            "Frostbite Armor-Shatter Pulse",
+            "Crystallized Blizzard Core",
+            40,
+            7,
+            638,
+            148,
+            "#38bdf8",
+            "Leads a 12-wolf pack through Schuttgart/Goddard Frozen Labyrinth blizzards, dropping Crystallized Blizzard Cores for Ice-attribute forging.",
+        ),
+        (
+            "nocturnal-affix-08-swamp-of-screams-monsoon-stakato-queen",
+            "Swamp of Screams Monsoon Stakato Queen — Torrential Brood-Matriarch",
+            "zone-field-whispering-mire",
+            "town-starfall-haven",
+            "zone-catacomb-witch-pendulum",
+            "Thunderstorm + Barometric Drop",
+            "Nocturnal Frenzy +35% ASPD",
+            "Moonshadow Essence",
+            25,
+            9,
+            544,
+            218,
+            "#a78bfa",
+            "Spawns in the flooded central nest of Swamp of Screams during monsoon squalls with hyper-accelerated brood guards.",
+        ),
+        (
+            "nocturnal-affix-09-wall-of-argos-solar-eclipse-nephilim-judge",
+            "Wall of Argos Solar-Eclipse Nephilim Judge — Umbral Hundred-Eyed Arbiter",
+            "zone-field-aurora-tether",
+            "town-inductor-switchyard",
+            "zone-catacomb-forbidden-path-orrery",
+            "Full Moon + Zero Torchlight Radius",
+            "Eclipse Shadow-Cloak True-Sight Required",
+            "Abyssal Eclipse Shard",
+            15,
+            14,
+            678,
+            212,
+            "#8b5cf6",
+            "Manifests at the deepest shrine of Wall of Argos during total eclipse darkness; drops Abyssal Eclipse Shards for S80 unsealing.",
+        ),
+        (
+            "nocturnal-affix-10-plains-of-lizardmen-sand-gale-scale-breaker",
+            "Plains of the Lizardmen Sand-Gale Scale-breaker — Haboob Warlord Champion",
+            "zone-field-astrolabe-rift",
+            "town-escapement-anvil",
+            "zone-dungeon-medallion-heart-vault",
+            "Volcanic Ashfall + Magma Surge",
+            "Storm-Charged Chain Lightning Aura",
+            "Stormforged Dragon Scale",
+            35,
+            6,
+            588,
+            336,
+            "#a78bfa",
+            "Emerges during choking dust and ash gales across Plains of the Lizardmen with static-charged obsidian polearms.",
+        ),
+        (
+            "nocturnal-affix-11-enchanted-valley-aurora-pixie-matriarch",
+            "Enchanted Valley Aurora Pixie Matriarch — Starlight Borealis Arch-Fae",
+            "zone-field-tether-causeway",
+            "town-torque-balance-citadel",
+            "zone-dungeon-medallion-heart-vault",
+            "Full Moon + Zero Torchlight Radius",
+            "Eclipse Shadow-Cloak True-Sight Required",
+            "Crystallized Blizzard Core",
+            30,
+            4,
+            632,
+            258,
+            "#38bdf8",
+            "Appears beneath the upper waterfalls of Enchanted Valley under full-moon auroras; rewards 4-player precision parties.",
+        ),
+        (
+            "nocturnal-affix-12-silent-valley-dusk-mist-ancient-watcher",
+            "Silent Valley Dusk-Mist Ancient Watcher — Giant's Automaton Sentinel",
+            "zone-field-metronome-bridge",
+            "town-crown-beacon-citadel",
+            "zone-catacomb-apostate-dynamo",
+            "Midnight 00:00-04:00 Game-Time + Blood Fog",
+            "Frostbite Armor-Shatter Pulse",
+            "Crystallized Blizzard Core",
+            45,
+            9,
+            668,
+            298,
+            "#a78bfa",
+            "Patrols the Giant's Ruins of Silent Valley during midnight mist windows, guarding Ancient Tome fragments and Blizzard Cores.",
+        ),
+        (
+            "nocturnal-affix-13-primeval-isle-typhoon-sailren-stalker",
+            "Primeval Isle Typhoon Sailren Stalker — Hurricane Velociraptor Alpha",
+            "zone-field-siphon-sluice",
+            "town-starfall-haven",
+            "zone-dungeon-sunken-potter-hold",
+            "Thunderstorm + Barometric Drop",
+            "Nocturnal Frenzy +35% ASPD",
+            "Stormforged Dragon Scale",
+            20,
+            9,
+            524,
+            462,
+            "#ec4899",
+            "Hunts along Primeval Isle's Lost Nest beaches when tropical typhoons strike, ambushing parties with +35% ASPD frenzy.",
+        ),
+        (
+            "nocturnal-affix-14-hellbound-heat-mirage-chimera-overlord",
+            "HellboundHeat-Mirage Chimera Overlord — Battered Lands Solar-Flare Apex",
+            "zone-field-cinder-apron",
+            "town-glaze-barge-quay",
+            "zone-dungeon-kiln-cellar",
+            "Volcanic Ashfall + Magma Surge",
+            "Eclipse Shadow-Cloak True-Sight Required",
+            "Abyssal Eclipse Shard",
+            15,
+            18,
+            468,
+            466,
+            "#ec4899",
+            "Requires a 2-party (18-player) command channel in Hellbound's Battered Lands during extreme volcanic ash and heat-mirage surges.",
+        ),
+        (
+            "nocturnal-affix-15-antharas-lair-tremor-pulse-behemoth",
+            "Antharas Lair Tremor-Pulse Behemoth — Earth-Kin Magma Fissure Titan",
+            "zone-field-leyden-causeway",
+            "town-pinion-terminus",
+            "zone-dungeon-chronometer-foundry",
+            "Volcanic Ashfall + Magma Surge",
+            "Frostbite Armor-Shatter Pulse",
+            "Stormforged Dragon Scale",
+            25,
+            18,
+            626,
+            392,
+            "#8b5cf6",
+            "Breaches the Heart of Warding entrance in Antharas Lair during seismic magma surges, dropping Stormforged Dragon Scales.",
+        ),
+        (
+            "nocturnal-affix-16-devils-isle-midnight-ghost-admiral",
+            "Devil's Isle Midnight Ghost-Admiral — Zaken's Cursed Quartermaster Wraith",
+            "zone-field-siphon-sluice",
+            "town-pinion-terminus",
+            "zone-dungeon-sunken-potter-hold",
+            "Midnight 00:00-04:00 Game-Time + Blood Fog",
+            "Eclipse Shadow-Cloak True-Sight Required",
+            "Moonshadow Essence",
+            15,
+            9,
+            568,
+            448,
+            "#38bdf8",
+            "Boards the sunken pirate galleon deck at midnight when Devil's Isle lanterns turn crimson, dropping Moonshadow Essence.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        aid,
+        title,
+        zid,
+        tid,
+        did,
+        trig,
+        mut,
+        drop,
+        win_min,
+        psize,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "affix_spawn_id": aid,
+                "title": title,
+                "zone_id": zid,
+                "town_id": tid,
+                "dungeon_id": did,
+                "trigger_condition": trig,
+                "affix_mutation_tier": mut,
+                "exclusive_reagent_drop": drop,
+                "spawn_window_min": win_min,
+                "recommended_party_size": psize,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_nocturnal_weather_affix_spawns(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_nocturnal_weather_affix_spawns(atlas)
+    atlas["nocturnal_weather_affix_spawns"] = rows
+    return rows
+
+
+def _build_deterministic_combat_replays(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Record [Role 4: Backend Infra — Deterministic Combat Replay Verifier, Anti-Cheat Desync Audit & Tick-by-Tick Hash Chain Matrix] (D102)."""
+    specs = [
+        (
+            "combat-replay-01-talking-island",
+            "Talking Island (Lantern Hollow) — Starter Duel & Obelisk Frame-Exact Replay Verifier",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Olympiad 1v1 Frame-Exact Audit",
+            30,
+            120,
+            24.5,
+            458,
+            444,
+            "#10b981",
+            "Verifies novice arena duels and Cedar Obelisk tutorial combat traces with 30Hz BLAKE3-256 tick state Merkle chains.",
+        ),
+        (
+            "combat-replay-02-elven-village",
+            "Elven Village (Porcelain Loom) — Mother Tree Sanctuary Evasion & Cast-Tick Verifier",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "Olympiad 1v1 Frame-Exact Audit",
+            40,
+            180,
+            32.0,
+            546,
+            298,
+            "#34d399",
+            "Audits high-DEX Elven evasion rolls and sub-tick spell interrupt frames using ChaCha12 per-entity PRNG streams.",
+        ),
+        (
+            "combat-replay-03-dark-elven-village",
+            "Dark Elven Village (Carillon Belfry) — Critical Backstab & PK Drop Forensics Verifier",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "High-Value PK Drop Desync Forensics",
+            40,
+            240,
+            36.8,
+            518,
+            272,
+            "#14b8a6",
+            "Captures 240s rewind rings for chaotic PK karma drops and lethal blow critical positioning in Dark Forest borderlands.",
+        ),
+        (
+            "combat-replay-04-orc-village",
+            "Orc Village (Draft-Kiln Post) — Immortal Plateau Titan Frenzy & Stun-Lock Replay Node",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Olympiad 1v1 Frame-Exact Audit",
+            30,
+            150,
+            28.4,
+            470,
+            142,
+            "#60a5fa",
+            "Validates low-HP Zealot/Frenzy threshold activation ticks and stun-resist RNG parity across Rust simulation shards.",
+        ),
+        (
+            "combat-replay-05-dwarven-village",
+            "Dwarven Village (Root-Train Roundhouse) — Spoil/Sweep & Siege Golem Hitbox Verifier",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Epic Raid Boss First-Kill Proof",
+            20,
+            300,
+            18.0,
+            628,
+            90,
+            "#10b981",
+            "Records deterministic spoil/sweep loot rolls and Siege Golem demolition frames at 18.0 kbps compressed FlatBuffers bitrate.",
+        ),
+        (
+            "combat-replay-06-kamael-village",
+            "Kamael Village (Cinnamon-Mill Haven) — Soul-Consumption & Rush-Impact Frame Verifier",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "Olympiad 1v1 Frame-Exact Audit",
+            60,
+            180,
+            48.5,
+            390,
+            308,
+            "#34d399",
+            "60Hz high-frequency combat verifier auditing Kamael Rush-Impact displacement vectors and Soul-Barrier absorption ticks.",
+        ),
+        (
+            "combat-replay-07-gludin-village",
+            "Gludin Village (Glaze-Barge Quay) — Harbor Coliseum & PK Contraband Forensics Node",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "High-Value PK Drop Desync Forensics",
+            30,
+            300,
+            34.2,
+            428,
+            410,
+            "#14b8a6",
+            "Protects coastal caravan escorts and Gludin Arena wagers with automatic loot-freeze on BLAKE3 state-hash divergence.",
+        ),
+        (
+            "combat-replay-08-gludio-town",
+            "Town of Gludio (Kilnwatch Bastion) — 200v200 Frontier Castle Siege Tick Hash-Chain",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "200v200 Castle Siege Tick Hash-Chain",
+            20,
+            600,
+            72.0,
+            498,
+            384,
+            "#60a5fa",
+            "Full 600-second (10-minute) rolling siege replay buffer verifying Holy Artifact engraving interrupts and gate damage totals.",
+        ),
+        (
+            "combat-replay-09-dion-town",
+            "Town of Dion (Saffron Press) — Cruma Core & Fortress Ward Siege Replay Verifier",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "200v200 Castle Siege Tick Hash-Chain",
+            25,
+            480,
+            64.0,
+            528,
+            424,
+            "#10b981",
+            "Audits Dion Territory Ward captures and Cruma Tower Core matrix raid encounters with zero floating-point drift.",
+        ),
+        (
+            "combat-replay-10-giran-castle-town",
+            "Giran Castle Town (Pinion Terminus) — Antharas First-Kill & High-Stakes PK Verifier",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Epic Raid Boss First-Kill Proof",
+            30,
+            600,
+            88.5,
+            594,
+            406,
+            "#34d399",
+            "Generates cryptographic BLAKE3-256 first-kill certificates for Antharas 200-player Command Channel expeditions.",
+        ),
+        (
+            "combat-replay-11-oren-town",
+            "Town of Oren (Escapement Anvil) — Baium Angelic Vortex & Orfen Raid Proof Node",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Epic Raid Boss First-Kill Proof",
+            30,
+            450,
+            58.0,
+            598,
+            310,
+            "#14b8a6",
+            "Verifies Tower of Insolence 14F Baium awakening hits and Ivory Tower elemental duel damage formulas.",
+        ),
+        (
+            "combat-replay-12-hunters-village",
+            "Hunters Village (Torque-Balance Citadel) — Zariche/Akamanah Cursed PK Forensics Node",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "High-Value PK Drop Desync Forensics",
+            40,
+            360,
+            44.0,
+            630,
+            240,
+            "#60a5fa",
+            "Tracks Cursed Weapon world-drop coordinates, PK kill-streak multipliers, and anti-speedhack movement envelopes.",
+        ),
+        (
+            "combat-replay-13-aden-imperial-capital",
+            "Town of Aden (Crown-Beacon Citadel) — Grand Olympiad & Imperial Siege Master Verifier",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "200v200 Castle Siege Tick Hash-Chain",
+            60,
+            600,
+            95.0,
+            664,
+            286,
+            "#10b981",
+            "Flagship 60Hz deterministic replay verifier governing Grand Olympiad Hero crown matches and Aden Castle throne room sieges.",
+        ),
+        (
+            "combat-replay-14-goddard-town",
+            "Town of Goddard (Inductor Switchyard) — Valakas Lair 200-Player Raid First-Kill Proof",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Epic Raid Boss First-Kill Proof",
+            30,
+            600,
+            84.0,
+            664,
+            204,
+            "#34d399",
+            "Certifies Forge of the Gods Valakas dragon-slayer raids with tick-exact ChaCha12 PRNG seed verification.",
+        ),
+        (
+            "combat-replay-15-rune-township",
+            "Rune Township (Starfall Haven) — Frintezza/Freya Command Raid & Cliffside Siege Verifier",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "200v200 Castle Siege Tick Hash-Chain",
+            40,
+            540,
+            76.5,
+            560,
+            210,
+            "#14b8a6",
+            "Audits Rune Sky-Citadel vertical siege elevators, Pagan Temple boss locks, and Ice Queen Freya phase transitions.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        rid,
+        title,
+        tid,
+        zid,
+        scope,
+        hz,
+        rewind,
+        kbps,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "replay_sector_id": rid,
+                "title": title,
+                "town_id": tid,
+                "zone_id": zid,
+                "verification_scope": scope,
+                "tick_rate_hz": hz,
+                "hash_chain_algorithm": "BLAKE3-256 Incremental State Merkle Tree",
+                "prng_seed_discipline": "ChaCha12 Deterministic Per-Entity Stream",
+                "max_rewind_window_sec": rewind,
+                "replay_compression_kbps": kbps,
+                "desync_auto_halt_policy": "Freeze Loot + Snapshot Memory Dump + GM Alert",
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_deterministic_combat_replays(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_deterministic_combat_replays(atlas)
+    atlas["deterministic_combat_replays"] = rows
+    return rows
+
+
 
 
 
@@ -23879,6 +24440,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("centennial_100d_studio_charters") or []) < 22:
         inject_centennial_100d_studio_charters(atlas)
         actions.append("populated_22_centennial_100d_studio_charters")
+
+    # 85. Ensure all 16 Dynamic World Weather-Triggered Rare Spawns, Nocturnal Hunt & Eclipse Affix Matrix records exist in `nocturnal_weather_affix_spawns` (D101)
+    if len(atlas.get("nocturnal_weather_affix_spawns") or []) < 16:
+        inject_nocturnal_weather_affix_spawns(atlas)
+        actions.append("populated_16_nocturnal_weather_affix_spawns")
+
+    # 86. Ensure all 15 Deterministic Combat Replay Verifier, Anti-Cheat Desync Audit & Tick-by-Tick Hash Chain Matrix records exist in `deterministic_combat_replays` (D102)
+    if len(atlas.get("deterministic_combat_replays") or []) < 15:
+        inject_deterministic_combat_replays(atlas)
+        actions.append("populated_15_deterministic_combat_replays")
 
     return {"actions": actions}
 
@@ -28739,15 +29310,25 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d100_eval = score_d100_centennial_100d_studio_charters(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
     d100_score = d100_eval["score"]
 
+    # D101: Interactive 16-Record [Role 2: Content & World Tools — Dynamic World Weather-Triggered Rare Spawns, Nocturnal Hunt & Eclipse Affix Matrix] (`nocturnal_weather_affix_spawns` - 16 Spawns)
+    d101_eval = score_d101_nocturnal_weather_affix_spawns(
+        atlas, zone_ids_set=zone_ids_set, mf_dungeon_id_set=mf_dungeon_id_set, web_txt=web_txt
+    )
+    d101_score = d101_eval["score"]
+
+    # D102: Interactive 15-Record [Role 4: Backend Infra — Deterministic Combat Replay Verifier, Anti-Cheat Desync Audit & Tick-by-Tick Hash Chain Matrix] (`deterministic_combat_replays` - 15 Replay Sectors)
+    d102_eval = score_d102_deterministic_combat_replays(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d102_score = d102_eval["score"]
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 82.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 84.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0 and d99_score == 100.0 and d100_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 84.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 94.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 83.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score) / 90.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 84.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 86.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0 and d97_score == 100.0 and d98_score == 100.0 and d99_score == 100.0 and d100_score == 100.0 and d101_score == 100.0 and d102_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 86.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 96.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 85.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score + d97_score + d98_score + d99_score + d100_score + d101_score + d102_score) / 92.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -28852,8 +29433,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d98_score
             + d99_score
             + d100_score
+            + d101_score
+            + d102_score
         )
-        / 100.0,
+        / 102.0,
         1,
     )
 
@@ -29598,7 +30181,209 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D98_automated_localization_voiceover_lipsync_and_subtitle_matrix": d98_eval,
             "D99_cross_tool_hot_reload_websocket_bus_and_godot_live_sync_matrix": d99_eval,
             "D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix": d100_eval,
+            "D101_nocturnal_weather_triggered_rare_spawns_and_eclipse_affix_matrix": d101_eval,
+            "D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix": d102_eval,
         },
+    }
+
+
+def score_d101_nocturnal_weather_affix_spawns(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    mf_dungeon_id_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_triggers = {
+        "Midnight 00:00-04:00 Game-Time + Blood Fog",
+        "Thunderstorm + Barometric Drop",
+        "Full Moon + Zero Torchlight Radius",
+        "Volcanic Ashfall + Magma Surge",
+    }
+    expected_mutations = {
+        "Nocturnal Frenzy +35% ASPD",
+        "Storm-Charged Chain Lightning Aura",
+        "Eclipse Shadow-Cloak True-Sight Required",
+        "Frostbite Armor-Shatter Pulse",
+    }
+    expected_drops = {
+        "Moonshadow Essence",
+        "Stormforged Dragon Scale",
+        "Abyssal Eclipse Shard",
+        "Crystallized Blizzard Core",
+    }
+    rows = atlas.get("nocturnal_weather_affix_spawns") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_triggers: set[str] = set()
+    seen_mutations: set[str] = set()
+    seen_drops: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        aid = str(row.get("affix_spawn_id") or "")
+        zid = str(row.get("zone_id") or "")
+        tid = str(row.get("town_id") or "")
+        did = str(row.get("dungeon_id") or "")
+        trig = str(row.get("trigger_condition") or "")
+        mut = str(row.get("affix_mutation_tier") or "")
+        drop = str(row.get("exclusive_reagent_drop") or "")
+        win_min = int(row.get("spawn_window_min") or 0)
+        psize = int(row.get("recommended_party_size") or 0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            aid
+            and aid not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and tid
+            and did in zone_ids_set
+            and trig in expected_triggers
+            and mut in expected_mutations
+            and drop in expected_drops
+            and 10 <= win_min <= 60
+            and 2 <= psize <= 18
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#8b5cf6", "#a78bfa", "#38bdf8", "#ec4899")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(aid)
+            seen_triggers.add(trig)
+            seen_mutations.add(mut)
+            seen_drops.add(drop)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_NOCTURNAL_AFFIX_MODE",
+            "setAtlasNocturnalAffixMode",
+            "selectNocturnalAffixSpawn",
+            "renderAtlasNocturnalAffixBarHtml",
+            "studioNocturnalAffixSpawnsOverlay",
+        )
+    )
+    ratio = valid_count / 16.0
+    full_cov = (
+        valid_count == 16
+        and seen_triggers == expected_triggers
+        and seen_mutations == expected_mutations
+        and seen_drops == expected_drops
+    )
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 16,
+        "trigger_conditions": sorted(seen_triggers),
+        "affix_mutation_tiers": sorted(seen_mutations),
+        "exclusive_reagent_drops": sorted(seen_drops),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d102_deterministic_combat_replays(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_scopes = {
+        "Olympiad 1v1 Frame-Exact Audit",
+        "200v200 Castle Siege Tick Hash-Chain",
+        "Epic Raid Boss First-Kill Proof",
+        "High-Value PK Drop Desync Forensics",
+    }
+    rows = atlas.get("deterministic_combat_replays") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_scopes: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        rid = str(row.get("replay_sector_id") or "")
+        tid = str(row.get("town_id") or "")
+        zid = str(row.get("zone_id") or "")
+        scope = str(row.get("verification_scope") or "")
+        hz = int(row.get("tick_rate_hz") or 0)
+        algo = str(row.get("hash_chain_algorithm") or "")
+        prng = str(row.get("prng_seed_discipline") or "")
+        rewind = int(row.get("max_rewind_window_sec") or 0)
+        kbps = float(row.get("replay_compression_kbps") or 0.0)
+        policy = str(row.get("desync_auto_halt_policy") or "")
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            rid
+            and rid not in seen_ids
+            and row.get("title")
+            and tid
+            and zid in zone_ids_set
+            and scope in expected_scopes
+            and 20 <= hz <= 60
+            and algo == "BLAKE3-256 Incremental State Merkle Tree"
+            and prng == "ChaCha12 Deterministic Per-Entity Stream"
+            and 60 <= rewind <= 600
+            and 12.0 <= kbps <= 96.0
+            and policy == "Freeze Loot + Snapshot Memory Dump + GM Alert"
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#10b981", "#34d399", "#14b8a6", "#60a5fa")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(rid)
+            seen_scopes.add(scope)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_COMBAT_REPLAY_MODE",
+            "setAtlasCombatReplayMode",
+            "selectDeterministicCombatReplay",
+            "renderAtlasCombatReplayBarHtml",
+            "studioDeterministicCombatReplaysOverlay",
+        )
+    )
+    ratio = valid_count / 15.0
+    full_cov = valid_count == 15 and seen_scopes == expected_scopes
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 15,
+        "verification_scopes": sorted(seen_scopes),
+        "ui_wired": has_ui,
     }
 
 
@@ -31413,7 +32198,7 @@ def evaluate_80d_atlas(whc: dict[str, Any] | None = None, atlas: dict[str, Any] 
     if atlas is None:
         atlas = json.loads(ATLAS_PATH.read_text(encoding="utf-8"))
     res = audit_world_atlas(whc, atlas)
-    res["wave"] = 48
+    res["wave"] = 49
     return res
 
 
@@ -31557,6 +32342,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D98 (15 Localization VO)    : {dims['D98_automated_localization_voiceover_lipsync_and_subtitle_matrix']['score']}/100 ({dims['D98_automated_localization_voiceover_lipsync_and_subtitle_matrix']['verified']}/{dims['D98_automated_localization_voiceover_lipsync_and_subtitle_matrix']['target']} localization voiceover banks)")
         print(f"  D99 (16 Hot-Reload Bridges) : {dims['D99_cross_tool_hot_reload_websocket_bus_and_godot_live_sync_matrix']['score']}/100 ({dims['D99_cross_tool_hot_reload_websocket_bus_and_godot_live_sync_matrix']['verified']}/{dims['D99_cross_tool_hot_reload_websocket_bus_and_godot_live_sync_matrix']['target']} cross-tool hot-reload bridges)")
         print(f"  D100 (22 100D Charters)     : {dims['D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix']['score']}/100 ({dims['D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix']['verified']}/{dims['D100_centennial_100d_two_ring_studio_grand_charter_and_tour_matrix']['target']} 100D centennial studio charters)")
+        print(f"  D101 (16 Nocturnal Affixes) : {dims['D101_nocturnal_weather_triggered_rare_spawns_and_eclipse_affix_matrix']['score']}/100 ({dims['D101_nocturnal_weather_triggered_rare_spawns_and_eclipse_affix_matrix']['verified']}/{dims['D101_nocturnal_weather_triggered_rare_spawns_and_eclipse_affix_matrix']['target']} nocturnal weather affix spawns)")
+        print(f"  D102 (15 Combat Replays)    : {dims['D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix']['score']}/100 ({dims['D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix']['verified']}/{dims['D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix']['target']} deterministic combat replay sectors)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

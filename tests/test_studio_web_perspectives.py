@@ -4332,9 +4332,9 @@ class TestStudioWebPerspectives(unittest.TestCase):
         whc = bundle["worldHistoryAndConcept"]
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.evaluate_80d_atlas(whc, atlas)
-        self.assertEqual(audit["wave"], 48)
+        self.assertGreaterEqual(audit["wave"], 48)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 100)
+        self.assertGreaterEqual(len(audit["dimensions"]), 100)
 
         d99 = audit["dimensions"]["D99_cross_tool_hot_reload_websocket_bus_and_godot_live_sync_matrix"]
         self.assertEqual(d99["score"], 100.0)
@@ -4415,10 +4415,130 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas100DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 100)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 100)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 100)
-        self.assertIn("100-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 100)
+        self.assertIn("Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave49_nocturnal_weather_spawns_and_deterministic_combat_replays(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        t_summary = report["summary"]["tShapedAtlasSummary"]
+        self.assertEqual(t_summary["nocturnalWeatherAffixSpawnsCount"], 16)
+        self.assertEqual(t_summary["deterministicCombatReplaysCount"], 15)
+
+        index_html = web.INDEX_HTML
+        for token in (
+            "ATLAS_NOCTURNAL_AFFIX_MODE",
+            "NOCTURNAL_AFFIX_SPAWNS",
+            "setAtlasNocturnalAffixMode",
+            "selectNocturnalAffixSpawn",
+            "renderAtlasNocturnalAffixBarHtml",
+            "studioNocturnalAffixSpawnsOverlay",
+            "ATLAS_COMBAT_REPLAY_MODE",
+            "DETERMINISTIC_COMBAT_REPLAYS",
+            "setAtlasCombatReplayMode",
+            "selectDeterministicCombatReplay",
+            "renderAtlasCombatReplayBarHtml",
+            "studioDeterministicCombatReplaysOverlay",
+            "🌑 Nocturnal &amp; Weather Spawns (16)",
+            "📼 Combat Replay Verifier (15)",
+            "102-Dimension Semantic-Zoom Atlas Score",
+            "D1–D102 Verified",
+        ):
+            self.assertIn(token, index_html)
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.evaluate_80d_atlas(whc, atlas)
+        self.assertEqual(audit["wave"], 49)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 102)
+
+        d101 = audit["dimensions"]["D101_nocturnal_weather_triggered_rare_spawns_and_eclipse_affix_matrix"]
+        self.assertEqual(d101["score"], 100.0)
+        self.assertEqual(d101["verified"], 16)
+        self.assertEqual(d101["target"], 16)
+        self.assertTrue(d101["ui_wired"])
+
+        d102 = audit["dimensions"]["D102_deterministic_combat_replay_verifier_and_blake3_tick_hash_matrix"]
+        self.assertEqual(d102["score"], 100.0)
+        self.assertEqual(d102["verified"], 15)
+        self.assertEqual(d102["target"], 15)
+        self.assertTrue(d102["ui_wired"])
+
+        spawns = atlas["nocturnal_weather_affix_spawns"]
+        self.assertEqual(len(spawns), 16)
+        expected_triggers = {
+            "Midnight 00:00-04:00 Game-Time + Blood Fog",
+            "Thunderstorm + Barometric Drop",
+            "Full Moon + Zero Torchlight Radius",
+            "Volcanic Ashfall + Magma Surge",
+        }
+        expected_mutations = {
+            "Nocturnal Frenzy +35% ASPD",
+            "Storm-Charged Chain Lightning Aura",
+            "Eclipse Shadow-Cloak True-Sight Required",
+            "Frostbite Armor-Shatter Pulse",
+        }
+        expected_reagents = {
+            "Moonshadow Essence",
+            "Stormforged Dragon Scale",
+            "Abyssal Eclipse Shard",
+            "Crystallized Blizzard Core",
+        }
+        seen_triggers = set()
+        seen_mutations = set()
+        seen_reagents = set()
+        for s_row in spawns:
+            self.assertIn(s_row["trigger_condition"], expected_triggers)
+            seen_triggers.add(s_row["trigger_condition"])
+            self.assertIn(s_row["affix_mutation_tier"], expected_mutations)
+            seen_mutations.add(s_row["affix_mutation_tier"])
+            self.assertIn(s_row["exclusive_reagent_drop"], expected_reagents)
+            seen_reagents.add(s_row["exclusive_reagent_drop"])
+            self.assertGreaterEqual(s_row["spawn_window_min"], 15)
+            self.assertLessEqual(s_row["spawn_window_min"], 45)
+            self.assertGreaterEqual(s_row["recommended_party_size"], 4)
+            self.assertLessEqual(s_row["recommended_party_size"], 18)
+        self.assertEqual(seen_triggers, expected_triggers)
+        self.assertEqual(seen_mutations, expected_mutations)
+        self.assertEqual(seen_reagents, expected_reagents)
+
+        replays = atlas["deterministic_combat_replays"]
+        self.assertEqual(len(replays), 15)
+        expected_scopes = {
+            "Olympiad 1v1 Frame-Exact Audit",
+            "200v200 Castle Siege Tick Hash-Chain",
+            "Epic Raid Boss First-Kill Proof",
+            "High-Value PK Drop Desync Forensics",
+        }
+        seen_scopes = set()
+        for r_row in replays:
+            self.assertIn(r_row["verification_scope"], expected_scopes)
+            seen_scopes.add(r_row["verification_scope"])
+            self.assertGreaterEqual(r_row["tick_rate_hz"], 20)
+            self.assertLessEqual(r_row["tick_rate_hz"], 60)
+            self.assertEqual(r_row["hash_chain_algorithm"], "BLAKE3-256 Incremental State Merkle Tree")
+            self.assertEqual(r_row["prng_seed_discipline"], "ChaCha12 Deterministic Per-Entity Stream")
+            self.assertGreaterEqual(r_row["max_rewind_window_sec"], 30)
+            self.assertLessEqual(r_row["max_rewind_window_sec"], 600)
+            self.assertGreaterEqual(r_row["replay_compression_kbps"], 18.0)
+            self.assertLessEqual(r_row["replay_compression_kbps"], 95.0)
+            self.assertEqual(r_row["desync_auto_halt_policy"], "Freeze Loot + Snapshot Memory Dump + GM Alert")
+        self.assertEqual(seen_scopes, expected_scopes)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas102DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 102)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 102)
+        self.assertIn("102-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

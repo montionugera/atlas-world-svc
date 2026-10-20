@@ -515,6 +515,18 @@
       "maxItems": 22,
       "items": { "$ref": "#/$defs/centennial100dStudioCharterSpec" }
     },
+    "nocturnal_weather_affix_spawns": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/nocturnalWeatherAffixSpawnSpec" }
+    },
+    "deterministic_combat_replays": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/deterministicCombatReplaySpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -5967,6 +5979,163 @@
         "accent": {
           "type": "string",
           "enum": ["#facc15", "#fde047", "#f59e0b", "#38bdf8", "#a855f7"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "nocturnalWeatherAffixSpawnSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "affix_spawn_id",
+        "title",
+        "zone_id",
+        "town_id",
+        "dungeon_id",
+        "trigger_condition",
+        "affix_mutation_tier",
+        "exclusive_reagent_drop",
+        "spawn_window_min",
+        "recommended_party_size",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "affix_spawn_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "zone_id": { "type": "string", "minLength": 1 },
+        "town_id": { "type": "string", "minLength": 1 },
+        "dungeon_id": { "type": "string" },
+        "trigger_condition": {
+          "type": "string",
+          "enum": [
+            "Midnight 00:00-04:00 Game-Time + Blood Fog",
+            "Thunderstorm + Barometric Drop",
+            "Full Moon + Zero Torchlight Radius",
+            "Volcanic Ashfall + Magma Surge"
+          ]
+        },
+        "affix_mutation_tier": {
+          "type": "string",
+          "enum": [
+            "Nocturnal Frenzy +35% ASPD",
+            "Storm-Charged Chain Lightning Aura",
+            "Eclipse Shadow-Cloak True-Sight Required",
+            "Frostbite Armor-Shatter Pulse"
+          ]
+        },
+        "exclusive_reagent_drop": {
+          "type": "string",
+          "enum": [
+            "Moonshadow Essence",
+            "Stormforged Dragon Scale",
+            "Abyssal Eclipse Shard",
+            "Crystallized Blizzard Core"
+          ]
+        },
+        "spawn_window_min": {
+          "type": "integer",
+          "minimum": 15,
+          "maximum": 45
+        },
+        "recommended_party_size": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 18
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#8b5cf6", "#a78bfa", "#ec4899", "#38bdf8"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "deterministicCombatReplaySpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "replay_sector_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "verification_scope",
+        "tick_rate_hz",
+        "hash_chain_algorithm",
+        "prng_seed_discipline",
+        "max_rewind_window_sec",
+        "replay_compression_kbps",
+        "desync_auto_halt_policy",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "replay_sector_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "town_id": { "type": "string", "minLength": 1 },
+        "zone_id": { "type": "string", "minLength": 1 },
+        "verification_scope": {
+          "type": "string",
+          "enum": [
+            "Olympiad 1v1 Frame-Exact Audit",
+            "200v200 Castle Siege Tick Hash-Chain",
+            "Epic Raid Boss First-Kill Proof",
+            "High-Value PK Drop Desync Forensics"
+          ]
+        },
+        "tick_rate_hz": {
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 60
+        },
+        "hash_chain_algorithm": {
+          "type": "string",
+          "const": "BLAKE3-256 Incremental State Merkle Tree"
+        },
+        "prng_seed_discipline": {
+          "type": "string",
+          "const": "ChaCha12 Deterministic Per-Entity Stream"
+        },
+        "max_rewind_window_sec": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 600
+        },
+        "replay_compression_kbps": {
+          "type": "number",
+          "minimum": 18.0,
+          "maximum": 95.0
+        },
+        "desync_auto_halt_policy": {
+          "type": "string",
+          "const": "Freeze Loot + Snapshot Memory Dump + GM Alert"
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#10b981", "#34d399", "#14b8a6", "#60a5fa"]
         },
         "notes": { "type": "string" }
       }

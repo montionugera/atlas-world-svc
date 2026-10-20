@@ -740,6 +740,8 @@ def validate_world_governance(
                 "localizationVoiceoverBanksCount": len(t_doc.get("localization_voiceover_banks") or []),
                 "crossToolHotReloadBridgesCount": len(t_doc.get("cross_tool_hot_reload_bridges") or []),
                 "centennial100dStudioChartersCount": len(t_doc.get("centennial_100d_studio_charters") or []),
+                "nocturnalWeatherAffixSpawnsCount": len(t_doc.get("nocturnal_weather_affix_spawns") or []),
+                "deterministicCombatReplaysCount": len(t_doc.get("deterministic_combat_replays") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -2194,6 +2196,38 @@ def validate_world_governance(
                 if cc_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: centennial_100d_studio_charters '{cc_id}' references unknown zone_id '{cc_zid}'"
+                    )
+
+            # Validate 16-Record Dynamic World Weather-Triggered Rare Spawns, Nocturnal Hunt & Eclipse Affix Matrix (D101)
+            nocturnal_spawns = t_doc.get("nocturnal_weather_affix_spawns") or []
+            if nocturnal_spawns and len(nocturnal_spawns) < 16:
+                errors.append(
+                    f"GOV-10 violation: nocturnal_weather_affix_spawns must have at least 16 records, got {len(nocturnal_spawns)}"
+                )
+            for ns_item in nocturnal_spawns:
+                if not isinstance(ns_item, dict):
+                    continue
+                ns_id = str(ns_item.get("affix_spawn_id", ""))
+                ns_zid = str(ns_item.get("zone_id", ""))
+                if ns_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: nocturnal_weather_affix_spawns '{ns_id}' references unknown zone_id '{ns_zid}'"
+                    )
+
+            # Validate 15-Record Deterministic Combat Replay Verifier, Anti-Cheat Desync Audit & Tick-by-Tick Hash Chain Matrix (D102)
+            combat_replays = t_doc.get("deterministic_combat_replays") or []
+            if combat_replays and len(combat_replays) < 15:
+                errors.append(
+                    f"GOV-10 violation: deterministic_combat_replays must have at least 15 records, got {len(combat_replays)}"
+                )
+            for cr_item in combat_replays:
+                if not isinstance(cr_item, dict):
+                    continue
+                cr_id = str(cr_item.get("replay_sector_id", ""))
+                cr_zid = str(cr_item.get("zone_id", ""))
+                if cr_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: deterministic_combat_replays '{cr_id}' references unknown zone_id '{cr_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)
