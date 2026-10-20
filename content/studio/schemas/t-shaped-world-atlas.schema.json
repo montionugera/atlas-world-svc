@@ -311,6 +311,18 @@
       "maxItems": 14,
       "items": { "$ref": "#/$defs/commandChannelRaidSanctumSpec" }
     },
+    "nevit_blessing_sanctuaries": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/nevitBlessingSanctuarySpec" }
+    },
+    "eight_hour_council_signoff_ledger": {
+      "type": "array",
+      "minItems": 24,
+      "maxItems": 24,
+      "items": { "$ref": "#/$defs/eightHourCouncilSignoffSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -3628,6 +3640,90 @@
           "minItems": 2,
           "items": { "type": "string" }
         }
+      }
+    },
+    "nevitBlessingSanctuarySpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sanctuary_id",
+        "town_zone_id",
+        "town_name",
+        "blessing_category",
+        "priest_or_manager_npc",
+        "sanctuary_loc",
+        "nevit_blessing_effect",
+        "featured_hunting_helpers",
+        "donation_or_voucher_rule"
+      ],
+      "properties": {
+        "sanctuary_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "blessing_category": {
+          "type": "string",
+          "enum": [
+            "Nevit_Hourglass_Altar",
+            "Arcane_Fairy_Helper_Sanctuary",
+            "Martial_Turtle_Helper_Sanctuary"
+          ]
+        },
+        "priest_or_manager_npc": { "type": "string" },
+        "sanctuary_loc": { "type": "string" },
+        "nevit_blessing_effect": { "type": "string" },
+        "featured_hunting_helpers": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "donation_or_voucher_rule": { "type": "string" }
+      }
+    },
+    "eightHourCouncilSignoffSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signoff_id",
+        "council_role",
+        "pillar_domain_title",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "certified_wave_range",
+        "certified_dimensions",
+        "signoff_verdict",
+        "architectural_proof_note"
+      ],
+      "properties": {
+        "signoff_id": { "type": "string" },
+        "council_role": {
+          "type": "string",
+          "enum": [
+            "Product_Owner",
+            "Game_Designer_Lead",
+            "Player_Growth_Path_Designer",
+            "Game_Story_Designer",
+            "Monster_And_Mob_Designer",
+            "Lead_Systems_Map_Architect"
+          ]
+        },
+        "pillar_domain_title": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "certified_wave_range": { "type": "string" },
+        "certified_dimensions": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "signoff_verdict": { "type": "string" },
+        "architectural_proof_note": { "type": "string" }
       }
     }
   }

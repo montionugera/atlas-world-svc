@@ -706,6 +706,8 @@ def validate_world_governance(
                 "reputationFameMonumentsCount": len(t_doc.get("reputation_fame_monuments") or []),
                 "delusionChamberConduitsCount": len(t_doc.get("delusion_chamber_conduits") or []),
                 "commandChannelRaidSanctumsCount": len(t_doc.get("command_channel_raid_sanctums") or []),
+                "nevitBlessingSanctuariesCount": len(t_doc.get("nevit_blessing_sanctuaries") or []),
+                "eightHourCouncilSignoffLedgerCount": len(t_doc.get("eight_hour_council_signoff_ledger") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1531,6 +1533,43 @@ def validate_world_governance(
                 if cc_did and cc_did not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: command_channel_raid_sanctums '{cc_id}' references unknown dungeon_id '{cc_did}'"
+                    )
+
+            # Validate 15 Town Nevit's Blessing Hourglass & Hunting Helper Sanctuaries (D67)
+            nevit_sanctuaries = t_doc.get("nevit_blessing_sanctuaries") or []
+            if nevit_sanctuaries and len(nevit_sanctuaries) != 15:
+                errors.append(
+                    f"GOV-10 violation: nevit_blessing_sanctuaries must have 15 sanctuaries, got {len(nevit_sanctuaries)}"
+                )
+            for nb_item in nevit_sanctuaries:
+                if not isinstance(nb_item, dict):
+                    continue
+                nb_id = str(nb_item.get("sanctuary_id", ""))
+                nb_tzid = str(nb_item.get("town_zone_id", ""))
+                if nb_tzid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: nevit_blessing_sanctuaries '{nb_id}' references unknown town_zone_id '{nb_tzid}'"
+                    )
+
+            # Validate 24-Record 8-Hour Studio Council Complete D1-D68 Sign-Off Ledger (D68)
+            council_signoffs = t_doc.get("eight_hour_council_signoff_ledger") or []
+            if council_signoffs and len(council_signoffs) != 24:
+                errors.append(
+                    f"GOV-10 violation: eight_hour_council_signoff_ledger must have 24 sign-off records, got {len(council_signoffs)}"
+                )
+            for cs_item in council_signoffs:
+                if not isinstance(cs_item, dict):
+                    continue
+                cs_id = str(cs_item.get("signoff_id", ""))
+                cs_zid = str(cs_item.get("zone_id", ""))
+                cs_did = str(cs_item.get("dungeon_id", ""))
+                if cs_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: eight_hour_council_signoff_ledger '{cs_id}' references unknown zone_id '{cs_zid}'"
+                    )
+                if cs_did and cs_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: eight_hour_council_signoff_ledger '{cs_id}' references unknown dungeon_id '{cs_did}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

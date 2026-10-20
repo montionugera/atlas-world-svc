@@ -2575,7 +2575,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 66)
+        self.assertGreaterEqual(len(audit["dimensions"]), 66)
 
         d65 = audit["dimensions"]["D65_delusion_chamber_and_aenkinel_raid_conduits"]
         self.assertEqual(d65["score"], 100.0)
@@ -2629,10 +2629,112 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas66DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 66)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 66)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 66)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 66)
         self.assertIn("66-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave32_nevit_blessing_sanctuaries_and_eight_hour_council_signoff_ledger(self) -> None:
+        """Wave 32 (D67–D68): 15 Town Nevit's Blessing Hourglass & Hunting Helper Sanctuaries & 24-Record 8-Hour Studio Council D1–D68 Sign-Off Ledger."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["nevitBlessingSanctuariesCount"], 15)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["eightHourCouncilSignoffLedgerCount"], 24)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_NEVIT_BLESSING_MODE",
+            "setAtlasNevitBlessingMode(",
+            "renderAtlasNevitBlessingBarHtml(",
+            "studioNevitBlessingOverlay",
+            "ATLAS_COUNCIL_SIGNOFF_MODE",
+            "setAtlasCouncilSignoffMode(",
+            "renderAtlasCouncilSignoffBarHtml(",
+            "studioCouncilSignoffOverlay",
+            "68-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 32 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 68)
+
+        d67 = audit["dimensions"]["D67_nevit_blessing_hourglass_and_hunting_helpers"]
+        self.assertEqual(d67["score"], 100.0)
+        self.assertEqual(d67["verified"], 15)
+        self.assertEqual(d67["target"], 15)
+        self.assertEqual(d67["nevit_hourglass_altars"], 5)
+        self.assertEqual(d67["arcane_fairy_helper_sanctuaries"], 5)
+        self.assertEqual(d67["martial_turtle_helper_sanctuaries"], 5)
+        self.assertEqual(
+            set(d67["blessing_categories"]),
+            {
+                "Nevit_Hourglass_Altar",
+                "Arcane_Fairy_Helper_Sanctuary",
+                "Martial_Turtle_Helper_Sanctuary",
+            },
+        )
+        self.assertTrue(d67["ui_wired"])
+
+        d68 = audit["dimensions"]["D68_eight_hour_studio_council_signoff_ledger"]
+        self.assertEqual(d68["score"], 100.0)
+        self.assertEqual(d68["verified"], 24)
+        self.assertEqual(d68["target"], 24)
+        self.assertEqual(d68["product_owner_signoffs"], 4)
+        self.assertEqual(d68["game_designer_lead_signoffs"], 4)
+        self.assertEqual(d68["player_growth_path_signoffs"], 4)
+        self.assertEqual(d68["game_story_designer_signoffs"], 4)
+        self.assertEqual(d68["monster_and_mob_designer_signoffs"], 4)
+        self.assertEqual(d68["lead_systems_map_architect_signoffs"], 4)
+        self.assertEqual(
+            set(d68["council_roles"]),
+            {
+                "Product_Owner",
+                "Game_Designer_Lead",
+                "Player_Growth_Path_Designer",
+                "Game_Story_Designer",
+                "Monster_And_Mob_Designer",
+                "Lead_Systems_Map_Architect",
+            },
+        )
+        self.assertEqual(len(d68["certified_wave_ranges"]), 4)
+        self.assertTrue(d68["ui_wired"])
+
+        sanctuaries = atlas["nevit_blessing_sanctuaries"]
+        self.assertEqual(len(sanctuaries), 15)
+        self.assertEqual(sum(1 for s in sanctuaries if s["blessing_category"] == "Nevit_Hourglass_Altar"), 5)
+        self.assertEqual(sum(1 for s in sanctuaries if s["blessing_category"] == "Arcane_Fairy_Helper_Sanctuary"), 5)
+        self.assertEqual(sum(1 for s in sanctuaries if s["blessing_category"] == "Martial_Turtle_Helper_Sanctuary"), 5)
+        for s in sanctuaries:
+            self.assertGreaterEqual(len(s["featured_hunting_helpers"]), 2)
+
+        ledger = atlas["eight_hour_council_signoff_ledger"]
+        self.assertEqual(len(ledger), 24)
+        for role in (
+            "Product_Owner",
+            "Game_Designer_Lead",
+            "Player_Growth_Path_Designer",
+            "Game_Story_Designer",
+            "Monster_And_Mob_Designer",
+            "Lead_Systems_Map_Architect",
+        ):
+            self.assertEqual(sum(1 for r in ledger if r["council_role"] == role), 4)
+        for r in ledger:
+            self.assertGreaterEqual(len(r["certified_dimensions"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas68DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 68)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 68)
+        self.assertIn("68-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
