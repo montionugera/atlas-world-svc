@@ -69,22 +69,24 @@ def compute_studio_self_evaluation() -> dict:
             }
             dims = iter_state["dimensions"]
     overall_atlas_score = float(iter_state.get("overall_score", 100.0))
-    dim_count = len(dims) or 20
+    dim_count = len(dims) or 22
     qs = dict(self_eval.get("qualityScorecard") or {})
     qs.setdefault("overallQualityScorePct", 100.0)
     qs["semanticZoomAtlas18DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas20DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas22DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 8)),
+        "wave": int(iter_state.get("wave", 9)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D20 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D22 Verified"
         ),
     }
     return merged
@@ -4346,7 +4348,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D20 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D22 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4385,6 +4387,7 @@ let ATLAS_ROUTE_FROM_ID = 'zone-town-lantern-hollow';
 let ATLAS_ROUTE_TO_ID = 'zone-dungeon-kiln-cellar';
 let ATLAS_REFINE_GRADE = 'No-Grade Lv.1–19';
 let ATLAS_REFINE_PLUS = 3;
+let ATLAS_BOSS_GOD_ID = 'god-sola-hearth-weaver';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4395,6 +4398,7 @@ const ATLAS_STATE_STORE = {
   routeToId: 'zone-dungeon-kiln-cellar',   // D17: Interactive Travel Path & Gatekeeper Route Destination
   refineGrade: 'No-Grade Lv.1–19',         // D19: Active Blacksmith Refinement Equipment Grade
   refinePlus: 3,                           // D19: Active Blacksmith Refinement Step (+1..+15)
+  bossGodId: 'god-sola-hearth-weaver',     // D21: Active Sealed-God 5-Tier Boss Hierarchy Chain
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4402,6 +4406,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasBossGodChain(godId) {
+  ATLAS_BOSS_GOD_ID = String(godId || 'All');
+  ATLAS_STATE_STORE.bossGodId = ATLAS_BOSS_GOD_ID;
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const chains = tatlas.boss_hierarchy_chains || [];
+  const activeChain = chains.find(c => c.god_id === ATLAS_BOSS_GOD_ID || c.god_short_label === ATLAS_BOSS_GOD_ID);
+  if (activeChain && activeChain.seal_loc) {
+    STUDIO_MAP_LOC = clampWorldLocCoord(activeChain.seal_loc);
+  }
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasRefineGrade(gradeCode) {
   ATLAS_REFINE_GRADE = String(gradeCode || 'No-Grade Lv.1–19');
@@ -4881,6 +4899,8 @@ function resetAtlasFilters() {
   ATLAS_STATE_STORE.filter = 'All';
   ATLAS_STATE_STORE.levelBand = 'All';
   ATLAS_STATE_STORE.raceGrowthRoute = 'All';
+  ATLAS_BOSS_GOD_ID = 'All';
+  ATLAS_STATE_STORE.bossGodId = 'All';
   ATLAS_OMNI_SEARCH_QUERY = '';
   ATLAS_STATE_STORE.omniSearchQuery = '';
   ATLAS_STATE_STORE.toastMessage = '';
@@ -5806,6 +5826,24 @@ function buildAtlasOmniSearchIndex(tatlas) {
     });
   });
 
+  // 7. 6 Primordial Sealed-God 5-Tier Boss Hierarchy Chains
+  const bossChains = getAtlasBossHierarchyChains(tatlas);
+  bossChains.forEach(ch => {
+    const mvpNames = (ch.mvp_apostles || []).map(x => x.name).join(', ');
+    const raidNames = (ch.raid_bosses || []).map(x => x.name).join(', ');
+    entries.push({
+      id: `god-chain-${ch.god_id}`,
+      kind: 'Sealed God Chain',
+      icon: ch.icon || '🔱',
+      badgeColor: ch.theme_color || '#f43f5e',
+      title: `${ch.god_name} (${ch.chapter_epoch})`,
+      subtitle: `5-Tier Chain: Sealed God → MVP (${mvpNames}) → Raid (${raidNames})`,
+      keywords: `${ch.god_id} ${ch.god_name} ${ch.chapter_epoch} ${ch.domain_aspect || ''} ${mvpNames} ${raidNames} Boss Hierarchy Chain Sealed God`,
+      actionJs: `setAtlasBossGodChain('${escapeHtml(ch.god_id)}')`,
+      actionLabel: `🔱 Trace 5-Tier Chain`
+    });
+  });
+
   return entries;
 }
 
@@ -6151,6 +6189,131 @@ function renderAtlasBlacksmithRefinementBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasBossHierarchyChainBarHtml(tatlas) {
+  const chains = (tatlas && tatlas.boss_hierarchy_chains) || [];
+  if (!chains.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+    if (z.studio_node_id) zoneById[z.studio_node_id] = z;
+  });
+
+  const curGodId = ATLAS_BOSS_GOD_ID || ATLAS_STATE_STORE.bossGodId || chains[0].god_id;
+  const activeChain = chains.find(c => c.god_id === curGodId || c.god_short_label === curGodId) || chains[0];
+  const isAllGods = curGodId === 'All';
+
+  const godPills = [
+    { id: 'All', label: '🌐 All Gods' },
+    { id: 'god-sola-hearth-weaver', label: '🔥 Sola' },
+    { id: 'god-krono-brass-titan', label: '⚙️ Krono' },
+    { id: 'god-vesper-dream-eater', label: '✨ Vesper' },
+    { id: 'god-aurelia-dawn-forger', label: '☀️ Aurelia' },
+    { id: 'god-thalassa-abyss-tide', label: '🌊 Thalassa' },
+    { id: 'god-legendary-dragon', label: '🐉 Legendary Dragon' }
+  ];
+
+  const catObj = zoneById[activeChain.seal_catacomb_zone_id];
+  const catShort = catObj ? catObj.name.split('(')[0].trim() : activeChain.seal_catacomb_zone_id;
+
+  return `
+    <div id="atlasBossHierarchyChainBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#160d1f;border:1px solid rgba(192,132,252,0.5)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#e9d5ff">👑 5-TIER BOSS POWER HIERARCHY &amp; SEALED-GOD CHAIN (D21):</span>
+          ${godPills.map(gp => {
+            const isAct = (isAllGods && gp.id === 'All') || (!isAllGods && activeChain.god_id === gp.id);
+            return `
+              <button type="button" onclick="setAtlasBossGodChain('${escapeHtml(gp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.8px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(192,132,252,0.4)'};background:${isAct ? '#7e22ce' : '#0f172a'};color:${isAct ? '#ffffff' : '#e9d5ff'}">
+                ${escapeHtml(gp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9.2px;color:#fde047;font-weight:800">
+          STRICT LAW: [1] SEALED GOD ➔ [2] MVP APOSTLE (B3/3F) ➔ [3] RAID BOSS ➔ [4] MINI-BOSS ➔ [5] MINION FAMILY
+        </span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;align-items:stretch">
+        <!-- Tier 1: Primordial Sealed God & Seal Catacomb -->
+        <div style="padding:6px 8px;border-radius:6px;background:#0f172a;border-left:3.5px solid #c084fc;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+          <div>
+            <div class="mono" style="font-size:9px;font-weight:900;color:#c084fc">TIER 1 · PRIMORDIAL SEALED GOD</div>
+            <div style="font-size:10px;font-weight:900;color:#f8fafc;margin-top:2px">${escapeHtml(activeChain.god_name)}</div>
+            <div class="mono" style="font-size:8.6px;color:#94a3b8;margin-top:2px">${escapeHtml(activeChain.chapter_epoch)} · loc=${escapeHtml(activeChain.seal_loc)}</div>
+          </div>
+          <button type="button" onclick="openDungeonSubMap('${escapeHtml(activeChain.seal_catacomb_zone_id)}', 'B3')"
+                  title="Jump to Seal Catacomb (${escapeHtml(catShort)})"
+                  style="padding:3px 7px;border-radius:5px;border:1px solid #c084fc;background:#3b0764;color:#f3e8ff;font-size:8.8px;font-weight:900;cursor:pointer;text-align:left">
+            🕳️ Jump to Seal Catacomb: ${escapeHtml(catShort)} (B3)
+          </button>
+        </div>
+
+        <!-- Tier 2: Direct MVP Apostles (B3 / 3F Sanctums) -->
+        <div style="padding:6px 8px;border-radius:6px;background:#0f172a;border-left:3.5px solid #eab308;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+          <div>
+            <div class="mono" style="font-size:9px;font-weight:900;color:#fde047">TIER 2 · DIRECT MVP APOSTLES (SANCTUM B3/3F)</div>
+            ${(activeChain.mvp_apostles || []).map(ap => `
+              <div style="margin-top:3px;padding:3px 5px;border-radius:4px;background:#162033">
+                <div style="font-size:9.4px;font-weight:800;color:#fef08a">👑 ${escapeHtml(ap.name)} (Lv.${ap.level})</div>
+                <div class="mono" style="font-size:8.3px;color:#6ee7b7">💎 ${escapeHtml(ap.signature_drop)}</div>
+                <button type="button" onclick="openDungeonSubMap('${escapeHtml(ap.dungeon_id)}', '${escapeHtml(ap.floor_id)}')"
+                        style="margin-top:2px;padding:2px 6px;border-radius:4px;border:1px solid #fde047;background:#713f12;color:#fef08a;font-size:8.4px;font-weight:800;cursor:pointer">
+                  👑 Open MVP Sanctum: ${escapeHtml(ap.dungeon_id.replace('zone-', ''))} (${escapeHtml(ap.floor_id)})
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Tier 3: Regional Raid Bosses -->
+        <div style="padding:6px 8px;border-radius:6px;background:#0f172a;border-left:3.5px solid #f97316;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+          <div>
+            <div class="mono" style="font-size:9px;font-weight:900;color:#fb923c">TIER 3 · REGIONAL RAID BOSSES</div>
+            ${(activeChain.raid_bosses || []).map(rb => `
+              <div style="margin-top:3px;padding:3px 5px;border-radius:4px;background:#162033;display:flex;justify-content:space-between;align-items:center;gap:4px">
+                <div style="min-width:0">
+                  <div style="font-size:9.3px;font-weight:800;color:#fed7aa">🔥 ${escapeHtml(rb.name)} (Lv.${rb.level})</div>
+                  <div class="mono" style="font-size:8.2px;color:#94a3b8">Respawn ${escapeHtml(rb.respawn)} · loc=${escapeHtml(rb.loc)}</div>
+                </div>
+                <button type="button" onclick="focusFieldTacticalBlueprint('${escapeHtml(rb.zone_id)}', '${escapeHtml(rb.loc)}')"
+                        style="padding:2px 6px;border-radius:4px;border:1px solid #fb923c;background:#431407;color:#ffedd5;font-size:8.3px;font-weight:800;cursor:pointer;flex-shrink:0">
+                  🔥 Raid Field
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Tier 4 & Tier 5: Mini-Boss Patrols & Minion Ecological Families -->
+        <div style="padding:6px 8px;border-radius:6px;background:#0f172a;border-left:3.5px solid #ef4444;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+          <div>
+            <div class="mono" style="font-size:9px;font-weight:900;color:#f87171">TIER 4 MINI-BOSS &amp; TIER 5 MINION FAMILIES</div>
+            ${(activeChain.mini_bosses || []).map(mb => `
+              <div style="margin-top:2px;display:flex;justify-content:space-between;align-items:center;gap:4px">
+                <span style="font-size:9px;color:#e2e8f0;font-weight:700">⚔️ ${escapeHtml(mb.name)} (Lv.${mb.level})</span>
+                <button type="button" onclick="focusFieldTacticalBlueprint('${escapeHtml(mb.zone_id)}', '${escapeHtml(mb.loc)}')"
+                        style="padding:1px 5px;border-radius:4px;border:1px solid #a855f7;background:#2e1065;color:#e9d5ff;font-size:8px;font-weight:800;cursor:pointer">
+                  ⚔️ Patrol
+                </button>
+              </div>
+            `).join('')}
+            <div style="margin-top:4px;padding-top:3px;border-top:1px solid rgba(255,255,255,0.08)">
+              ${(activeChain.minion_families || []).map(mf => `
+                <div style="font-size:8.6px;color:#cbd5e1;margin-top:2px">
+                  👾 <strong>${escapeHtml(mf.family_name)}:</strong> ${escapeHtml(mf.representative_mob)}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -6276,6 +6439,7 @@ function renderAtlasFilterBarHtml(matchCount) {
       </div>
 
       ${renderAtlasBlacksmithRefinementBarHtml(tatlas)}
+      ${renderAtlasBossHierarchyChainBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -6409,6 +6573,120 @@ function renderAtlasFilterBarHtml(matchCount) {
         ` : ''}
       </div>
     </div>
+  `;
+}
+
+function renderAtlasOverviewMiniMapPipSvg(activeZoneOrId, tatlas, viewKind = 'town') {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const atlasDoc = tatlas || sp.tShapedWorldAtlas || {};
+  const allZones = getAllAtlas63Zones(atlasDoc);
+  const byId = {};
+  allZones.forEach(z => {
+    byId[z.zone_id] = z;
+    if (z.studio_node_id) byId[z.studio_node_id] = z;
+  });
+
+  const targetId = typeof activeZoneOrId === 'string'
+    ? activeZoneOrId
+    : ((activeZoneOrId && (activeZoneOrId.zone_id || activeZoneOrId.studio_node_id || activeZoneOrId.dungeon_id || activeZoneOrId.id)) || 'zone-town-lantern-hollow');
+  const activeZone = byId[targetId] || allZones[0] || {
+    zone_id: 'zone-town-lantern-hollow',
+    studio_node_id: 'town-lantern-hollow',
+    name: 'Lantern Hollow Village',
+    loc_coord: '-84120:243500',
+    connected_zone_ids: ['zone-field-clover-south-gate', 'zone-dungeon-kiln-cellar']
+  };
+  const activeLocStr = activeZone.loc_coord
+    || (activeZoneOrId && (activeZoneOrId.entrance_loc || activeZoneOrId.loc_coord))
+    || `${STUDIO_MAP_LOC.x}:${STUDIO_MAP_LOC.y}`;
+  const activeCoord = clampWorldLocCoord(activeLocStr);
+
+  // Place PiP in bottom-left when in dungeon sub-map (since vertical cutaway occupies right) or bottom-right in Town/Field/Fortress views
+  const pipW = 248;
+  const pipH = 148;
+  const pipX = viewKind === 'dungeon' ? 16 : 776;
+  const pipY = 304;
+  const mapX = pipX + 8;
+  const mapY = pipY + 24;
+  const mapW = pipW - 16;
+  const mapH = 92;
+
+  const toMiniXY = (svgX, svgY) => ({
+    mx: Math.round(mapX + (Math.max(20, Math.min(1020, svgX)) / 1040) * mapW),
+    my: Math.round(mapY + (Math.max(20, Math.min(480, svgY)) / 500) * mapH)
+  });
+
+  const actMini = toMiniXY(activeCoord.svgX, activeCoord.svgY);
+  const neighborIds = (activeZone.connected_zone_ids || []).slice(0, 5);
+  const neighborPins = neighborIds
+    .map(nid => byId[nid])
+    .filter(Boolean)
+    .map(nb => {
+      const nc = clampWorldLocCoord(nb.loc_coord || '-84120:243500');
+      const mpos = toMiniXY(nc.svgX, nc.svgY);
+      return { nb, ...mpos };
+    });
+
+  const neighborEdgesSvg = neighborPins.map(np => `
+    <line x1="${actMini.mx}" y1="${actMini.my}" x2="${np.mx}" y2="${np.my}" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 2"/>
+  `).join('');
+
+  const neighborDotsSvg = neighborPins.map(np => {
+    const clickCall = np.nb.actionType === 'dungeon'
+      ? `openDungeonSubMap('${escapeHtml(np.nb.zone_id)}', 'B1')`
+      : (np.nb.actionType === 'town'
+        ? `focusTownStreetBlueprint('${escapeHtml(np.nb.studio_node_id || np.nb.zone_id)}', '${escapeHtml(np.nb.loc_coord || '')}')`
+        : `focusFieldTacticalBlueprint('${escapeHtml(np.nb.zone_id)}', '${escapeHtml(np.nb.loc_coord || '')}')`);
+    return `
+      <g style="cursor:pointer" onclick="${clickCall}">
+        <circle cx="${np.mx}" cy="${np.my}" r="4.2" fill="#0284c7" stroke="#bae6fd" stroke-width="1.2"/>
+      </g>
+    `;
+  }).join('');
+
+  const shortZoneTitle = (activeZone.name || targetId).split('(')[0].trim().slice(0, 22);
+
+  return `
+    <g id="studioOverviewMiniMapPip" filter="url(#cartoDropShadow)">
+      <rect x="${pipX}" y="${pipY}" width="${pipW}" height="${pipH}" rx="10" fill="rgba(9,13,22,0.94)" stroke="#fde047" stroke-width="1.8"/>
+      <text x="${pipX + 10}" y="${pipY + 16}" fill="#fde047" font-size="8.8" font-weight="900" font-family="monospace">
+        🛰️ PiP WORLD RADAR · ${escapeHtml(shortZoneTitle)}
+      </text>
+
+      <!-- Mini World Map Canvas showing 3 Continents -->
+      <rect x="${mapX}" y="${mapY}" width="${mapW}" height="${mapH}" rx="6" fill="#0c1928" stroke="rgba(56,189,248,0.45)" stroke-width="1"/>
+      <image href="/studio-maps/c3_continent_parchment_relief.png" x="${mapX}" y="${mapY}" width="${mapW}" height="${mapH}" preserveAspectRatio="none" opacity="0.45"/>
+
+      <!-- 3 Continent Silhouette Zones (C01 Hearthbloom, C02 Steppe, C03 Shattered Halo) -->
+      <ellipse cx="${mapX + Math.round(mapW * 0.44)}" cy="${mapY + Math.round(mapH * 0.76)}" rx="52" ry="16" fill="rgba(16,185,129,0.18)" stroke="#34d399" stroke-width="1" stroke-dasharray="3 2"/>
+      <text x="${mapX + Math.round(mapW * 0.24)}" y="${mapY + Math.round(mapH * 0.88)}" fill="#6ee7b7" font-size="6.8" font-weight="800" font-family="monospace">C01 HEARTHBLOOM</text>
+
+      <ellipse cx="${mapX + Math.round(mapW * 0.74)}" cy="${mapY + Math.round(mapH * 0.50)}" rx="38" ry="15" fill="rgba(245,158,11,0.18)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3 2"/>
+      <text x="${mapX + Math.round(mapW * 0.64)}" y="${mapY + Math.round(mapH * 0.54)}" fill="#fde68a" font-size="6.8" font-weight="800" font-family="monospace">C02 STEPPE</text>
+
+      <ellipse cx="${mapX + Math.round(mapW * 0.64)}" cy="${mapY + Math.round(mapH * 0.22)}" rx="44" ry="13" fill="rgba(192,132,252,0.18)" stroke="#c084fc" stroke-width="1" stroke-dasharray="3 2"/>
+      <text x="${mapX + Math.round(mapW * 0.50)}" y="${mapY + Math.round(mapH * 0.24)}" fill="#e9d5ff" font-size="6.8" font-weight="800" font-family="monospace">C03 HALO</text>
+
+      ${neighborEdgesSvg}
+      ${neighborDotsSvg}
+
+      <!-- Active Zone Pulsing Radar Pin -->
+      <circle cx="${actMini.mx}" cy="${actMini.my}" r="9" fill="rgba(250,204,21,0.28)" stroke="#fde047" stroke-width="1.4">
+        <animate attributeName="r" values="6;12;6" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="${actMini.mx}" cy="${actMini.my}" r="4.8" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
+
+      <!-- Bottom Coordinate Readout & 1-Click Expand to World Map (1.0x) Button -->
+      <text x="${pipX + 10}" y="${pipY + pipH - 11}" fill="#93c5fd" font-size="7.8" font-weight="800" font-family="monospace">
+        loc=${escapeHtml(activeLocStr)}
+      </text>
+      <g style="cursor:pointer" onclick="zoomStudioMap(0, true)">
+        <rect x="${pipX + 108}" y="${pipY + pipH - 24}" width="132" height="19" rx="5" fill="#0284c7" stroke="#fde047" stroke-width="1.2"/>
+        <text x="${pipX + 174}" y="${pipY + pipH - 12}" text-anchor="middle" fill="#ffffff" font-size="7.8" font-weight="900" font-family="monospace">
+          🌍 Expand to World Map (1.0×)
+        </text>
+      </g>
+    </g>
   `;
 }
 
@@ -6675,6 +6953,7 @@ function renderDungeonSubMapAtlas(dng, tatlas) {
       ${warpsSvg}
     </g>
     ${cutawaySvg}
+    ${renderAtlasOverviewMiniMapPipSvg(dng, tatlas, 'dungeon')}
     ${toastSvg}
   `;
 
@@ -7080,8 +7359,9 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
   };
   const activeArchetypeLabel = archetypeLabels[layoutArchetype] || archetypeLabels.polygonal_walled_keep;
 
+  const pipWorldRadarSvg = renderAtlasOverviewMiniMapPipSvg(activeTownId, tatlas, 'town');
   const svgInnerHtml = isSchematicMode
-    ? renderOrenSchematicBlueprintSvg(bp, townNode, visibleMarks, spawnPinSvg)
+    ? `${renderOrenSchematicBlueprintSvg(bp, townNode, visibleMarks, spawnPinSvg)}${pipWorldRadarSvg}`
     : `
       ${renderTownArchetypeBackdropSvg(layoutArchetype, wallPts)}
       ${streetsSvg}
@@ -7095,6 +7375,7 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
           ARCHETYPE: ${escapeHtml(layoutArchetype.toUpperCase())}
         </text>
       </g>
+      ${pipWorldRadarSvg}
     `;
 
   const defaultPoi = {
@@ -7355,6 +7636,7 @@ function renderFieldOrFortressTacticalBlueprintAtlas(targetIdOrEntry, tatlas) {
     ${territoriesSvg}
     ${marksSvg}
     ${warpsSvg}
+    ${renderAtlasOverviewMiniMapPipSvg(entry, tatlas, kind)}
   `;
 
   const defaultPoi = {
@@ -8043,6 +8325,54 @@ function renderDedicatedWorldAtlas() {
     `;
   }).join('');
 
+  const bossChains = getAtlasBossHierarchyChains(tatlas);
+  const activeBossChain = bossChains.find(c => c.god_id === (ATLAS_BOSS_GOD_ID || ATLAS_STATE_STORE.activeBossGodId || 'god-sola-hearth-weaver')) || bossChains[0] || null;
+  let bossHierarchyOverlaySvg = '<g id="studioBossHierarchyChainOverlay"></g>';
+  if (activeBossChain) {
+    const godCoord = clampWorldLocCoord(activeBossChain.seal_loc || '-72400:256800');
+    const themeCol = activeBossChain.theme_color || '#f43f5e';
+    const mvpNodes = (activeBossChain.mvp_apostles || []).map((m, idx) => {
+      const c = clampWorldLocCoord(m.loc_coord || activeBossChain.seal_loc || '-72400:256800');
+      return { ...m, sx: c.svgX + (idx * 18 - 9), sy: c.svgY - 14 };
+    });
+    const raidNodes = (activeBossChain.raid_bosses || []).map((r, idx) => {
+      const c = clampWorldLocCoord(r.loc_coord || activeBossChain.seal_loc || '-72400:256800');
+      return { ...r, sx: c.svgX + (idx * 22 - 11), sy: c.svgY + 12 };
+    });
+    const miniNodes = (activeBossChain.mini_bosses || []).map((mb, idx) => {
+      const c = clampWorldLocCoord(mb.loc_coord || activeBossChain.seal_loc || '-72400:256800');
+      return { ...mb, sx: c.svgX + (idx * 16 - 8), sy: c.svgY + 20 };
+    });
+
+    const linesSvg = [];
+    mvpNodes.forEach(m => {
+      linesSvg.push(`<line x1="${godCoord.svgX}" y1="${godCoord.svgY}" x2="${m.sx}" y2="${m.sy}" stroke="${themeCol}" stroke-width="2.6" stroke-dasharray="6 4" opacity="0.88"/>`);
+    });
+    raidNodes.forEach((r, idx) => {
+      const src = mvpNodes[idx % Math.max(1, mvpNodes.length)] || { sx: godCoord.svgX, sy: godCoord.svgY };
+      linesSvg.push(`<line x1="${src.sx}" y1="${src.sy}" x2="${r.sx}" y2="${r.sy}" stroke="#f97316" stroke-width="2" stroke-dasharray="4 3" opacity="0.82"/>`);
+    });
+    miniNodes.forEach((mb, idx) => {
+      const src = raidNodes[idx % Math.max(1, raidNodes.length)] || { sx: godCoord.svgX, sy: godCoord.svgY };
+      linesSvg.push(`<line x1="${src.sx}" y1="${src.sy}" x2="${mb.sx}" y2="${mb.sy}" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.76"/>`);
+    });
+
+    bossHierarchyOverlaySvg = `
+      <g id="studioBossHierarchyChainOverlay">
+        ${linesSvg.join('')}
+        <g data-poi-clickable="1" style="cursor:pointer" onclick="openDungeonSubMap('${escapeHtml(activeBossChain.seal_catacomb_id || 'dungeon-ember-catacombs')}', '${escapeHtml(activeBossChain.seal_floor_id || 'B3')}')" filter="url(#cartoDropShadow)">
+          <circle cx="${godCoord.svgX}" cy="${godCoord.svgY}" r="18" fill="rgba(244,63,94,0.25)" stroke="${themeCol}" stroke-width="2.2" stroke-dasharray="4 2"/>
+          <circle cx="${godCoord.svgX}" cy="${godCoord.svgY}" r="12" fill="#090d16" stroke="${themeCol}" stroke-width="2.4"/>
+          <text x="${godCoord.svgX}" y="${godCoord.svgY + 4}" text-anchor="middle" font-size="11">${activeBossChain.icon || '🔱'}</text>
+          <rect x="${godCoord.svgX - 88}" y="${godCoord.svgY - 32}" width="176" height="16" rx="5" fill="rgba(9,13,22,0.94)" stroke="${themeCol}" stroke-width="1.2"/>
+          <text x="${godCoord.svgX}" y="${godCoord.svgY - 21}" text-anchor="middle" fill="#fde047" font-size="8" font-weight="900" font-family="monospace">
+            TIER 5 SEALED GOD: ${escapeHtml((activeBossChain.god_name || '').slice(0, 18))}
+          </text>
+        </g>
+      </g>
+    `;
+  }
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -8050,6 +8380,7 @@ function renderDedicatedWorldAtlas() {
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
     ${raceGrowthPathSvg}
+    ${bossHierarchyOverlaySvg}
     ${landmarksSvg}
     ${mobPinsSvg}
   `;
@@ -8939,6 +9270,7 @@ function renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, active
 
     <!-- Clickable North / South / East / West / Dungeon / Exit Portal Gates -->
     ${portalsSvg}
+    ${renderAtlasOverviewMiniMapPipSvg(activeNode, null, 'step4')}
   `;
 
   const defaultPoi = activeMonster

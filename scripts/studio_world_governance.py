@@ -661,6 +661,7 @@ def validate_world_governance(
                     len(entries) for entries in zdir.values() if isinstance(entries, list)
                 ),
                 "refinementGradeMatrixCount": len(t_doc.get("refinement_grade_matrix") or []),
+                "bossHierarchyChainsCount": len(t_doc.get("boss_hierarchy_chains") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -743,6 +744,58 @@ def validate_world_governance(
                             if str(d_zid) not in drop_zone_ids:
                                 errors.append(
                                     f"GOV-10 violation: refinement_grade_matrix '{gcode}' material '{mat.get('material_name')}' references unknown drop_zone '{d_zid}'"
+                                )
+
+            # Validate 6-God 5-Tier Boss Power Hierarchy Chains (D21)
+            catacomb_zone_ids = {
+                str(z.get("zone_id", ""))
+                for z in (zdir.get("seven_signs_seal_catacombs") or [])
+                if isinstance(z, dict) and z.get("zone_id")
+            }
+            mf_dungeon_ids = {
+                str(d.get("dungeon_id", ""))
+                for d in mf_dungeons
+                if isinstance(d, dict) and d.get("dungeon_id")
+            }
+            boss_chains = t_doc.get("boss_hierarchy_chains") or []
+            if boss_chains and len(boss_chains) != 6:
+                errors.append(f"GOV-10 violation: boss_hierarchy_chains must have 6 Primordial Sealed Gods, got {len(boss_chains)}")
+            for b_chain in boss_chains:
+                if not isinstance(b_chain, dict):
+                    continue
+                gid = str(b_chain.get("god_id", ""))
+                sc_zid = str(b_chain.get("seal_catacomb_zone_id", ""))
+                if sc_zid not in catacomb_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: boss_hierarchy_chains '{gid}' references unknown seal_catacomb_zone_id '{sc_zid}'"
+                    )
+                for mvp_ap in b_chain.get("mvp_apostles") or []:
+                    if isinstance(mvp_ap, dict):
+                        ap_did = str(mvp_ap.get("dungeon_id", ""))
+                        if ap_did not in mf_dungeon_ids:
+                            errors.append(
+                                f"GOV-10 violation: boss_hierarchy_chains '{gid}' MVP apostle '{mvp_ap.get('name')}' references unknown dungeon_id '{ap_did}'"
+                            )
+                for rb in b_chain.get("raid_bosses") or []:
+                    if isinstance(rb, dict):
+                        rb_zid = str(rb.get("zone_id", ""))
+                        if rb_zid not in all_zone_ids:
+                            errors.append(
+                                f"GOV-10 violation: boss_hierarchy_chains '{gid}' Raid Boss '{rb.get('name')}' references unknown zone_id '{rb_zid}'"
+                            )
+                for mb in b_chain.get("mini_bosses") or []:
+                    if isinstance(mb, dict):
+                        mb_zid = str(mb.get("zone_id", ""))
+                        if mb_zid not in all_zone_ids:
+                            errors.append(
+                                f"GOV-10 violation: boss_hierarchy_chains '{gid}' Mini-Boss '{mb.get('name')}' references unknown zone_id '{mb_zid}'"
+                            )
+                for mf_fam in b_chain.get("minion_families") or []:
+                    if isinstance(mf_fam, dict):
+                        for fz in mf_fam.get("zone_ids") or []:
+                            if str(fz) not in all_zone_ids:
+                                errors.append(
+                                    f"GOV-10 violation: boss_hierarchy_chains '{gid}' Minion family '{mf_fam.get('family_name')}' references unknown zone_id '{fz}'"
                                 )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

@@ -1012,6 +1012,486 @@ def _build_refinement_grade_matrix() -> list[dict[str, Any]]:
     return matrix
 
 
+BOSS_HIERARCHY_CHAIN_SPECS: tuple[dict[str, Any], ...] = (
+    {
+        "god_id": "god-sola-hearth-weaver",
+        "god_name": "Sola the Hearth-Weaver (Sealed Primordial of Warm Clay & Hearth-Fires)",
+        "god_short_label": "Sola",
+        "chapter_epoch": "1.4 God Seal Magic — Sealed under Heretic Kiln Necropolis I",
+        "seal_catacomb_zone_id": "zone-catacomb-heretic-kiln",
+        "seal_loc": "19800:173400",
+        "mvp_apostles": [
+            {
+                "name": "Kiln-Saint Pyraea — Queen Ant Ash-Brood Sovereign",
+                "level": 22,
+                "dungeon_id": "zone-dungeon-kiln-cellar",
+                "floor_id": "B3",
+                "loc": "53100:242600",
+                "signature_drop": "D-Grade Artisan Anvil Core & Ring of the Kiln-Saint",
+            },
+            {
+                "name": "Vitrified Apostle Ignisazar (Heretic Kiln Sanctum)",
+                "level": 30,
+                "dungeon_id": "zone-catacomb-heretic-kiln",
+                "floor_id": "B3",
+                "loc": "20400:172800",
+                "signature_drop": "Sola's Hearth-Flame Catalyst (+10..+12 Stabilizer)",
+            },
+        ],
+        "raid_bosses": [
+            {
+                "name": "[Raid Boss] Terracotta Kiln Warden (Clover Meadow)",
+                "level": 12,
+                "zone_id": "zone-field-clover-south-gate",
+                "loc": "73436:112980",
+                "respawn": "3600s",
+            },
+            {
+                "name": "[Raid Boss] Cinder-Apron Slag Behemoth",
+                "level": 22,
+                "zone_id": "zone-field-cinder-apron",
+                "loc": "-5950:131450",
+                "respawn": "3600s",
+            },
+        ],
+        "mini_bosses": [
+            {
+                "name": "[Mini-Boss] Kiln-Shell Patrol Captain",
+                "level": 8,
+                "zone_id": "zone-field-clover-south-gate",
+                "loc": "73206:113160",
+            },
+            {
+                "name": "[Mini-Boss] Orchard Glaze Overseer",
+                "level": 11,
+                "zone_id": "zone-field-kiln-east-orchard",
+                "loc": "78640:108730",
+            },
+        ],
+        "minion_families": [
+            {
+                "family_name": "Ash-Crawler & Clover-Dew Pack Brood",
+                "representative_mob": "Clover-Dew Pup & Ash-Shell Worker Ant",
+                "zone_ids": [
+                    "zone-field-clover-south-gate",
+                    "zone-field-kiln-east-orchard",
+                    "zone-dungeon-kiln-cellar",
+                ],
+            },
+            {
+                "family_name": "Heretic Kiln Cinder Acolytes",
+                "representative_mob": "Vitrified Clay Zealot",
+                "zone_ids": [
+                    "zone-field-cinder-apron",
+                    "zone-catacomb-heretic-kiln",
+                ],
+            },
+        ],
+    },
+    {
+        "god_id": "god-krono-brass-titan",
+        "god_name": "Krono the Brass Titan (Sealed Primordial of Wind-Gears & Perpetual Motion)",
+        "god_short_label": "Krono",
+        "chapter_epoch": "1.4 God Seal Magic — Sealed under Branded Bellows Necropolis II",
+        "seal_catacomb_zone_id": "zone-catacomb-branded-bellows",
+        "seal_loc": "112400:18200",
+        "mvp_apostles": [
+            {
+                "name": "Chrono-Vanguard Aegis-IX (Core — Prime Governor)",
+                "level": 30,
+                "dungeon_id": "zone-dungeon-pendulum-shaft",
+                "floor_id": "3F",
+                "loc": "17724:108150",
+                "signature_drop": "C-Grade Resonance Catalyst & Core's Escapement Ring",
+            },
+            {
+                "name": "Sovereign Chronometer Aethel-Prime",
+                "level": 35,
+                "dungeon_id": "zone-dungeon-chronometer-foundry",
+                "floor_id": "3F",
+                "loc": "115180:15900",
+                "signature_drop": "Krono's Brass Mainspring Core (+13..+15 Stabilizer)",
+            },
+        ],
+        "raid_bosses": [
+            {
+                "name": "[Raid Boss] Catherok Pendulum Colossus",
+                "level": 26,
+                "zone_id": "zone-field-brass-spur-ridge",
+                "loc": "89650:138050",
+                "respawn": "3600s",
+            },
+            {
+                "name": "[Raid Boss] Mainspring Caldera Gear-Warden",
+                "level": 30,
+                "zone_id": "zone-field-caldera-rim",
+                "loc": "86850:60850",
+                "respawn": "3600s",
+            },
+        ],
+        "mini_bosses": [
+            {
+                "name": "[Mini-Boss] Brass-Spur Escapement Centurion",
+                "level": 23,
+                "zone_id": "zone-field-brass-spur-ridge",
+                "loc": "89420:138230",
+            },
+            {
+                "name": "[Mini-Boss] Astrolabe Rift Pinion Overseer",
+                "level": 28,
+                "zone_id": "zone-field-astrolabe-rift",
+                "loc": "76620:68030",
+            },
+        ],
+        "minion_families": [
+            {
+                "family_name": "Clockwork Porta & Excuro Constructs",
+                "representative_mob": "Cruma Clockwork Golem & Pinion Sentry",
+                "zone_ids": [
+                    "zone-field-brass-spur-ridge",
+                    "zone-dungeon-pendulum-shaft",
+                    "zone-dungeon-chronometer-foundry",
+                ],
+            },
+            {
+                "family_name": "Branded Bellows Brass Automaton Cohort",
+                "representative_mob": "Spring-Wound Piston Stalker",
+                "zone_ids": [
+                    "zone-field-caldera-rim",
+                    "zone-catacomb-branded-bellows",
+                ],
+            },
+        ],
+    },
+    {
+        "god_id": "god-vesper-dream-eater",
+        "god_name": "Vesper the Dream-Eater (Sealed Primordial of Starlight Tides & Inverted Gravity)",
+        "god_short_label": "Vesper",
+        "chapter_epoch": "1.4 God Seal Magic — Sealed under Forbidden Orrery Necropolis VI",
+        "seal_catacomb_zone_id": "zone-catacomb-forbidden-path-orrery",
+        "seal_loc": "18400:-64200",
+        "mvp_apostles": [
+            {
+                "name": "Eclipse-Cantor Nocturne — Apostle of the Shattered Halo",
+                "level": 92,
+                "dungeon_id": "zone-dungeon-star-heart-nave",
+                "floor_id": "3F",
+                "loc": "148000:-204000",
+                "signature_drop": "Sovereign Bastion Heart & Vesper's Memory-Glass Crown",
+            },
+            {
+                "name": "First Seal-Scribe Automaton, Prime Keeper",
+                "level": 95,
+                "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+                "floor_id": "B3",
+                "loc": "18900:-64800",
+                "signature_drop": "Divine Apostle Anvil Core (S-Grade +15 Apex Catalyst)",
+            },
+        ],
+        "raid_bosses": [
+            {
+                "name": "[Raid Boss] Star-Tether Gravity Leviathan",
+                "level": 68,
+                "zone_id": "zone-field-aurora-tether",
+                "loc": "152850:30850",
+                "respawn": "3600s",
+            },
+            {
+                "name": "[Raid Boss] Orrery Bridge Astral Arbiter",
+                "level": 42,
+                "zone_id": "zone-field-orrery-bridge",
+                "loc": "-27950:-108550",
+                "respawn": "3600s",
+            },
+        ],
+        "mini_bosses": [
+            {
+                "name": "[Mini-Boss] Aurora Tether Prism Warden",
+                "level": 64,
+                "zone_id": "zone-field-aurora-tether",
+                "loc": "152620:31030",
+            },
+            {
+                "name": "[Mini-Boss] Star-Tether Causeway Cantor",
+                "level": 44,
+                "zone_id": "zone-field-tether-causeway",
+                "loc": "49420:-41370",
+            },
+        ],
+        "minion_families": [
+            {
+                "family_name": "Astral Prism & Inverted-Gravity Choir",
+                "representative_mob": "Astral Prism Sentinel & Memory-Glass Wraith",
+                "zone_ids": [
+                    "zone-field-tether-causeway",
+                    "zone-field-aurora-tether",
+                    "zone-dungeon-star-heart-nave",
+                ],
+            },
+            {
+                "family_name": "Forbidden Orrery Seal-Watchers",
+                "representative_mob": "Null-Gravity Astrolabe Construct",
+                "zone_ids": [
+                    "zone-field-orrery-bridge",
+                    "zone-catacomb-forbidden-path-orrery",
+                ],
+            },
+        ],
+    },
+    {
+        "god_id": "god-aurelia-dawn-forger",
+        "god_name": "Aurelia the Dawn-Forger / Seraphiel of the Zenith Choir (Sealed Radiant Law)",
+        "god_short_label": "Aurelia",
+        "chapter_epoch": "1.4 God Seal Magic — Sealed under Astral Witch Necropolis IV",
+        "seal_catacomb_zone_id": "zone-catacomb-witch-pendulum",
+        "seal_loc": "54200:-34800",
+        "mvp_apostles": [
+            {
+                "name": "Arch-Valkyrie Caelia — Dawn-Forger Apostle",
+                "level": 50,
+                "dungeon_id": "zone-catacomb-witch-pendulum",
+                "floor_id": "B3",
+                "loc": "54800:-35400",
+                "signature_drop": "Aurelia's Dawn-Anvil Sigil & B-Grade Grand Master Core",
+            },
+            {
+                "name": "Porcelain Medallion Archon Sera",
+                "level": 20,
+                "dungeon_id": "zone-dungeon-medallion-heart-vault",
+                "floor_id": "B3",
+                "loc": "50200:43700",
+                "signature_drop": "Blessed Celadon Seal-Stone (+7..+9 Safe Stabilizer)",
+            },
+        ],
+        "raid_bosses": [
+            {
+                "name": "[Raid Boss] Celadon Causeway Dawn-Sentinel",
+                "level": 12,
+                "zone_id": "zone-field-celadon-causeway",
+                "loc": "48650:49250",
+                "respawn": "3600s",
+            },
+            {
+                "name": "[Raid Boss] Metronome Bridge Seraphic Bell-ringer",
+                "level": 36,
+                "zone_id": "zone-field-metronome-bridge",
+                "loc": "119050:-8750",
+                "respawn": "3600s",
+            },
+        ],
+        "mini_bosses": [
+            {
+                "name": "[Mini-Boss] Chime-Pipe Harmonic Prefect",
+                "level": 9,
+                "zone_id": "zone-field-chime-pipe-colonnade",
+                "loc": "19120:23930",
+            },
+            {
+                "name": "[Mini-Boss] Apricot Aqueduct Bell-Knight",
+                "level": 11,
+                "zone_id": "zone-field-apricot-aqueduct-terrace",
+                "loc": "21620:157830",
+            },
+        ],
+        "minion_families": [
+            {
+                "family_name": "Zenith Choir & Celadon Loom Automatons",
+                "representative_mob": "Porcelain Choir Sentinel & Harmonic Bell-Wisp",
+                "zone_ids": [
+                    "zone-field-celadon-causeway",
+                    "zone-field-chime-pipe-colonnade",
+                    "zone-dungeon-medallion-heart-vault",
+                ],
+            },
+            {
+                "family_name": "Astral Witch Pendulum Nephilim",
+                "representative_mob": "Radiant Seal Inquisitor",
+                "zone_ids": [
+                    "zone-field-metronome-bridge",
+                    "zone-catacomb-witch-pendulum",
+                ],
+            },
+        ],
+    },
+    {
+        "god_id": "god-thalassa-abyss-tide",
+        "god_name": "Thalassa the Abyss-Tide / Thalassor the Trench-Swallower (Sealed Pelagic Primordial)",
+        "god_short_label": "Thalassa",
+        "chapter_epoch": "1.4 God Seal Magic — Sealed under Deep Devotion Necropolis V",
+        "seal_catacomb_zone_id": "zone-catacomb-dark-omens-coral",
+        "seal_loc": "38400:-28900",
+        "mvp_apostles": [
+            {
+                "name": "Tide-Herald Pelagios — Abyssal Coral Sovereign",
+                "level": 65,
+                "dungeon_id": "zone-catacomb-dark-omens-coral",
+                "floor_id": "B3",
+                "loc": "38900:-29400",
+                "signature_drop": "A-Grade Sovereign Seal Matrix & Abyssal Pearl Core",
+            },
+            {
+                "name": "Sunken Potter Leviathan-Brood Matriarch",
+                "level": 25,
+                "dungeon_id": "zone-dungeon-sunken-potter-hold",
+                "floor_id": "B3",
+                "loc": "-77900:148700",
+                "signature_drop": "Pelagic Brine-Tempered Alloy Core",
+            },
+        ],
+        "raid_bosses": [
+            {
+                "name": "[Raid Boss] Kelp Spiral Undertide Kraken",
+                "level": 46,
+                "zone_id": "zone-field-kelp-spiral-reef",
+                "loc": "-51950:-138950",
+                "respawn": "3600s",
+            },
+            {
+                "name": "[Raid Boss] Cobalt Sandbar Maelstrom Turtle",
+                "level": 16,
+                "zone_id": "zone-field-cobalt-sandbar-ford",
+                "loc": "-73750:142450",
+                "respawn": "3600s",
+            },
+        ],
+        "mini_bosses": [
+            {
+                "name": "[Mini-Boss] Verdigris Siphon Lock-Warden",
+                "level": 27,
+                "zone_id": "zone-field-siphon-sluice",
+                "loc": "64420:34630",
+            },
+            {
+                "name": "[Mini-Boss] Whispering Mire Brine-Stalker",
+                "level": 13,
+                "zone_id": "zone-field-whispering-mire",
+                "loc": "-68180:228230",
+            },
+        ],
+        "minion_families": [
+            {
+                "family_name": "Pelagic Coral & Undertide Sahaguin",
+                "representative_mob": "Bioluminescent Reef Stalker & Brine-Shell Crab",
+                "zone_ids": [
+                    "zone-field-cobalt-sandbar-ford",
+                    "zone-field-kelp-spiral-reef",
+                    "zone-dungeon-sunken-potter-hold",
+                ],
+            },
+            {
+                "family_name": "Deep Devotion Abyssal Tide-Priests",
+                "representative_mob": "Trench-Swallower Pelagic Cultist",
+                "zone_ids": [
+                    "zone-field-siphon-sluice",
+                    "zone-catacomb-dark-omens-coral",
+                ],
+            },
+        ],
+    },
+    {
+        "god_id": "god-legendary-dragon",
+        "god_name": "Bahamut-Triad, The Legendary Dragon of Earth, Fire & Thunder (Sealed Tri-Scale Wyrm)",
+        "god_short_label": "Legendary Dragon",
+        "chapter_epoch": "1.4 God Seal Magic — Sealed under Apostate Dynamo Necropolis III",
+        "seal_catacomb_zone_id": "zone-catacomb-apostate-dynamo",
+        "seal_loc": "149800:-51200",
+        "mvp_apostles": [
+            {
+                "name": "Tri-Scale Wyrm-Marshal Volcanor (Earth/Fire/Thunder Apostle)",
+                "level": 45,
+                "dungeon_id": "zone-catacomb-apostate-dynamo",
+                "floor_id": "B3",
+                "loc": "150300:-51700",
+                "signature_drop": "Tri-Scale Dragon Anvil Heart & Blessed Oriharukon Core",
+            },
+            {
+                "name": "Alpha Electro-Stalker Raijin-Vex (Ember Bellows Sanctum)",
+                "level": 24,
+                "dungeon_id": "zone-dungeon-ember-bellows-chamber",
+                "floor_id": "B3",
+                "loc": "-40800:-110200",
+                "signature_drop": "Galvanic Dragon-Scale Flux Catalyst",
+            },
+        ],
+        "raid_bosses": [
+            {
+                "name": "[Raid Boss] Leyden Causeway Thunder-Drake",
+                "level": 40,
+                "zone_id": "zone-field-leyden-causeway",
+                "loc": "141650:-48950",
+                "respawn": "3600s",
+            },
+            {
+                "name": "[Raid Boss] Vitrified Slag Chasm Magma-Wyrm",
+                "level": 20,
+                "zone_id": "zone-field-slag-chasm",
+                "loc": "25250:135850",
+                "respawn": "3600s",
+            },
+        ],
+        "mini_bosses": [
+            {
+                "name": "[Mini-Boss] Firebrick Duct Crucible Drake-Hound",
+                "level": 10,
+                "zone_id": "zone-field-firebrick-duct",
+                "loc": "-38980:-105570",
+            },
+            {
+                "name": "[Mini-Boss] Spiral Wormway Tectonic Basilisk",
+                "level": 38,
+                "zone_id": "zone-field-spiral-wormway-ramp",
+                "loc": "134420:-24770",
+            },
+        ],
+        "minion_families": [
+            {
+                "family_name": "Tri-Scale Drake-Kin & Bellows Wyverns",
+                "representative_mob": "Firebrick Ash-Drake & Galvanic Scale-Hound",
+                "zone_ids": [
+                    "zone-field-firebrick-duct",
+                    "zone-field-slag-chasm",
+                    "zone-dungeon-ember-bellows-chamber",
+                ],
+            },
+            {
+                "family_name": "Apostate Dynamo Thunder-Scale Cohort",
+                "representative_mob": "Leyden Capacitor Wyrmling",
+                "zone_ids": [
+                    "zone-field-leyden-causeway",
+                    "zone-field-spiral-wormway-ramp",
+                    "zone-catacomb-apostate-dynamo",
+                ],
+            },
+        ],
+    },
+)
+
+
+def _build_boss_hierarchy_chains() -> list[dict[str, Any]]:
+    return [
+        {
+            "god_id": spec["god_id"],
+            "god_name": spec["god_name"],
+            "god_short_label": spec["god_short_label"],
+            "chapter_epoch": spec["chapter_epoch"],
+            "seal_catacomb_zone_id": spec["seal_catacomb_zone_id"],
+            "seal_loc": spec["seal_loc"],
+            "mvp_apostles": [dict(a) for a in spec["mvp_apostles"]],
+            "raid_bosses": [dict(r) for r in spec["raid_bosses"]],
+            "mini_bosses": [dict(m) for m in spec["mini_bosses"]],
+            "minion_families": [
+                {
+                    "family_name": f["family_name"],
+                    "representative_mob": f["representative_mob"],
+                    "zone_ids": list(f["zone_ids"]),
+                }
+                for f in spec["minion_families"]
+            ],
+        }
+        for spec in BOSS_HIERARCHY_CHAIN_SPECS
+    ]
+
+
 def _synthesize_shop_and_refinement_catalog(zone_entry: dict[str, Any], idx: int) -> dict[str, Any]:
     tname = str(zone_entry.get("name", f"Town {idx}")).split("(")[0].strip()
     lmin, lmax = (zone_entry.get("level_band") or [1, 15])[:2]
@@ -1928,6 +2408,11 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
         atlas["refinement_grade_matrix"] = _build_refinement_grade_matrix()
         actions.append("populated_6_grade_refinement_matrix")
 
+    # 1d. Ensure all 6 Primordial Sealed-God Boss Hierarchy Chains exist in `boss_hierarchy_chains` (D21)
+    if len(atlas.get("boss_hierarchy_chains") or []) < 6:
+        atlas["boss_hierarchy_chains"] = _build_boss_hierarchy_chains()
+        actions.append("populated_6_god_boss_hierarchy_chains")
+
     # Ensure deep_town.town_blueprint also has race_spawn_point & refinement_anvils & zone_id & shop_and_refinement_catalog
     deep_town = (atlas.get("t_deep_validation_slice") or {}).get("deep_town") or {}
     deep_tb = deep_town.get("town_blueprint")
@@ -2599,15 +3084,120 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d20_checks = [has_d20_sync_js, has_d20_readme, has_d20_drawio]
     d20_score = round((sum(1 for c in d20_checks if c) / float(len(d20_checks))) * 100.0, 1)
 
+    # D21: Interactive 5-Tier Boss Power Hierarchy & Sealed-God Chain Overlay (`boss_hierarchy_chains`)
+    expected_god_ids = (
+        "god-sola-hearth-weaver",
+        "god-krono-brass-titan",
+        "god-vesper-dream-eater",
+        "god-aurelia-dawn-forger",
+        "god-thalassa-abyss-tide",
+        "god-legendary-dragon",
+    )
+    catacomb_zone_id_set = {
+        str(c.get("zone_id"))
+        for c in catacombs
+        if isinstance(c, dict) and c.get("zone_id")
+    }
+    mf_dungeon_id_set = {
+        str(d.get("dungeon_id"))
+        for d in mf_dungeons
+        if isinstance(d, dict) and d.get("dungeon_id")
+    }
+    boss_chains = atlas.get("boss_hierarchy_chains") or []
+    valid_boss_chains = 0
+    for b_entry in boss_chains:
+        if not isinstance(b_entry, dict):
+            continue
+        gid = str(b_entry.get("god_id") or "")
+        sc_zid = str(b_entry.get("seal_catacomb_zone_id") or "")
+        mvp_list = b_entry.get("mvp_apostles") or []
+        raid_list = b_entry.get("raid_bosses") or []
+        mini_list = b_entry.get("mini_bosses") or []
+        fam_list = b_entry.get("minion_families") or []
+        if (
+            gid in expected_god_ids
+            and b_entry.get("god_name")
+            and b_entry.get("chapter_epoch")
+            and sc_zid in catacomb_zone_id_set
+            and ":" in str(b_entry.get("seal_loc", ""))
+            and len(mvp_list) >= 1
+            and all(
+                isinstance(ap, dict)
+                and ap.get("name")
+                and isinstance(ap.get("level"), int)
+                and str(ap.get("dungeon_id")) in mf_dungeon_id_set
+                and ap.get("floor_id") in ("B1", "B2", "B3", "1F", "2F", "3F")
+                and ":" in str(ap.get("loc", ""))
+                and ap.get("signature_drop")
+                for ap in mvp_list
+            )
+            and len(raid_list) >= 1
+            and all(
+                isinstance(rb, dict)
+                and rb.get("name")
+                and isinstance(rb.get("level"), int)
+                and str(rb.get("zone_id")) in zone_ids_set
+                and ":" in str(rb.get("loc", ""))
+                and rb.get("respawn")
+                for rb in raid_list
+            )
+            and len(mini_list) >= 1
+            and all(
+                isinstance(mb, dict)
+                and mb.get("name")
+                and isinstance(mb.get("level"), int)
+                and str(mb.get("zone_id")) in zone_ids_set
+                and ":" in str(mb.get("loc", ""))
+                for mb in mini_list
+            )
+            and len(fam_list) >= 1
+            and all(
+                isinstance(fm, dict)
+                and fm.get("family_name")
+                and fm.get("representative_mob")
+                and len(fm.get("zone_ids") or []) >= 1
+                and all(str(fz) in zone_ids_set for fz in (fm.get("zone_ids") or []))
+                for fm in fam_list
+            )
+        ):
+            valid_boss_chains += 1
+
+    has_d21_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_BOSS_GOD_ID",
+            "setAtlasBossGodChain",
+            "renderAtlasBossHierarchyChainBarHtml",
+            "studioBossHierarchyChainOverlay",
+            "god-sola-hearth-weaver",
+            "god-krono-brass-titan",
+            "god-vesper-dream-eater",
+            "god-aurelia-dawn-forger",
+            "god-thalassa-abyss-tide",
+            "god-legendary-dragon",
+        )
+    )
+    d21_ratio = valid_boss_chains / 6.0
+    d21_score = round(min(100.0, d21_ratio * 100.0), 1) if has_d21_ui else round(d21_ratio * 80.0, 1)
+
+    # D22: Picture-in-Picture (PiP) World Radar Mini-Map inside Zoomed Views (`renderAtlasOverviewMiniMapPipSvg`)
+    d22_checks = [
+        "renderAtlasOverviewMiniMapPipSvg" in web_txt,
+        "studioOverviewMiniMapPip" in web_txt,
+        "Expand to World Map (1.0×)" in web_txt,
+        web_txt.count("renderAtlasOverviewMiniMapPipSvg(") >= 4,
+    ]
+    d22_score = round((sum(1 for c in d22_checks if c) / float(len(d22_checks))) * 100.0, 1)
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score) / 5.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score) / 7.0, 1),
-        "Narrative": 100.0 if len(whc.get("historical_epochs") or []) >= 4 else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score) / 8.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score) / 14.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score) / 5.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score) / 11.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score) / 6.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score) / 8.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score) / 9.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score) / 16.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score) / 6.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score) / 12.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -2632,8 +3222,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d18_score
             + d19_score
             + d20_score
+            + d21_score
+            + d22_score
         )
-        / 20.0,
+        / 22.0,
         1,
     )
 
@@ -2736,6 +3328,18 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "readme_documented": has_d20_readme,
                 "drawio_verified": has_d20_drawio,
             },
+            "D21_boss_hierarchy_and_sealed_god_chains": {
+                "score": d21_score,
+                "verified": valid_boss_chains,
+                "target": 6,
+                "ui_wired": has_d21_ui,
+            },
+            "D22_pip_world_radar_minimap_in_zoomed_views": {
+                "score": d22_score,
+                "verified": sum(1 for c in d22_checks if c),
+                "target": len(d22_checks),
+                "pip_renderer_wired": all(d22_checks),
+            },
         },
     }
 
@@ -2800,6 +3404,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D18 (Chamber & Telemetry)   : {dims['D18_dungeon_room_inspector_and_telemetry']['score']}/100 ({dims['D18_dungeon_room_inspector_and_telemetry']['clickable_chambers']}/{dims['D18_dungeon_room_inspector_and_telemetry']['total_chambers']} chambers · {dims['D18_dungeon_room_inspector_and_telemetry']['clickable_spawns']}/{dims['D18_dungeon_room_inspector_and_telemetry']['total_spawns']} spawns)")
         print(f"  D19 (Refine & Spoil Locator): {dims['D19_refinement_grade_and_spoil_locator']['score']}/100 ({dims['D19_refinement_grade_and_spoil_locator']['verified']}/{dims['D19_refinement_grade_and_spoil_locator']['target']} grades)")
         print(f"  D20 (Studio/Atlas 20D Sync) : {dims['D20_bidirectional_studio_atlas_sync_and_docs']['score']}/100 ({dims['D20_bidirectional_studio_atlas_sync_and_docs']['verified']}/{dims['D20_bidirectional_studio_atlas_sync_and_docs']['target']} checks)")
+        print(f"  D21 (6-God Boss Hierarchy)  : {dims['D21_boss_hierarchy_and_sealed_god_chains']['score']}/100 ({dims['D21_boss_hierarchy_and_sealed_god_chains']['verified']}/{dims['D21_boss_hierarchy_and_sealed_god_chains']['target']} Sealed-God chains)")
+        print(f"  D22 (PiP World Radar Map)   : {dims['D22_pip_world_radar_minimap_in_zoomed_views']['score']}/100 ({dims['D22_pip_world_radar_minimap_in_zoomed_views']['verified']}/{dims['D22_pip_world_radar_minimap_in_zoomed_views']['target']} checks)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

@@ -627,7 +627,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 20)
+        self.assertGreaterEqual(len(audit["dimensions"]), 20)
 
         d19 = audit["dimensions"]["D19_refinement_grade_and_spoil_locator"]
         self.assertEqual(d19["score"], 100.0)
@@ -664,10 +664,80 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas20DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 20)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 20)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 20)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 20)
         self.assertIn("20-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave9_boss_hierarchy_chains_and_pip_world_radar_minimap(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["bossHierarchyChainsCount"], 6)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_BOSS_GOD_ID",
+            "setAtlasBossGodChain(",
+            "renderAtlasBossHierarchyChainBarHtml(",
+            "studioBossHierarchyChainOverlay",
+            "renderAtlasOverviewMiniMapPipSvg(",
+            "studioOverviewMiniMapPip",
+            "Expand to World Map (1.0×)",
+            "22-Dimension Semantic-Zoom Atlas Score",
+            "god-sola-hearth-weaver",
+            "god-krono-brass-titan",
+            "god-vesper-dream-eater",
+            "god-aurelia-dawn-forger",
+            "god-thalassa-abyss-tide",
+            "god-legendary-dragon",
+        ):
+            self.assertIn(token, html, f"Missing Wave 9 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 22)
+
+        d21 = audit["dimensions"]["D21_boss_hierarchy_and_sealed_god_chains"]
+        self.assertEqual(d21["score"], 100.0)
+        self.assertEqual(d21["verified"], 6)
+        self.assertEqual(d21["target"], 6)
+        self.assertTrue(d21["ui_wired"])
+
+        d22 = audit["dimensions"]["D22_pip_world_radar_minimap_in_zoomed_views"]
+        self.assertEqual(d22["score"], 100.0)
+        self.assertEqual(d22["verified"], 4)
+        self.assertEqual(d22["target"], 4)
+
+        chains = atlas["boss_hierarchy_chains"]
+        self.assertEqual(len(chains), 6)
+        expected_gods = [
+            "god-sola-hearth-weaver",
+            "god-krono-brass-titan",
+            "god-vesper-dream-eater",
+            "god-aurelia-dawn-forger",
+            "god-thalassa-abyss-tide",
+            "god-legendary-dragon",
+        ]
+        self.assertEqual([c["god_id"] for c in chains], expected_gods)
+        for c in chains:
+            self.assertTrue(c["seal_catacomb_zone_id"])
+            self.assertIn(":", c["seal_loc"])
+            self.assertGreaterEqual(len(c["mvp_apostles"]), 2)
+            self.assertGreaterEqual(len(c["raid_bosses"]), 2)
+            self.assertGreaterEqual(len(c["mini_bosses"]), 2)
+            self.assertGreaterEqual(len(c["minion_families"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas22DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 22)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 22)
+        self.assertIn("22-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
