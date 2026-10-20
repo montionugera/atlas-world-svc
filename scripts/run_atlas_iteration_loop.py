@@ -5572,6 +5572,570 @@ def _build_territory_ward_supply_nodes(atlas: dict[str, Any]) -> list[dict[str, 
     return rows
 
 
+def _build_epic_jewelry_sanctums(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 12 Canonical Epic Boss Jewelry Relics (4 Epic_Ring + 4 Epic_Earring + 4 Epic_Necklace across the 16 Multi-Floor Dungeons & Boss Sanctums) (D41)."""
+    specs = [
+        # 4 Epic_Ring
+        (
+            "jewelry-01-ring-queen-ant-kiln",
+            "Ring of the Kiln-Queen (Queen Ant Ring Analog)",
+            "Epic_Ring",
+            "B-Grade",
+            "Queen Ant-Brood Matriarch",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "-113190:235226",
+            [
+                "+30% Poison Resist / +30% Poison Attack",
+                "+20% Hold Resist / +20% Hold Attack",
+            ],
+            [
+                "+15% Critical Damage Multiplier",
+                "+2 Physical Accuracy",
+                "+21 Max MP Resonance",
+            ],
+            "30% Sovereign Relic Drop (24h ± 4h Sanctum Respawn)",
+        ),
+        (
+            "jewelry-02-ring-core-pendulum",
+            "Ring of the Core Automaton (Ring of Core Analog)",
+            "Epic_Ring",
+            "A-Grade",
+            "Core Pendulum Prime Construct",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "85700:143900",
+            [
+                "+20% Poison Resist & Mental Debuff Cleanse",
+                "+20% Root & Paralysis Resistance",
+            ],
+            [
+                "-20% Incoming Physical & Magical Damage Taken",
+                "+1 Physical Accuracy",
+                "+21 Max MP Resonance",
+            ],
+            "30% Sovereign Relic Drop (36h ± 4h Sanctum Respawn)",
+        ),
+        (
+            "jewelry-03-ring-baium-star-heart",
+            "Ring of the Celestial Archon (Ring of Baium Analog)",
+            "Epic_Ring",
+            "S-Grade",
+            "Celestial Archon Baium-Analog",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "149500:28100",
+            [
+                "+40% Hold Resist / +40% Hold Attack",
+                "+30% Stun Resist / +30% Stun Attack",
+                "+40% Poison Resistance",
+            ],
+            [
+                "+15% Critical Damage Multiplier",
+                "+4% Attack Speed & +4% Casting Speed",
+                "+2 Physical Accuracy & +21 Max MP",
+            ],
+            "100% Guaranteed 1x per Sanctum Kill (120h + 8h Awakening)",
+        ),
+        (
+            "jewelry-04-ring-beleth-forbidden",
+            "Ring of the Forbidden Architect (Beleth's Ring Analog)",
+            "Epic_Ring",
+            "S-Grade",
+            "Forbidden Architect Beleth-Analog",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "18700:-64500",
+            [
+                "+12% Mental Attack / +12% Mental Resist",
+                "+30 Dark Element Resistance",
+                "+25% Hold & Sleep Resistance",
+            ],
+            [
+                "+12% Magic Defense (M.Def) Bonus",
+                "+105 Max HP & +38 Max MP",
+                "+15% MP Regeneration Rate",
+            ],
+            "100% Guaranteed 1x per Command Channel Sanctum Kill (192h)",
+        ),
+        # 4 Epic_Earring
+        (
+            "jewelry-05-earring-orfen-mire",
+            "Earring of the Spore-Weaver (Earring of Orfen Analog)",
+            "Epic_Earring",
+            "A-Grade",
+            "Spore-Queen Orfen-Analog",
+            "zone-field-whispering-mire",
+            "",
+            "",
+            "-62200:189500",
+            [
+                "+20% Bleed Resist / +20% Bleed Attack",
+                "+25% Hold & Mental Debuff Resistance",
+            ],
+            [
+                "+6% Heal Power Received",
+                "+31 Max MP Resonance",
+                "MP Drain & Anchor Ward",
+            ],
+            "30% Sovereign Overland Lair Drop (28h ± 4h Respawn)",
+        ),
+        (
+            "jewelry-06-earring-zaken-sunken",
+            "Earring of the Sunken Dread-Captain (Zaken's Earring Analog)",
+            "Epic_Earring",
+            "S-Grade",
+            "Dread-Captain Zaken-Analog",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B3",
+            "-78100:148900",
+            [
+                "+30% Stun Resist / +30% Stun Attack",
+                "+30% Mental Attack / +30% Mental Resist",
+                "+30% Bleed Resist / +30% Bleed Attack",
+            ],
+            [
+                "+4% Vampiric Rage Melee Life-Drain",
+                "+10% Heal Power Received",
+                "-10% Skill MP Consumption & +31 Max MP",
+            ],
+            "100% Guaranteed 1x on Nocturnal 00:00 Cabin Breach (44h)",
+        ),
+        (
+            "jewelry-07-earring-antharas-heretic",
+            "Earring of the Earth-Drake Apostle (Earring of Antharas Analog)",
+            "Epic_Earring",
+            "S-Grade",
+            "Earth-Drake Apostle Antharas-Analog",
+            "zone-catacomb-heretic-kiln",
+            "zone-catacomb-heretic-kiln",
+            "B3",
+            "20100:173100",
+            [
+                "+40% Stun Resist / +40% Stun Attack",
+                "+40% Bleed Resist / +40% Bleed Attack",
+                "+30% Mental & Derangement Resistance",
+            ],
+            [
+                "+4% Vampiric Rage Melee Life-Drain",
+                "+10% Heal Power Received",
+                "-10% Skill MP Cost & +37 Max MP",
+            ],
+            "100% Guaranteed 1x per 90-Player Command Channel Kill (192h)",
+        ),
+        (
+            "jewelry-08-earring-lilith-apostate",
+            "Earring of the Abyssal Lilim Mother (Lilith's Sanctum Earring)",
+            "Epic_Earring",
+            "S-Grade",
+            "High Priestess Lilith-Analog",
+            "zone-catacomb-apostate-dynamo",
+            "zone-catacomb-apostate-dynamo",
+            "B3",
+            "150100:-51500",
+            [
+                "+35% Sleep & Hold Resistance",
+                "+35% Silence & Fear Resistance",
+                "+30 Dark Element Resistance",
+            ],
+            [
+                "+8% Casting Speed Resonance",
+                "+4% Vampiric Rage Effect",
+                "-8% Magic Skill Reuse Delay",
+            ],
+            "50% Dusk-Sign Seal Victory Sanctum Drop (Seven-Seals Cycle)",
+        ),
+        # 4 Epic_Necklace
+        (
+            "jewelry-09-necklace-frintezza-chronometer",
+            "Necklace of the Scarlet Prince (Frintezza's Necklace Analog)",
+            "Epic_Necklace",
+            "A-Grade",
+            "Scarlet Halisha & Prince Frintezza-Analog",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "85100:56100",
+            [
+                "+25% Sleep / Paralysis / Stun Resistance",
+                "+25% Poison & Bleed Resistance",
+                "+15 Dark Element Resistance",
+            ],
+            [
+                "-5% Physical & Magic Skill Reuse Delay",
+                "+4% Melee Damage Reflect Shield",
+                "+42 Max MP Resonance",
+            ],
+            "100% Guaranteed 1x per Imperial Tomb Pipe-Organ Raid (48h)",
+        ),
+        (
+            "jewelry-10-necklace-valakas-caldera",
+            "Necklace of the Fire-Dragon Sovereign (Necklace of Valakas Analog)",
+            "Epic_Necklace",
+            "S-Grade",
+            "Fire-Dragon Sovereign Valakas-Analog",
+            "zone-field-caldera-rim",
+            "",
+            "",
+            "181200:-108400",
+            [
+                "+40% Sleep Resist / +40% Sleep Attack",
+                "+35 Fire Element Resistance",
+                "+25% Hold & Stun Resistance",
+            ],
+            [
+                "+445 Max HP & +42 Max MP",
+                "+4% P.Atk, +8% M.Atk & +100 Magic Critical Rate",
+                "-10% Skill Reuse Delay & +5% Damage Reflect",
+            ],
+            "100% Guaranteed 1x per Caldera Lair Command Channel Kill (264h)",
+        ),
+        (
+            "jewelry-11-necklace-anakim-witch",
+            "Necklace of the Sacred Flame Nephilim (Anakim's Sanctum Necklace)",
+            "Epic_Necklace",
+            "S-Grade",
+            "Sacred Flame Nephilim Anakim-Analog",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "54500:-35100",
+            [
+                "+35% Paralysis & Root Resistance",
+                "+30 Holy Element Resistance",
+                "+25% Mental Debuff Resistance",
+            ],
+            [
+                "+320 Max HP & +46 Max MP",
+                "-8% Skill Reuse Delay",
+                "+12% Heal Power & Clarity Efficiency",
+            ],
+            "50% Dawn-Sign Seal Victory Sanctum Drop (Seven-Seals Cycle)",
+        ),
+        (
+            "jewelry-12-necklace-freya-coral",
+            "Necklace of the Glacial Tide-Queen (Freya's Sanctum Necklace)",
+            "Epic_Necklace",
+            "S-Grade",
+            "Glacial Tide-Queen Freya-Analog",
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-dark-omens-coral",
+            "B3",
+            "38700:-29200",
+            [
+                "+30% Bleed, Paralysis & Shock Resistance",
+                "+25 Water Element Resistance",
+                "+20% Mental Debuff Resistance",
+            ],
+            [
+                "-5% Magic Skill Reuse Delay",
+                "-5% Magic MP Consumption",
+                "+156 Max HP, +50 Max MP & +2 MEN/+1 INT",
+            ],
+            "100% Guaranteed 1x per Deep Sanctum Hard-Mode Raid (72h)",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        jid,
+        rname,
+        slot_cat,
+        grade,
+        bname,
+        zid,
+        did,
+        fid,
+        loc,
+        resists,
+        stats,
+        drule,
+    ) in specs:
+        rows.append(
+            {
+                "jewelry_id": jid,
+                "relic_name": rname,
+                "slot_category": slot_cat,
+                "grade": grade,
+                "boss_guardian_name": bname,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "status_resist_bonuses": resists,
+                "combat_stat_bonuses": stats,
+                "drop_chance_rule": drule,
+            }
+        )
+    return rows
+
+
+def _build_adventurer_vitality_obelisks(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 Town Adventurer's Guide Buff, Shadow Weapon & Vitality Obelisk Hubs across all 15 Towns (D42)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 6 Starter_Apprentice_Coupon_Hub Towns
+        (
+            "obelisk-01-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Starter_Apprentice_Coupon_Hub",
+            "Newbie Guide & Adventurer's Envoy Leona",
+            "Lv.6–75 Full Support Suite + Life Cubic (Lv.16–34)",
+            [
+                "Wind Walk Lv.2 (+33 Move Spd)",
+                "Shield Lv.3 & Magic Barrier Lv.2",
+                "Vampiric Rage Lv.4 / Acumen Lv.3",
+                "Life Cubic Heal Summon (Lv.16–34)",
+            ],
+            "D-Grade Apprentice Weapon Exchange Coupon (5x)",
+            "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest",
+        ),
+        (
+            "obelisk-02-porcelain-loom",
+            "zone-town-porcelain-loom",
+            "Starter_Apprentice_Coupon_Hub",
+            "Newbie Guide & Moon-Weaver Envoy",
+            "Lv.6–75 Mystic & Scout Support Suite + Life Cubic",
+            [
+                "Wind Walk Lv.2 & Bless the Body/Soul Lv.6",
+                "Acumen Lv.3 & Empower Lv.1",
+                "Clarity & Regeneration Lv.3",
+                "Life Cubic Heal Summon (Lv.16–34)",
+            ],
+            "D-Grade Apprentice Mystic Staff & Bow Coupon (5x)",
+            "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest",
+        ),
+        (
+            "obelisk-03-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Starter_Apprentice_Coupon_Hub",
+            "Newbie Guide & Flame-Totem Tutor",
+            "Lv.6–75 Brawler & Warcryer Support Suite + Life Cubic",
+            [
+                "Wind Walk Lv.2 & Haste Lv.2",
+                "Vampiric Rage Lv.4 & Berserker Spirit Lv.2",
+                "Shield Lv.3 & Bless the Body Lv.6",
+                "Life Cubic Heal Summon (Lv.16–34)",
+            ],
+            "D-Grade Apprentice Fist & Two-Handed Sword Coupon (5x)",
+            "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest",
+        ),
+        (
+            "obelisk-04-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Starter_Apprentice_Coupon_Hub",
+            "Newbie Guide & Iron Gate Mentor",
+            "Lv.6–75 Scavenger & Artisan Support Suite + Life Cubic",
+            [
+                "Wind Walk Lv.2 & Shield Lv.3",
+                "Haste Lv.2 & Vampiric Rage Lv.4",
+                "Bless the Body Lv.6 & Magic Barrier Lv.2",
+                "Life Cubic Heal Summon (Lv.16–34)",
+            ],
+            "D-Grade Apprentice Polearm & Blunt Hammer Coupon (5x)",
+            "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest",
+        ),
+        (
+            "obelisk-05-carillon-belfry",
+            "zone-town-carillon-belfry",
+            "Starter_Apprentice_Coupon_Hub",
+            "Newbie Guide & Abyssal Chime Tutor",
+            "Lv.6–75 Assassin & Dark Mage Support Suite + Life Cubic",
+            [
+                "Wind Walk Lv.2 & Death Whisper / Guidance",
+                "Vampiric Rage Lv.4 & Acumen Lv.3",
+                "Empower Lv.1 & Magic Barrier Lv.2",
+                "Life Cubic Heal Summon (Lv.16–34)",
+            ],
+            "D-Grade Apprentice Dagger & Dark Tome Coupon (5x)",
+            "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest",
+        ),
+        (
+            "obelisk-06-cinnamon-mill",
+            "zone-town-cinnamon-mill",
+            "Starter_Apprentice_Coupon_Hub",
+            "Newbie Guide & Wind-Tail Envoy",
+            "Lv.6–75 Skirmisher & Warder Support Suite + Life Cubic",
+            [
+                "Wind Walk Lv.2 & Haste Lv.2",
+                "Vampiric Rage Lv.4 & Shield Lv.3",
+                "Bless the Body/Soul Lv.6 & Magic Barrier Lv.2",
+                "Life Cubic Heal Summon (Lv.16–34)",
+            ],
+            "D-Grade Apprentice Rapier, Ancient Sword & Crossbow Coupon (5x)",
+            "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest",
+        ),
+        # 5 Regional_Shadow_Weapon_Hub Towns
+        (
+            "obelisk-07-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Regional_Shadow_Weapon_Hub",
+            "Adventurer's Guide Captain & Dion Shadow Quartermaster",
+            "Lv.6–75 Full Convergence Support Suite + Pet Buffs",
+            [
+                "Wind Walk Lv.2, Shield Lv.3 & Magic Barrier Lv.2",
+                "Haste Lv.2, Vampiric Rage Lv.4 & Berserker Spirit Lv.2",
+                "Acumen Lv.3, Empower Lv.1 & Bless the Soul Lv.6",
+                "Servitor/Pet Haste, Vampiric & Horn Melody Suite",
+            ],
+            "C-Grade Shadow Weapon Exchange Coupon (Lv.40 Class Transfer)",
+            "Stage 0 -> Stage 4 (+300% EXP) in 5h Regional Obelisk Rest",
+        ),
+        (
+            "obelisk-08-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Regional_Shadow_Weapon_Hub",
+            "Adventurer's Guide & Maritime Shadow Quartermaster",
+            "Lv.6–75 Full Support Suite + Aquatic Stamina Aura",
+            [
+                "Wind Walk Lv.2 & Kiss of Eva Breath Bonus",
+                "Vampiric Rage Lv.4, Haste Lv.2 & Shield Lv.3",
+                "Acumen Lv.3, Empower Lv.1 & Clarity Resonance",
+                "Life Cubic & Companion Support Suite",
+            ],
+            "C-Grade & B-Grade Shadow Weapon Exchange Coupon",
+            "Stage 0 -> Stage 4 (+300% EXP) in 5h Regional Obelisk Rest",
+        ),
+        (
+            "obelisk-09-saffron-press",
+            "zone-town-saffron-press",
+            "Regional_Shadow_Weapon_Hub",
+            "Adventurer's Guide & Freeholds Militia Envoy",
+            "Lv.6–75 Solo & Duo Spoil Support Suite + Life Cubic",
+            [
+                "Wind Walk Lv.2, Haste Lv.2 & Vampiric Rage Lv.4",
+                "Shield Lv.3, Magic Barrier Lv.2 & Bless the Body Lv.6",
+                "Acumen Lv.3 & Regeneration Lv.3",
+                "Life Cubic Heal Summon & Penalty Recovery Scroll Exchange",
+            ],
+            "C-Grade Shadow Polearm, Dual-Sword & Dagger Coupon",
+            "Stage 0 -> Stage 4 (+300% EXP) in 5h Regional Obelisk Rest",
+        ),
+        (
+            "obelisk-10-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Regional_Shadow_Weapon_Hub",
+            "Adventurer's Guide & Steppe Vanguard Quartermaster",
+            "Lv.6–75 High-Plains Raid Support Suite + Mount Buffs",
+            [
+                "Wind Walk Lv.2, Haste Lv.2 & Guidance Resonance",
+                "Vampiric Rage Lv.4, Berserker Spirit Lv.2 & Shield Lv.3",
+                "Acumen Lv.3, Empower Lv.1 & Magic Barrier Lv.2",
+                "Strider & Fenrir Companion Support Buff Suite",
+            ],
+            "B-Grade Shadow Weapon & Shadow Accessory Exchange",
+            "Stage 0 -> Stage 4 (+300% EXP) in 4.5h Regional Obelisk Rest",
+        ),
+        (
+            "obelisk-11-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Regional_Shadow_Weapon_Hub",
+            "Adventurer's Guide & Oren Tower Warden",
+            "Lv.6–75 Frontier & Tower Support Suite + Death Penalty Cure",
+            [
+                "Wind Walk Lv.2, Shield Lv.3 & Magic Barrier Lv.2",
+                "Haste Lv.2, Vampiric Rage Lv.4 & Focus Resonance",
+                "Acumen Lv.3, Empower Lv.1 & Bless the Body/Soul Lv.6",
+                "Scroll: Recovery (C/B/A-Grade Death Penalty Cure) Exchange",
+            ],
+            "B-Grade Shadow Armament Coupon (Keshanberk / Valhalla / Kris)",
+            "Stage 0 -> Stage 4 (+300% EXP) in 4.5h Regional Obelisk Rest",
+        ),
+        # 4 Capital_Stage4_Vitality_Sanctuary Towns
+        (
+            "obelisk-12-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Capital_Stage4_Vitality_Sanctuary",
+            "Grand Adventurer's Guide & Giran Vitality Arbiter",
+            "Lv.6–75 Capital Full Support Suite + Vitality Replenishing Tonic",
+            [
+                "Wind Walk Lv.2, Haste Lv.2, Vampiric Rage Lv.4 & Shield Lv.3",
+                "Acumen Lv.3, Empower Lv.1, Magic Barrier Lv.2 & Clarity",
+                "Bless the Body Lv.6, Bless the Soul Lv.6 & Berserker Spirit Lv.2",
+                "Vitality Maintaining Potion (30m Stage-4 Lock) Exchange",
+            ],
+            "B-Grade Shadow Armament + Vitality Replenishing Herb Tonic",
+            "Stage 0 -> Stage 4 (+300% EXP) in 3.5h Capital Sanctuary Rest + Raid Vitality Bonus",
+        ),
+        (
+            "obelisk-13-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Capital_Stage4_Vitality_Sanctuary",
+            "Grand Adventurer's Guide & Aden Royal Vitality Prelate",
+            "Lv.6–75 Royal Citadel Full Support + Subclass Vitality Aura",
+            [
+                "Wind Walk Lv.2, Haste Lv.2, Vampiric Rage Lv.4 & Shield Lv.3",
+                "Acumen Lv.3, Empower Lv.1 & Magic Barrier Lv.2",
+                "Royal Knight/Warder Defense & Elemental Ward Resonance",
+                "Scroll: Recovery (A/S-Grade) & Pailaka Vitality Refill",
+            ],
+            "B-Grade Shadow Armament + Royal Vitality Replenishing Tonic",
+            "Stage 0 -> Stage 4 (+300% EXP) in 3.5h Capital Sanctuary Rest + Raid Vitality Bonus",
+        ),
+        (
+            "obelisk-14-starfall-haven",
+            "zone-town-starfall-haven",
+            "Capital_Stage4_Vitality_Sanctuary",
+            "Grand Adventurer's Guide & Rune Astral Vitality Keeper",
+            "Lv.6–75 Astral Sanctuary Support + Nevit's Blessing Hourglass",
+            [
+                "Wind Walk Lv.2, Haste Lv.2, Vampiric Rage Lv.4 & Shield Lv.3",
+                "Acumen Lv.3, Empower Lv.1, Magic Barrier Lv.2 & Bless Body/Soul",
+                "Nevit's Hourglass (+50% Bonus EXP / Zero Vitality Drain 1h)",
+                "Servitor/Companion Full Awakening Support Suite",
+            ],
+            "B-Grade Shadow Armament + Nevit's Voice (+10 Rec. Bonus) & Tonic",
+            "Stage 0 -> Stage 4 (+300% EXP) in 3h Capital Sanctuary Rest + Raid Boss Refill",
+        ),
+        (
+            "obelisk-15-crown-beacon",
+            "zone-town-crown-beacon",
+            "Capital_Stage4_Vitality_Sanctuary",
+            "Sovereign Adventurer's Herald & High-Halo Vitality Archon",
+            "Lv.6–75 Sovereign Full Support + Stage-4 Vitality Surge",
+            [
+                "Wind Walk Lv.2, Haste Lv.2, Vampiric Rage Lv.4 & Shield Lv.3",
+                "Acumen Lv.3, Empower Lv.1, Magic Barrier Lv.2 & Berserker Spirit Lv.2",
+                "Sovereign Vitality Surge (+300% Stage-4 EXP Lock & +30% Drop Aura)",
+                "Scroll: Recovery (S-Grade) & Olympiad Hero Blessing",
+            ],
+            "Apex B/A-Grade Shadow Armament + Sovereign Stage-4 Vitality Elixir",
+            "Stage 0 -> Stage 4 (+300% EXP) in 3h Capital Sanctuary Rest + 100% Raid Refill",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (oid, tzid, otier, gnpc, brange, bsuite, scoupon, vrate) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(tzid) or {}
+        tname = str(t_obj.get("name", tzid))
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        obelisk_loc = _fmt_loc(bx - 165 - idx * 8, by + 135 + idx * 7)
+        rows.append(
+            {
+                "obelisk_id": oid,
+                "town_zone_id": tzid,
+                "town_name": tname,
+                "obelisk_tier": otier,
+                "guide_npc_name": gnpc,
+                "obelisk_loc": obelisk_loc,
+                "buff_level_range": brange,
+                "granted_buff_suite": bsuite,
+                "shadow_weapon_coupon_grade": scoupon,
+                "vitality_recovery_rate": vrate,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -6606,6 +7170,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("territory_ward_supply_nodes") or []) < 16:
         atlas["territory_ward_supply_nodes"] = _build_territory_ward_supply_nodes(atlas)
         actions.append("populated_16_territory_ward_supply_nodes")
+
+    # 25. Ensure all 12 Epic Boss Jewelry Relics & Sanctums exist in `epic_jewelry_sanctums` (D41)
+    if len(atlas.get("epic_jewelry_sanctums") or []) < 12:
+        atlas["epic_jewelry_sanctums"] = _build_epic_jewelry_sanctums(atlas)
+        actions.append("populated_12_epic_jewelry_sanctums")
+
+    # 26. Ensure all 15 Town Adventurer's Guide & Vitality Obelisks exist in `adventurer_vitality_obelisks` (D42)
+    if len(atlas.get("adventurer_vitality_obelisks") or []) < 15:
+        atlas["adventurer_vitality_obelisks"] = _build_adventurer_vitality_obelisks(atlas)
+        actions.append("populated_15_adventurer_vitality_obelisks")
 
     return {"actions": actions}
 
@@ -8445,15 +9019,160 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d40_ratio * 80.0, 1)
     )
 
+    # D41: Interactive 12-Relic Epic Boss Jewelry & Status Resistance Matrix (`epic_jewelry_sanctums` - 12/12 Relics = 4 Epic_Ring + 4 Epic_Earring + 4 Epic_Necklace)
+    expected_jewelry_slots = {
+        "Epic_Ring",
+        "Epic_Earring",
+        "Epic_Necklace",
+    }
+    expected_jewelry_grades = {"B-Grade", "A-Grade", "S-Grade"}
+    epic_jewelry_rows = atlas.get("epic_jewelry_sanctums") or []
+    valid_epic_jewelry = 0
+    epic_ring_count = 0
+    epic_earring_count = 0
+    epic_necklace_count = 0
+    seen_jewelry_ids: set[str] = set()
+    seen_jewelry_slots: set[str] = set()
+    seen_jewelry_grades: set[str] = set()
+    for ej in epic_jewelry_rows:
+        if not isinstance(ej, dict):
+            continue
+        jid = str(ej.get("jewelry_id") or "")
+        slot_cat = str(ej.get("slot_category") or "")
+        jgrade = str(ej.get("grade") or "")
+        zid = str(ej.get("zone_id") or "")
+        resists = ej.get("status_resist_bonuses") or []
+        cstats = ej.get("combat_stat_bonuses") or []
+        if (
+            jid
+            and jid not in seen_jewelry_ids
+            and ej.get("relic_name")
+            and slot_cat in expected_jewelry_slots
+            and jgrade in expected_jewelry_grades
+            and ej.get("boss_guardian_name")
+            and zid in zone_ids_set
+            and isinstance(ej.get("dungeon_id"), str)
+            and isinstance(ej.get("floor_id"), str)
+            and ":" in str(ej.get("loc", ""))
+            and isinstance(resists, list)
+            and len(resists) >= 2
+            and isinstance(cstats, list)
+            and len(cstats) >= 2
+            and ej.get("drop_chance_rule")
+        ):
+            valid_epic_jewelry += 1
+            seen_jewelry_ids.add(jid)
+            seen_jewelry_slots.add(slot_cat)
+            seen_jewelry_grades.add(jgrade)
+            if slot_cat == "Epic_Ring":
+                epic_ring_count += 1
+            elif slot_cat == "Epic_Earring":
+                epic_earring_count += 1
+            elif slot_cat == "Epic_Necklace":
+                epic_necklace_count += 1
+
+    has_d41_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_EPIC_JEWELRY_MODE",
+            "setAtlasEpicJewelryMode",
+            "renderAtlasEpicJewelryBarHtml",
+            "studioEpicJewelryOverlay",
+        )
+    )
+    d41_ratio = valid_epic_jewelry / 12.0
+    d41_full_coverage = (
+        epic_ring_count == 4
+        and epic_earring_count == 4
+        and epic_necklace_count == 4
+        and seen_jewelry_slots == expected_jewelry_slots
+        and seen_jewelry_grades == expected_jewelry_grades
+    )
+    d41_score = (
+        round(min(100.0, d41_ratio * 100.0), 1)
+        if (has_d41_ui and d41_full_coverage)
+        else round(d41_ratio * 80.0, 1)
+    )
+
+    # D42: Interactive 15-Town Adventurer's Guide Buff, Shadow Weapon & Vitality Obelisk Matrix (`adventurer_vitality_obelisks` - 15/15 Town Obelisks)
+    expected_obelisk_tiers = {
+        "Starter_Apprentice_Coupon_Hub",
+        "Regional_Shadow_Weapon_Hub",
+        "Capital_Stage4_Vitality_Sanctuary",
+    }
+    vitality_obelisks = atlas.get("adventurer_vitality_obelisks") or []
+    valid_vitality_obelisks = 0
+    starter_obelisk_count = 0
+    regional_obelisk_count = 0
+    capital_obelisk_count = 0
+    seen_obelisk_ids: set[str] = set()
+    seen_obelisk_town_ids: set[str] = set()
+    seen_obelisk_tiers: set[str] = set()
+    for ob in vitality_obelisks:
+        if not isinstance(ob, dict):
+            continue
+        oid = str(ob.get("obelisk_id") or "")
+        tzid = str(ob.get("town_zone_id") or "")
+        otier = str(ob.get("obelisk_tier") or "")
+        bsuite = ob.get("granted_buff_suite") or []
+        if (
+            oid
+            and oid not in seen_obelisk_ids
+            and tzid in town_zone_id_set
+            and tzid not in seen_obelisk_town_ids
+            and ob.get("town_name")
+            and otier in expected_obelisk_tiers
+            and ob.get("guide_npc_name")
+            and ":" in str(ob.get("obelisk_loc", ""))
+            and ob.get("buff_level_range")
+            and isinstance(bsuite, list)
+            and len(bsuite) >= 3
+            and ob.get("shadow_weapon_coupon_grade")
+            and ob.get("vitality_recovery_rate")
+        ):
+            valid_vitality_obelisks += 1
+            seen_obelisk_ids.add(oid)
+            seen_obelisk_town_ids.add(tzid)
+            seen_obelisk_tiers.add(otier)
+            if otier == "Starter_Apprentice_Coupon_Hub":
+                starter_obelisk_count += 1
+            elif otier == "Regional_Shadow_Weapon_Hub":
+                regional_obelisk_count += 1
+            elif otier == "Capital_Stage4_Vitality_Sanctuary":
+                capital_obelisk_count += 1
+
+    has_d42_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_VITALITY_OBELISK_MODE",
+            "setAtlasVitalityObeliskMode",
+            "renderAtlasVitalityObeliskBarHtml",
+            "studioVitalityObeliskOverlay",
+        )
+    )
+    d42_ratio = valid_vitality_obelisks / 15.0
+    d42_full_coverage = (
+        len(seen_obelisk_town_ids) == 15
+        and seen_obelisk_tiers == expected_obelisk_tiers
+        and starter_obelisk_count == 6
+        and regional_obelisk_count == 5
+        and capital_obelisk_count == 4
+    )
+    d42_score = (
+        round(min(100.0, d42_ratio * 100.0), 1)
+        if (has_d42_ui and d42_full_coverage)
+        else round(d42_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 22.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 24.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 24.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 34.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 23.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 30.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 24.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 26.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 26.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 36.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 25.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score) / 32.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -8498,8 +9217,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d38_score
             + d39_score
             + d40_score
+            + d41_score
+            + d42_score
         )
-        / 40.0,
+        / 42.0,
         1,
     )
 
@@ -8786,6 +9507,27 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "node_roles": sorted(seen_ward_roles),
                 "ui_wired": has_d40_ui,
             },
+            "D41_epic_boss_jewelry_and_status_resist_sanctums": {
+                "score": d41_score,
+                "verified": valid_epic_jewelry,
+                "target": 12,
+                "epic_rings": epic_ring_count,
+                "epic_earrings": epic_earring_count,
+                "epic_necklaces": epic_necklace_count,
+                "slot_categories": sorted(seen_jewelry_slots),
+                "grades": sorted(seen_jewelry_grades),
+                "ui_wired": has_d41_ui,
+            },
+            "D42_adventurer_guide_buff_and_vitality_obelisks": {
+                "score": d42_score,
+                "verified": valid_vitality_obelisks,
+                "target": 15,
+                "starter_coupon_hubs": starter_obelisk_count,
+                "regional_shadow_hubs": regional_obelisk_count,
+                "capital_vitality_sanctuaries": capital_obelisk_count,
+                "obelisk_tiers": sorted(seen_obelisk_tiers),
+                "ui_wired": has_d42_ui,
+            },
         },
     }
 
@@ -8870,6 +9612,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D38 (24 Field Herb/Elem)    : {dims['D38_field_herb_and_elemental_biomes']['score']}/100 ({dims['D38_field_herb_and_elemental_biomes']['verified']}/{dims['D38_field_herb_and_elemental_biomes']['target']} field biomes)")
         print(f"  D39 (15 Soulshot/Workshops) : {dims['D39_soulshot_and_dwarven_manufacture_workshops']['score']}/100 ({dims['D39_soulshot_and_dwarven_manufacture_workshops']['verified']}/{dims['D39_soulshot_and_dwarven_manufacture_workshops']['target']} workshop plazas)")
         print(f"  D40 (16 Territory/Codex)    : {dims['D40_territory_ward_and_fortress_codex_supply']['score']}/100 ({dims['D40_territory_ward_and_fortress_codex_supply']['verified']}/{dims['D40_territory_ward_and_fortress_codex_supply']['target']} ward/supply nodes)")
+        print(f"  D41 (12 Epic Boss Jewelry)  : {dims['D41_epic_boss_jewelry_and_status_resist_sanctums']['score']}/100 ({dims['D41_epic_boss_jewelry_and_status_resist_sanctums']['verified']}/{dims['D41_epic_boss_jewelry_and_status_resist_sanctums']['target']} epic relics)")
+        print(f"  D42 (15 Vitality Obelisks)  : {dims['D42_adventurer_guide_buff_and_vitality_obelisks']['score']}/100 ({dims['D42_adventurer_guide_buff_and_vitality_obelisks']['verified']}/{dims['D42_adventurer_guide_buff_and_vitality_obelisks']['target']} vitality obelisks)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

@@ -84,15 +84,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas36DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas38DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas40DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas42DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 18)),
+        "wave": int(iter_state.get("wave", 19)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"42-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"40-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"38-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"36-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -104,7 +106,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D40 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D42 Verified"
         ),
     }
     return merged
@@ -4366,7 +4368,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D40 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D42 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4425,6 +4427,8 @@ let ATLAS_CLAN_ACADEMY_MODE = 'All';
 let ATLAS_HERB_BIOME_MODE = 'All';
 let ATLAS_WORKSHOP_MODE = 'All';
 let ATLAS_TERRITORY_WARD_MODE = 'All';
+let ATLAS_EPIC_JEWELRY_MODE = 'All';
+let ATLAS_VITALITY_OBELISK_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4455,6 +4459,8 @@ const ATLAS_STATE_STORE = {
   herbBiomeMode: 'All',                    // D38: Active 24-Field Elemental & Herb Sustainability Selector ('Off' | 'All' | 'S_Tier_Zero_Downtime' | 'A_Tier_Mystic_Mana_Rich' | 'By_Elemental_Weakness')
   workshopMode: 'All',                     // D39: Active 15-Town Soulshot & Dwarven Manufacture Selector ('Off' | 'All' | 'Starter_D_C_Plaza' | 'Regional_B_A_Workshop' | 'Capital_S_Grade_Master_Forge')
   territoryWardMode: 'All',                // D40: Active Territory Ward & Giant's Codex Selector ('Off' | 'All' | 'Sovereign_Territory_Ward' | 'Fortress_Codex_Supply_Vault')
+  epicJewelryMode: 'All',                  // D41: Active 12-Relic Epic Boss Jewelry Selector ('Off' | 'All' | 'Epic_Ring' | 'Epic_Earring' | 'Epic_Necklace')
+  vitalityObeliskMode: 'All',              // D42: Active 15-Town Adventurer's Guide & Vitality Obelisk Selector ('Off' | 'All' | 'Starter_Apprentice_Coupon_Hub' | 'Regional_Shadow_Weapon_Hub' | 'Capital_Stage4_Vitality_Sanctuary')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4462,6 +4468,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasEpicJewelryMode(modeId) {
+  ATLAS_EPIC_JEWELRY_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.epicJewelryMode = ATLAS_EPIC_JEWELRY_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasVitalityObeliskMode(modeId) {
+  ATLAS_VITALITY_OBELISK_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.vitalityObeliskMode = ATLAS_VITALITY_OBELISK_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasWorkshopMode(modeId) {
   ATLAS_WORKSHOP_MODE = String(modeId || 'All');
@@ -8224,6 +8244,180 @@ function renderAtlasTerritoryWardBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasEpicJewelryBarHtml(tatlas) {
+  const relics = (tatlas && tatlas.epic_jewelry_sanctums) || [];
+  if (!relics.length) return '';
+
+  const curMode = ATLAS_EPIC_JEWELRY_MODE || ATLAS_STATE_STORE.epicJewelryMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '💍 All 12 Epic Relics' },
+    { id: 'Epic_Ring', label: '💍 4 Epic Rings' },
+    { id: 'Epic_Earring', label: '💎 4 Epic Earrings' },
+    { id: 'Epic_Necklace', label: '📿 4 Epic Necklaces' }
+  ];
+
+  const filteredRelics = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? relics : relics.filter(r => r.slot_category === curMode));
+
+  const featuredRelics = curMode === 'All'
+    ? [
+        ...relics.filter(r => r.slot_category === 'Epic_Ring').slice(0, 2),
+        ...relics.filter(r => r.slot_category === 'Epic_Earring').slice(0, 1),
+        ...relics.filter(r => r.slot_category === 'Epic_Necklace').slice(0, 1)
+      ]
+    : filteredRelics.slice(0, 4);
+
+  return `
+    <div id="atlasEpicJewelryBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1e1033;border:1px solid rgba(192,132,252,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#f3e8ff">💍 12-RELIC EPIC BOSS JEWELRY &amp; STATUS RESISTANCE MATRIX (D41 · 12 SANCTUMS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasEpicJewelryMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(192,132,252,0.45)'};background:${isAct ? '#7e22ce' : '#090d14'};color:${isAct ? '#ffffff' : '#f3e8ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          4 EPIC RINGS + 4 EPIC EARRINGS + 4 EPIC NECKLACES (STUN/HOLD/SLEEP/BLEED/MENTAL RESIST &amp; CRIT/VAMPIRIC/REUSE)
+        </span>
+      </div>
+
+      ${featuredRelics.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredRelics.map(r => {
+            const isRing = r.slot_category === 'Epic_Ring';
+            const isEar = r.slot_category === 'Epic_Earring';
+            const slotCol = isRing ? '#f59e0b' : (isEar ? '#38bdf8' : '#e879f9');
+            const slotIcon = isRing ? '💍' : (isEar ? '💎' : '📿');
+            const sanctumJumpJs = r.dungeon_id
+              ? `openDungeonSubMap('${escapeHtml(r.dungeon_id)}', '${escapeHtml(r.floor_id || 'B3')}')`
+              : `focusFieldTacticalBlueprint('${escapeHtml(r.zone_id)}', '${escapeHtml(r.loc)}')`;
+            const resistSummary = (r.status_resist_bonuses || []).slice(0, 2).join(' · ');
+            const statSummary = (r.combat_stat_bonuses || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${slotCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${slotIcon} ${escapeHtml(r.relic_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${slotCol}">${escapeHtml(r.grade)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#e9d5ff;margin-top:1px">
+                    👑 ${escapeHtml(r.boss_guardian_name)} · 🛡️ ${escapeHtml(resistSummary.slice(0, 48))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ⚔️ ${escapeHtml(statSummary.slice(0, 56))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${sanctumJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${slotCol};background:#3b0764;color:#f3e8ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${slotIcon} Warp to ${r.dungeon_id ? `Sanctum (${escapeHtml(r.floor_id || 'B3')})` : 'Overland Lair'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasVitalityObeliskBarHtml(tatlas) {
+  const obelisks = (tatlas && tatlas.adventurer_vitality_obelisks) || [];
+  if (!obelisks.length) return '';
+
+  const curMode = ATLAS_VITALITY_OBELISK_MODE || ATLAS_STATE_STORE.vitalityObeliskMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '✨ All 15 Obelisks' },
+    { id: 'Starter_Apprentice_Coupon_Hub', label: '🗡️ Starter D/C Shadow Coupons' },
+    { id: 'Regional_Shadow_Weapon_Hub', label: '⚡ Lv.6–75 Support Buff Suites' },
+    { id: 'Capital_Stage4_Vitality_Sanctuary', label: '🔋 Capital Stage 4 Vitality Sanctuaries' }
+  ];
+
+  const filteredObelisks = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? obelisks : obelisks.filter(o => o.obelisk_tier === curMode));
+
+  const featuredObelisks = curMode === 'All'
+    ? [
+        ...obelisks.filter(o => o.obelisk_tier === 'Starter_Apprentice_Coupon_Hub').slice(0, 1),
+        ...obelisks.filter(o => o.obelisk_tier === 'Regional_Shadow_Weapon_Hub').slice(0, 1),
+        ...obelisks.filter(o => o.obelisk_tier === 'Capital_Stage4_Vitality_Sanctuary').slice(0, 2)
+      ]
+    : filteredObelisks.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasVitalityObeliskBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0a221c;border:1px solid rgba(52,211,153,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#a7f3d0">✨ 15-TOWN ADVENTURER'S GUIDE BUFF, SHADOW WEAPON &amp; VITALITY OBELISK MATRIX (D42 · 15 TOWNS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasVitalityObeliskMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(52,211,153,0.45)'};background:${isAct ? '#059669' : '#090d14'};color:${isAct ? '#ffffff' : '#d1fae5'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          LV.6–75 SUPPORT BUFF SUITES + D/C/B SHADOW WEAPON COUPONS + STAGE 4 (+300% EXP) VITALITY REST SANCTUARIES
+        </span>
+      </div>
+
+      ${featuredObelisks.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredObelisks.map(o => {
+            const isCap = o.obelisk_tier === 'Capital_Stage4_Vitality_Sanctuary';
+            const isReg = o.obelisk_tier === 'Regional_Shadow_Weapon_Hub';
+            const tierCol = isCap ? '#34d399' : (isReg ? '#38bdf8' : '#fbbf24');
+            const tz = byZid[o.town_zone_id] || {};
+            const townNode = tz.studio_node_id || o.town_zone_id.replace('zone-', '');
+            const obeliskJumpJs = `focusTownStreetBlueprint('${escapeHtml(townNode)}', '${escapeHtml(o.obelisk_loc)}')`;
+            const buffSummary = (o.granted_buff_suite || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${tierCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">✨ ${escapeHtml(o.town_name.slice(0, 32))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${tierCol}">${escapeHtml(o.obelisk_tier.replace(/_/g, ' '))}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#a7f3d0;margin-top:1px">
+                    🧭 ${escapeHtml(o.guide_npc_name)} · 🗡️ ${escapeHtml(o.shadow_weapon_coupon_grade.slice(0, 36))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ⚡ ${escapeHtml(buffSummary.slice(0, 48))} · 🔋 ${escapeHtml(o.vitality_recovery_rate.slice(0, 44))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${obeliskJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${tierCol};background:#064e3b;color:#d1fae5;font-size:8px;font-weight:800;cursor:pointer">
+                    ✨ Adventurer's Guide &amp; Vitality Obelisk (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -8368,6 +8562,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasHerbBiomeBarHtml(tatlas)}
       ${renderAtlasWorkshopPlazaBarHtml(tatlas)}
       ${renderAtlasTerritoryWardBarHtml(tatlas)}
+      ${renderAtlasEpicJewelryBarHtml(tatlas)}
+      ${renderAtlasVitalityObeliskBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -10850,6 +11046,63 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D41: Interactive 12-Relic Epic Boss Jewelry & Status Resistance Overlay (`studioEpicJewelryOverlay`)
+  const epicJewelryRows = (tatlas && tatlas.epic_jewelry_sanctums) || [];
+  const curJewelryMode = ATLAS_EPIC_JEWELRY_MODE || ATLAS_STATE_STORE.epicJewelryMode || 'All';
+  const activeEpicJewelryRows = curJewelryMode === 'Off'
+    ? []
+    : (curJewelryMode === 'All'
+      ? epicJewelryRows
+      : epicJewelryRows.filter(r => r.slot_category === curJewelryMode));
+  const epicJewelryOverlaySvg = `
+    <g id="studioEpicJewelryOverlay">
+      ${activeEpicJewelryRows.map(r => {
+        const jc = clampWorldLocCoord(r.loc || '-113190:235226');
+        const isRing = r.slot_category === 'Epic_Ring';
+        const isEar = r.slot_category === 'Epic_Earring';
+        const colHex = isRing ? '#f59e0b' : (isEar ? '#38bdf8' : '#e879f9');
+        const iconTxt = isRing ? '💍' : (isEar ? '💎' : '📿');
+        const jumpJs = r.dungeon_id
+          ? `openDungeonSubMap('${escapeHtml(r.dungeon_id)}', '${escapeHtml(r.floor_id || 'B3')}')`
+          : `focusFieldTacticalBlueprint('${escapeHtml(r.zone_id)}', '${escapeHtml(r.loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${jc.svgX}" cy="${jc.svgY}" r="11.4" fill="rgba(88,28,135,0.42)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${jc.svgX}" y="${jc.svgY + 3.5}" text-anchor="middle" font-size="8.6">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D42: Interactive 15-Town Adventurer's Guide Buff, Shadow Weapon & Vitality Obelisk Overlay (`studioVitalityObeliskOverlay`)
+  const vitalityObeliskRows = (tatlas && tatlas.adventurer_vitality_obelisks) || [];
+  const curObeliskMode = ATLAS_VITALITY_OBELISK_MODE || ATLAS_STATE_STORE.vitalityObeliskMode || 'All';
+  const activeVitalityObelisks = curObeliskMode === 'Off'
+    ? []
+    : (curObeliskMode === 'All'
+      ? vitalityObeliskRows
+      : vitalityObeliskRows.filter(o => o.obelisk_tier === curObeliskMode));
+  const vitalityObeliskOverlaySvg = `
+    <g id="studioVitalityObeliskOverlay">
+      ${activeVitalityObelisks.map(o => {
+        const oc = clampWorldLocCoord(o.obelisk_loc || '-84120:243500');
+        const tz = allZonesById[o.town_zone_id] || {};
+        const isCap = o.obelisk_tier === 'Capital_Stage4_Vitality_Sanctuary';
+        const isReg = o.obelisk_tier === 'Regional_Shadow_Weapon_Hub';
+        const colHex = isCap ? '#34d399' : (isReg ? '#38bdf8' : '#fbbf24');
+        const iconTxt = isCap ? '🔋' : (isReg ? '⚡' : '✨');
+        const townClickJs = `focusTownStreetBlueprint('${escapeHtml(tz.studio_node_id || o.town_zone_id.replace('zone-', ''))}', '${escapeHtml(o.obelisk_loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${townClickJs}">
+            <circle cx="${oc.svgX}" cy="${oc.svgY}" r="10.4" fill="rgba(6,78,59,0.42)" stroke="${colHex}" stroke-width="1.8"/>
+            <text x="${oc.svgX}" y="${oc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -10870,6 +11123,8 @@ function renderDedicatedWorldAtlas() {
     ${herbElementalBiomeOverlaySvg}
     ${soulshotWorkshopOverlaySvg}
     ${territoryWardOverlaySvg}
+    ${epicJewelryOverlaySvg}
+    ${vitalityObeliskOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

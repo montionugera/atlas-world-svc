@@ -680,6 +680,8 @@ def validate_world_governance(
                 "fieldHerbElementalBiomesCount": len(t_doc.get("field_herb_elemental_biomes") or []),
                 "soulshotWorkshopPlazasCount": len(t_doc.get("soulshot_workshop_plazas") or []),
                 "territoryWardSupplyNodesCount": len(t_doc.get("territory_ward_supply_nodes") or []),
+                "epicJewelrySanctumsCount": len(t_doc.get("epic_jewelry_sanctums") or []),
+                "adventurerVitalityObelisksCount": len(t_doc.get("adventurer_vitality_obelisks") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):

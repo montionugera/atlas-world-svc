@@ -155,6 +155,18 @@
       "maxItems": 16,
       "items": { "$ref": "#/$defs/territoryWardSupplyNodeSpec" }
     },
+    "epic_jewelry_sanctums": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": { "$ref": "#/$defs/epicJewelrySanctumSpec" }
+    },
+    "adventurer_vitality_obelisks": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/adventurerVitalityObeliskSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2402,6 +2414,91 @@
         "stat_ward_bonus": { "type": "string" },
         "epaulette_codex_reward": { "type": "string" },
         "territory_battle_window": { "type": "string" }
+      }
+    },
+    "epicJewelrySanctumSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "jewelry_id",
+        "relic_name",
+        "slot_category",
+        "grade",
+        "boss_guardian_name",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "status_resist_bonuses",
+        "combat_stat_bonuses",
+        "drop_chance_rule"
+      ],
+      "properties": {
+        "jewelry_id": { "type": "string" },
+        "relic_name": { "type": "string" },
+        "slot_category": {
+          "type": "string",
+          "enum": ["Epic_Ring", "Epic_Earring", "Epic_Necklace"]
+        },
+        "grade": {
+          "type": "string",
+          "enum": ["B-Grade", "A-Grade", "S-Grade"]
+        },
+        "boss_guardian_name": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "status_resist_bonuses": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "combat_stat_bonuses": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "drop_chance_rule": { "type": "string" }
+      }
+    },
+    "adventurerVitalityObeliskSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "obelisk_id",
+        "town_zone_id",
+        "town_name",
+        "obelisk_tier",
+        "guide_npc_name",
+        "obelisk_loc",
+        "buff_level_range",
+        "granted_buff_suite",
+        "shadow_weapon_coupon_grade",
+        "vitality_recovery_rate"
+      ],
+      "properties": {
+        "obelisk_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "obelisk_tier": {
+          "type": "string",
+          "enum": [
+            "Starter_Apprentice_Coupon_Hub",
+            "Regional_Shadow_Weapon_Hub",
+            "Capital_Stage4_Vitality_Sanctuary"
+          ]
+        },
+        "guide_npc_name": { "type": "string" },
+        "obelisk_loc": { "type": "string" },
+        "buff_level_range": { "type": "string" },
+        "granted_buff_suite": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "type": "string" }
+        },
+        "shadow_weapon_coupon_grade": { "type": "string" },
+        "vitality_recovery_rate": { "type": "string" }
       }
     }
   }

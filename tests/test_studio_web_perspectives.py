@@ -1408,7 +1408,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 40)
+        self.assertGreaterEqual(len(audit["dimensions"]), 40)
 
         d39 = audit["dimensions"]["D39_soulshot_and_dwarven_manufacture_workshops"]
         self.assertEqual(d39["score"], 100.0)
@@ -1458,10 +1458,95 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas40DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 40)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 40)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 40)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 40)
         self.assertIn("40-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave19_epic_jewelry_sanctums_and_adventurer_vitality_obelisks(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["epicJewelrySanctumsCount"], 12)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["adventurerVitalityObelisksCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_EPIC_JEWELRY_MODE",
+            "setAtlasEpicJewelryMode(",
+            "renderAtlasEpicJewelryBarHtml(",
+            "studioEpicJewelryOverlay",
+            "ATLAS_VITALITY_OBELISK_MODE",
+            "setAtlasVitalityObeliskMode(",
+            "renderAtlasVitalityObeliskBarHtml(",
+            "studioVitalityObeliskOverlay",
+            "42-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 19 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 42)
+
+        d41 = audit["dimensions"]["D41_epic_boss_jewelry_and_status_resist_sanctums"]
+        self.assertEqual(d41["score"], 100.0)
+        self.assertEqual(d41["verified"], 12)
+        self.assertEqual(d41["target"], 12)
+        self.assertEqual(d41["epic_rings"], 4)
+        self.assertEqual(d41["epic_earrings"], 4)
+        self.assertEqual(d41["epic_necklaces"], 4)
+        self.assertEqual(
+            set(d41["slot_categories"]),
+            {"Epic_Ring", "Epic_Earring", "Epic_Necklace"},
+        )
+        self.assertEqual(set(d41["grades"]), {"B-Grade", "A-Grade", "S-Grade"})
+        self.assertTrue(d41["ui_wired"])
+
+        d42 = audit["dimensions"]["D42_adventurer_guide_buff_and_vitality_obelisks"]
+        self.assertEqual(d42["score"], 100.0)
+        self.assertEqual(d42["verified"], 15)
+        self.assertEqual(d42["target"], 15)
+        self.assertEqual(d42["starter_coupon_hubs"], 6)
+        self.assertEqual(d42["regional_shadow_hubs"], 5)
+        self.assertEqual(d42["capital_vitality_sanctuaries"], 4)
+        self.assertEqual(
+            set(d42["obelisk_tiers"]),
+            {
+                "Starter_Apprentice_Coupon_Hub",
+                "Regional_Shadow_Weapon_Hub",
+                "Capital_Stage4_Vitality_Sanctuary",
+            },
+        )
+        self.assertTrue(d42["ui_wired"])
+
+        relics = atlas["epic_jewelry_sanctums"]
+        self.assertEqual(len(relics), 12)
+        self.assertEqual(sum(1 for r in relics if r["slot_category"] == "Epic_Ring"), 4)
+        self.assertEqual(sum(1 for r in relics if r["slot_category"] == "Epic_Earring"), 4)
+        self.assertEqual(sum(1 for r in relics if r["slot_category"] == "Epic_Necklace"), 4)
+        for r in relics:
+            self.assertGreaterEqual(len(r["status_resist_bonuses"]), 2)
+            self.assertGreaterEqual(len(r["combat_stat_bonuses"]), 2)
+
+        obelisks = atlas["adventurer_vitality_obelisks"]
+        self.assertEqual(len(obelisks), 15)
+        self.assertEqual(len({o["town_zone_id"] for o in obelisks}), 15)
+        self.assertEqual(sum(1 for o in obelisks if o["obelisk_tier"] == "Starter_Apprentice_Coupon_Hub"), 6)
+        self.assertEqual(sum(1 for o in obelisks if o["obelisk_tier"] == "Regional_Shadow_Weapon_Hub"), 5)
+        self.assertEqual(sum(1 for o in obelisks if o["obelisk_tier"] == "Capital_Stage4_Vitality_Sanctuary"), 4)
+        for o in obelisks:
+            self.assertGreaterEqual(len(o["granted_buff_suite"]), 3)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas42DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 42)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 42)
+        self.assertIn("42-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

@@ -51723,5 +51723,525 @@
       "epaulette_codex_reward": "Giant's Codex: Mastery + Discipline Bundle & Divine Talisman",
       "territory_battle_window": "Every 4 Hours (High-Halo Citadel Supply & Rim Pailaka Raid)"
     }
+  ],
+  "epic_jewelry_sanctums": [
+    {
+      "jewelry_id": "jewelry-01-ring-queen-ant-kiln",
+      "relic_name": "Ring of the Kiln-Queen (Queen Ant Ring Analog)",
+      "slot_category": "Epic_Ring",
+      "grade": "B-Grade",
+      "boss_guardian_name": "Queen Ant-Brood Matriarch",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B3",
+      "loc": "-113190:235226",
+      "status_resist_bonuses": [
+        "+30% Poison Resist / +30% Poison Attack",
+        "+20% Hold Resist / +20% Hold Attack"
+      ],
+      "combat_stat_bonuses": [
+        "+15% Critical Damage Multiplier",
+        "+2 Physical Accuracy",
+        "+21 Max MP Resonance"
+      ],
+      "drop_chance_rule": "30% Sovereign Relic Drop (24h \u00b1 4h Sanctum Respawn)"
+    },
+    {
+      "jewelry_id": "jewelry-02-ring-core-pendulum",
+      "relic_name": "Ring of the Core Automaton (Ring of Core Analog)",
+      "slot_category": "Epic_Ring",
+      "grade": "A-Grade",
+      "boss_guardian_name": "Core Pendulum Prime Construct",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "3F",
+      "loc": "85700:143900",
+      "status_resist_bonuses": [
+        "+20% Poison Resist & Mental Debuff Cleanse",
+        "+20% Root & Paralysis Resistance"
+      ],
+      "combat_stat_bonuses": [
+        "-20% Incoming Physical & Magical Damage Taken",
+        "+1 Physical Accuracy",
+        "+21 Max MP Resonance"
+      ],
+      "drop_chance_rule": "30% Sovereign Relic Drop (36h \u00b1 4h Sanctum Respawn)"
+    },
+    {
+      "jewelry_id": "jewelry-03-ring-baium-star-heart",
+      "relic_name": "Ring of the Celestial Archon (Ring of Baium Analog)",
+      "slot_category": "Epic_Ring",
+      "grade": "S-Grade",
+      "boss_guardian_name": "Celestial Archon Baium-Analog",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149500:28100",
+      "status_resist_bonuses": [
+        "+40% Hold Resist / +40% Hold Attack",
+        "+30% Stun Resist / +30% Stun Attack",
+        "+40% Poison Resistance"
+      ],
+      "combat_stat_bonuses": [
+        "+15% Critical Damage Multiplier",
+        "+4% Attack Speed & +4% Casting Speed",
+        "+2 Physical Accuracy & +21 Max MP"
+      ],
+      "drop_chance_rule": "100% Guaranteed 1x per Sanctum Kill (120h + 8h Awakening)"
+    },
+    {
+      "jewelry_id": "jewelry-04-ring-beleth-forbidden",
+      "relic_name": "Ring of the Forbidden Architect (Beleth's Ring Analog)",
+      "slot_category": "Epic_Ring",
+      "grade": "S-Grade",
+      "boss_guardian_name": "Forbidden Architect Beleth-Analog",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B3",
+      "loc": "18700:-64500",
+      "status_resist_bonuses": [
+        "+12% Mental Attack / +12% Mental Resist",
+        "+30 Dark Element Resistance",
+        "+25% Hold & Sleep Resistance"
+      ],
+      "combat_stat_bonuses": [
+        "+12% Magic Defense (M.Def) Bonus",
+        "+105 Max HP & +38 Max MP",
+        "+15% MP Regeneration Rate"
+      ],
+      "drop_chance_rule": "100% Guaranteed 1x per Command Channel Sanctum Kill (192h)"
+    },
+    {
+      "jewelry_id": "jewelry-05-earring-orfen-mire",
+      "relic_name": "Earring of the Spore-Weaver (Earring of Orfen Analog)",
+      "slot_category": "Epic_Earring",
+      "grade": "A-Grade",
+      "boss_guardian_name": "Spore-Queen Orfen-Analog",
+      "zone_id": "zone-field-whispering-mire",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-62200:189500",
+      "status_resist_bonuses": [
+        "+20% Bleed Resist / +20% Bleed Attack",
+        "+25% Hold & Mental Debuff Resistance"
+      ],
+      "combat_stat_bonuses": [
+        "+6% Heal Power Received",
+        "+31 Max MP Resonance",
+        "MP Drain & Anchor Ward"
+      ],
+      "drop_chance_rule": "30% Sovereign Overland Lair Drop (28h \u00b1 4h Respawn)"
+    },
+    {
+      "jewelry_id": "jewelry-06-earring-zaken-sunken",
+      "relic_name": "Earring of the Sunken Dread-Captain (Zaken's Earring Analog)",
+      "slot_category": "Epic_Earring",
+      "grade": "S-Grade",
+      "boss_guardian_name": "Dread-Captain Zaken-Analog",
+      "zone_id": "zone-dungeon-sunken-potter-hold",
+      "dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "floor_id": "B3",
+      "loc": "-78100:148900",
+      "status_resist_bonuses": [
+        "+30% Stun Resist / +30% Stun Attack",
+        "+30% Mental Attack / +30% Mental Resist",
+        "+30% Bleed Resist / +30% Bleed Attack"
+      ],
+      "combat_stat_bonuses": [
+        "+4% Vampiric Rage Melee Life-Drain",
+        "+10% Heal Power Received",
+        "-10% Skill MP Consumption & +31 Max MP"
+      ],
+      "drop_chance_rule": "100% Guaranteed 1x on Nocturnal 00:00 Cabin Breach (44h)"
+    },
+    {
+      "jewelry_id": "jewelry-07-earring-antharas-heretic",
+      "relic_name": "Earring of the Earth-Drake Apostle (Earring of Antharas Analog)",
+      "slot_category": "Epic_Earring",
+      "grade": "S-Grade",
+      "boss_guardian_name": "Earth-Drake Apostle Antharas-Analog",
+      "zone_id": "zone-catacomb-heretic-kiln",
+      "dungeon_id": "zone-catacomb-heretic-kiln",
+      "floor_id": "B3",
+      "loc": "20100:173100",
+      "status_resist_bonuses": [
+        "+40% Stun Resist / +40% Stun Attack",
+        "+40% Bleed Resist / +40% Bleed Attack",
+        "+30% Mental & Derangement Resistance"
+      ],
+      "combat_stat_bonuses": [
+        "+4% Vampiric Rage Melee Life-Drain",
+        "+10% Heal Power Received",
+        "-10% Skill MP Cost & +37 Max MP"
+      ],
+      "drop_chance_rule": "100% Guaranteed 1x per 90-Player Command Channel Kill (192h)"
+    },
+    {
+      "jewelry_id": "jewelry-08-earring-lilith-apostate",
+      "relic_name": "Earring of the Abyssal Lilim Mother (Lilith's Sanctum Earring)",
+      "slot_category": "Epic_Earring",
+      "grade": "S-Grade",
+      "boss_guardian_name": "High Priestess Lilith-Analog",
+      "zone_id": "zone-catacomb-apostate-dynamo",
+      "dungeon_id": "zone-catacomb-apostate-dynamo",
+      "floor_id": "B3",
+      "loc": "150100:-51500",
+      "status_resist_bonuses": [
+        "+35% Sleep & Hold Resistance",
+        "+35% Silence & Fear Resistance",
+        "+30 Dark Element Resistance"
+      ],
+      "combat_stat_bonuses": [
+        "+8% Casting Speed Resonance",
+        "+4% Vampiric Rage Effect",
+        "-8% Magic Skill Reuse Delay"
+      ],
+      "drop_chance_rule": "50% Dusk-Sign Seal Victory Sanctum Drop (Seven-Seals Cycle)"
+    },
+    {
+      "jewelry_id": "jewelry-09-necklace-frintezza-chronometer",
+      "relic_name": "Necklace of the Scarlet Prince (Frintezza's Necklace Analog)",
+      "slot_category": "Epic_Necklace",
+      "grade": "A-Grade",
+      "boss_guardian_name": "Scarlet Halisha & Prince Frintezza-Analog",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "85100:56100",
+      "status_resist_bonuses": [
+        "+25% Sleep / Paralysis / Stun Resistance",
+        "+25% Poison & Bleed Resistance",
+        "+15 Dark Element Resistance"
+      ],
+      "combat_stat_bonuses": [
+        "-5% Physical & Magic Skill Reuse Delay",
+        "+4% Melee Damage Reflect Shield",
+        "+42 Max MP Resonance"
+      ],
+      "drop_chance_rule": "100% Guaranteed 1x per Imperial Tomb Pipe-Organ Raid (48h)"
+    },
+    {
+      "jewelry_id": "jewelry-10-necklace-valakas-caldera",
+      "relic_name": "Necklace of the Fire-Dragon Sovereign (Necklace of Valakas Analog)",
+      "slot_category": "Epic_Necklace",
+      "grade": "S-Grade",
+      "boss_guardian_name": "Fire-Dragon Sovereign Valakas-Analog",
+      "zone_id": "zone-field-caldera-rim",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "181200:-108400",
+      "status_resist_bonuses": [
+        "+40% Sleep Resist / +40% Sleep Attack",
+        "+35 Fire Element Resistance",
+        "+25% Hold & Stun Resistance"
+      ],
+      "combat_stat_bonuses": [
+        "+445 Max HP & +42 Max MP",
+        "+4% P.Atk, +8% M.Atk & +100 Magic Critical Rate",
+        "-10% Skill Reuse Delay & +5% Damage Reflect"
+      ],
+      "drop_chance_rule": "100% Guaranteed 1x per Caldera Lair Command Channel Kill (264h)"
+    },
+    {
+      "jewelry_id": "jewelry-11-necklace-anakim-witch",
+      "relic_name": "Necklace of the Sacred Flame Nephilim (Anakim's Sanctum Necklace)",
+      "slot_category": "Epic_Necklace",
+      "grade": "S-Grade",
+      "boss_guardian_name": "Sacred Flame Nephilim Anakim-Analog",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "54500:-35100",
+      "status_resist_bonuses": [
+        "+35% Paralysis & Root Resistance",
+        "+30 Holy Element Resistance",
+        "+25% Mental Debuff Resistance"
+      ],
+      "combat_stat_bonuses": [
+        "+320 Max HP & +46 Max MP",
+        "-8% Skill Reuse Delay",
+        "+12% Heal Power & Clarity Efficiency"
+      ],
+      "drop_chance_rule": "50% Dawn-Sign Seal Victory Sanctum Drop (Seven-Seals Cycle)"
+    },
+    {
+      "jewelry_id": "jewelry-12-necklace-freya-coral",
+      "relic_name": "Necklace of the Glacial Tide-Queen (Freya's Sanctum Necklace)",
+      "slot_category": "Epic_Necklace",
+      "grade": "S-Grade",
+      "boss_guardian_name": "Glacial Tide-Queen Freya-Analog",
+      "zone_id": "zone-catacomb-dark-omens-coral",
+      "dungeon_id": "zone-catacomb-dark-omens-coral",
+      "floor_id": "B3",
+      "loc": "38700:-29200",
+      "status_resist_bonuses": [
+        "+30% Bleed, Paralysis & Shock Resistance",
+        "+25 Water Element Resistance",
+        "+20% Mental Debuff Resistance"
+      ],
+      "combat_stat_bonuses": [
+        "-5% Magic Skill Reuse Delay",
+        "-5% Magic MP Consumption",
+        "+156 Max HP, +50 Max MP & +2 MEN/+1 INT"
+      ],
+      "drop_chance_rule": "100% Guaranteed 1x per Deep Sanctum Hard-Mode Raid (72h)"
+    }
+  ],
+  "adventurer_vitality_obelisks": [
+    {
+      "obelisk_id": "obelisk-01-lantern-hollow",
+      "town_zone_id": "zone-town-lantern-hollow",
+      "town_name": "Lantern Hollow Village (Human Starter)",
+      "obelisk_tier": "Starter_Apprentice_Coupon_Hub",
+      "guide_npc_name": "Newbie Guide & Adventurer's Envoy Leona",
+      "obelisk_loc": "-84293:243642",
+      "buff_level_range": "Lv.6\u201375 Full Support Suite + Life Cubic (Lv.16\u201334)",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2 (+33 Move Spd)",
+        "Shield Lv.3 & Magic Barrier Lv.2",
+        "Vampiric Rage Lv.4 / Acumen Lv.3",
+        "Life Cubic Heal Summon (Lv.16\u201334)"
+      ],
+      "shadow_weapon_coupon_grade": "D-Grade Apprentice Weapon Exchange Coupon (5x)",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest"
+    },
+    {
+      "obelisk_id": "obelisk-02-porcelain-loom",
+      "town_zone_id": "zone-town-porcelain-loom",
+      "town_name": "Porcelain Loom Sanctuary (Lunar Starter)",
+      "obelisk_tier": "Starter_Apprentice_Coupon_Hub",
+      "guide_npc_name": "Newbie Guide & Moon-Weaver Envoy",
+      "obelisk_loc": "45619:41349",
+      "buff_level_range": "Lv.6\u201375 Mystic & Scout Support Suite + Life Cubic",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2 & Bless the Body/Soul Lv.6",
+        "Acumen Lv.3 & Empower Lv.1",
+        "Clarity & Regeneration Lv.3",
+        "Life Cubic Heal Summon (Lv.16\u201334)"
+      ],
+      "shadow_weapon_coupon_grade": "D-Grade Apprentice Mystic Staff & Bow Coupon (5x)",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest"
+    },
+    {
+      "obelisk_id": "obelisk-03-draft-kiln-post",
+      "town_zone_id": "zone-town-draft-kiln-post",
+      "town_name": "Draft-Kiln Post (Ogre/Orc Starter)",
+      "obelisk_tier": "Starter_Apprentice_Coupon_Hub",
+      "guide_npc_name": "Newbie Guide & Flame-Totem Tutor",
+      "obelisk_loc": "-44989:-113044",
+      "buff_level_range": "Lv.6\u201375 Brawler & Warcryer Support Suite + Life Cubic",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2 & Haste Lv.2",
+        "Vampiric Rage Lv.4 & Berserker Spirit Lv.2",
+        "Shield Lv.3 & Bless the Body Lv.6",
+        "Life Cubic Heal Summon (Lv.16\u201334)"
+      ],
+      "shadow_weapon_coupon_grade": "D-Grade Apprentice Fist & Two-Handed Sword Coupon (5x)",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest"
+    },
+    {
+      "obelisk_id": "obelisk-04-root-train-roundhouse",
+      "town_zone_id": "zone-town-root-train-roundhouse",
+      "town_name": "Root-Train Roundhouse (Dwarf Starter)",
+      "obelisk_tier": "Starter_Apprentice_Coupon_Hub",
+      "guide_npc_name": "Newbie Guide & Iron Gate Mentor",
+      "obelisk_loc": "114903:-178037",
+      "buff_level_range": "Lv.6\u201375 Scavenger & Artisan Support Suite + Life Cubic",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2 & Shield Lv.3",
+        "Haste Lv.2 & Vampiric Rage Lv.4",
+        "Bless the Body Lv.6 & Magic Barrier Lv.2",
+        "Life Cubic Heal Summon (Lv.16\u201334)"
+      ],
+      "shadow_weapon_coupon_grade": "D-Grade Apprentice Polearm & Blunt Hammer Coupon (5x)",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest"
+    },
+    {
+      "obelisk_id": "obelisk-05-carillon-belfry",
+      "town_zone_id": "zone-town-carillon-belfry",
+      "town_name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+      "obelisk_tier": "Starter_Apprentice_Coupon_Hub",
+      "guide_npc_name": "Newbie Guide & Abyssal Chime Tutor",
+      "obelisk_loc": "12195:16970",
+      "buff_level_range": "Lv.6\u201375 Assassin & Dark Mage Support Suite + Life Cubic",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2 & Death Whisper / Guidance",
+        "Vampiric Rage Lv.4 & Acumen Lv.3",
+        "Empower Lv.1 & Magic Barrier Lv.2",
+        "Life Cubic Heal Summon (Lv.16\u201334)"
+      ],
+      "shadow_weapon_coupon_grade": "D-Grade Apprentice Dagger & Dark Tome Coupon (5x)",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest"
+    },
+    {
+      "obelisk_id": "obelisk-06-cinnamon-mill",
+      "town_zone_id": "zone-town-cinnamon-mill",
+      "town_name": "Cinnamon-Mill Haven (Furral Starter)",
+      "obelisk_tier": "Starter_Apprentice_Coupon_Hub",
+      "guide_npc_name": "Newbie Guide & Wind-Tail Envoy",
+      "obelisk_loc": "-118413:46977",
+      "buff_level_range": "Lv.6\u201375 Skirmisher & Warder Support Suite + Life Cubic",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2 & Haste Lv.2",
+        "Vampiric Rage Lv.4 & Shield Lv.3",
+        "Bless the Body/Soul Lv.6 & Magic Barrier Lv.2",
+        "Life Cubic Heal Summon (Lv.16\u201334)"
+      ],
+      "shadow_weapon_coupon_grade": "D-Grade Apprentice Rapier, Ancient Sword & Crossbow Coupon (5x)",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 6h Peace-Zone Rest"
+    },
+    {
+      "obelisk_id": "obelisk-07-kilnwatch-bastion",
+      "town_zone_id": "zone-town-kilnwatch-bastion",
+      "town_name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+      "obelisk_tier": "Regional_Shadow_Weapon_Hub",
+      "guide_npc_name": "Adventurer's Guide Captain & Dion Shadow Quartermaster",
+      "obelisk_loc": "-14421:123684",
+      "buff_level_range": "Lv.6\u201375 Full Convergence Support Suite + Pet Buffs",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2, Shield Lv.3 & Magic Barrier Lv.2",
+        "Haste Lv.2, Vampiric Rage Lv.4 & Berserker Spirit Lv.2",
+        "Acumen Lv.3, Empower Lv.1 & Bless the Soul Lv.6",
+        "Servitor/Pet Haste, Vampiric & Horn Melody Suite"
+      ],
+      "shadow_weapon_coupon_grade": "C-Grade Shadow Weapon Exchange Coupon (Lv.40 Class Transfer)",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 5h Regional Obelisk Rest"
+    },
+    {
+      "obelisk_id": "obelisk-08-glaze-barge-quay",
+      "town_zone_id": "zone-town-glaze-barge-quay",
+      "town_name": "Glaze-Barge Quay (River Trade & Raid Port)",
+      "obelisk_tier": "Regional_Shadow_Weapon_Hub",
+      "guide_npc_name": "Adventurer's Guide & Maritime Shadow Quartermaster",
+      "obelisk_loc": "-81429:151591",
+      "buff_level_range": "Lv.6\u201375 Full Support Suite + Aquatic Stamina Aura",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2 & Kiss of Eva Breath Bonus",
+        "Vampiric Rage Lv.4, Haste Lv.2 & Shield Lv.3",
+        "Acumen Lv.3, Empower Lv.1 & Clarity Resonance",
+        "Life Cubic & Companion Support Suite"
+      ],
+      "shadow_weapon_coupon_grade": "C-Grade & B-Grade Shadow Weapon Exchange Coupon",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 5h Regional Obelisk Rest"
+    },
+    {
+      "obelisk_id": "obelisk-09-saffron-press",
+      "town_zone_id": "zone-town-saffron-press",
+      "town_name": "Saffron Press Village (Manor Agricultural Hub)",
+      "obelisk_tier": "Regional_Shadow_Weapon_Hub",
+      "guide_npc_name": "Adventurer's Guide & Freeholds Militia Envoy",
+      "obelisk_loc": "17163:170298",
+      "buff_level_range": "Lv.6\u201375 Solo & Duo Spoil Support Suite + Life Cubic",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2, Haste Lv.2 & Vampiric Rage Lv.4",
+        "Shield Lv.3, Magic Barrier Lv.2 & Bless the Body Lv.6",
+        "Acumen Lv.3 & Regeneration Lv.3",
+        "Life Cubic Heal Summon & Penalty Recovery Scroll Exchange"
+      ],
+      "shadow_weapon_coupon_grade": "C-Grade Shadow Polearm, Dual-Sword & Dagger Coupon",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 5h Regional Obelisk Rest"
+    },
+    {
+      "obelisk_id": "obelisk-10-pinion-terminus",
+      "town_zone_id": "zone-town-pinion-terminus",
+      "town_name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+      "obelisk_tier": "Regional_Shadow_Weapon_Hub",
+      "guide_npc_name": "Adventurer's Guide & Steppe Vanguard Quartermaster",
+      "obelisk_loc": "82155:148805",
+      "buff_level_range": "Lv.6\u201375 High-Plains Raid Support Suite + Mount Buffs",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2, Haste Lv.2 & Guidance Resonance",
+        "Vampiric Rage Lv.4, Berserker Spirit Lv.2 & Shield Lv.3",
+        "Acumen Lv.3, Empower Lv.1 & Magic Barrier Lv.2",
+        "Strider & Fenrir Companion Support Buff Suite"
+      ],
+      "shadow_weapon_coupon_grade": "B-Grade Shadow Weapon & Shadow Accessory Exchange",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 4.5h Regional Obelisk Rest"
+    },
+    {
+      "obelisk_id": "obelisk-11-escapement-anvil",
+      "town_zone_id": "zone-town-escapement-anvil",
+      "town_name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+      "obelisk_tier": "Regional_Shadow_Weapon_Hub",
+      "guide_npc_name": "Adventurer's Guide & Oren Tower Warden",
+      "obelisk_loc": "82847:53412",
+      "buff_level_range": "Lv.6\u201375 Frontier & Tower Support Suite + Death Penalty Cure",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2, Shield Lv.3 & Magic Barrier Lv.2",
+        "Haste Lv.2, Vampiric Rage Lv.4 & Focus Resonance",
+        "Acumen Lv.3, Empower Lv.1 & Bless the Body/Soul Lv.6",
+        "Scroll: Recovery (C/B/A-Grade Death Penalty Cure) Exchange"
+      ],
+      "shadow_weapon_coupon_grade": "B-Grade Shadow Armament Coupon (Keshanberk / Valhalla / Kris)",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 4.5h Regional Obelisk Rest"
+    },
+    {
+      "obelisk_id": "obelisk-12-inductor-switchyard",
+      "town_zone_id": "zone-town-inductor-switchyard",
+      "town_name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+      "obelisk_tier": "Capital_Stage4_Vitality_Sanctuary",
+      "guide_npc_name": "Grand Adventurer's Guide & Giran Vitality Arbiter",
+      "obelisk_loc": "147139:-54981",
+      "buff_level_range": "Lv.6\u201375 Capital Full Support Suite + Vitality Replenishing Tonic",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2, Haste Lv.2, Vampiric Rage Lv.4 & Shield Lv.3",
+        "Acumen Lv.3, Empower Lv.1, Magic Barrier Lv.2 & Clarity",
+        "Bless the Body Lv.6, Bless the Soul Lv.6 & Berserker Spirit Lv.2",
+        "Vitality Maintaining Potion (30m Stage-4 Lock) Exchange"
+      ],
+      "shadow_weapon_coupon_grade": "B-Grade Shadow Armament + Vitality Replenishing Herb Tonic",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 3.5h Capital Sanctuary Rest + Raid Vitality Bonus"
+    },
+    {
+      "obelisk_id": "obelisk-13-torque-balance-citadel",
+      "town_zone_id": "zone-town-torque-balance-citadel",
+      "town_name": "Town of Torque-Balance Citadel (Human Ancestral Expedition Hub)",
+      "obelisk_tier": "Capital_Stage4_Vitality_Sanctuary",
+      "guide_npc_name": "Grand Adventurer's Guide & Aden Royal Vitality Prelate",
+      "obelisk_loc": "116131:-18174",
+      "buff_level_range": "Lv.6\u201375 Royal Citadel Full Support + Subclass Vitality Aura",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2, Haste Lv.2, Vampiric Rage Lv.4 & Shield Lv.3",
+        "Acumen Lv.3, Empower Lv.1 & Magic Barrier Lv.2",
+        "Royal Knight/Warder Defense & Elemental Ward Resonance",
+        "Scroll: Recovery (A/S-Grade) & Pailaka Vitality Refill"
+      ],
+      "shadow_weapon_coupon_grade": "B-Grade Shadow Armament + Royal Vitality Replenishing Tonic",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 3.5h Capital Sanctuary Rest + Raid Vitality Bonus"
+    },
+    {
+      "obelisk_id": "obelisk-14-starfall-haven",
+      "town_zone_id": "zone-town-starfall-haven",
+      "town_name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+      "obelisk_tier": "Capital_Stage4_Vitality_Sanctuary",
+      "guide_npc_name": "Grand Adventurer's Guide & Rune Astral Vitality Keeper",
+      "obelisk_loc": "43523:-47667",
+      "buff_level_range": "Lv.6\u201375 Astral Sanctuary Support + Nevit's Blessing Hourglass",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2, Haste Lv.2, Vampiric Rage Lv.4 & Shield Lv.3",
+        "Acumen Lv.3, Empower Lv.1, Magic Barrier Lv.2 & Bless Body/Soul",
+        "Nevit's Hourglass (+50% Bonus EXP / Zero Vitality Drain 1h)",
+        "Servitor/Companion Full Awakening Support Suite"
+      ],
+      "shadow_weapon_coupon_grade": "B-Grade Shadow Armament + Nevit's Voice (+10 Rec. Bonus) & Tonic",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 3h Capital Sanctuary Rest + Raid Boss Refill"
+    },
+    {
+      "obelisk_id": "obelisk-15-crown-beacon",
+      "town_zone_id": "zone-town-crown-beacon",
+      "town_name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+      "obelisk_tier": "Capital_Stage4_Vitality_Sanctuary",
+      "guide_npc_name": "Sovereign Adventurer's Herald & High-Halo Vitality Archon",
+      "obelisk_loc": "147615:27040",
+      "buff_level_range": "Lv.6\u201375 Sovereign Full Support + Stage-4 Vitality Surge",
+      "granted_buff_suite": [
+        "Wind Walk Lv.2, Haste Lv.2, Vampiric Rage Lv.4 & Shield Lv.3",
+        "Acumen Lv.3, Empower Lv.1, Magic Barrier Lv.2 & Berserker Spirit Lv.2",
+        "Sovereign Vitality Surge (+300% Stage-4 EXP Lock & +30% Drop Aura)",
+        "Scroll: Recovery (S-Grade) & Olympiad Hero Blessing"
+      ],
+      "shadow_weapon_coupon_grade": "Apex B/A-Grade Shadow Armament + Sovereign Stage-4 Vitality Elixir",
+      "vitality_recovery_rate": "Stage 0 -> Stage 4 (+300% EXP) in 3h Capital Sanctuary Rest + 100% Raid Refill"
+    }
   ]
 }
