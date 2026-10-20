@@ -179,6 +179,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/kamalokaPailakaInstanceSpec" }
     },
+    "forgotten_scroll_skill_sanctums": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/forgottenScrollSkillSanctumSpec" }
+    },
+    "elemental_stone_caravan_quarries": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": { "$ref": "#/$defs/elementalStoneCaravanQuarrySpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2588,6 +2600,106 @@
         "party_size_rule": { "type": "string" },
         "reset_cooldown": { "type": "string" },
         "completion_reward": { "type": "string" }
+      }
+    },
+    "forgottenScrollSkillSanctumSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sanctum_id",
+        "scroll_or_tome_name",
+        "mastery_category",
+        "unlock_level",
+        "drop_zone_id",
+        "drop_dungeon_id",
+        "drop_floor_id",
+        "loc",
+        "trainer_town_zone_id",
+        "unlocked_skills",
+        "drop_guardian_mob",
+        "drop_rate_summary"
+      ],
+      "properties": {
+        "sanctum_id": { "type": "string" },
+        "scroll_or_tome_name": { "type": "string" },
+        "mastery_category": {
+          "type": "string",
+          "enum": [
+            "Martial_Will_Scroll",
+            "Arcane_Enlightenment_Scroll",
+            "Ancient_Tome_Codex_Sanctum"
+          ]
+        },
+        "unlock_level": { "type": "integer", "minimum": 76, "maximum": 85 },
+        "drop_zone_id": { "type": "string" },
+        "drop_dungeon_id": { "type": "string" },
+        "drop_floor_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "trainer_town_zone_id": { "type": "string" },
+        "unlocked_skills": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "drop_guardian_mob": { "type": "string" },
+        "drop_rate_summary": { "type": "string" }
+      }
+    },
+    "elementalStoneCaravanQuarrySpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quarry_id",
+        "quarry_name",
+        "quarry_category",
+        "element_type",
+        "attribute_cap_range",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "attribute_master_npc",
+        "hourly_stone_yield",
+        "combat_multiplier_effect"
+      ],
+      "properties": {
+        "quarry_id": { "type": "string" },
+        "quarry_name": { "type": "string" },
+        "quarry_category": {
+          "type": "string",
+          "enum": [
+            "Elemental_Stone_Quarry_150",
+            "Elemental_Crystal_Sanctum_300",
+            "Caravan_Trust_Oasis"
+          ]
+        },
+        "element_type": {
+          "type": "string",
+          "enum": [
+            "Fire",
+            "Water",
+            "Wind",
+            "Earth",
+            "Holy",
+            "Dark",
+            "Omni_Caravan"
+          ]
+        },
+        "attribute_cap_range": {
+          "type": "string",
+          "enum": [
+            "Lv.1–4 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+            "Lv.5–7 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+            "Caravan Trust Stage 1 -> 11 Unlock"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "attribute_master_npc": { "type": "string" },
+        "hourly_stone_yield": { "type": "string" },
+        "combat_multiplier_effect": { "type": "string" }
       }
     }
   }

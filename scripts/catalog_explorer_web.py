@@ -86,15 +86,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas40DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas42DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas44DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas46DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 20)),
+        "wave": int(iter_state.get("wave", 21)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"46-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"44-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"42-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"40-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -108,7 +110,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D44 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D46 Verified"
         ),
     }
     return merged
@@ -4370,7 +4372,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D44 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D46 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4433,6 +4435,8 @@ let ATLAS_EPIC_JEWELRY_MODE = 'All';
 let ATLAS_VITALITY_OBELISK_MODE = 'All';
 let ATLAS_ARMOR_SET_MODE = 'All';
 let ATLAS_KAMALOKA_MODE = 'All';
+let ATLAS_SKILL_SCROLL_MODE = 'All';
+let ATLAS_ELEMENTAL_QUARRY_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4467,6 +4471,8 @@ const ATLAS_STATE_STORE = {
   vitalityObeliskMode: 'All',              // D42: Active 15-Town Adventurer's Guide & Vitality Obelisk Selector ('Off' | 'All' | 'Starter_Apprentice_Coupon_Hub' | 'Regional_Shadow_Weapon_Hub' | 'Capital_Stage4_Vitality_Sanctuary')
   armorSetMode: 'All',                     // D43: Active 16-Set Armor & Masterwork Forge Selector ('Off' | 'All' | 'Heavy_Vanguard_Set' | 'Light_Skirmisher_Set' | 'Mystic_Robe_Set')
   kamalokaMode: 'All',                     // D44: Active 15-Portal Kamaloka, Pailaka & Seed Selector ('Off' | 'All' | 'Kamaloka_Abyss_Hall' | 'Pailaka_Vitality_Trial' | 'Seed_Delusion_Conduit')
+  skillScrollMode: 'All',                  // D45: Active 16-Sanctum Forgotten Scroll & Skill Mastery Selector ('Off' | 'All' | 'Martial_Will_Scroll' | 'Arcane_Enlightenment_Scroll' | 'Ancient_Tome_Codex_Sanctum')
+  elementalQuarryMode: 'All',              // D46: Active 14-Node Elemental Stone/Crystal & Caravan Quarry Selector ('Off' | 'All' | 'Elemental_Stone_Quarry_150' | 'Elemental_Crystal_Sanctum_300' | 'Caravan_Trust_Oasis')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4474,6 +4480,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasSkillScrollMode(modeId) {
+  ATLAS_SKILL_SCROLL_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.skillScrollMode = ATLAS_SKILL_SCROLL_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasElementalQuarryMode(modeId) {
+  ATLAS_ELEMENTAL_QUARRY_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.elementalQuarryMode = ATLAS_ELEMENTAL_QUARRY_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasArmorSetMode(modeId) {
   ATLAS_ARMOR_SET_MODE = String(modeId || 'All');
@@ -8627,6 +8647,196 @@ function renderAtlasKamalokaBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasSkillScrollBarHtml(tatlas) {
+  const sanctums = (tatlas && tatlas.forgotten_scroll_skill_sanctums) || [];
+  if (!sanctums.length) return '';
+
+  const curMode = ATLAS_SKILL_SCROLL_MODE || ATLAS_STATE_STORE.skillScrollMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '📖 All 16 Sanctums' },
+    { id: 'Martial_Will_Scroll', label: '⚔️ 6 Martial Wills' },
+    { id: 'Arcane_Enlightenment_Scroll', label: '🔮 5 Arcane Enlightenment' },
+    { id: 'Ancient_Tome_Codex_Sanctum', label: '📜 5 Ancient Tomes & Codices' }
+  ];
+
+  const filteredSanctums = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? sanctums : sanctums.filter(s => s.mastery_category === curMode));
+
+  const featuredSanctums = curMode === 'All'
+    ? [
+        ...sanctums.filter(s => s.mastery_category === 'Martial_Will_Scroll').slice(0, 2),
+        ...sanctums.filter(s => s.mastery_category === 'Arcane_Enlightenment_Scroll').slice(0, 1),
+        ...sanctums.filter(s => s.mastery_category === 'Ancient_Tome_Codex_Sanctum').slice(0, 1)
+      ]
+    : filteredSanctums.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasSkillScrollBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1a102c;border:1px solid rgba(192,132,252,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#e9d5ff">📖 16-SANCTUM FORGOTTEN SCROLL, ANCIENT TOME &amp; LV.81–83 SKILL MASTERY MATRIX (D45 · 16 SANCTUMS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasSkillScrollMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(192,132,252,0.45)'};background:${isAct ? '#7e22ce' : '#090d14'};color:${isAct ? '#ffffff' : '#f3e8ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 MARTIAL WILLS + 5 ARCANE ENLIGHTENMENT + 5 ANCIENT TOMES &amp; GIANT'S CODEX SANCTUMS (LV.76–83)
+        </span>
+      </div>
+
+      ${featuredSanctums.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredSanctums.map(s => {
+            const isMartial = s.mastery_category === 'Martial_Will_Scroll';
+            const isArcane = s.mastery_category === 'Arcane_Enlightenment_Scroll';
+            const catCol = isMartial ? '#f97316' : (isArcane ? '#c084fc' : '#fde047');
+            const catIcon = isMartial ? '⚔️' : (isArcane ? '🔮' : '📜');
+            const tz = byZid[s.trainer_town_zone_id] || {};
+            const townNode = tz.studio_node_id || s.trainer_town_zone_id.replace('zone-', '');
+            const trainerJumpJs = `focusTownStreetBlueprint('${escapeHtml(townNode)}', '${escapeHtml(tz.loc_coord || s.loc)}')`;
+            const dropJumpJs = s.drop_dungeon_id
+              ? `openDungeonSubMap('${escapeHtml(s.drop_dungeon_id)}', '${escapeHtml(s.drop_floor_id || 'B3')}')`
+              : `focusFieldTacticalBlueprint('${escapeHtml(s.drop_zone_id)}', '${escapeHtml(s.loc)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(s.scroll_or_tome_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">Lv.${escapeHtml(String(s.unlock_level))}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#e9d5ff;margin-top:1px">
+                    ✨ ${escapeHtml(((s.unlocked_skills && s.unlocked_skills[0]) || '').slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    👾 ${escapeHtml(s.drop_guardian_mob.slice(0, 32))} · 🎲 ${escapeHtml(s.drop_rate_summary.slice(0, 28))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${dropJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#3b0764;color:#f3e8ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${s.drop_dungeon_id ? `🕳️ Drop Sanctum (${escapeHtml(s.drop_floor_id || 'B3')})` : '🌾 Drop Field (4.8×)'}
+                  </button>
+                  <button type="button" onclick="${trainerJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid #38bdf8;background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    🏛️ Trainer Town (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasElementalQuarryBarHtml(tatlas) {
+  const quarries = (tatlas && tatlas.elemental_stone_caravan_quarries) || [];
+  if (!quarries.length) return '';
+
+  const curMode = ATLAS_ELEMENTAL_QUARRY_MODE || ATLAS_STATE_STORE.elementalQuarryMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🔥 All 14 Quarries' },
+    { id: 'Elemental_Stone_Quarry_150', label: '🔥💧🌪️🪨 6 Elemental Stones (0–150)' },
+    { id: 'Elemental_Crystal_Sanctum_300', label: '💎 6 Elemental Crystals (150–300)' },
+    { id: 'Caravan_Trust_Oasis', label: '🐪 2 Caravan Trust Oases' }
+  ];
+
+  const filteredQuarries = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? quarries : quarries.filter(q => q.quarry_category === curMode));
+
+  const featuredQuarries = curMode === 'All'
+    ? [
+        ...quarries.filter(q => q.quarry_category === 'Elemental_Stone_Quarry_150').slice(0, 2),
+        ...quarries.filter(q => q.quarry_category === 'Elemental_Crystal_Sanctum_300').slice(0, 1),
+        ...quarries.filter(q => q.quarry_category === 'Caravan_Trust_Oasis').slice(0, 1)
+      ]
+    : filteredQuarries.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasElementalQuarryBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#24110b;border:1px solid rgba(251,146,60,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fed7aa">🔥 14-NODE ELEMENTAL ATTRIBUTE STONE/CRYSTAL (150/300) &amp; CARAVAN QUARRY MATRIX (D46 · 14 QUARRIES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasElementalQuarryMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(251,146,60,0.45)'};background:${isAct ? '#c2410c' : '#090d14'};color:${isAct ? '#ffffff' : '#ffedd5'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 ELEMENTAL STONE QUARRIES (0–150) + 6 CRYSTAL SANCTUMS (150–300) + 2 CARAVAN TRUST OASES (STAGE 1–11)
+        </span>
+      </div>
+
+      ${featuredQuarries.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredQuarries.map(q => {
+            const isStone = q.quarry_category === 'Elemental_Stone_Quarry_150';
+            const isCrystal = q.quarry_category === 'Elemental_Crystal_Sanctum_300';
+            const catCol = isStone ? '#fb923c' : (isCrystal ? '#38bdf8' : '#facc15');
+            const catIcon = isStone ? '🔥' : (isCrystal ? '💎' : '🐪');
+            const zObj = byZid[q.zone_id] || {};
+            const zidStr = String(q.zone_id || '');
+            let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(q.loc)}')`;
+            if (q.dungeon_id) {
+              jumpJs = `openDungeonSubMap('${escapeHtml(q.dungeon_id)}', '${escapeHtml(q.floor_id || '3F')}')`;
+            } else if (zidStr.startsWith('zone-town-')) {
+              jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(q.loc)}')`;
+            } else if (zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(q.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(q.quarry_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(q.element_type)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fed7aa;margin-top:1px">
+                    ⚖️ ${escapeHtml(q.attribute_master_npc.slice(0, 30))} · ⛏️ ${escapeHtml(q.hourly_stone_yield.slice(0, 28))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ⚡ ${escapeHtml(q.combat_multiplier_effect.slice(0, 56))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#431407;color:#ffedd5;font-size:8px;font-weight:800;cursor:pointer">
+                    ${q.dungeon_id ? `🕳️ Quarry Floor (${escapeHtml(q.floor_id || '3F')})` : `${catIcon} Warp to Quarry / Oasis (5.2×)`}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -8775,6 +8985,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasVitalityObeliskBarHtml(tatlas)}
       ${renderAtlasArmorSetBarHtml(tatlas)}
       ${renderAtlasKamalokaBarHtml(tatlas)}
+      ${renderAtlasSkillScrollBarHtml(tatlas)}
+      ${renderAtlasElementalQuarryBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -11381,6 +11593,74 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D45: Interactive 16-Sanctum Forgotten Scroll, Ancient Tome & Lv.81–83 Skill Mastery Overlay (`studioForgottenScrollOverlay`)
+  const scrollSanctumRows = (tatlas && tatlas.forgotten_scroll_skill_sanctums) || [];
+  const curSkillScrollMode = ATLAS_SKILL_SCROLL_MODE || ATLAS_STATE_STORE.skillScrollMode || 'All';
+  const activeScrollSanctums = curSkillScrollMode === 'Off'
+    ? []
+    : (curSkillScrollMode === 'All'
+      ? scrollSanctumRows
+      : scrollSanctumRows.filter(s => s.mastery_category === curSkillScrollMode));
+  const forgottenScrollOverlaySvg = `
+    <g id="studioForgottenScrollOverlay">
+      ${activeScrollSanctums.map(s => {
+        const sc = clampWorldLocCoord(s.loc || '-84120:243500');
+        const tz = allZonesById[s.trainer_town_zone_id] || {};
+        const tc = clampWorldLocCoord(tz.loc_coord || '-84120:243500');
+        const isMartial = s.mastery_category === 'Martial_Will_Scroll';
+        const isArcane = s.mastery_category === 'Arcane_Enlightenment_Scroll';
+        const colHex = isMartial ? '#f97316' : (isArcane ? '#c084fc' : '#fde047');
+        const iconTxt = isMartial ? '⚔️' : (isArcane ? '🔮' : '📜');
+        const jumpJs = s.drop_dungeon_id
+          ? `openDungeonSubMap('${escapeHtml(s.drop_dungeon_id)}', '${escapeHtml(s.drop_floor_id || 'B3')}')`
+          : `focusFieldTacticalBlueprint('${escapeHtml(s.drop_zone_id)}', '${escapeHtml(s.loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <line x1="${sc.svgX}" y1="${sc.svgY}" x2="${tc.svgX}" y2="${tc.svgY}" stroke="${colHex}" stroke-width="1.5" stroke-dasharray="4 2" opacity="0.78"/>
+            <circle cx="${sc.svgX}" cy="${sc.svgY}" r="10.6" fill="rgba(88,28,135,0.40)" stroke="${colHex}" stroke-width="1.8"/>
+            <text x="${sc.svgX}" y="${sc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D46: Interactive 14-Node Elemental Attribute Stone/Crystal (150/300) & Caravan Quarry Overlay (`studioElementalQuarryOverlay`)
+  const quarryRows = (tatlas && tatlas.elemental_stone_caravan_quarries) || [];
+  const curQuarryMode = ATLAS_ELEMENTAL_QUARRY_MODE || ATLAS_STATE_STORE.elementalQuarryMode || 'All';
+  const activeQuarries = curQuarryMode === 'Off'
+    ? []
+    : (curQuarryMode === 'All'
+      ? quarryRows
+      : quarryRows.filter(q => q.quarry_category === curQuarryMode));
+  const elementalQuarryOverlaySvg = `
+    <g id="studioElementalQuarryOverlay">
+      ${activeQuarries.map(q => {
+        const qc = clampWorldLocCoord(q.loc || '-84120:243500');
+        const zObj = allZonesById[q.zone_id] || {};
+        const zidStr = String(q.zone_id || '');
+        const isStone = q.quarry_category === 'Elemental_Stone_Quarry_150';
+        const isCrystal = q.quarry_category === 'Elemental_Crystal_Sanctum_300';
+        const colHex = isStone ? '#fb923c' : (isCrystal ? '#38bdf8' : '#facc15');
+        const iconTxt = isStone ? '🔥' : (isCrystal ? '💎' : '🐪');
+        let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(q.loc)}')`;
+        if (q.dungeon_id) {
+          jumpJs = `openDungeonSubMap('${escapeHtml(q.dungeon_id)}', '${escapeHtml(q.floor_id || '3F')}')`;
+        } else if (zidStr.startsWith('zone-town-')) {
+          jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(q.loc)}')`;
+        } else if (zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(q.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${qc.svgX}" cy="${qc.svgY}" r="10.8" fill="rgba(194,65,12,0.38)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${qc.svgX}" y="${qc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -11405,6 +11685,8 @@ function renderDedicatedWorldAtlas() {
     ${vitalityObeliskOverlaySvg}
     ${armorSetMasterworkOverlaySvg}
     ${kamalokaPailakaOverlaySvg}
+    ${forgottenScrollOverlaySvg}
+    ${elementalQuarryOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

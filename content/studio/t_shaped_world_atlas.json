@@ -52651,5 +52651,492 @@
       "reset_cooldown": "Wed/Sat 06:30 UTC Instance Reset",
       "completion_reward": "Vesper Noble Enhancement Stones, 150+ Attribute Crystals & TiatWeapons"
     }
+  ],
+  "forgotten_scroll_skill_sanctums": [
+    {
+      "sanctum_id": "scroll-sanctum-01-fighters-will",
+      "scroll_or_tome_name": "Forgotten Scroll: Fighter's Will & Expose Weak Point",
+      "mastery_category": "Martial_Will_Scroll",
+      "unlock_level": 81,
+      "drop_zone_id": "zone-dungeon-star-heart-nave",
+      "drop_dungeon_id": "zone-dungeon-star-heart-nave",
+      "drop_floor_id": "3F",
+      "loc": "149406:28227",
+      "trainer_town_zone_id": "zone-town-escapement-anvil",
+      "unlocked_skills": [
+        "Fighter's Will (+100 P.Atk / +10% Atk.Spd & +20% Skill Power Proc)",
+        "Expose Weak Point (-20% Target P.Def Counter Trigger)",
+        "Final Secret (+30% Physical Skill & Normal Damage in PvP)"
+      ],
+      "drop_guardian_mob": "Archangel Galaxia & Platinum Tribe Overlord",
+      "drop_rate_summary": "1.45% Sanctum Drop / 0.42% Spoil (3F Apex Choir)"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-02-archers-will",
+      "scroll_or_tome_name": "Forgotten Scroll: Archer's Will & Seven Arrow Mastery",
+      "mastery_category": "Martial_Will_Scroll",
+      "unlock_level": 81,
+      "drop_zone_id": "zone-catacomb-dark-omens-coral",
+      "drop_dungeon_id": "zone-catacomb-dark-omens-coral",
+      "drop_floor_id": "B3",
+      "loc": "38617:-29081",
+      "trainer_town_zone_id": "zone-town-starfall-haven",
+      "unlocked_skills": [
+        "Archer's Will (+50 Bow/Crossbow Range, +8% Accuracy & +20% Skill Power Proc)",
+        "Seven Arrow (High-Burst 7-Volley Long-Range Barrage)",
+        "Silent Mind (Zero MP Consumption on Toggle Stance)"
+      ],
+      "drop_guardian_mob": "Crypt Archon Nephilim & Dark Omen Sentinel",
+      "drop_rate_summary": "1.38% Catacomb Drop / 250x Ancient Tome Exchange"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-03-sixth-sense-evasion",
+      "scroll_or_tome_name": "Forgotten Scroll: Sixth Sense, Hide & Dual Dagger Mastery",
+      "mastery_category": "Martial_Will_Scroll",
+      "unlock_level": 81,
+      "drop_zone_id": "zone-catacomb-branded-bellows",
+      "drop_dungeon_id": "zone-catacomb-branded-bellows",
+      "drop_floor_id": "B3",
+      "loc": "112628:18011",
+      "trainer_town_zone_id": "zone-town-inductor-switchyard",
+      "unlocked_skills": [
+        "Sixth Sense (+15 Evasion Rating when HP < 30%)",
+        "Dual Dagger Mastery (+5% Dual-Dagger P.Atk & +5% Deadly Blow Rate)",
+        "Hide (30s Complete Stealth & Ambush Speed Reset)"
+      ],
+      "drop_guardian_mob": "Lilim Great Mystic & Branded Vault Executioner",
+      "drop_rate_summary": "1.50% Sanctum Drop / 0.55% Spoil (B3 Inner Crypt)"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-04-deflect-magic-vanguard",
+      "scroll_or_tome_name": "Forgotten Scroll: Deflect Magic, Challenge for Fate & Tank Will",
+      "mastery_category": "Martial_Will_Scroll",
+      "unlock_level": 81,
+      "drop_zone_id": "zone-dungeon-chronometer-foundry",
+      "drop_dungeon_id": "zone-dungeon-chronometer-foundry",
+      "drop_floor_id": "3F",
+      "loc": "85039:56203",
+      "trainer_town_zone_id": "zone-town-torque-balance-citadel",
+      "unlocked_skills": [
+        "Deflect Magic (+100% Magic Damage Reflection Resistance Check)",
+        "Protection of Rune / Elemental / Alignment (+15% M.Def & +1000 M.Def Proc)",
+        "Challenge for Fate (Mass Aggro + 15s Aegis P.Def/M.Def Surge)"
+      ],
+      "drop_guardian_mob": "Hallate's Royal Guard & Chronometer Arbiter",
+      "drop_rate_summary": "1.65% Sanctum Drop / 100% Raid Chest Guarantee"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-05-exciting-adventure-wind-riding",
+      "scroll_or_tome_name": "Forgotten Scroll: Exciting Adventure, Wind Riding & Ghost Walking",
+      "mastery_category": "Martial_Will_Scroll",
+      "unlock_level": 81,
+      "drop_zone_id": "zone-field-aurora-tether",
+      "drop_dungeon_id": "",
+      "drop_floor_id": "",
+      "loc": "152650:30995",
+      "trainer_town_zone_id": "zone-town-crown-beacon",
+      "unlocked_skills": [
+        "Exciting Adventure (+20 Speed, +15 Evasion, +30% Blow Rate, 75% Skill Dodge)",
+        "Wind Riding (+25 Speed, +20 Evasion, +40% Lethal Strike Rate)",
+        "Ghost Walking (+33 Speed, +15 Evasion, 80% Physical Skill Evasion)"
+      ],
+      "drop_guardian_mob": "Tether Chimeras & Celtic Guardian Commander",
+      "drop_rate_summary": "1.12% Field Elite Drop (Aurora Tether High Plateau)"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-06-hell-scream-flame-icon",
+      "scroll_or_tome_name": "Forgotten Scroll: Flame Icon, Spirit of Shilen & Hell Scream",
+      "mastery_category": "Martial_Will_Scroll",
+      "unlock_level": 83,
+      "drop_zone_id": "zone-catacomb-forbidden-path-orrery",
+      "drop_dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "drop_floor_id": "B3",
+      "loc": "18661:-64413",
+      "trainer_town_zone_id": "zone-town-pinion-terminus",
+      "unlocked_skills": [
+        "Flame Icon / Spirit of Shilen (+30% Party Atk.Spd, +100 Crit Rate, +2x Crit Dmg)",
+        "Hell Scream (-30% Enemy P.Def/M.Def + AoE Fear Terror)",
+        "Vanguard Demolition Impact (5000 Power AoE Physical Cleave)"
+      ],
+      "drop_guardian_mob": "Anakim's Nemesis & Forbidden Path Sovereign",
+      "drop_rate_summary": "0.95% B3 MVP/Raid Drop (Lv.83 Apex Martial Tome)"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-07-enlightenment-wizard",
+      "scroll_or_tome_name": "Forgotten Scroll: Enlightenment (Wizard) & Magician's Will",
+      "mastery_category": "Arcane_Enlightenment_Scroll",
+      "unlock_level": 81,
+      "drop_zone_id": "zone-catacomb-witch-pendulum",
+      "drop_dungeon_id": "zone-catacomb-witch-pendulum",
+      "drop_floor_id": "B3",
+      "loc": "54472:-35021",
+      "trainer_town_zone_id": "zone-town-crown-beacon",
+      "unlocked_skills": [
+        "Enlightenment \u2014 Wizard (+40% M.Atk, +50% Cast.Spd, +50% Magic Crit, -90% MP Cost for 20s)",
+        "Magician's Will (+5% M.Atk, +5% Cast.Spd, +5% Magic Crit Rate, -5% MP Cost)",
+        "Arcane Roar (+5% Elemental Resistance & +3% M.Atk Passive)"
+      ],
+      "drop_guardian_mob": "Witch Catacomb Hierophant & Gigantic Golem",
+      "drop_rate_summary": "1.40% Sanctum Drop / 0.48% Spoil (B3 Witch Altar)"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-08-meteor-star-fall",
+      "scroll_or_tome_name": "Forgotten Scroll: Meteor, Star Fall & Aura Symphony",
+      "mastery_category": "Arcane_Enlightenment_Scroll",
+      "unlock_level": 81,
+      "drop_zone_id": "zone-field-cinder-apron",
+      "drop_dungeon_id": "",
+      "drop_floor_id": "",
+      "loc": "-6117:131571",
+      "trainer_town_zone_id": "zone-town-saffron-press",
+      "unlocked_skills": [
+        "Meteor (Continuous Fire Meteor Bombardment + 20% P.Def Crush)",
+        "Star Fall (Arcane Celestial Star Barrage ignoring 30% M.Def)",
+        "Blizzard / Demon Wind (AoE Elemental Vortex + -50% Speed Freeze/Wind Shear)"
+      ],
+      "drop_guardian_mob": "Battered Chimera & Cinder Apron Demon Prince",
+      "drop_rate_summary": "1.05% Elite Drop / 400x Ancient Tome of the Demon"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-09-enlightenment-healer-turn-stone",
+      "scroll_or_tome_name": "Forgotten Scroll: Enlightenment (Healer), Sublime Self-Sacrifice & Turn to Stone",
+      "mastery_category": "Arcane_Enlightenment_Scroll",
+      "unlock_level": 81,
+      "drop_zone_id": "zone-catacomb-apostate-dynamo",
+      "drop_dungeon_id": "zone-catacomb-apostate-dynamo",
+      "drop_floor_id": "B3",
+      "loc": "150094:-51437",
+      "trainer_town_zone_id": "zone-town-porcelain-loom",
+      "unlocked_skills": [
+        "Enlightenment \u2014 Healer (+10% M.Atk, +40% Heal Power, +50% Cast.Spd, -90% MP Cost)",
+        "Turn to Stone (8s Self-Petrification Invulnerability against Lethal Burst)",
+        "Sublime Self-Sacrifice (Full Party Invincibility + 100% HP/MP/CP Restoration)"
+      ],
+      "drop_guardian_mob": "Apostate High Confessor & Seal Dynamo Guardian",
+      "drop_rate_summary": "1.52% Sanctum Drop (B3 Apostate Inner Sanctum)"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-10-servitor-barrier-excessive-loyalty",
+      "scroll_or_tome_name": "Forgotten Scroll: Servitor Barrier, Mutual Response & Spirit of the Nabir",
+      "mastery_category": "Arcane_Enlightenment_Scroll",
+      "unlock_level": 81,
+      "drop_zone_id": "zone-field-kelp-spiral-reef",
+      "drop_dungeon_id": "",
+      "drop_floor_id": "",
+      "loc": "-52095:-138845",
+      "trainer_town_zone_id": "zone-town-glaze-barge-quay",
+      "unlocked_skills": [
+        "Servitor Barrier (30s Summon Celestial Shield Invulnerability)",
+        "Excessive Loyalty (+35% Servitor P.Atk/M.Atk when Master takes Damage)",
+        "Mutual Response (Restores Master & Summon HP/MP on Critical Hit)"
+      ],
+      "drop_guardian_mob": "Seed of Infinity Tumor Warden & Reef Leviathan",
+      "drop_rate_summary": "1.25% Reef Elite Drop / Officer Tepios Supply Reward"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-11-great-fury-chant-of-movement",
+      "scroll_or_tome_name": "Forgotten Scroll: Great Fury, Chant of Combat & Seal of Limit",
+      "mastery_category": "Arcane_Enlightenment_Scroll",
+      "unlock_level": 83,
+      "drop_zone_id": "zone-catacomb-heretic-kiln",
+      "drop_dungeon_id": "zone-catacomb-heretic-kiln",
+      "drop_floor_id": "B3",
+      "loc": "20116:173147",
+      "trainer_town_zone_id": "zone-town-draft-kiln-post",
+      "unlocked_skills": [
+        "Great Fury (Triggers +50% Party Attack Spd upon Burning Chop Hit)",
+        "Seal of Limit (Blocks 70% CP/HP/MP Recovery on Enemy Raid/PvP Targets)",
+        "Counter Critical (+100% Received Melee Crit Damage Bonus Proc for Party)"
+      ],
+      "drop_guardian_mob": "Heretic High Inquisitor & Flame-Kiln Overlord",
+      "drop_rate_summary": "1.10% B3 Sanctum Drop / Orc Mystic High Altar"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-12-ancient-tome-of-the-demon",
+      "scroll_or_tome_name": "Ancient Tome of the Demon & Hidden First/Second Pages (Hellbound Oasis)",
+      "mastery_category": "Ancient_Tome_Codex_Sanctum",
+      "unlock_level": 80,
+      "drop_zone_id": "zone-field-cinder-apron",
+      "drop_dungeon_id": "",
+      "drop_floor_id": "",
+      "loc": "-6073:131539",
+      "trainer_town_zone_id": "zone-town-glaze-barge-quay",
+      "unlocked_skills": [
+        "Unseals Hidden First Page, Hidden Second Page & Demon Contract Fragment",
+        "Trades with Shadai for Dynasty Essence I/II & Lv.81 Forgotten Scrolls"
+      ],
+      "drop_guardian_mob": "Hellbound Junior Summoner & Sandstorm Torturer",
+      "drop_rate_summary": "8.5% Drop per Mob (Unsealed Free with 0 Break Chance)"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-13-giants-codex-oblivion-discipline",
+      "scroll_or_tome_name": "Giant's Codex: Mastery, Discipline & Oblivion Vault (Cruma / Insolence)",
+      "mastery_category": "Ancient_Tome_Codex_Sanctum",
+      "unlock_level": 76,
+      "drop_zone_id": "zone-dungeon-pendulum-shaft",
+      "drop_dungeon_id": "zone-dungeon-pendulum-shaft",
+      "drop_floor_id": "3F",
+      "loc": "85738:143931",
+      "trainer_town_zone_id": "zone-town-kilnwatch-bastion",
+      "unlocked_skills": [
+        "Giant's Codex: Mastery (Safe Skill Enchant +1..+30 without Reset on Fail)",
+        "Giant's Codex: Discipline (Switch Skill Enchant Route e.g. Power -> Duel/Cost)",
+        "Giant's Codex: Oblivion (Refunds 80% SP from Enchanted Skill)"
+      ],
+      "drop_guardian_mob": "Core's Construct Prime & Excuro Marshal",
+      "drop_rate_summary": "2.80% 3F Sanctum Drop / Olympiad Token & Epaulette Exchange"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-14-rune-stone-combo-buff-codex",
+      "scroll_or_tome_name": "Rune Stone & Lv.83 Dual-Buff Combination Tome Sanctum",
+      "mastery_category": "Ancient_Tome_Codex_Sanctum",
+      "unlock_level": 83,
+      "drop_zone_id": "zone-dungeon-sunken-potter-hold",
+      "drop_dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "drop_floor_id": "B3",
+      "loc": "-78051:148923",
+      "trainer_town_zone_id": "zone-town-carillon-belfry",
+      "unlocked_skills": [
+        "Improve Combat (Combines Shield Lv.3 + Might Lv.3 in 1 Buff Slot)",
+        "Improve Magic & Critical Attack (Acumen + Empower / Focus + Death Whisper)",
+        "Improve Condition & Movement (Blessed Body + Soul / Wind Walk + Agility)"
+      ],
+      "drop_guardian_mob": "Sunken Potter Abyssal Lord & Eva's Guardian",
+      "drop_rate_summary": "1.85% B3 Raid & Mini-Boss Drop (Requires 8x Rune Stones)"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-15-Protection-of-rune-elemental-alignment",
+      "scroll_or_tome_name": "Trilogy Tome: Protection of Rune, Protection of Elemental & Alignment",
+      "mastery_category": "Ancient_Tome_Codex_Sanctum",
+      "unlock_level": 82,
+      "drop_zone_id": "zone-dungeon-medallion-heart-vault",
+      "drop_dungeon_id": "zone-dungeon-medallion-heart-vault",
+      "drop_floor_id": "B3",
+      "loc": "50160:43815",
+      "trainer_town_zone_id": "zone-town-lantern-hollow",
+      "unlocked_skills": [
+        "Protection of Rune (+15% M.Def Passive + +1000 M.Def Proc when Hit by Magic)",
+        "Protection of Elemental (+20 Fire/Water/Wind/Earth Resistance + Proc)",
+        "Protection of Alignment (+20 Holy/Dark Resistance + +1000 M.Def Proc)"
+      ],
+      "drop_guardian_mob": "Medallion Vault Keeper & Ancient Gargoyle King",
+      "drop_rate_summary": "1.60% B3 Sanctum Drop / Full Party Command Drop"
+    },
+    {
+      "sanctum_id": "scroll-sanctum-16-lucky-strike-spoil-bomb-codex",
+      "scroll_or_tome_name": "Dwarven Grand Codex: Lucky Strike, Spoil Bomb & Maximum Force",
+      "mastery_category": "Ancient_Tome_Codex_Sanctum",
+      "unlock_level": 81,
+      "drop_zone_id": "zone-dungeon-kiln-cellar",
+      "drop_dungeon_id": "zone-dungeon-kiln-cellar",
+      "drop_floor_id": "B3",
+      "loc": "75781:116527",
+      "trainer_town_zone_id": "zone-town-root-train-roundhouse",
+      "unlocked_skills": [
+        "Lucky Strike (AoE Polearm/Blunt Strike that Simultaneously Spoils up to 8 Mobs)",
+        "Spoil Bomb (AoE Delayed Detonation + Simultaneous Mass Sweeper Trigger)",
+        "Final Flying Form & Transform Golem Armor (Apex Dwarven Siege Mech)"
+      ],
+      "drop_guardian_mob": "Queen Ant's Royal Guard & B3 Chitin Overseer",
+      "drop_rate_summary": "1.75% B3 Sanctum Drop / Black Anvil Guild Masterwork"
+    }
+  ],
+  "elemental_stone_caravan_quarries": [
+    {
+      "quarry_id": "quarry-01-fire-stone-forge-of-gods",
+      "quarry_name": "Fire Stone Quarry \u2014 Cinder Apron & Forge of the Gods Lavabeds",
+      "quarry_category": "Elemental_Stone_Quarry_150",
+      "element_type": "Fire",
+      "attribute_cap_range": "Lv.1\u20134 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+      "zone_id": "zone-field-cinder-apron",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-6622:131979",
+      "attribute_master_npc": "Attribute Master Yin (Aden) & Shadai (Hellbound)",
+      "hourly_stone_yield": "18\u201326 Fire Stones / hr (Solo/Duo AoE + Spoil)",
+      "combat_multiplier_effect": "+20% to +40% Fire Weapon Damage vs. Earth-Aligned Targets; +25% Fire Armor Mitigation"
+    },
+    {
+      "quarry_id": "quarry-02-water-stone-isle-of-prayer",
+      "quarry_name": "Water Stone Quarry \u2014 Chromatic Lagoon & Isle of Prayer Reefs",
+      "quarry_category": "Elemental_Stone_Quarry_150",
+      "element_type": "Water",
+      "attribute_cap_range": "Lv.1\u20134 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+      "zone_id": "zone-field-kelp-spiral-reef",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-52634:-138412",
+      "attribute_master_npc": "Attribute Master Yang (Rune) & Trader Holly",
+      "hourly_stone_yield": "16\u201324 Water Stones / hr (Chromatic Crystal Mob Drops)",
+      "combat_multiplier_effect": "+20% to +40% Water Weapon Damage vs. Fire-Aligned Targets; +25% Water Armor Mitigation"
+    },
+    {
+      "quarry_id": "quarry-03-wind-stone-battered-lands",
+      "quarry_name": "Wind Stone Quarry \u2014 Aurora Tether Cyclone Ridge & Battered Lands",
+      "quarry_category": "Elemental_Stone_Quarry_150",
+      "element_type": "Wind",
+      "attribute_cap_range": "Lv.1\u20134 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+      "zone_id": "zone-field-aurora-tether",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "152154:31397",
+      "attribute_master_npc": "Attribute Master Yin (Aden) & Wind Sweeper Envoy",
+      "hourly_stone_yield": "15\u201322 Wind Stones / hr (Chimeras & Celtus Drops)",
+      "combat_multiplier_effect": "+20% to +40% Wind Weapon Damage vs. Water-Aligned Targets; +25% Wind Armor Mitigation"
+    },
+    {
+      "quarry_id": "quarry-04-earth-stone-ancient-temple-remnants",
+      "quarry_name": "Earth Stone Quarry \u2014 Cinnamon Bark Viaduct & Temple Remnants",
+      "quarry_category": "Elemental_Stone_Quarry_150",
+      "element_type": "Earth",
+      "attribute_cap_range": "Lv.1\u20134 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+      "zone_id": "zone-field-cinnamon-bark-viaduct",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-112658:51406",
+      "attribute_master_npc": "Attribute Master Yang (Rune) & Quarry Foreman Durn",
+      "hourly_stone_yield": "14\u201321 Earth Stones / hr (Golem & Sand Scorpion Spoils)",
+      "combat_multiplier_effect": "+20% to +40% Earth Weapon Damage vs. Wind-Aligned Targets; +25% Earth Armor Mitigation"
+    },
+    {
+      "quarry_id": "quarry-05-holy-stone-monastery-of-silence",
+      "quarry_name": "Divine Stone Quarry \u2014 Star-Heart Nave & Monastery of Silence Choir",
+      "quarry_category": "Elemental_Stone_Quarry_150",
+      "element_type": "Holy",
+      "attribute_cap_range": "Lv.1\u20134 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "2F",
+      "loc": "148930:28615",
+      "attribute_master_npc": "Attribute Master Yin (Aden) & High Priestess Agnes",
+      "hourly_stone_yield": "16\u201325 Divine Stones / hr (Solina Knights & Ascetics)",
+      "combat_multiplier_effect": "+20% to +40% Holy Weapon Damage vs. Dark/Undead Targets; +25% Holy Armor Mitigation"
+    },
+    {
+      "quarry_id": "quarry-06-dark-stone-pagan-forbidden-catacomb",
+      "quarry_name": "Dark Stone Quarry \u2014 Forbidden Path Catacomb & Pagan Chapel",
+      "quarry_category": "Elemental_Stone_Quarry_150",
+      "element_type": "Dark",
+      "attribute_cap_range": "Lv.1\u20134 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B2",
+      "loc": "18118:-63976",
+      "attribute_master_npc": "Attribute Master Yang (Rune) & Priest of Dusk",
+      "hourly_stone_yield": "17\u201325 Dark Stones / hr (Triol Believers & Lilim)",
+      "combat_multiplier_effect": "+20% to +40% Dark Weapon Damage vs. Holy-Aligned Angels; +25% Dark Armor Mitigation"
+    },
+    {
+      "quarry_id": "quarry-07-fire-crystal-300-tully-foundry",
+      "quarry_name": "Fire Crystal Sanctum (300 Cap) \u2014 Tully's Workshop & Chronometer 3F",
+      "quarry_category": "Elemental_Crystal_Sanctum_300",
+      "element_type": "Fire",
+      "attribute_cap_range": "Lv.5\u20137 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84506:56633",
+      "attribute_master_npc": "Attribute Master Yin (5x Fire Stone -> 1x Fire Crystal Synthesis)",
+      "hourly_stone_yield": "4\u20137 Fire Crystals + 30 Energy Star Stones / hr",
+      "combat_multiplier_effect": "+70% Apex Fire Weapon Damage at 300 Attribute; Unlocks Lv.7 Armor Counter-Shield"
+    },
+    {
+      "quarry_id": "quarry-08-water-crystal-300-baylor-cavern",
+      "quarry_name": "Water Crystal Sanctum (300 Cap) \u2014 Coral Cavern & Sunken Hold B3",
+      "quarry_category": "Elemental_Crystal_Sanctum_300",
+      "element_type": "Water",
+      "attribute_cap_range": "Lv.5\u20137 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+      "zone_id": "zone-dungeon-sunken-potter-hold",
+      "dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "floor_id": "B3",
+      "loc": "-78706:149442",
+      "attribute_master_npc": "Attribute Master Yang (5x Water Stone -> 1x Water Crystal Synthesis)",
+      "hourly_stone_yield": "4\u20136 Water Crystals + Red/Blue Coral Chests / hr",
+      "combat_multiplier_effect": "+70% Apex Water Weapon Damage at 300 Attribute; Neutralizes Fire Breath Raids"
+    },
+    {
+      "quarry_id": "quarry-09-wind-crystal-300-aerial-cleft",
+      "quarry_name": "Wind Crystal Sanctum (300 Cap) \u2014 Aerial Cleft & Starfall Vortex",
+      "quarry_category": "Elemental_Crystal_Sanctum_300",
+      "element_type": "Wind",
+      "attribute_cap_range": "Lv.5\u20137 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "43482:-47649",
+      "attribute_master_npc": "Engineer Lekon & Attribute Master Yang (Starfall Sky-Dock)",
+      "hourly_stone_yield": "5\u20138 Extracted Red/Blue/Green Star Stones -> Wind Crystals / hr",
+      "combat_multiplier_effect": "+70% Apex Wind Weapon Damage at 300 Attribute; Maximum Evasion/Kiting Synergy"
+    },
+    {
+      "quarry_id": "quarry-10-earth-crystal-300-seed-of-destruction",
+      "quarry_name": "Earth Crystal Sanctum (300 Cap) \u2014 Seed of Destruction Dragon Fonts",
+      "quarry_category": "Elemental_Crystal_Sanctum_300",
+      "element_type": "Earth",
+      "attribute_cap_range": "Lv.5\u20137 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+      "zone_id": "zone-town-crown-beacon",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147570:27060",
+      "attribute_master_npc": "Sergeant Allenos & Attribute Master Yin (Gathering Font)",
+      "hourly_stone_yield": "5\u20139 Earth Crystals / hr during 12h Tiat Occupation Phase",
+      "combat_multiplier_effect": "+70% Apex Earth Weapon Damage at 300 Attribute; +40% Physical Siege Fortitude"
+    },
+    {
+      "quarry_id": "quarry-11-holy-crystal-300-tower-of-naia",
+      "quarry_name": "Divine Crystal Sanctum (300 Cap) \u2014 Tower of Naia & Star-Heart 3F",
+      "quarry_category": "Elemental_Crystal_Sanctum_300",
+      "element_type": "Holy",
+      "attribute_cap_range": "Lv.5\u20137 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "148858:28669",
+      "attribute_master_npc": "Attribute Master Yin (5x Divine Stone -> 1x Divine Crystal)",
+      "hourly_stone_yield": "4\u20137 Divine Crystals / hr (Epidos Elemental Core & Archangels)",
+      "combat_multiplier_effect": "+70% Apex Holy Weapon Damage at 300 Attribute; Supreme Undead/Demon Purge"
+    },
+    {
+      "quarry_id": "quarry-12-dark-crystal-300-seed-of-infinity",
+      "quarry_name": "Dark Crystal Sanctum (300 Cap) \u2014 Seed of Infinity & Dark Omens B3",
+      "quarry_category": "Elemental_Crystal_Sanctum_300",
+      "element_type": "Dark",
+      "attribute_cap_range": "Lv.5\u20137 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+      "zone_id": "zone-catacomb-dark-omens-coral",
+      "dungeon_id": "zone-catacomb-dark-omens-coral",
+      "floor_id": "B3",
+      "loc": "38046:-28622",
+      "attribute_master_npc": "Officer Tepios & Attribute Master Yang",
+      "hourly_stone_yield": "5\u20138 Dark Crystals / hr (Ekimus Hounds & Soul Coffins)",
+      "combat_multiplier_effect": "+70% Apex Dark Weapon Damage at 300 Attribute; Maximum Necromancer/Kamael Scaling"
+    },
+    {
+      "quarry_id": "quarry-13-caravan-oasis-falk-certificate",
+      "quarry_name": "Hellbound Caravan Encampment \u2014 Envoy Falk & Jude Trust Oasis (Stage 1\u20136)",
+      "quarry_category": "Caravan_Trust_Oasis",
+      "element_type": "Omni_Caravan",
+      "attribute_cap_range": "Caravan Trust Stage 1 -> 11 Unlock",
+      "zone_id": "zone-town-saffron-press",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "17034:170387",
+      "attribute_master_npc": "Caravan Envoy Falk, Bernarde & Jude (Darion's Badges)",
+      "hourly_stone_yield": "350\u2013600 Darion's Badges / hr -> Basic & Standard Caravan Certificates",
+      "combat_multiplier_effect": "Unlocks Shadai Blacksmith, Native Helmet/Tunic Disguise & Ancient Tome Trading"
+    },
+    {
+      "quarry_id": "quarry-14-caravan-steel-citadel-hude-tailor",
+      "quarry_name": "Caravan Supreme Oasis \u2014 Hude & Buron Dynasty S80 Unseal Bazaar (Stage 7\u201311)",
+      "quarry_category": "Caravan_Trust_Oasis",
+      "element_type": "Omni_Caravan",
+      "attribute_cap_range": "Caravan Trust Stage 1 -> 11 Unlock",
+      "zone_id": "zone-fortress-cloud-halo",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "45822:-44804",
+      "attribute_master_npc": "Caravan Trader Hude, Tailor Buron & Traitor Kief (Life Force / Dim Life Force)",
+      "hourly_stone_yield": "80x Fiery Demon Blood + 20x Dim Life Force / hr (Chimeras)",
+      "combat_multiplier_effect": "Exchanges 60% Dynasty Weapon/Armor/Jewelry Recipes & Unsealed S80 Class Shoulders"
+    }
   ]
 }

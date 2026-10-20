@@ -1575,7 +1575,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 44)
+        self.assertGreaterEqual(len(audit["dimensions"]), 44)
 
         d43 = audit["dimensions"]["D43_armor_set_progression_and_masterwork_forges"]
         self.assertEqual(d43["score"], 100.0)
@@ -1630,10 +1630,100 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas44DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 44)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 44)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 44)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 44)
         self.assertIn("44-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave21_forgotten_scroll_skill_sanctums_and_elemental_stone_caravan_quarries(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["forgottenScrollSkillSanctumsCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["elementalStoneCaravanQuarriesCount"], 14)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_SKILL_SCROLL_MODE",
+            "setAtlasSkillScrollMode(",
+            "renderAtlasSkillScrollBarHtml(",
+            "studioForgottenScrollOverlay",
+            "ATLAS_ELEMENTAL_QUARRY_MODE",
+            "setAtlasElementalQuarryMode(",
+            "renderAtlasElementalQuarryBarHtml(",
+            "studioElementalQuarryOverlay",
+            "46-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 21 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 46)
+
+        d45 = audit["dimensions"]["D45_forgotten_scroll_and_skill_mastery_sanctums"]
+        self.assertEqual(d45["score"], 100.0)
+        self.assertEqual(d45["verified"], 16)
+        self.assertEqual(d45["target"], 16)
+        self.assertEqual(d45["martial_will_scrolls"], 6)
+        self.assertEqual(d45["arcane_enlightenment_scrolls"], 5)
+        self.assertEqual(d45["ancient_tome_codex_sanctums"], 5)
+        self.assertEqual(
+            set(d45["mastery_categories"]),
+            {
+                "Martial_Will_Scroll",
+                "Arcane_Enlightenment_Scroll",
+                "Ancient_Tome_Codex_Sanctum",
+            },
+        )
+        self.assertTrue(d45["ui_wired"])
+
+        d46 = audit["dimensions"]["D46_elemental_stone_crystal_and_caravan_quarries"]
+        self.assertEqual(d46["score"], 100.0)
+        self.assertEqual(d46["verified"], 14)
+        self.assertEqual(d46["target"], 14)
+        self.assertEqual(d46["elemental_stone_quarries_150"], 6)
+        self.assertEqual(d46["elemental_crystal_sanctums_300"], 6)
+        self.assertEqual(d46["caravan_trust_oases"], 2)
+        self.assertEqual(
+            set(d46["quarry_categories"]),
+            {
+                "Elemental_Stone_Quarry_150",
+                "Elemental_Crystal_Sanctum_300",
+                "Caravan_Trust_Oasis",
+            },
+        )
+        self.assertEqual(
+            set(d46["element_types"]),
+            {"Fire", "Water", "Wind", "Earth", "Holy", "Dark", "Omni_Caravan"},
+        )
+        self.assertTrue(d46["ui_wired"])
+
+        sanctums = atlas["forgotten_scroll_skill_sanctums"]
+        self.assertEqual(len(sanctums), 16)
+        self.assertEqual(sum(1 for s in sanctums if s["mastery_category"] == "Martial_Will_Scroll"), 6)
+        self.assertEqual(sum(1 for s in sanctums if s["mastery_category"] == "Arcane_Enlightenment_Scroll"), 5)
+        self.assertEqual(sum(1 for s in sanctums if s["mastery_category"] == "Ancient_Tome_Codex_Sanctum"), 5)
+        for s in sanctums:
+            self.assertGreaterEqual(len(s["unlocked_skills"]), 2)
+
+        quarries = atlas["elemental_stone_caravan_quarries"]
+        self.assertEqual(len(quarries), 14)
+        self.assertEqual(sum(1 for q in quarries if q["quarry_category"] == "Elemental_Stone_Quarry_150"), 6)
+        self.assertEqual(sum(1 for q in quarries if q["quarry_category"] == "Elemental_Crystal_Sanctum_300"), 6)
+        self.assertEqual(sum(1 for q in quarries if q["quarry_category"] == "Caravan_Trust_Oasis"), 2)
+        for q in quarries:
+            self.assertTrue(q["combat_multiplier_effect"])
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas46DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 46)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 46)
+        self.assertIn("46-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

@@ -6604,6 +6604,557 @@ def _build_kamaloka_pailaka_instances(atlas: dict[str, Any]) -> list[dict[str, A
     return rows
 
 
+def _build_forgotten_scroll_skill_sanctums(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 High-Level Forgotten Scroll, Ancient Tome & Lv.81–83 Skill Mastery Sanctums (6 Martial_Will_Scroll + 5 Arcane_Enlightenment_Scroll + 5 Ancient_Tome_Codex_Sanctum) (D45)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones: list[dict[str, Any]] = []
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            all_zones.extend(e for e in entries if isinstance(e, dict))
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if z.get("zone_id")}
+    specs = [
+        # 6 Martial_Will_Scroll
+        (
+            "scroll-sanctum-01-fighters-will",
+            "Forgotten Scroll: Fighter's Will & Expose Weak Point",
+            "Martial_Will_Scroll",
+            81,
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "zone-town-escapement-anvil",
+            [
+                "Fighter's Will (+100 P.Atk / +10% Atk.Spd & +20% Skill Power Proc)",
+                "Expose Weak Point (-20% Target P.Def Counter Trigger)",
+                "Final Secret (+30% Physical Skill & Normal Damage in PvP)",
+            ],
+            "Archangel Galaxia & Platinum Tribe Overlord",
+            "1.45% Sanctum Drop / 0.42% Spoil (3F Apex Choir)",
+        ),
+        (
+            "scroll-sanctum-02-archers-will",
+            "Forgotten Scroll: Archer's Will & Seven Arrow Mastery",
+            "Martial_Will_Scroll",
+            81,
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-dark-omens-coral",
+            "B3",
+            "zone-town-starfall-haven",
+            [
+                "Archer's Will (+50 Bow/Crossbow Range, +8% Accuracy & +20% Skill Power Proc)",
+                "Seven Arrow (High-Burst 7-Volley Long-Range Barrage)",
+                "Silent Mind (Zero MP Consumption on Toggle Stance)",
+            ],
+            "Crypt Archon Nephilim & Dark Omen Sentinel",
+            "1.38% Catacomb Drop / 250x Ancient Tome Exchange",
+        ),
+        (
+            "scroll-sanctum-03-sixth-sense-evasion",
+            "Forgotten Scroll: Sixth Sense, Hide & Dual Dagger Mastery",
+            "Martial_Will_Scroll",
+            81,
+            "zone-catacomb-branded-bellows",
+            "zone-catacomb-branded-bellows",
+            "B3",
+            "zone-town-inductor-switchyard",
+            [
+                "Sixth Sense (+15 Evasion Rating when HP < 30%)",
+                "Dual Dagger Mastery (+5% Dual-Dagger P.Atk & +5% Deadly Blow Rate)",
+                "Hide (30s Complete Stealth & Ambush Speed Reset)",
+            ],
+            "Lilim Great Mystic & Branded Vault Executioner",
+            "1.50% Sanctum Drop / 0.55% Spoil (B3 Inner Crypt)",
+        ),
+        (
+            "scroll-sanctum-04-deflect-magic-vanguard",
+            "Forgotten Scroll: Deflect Magic, Challenge for Fate & Tank Will",
+            "Martial_Will_Scroll",
+            81,
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "zone-town-torque-balance-citadel",
+            [
+                "Deflect Magic (+100% Magic Damage Reflection Resistance Check)",
+                "Protection of Rune / Elemental / Alignment (+15% M.Def & +1000 M.Def Proc)",
+                "Challenge for Fate (Mass Aggro + 15s Aegis P.Def/M.Def Surge)",
+            ],
+            "Hallate's Royal Guard & Chronometer Arbiter",
+            "1.65% Sanctum Drop / 100% Raid Chest Guarantee",
+        ),
+        (
+            "scroll-sanctum-05-exciting-adventure-wind-riding",
+            "Forgotten Scroll: Exciting Adventure, Wind Riding & Ghost Walking",
+            "Martial_Will_Scroll",
+            81,
+            "zone-field-aurora-tether",
+            "",
+            "",
+            "zone-town-crown-beacon",
+            [
+                "Exciting Adventure (+20 Speed, +15 Evasion, +30% Blow Rate, 75% Skill Dodge)",
+                "Wind Riding (+25 Speed, +20 Evasion, +40% Lethal Strike Rate)",
+                "Ghost Walking (+33 Speed, +15 Evasion, 80% Physical Skill Evasion)",
+            ],
+            "Tether Chimeras & Celtic Guardian Commander",
+            "1.12% Field Elite Drop (Aurora Tether High Plateau)",
+        ),
+        (
+            "scroll-sanctum-06-hell-scream-flame-icon",
+            "Forgotten Scroll: Flame Icon, Spirit of Shilen & Hell Scream",
+            "Martial_Will_Scroll",
+            83,
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "zone-town-pinion-terminus",
+            [
+                "Flame Icon / Spirit of Shilen (+30% Party Atk.Spd, +100 Crit Rate, +2x Crit Dmg)",
+                "Hell Scream (-30% Enemy P.Def/M.Def + AoE Fear Terror)",
+                "Vanguard Demolition Impact (5000 Power AoE Physical Cleave)",
+            ],
+            "Anakim's Nemesis & Forbidden Path Sovereign",
+            "0.95% B3 MVP/Raid Drop (Lv.83 Apex Martial Tome)",
+        ),
+        # 5 Arcane_Enlightenment_Scroll
+        (
+            "scroll-sanctum-07-enlightenment-wizard",
+            "Forgotten Scroll: Enlightenment (Wizard) & Magician's Will",
+            "Arcane_Enlightenment_Scroll",
+            81,
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "zone-town-crown-beacon",
+            [
+                "Enlightenment — Wizard (+40% M.Atk, +50% Cast.Spd, +50% Magic Crit, -90% MP Cost for 20s)",
+                "Magician's Will (+5% M.Atk, +5% Cast.Spd, +5% Magic Crit Rate, -5% MP Cost)",
+                "Arcane Roar (+5% Elemental Resistance & +3% M.Atk Passive)",
+            ],
+            "Witch Catacomb Hierophant & Gigantic Golem",
+            "1.40% Sanctum Drop / 0.48% Spoil (B3 Witch Altar)",
+        ),
+        (
+            "scroll-sanctum-08-meteor-star-fall",
+            "Forgotten Scroll: Meteor, Star Fall & Aura Symphony",
+            "Arcane_Enlightenment_Scroll",
+            81,
+            "zone-field-cinder-apron",
+            "",
+            "",
+            "zone-town-saffron-press",
+            [
+                "Meteor (Continuous Fire Meteor Bombardment + 20% P.Def Crush)",
+                "Star Fall (Arcane Celestial Star Barrage ignoring 30% M.Def)",
+                "Blizzard / Demon Wind (AoE Elemental Vortex + -50% Speed Freeze/Wind Shear)",
+            ],
+            "Battered Chimera & Cinder Apron Demon Prince",
+            "1.05% Elite Drop / 400x Ancient Tome of the Demon",
+        ),
+        (
+            "scroll-sanctum-09-enlightenment-healer-turn-stone",
+            "Forgotten Scroll: Enlightenment (Healer), Sublime Self-Sacrifice & Turn to Stone",
+            "Arcane_Enlightenment_Scroll",
+            81,
+            "zone-catacomb-apostate-dynamo",
+            "zone-catacomb-apostate-dynamo",
+            "B3",
+            "zone-town-porcelain-loom",
+            [
+                "Enlightenment — Healer (+10% M.Atk, +40% Heal Power, +50% Cast.Spd, -90% MP Cost)",
+                "Turn to Stone (8s Self-Petrification Invulnerability against Lethal Burst)",
+                "Sublime Self-Sacrifice (Full Party Invincibility + 100% HP/MP/CP Restoration)",
+            ],
+            "Apostate High Confessor & Seal Dynamo Guardian",
+            "1.52% Sanctum Drop (B3 Apostate Inner Sanctum)",
+        ),
+        (
+            "scroll-sanctum-10-servitor-barrier-excessive-loyalty",
+            "Forgotten Scroll: Servitor Barrier, Mutual Response & Spirit of the Nabir",
+            "Arcane_Enlightenment_Scroll",
+            81,
+            "zone-field-kelp-spiral-reef",
+            "",
+            "",
+            "zone-town-glaze-barge-quay",
+            [
+                "Servitor Barrier (30s Summon Celestial Shield Invulnerability)",
+                "Excessive Loyalty (+35% Servitor P.Atk/M.Atk when Master takes Damage)",
+                "Mutual Response (Restores Master & Summon HP/MP on Critical Hit)",
+            ],
+            "Seed of Infinity Tumor Warden & Reef Leviathan",
+            "1.25% Reef Elite Drop / Officer Tepios Supply Reward",
+        ),
+        (
+            "scroll-sanctum-11-great-fury-chant-of-movement",
+            "Forgotten Scroll: Great Fury, Chant of Combat & Seal of Limit",
+            "Arcane_Enlightenment_Scroll",
+            83,
+            "zone-catacomb-heretic-kiln",
+            "zone-catacomb-heretic-kiln",
+            "B3",
+            "zone-town-draft-kiln-post",
+            [
+                "Great Fury (Triggers +50% Party Attack Spd upon Burning Chop Hit)",
+                "Seal of Limit (Blocks 70% CP/HP/MP Recovery on Enemy Raid/PvP Targets)",
+                "Counter Critical (+100% Received Melee Crit Damage Bonus Proc for Party)",
+            ],
+            "Heretic High Inquisitor & Flame-Kiln Overlord",
+            "1.10% B3 Sanctum Drop / Orc Mystic High Altar",
+        ),
+        # 5 Ancient_Tome_Codex_Sanctum
+        (
+            "scroll-sanctum-12-ancient-tome-of-the-demon",
+            "Ancient Tome of the Demon & Hidden First/Second Pages (Hellbound Oasis)",
+            "Ancient_Tome_Codex_Sanctum",
+            80,
+            "zone-field-cinder-apron",
+            "",
+            "",
+            "zone-town-glaze-barge-quay",
+            [
+                "Unseals Hidden First Page, Hidden Second Page & Demon Contract Fragment",
+                "Trades with Shadai for Dynasty Essence I/II & Lv.81 Forgotten Scrolls",
+            ],
+            "Hellbound Junior Summoner & Sandstorm Torturer",
+            "8.5% Drop per Mob (Unsealed Free with 0 Break Chance)",
+        ),
+        (
+            "scroll-sanctum-13-giants-codex-oblivion-discipline",
+            "Giant's Codex: Mastery, Discipline & Oblivion Vault (Cruma / Insolence)",
+            "Ancient_Tome_Codex_Sanctum",
+            76,
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "zone-town-kilnwatch-bastion",
+            [
+                "Giant's Codex: Mastery (Safe Skill Enchant +1..+30 without Reset on Fail)",
+                "Giant's Codex: Discipline (Switch Skill Enchant Route e.g. Power -> Duel/Cost)",
+                "Giant's Codex: Oblivion (Refunds 80% SP from Enchanted Skill)",
+            ],
+            "Core's Construct Prime & Excuro Marshal",
+            "2.80% 3F Sanctum Drop / Olympiad Token & Epaulette Exchange",
+        ),
+        (
+            "scroll-sanctum-14-rune-stone-combo-buff-codex",
+            "Rune Stone & Lv.83 Dual-Buff Combination Tome Sanctum",
+            "Ancient_Tome_Codex_Sanctum",
+            83,
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B3",
+            "zone-town-carillon-belfry",
+            [
+                "Improve Combat (Combines Shield Lv.3 + Might Lv.3 in 1 Buff Slot)",
+                "Improve Magic & Critical Attack (Acumen + Empower / Focus + Death Whisper)",
+                "Improve Condition & Movement (Blessed Body + Soul / Wind Walk + Agility)",
+            ],
+            "Sunken Potter Abyssal Lord & Eva's Guardian",
+            "1.85% B3 Raid & Mini-Boss Drop (Requires 8x Rune Stones)",
+        ),
+        (
+            "scroll-sanctum-15-Protection-of-rune-elemental-alignment",
+            "Trilogy Tome: Protection of Rune, Protection of Elemental & Alignment",
+            "Ancient_Tome_Codex_Sanctum",
+            82,
+            "zone-dungeon-medallion-heart-vault",
+            "zone-dungeon-medallion-heart-vault",
+            "B3",
+            "zone-town-lantern-hollow",
+            [
+                "Protection of Rune (+15% M.Def Passive + +1000 M.Def Proc when Hit by Magic)",
+                "Protection of Elemental (+20 Fire/Water/Wind/Earth Resistance + Proc)",
+                "Protection of Alignment (+20 Holy/Dark Resistance + +1000 M.Def Proc)",
+            ],
+            "Medallion Vault Keeper & Ancient Gargoyle King",
+            "1.60% B3 Sanctum Drop / Full Party Command Drop",
+        ),
+        (
+            "scroll-sanctum-16-lucky-strike-spoil-bomb-codex",
+            "Dwarven Grand Codex: Lucky Strike, Spoil Bomb & Maximum Force",
+            "Ancient_Tome_Codex_Sanctum",
+            81,
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "zone-town-root-train-roundhouse",
+            [
+                "Lucky Strike (AoE Polearm/Blunt Strike that Simultaneously Spoils up to 8 Mobs)",
+                "Spoil Bomb (AoE Delayed Detonation + Simultaneous Mass Sweeper Trigger)",
+                "Final Flying Form & Transform Golem Armor (Apex Dwarven Siege Mech)",
+            ],
+            "Queen Ant's Royal Guard & B3 Chitin Overseer",
+            "1.75% B3 Sanctum Drop / Black Anvil Guild Masterwork",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        sid,
+        sname,
+        mcat,
+        ulvl,
+        dzid,
+        ddid,
+        dfid,
+        ttzid,
+        uskills,
+        gmob,
+        drate,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(dzid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx + 195 + idx * 11, by - 165 - idx * 8)
+        rows.append(
+            {
+                "sanctum_id": sid,
+                "scroll_or_tome_name": sname,
+                "mastery_category": mcat,
+                "unlock_level": ulvl,
+                "drop_zone_id": dzid,
+                "drop_dungeon_id": ddid,
+                "drop_floor_id": dfid,
+                "loc": loc,
+                "trainer_town_zone_id": ttzid,
+                "unlocked_skills": uskills,
+                "drop_guardian_mob": gmob,
+                "drop_rate_summary": drate,
+            }
+        )
+    return rows
+
+
+def _build_elemental_stone_caravan_quarries(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 14 Endgame Elemental Attribute Stone/Crystal (150/300) & Caravan Trust Quarries (6 Elemental_Stone_Quarry_150 + 6 Elemental_Crystal_Sanctum_300 + 2 Caravan_Trust_Oasis) (D46)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones: list[dict[str, Any]] = []
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            all_zones.extend(e for e in entries if isinstance(e, dict))
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if z.get("zone_id")}
+    specs = [
+        # 6 Elemental_Stone_Quarry_150 (0 -> 150 Weapon / 0 -> 60 Armor)
+        (
+            "quarry-01-fire-stone-forge-of-gods",
+            "Fire Stone Quarry — Cinder Apron & Forge of the Gods Lavabeds",
+            "Elemental_Stone_Quarry_150",
+            "Fire",
+            "Lv.1–4 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+            "zone-field-cinder-apron",
+            "",
+            "",
+            "Attribute Master Yin (Aden) & Shadai (Hellbound)",
+            "18–26 Fire Stones / hr (Solo/Duo AoE + Spoil)",
+            "+20% to +40% Fire Weapon Damage vs. Earth-Aligned Targets; +25% Fire Armor Mitigation",
+        ),
+        (
+            "quarry-02-water-stone-isle-of-prayer",
+            "Water Stone Quarry — Chromatic Lagoon & Isle of Prayer Reefs",
+            "Elemental_Stone_Quarry_150",
+            "Water",
+            "Lv.1–4 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+            "zone-field-kelp-spiral-reef",
+            "",
+            "",
+            "Attribute Master Yang (Rune) & Trader Holly",
+            "16–24 Water Stones / hr (Chromatic Crystal Mob Drops)",
+            "+20% to +40% Water Weapon Damage vs. Fire-Aligned Targets; +25% Water Armor Mitigation",
+        ),
+        (
+            "quarry-03-wind-stone-battered-lands",
+            "Wind Stone Quarry — Aurora Tether Cyclone Ridge & Battered Lands",
+            "Elemental_Stone_Quarry_150",
+            "Wind",
+            "Lv.1–4 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+            "zone-field-aurora-tether",
+            "",
+            "",
+            "Attribute Master Yin (Aden) & Wind Sweeper Envoy",
+            "15–22 Wind Stones / hr (Chimeras & Celtus Drops)",
+            "+20% to +40% Wind Weapon Damage vs. Water-Aligned Targets; +25% Wind Armor Mitigation",
+        ),
+        (
+            "quarry-04-earth-stone-ancient-temple-remnants",
+            "Earth Stone Quarry — Cinnamon Bark Viaduct & Temple Remnants",
+            "Elemental_Stone_Quarry_150",
+            "Earth",
+            "Lv.1–4 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+            "zone-field-cinnamon-bark-viaduct",
+            "",
+            "",
+            "Attribute Master Yang (Rune) & Quarry Foreman Durn",
+            "14–21 Earth Stones / hr (Golem & Sand Scorpion Spoils)",
+            "+20% to +40% Earth Weapon Damage vs. Wind-Aligned Targets; +25% Earth Armor Mitigation",
+        ),
+        (
+            "quarry-05-holy-stone-monastery-of-silence",
+            "Divine Stone Quarry — Star-Heart Nave & Monastery of Silence Choir",
+            "Elemental_Stone_Quarry_150",
+            "Holy",
+            "Lv.1–4 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "2F",
+            "Attribute Master Yin (Aden) & High Priestess Agnes",
+            "16–25 Divine Stones / hr (Solina Knights & Ascetics)",
+            "+20% to +40% Holy Weapon Damage vs. Dark/Undead Targets; +25% Holy Armor Mitigation",
+        ),
+        (
+            "quarry-06-dark-stone-pagan-forbidden-catacomb",
+            "Dark Stone Quarry — Forbidden Path Catacomb & Pagan Chapel",
+            "Elemental_Stone_Quarry_150",
+            "Dark",
+            "Lv.1–4 Attribute (0 -> 150 Weapon / 0 -> 60 Armor)",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B2",
+            "Attribute Master Yang (Rune) & Priest of Dusk",
+            "17–25 Dark Stones / hr (Triol Believers & Lilim)",
+            "+20% to +40% Dark Weapon Damage vs. Holy-Aligned Angels; +25% Dark Armor Mitigation",
+        ),
+        # 6 Elemental_Crystal_Sanctum_300 (150 -> 300 Weapon / 60 -> 120 Armor)
+        (
+            "quarry-07-fire-crystal-300-tully-foundry",
+            "Fire Crystal Sanctum (300 Cap) — Tully's Workshop & Chronometer 3F",
+            "Elemental_Crystal_Sanctum_300",
+            "Fire",
+            "Lv.5–7 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "Attribute Master Yin (5x Fire Stone -> 1x Fire Crystal Synthesis)",
+            "4–7 Fire Crystals + 30 Energy Star Stones / hr",
+            "+70% Apex Fire Weapon Damage at 300 Attribute; Unlocks Lv.7 Armor Counter-Shield",
+        ),
+        (
+            "quarry-08-water-crystal-300-baylor-cavern",
+            "Water Crystal Sanctum (300 Cap) — Coral Cavern & Sunken Hold B3",
+            "Elemental_Crystal_Sanctum_300",
+            "Water",
+            "Lv.5–7 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B3",
+            "Attribute Master Yang (5x Water Stone -> 1x Water Crystal Synthesis)",
+            "4–6 Water Crystals + Red/Blue Coral Chests / hr",
+            "+70% Apex Water Weapon Damage at 300 Attribute; Neutralizes Fire Breath Raids",
+        ),
+        (
+            "quarry-09-wind-crystal-300-aerial-cleft",
+            "Wind Crystal Sanctum (300 Cap) — Aerial Cleft & Starfall Vortex",
+            "Elemental_Crystal_Sanctum_300",
+            "Wind",
+            "Lv.5–7 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "Engineer Lekon & Attribute Master Yang (Starfall Sky-Dock)",
+            "5–8 Extracted Red/Blue/Green Star Stones -> Wind Crystals / hr",
+            "+70% Apex Wind Weapon Damage at 300 Attribute; Maximum Evasion/Kiting Synergy",
+        ),
+        (
+            "quarry-10-earth-crystal-300-seed-of-destruction",
+            "Earth Crystal Sanctum (300 Cap) — Seed of Destruction Dragon Fonts",
+            "Elemental_Crystal_Sanctum_300",
+            "Earth",
+            "Lv.5–7 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+            "zone-town-crown-beacon",
+            "",
+            "",
+            "Sergeant Allenos & Attribute Master Yin (Gathering Font)",
+            "5–9 Earth Crystals / hr during 12h Tiat Occupation Phase",
+            "+70% Apex Earth Weapon Damage at 300 Attribute; +40% Physical Siege Fortitude",
+        ),
+        (
+            "quarry-11-holy-crystal-300-tower-of-naia",
+            "Divine Crystal Sanctum (300 Cap) — Tower of Naia & Star-Heart 3F",
+            "Elemental_Crystal_Sanctum_300",
+            "Holy",
+            "Lv.5–7 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "Attribute Master Yin (5x Divine Stone -> 1x Divine Crystal)",
+            "4–7 Divine Crystals / hr (Epidos Elemental Core & Archangels)",
+            "+70% Apex Holy Weapon Damage at 300 Attribute; Supreme Undead/Demon Purge",
+        ),
+        (
+            "quarry-12-dark-crystal-300-seed-of-infinity",
+            "Dark Crystal Sanctum (300 Cap) — Seed of Infinity & Dark Omens B3",
+            "Elemental_Crystal_Sanctum_300",
+            "Dark",
+            "Lv.5–7 Attribute (150 -> 300 Weapon / 60 -> 120 Armor)",
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-dark-omens-coral",
+            "B3",
+            "Officer Tepios & Attribute Master Yang",
+            "5–8 Dark Crystals / hr (Ekimus Hounds & Soul Coffins)",
+            "+70% Apex Dark Weapon Damage at 300 Attribute; Maximum Necromancer/Kamael Scaling",
+        ),
+        # 2 Caravan_Trust_Oasis (Hellbound Stage 1 -> 11 Unlock)
+        (
+            "quarry-13-caravan-oasis-falk-certificate",
+            "Hellbound Caravan Encampment — Envoy Falk & Jude Trust Oasis (Stage 1–6)",
+            "Caravan_Trust_Oasis",
+            "Omni_Caravan",
+            "Caravan Trust Stage 1 -> 11 Unlock",
+            "zone-town-saffron-press",
+            "",
+            "",
+            "Caravan Envoy Falk, Bernarde & Jude (Darion's Badges)",
+            "350–600 Darion's Badges / hr -> Basic & Standard Caravan Certificates",
+            "Unlocks Shadai Blacksmith, Native Helmet/Tunic Disguise & Ancient Tome Trading",
+        ),
+        (
+            "quarry-14-caravan-steel-citadel-hude-tailor",
+            "Caravan Supreme Oasis — Hude & Buron Dynasty S80 Unseal Bazaar (Stage 7–11)",
+            "Caravan_Trust_Oasis",
+            "Omni_Caravan",
+            "Caravan Trust Stage 1 -> 11 Unlock",
+            "zone-fortress-cloud-halo",
+            "",
+            "",
+            "Caravan Trader Hude, Tailor Buron & Traitor Kief (Life Force / Dim Life Force)",
+            "80x Fiery Demon Blood + 20x Dim Life Force / hr (Chimeras)",
+            "Exchanges 60% Dynasty Weapon/Armor/Jewelry Recipes & Unsealed S80 Class Shoulders",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        qid,
+        qname,
+        qcat,
+        etype,
+        cap_range,
+        zid,
+        did,
+        fid,
+        mnpc,
+        hyield,
+        cmult,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx - 210 - idx * 12, by + 170 + idx * 9)
+        rows.append(
+            {
+                "quarry_id": qid,
+                "quarry_name": qname,
+                "quarry_category": qcat,
+                "element_type": etype,
+                "attribute_cap_range": cap_range,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "attribute_master_npc": mnpc,
+                "hourly_stone_yield": hyield,
+                "combat_multiplier_effect": cmult,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -7658,6 +8209,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("kamaloka_pailaka_instances") or []) < 15:
         atlas["kamaloka_pailaka_instances"] = _build_kamaloka_pailaka_instances(atlas)
         actions.append("populated_15_kamaloka_pailaka_instances")
+
+    # 29. Ensure all 16 Forgotten Scroll, Ancient Tome & Skill Mastery Sanctums exist in `forgotten_scroll_skill_sanctums` (D45)
+    if len(atlas.get("forgotten_scroll_skill_sanctums") or []) < 16:
+        atlas["forgotten_scroll_skill_sanctums"] = _build_forgotten_scroll_skill_sanctums(atlas)
+        actions.append("populated_16_forgotten_scroll_skill_sanctums")
+
+    # 30. Ensure all 14 Elemental Attribute Stone/Crystal & Caravan Quarries exist in `elemental_stone_caravan_quarries` (D46)
+    if len(atlas.get("elemental_stone_caravan_quarries") or []) < 14:
+        atlas["elemental_stone_caravan_quarries"] = _build_elemental_stone_caravan_quarries(atlas)
+        actions.append("populated_14_elemental_stone_caravan_quarries")
 
     return {"actions": actions}
 
@@ -9784,15 +10345,165 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d44_ratio * 80.0, 1)
     )
 
+    # D45: Interactive 16-Sanctum Forgotten Scroll, Ancient Tome & Lv.81–83 Skill Mastery Matrix (`forgotten_scroll_skill_sanctums` - 16/16 Sanctums = 6 Martial_Will_Scroll + 5 Arcane_Enlightenment_Scroll + 5 Ancient_Tome_Codex_Sanctum)
+    expected_mastery_categories = {
+        "Martial_Will_Scroll",
+        "Arcane_Enlightenment_Scroll",
+        "Ancient_Tome_Codex_Sanctum",
+    }
+    scroll_sanctum_rows = atlas.get("forgotten_scroll_skill_sanctums") or []
+    valid_scroll_sanctums = 0
+    martial_will_count = 0
+    arcane_enlightenment_count = 0
+    ancient_tome_count = 0
+    seen_scroll_sanctum_ids: set[str] = set()
+    seen_mastery_categories: set[str] = set()
+    for sr in scroll_sanctum_rows:
+        if not isinstance(sr, dict):
+            continue
+        sid = str(sr.get("sanctum_id") or "")
+        mcat = str(sr.get("mastery_category") or "")
+        ulvl = sr.get("unlock_level")
+        dzid = str(sr.get("drop_zone_id") or "")
+        ttzid = str(sr.get("trainer_town_zone_id") or "")
+        uskills = sr.get("unlocked_skills") or []
+        if (
+            sid
+            and sid not in seen_scroll_sanctum_ids
+            and sr.get("scroll_or_tome_name")
+            and mcat in expected_mastery_categories
+            and isinstance(ulvl, int)
+            and 76 <= ulvl <= 85
+            and dzid in zone_ids_set
+            and isinstance(sr.get("drop_dungeon_id"), str)
+            and isinstance(sr.get("drop_floor_id"), str)
+            and ":" in str(sr.get("loc", ""))
+            and ttzid in town_zone_id_set
+            and isinstance(uskills, list)
+            and len(uskills) >= 2
+            and sr.get("drop_guardian_mob")
+            and sr.get("drop_rate_summary")
+        ):
+            valid_scroll_sanctums += 1
+            seen_scroll_sanctum_ids.add(sid)
+            seen_mastery_categories.add(mcat)
+            if mcat == "Martial_Will_Scroll":
+                martial_will_count += 1
+            elif mcat == "Arcane_Enlightenment_Scroll":
+                arcane_enlightenment_count += 1
+            elif mcat == "Ancient_Tome_Codex_Sanctum":
+                ancient_tome_count += 1
+
+    has_d45_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_SKILL_SCROLL_MODE",
+            "setAtlasSkillScrollMode",
+            "renderAtlasSkillScrollBarHtml",
+            "studioForgottenScrollOverlay",
+        )
+    )
+    d45_ratio = valid_scroll_sanctums / 16.0
+    d45_full_coverage = (
+        martial_will_count == 6
+        and arcane_enlightenment_count == 5
+        and ancient_tome_count == 5
+        and seen_mastery_categories == expected_mastery_categories
+    )
+    d45_score = (
+        round(min(100.0, d45_ratio * 100.0), 1)
+        if (has_d45_ui and d45_full_coverage)
+        else round(d45_ratio * 80.0, 1)
+    )
+
+    # D46: Interactive 14-Node Elemental Attribute Stone/Crystal (150/300) & Caravan Quarry Matrix (`elemental_stone_caravan_quarries` - 14/14 Quarries = 6 Elemental_Stone_Quarry_150 + 6 Elemental_Crystal_Sanctum_300 + 2 Caravan_Trust_Oasis)
+    expected_quarry_categories = {
+        "Elemental_Stone_Quarry_150",
+        "Elemental_Crystal_Sanctum_300",
+        "Caravan_Trust_Oasis",
+    }
+    expected_quarry_elements = {
+        "Fire",
+        "Water",
+        "Wind",
+        "Earth",
+        "Holy",
+        "Dark",
+        "Omni_Caravan",
+    }
+    quarry_rows = atlas.get("elemental_stone_caravan_quarries") or []
+    valid_quarry_nodes = 0
+    stone_150_count = 0
+    crystal_300_count = 0
+    caravan_oasis_count = 0
+    seen_quarry_ids: set[str] = set()
+    seen_quarry_categories: set[str] = set()
+    seen_quarry_elements: set[str] = set()
+    for qr in quarry_rows:
+        if not isinstance(qr, dict):
+            continue
+        qid = str(qr.get("quarry_id") or "")
+        qcat = str(qr.get("quarry_category") or "")
+        etype = str(qr.get("element_type") or "")
+        zid = str(qr.get("zone_id") or "")
+        if (
+            qid
+            and qid not in seen_quarry_ids
+            and qr.get("quarry_name")
+            and qcat in expected_quarry_categories
+            and etype in expected_quarry_elements
+            and qr.get("attribute_cap_range")
+            and zid in zone_ids_set
+            and isinstance(qr.get("dungeon_id"), str)
+            and isinstance(qr.get("floor_id"), str)
+            and ":" in str(qr.get("loc", ""))
+            and qr.get("attribute_master_npc")
+            and qr.get("hourly_stone_yield")
+            and qr.get("combat_multiplier_effect")
+        ):
+            valid_quarry_nodes += 1
+            seen_quarry_ids.add(qid)
+            seen_quarry_categories.add(qcat)
+            seen_quarry_elements.add(etype)
+            if qcat == "Elemental_Stone_Quarry_150":
+                stone_150_count += 1
+            elif qcat == "Elemental_Crystal_Sanctum_300":
+                crystal_300_count += 1
+            elif qcat == "Caravan_Trust_Oasis":
+                caravan_oasis_count += 1
+
+    has_d46_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_ELEMENTAL_QUARRY_MODE",
+            "setAtlasElementalQuarryMode",
+            "renderAtlasElementalQuarryBarHtml",
+            "studioElementalQuarryOverlay",
+        )
+    )
+    d46_ratio = valid_quarry_nodes / 14.0
+    d46_full_coverage = (
+        stone_150_count == 6
+        and crystal_300_count == 6
+        and caravan_oasis_count == 2
+        and seen_quarry_categories == expected_quarry_categories
+        and seen_quarry_elements == expected_quarry_elements
+    )
+    d46_score = (
+        round(min(100.0, d46_ratio * 100.0), 1)
+        if (has_d46_ui and d46_full_coverage)
+        else round(d46_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 26.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 28.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 28.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 38.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 27.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score) / 34.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 28.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 30.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 30.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 40.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 29.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 36.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -9841,8 +10552,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d42_score
             + d43_score
             + d44_score
+            + d45_score
+            + d46_score
         )
-        / 44.0,
+        / 46.0,
         1,
     )
 
@@ -10171,6 +10884,27 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "conduit_categories": sorted(seen_conduit_categories),
                 "ui_wired": has_d44_ui,
             },
+            "D45_forgotten_scroll_and_skill_mastery_sanctums": {
+                "score": d45_score,
+                "verified": valid_scroll_sanctums,
+                "target": 16,
+                "martial_will_scrolls": martial_will_count,
+                "arcane_enlightenment_scrolls": arcane_enlightenment_count,
+                "ancient_tome_codex_sanctums": ancient_tome_count,
+                "mastery_categories": sorted(seen_mastery_categories),
+                "ui_wired": has_d45_ui,
+            },
+            "D46_elemental_stone_crystal_and_caravan_quarries": {
+                "score": d46_score,
+                "verified": valid_quarry_nodes,
+                "target": 14,
+                "elemental_stone_quarries_150": stone_150_count,
+                "elemental_crystal_sanctums_300": crystal_300_count,
+                "caravan_trust_oases": caravan_oasis_count,
+                "quarry_categories": sorted(seen_quarry_categories),
+                "element_types": sorted(seen_quarry_elements),
+                "ui_wired": has_d46_ui,
+            },
         },
     }
 
@@ -10259,6 +10993,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D42 (15 Vitality Obelisks)  : {dims['D42_adventurer_guide_buff_and_vitality_obelisks']['score']}/100 ({dims['D42_adventurer_guide_buff_and_vitality_obelisks']['verified']}/{dims['D42_adventurer_guide_buff_and_vitality_obelisks']['target']} vitality obelisks)")
         print(f"  D43 (16 Armor Set Forges)   : {dims['D43_armor_set_progression_and_masterwork_forges']['score']}/100 ({dims['D43_armor_set_progression_and_masterwork_forges']['verified']}/{dims['D43_armor_set_progression_and_masterwork_forges']['target']} armor sets)")
         print(f"  D44 (15 Kamaloka/Pailaka)   : {dims['D44_kamaloka_pailaka_and_seed_instances']['score']}/100 ({dims['D44_kamaloka_pailaka_and_seed_instances']['verified']}/{dims['D44_kamaloka_pailaka_and_seed_instances']['target']} instance portals)")
+        print(f"  D45 (16 Forgotten Scrolls)  : {dims['D45_forgotten_scroll_and_skill_mastery_sanctums']['score']}/100 ({dims['D45_forgotten_scroll_and_skill_mastery_sanctums']['verified']}/{dims['D45_forgotten_scroll_and_skill_mastery_sanctums']['target']} skill sanctums)")
+        print(f"  D46 (14 Elemental Quarries) : {dims['D46_elemental_stone_crystal_and_caravan_quarries']['score']}/100 ({dims['D46_elemental_stone_crystal_and_caravan_quarries']['verified']}/{dims['D46_elemental_stone_crystal_and_caravan_quarries']['target']} attribute quarries)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
