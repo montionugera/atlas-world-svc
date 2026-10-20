@@ -696,6 +696,8 @@ def validate_world_governance(
                 "monsterTrackFantasyPlazasCount": len(t_doc.get("monster_track_fantasy_plazas") or []),
                 "olympiadHeroWeaponExchangesCount": len(t_doc.get("olympiad_hero_weapon_exchanges") or []),
                 "treasureChestLockpickGroundsCount": len(t_doc.get("treasure_chest_lockpick_grounds") or []),
+                "aerialStarStoneDocksCount": len(t_doc.get("aerial_star_stone_docks") or []),
+                "beltCloakWeaverHubsCount": len(t_doc.get("belt_cloak_weaver_hubs") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1326,6 +1328,48 @@ def validate_world_governance(
                 if tc_did and tc_did not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: treasure_chest_lockpick_grounds '{tc_id}' references unknown dungeon_id '{tc_did}'"
+                    )
+
+            # Validate 12 Clan Airship Summon Dock, Star Stone Extraction & Aerial Raid Nodes (D57)
+            aerial_docks = t_doc.get("aerial_star_stone_docks") or []
+            if aerial_docks and len(aerial_docks) != 12:
+                errors.append(
+                    f"GOV-10 violation: aerial_star_stone_docks must have 12 aerial nodes, got {len(aerial_docks)}"
+                )
+            for ad_item in aerial_docks:
+                if not isinstance(ad_item, dict):
+                    continue
+                ad_id = str(ad_item.get("aerial_node_id", ""))
+                ad_zid = str(ad_item.get("zone_id", ""))
+                ad_czid = str(ad_item.get("connected_dock_zone_id", ""))
+                if ad_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: aerial_star_stone_docks '{ad_id}' references unknown zone_id '{ad_zid}'"
+                    )
+                if ad_czid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: aerial_star_stone_docks '{ad_id}' references unknown connected_dock_zone_id '{ad_czid}'"
+                    )
+
+            # Validate 14 Weaver Olf Mithril Belt & Sovereign Boss/Castle Cloak Hubs (D58)
+            weaver_hubs = t_doc.get("belt_cloak_weaver_hubs") or []
+            if weaver_hubs and len(weaver_hubs) != 14:
+                errors.append(
+                    f"GOV-10 violation: belt_cloak_weaver_hubs must have 14 weaver/cloak hubs, got {len(weaver_hubs)}"
+                )
+            for wh_item in weaver_hubs:
+                if not isinstance(wh_item, dict):
+                    continue
+                wh_id = str(wh_item.get("weaver_hub_id", ""))
+                wh_zid = str(wh_item.get("zone_id", ""))
+                wh_did = str(wh_item.get("dungeon_id", ""))
+                if wh_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: belt_cloak_weaver_hubs '{wh_id}' references unknown zone_id '{wh_zid}'"
+                    )
+                if wh_did and wh_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: belt_cloak_weaver_hubs '{wh_id}' references unknown dungeon_id '{wh_did}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

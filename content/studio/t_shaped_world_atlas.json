@@ -55544,5 +55544,439 @@
         "Top-Grade Life Stone (Lv.76\u201380) & Giant's Codex: Mastery"
       ]
     }
+  ],
+  "aerial_star_stone_docks": [
+    {
+      "aerial_node_id": "aerial-01-glaze-barge-airship-summon-dock",
+      "node_name": "Glaze-Barge Airship Summon Wharf \u2014 Southern Sky-Continent Pier",
+      "aerial_category": "Clan_Airship_Summon_Dock",
+      "zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "connected_dock_zone_id": "zone-town-starfall-haven",
+      "loc": "-89239:155022",
+      "engineer_or_controller_npc": "Engineer Lekon & Wharf Controller Tolonis",
+      "star_stone_fuel_or_yield": "Airship Summon License (10 Energy Star Stones + Clan Lv.5+) & 5 Energy Star Stones per Summon",
+      "aurabird_form_or_vessel": "Clan Airship Helm (Steer / Autopilot / Boost) & Scheduled Gracia Ferry",
+      "aerial_rewards": [
+        "Clan Airship Summon License & Spellbook: Aurabird Falcon / Aurabird Owl",
+        "Expert Text: Star Stone Extraction Skillbook (Lv.1\u20133 Collection)",
+        "Keucereus Alliance Supply Box & Icarus Weapon Piece Voucher"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-02-starfall-keucereus-alliance-dock",
+      "node_name": "Starfall Haven Keucereus Sky-Pier \u2014 Primary Alliance Airship Berth",
+      "aerial_category": "Clan_Airship_Summon_Dock",
+      "zone_id": "zone-town-starfall-haven",
+      "connected_dock_zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "loc": "43947:-48066",
+      "engineer_or_controller_npc": "Admiral Keucereus, Engineer Lekon & Magister Dilios",
+      "star_stone_fuel_or_yield": "5 Energy Star Stones per Clan Airship Summon (100\u2013600 Epaulette Fuel Reserve)",
+      "aurabird_form_or_vessel": "Clan Airship Command Helm + Spellbook: Aurabird Falcon (Speed Flight)",
+      "aerial_rewards": [
+        "Icarus S80 Weapon 60% Recipes (Icarus Sawsword, Disperser, Spirit, Spitter)",
+        "Vesper Noble Enhancement Stone & Seed of Infinity / Destruction Transit",
+        "Extracted Red / Blue / Green Star Stone Compression Bundle"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-03-cloud-halo-cleft-airship-mooring",
+      "node_name": "Cloud-Halo Fortress Aerial Mooring \u2014 Cleft & Seed Command Platform",
+      "aerial_category": "Clan_Airship_Summon_Dock",
+      "zone_id": "zone-fortress-cloud-halo",
+      "connected_dock_zone_id": "zone-town-starfall-haven",
+      "loc": "46333:-45254",
+      "engineer_or_controller_npc": "Special Product Broker Kutran & Airship Controller",
+      "star_stone_fuel_or_yield": "5 Energy Star Stones per Summon + 1 Energy Star Stone per 100s Boost",
+      "aurabird_form_or_vessel": "Clan Airship War-Galley + Spellbook: Aurabird Owl (Armored Aerial Recon)",
+      "aerial_rewards": [
+        "Masterwork Vesper & Dynasty Accessory Recipes (Kutran Star Stone Exchange)",
+        "Scroll: Enchant Aerial Transformation Skill (Falcon / Owl Mastery)",
+        "Attribute Crystal (Fire/Water/Wind/Earth/Holy/Dark 150->300 Catalyst)"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-04-pinion-steppe-sky-gantry",
+      "node_name": "Pinion Terminus Brass Sky-Gantry \u2014 Continental Airship Relay",
+      "aerial_category": "Clan_Airship_Summon_Dock",
+      "zone_id": "zone-town-pinion-terminus",
+      "connected_dock_zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "loc": "82519:148458",
+      "engineer_or_controller_npc": "Dwarven Airship Engineer Bauch & Sky Controller",
+      "star_stone_fuel_or_yield": "5 Energy Star Stones per Summon (Refined from Extracted Red Star Stones)",
+      "aurabird_form_or_vessel": "Brass Dirigible Airship & Aurabird Falcon High-Altitude Glide",
+      "aerial_rewards": [
+        "Energy Star Stone Fuel Crates (x50 Clan Airship Reserve)",
+        "Dynasty Armor & Weapon Key Material Supply Chests",
+        "Blessed Scroll of Escape: Keucereus Alliance Base"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-05-tether-causeway-red-star-stone-cloud",
+      "node_name": "Star-Tether Causeway Sky-Currents \u2014 Extracted Red Star Stone Stratum",
+      "aerial_category": "Star_Stone_Extraction_Field",
+      "zone_id": "zone-field-tether-causeway",
+      "connected_dock_zone_id": "zone-town-starfall-haven",
+      "loc": "49305:-41330",
+      "engineer_or_controller_npc": "Field Officer Nemo & Collector Kutran",
+      "star_stone_fuel_or_yield": "Extracted Red Star Stone (x1\u2013x4 per Vein via Star Stone Gathering Lv.1\u20133)",
+      "aurabird_form_or_vessel": "Spellbook: Aurabird Falcon (Lv.75+ Rapid Extraction Dive)",
+      "aerial_rewards": [
+        "Extracted Red Star Stone -> Energy Star Stone Fuel Refinement",
+        "150->300 Elemental Attribute Crystal Synthesis Catalyst (Kutran)",
+        "Aerial Collection Mastery SP Scroll & Vitality Replenishing Herb"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-06-aurora-tether-blue-star-stone-vortex",
+      "node_name": "Aurora Tether Upper Vortex \u2014 Extracted Blue Star Stone Drift",
+      "aerial_category": "Star_Stone_Extraction_Field",
+      "zone_id": "zone-field-aurora-tether",
+      "connected_dock_zone_id": "zone-fortress-cloud-halo",
+      "loc": "152491:31082",
+      "engineer_or_controller_npc": "Magister Dilios & Wind Sentinel",
+      "star_stone_fuel_or_yield": "Extracted Blue Star Stone (x1\u2013x4 per Vein \u00b7 Collection Skill Lv.2\u20133)",
+      "aurabird_form_or_vessel": "Spellbook: Aurabird Owl (Lv.75+ High-Stability Vortex Hover)",
+      "aerial_rewards": [
+        "Extracted Blue Star Stone -> Icarus & Vesper Recipe Exchange",
+        "Water / Wind / Divine Attribute Crystal (150->300 Upgrade)",
+        "Expert Text: Star Stone Extraction Level 2 & 3 Upgrade Tome"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-07-orrery-bridge-green-star-stone-belt",
+      "node_name": "The Orrery Bridge Refractory Belt \u2014 Extracted Green Star Stone Field",
+      "aerial_category": "Star_Stone_Extraction_Field",
+      "zone_id": "zone-field-orrery-bridge",
+      "connected_dock_zone_id": "zone-town-starfall-haven",
+      "loc": "-28323:-108306",
+      "engineer_or_controller_npc": "Engineer Lekon's Astrolabe Scout",
+      "star_stone_fuel_or_yield": "Extracted Green Star Stone (x1\u2013x4 per Vein \u00b7 Collection Skill Lv.1\u20133)",
+      "aurabird_form_or_vessel": "Aurabird Falcon / Owl Dual-Form Aerial Collector",
+      "aerial_rewards": [
+        "Extracted Green Star Stone -> Earth / Dark / Fire Crystal Synthesis",
+        "Spellbook: Final Flying Form (Lv.79 Ultimate Aerial Combat Morph)",
+        "Top-Grade Life Stone (Lv.80) & Giant's Codex: Oblivion"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-08-astrolabe-rift-thermals-star-vein",
+      "node_name": "Astrolabe Rift Thermal Updrafts \u2014 Frontier Star Stone Vein",
+      "aerial_category": "Star_Stone_Extraction_Field",
+      "zone_id": "zone-field-astrolabe-rift",
+      "connected_dock_zone_id": "zone-town-pinion-terminus",
+      "loc": "76463:68106",
+      "engineer_or_controller_npc": "Prospector Keltir & Sky-Surveyor",
+      "star_stone_fuel_or_yield": "Extracted Red & Green Star Stones (Low-Altitude Updraft Veins)",
+      "aurabird_form_or_vessel": "Aurabird Falcon / Owl & Wyvern Thermal Updraft Wing",
+      "aerial_rewards": [
+        "Energy Star Stone Starter Pack (x25 Clan Airship Fuel)",
+        "Gracia Star Stone Fairy Agathion Summon Bracelet",
+        "High-Grade Attribute Stone Bundle (+6..+150 Elemental)"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-09-seed-of-infinity-ekimus-sky-corridor",
+      "node_name": "Seed of Infinity Aerial Approach \u2014 Ekimus & Twin Vulture Corridor",
+      "aerial_category": "Aerial_Raid_Corridor",
+      "zone_id": "zone-catacomb-dark-omens-coral",
+      "connected_dock_zone_id": "zone-town-starfall-haven",
+      "loc": "38449:-28982",
+      "engineer_or_controller_npc": "Officer Tepios & Mouth of Ekimus",
+      "star_stone_fuel_or_yield": "Clan Airship Command Channel (18\u201345 Players) + 5 Energy Star Stones",
+      "aurabird_form_or_vessel": "Clan Airship Dock Insertion + Aurabird Falcon Escort",
+      "aerial_rewards": [
+        "Vesper Weapon & Armor Set Pieces (Ekimus Raid Jackpot)",
+        "Soul Crystal Stage 15\u201316 Resonance & Freed Soul",
+        "Icarus S80 Weapon Recipes & Top-Grade Life Stone (Lv.82)"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-10-seed-of-destruction-tiat-landing-corridor",
+      "node_name": "Seed of Destruction Dragon-Promentory \u2014 Tiat Clan Airship Landing",
+      "aerial_category": "Aerial_Raid_Corridor",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "connected_dock_zone_id": "zone-town-starfall-haven",
+      "loc": "18435:-64270",
+      "engineer_or_controller_npc": "Sergeant Allenos & Magister Dilios",
+      "star_stone_fuel_or_yield": "Clan Airship Command Channel (36\u201345 Players) + Dragon Totem Defense",
+      "aurabird_form_or_vessel": "Clan Airship Direct Citadel Dock + Final Flying Form",
+      "aerial_rewards": [
+        "Vesper Cutter, Shaper, Buster, Singer & Caster Drops (Tiat Raid)",
+        "Draconic & Imperial Crusader Masterwork Foundation Boxes",
+        "12h Seed of Destruction Dragon-Crystal Harvesting Access"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-11-star-heart-valdstone-aerial-raid-skyway",
+      "node_name": "Star-Heart Spire Upper Skyway \u2014 Aerial Raid Boss Valdstone & Rok",
+      "aerial_category": "Aerial_Raid_Corridor",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "connected_dock_zone_id": "zone-fortress-cloud-halo",
+      "loc": "149221:28342",
+      "engineer_or_controller_npc": "Admiral Keucereus & Sky-Watch Commander",
+      "star_stone_fuel_or_yield": "Aurabird Falcon / Owl / Final Flying Form Raid Wing (Lv.78\u201385)",
+      "aurabird_form_or_vessel": "Aurabird Falcon / Owl + Final Flying Form (Aerial Dogfight Skills)",
+      "aerial_rewards": [
+        "Aerial Raid Boss Trophy: Enkura / Valdstone / Rok Essence",
+        "Blessed Scroll: Enchant Weapon (S-Grade) & Armor (S-Grade)",
+        "Forgotten Scroll: Star Fall, Meteor & Enlightenment"
+      ]
+    },
+    {
+      "aerial_node_id": "aerial-12-kelp-reef-enira-sky-trench-corridor",
+      "node_name": "Kelp Spiral Sky-Trench \u2014 Aerial Raid Boss Enira & Banshee Queen",
+      "aerial_category": "Aerial_Raid_Corridor",
+      "zone_id": "zone-field-kelp-spiral-reef",
+      "connected_dock_zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "loc": "-52393:-138646",
+      "engineer_or_controller_npc": "Harbor Airship Controller & Sky-Navigator",
+      "star_stone_fuel_or_yield": "Clan Airship Patrol Wing + 5 Energy Star Stones per Sortie",
+      "aurabird_form_or_vessel": "Clan Airship Escort + Aurabird Owl (High-M.Def Aerial Shield)",
+      "aerial_rewards": [
+        "Icarus Trident, Hammer & Hall 60% Recipes + Key Pieces",
+        "Extracted Red/Blue/Green Star Stone Crate (x100)",
+        "Attribute Crystal (Water / Wind 150->300) & Giant's Codex: Mastery"
+      ]
+    }
+  ],
+  "belt_cloak_weaver_hubs": [
+    {
+      "weaver_hub_id": "weaver-01-aden-olf-adams-master-loom",
+      "hub_name": "Torque-Balance Imperial Loom \u2014 Weaver Olf Adams (Aden S-Grade Mithril Belts)",
+      "garment_category": "Weaver_Olf_Belt_Loom",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "116248:-18232",
+      "weaver_npc_name": "Weaver Olf Adams (Imperial Tailor Guild)",
+      "featured_belts_or_cloaks": [
+        "Top-Grade Magic Ornament Mithril Belt (PvP Skill Attack +5% / PvP Defense +6%)",
+        "Top-Grade Magic Pouch Mithril Belt (+36 Inventory Slots) & Magic Pin (+8,000 Weight Limit)",
+        "Top-Grade Magic Rune Clip Mithril Belt (+HP/MP Combat Regeneration) & Olf's +10 T-Shirt"
+      ],
+      "unseal_badge_cost": "Territory Badge (x80) + 350,000 Adena per Sealed Magic Pouch / Pin / Ornament",
+      "stat_enhancement_summary": "Unseals Sealed Mithril Belt (S-Grade) + Low/Regular/High/Top-Grade clasps; +36 inventory slots or +5% PvP damage."
+    },
+    {
+      "weaver_hub_id": "weaver-02-rune-olf-kanore-mithril-loom",
+      "hub_name": "Starfall Haven Sky-Loom \u2014 Weaver Olf Kanore (Rune S-Grade Belt & Rune Clip)",
+      "garment_category": "Weaver_Olf_Belt_Loom",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "43661:-47744",
+      "weaver_npc_name": "Weaver Olf Kanore (Rune Weaver's Guild)",
+      "featured_belts_or_cloaks": [
+        "Top-Grade Magic Ornament Mithril Belt (PvP Physical Attack +5% / Skill Damage +5%)",
+        "Top-Grade Magic Rune Clip Mithril Belt (HP Recovery +3.5/tick & MP Recovery +2.2/tick)",
+        "High-Grade Magic Pouch & Magic Pin Mithril Belt (+24 Slots / +6,000 Weight Limit)"
+      ],
+      "unseal_badge_cost": "Territory Badge (x80) + 350,000 Adena (Unseal Sealed Magic Ornament / Rune Clip)",
+      "stat_enhancement_summary": "Specializes in S-Grade Mithril Belt unsealing & Top-Grade Magic Ornament PvP offensive/defensive weaving."
+    },
+    {
+      "weaver_hub_id": "weaver-03-giran-guild-iron-belt-loom",
+      "hub_name": "Inductor Switchyard Tailor Loom \u2014 Weaver Olf's Giran Iron Belt Parlor",
+      "garment_category": "Weaver_Olf_Belt_Loom",
+      "zone_id": "zone-town-inductor-switchyard",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147274:-55056",
+      "weaver_npc_name": "Weaver Olf's Journeyman Tailor Lauren",
+      "featured_belts_or_cloaks": [
+        "Top-Grade Magic Ornament Iron Belt (A-Grade \u00b7 PvP Skill Attack +4% / Defense +4.5%)",
+        "Top-Grade Magic Pouch Iron Belt (A-Grade \u00b7 +24 Inventory Slots) & Magic Pin (+6,000 Weight)",
+        "Shiny Litographed Olf's T-Shirt (+4..+10 Speed, +7 Teleport Return, +STR/+INT/+CON/+MEN)"
+      ],
+      "unseal_badge_cost": "Territory Badge (x50) + 180,000 Adena per A-Grade Sealed Iron Belt Clasp",
+      "stat_enhancement_summary": "Crafts & unseals A-Grade Iron Belts (Lv.61+) and enchanted Olf's T-Shirts with blessed protection scrolls."
+    },
+    {
+      "weaver_hub_id": "weaver-04-oren-cloth-belt-outfitter",
+      "hub_name": "Escapement Anvil Outfitter \u2014 Weaver Olf's B-Grade Cloth Belt Workshop",
+      "garment_category": "Weaver_Olf_Belt_Loom",
+      "zone_id": "zone-town-escapement-anvil",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "82987:53332",
+      "weaver_npc_name": "Weaver Olf's Steward Hermin",
+      "featured_belts_or_cloaks": [
+        "Top-Grade Magic Pouch Cloth Belt (B-Grade \u00b7 +18 Inventory Slots)",
+        "Top-Grade Magic Pin Cloth Belt (B-Grade \u00b7 +5,000 Weight Gauge Capacity)",
+        "Regular/High-Grade Magic Ornament Cloth Belt (+PvP Physical & Skill Defense)"
+      ],
+      "unseal_badge_cost": "Territory Badge (x30) + 85,000 Adena per B-Grade Sealed Cloth Belt Clasp",
+      "stat_enhancement_summary": "Provides mid-tier B-Grade Cloth Belts (Lv.52+) expanding Dwarven spoil haul weight & inventory slots."
+    },
+    {
+      "weaver_hub_id": "weaver-05-kilnwatch-leather-belt-loom",
+      "hub_name": "Kilnwatch Bastion Garrison Loom \u2014 Weaver Olf's C-Grade Leather Belt Tannery",
+      "garment_category": "Weaver_Olf_Belt_Loom",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-14300:123620",
+      "weaver_npc_name": "Weaver Olf's Apprentice Tannery Master",
+      "featured_belts_or_cloaks": [
+        "High-Grade Magic Pouch Leather Belt (C-Grade \u00b7 +12 Inventory Slots)",
+        "High-Grade Magic Pin Leather Belt (C-Grade \u00b7 +3,500 Weight Gauge Capacity)",
+        "Striped Linen Shirt & Mithril Shirt (+P.Def & Weight Gauge Bonus)"
+      ],
+      "unseal_badge_cost": "Territory Badge (x15) + 35,000 Adena per C-Grade Sealed Leather Pouch / Pin",
+      "stat_enhancement_summary": "Equips Lv.40+ vanguard parties with C-Grade Leather Belts and fortified shirts before Cruma / Ant Nest raids."
+    },
+    {
+      "weaver_hub_id": "weaver-06-zaken-holy-spirit-cloak-sanctum",
+      "hub_name": "Sunken Potter Hold B3 Captain's Cabin \u2014 Holy Spirit's Cloak of Zaken",
+      "garment_category": "Sovereign_Boss_Cloak_Sanctum",
+      "zone_id": "zone-dungeon-sunken-potter-hold",
+      "dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "floor_id": "B3",
+      "loc": "-78487:149308",
+      "weaver_npc_name": "Pirate King Zaken's Spectral Loom & Pathfinder Steward",
+      "featured_belts_or_cloaks": [
+        "Holy Spirit's Cloak of Zaken (S80/S84 \u00b7 P.Def +26, +15 Dark/Holy Elemental Defense)",
+        "Soul Cloak of Zaken (20 Soul Fragments of Zaken Quest Reward \u00b7 +30 All Elemental Def)",
+        "Sealed Vorpal & Elegia Cloak Pattern Drops (Daytime Lv.83 Zaken Raid)"
+      ],
+      "unseal_badge_cost": "20 Soul Fragments of Zaken (Quest: Ghosts of Batur / Day-Night Zaken Raid)",
+      "stat_enhancement_summary": "Grants S80/S84 Cloak slot armor (+26\u201330 P.Def and +15\u201330 Dark/Holy/Multi-Elemental Defense)."
+    },
+    {
+      "weaver_hub_id": "weaver-07-freya-sublime-ice-cloak-sanctum",
+      "hub_name": "Catacomb of the Astral Witch B3 Throne \u2014 Holy Spirit's Cloak of Freya",
+      "garment_category": "Sovereign_Boss_Cloak_Sanctum",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "54126:-34704",
+      "weaver_npc_name": "Rafforty & Jinia's Ice Queen Reliquary",
+      "featured_belts_or_cloaks": [
+        "Holy Spirit's Cloak of Freya (S80/S84 \u00b7 P.Def +26, +15 Water/Fire Elemental Defense)",
+        "Soul Cloak of Freya (20 Soul Fragments of Freya \u00b7 +30 Water/Wind/Earth Defense)",
+        "Bottle of Freya's Soul (Upgrades Necklace of Freya -> Blessed Necklace of Freya)"
+      ],
+      "unseal_badge_cost": "20 Soul Fragments of Freya (Normal / Extreme Ice Queen Freya Raid)",
+      "stat_enhancement_summary": "Bestows the frost-woven Soul Cloak of Freya with +30 Elemental Defense and S84 Cloak slot protection."
+    },
+    {
+      "weaver_hub_id": "weaver-08-frintezza-scarlet-imperial-cloak-sanctum",
+      "hub_name": "Chronometer Foundry 3F Imperial Tomb \u2014 Holy Spirit's Cloak of Frintezza",
+      "garment_category": "Sovereign_Boss_Cloak_Sanctum",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84739:56484",
+      "weaver_npc_name": "Imperial Tomb Guide & Weaver Olf's Relic Envoy",
+      "featured_belts_or_cloaks": [
+        "Holy Spirit's Cloak of Frintezza (S80/S84 \u00b7 P.Def +26, +15 Dark/Wind Elemental Defense)",
+        "Soul Cloak of Frintezza (20 Soul Fragments of Frintezza \u00b7 +30 All Elemental Def)",
+        "Scarlet van Halisha's Crimson Drape & Forgotten Scroll: Fighter's Will"
+      ],
+      "unseal_badge_cost": "20 Soul Fragments of Frintezza (Last Imperial Prince / Scarlet van Halisha Raid)",
+      "stat_enhancement_summary": "Harnesses Scarlet van Halisha's symphony barrier into an S80/S84 Cloak with +30 Elemental Defense."
+    },
+    {
+      "weaver_hub_id": "weaver-09-antharas-valakas-dragon-cloak-sanctum",
+      "hub_name": "Ember Bellows B3 Dragon Lair \u2014 Sovereign Cloak of Antharas & Valakas",
+      "garment_category": "Sovereign_Boss_Cloak_Sanctum",
+      "zone_id": "zone-dungeon-ember-bellows-chamber",
+      "dungeon_id": "zone-dungeon-ember-bellows-chamber",
+      "floor_id": "B3",
+      "loc": "-41248:-109728",
+      "weaver_npc_name": "Watchman Gilmore & Klein's Dragon-Scale Loom",
+      "featured_belts_or_cloaks": [
+        "Ancient Cloak of Antharas (P.Def +32, +35 Earth/Holy/Dark Elemental Defense)",
+        "Ancient Cloak of Valakas (P.Def +32, +35 Fire/Water/Wind Elemental Defense)",
+        "Sealed Vespers & Elegia Dragon-Scale Cloak Clasps"
+      ],
+      "unseal_badge_cost": "Dragon Heart Scale + 20 Soul Fragments of Antharas / Valakas",
+      "stat_enhancement_summary": "Apex World-Dragon Cloak granting +32 P.Def and +35 Elemental Defense across 3 elemental axes."
+    },
+    {
+      "weaver_hub_id": "weaver-10-star-heart-beleth-kimerian-cloak-sanctum",
+      "hub_name": "Star-Heart Nave 3F Apex Sanctum \u2014 Cloak of Kimerian & Beleth's Drape",
+      "garment_category": "Sovereign_Boss_Cloak_Sanctum",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149165:28460",
+      "weaver_npc_name": "Ancient Arcanist & Fairy Citizen Envoy",
+      "featured_belts_or_cloaks": [
+        "Holy Spirit's Cloak of Kimerian (P.Def +28, +25 Wind/Earth Elemental Defense)",
+        "Beleth's Astral Sovereign Cloak (+28 P.Def, +15% Resistance to Buff-Cancel)",
+        "Ancient Cloak: S80/S84 Grade (No-PK Penalty Safe Enchant Cloak)"
+      ],
+      "unseal_badge_cost": "Glimmering Fairy Spark + 15 Astral Boss Seal Stones",
+      "stat_enhancement_summary": "Provides anti-cancel and elemental damage reduction cloaks for S80 Dynasty/Moirai/Vesper/Elegia sets."
+    },
+    {
+      "weaver_hub_id": "weaver-11-crown-beacon-royal-castle-cloak-armory",
+      "hub_name": "Crown-Beacon Citadel Royal Armory \u2014 Knight's Cloak of Light & Darkness",
+      "garment_category": "Castle_Knight_Cloak_Armory",
+      "zone_id": "zone-town-crown-beacon",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147878:26848",
+      "weaver_npc_name": "Grand Chamberlain Crosby & Royal Cloak Quartermaster",
+      "featured_belts_or_cloaks": [
+        "Knight's Cloak of Light (Sovereign Castle of Light \u00b7 P.Def +25, Castle Return Skill)",
+        "Knight's Cloak of Darkness (Tax-Sovereign Castle of Darkness \u00b7 P.Def +25, +PvP Reduction)",
+        "Royal Crown of the Lord & Marquis/Duke Clan Cloak Insignia"
+      ],
+      "unseal_badge_cost": "Castle Ownership (Clan Rank: Knight / Elder / Royal Guard) + 35,000 Adena",
+      "stat_enhancement_summary": "Equips ruling Castle Clan Knights and Royal Guards with sovereign heraldic cloaks (S/S80/S84 Armor Sets)."
+    },
+    {
+      "weaver_hub_id": "weaver-12-kilnwatch-accord-clanhall-cloak-armory",
+      "hub_name": "Kilnwatch Accord Quartermaster \u2014 Clan Hall & Dion Territory Knight's Cloak",
+      "garment_category": "Castle_Knight_Cloak_Armory",
+      "zone_id": "zone-clanhall-kilnwatch-accord",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-13809:124136",
+      "weaver_npc_name": "Chamberlain Saul & Mercenary Captain",
+      "featured_belts_or_cloaks": [
+        "Knight's Cloak: Dion & Gludio Sovereign Weave (+22 P.Def, +10 Elemental Def)",
+        "Elite Clan Hall Sovereign Cloak (1h Blessed Return to Clan Hall)",
+        "Top-Grade Magic Ornament Belt Buckle & Knights' Epaulette Bundle"
+      ],
+      "unseal_badge_cost": "450 Knights' Epaulettes + 150,000 Adena (Clan Lv.5+ Marquis Rank)",
+      "stat_enhancement_summary": "Issues territory-colored Knight's Cloaks and Clan Hall teleport drapes to southern siege clans."
+    },
+    {
+      "weaver_hub_id": "weaver-13-dragonspine-fortress-vanguard-cloak-armory",
+      "hub_name": "Dragonspine Cog Fortress Armory \u2014 Garrison Knight's Cloak & Epaulette Loom",
+      "garment_category": "Castle_Knight_Cloak_Armory",
+      "zone_id": "zone-fortress-dragonspine-cog",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "91204:136824",
+      "weaver_npc_name": "Fortress Supply Officer & Logistics Weaver",
+      "featured_belts_or_cloaks": [
+        "Fortress Vanguard Cloak (P.Def +20, +5% Siege Bow/Crossbow Resistance)",
+        "High-Grade Magic Pin & Magic Pouch Mithril Belt Unsealing Service",
+        "Blue Talisman of Divine Protection & Red Talisman of Life Force"
+      ],
+      "unseal_badge_cost": "600 Knights' Epaulettes + 200,000 Adena (Contracted or Independent Fortress)",
+      "stat_enhancement_summary": "Combines Fortress Epaulette supply with Knight's Cloak armoring and Mithril Belt unsealing."
+    },
+    {
+      "weaver_hub_id": "weaver-14-cloud-halo-sky-citadel-cloak-armory",
+      "hub_name": "Cloud-Halo Sky-Fortress Armory \u2014 Astral Knight's Cloak & Dynasty Drape",
+      "garment_category": "Castle_Knight_Cloak_Armory",
+      "zone_id": "zone-fortress-cloud-halo",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "46217:-45088",
+      "weaver_npc_name": "Sky-Chamberlain Brasseur & Weaver Olf's Envoy",
+      "featured_belts_or_cloaks": [
+        "Knight's Cloak of the Shattered Halo (P.Def +26, +20 Holy/Dark Elemental Def)",
+        "Dynasty / Moirai / Vesper / Vorpal / Elegia Cloak Slot Unlocker",
+        "Top-Grade Magic Ornament & Magic Rune Clip Mithril Belt"
+      ],
+      "unseal_badge_cost": "Territory Badge (x80) or 750 Knights' Epaulettes + 350,000 Adena",
+      "stat_enhancement_summary": "Endgame Continent 03 armory unlocking S80/S84 armor set Cloak slots and Top-Grade Mithril Belts."
+    }
   ]
 }

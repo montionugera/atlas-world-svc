@@ -92,15 +92,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas52DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas54DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas56DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas58DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 26)),
+        "wave": int(iter_state.get("wave", 27)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"58-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"56-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"54-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"52-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -120,7 +122,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 Verified"
         ),
     }
     return merged
@@ -4382,7 +4384,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4457,6 +4459,8 @@ let ATLAS_FACTION_ALLIANCE_MODE = 'All';
 let ATLAS_FANTASY_PLAZA_MODE = 'All';
 let ATLAS_HERO_WEAPON_MODE = 'All';
 let ATLAS_TREASURE_CHEST_MODE = 'All';
+let ATLAS_AERIAL_DOCK_MODE = 'All';
+let ATLAS_BELT_CLOAK_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4503,6 +4507,8 @@ const ATLAS_STATE_STORE = {
   fantasyPlazaMode: 'All',                 // D54: Active 12-Node Monster Derby, Coin of Magic & Kratei's Cube Selector ('Off' | 'All' | 'Monster_Derby_Race_Track' | 'Coin_of_Magic_Collector_Lodge' | 'Kratei_Cube_Fantasy_Arena')
   heroWeaponMode: 'All',                   // D55: Active 15-Town Hero Weapon & Olympiad Token Selector ('Off' | 'All' | 'Martial_Infinity_Armory' | 'Arcane_Infinity_Sanctum' | 'Olympiad_Token_Codex_Exchange')
   treasureChestMode: 'All',                // D56: Active 16-Zone Treasure Chest & Lockpick Cache Selector ('Off' | 'All' | 'Overland_Pirate_Bandit_Cache' | 'Underground_Catacomb_Vault' | 'Tower_Sanctum_Coffer_Room')
+  aerialDockMode: 'All',                   // D57: Active 12-Node Clan Airship Dock & Star Stone Selector ('Off' | 'All' | 'Clan_Airship_Summon_Dock' | 'Star_Stone_Extraction_Field' | 'Aerial_Raid_Corridor')
+  beltCloakMode: 'All',                    // D58: Active 14-Node Mithril Belt Weaver & Sovereign Cloak Selector ('Off' | 'All' | 'Weaver_Olf_Belt_Loom' | 'Sovereign_Boss_Cloak_Sanctum' | 'Castle_Knight_Cloak_Armory')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4577,6 +4583,20 @@ function setAtlasHeroWeaponMode(modeId) {
 function setAtlasTreasureChestMode(modeId) {
   ATLAS_TREASURE_CHEST_MODE = String(modeId || 'All');
   ATLAS_STATE_STORE.treasureChestMode = ATLAS_TREASURE_CHEST_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasAerialDockMode(modeId) {
+  ATLAS_AERIAL_DOCK_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.aerialDockMode = ATLAS_AERIAL_DOCK_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasBeltCloakMode(modeId) {
+  ATLAS_BELT_CLOAK_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.beltCloakMode = ATLAS_BELT_CLOAK_MODE;
   writeUrlState(false);
   render();
 }
@@ -9837,6 +9857,197 @@ function renderAtlasTreasureChestBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasAerialDockBarHtml(tatlas) {
+  const docks = (tatlas && tatlas.aerial_star_stone_docks) || [];
+  if (!docks.length) return '';
+
+  const curMode = ATLAS_AERIAL_DOCK_MODE || ATLAS_STATE_STORE.aerialDockMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🛸 All 12 Aerial Nodes' },
+    { id: 'Clan_Airship_Summon_Dock', label: '⚓ 4 Clan Airship Docks' },
+    { id: 'Star_Stone_Extraction_Field', label: '☄️ 4 Star Stone Fields' },
+    { id: 'Aerial_Raid_Corridor', label: '🦅 4 Aerial Raid Corridors' }
+  ];
+
+  const filteredDocks = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? docks : docks.filter(d => d.aerial_category === curMode));
+
+  const featuredDocks = curMode === 'All'
+    ? [
+        ...docks.filter(d => d.aerial_category === 'Clan_Airship_Summon_Dock').slice(0, 1),
+        ...docks.filter(d => d.aerial_category === 'Star_Stone_Extraction_Field').slice(0, 1),
+        ...docks.filter(d => d.aerial_category === 'Aerial_Raid_Corridor').slice(0, 2)
+      ]
+    : filteredDocks.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasAerialDockBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0c1e2e;border:1px solid rgba(56,189,248,0.58)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#bae6fd">🛸 12-NODE CLAN AIRSHIP SUMMON DOCK, STAR STONE EXTRACTION &amp; AERIAL RAID MATRIX (D57 · 12 NODES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasAerialDockMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.45)'};background:${isAct ? '#0369a1' : '#090d14'};color:${isAct ? '#ffffff' : '#e0f2fe'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          4 CLAN AIRSHIP DOCKS + 4 STAR STONE EXTRACTION FIELDS + 4 AERIAL RAID CORRIDORS
+        </span>
+      </div>
+
+      ${featuredDocks.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredDocks.map(d => {
+            const isDock = d.aerial_category === 'Clan_Airship_Summon_Dock';
+            const isField = d.aerial_category === 'Star_Stone_Extraction_Field';
+            const catCol = isDock ? '#38bdf8' : (isField ? '#f43f5e' : '#facc15');
+            const catIcon = isDock ? '⚓' : (isField ? '☄️' : '🦅');
+            const zObj = byZid[d.zone_id] || {};
+            const zidStr = String(d.zone_id || '');
+            let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(d.loc)}')`;
+            if (zidStr.startsWith('zone-town-')) {
+              jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(d.loc)}')`;
+            } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(d.loc)}')`;
+            } else if (zidStr.startsWith('zone-dungeon-') || zidStr.startsWith('zone-catacomb-')) {
+              const defFloor = zidStr === 'zone-dungeon-star-heart-nave' ? '3F' : 'B3';
+              jumpJs = `openDungeonSubMap('${escapeHtml(zidStr)}', '${defFloor}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(d.node_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(d.aerial_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                    ⛽ ${escapeHtml(d.star_stone_fuel_or_yield.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🦅 ${escapeHtml(((d.aerial_rewards && d.aerial_rewards[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#082f49;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} Jump to Aerial Dock / Star Stone Node
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasBeltCloakBarHtml(tatlas) {
+  const hubs = (tatlas && tatlas.belt_cloak_weaver_hubs) || [];
+  if (!hubs.length) return '';
+
+  const curMode = ATLAS_BELT_CLOAK_MODE || ATLAS_STATE_STORE.beltCloakMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🧥 All 14 Hubs' },
+    { id: 'Weaver_Olf_Belt_Loom', label: '🧵 5 Weaver Olf Belt Looms' },
+    { id: 'Sovereign_Boss_Cloak_Sanctum', label: '🧥 5 Boss Cloak Sanctums' },
+    { id: 'Castle_Knight_Cloak_Armory', label: '🎖️ 4 Castle Knight Cloak Armories' }
+  ];
+
+  const filteredHubs = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? hubs : hubs.filter(h => h.garment_category === curMode));
+
+  const featuredHubs = curMode === 'All'
+    ? [
+        ...hubs.filter(h => h.garment_category === 'Weaver_Olf_Belt_Loom').slice(0, 1),
+        ...hubs.filter(h => h.garment_category === 'Sovereign_Boss_Cloak_Sanctum').slice(0, 2),
+        ...hubs.filter(h => h.garment_category === 'Castle_Knight_Cloak_Armory').slice(0, 1)
+      ]
+    : filteredHubs.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasBeltCloakBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1f1726;border:1px solid rgba(192,132,252,0.58)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#e9d5ff">🧥 14-NODE WEAVER OLF MITHRIL BELT &amp; SOVEREIGN BOSS/CASTLE CLOAK MATRIX (D58 · 14 HUBS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasBeltCloakMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(192,132,252,0.45)'};background:${isAct ? '#6b21a8' : '#090d14'};color:${isAct ? '#ffffff' : '#f3e8ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 WEAVER OLF BELT LOOMS + 5 SOVEREIGN BOSS CLOAK SANCTUMS + 4 CASTLE KNIGHT CLOAK ARMORIES
+        </span>
+      </div>
+
+      ${featuredHubs.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredHubs.map(h => {
+            const isLoom = h.garment_category === 'Weaver_Olf_Belt_Loom';
+            const isBoss = h.garment_category === 'Sovereign_Boss_Cloak_Sanctum';
+            const catCol = isLoom ? '#facc15' : (isBoss ? '#c084fc' : '#38bdf8');
+            const catIcon = isLoom ? '🧵' : (isBoss ? '🧥' : '🎖️');
+            const zObj = byZid[h.zone_id] || {};
+            const zidStr = String(h.zone_id || '');
+            const didStr = String(h.dungeon_id || '');
+            const fidStr = String(h.floor_id || 'B3');
+            let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(h.loc)}')`;
+            if (didStr) {
+              jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+            } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(h.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(h.hub_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(h.garment_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#e9d5ff;margin-top:1px">
+                    🪡 ${escapeHtml(((h.featured_belts_or_cloaks && h.featured_belts_or_cloaks[0]) || '').slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🎖️ ${escapeHtml(h.unseal_badge_cost.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#3b0764;color:#f3e8ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} ${didStr ? `Open Cloak Sanctum (${escapeHtml(fidStr)})` : 'Jump to Weaver / Cloak Armory'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -9997,6 +10208,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasFantasyPlazaBarHtml(tatlas)}
       ${renderAtlasHeroWeaponBarHtml(tatlas)}
       ${renderAtlasTreasureChestBarHtml(tatlas)}
+      ${renderAtlasAerialDockBarHtml(tatlas)}
+      ${renderAtlasBeltCloakBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -12991,6 +13204,82 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D57: Interactive 12-Node Clan Airship Summon Dock, Star Stone Extraction & Aerial Raid Overlay (`studioAerialStarStoneOverlay`)
+  const aerialDockRows = (tatlas && tatlas.aerial_star_stone_docks) || [];
+  const curAerialDockMode = ATLAS_AERIAL_DOCK_MODE || ATLAS_STATE_STORE.aerialDockMode || 'All';
+  const activeAerialDocks = curAerialDockMode === 'Off'
+    ? []
+    : (curAerialDockMode === 'All'
+        ? aerialDockRows
+        : aerialDockRows.filter(d => d.aerial_category === curAerialDockMode));
+  const aerialStarStoneOverlaySvg = `
+    <g id="studioAerialStarStoneOverlay">
+      ${activeAerialDocks.map(d => {
+        const ac = clampWorldLocCoord(d.loc || '-84120:243500');
+        const czObj = allZonesById[d.connected_dock_zone_id] || {};
+        const cc = clampWorldLocCoord(czObj.loc_coord || d.loc || '-84120:243500');
+        const zObj = allZonesById[d.zone_id] || {};
+        const zidStr = String(d.zone_id || '');
+        const isDock = d.aerial_category === 'Clan_Airship_Summon_Dock';
+        const isField = d.aerial_category === 'Star_Stone_Extraction_Field';
+        const colHex = isDock ? '#38bdf8' : (isField ? '#f43f5e' : '#facc15');
+        const iconTxt = isDock ? '⚓' : (isField ? '☄️' : '🦅');
+        let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(d.loc)}')`;
+        if (zidStr.startsWith('zone-town-')) {
+          jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(d.loc)}')`;
+        } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(d.loc)}')`;
+        } else if (zidStr.startsWith('zone-dungeon-') || zidStr.startsWith('zone-catacomb-')) {
+          const defFloor = zidStr === 'zone-dungeon-star-heart-nave' ? '3F' : 'B3';
+          jumpJs = `openDungeonSubMap('${escapeHtml(zidStr)}', '${defFloor}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <line x1="${ac.svgX}" y1="${ac.svgY}" x2="${cc.svgX}" y2="${cc.svgY}" stroke="${colHex}" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.58"/>
+            <circle cx="${ac.svgX}" cy="${ac.svgY}" r="10.6" fill="rgba(3,105,161,0.44)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${ac.svgX}" y="${ac.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D58: Interactive 14-Node Weaver Olf Mithril Belt & Sovereign Boss/Castle Cloak Overlay (`studioBeltCloakWeaverOverlay`)
+  const beltCloakRows = (tatlas && tatlas.belt_cloak_weaver_hubs) || [];
+  const curBeltCloakMode = ATLAS_BELT_CLOAK_MODE || ATLAS_STATE_STORE.beltCloakMode || 'All';
+  const activeBeltCloakHubs = curBeltCloakMode === 'Off'
+    ? []
+    : (curBeltCloakMode === 'All'
+        ? beltCloakRows
+        : beltCloakRows.filter(h => h.garment_category === curBeltCloakMode));
+  const beltCloakWeaverOverlaySvg = `
+    <g id="studioBeltCloakWeaverOverlay">
+      ${activeBeltCloakHubs.map(h => {
+        const hc = clampWorldLocCoord(h.loc || '18600:145200');
+        const zObj = allZonesById[h.zone_id] || {};
+        const zidStr = String(h.zone_id || '');
+        const didStr = String(h.dungeon_id || '');
+        const fidStr = String(h.floor_id || 'B3');
+        const isLoom = h.garment_category === 'Weaver_Olf_Belt_Loom';
+        const isBoss = h.garment_category === 'Sovereign_Boss_Cloak_Sanctum';
+        const colHex = isLoom ? '#facc15' : (isBoss ? '#c084fc' : '#38bdf8');
+        const iconTxt = isLoom ? '🧵' : (isBoss ? '🧥' : '🎖️');
+        let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(h.loc)}')`;
+        if (didStr) {
+          jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+        } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(h.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${hc.svgX}" cy="${hc.svgY}" r="10.5" fill="rgba(107,33,168,0.44)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${hc.svgX}" y="${hc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -13027,6 +13316,8 @@ function renderDedicatedWorldAtlas() {
     ${fantasyPlazaOverlaySvg}
     ${heroWeaponExchangeOverlaySvg}
     ${treasureChestOverlaySvg}
+    ${aerialStarStoneOverlaySvg}
+    ${beltCloakWeaverOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

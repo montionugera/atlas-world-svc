@@ -251,6 +251,18 @@
       "maxItems": 16,
       "items": { "$ref": "#/$defs/treasureChestLockpickGroundSpec" }
     },
+    "aerial_star_stone_docks": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": { "$ref": "#/$defs/aerialStarStoneDockSpec" }
+    },
+    "belt_cloak_weaver_hubs": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": { "$ref": "#/$defs/beltCloakWeaverHubSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -3159,6 +3171,89 @@
           "minItems": 2,
           "items": { "type": "string" }
         }
+      }
+    },
+    "aerialStarStoneDockSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "aerial_node_id",
+        "node_name",
+        "aerial_category",
+        "zone_id",
+        "connected_dock_zone_id",
+        "loc",
+        "engineer_or_controller_npc",
+        "star_stone_fuel_or_yield",
+        "aurabird_form_or_vessel",
+        "aerial_rewards"
+      ],
+      "properties": {
+        "aerial_node_id": { "type": "string" },
+        "node_name": { "type": "string" },
+        "aerial_category": {
+          "type": "string",
+          "enum": [
+            "Clan_Airship_Summon_Dock",
+            "Star_Stone_Extraction_Field",
+            "Aerial_Raid_Corridor"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "connected_dock_zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "engineer_or_controller_npc": { "type": "string" },
+        "star_stone_fuel_or_yield": { "type": "string" },
+        "aurabird_form_or_vessel": { "type": "string" },
+        "aerial_rewards": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "beltCloakWeaverHubSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "weaver_hub_id",
+        "hub_name",
+        "garment_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "weaver_npc_name",
+        "featured_belts_or_cloaks",
+        "unseal_badge_cost",
+        "stat_enhancement_summary"
+      ],
+      "properties": {
+        "weaver_hub_id": { "type": "string" },
+        "hub_name": { "type": "string" },
+        "garment_category": {
+          "type": "string",
+          "enum": [
+            "Weaver_Olf_Belt_Loom",
+            "Sovereign_Boss_Cloak_Sanctum",
+            "Castle_Knight_Cloak_Armory"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "weaver_npc_name": { "type": "string" },
+        "featured_belts_or_cloaks": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "unseal_badge_cost": { "type": "string" },
+        "stat_enhancement_summary": { "type": "string" }
       }
     }
   }

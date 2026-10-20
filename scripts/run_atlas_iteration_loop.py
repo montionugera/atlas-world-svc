@@ -9693,6 +9693,512 @@ def _build_treasure_chest_lockpick_grounds(atlas: dict[str, Any]) -> list[dict[s
     return rows
 
 
+def _build_aerial_star_stone_docks(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 12 Clan Airship Summon Dock, Star Stone Extraction & Aerial Raid Nodes (4 Clan_Airship_Summon_Dock + 4 Star_Stone_Extraction_Field + 4 Aerial_Raid_Corridor) (D57)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 4 Clan_Airship_Summon_Dock Nodes
+        (
+            "aerial-01-glaze-barge-airship-summon-dock",
+            "Glaze-Barge Airship Summon Wharf — Southern Sky-Continent Pier",
+            "Clan_Airship_Summon_Dock",
+            "zone-harbor-glaze-barge-airship-dock",
+            "zone-town-starfall-haven",
+            "Engineer Lekon & Wharf Controller Tolonis",
+            "Airship Summon License (10 Energy Star Stones + Clan Lv.5+) & 5 Energy Star Stones per Summon",
+            "Clan Airship Helm (Steer / Autopilot / Boost) & Scheduled Gracia Ferry",
+            [
+                "Clan Airship Summon License & Spellbook: Aurabird Falcon / Aurabird Owl",
+                "Expert Text: Star Stone Extraction Skillbook (Lv.1–3 Collection)",
+                "Keucereus Alliance Supply Box & Icarus Weapon Piece Voucher",
+            ],
+        ),
+        (
+            "aerial-02-starfall-keucereus-alliance-dock",
+            "Starfall Haven Keucereus Sky-Pier — Primary Alliance Airship Berth",
+            "Clan_Airship_Summon_Dock",
+            "zone-town-starfall-haven",
+            "zone-harbor-glaze-barge-airship-dock",
+            "Admiral Keucereus, Engineer Lekon & Magister Dilios",
+            "5 Energy Star Stones per Clan Airship Summon (100–600 Epaulette Fuel Reserve)",
+            "Clan Airship Command Helm + Spellbook: Aurabird Falcon (Speed Flight)",
+            [
+                "Icarus S80 Weapon 60% Recipes (Icarus Sawsword, Disperser, Spirit, Spitter)",
+                "Vesper Noble Enhancement Stone & Seed of Infinity / Destruction Transit",
+                "Extracted Red / Blue / Green Star Stone Compression Bundle",
+            ],
+        ),
+        (
+            "aerial-03-cloud-halo-cleft-airship-mooring",
+            "Cloud-Halo Fortress Aerial Mooring — Cleft & Seed Command Platform",
+            "Clan_Airship_Summon_Dock",
+            "zone-fortress-cloud-halo",
+            "zone-town-starfall-haven",
+            "Special Product Broker Kutran & Airship Controller",
+            "5 Energy Star Stones per Summon + 1 Energy Star Stone per 100s Boost",
+            "Clan Airship War-Galley + Spellbook: Aurabird Owl (Armored Aerial Recon)",
+            [
+                "Masterwork Vesper & Dynasty Accessory Recipes (Kutran Star Stone Exchange)",
+                "Scroll: Enchant Aerial Transformation Skill (Falcon / Owl Mastery)",
+                "Attribute Crystal (Fire/Water/Wind/Earth/Holy/Dark 150->300 Catalyst)",
+            ],
+        ),
+        (
+            "aerial-04-pinion-steppe-sky-gantry",
+            "Pinion Terminus Brass Sky-Gantry — Continental Airship Relay",
+            "Clan_Airship_Summon_Dock",
+            "zone-town-pinion-terminus",
+            "zone-harbor-glaze-barge-airship-dock",
+            "Dwarven Airship Engineer Bauch & Sky Controller",
+            "5 Energy Star Stones per Summon (Refined from Extracted Red Star Stones)",
+            "Brass Dirigible Airship & Aurabird Falcon High-Altitude Glide",
+            [
+                "Energy Star Stone Fuel Crates (x50 Clan Airship Reserve)",
+                "Dynasty Armor & Weapon Key Material Supply Chests",
+                "Blessed Scroll of Escape: Keucereus Alliance Base",
+            ],
+        ),
+        # 4 Star_Stone_Extraction_Field Nodes
+        (
+            "aerial-05-tether-causeway-red-star-stone-cloud",
+            "Star-Tether Causeway Sky-Currents — Extracted Red Star Stone Stratum",
+            "Star_Stone_Extraction_Field",
+            "zone-field-tether-causeway",
+            "zone-town-starfall-haven",
+            "Field Officer Nemo & Collector Kutran",
+            "Extracted Red Star Stone (x1–x4 per Vein via Star Stone Gathering Lv.1–3)",
+            "Spellbook: Aurabird Falcon (Lv.75+ Rapid Extraction Dive)",
+            [
+                "Extracted Red Star Stone -> Energy Star Stone Fuel Refinement",
+                "150->300 Elemental Attribute Crystal Synthesis Catalyst (Kutran)",
+                "Aerial Collection Mastery SP Scroll & Vitality Replenishing Herb",
+            ],
+        ),
+        (
+            "aerial-06-aurora-tether-blue-star-stone-vortex",
+            "Aurora Tether Upper Vortex — Extracted Blue Star Stone Drift",
+            "Star_Stone_Extraction_Field",
+            "zone-field-aurora-tether",
+            "zone-fortress-cloud-halo",
+            "Magister Dilios & Wind Sentinel",
+            "Extracted Blue Star Stone (x1–x4 per Vein · Collection Skill Lv.2–3)",
+            "Spellbook: Aurabird Owl (Lv.75+ High-Stability Vortex Hover)",
+            [
+                "Extracted Blue Star Stone -> Icarus & Vesper Recipe Exchange",
+                "Water / Wind / Divine Attribute Crystal (150->300 Upgrade)",
+                "Expert Text: Star Stone Extraction Level 2 & 3 Upgrade Tome",
+            ],
+        ),
+        (
+            "aerial-07-orrery-bridge-green-star-stone-belt",
+            "The Orrery Bridge Refractory Belt — Extracted Green Star Stone Field",
+            "Star_Stone_Extraction_Field",
+            "zone-field-orrery-bridge",
+            "zone-town-starfall-haven",
+            "Engineer Lekon's Astrolabe Scout",
+            "Extracted Green Star Stone (x1–x4 per Vein · Collection Skill Lv.1–3)",
+            "Aurabird Falcon / Owl Dual-Form Aerial Collector",
+            [
+                "Extracted Green Star Stone -> Earth / Dark / Fire Crystal Synthesis",
+                "Spellbook: Final Flying Form (Lv.79 Ultimate Aerial Combat Morph)",
+                "Top-Grade Life Stone (Lv.80) & Giant's Codex: Oblivion",
+            ],
+        ),
+        (
+            "aerial-08-astrolabe-rift-thermals-star-vein",
+            "Astrolabe Rift Thermal Updrafts — Frontier Star Stone Vein",
+            "Star_Stone_Extraction_Field",
+            "zone-field-astrolabe-rift",
+            "zone-town-pinion-terminus",
+            "Prospector Keltir & Sky-Surveyor",
+            "Extracted Red & Green Star Stones (Low-Altitude Updraft Veins)",
+            "Aurabird Falcon / Owl & Wyvern Thermal Updraft Wing",
+            [
+                "Energy Star Stone Starter Pack (x25 Clan Airship Fuel)",
+                "Gracia Star Stone Fairy Agathion Summon Bracelet",
+                "High-Grade Attribute Stone Bundle (+6..+150 Elemental)",
+            ],
+        ),
+        # 4 Aerial_Raid_Corridor Nodes
+        (
+            "aerial-09-seed-of-infinity-ekimus-sky-corridor",
+            "Seed of Infinity Aerial Approach — Ekimus & Twin Vulture Corridor",
+            "Aerial_Raid_Corridor",
+            "zone-catacomb-dark-omens-coral",
+            "zone-town-starfall-haven",
+            "Officer Tepios & Mouth of Ekimus",
+            "Clan Airship Command Channel (18–45 Players) + 5 Energy Star Stones",
+            "Clan Airship Dock Insertion + Aurabird Falcon Escort",
+            [
+                "Vesper Weapon & Armor Set Pieces (Ekimus Raid Jackpot)",
+                "Soul Crystal Stage 15–16 Resonance & Freed Soul",
+                "Icarus S80 Weapon Recipes & Top-Grade Life Stone (Lv.82)",
+            ],
+        ),
+        (
+            "aerial-10-seed-of-destruction-tiat-landing-corridor",
+            "Seed of Destruction Dragon-Promentory — Tiat Clan Airship Landing",
+            "Aerial_Raid_Corridor",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-town-starfall-haven",
+            "Sergeant Allenos & Magister Dilios",
+            "Clan Airship Command Channel (36–45 Players) + Dragon Totem Defense",
+            "Clan Airship Direct Citadel Dock + Final Flying Form",
+            [
+                "Vesper Cutter, Shaper, Buster, Singer & Caster Drops (Tiat Raid)",
+                "Draconic & Imperial Crusader Masterwork Foundation Boxes",
+                "12h Seed of Destruction Dragon-Crystal Harvesting Access",
+            ],
+        ),
+        (
+            "aerial-11-star-heart-valdstone-aerial-raid-skyway",
+            "Star-Heart Spire Upper Skyway — Aerial Raid Boss Valdstone & Rok",
+            "Aerial_Raid_Corridor",
+            "zone-dungeon-star-heart-nave",
+            "zone-fortress-cloud-halo",
+            "Admiral Keucereus & Sky-Watch Commander",
+            "Aurabird Falcon / Owl / Final Flying Form Raid Wing (Lv.78–85)",
+            "Aurabird Falcon / Owl + Final Flying Form (Aerial Dogfight Skills)",
+            [
+                "Aerial Raid Boss Trophy: Enkura / Valdstone / Rok Essence",
+                "Blessed Scroll: Enchant Weapon (S-Grade) & Armor (S-Grade)",
+                "Forgotten Scroll: Star Fall, Meteor & Enlightenment",
+            ],
+        ),
+        (
+            "aerial-12-kelp-reef-enira-sky-trench-corridor",
+            "Kelp Spiral Sky-Trench — Aerial Raid Boss Enira & Banshee Queen",
+            "Aerial_Raid_Corridor",
+            "zone-field-kelp-spiral-reef",
+            "zone-harbor-glaze-barge-airship-dock",
+            "Harbor Airship Controller & Sky-Navigator",
+            "Clan Airship Patrol Wing + 5 Energy Star Stones per Sortie",
+            "Clan Airship Escort + Aurabird Owl (High-M.Def Aerial Shield)",
+            [
+                "Icarus Trident, Hammer & Hall 60% Recipes + Key Pieces",
+                "Extracted Red/Blue/Green Star Stone Crate (x100)",
+                "Attribute Crystal (Water / Wind 150->300) & Giant's Codex: Mastery",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        aid,
+        aname,
+        acat,
+        zid,
+        cdzid,
+        enpc,
+        sfuel,
+        aform,
+        arewards,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx + 175 - idx * 14, by - 190 + idx * 12)
+        rows.append(
+            {
+                "aerial_node_id": aid,
+                "node_name": aname,
+                "aerial_category": acat,
+                "zone_id": zid,
+                "connected_dock_zone_id": cdzid,
+                "loc": loc,
+                "engineer_or_controller_npc": enpc,
+                "star_stone_fuel_or_yield": sfuel,
+                "aurabird_form_or_vessel": aform,
+                "aerial_rewards": arewards,
+            }
+        )
+    return rows
+
+
+def _build_belt_cloak_weaver_hubs(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 14 Weaver Olf Mithril Belt & Sovereign Boss/Castle Cloak Hubs (5 Weaver_Olf_Belt_Loom + 5 Sovereign_Boss_Cloak_Sanctum + 4 Castle_Knight_Cloak_Armory) (D58)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 5 Weaver_Olf_Belt_Loom Hubs
+        (
+            "weaver-01-aden-olf-adams-master-loom",
+            "Torque-Balance Imperial Loom — Weaver Olf Adams (Aden S-Grade Mithril Belts)",
+            "Weaver_Olf_Belt_Loom",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            "Weaver Olf Adams (Imperial Tailor Guild)",
+            [
+                "Top-Grade Magic Ornament Mithril Belt (PvP Skill Attack +5% / PvP Defense +6%)",
+                "Top-Grade Magic Pouch Mithril Belt (+36 Inventory Slots) & Magic Pin (+8,000 Weight Limit)",
+                "Top-Grade Magic Rune Clip Mithril Belt (+HP/MP Combat Regeneration) & Olf's +10 T-Shirt",
+            ],
+            "Territory Badge (x80) + 350,000 Adena per Sealed Magic Pouch / Pin / Ornament",
+            "Unseals Sealed Mithril Belt (S-Grade) + Low/Regular/High/Top-Grade clasps; +36 inventory slots or +5% PvP damage.",
+        ),
+        (
+            "weaver-02-rune-olf-kanore-mithril-loom",
+            "Starfall Haven Sky-Loom — Weaver Olf Kanore (Rune S-Grade Belt & Rune Clip)",
+            "Weaver_Olf_Belt_Loom",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "Weaver Olf Kanore (Rune Weaver's Guild)",
+            [
+                "Top-Grade Magic Ornament Mithril Belt (PvP Physical Attack +5% / Skill Damage +5%)",
+                "Top-Grade Magic Rune Clip Mithril Belt (HP Recovery +3.5/tick & MP Recovery +2.2/tick)",
+                "High-Grade Magic Pouch & Magic Pin Mithril Belt (+24 Slots / +6,000 Weight Limit)",
+            ],
+            "Territory Badge (x80) + 350,000 Adena (Unseal Sealed Magic Ornament / Rune Clip)",
+            "Specializes in S-Grade Mithril Belt unsealing & Top-Grade Magic Ornament PvP offensive/defensive weaving.",
+        ),
+        (
+            "weaver-03-giran-guild-iron-belt-loom",
+            "Inductor Switchyard Tailor Loom — Weaver Olf's Giran Iron Belt Parlor",
+            "Weaver_Olf_Belt_Loom",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            "Weaver Olf's Journeyman Tailor Lauren",
+            [
+                "Top-Grade Magic Ornament Iron Belt (A-Grade · PvP Skill Attack +4% / Defense +4.5%)",
+                "Top-Grade Magic Pouch Iron Belt (A-Grade · +24 Inventory Slots) & Magic Pin (+6,000 Weight)",
+                "Shiny Litographed Olf's T-Shirt (+4..+10 Speed, +7 Teleport Return, +STR/+INT/+CON/+MEN)",
+            ],
+            "Territory Badge (x50) + 180,000 Adena per A-Grade Sealed Iron Belt Clasp",
+            "Crafts & unseals A-Grade Iron Belts (Lv.61+) and enchanted Olf's T-Shirts with blessed protection scrolls.",
+        ),
+        (
+            "weaver-04-oren-cloth-belt-outfitter",
+            "Escapement Anvil Outfitter — Weaver Olf's B-Grade Cloth Belt Workshop",
+            "Weaver_Olf_Belt_Loom",
+            "zone-town-escapement-anvil",
+            "",
+            "",
+            "Weaver Olf's Steward Hermin",
+            [
+                "Top-Grade Magic Pouch Cloth Belt (B-Grade · +18 Inventory Slots)",
+                "Top-Grade Magic Pin Cloth Belt (B-Grade · +5,000 Weight Gauge Capacity)",
+                "Regular/High-Grade Magic Ornament Cloth Belt (+PvP Physical & Skill Defense)",
+            ],
+            "Territory Badge (x30) + 85,000 Adena per B-Grade Sealed Cloth Belt Clasp",
+            "Provides mid-tier B-Grade Cloth Belts (Lv.52+) expanding Dwarven spoil haul weight & inventory slots.",
+        ),
+        (
+            "weaver-05-kilnwatch-leather-belt-loom",
+            "Kilnwatch Bastion Garrison Loom — Weaver Olf's C-Grade Leather Belt Tannery",
+            "Weaver_Olf_Belt_Loom",
+            "zone-town-kilnwatch-bastion",
+            "",
+            "",
+            "Weaver Olf's Apprentice Tannery Master",
+            [
+                "High-Grade Magic Pouch Leather Belt (C-Grade · +12 Inventory Slots)",
+                "High-Grade Magic Pin Leather Belt (C-Grade · +3,500 Weight Gauge Capacity)",
+                "Striped Linen Shirt & Mithril Shirt (+P.Def & Weight Gauge Bonus)",
+            ],
+            "Territory Badge (x15) + 35,000 Adena per C-Grade Sealed Leather Pouch / Pin",
+            "Equips Lv.40+ vanguard parties with C-Grade Leather Belts and fortified shirts before Cruma / Ant Nest raids.",
+        ),
+        # 5 Sovereign_Boss_Cloak_Sanctum Hubs
+        (
+            "weaver-06-zaken-holy-spirit-cloak-sanctum",
+            "Sunken Potter Hold B3 Captain's Cabin — Holy Spirit's Cloak of Zaken",
+            "Sovereign_Boss_Cloak_Sanctum",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B3",
+            "Pirate King Zaken's Spectral Loom & Pathfinder Steward",
+            [
+                "Holy Spirit's Cloak of Zaken (S80/S84 · P.Def +26, +15 Dark/Holy Elemental Defense)",
+                "Soul Cloak of Zaken (20 Soul Fragments of Zaken Quest Reward · +30 All Elemental Def)",
+                "Sealed Vorpal & Elegia Cloak Pattern Drops (Daytime Lv.83 Zaken Raid)",
+            ],
+            "20 Soul Fragments of Zaken (Quest: Ghosts of Batur / Day-Night Zaken Raid)",
+            "Grants S80/S84 Cloak slot armor (+26–30 P.Def and +15–30 Dark/Holy/Multi-Elemental Defense).",
+        ),
+        (
+            "weaver-07-freya-sublime-ice-cloak-sanctum",
+            "Catacomb of the Astral Witch B3 Throne — Holy Spirit's Cloak of Freya",
+            "Sovereign_Boss_Cloak_Sanctum",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "Rafforty & Jinia's Ice Queen Reliquary",
+            [
+                "Holy Spirit's Cloak of Freya (S80/S84 · P.Def +26, +15 Water/Fire Elemental Defense)",
+                "Soul Cloak of Freya (20 Soul Fragments of Freya · +30 Water/Wind/Earth Defense)",
+                "Bottle of Freya's Soul (Upgrades Necklace of Freya -> Blessed Necklace of Freya)",
+            ],
+            "20 Soul Fragments of Freya (Normal / Extreme Ice Queen Freya Raid)",
+            "Bestows the frost-woven Soul Cloak of Freya with +30 Elemental Defense and S84 Cloak slot protection.",
+        ),
+        (
+            "weaver-08-frintezza-scarlet-imperial-cloak-sanctum",
+            "Chronometer Foundry 3F Imperial Tomb — Holy Spirit's Cloak of Frintezza",
+            "Sovereign_Boss_Cloak_Sanctum",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "Imperial Tomb Guide & Weaver Olf's Relic Envoy",
+            [
+                "Holy Spirit's Cloak of Frintezza (S80/S84 · P.Def +26, +15 Dark/Wind Elemental Defense)",
+                "Soul Cloak of Frintezza (20 Soul Fragments of Frintezza · +30 All Elemental Def)",
+                "Scarlet van Halisha's Crimson Drape & Forgotten Scroll: Fighter's Will",
+            ],
+            "20 Soul Fragments of Frintezza (Last Imperial Prince / Scarlet van Halisha Raid)",
+            "Harnesses Scarlet van Halisha's symphony barrier into an S80/S84 Cloak with +30 Elemental Defense.",
+        ),
+        (
+            "weaver-09-antharas-valakas-dragon-cloak-sanctum",
+            "Ember Bellows B3 Dragon Lair — Sovereign Cloak of Antharas & Valakas",
+            "Sovereign_Boss_Cloak_Sanctum",
+            "zone-dungeon-ember-bellows-chamber",
+            "zone-dungeon-ember-bellows-chamber",
+            "B3",
+            "Watchman Gilmore & Klein's Dragon-Scale Loom",
+            [
+                "Ancient Cloak of Antharas (P.Def +32, +35 Earth/Holy/Dark Elemental Defense)",
+                "Ancient Cloak of Valakas (P.Def +32, +35 Fire/Water/Wind Elemental Defense)",
+                "Sealed Vespers & Elegia Dragon-Scale Cloak Clasps",
+            ],
+            "Dragon Heart Scale + 20 Soul Fragments of Antharas / Valakas",
+            "Apex World-Dragon Cloak granting +32 P.Def and +35 Elemental Defense across 3 elemental axes.",
+        ),
+        (
+            "weaver-10-star-heart-beleth-kimerian-cloak-sanctum",
+            "Star-Heart Nave 3F Apex Sanctum — Cloak of Kimerian & Beleth's Drape",
+            "Sovereign_Boss_Cloak_Sanctum",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "Ancient Arcanist & Fairy Citizen Envoy",
+            [
+                "Holy Spirit's Cloak of Kimerian (P.Def +28, +25 Wind/Earth Elemental Defense)",
+                "Beleth's Astral Sovereign Cloak (+28 P.Def, +15% Resistance to Buff-Cancel)",
+                "Ancient Cloak: S80/S84 Grade (No-PK Penalty Safe Enchant Cloak)",
+            ],
+            "Glimmering Fairy Spark + 15 Astral Boss Seal Stones",
+            "Provides anti-cancel and elemental damage reduction cloaks for S80 Dynasty/Moirai/Vesper/Elegia sets.",
+        ),
+        # 4 Castle_Knight_Cloak_Armory Hubs
+        (
+            "weaver-11-crown-beacon-royal-castle-cloak-armory",
+            "Crown-Beacon Citadel Royal Armory — Knight's Cloak of Light & Darkness",
+            "Castle_Knight_Cloak_Armory",
+            "zone-town-crown-beacon",
+            "",
+            "",
+            "Grand Chamberlain Crosby & Royal Cloak Quartermaster",
+            [
+                "Knight's Cloak of Light (Sovereign Castle of Light · P.Def +25, Castle Return Skill)",
+                "Knight's Cloak of Darkness (Tax-Sovereign Castle of Darkness · P.Def +25, +PvP Reduction)",
+                "Royal Crown of the Lord & Marquis/Duke Clan Cloak Insignia",
+            ],
+            "Castle Ownership (Clan Rank: Knight / Elder / Royal Guard) + 35,000 Adena",
+            "Equips ruling Castle Clan Knights and Royal Guards with sovereign heraldic cloaks (S/S80/S84 Armor Sets).",
+        ),
+        (
+            "weaver-12-kilnwatch-accord-clanhall-cloak-armory",
+            "Kilnwatch Accord Quartermaster — Clan Hall & Dion Territory Knight's Cloak",
+            "Castle_Knight_Cloak_Armory",
+            "zone-clanhall-kilnwatch-accord",
+            "",
+            "",
+            "Chamberlain Saul & Mercenary Captain",
+            [
+                "Knight's Cloak: Dion & Gludio Sovereign Weave (+22 P.Def, +10 Elemental Def)",
+                "Elite Clan Hall Sovereign Cloak (1h Blessed Return to Clan Hall)",
+                "Top-Grade Magic Ornament Belt Buckle & Knights' Epaulette Bundle",
+            ],
+            "450 Knights' Epaulettes + 150,000 Adena (Clan Lv.5+ Marquis Rank)",
+            "Issues territory-colored Knight's Cloaks and Clan Hall teleport drapes to southern siege clans.",
+        ),
+        (
+            "weaver-13-dragonspine-fortress-vanguard-cloak-armory",
+            "Dragonspine Cog Fortress Armory — Garrison Knight's Cloak & Epaulette Loom",
+            "Castle_Knight_Cloak_Armory",
+            "zone-fortress-dragonspine-cog",
+            "",
+            "",
+            "Fortress Supply Officer & Logistics Weaver",
+            [
+                "Fortress Vanguard Cloak (P.Def +20, +5% Siege Bow/Crossbow Resistance)",
+                "High-Grade Magic Pin & Magic Pouch Mithril Belt Unsealing Service",
+                "Blue Talisman of Divine Protection & Red Talisman of Life Force",
+            ],
+            "600 Knights' Epaulettes + 200,000 Adena (Contracted or Independent Fortress)",
+            "Combines Fortress Epaulette supply with Knight's Cloak armoring and Mithril Belt unsealing.",
+        ),
+        (
+            "weaver-14-cloud-halo-sky-citadel-cloak-armory",
+            "Cloud-Halo Sky-Fortress Armory — Astral Knight's Cloak & Dynasty Drape",
+            "Castle_Knight_Cloak_Armory",
+            "zone-fortress-cloud-halo",
+            "",
+            "",
+            "Sky-Chamberlain Brasseur & Weaver Olf's Envoy",
+            [
+                "Knight's Cloak of the Shattered Halo (P.Def +26, +20 Holy/Dark Elemental Def)",
+                "Dynasty / Moirai / Vesper / Vorpal / Elegia Cloak Slot Unlocker",
+                "Top-Grade Magic Ornament & Magic Rune Clip Mithril Belt",
+            ],
+            "Territory Badge (x80) or 750 Knights' Epaulettes + 350,000 Adena",
+            "Endgame Continent 03 armory unlocking S80/S84 armor set Cloak slots and Top-Grade Mithril Belts.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        wid,
+        hname,
+        gcat,
+        zid,
+        did,
+        fid,
+        wnpc,
+        fbelts,
+        ucost,
+        ssum,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "18600:145200"))
+        loc = _fmt_loc(bx - 165 + idx * 13, by + 180 - idx * 12)
+        rows.append(
+            {
+                "weaver_hub_id": wid,
+                "hub_name": hname,
+                "garment_category": gcat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "weaver_npc_name": wnpc,
+                "featured_belts_or_cloaks": fbelts,
+                "unseal_badge_cost": ucost,
+                "stat_enhancement_summary": ssum,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -10807,6 +11313,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("treasure_chest_lockpick_grounds") or []) < 16:
         atlas["treasure_chest_lockpick_grounds"] = _build_treasure_chest_lockpick_grounds(atlas)
         actions.append("populated_16_treasure_chest_lockpick_grounds")
+
+    # 41. Ensure all 12 Clan Airship Summon Dock, Star Stone Extraction & Aerial Raid Nodes exist in `aerial_star_stone_docks` (D57)
+    if len(atlas.get("aerial_star_stone_docks") or []) < 12:
+        atlas["aerial_star_stone_docks"] = _build_aerial_star_stone_docks(atlas)
+        actions.append("populated_12_aerial_star_stone_docks")
+
+    # 42. Ensure all 14 Weaver Olf Mithril Belt & Sovereign Boss/Castle Cloak Hubs exist in `belt_cloak_weaver_hubs` (D58)
+    if len(atlas.get("belt_cloak_weaver_hubs") or []) < 14:
+        atlas["belt_cloak_weaver_hubs"] = _build_belt_cloak_weaver_hubs(atlas)
+        actions.append("populated_14_belt_cloak_weaver_hubs")
 
     return {"actions": actions}
 
@@ -13769,15 +14285,151 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d56_ratio * 80.0, 1)
     )
 
+    # D57: Interactive 12-Node Clan Airship Summon Dock, Star Stone Extraction & Aerial Raid Matrix (`aerial_star_stone_docks` - 12 Aerial Nodes = 4 Clan_Airship_Summon_Dock + 4 Star_Stone_Extraction_Field + 4 Aerial_Raid_Corridor)
+    expected_aerial_categories = {
+        "Clan_Airship_Summon_Dock",
+        "Star_Stone_Extraction_Field",
+        "Aerial_Raid_Corridor",
+    }
+    aerial_dock_rows = atlas.get("aerial_star_stone_docks") or []
+    valid_aerial_nodes = 0
+    airship_dock_count = 0
+    star_stone_field_count = 0
+    aerial_raid_corridor_count = 0
+    seen_aerial_node_ids: set[str] = set()
+    seen_aerial_categories: set[str] = set()
+    for arow in aerial_dock_rows:
+        if not isinstance(arow, dict):
+            continue
+        aid = str(arow.get("aerial_node_id") or "")
+        acat = str(arow.get("aerial_category") or "")
+        zid = str(arow.get("zone_id") or "")
+        cdzid = str(arow.get("connected_dock_zone_id") or "")
+        arewards = arow.get("aerial_rewards") or []
+        if (
+            aid
+            and aid not in seen_aerial_node_ids
+            and arow.get("node_name")
+            and acat in expected_aerial_categories
+            and zid in zone_ids_set
+            and cdzid in zone_ids_set
+            and ":" in str(arow.get("loc", ""))
+            and arow.get("engineer_or_controller_npc")
+            and arow.get("star_stone_fuel_or_yield")
+            and arow.get("aurabird_form_or_vessel")
+            and isinstance(arewards, list)
+            and len(arewards) >= 2
+        ):
+            valid_aerial_nodes += 1
+            seen_aerial_node_ids.add(aid)
+            seen_aerial_categories.add(acat)
+            if acat == "Clan_Airship_Summon_Dock":
+                airship_dock_count += 1
+            elif acat == "Star_Stone_Extraction_Field":
+                star_stone_field_count += 1
+            elif acat == "Aerial_Raid_Corridor":
+                aerial_raid_corridor_count += 1
+
+    has_d57_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_AERIAL_DOCK_MODE",
+            "setAtlasAerialDockMode",
+            "renderAtlasAerialDockBarHtml",
+            "studioAerialStarStoneOverlay",
+        )
+    )
+    d57_ratio = valid_aerial_nodes / 12.0
+    d57_full_coverage = (
+        airship_dock_count == 4
+        and star_stone_field_count == 4
+        and aerial_raid_corridor_count == 4
+        and seen_aerial_categories == expected_aerial_categories
+    )
+    d57_score = (
+        round(min(100.0, d57_ratio * 100.0), 1)
+        if (has_d57_ui and d57_full_coverage)
+        else round(d57_ratio * 80.0, 1)
+    )
+
+    # D58: Interactive 14-Node Weaver Olf Mithril Belt & Sovereign Boss/Castle Cloak Matrix (`belt_cloak_weaver_hubs` - 14 Hubs = 5 Weaver_Olf_Belt_Loom + 5 Sovereign_Boss_Cloak_Sanctum + 4 Castle_Knight_Cloak_Armory)
+    expected_garment_categories = {
+        "Weaver_Olf_Belt_Loom",
+        "Sovereign_Boss_Cloak_Sanctum",
+        "Castle_Knight_Cloak_Armory",
+    }
+    weaver_hub_rows = atlas.get("belt_cloak_weaver_hubs") or []
+    valid_weaver_hubs = 0
+    weaver_olf_loom_count = 0
+    boss_cloak_sanctum_count = 0
+    castle_cloak_armory_count = 0
+    seen_weaver_hub_ids: set[str] = set()
+    seen_garment_categories: set[str] = set()
+    for wrow in weaver_hub_rows:
+        if not isinstance(wrow, dict):
+            continue
+        wid = str(wrow.get("weaver_hub_id") or "")
+        gcat = str(wrow.get("garment_category") or "")
+        zid = str(wrow.get("zone_id") or "")
+        did = str(wrow.get("dungeon_id") or "")
+        fid = str(wrow.get("floor_id") or "")
+        fbelts = wrow.get("featured_belts_or_cloaks") or []
+        if (
+            wid
+            and wid not in seen_weaver_hub_ids
+            and wrow.get("hub_name")
+            and gcat in expected_garment_categories
+            and zid in zone_ids_set
+            and (did == "" or did in mf_dungeon_id_set)
+            and fid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(wrow.get("loc", ""))
+            and wrow.get("weaver_npc_name")
+            and isinstance(fbelts, list)
+            and len(fbelts) >= 2
+            and wrow.get("unseal_badge_cost")
+            and wrow.get("stat_enhancement_summary")
+        ):
+            valid_weaver_hubs += 1
+            seen_weaver_hub_ids.add(wid)
+            seen_garment_categories.add(gcat)
+            if gcat == "Weaver_Olf_Belt_Loom" and did == "" and fid == "":
+                weaver_olf_loom_count += 1
+            elif gcat == "Sovereign_Boss_Cloak_Sanctum" and did != "" and fid in ("B1", "B2", "B3", "1F", "2F", "3F"):
+                boss_cloak_sanctum_count += 1
+            elif gcat == "Castle_Knight_Cloak_Armory" and did == "" and fid == "":
+                castle_cloak_armory_count += 1
+
+    has_d58_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_BELT_CLOAK_MODE",
+            "setAtlasBeltCloakMode",
+            "renderAtlasBeltCloakBarHtml",
+            "studioBeltCloakWeaverOverlay",
+        )
+    )
+    d58_ratio = valid_weaver_hubs / 14.0
+    d58_full_coverage = (
+        weaver_olf_loom_count == 5
+        and boss_cloak_sanctum_count == 5
+        and castle_cloak_armory_count == 4
+        and seen_garment_categories == expected_garment_categories
+    )
+    d58_score = (
+        round(min(100.0, d58_ratio * 100.0), 1)
+        if (has_d58_ui and d58_full_coverage)
+        else round(d58_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 38.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 40.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 40.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 50.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 39.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score) / 46.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 40.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 42.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 42.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 52.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 41.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 48.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -13838,8 +14490,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d54_score
             + d55_score
             + d56_score
+            + d57_score
+            + d58_score
         )
-        / 56.0,
+        / 58.0,
         1,
     )
 
@@ -14289,6 +14943,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "cache_environments": sorted(seen_cache_environments),
                 "ui_wired": has_d56_ui,
             },
+            "D57_aerial_airship_docks_and_star_stone_raids": {
+                "score": d57_score,
+                "verified": valid_aerial_nodes,
+                "target": 12,
+                "clan_airship_summon_docks": airship_dock_count,
+                "star_stone_extraction_fields": star_stone_field_count,
+                "aerial_raid_corridors": aerial_raid_corridor_count,
+                "aerial_categories": sorted(seen_aerial_categories),
+                "ui_wired": has_d57_ui,
+            },
+            "D58_weaver_olf_belts_and_sovereign_cloaks": {
+                "score": d58_score,
+                "verified": valid_weaver_hubs,
+                "target": 14,
+                "weaver_olf_belt_looms": weaver_olf_loom_count,
+                "sovereign_boss_cloak_sanctums": boss_cloak_sanctum_count,
+                "castle_knight_cloak_armories": castle_cloak_armory_count,
+                "garment_categories": sorted(seen_garment_categories),
+                "ui_wired": has_d58_ui,
+            },
         },
     }
 
@@ -14389,6 +15063,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D54 (12 Derby/Coin/Kratei)  : {dims['D54_monster_derby_coin_and_kratei_plazas']['score']}/100 ({dims['D54_monster_derby_coin_and_kratei_plazas']['verified']}/{dims['D54_monster_derby_coin_and_kratei_plazas']['target']} event plazas)")
         print(f"  D55 (15 Hero Weapon/Tokens) : {dims['D55_olympiad_hero_weapon_and_token_exchanges']['score']}/100 ({dims['D55_olympiad_hero_weapon_and_token_exchanges']['verified']}/{dims['D55_olympiad_hero_weapon_and_token_exchanges']['target']} hero weapon hubs)")
         print(f"  D56 (16 Chest/Lockpick)     : {dims['D56_treasure_chest_lockpick_and_mimic_grounds']['score']}/100 ({dims['D56_treasure_chest_lockpick_and_mimic_grounds']['verified']}/{dims['D56_treasure_chest_lockpick_and_mimic_grounds']['target']} chest grounds)")
+        print(f"  D57 (12 Airship/Star Stone) : {dims['D57_aerial_airship_docks_and_star_stone_raids']['score']}/100 ({dims['D57_aerial_airship_docks_and_star_stone_raids']['verified']}/{dims['D57_aerial_airship_docks_and_star_stone_raids']['target']} aerial nodes)")
+        print(f"  D58 (14 Belt/Cloak Weavers) : {dims['D58_weaver_olf_belts_and_sovereign_cloaks']['score']}/100 ({dims['D58_weaver_olf_belts_and_sovereign_cloaks']['verified']}/{dims['D58_weaver_olf_belts_and_sovereign_cloaks']['target']} belt/cloak hubs)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

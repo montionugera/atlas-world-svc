@@ -2116,7 +2116,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 56)
+        self.assertGreaterEqual(len(audit["dimensions"]), 56)
 
         d55 = audit["dimensions"]["D55_olympiad_hero_weapon_and_token_exchanges"]
         self.assertEqual(d55["score"], 100.0)
@@ -2171,10 +2171,99 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas56DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 56)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 56)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 56)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 56)
         self.assertIn("56-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave27_aerial_star_stone_docks_and_belt_cloak_weaver_hubs(self) -> None:
+        """Wave 27 (D57–D58): 12 Clan Airship Summon Dock, Star Stone Extraction & Aerial Raid Nodes & 14 Weaver Olf Mithril Belt & Sovereign Boss/Castle Cloak Hubs."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["aerialStarStoneDocksCount"], 12)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["beltCloakWeaverHubsCount"], 14)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_AERIAL_DOCK_MODE",
+            "setAtlasAerialDockMode(",
+            "renderAtlasAerialDockBarHtml(",
+            "studioAerialStarStoneOverlay",
+            "ATLAS_BELT_CLOAK_MODE",
+            "setAtlasBeltCloakMode(",
+            "renderAtlasBeltCloakBarHtml(",
+            "studioBeltCloakWeaverOverlay",
+            "58-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 27 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 58)
+
+        d57 = audit["dimensions"]["D57_aerial_airship_docks_and_star_stone_raids"]
+        self.assertEqual(d57["score"], 100.0)
+        self.assertEqual(d57["verified"], 12)
+        self.assertEqual(d57["target"], 12)
+        self.assertEqual(d57["clan_airship_summon_docks"], 4)
+        self.assertEqual(d57["star_stone_extraction_fields"], 4)
+        self.assertEqual(d57["aerial_raid_corridors"], 4)
+        self.assertEqual(
+            set(d57["aerial_categories"]),
+            {
+                "Clan_Airship_Summon_Dock",
+                "Star_Stone_Extraction_Field",
+                "Aerial_Raid_Corridor",
+            },
+        )
+        self.assertTrue(d57["ui_wired"])
+
+        d58 = audit["dimensions"]["D58_weaver_olf_belts_and_sovereign_cloaks"]
+        self.assertEqual(d58["score"], 100.0)
+        self.assertEqual(d58["verified"], 14)
+        self.assertEqual(d58["target"], 14)
+        self.assertEqual(d58["weaver_olf_belt_looms"], 5)
+        self.assertEqual(d58["sovereign_boss_cloak_sanctums"], 5)
+        self.assertEqual(d58["castle_knight_cloak_armories"], 4)
+        self.assertEqual(
+            set(d58["garment_categories"]),
+            {
+                "Weaver_Olf_Belt_Loom",
+                "Sovereign_Boss_Cloak_Sanctum",
+                "Castle_Knight_Cloak_Armory",
+            },
+        )
+        self.assertTrue(d58["ui_wired"])
+
+        docks = atlas["aerial_star_stone_docks"]
+        self.assertEqual(len(docks), 12)
+        self.assertEqual(sum(1 for d in docks if d["aerial_category"] == "Clan_Airship_Summon_Dock"), 4)
+        self.assertEqual(sum(1 for d in docks if d["aerial_category"] == "Star_Stone_Extraction_Field"), 4)
+        self.assertEqual(sum(1 for d in docks if d["aerial_category"] == "Aerial_Raid_Corridor"), 4)
+        for d in docks:
+            self.assertGreaterEqual(len(d["aerial_rewards"]), 2)
+
+        hubs = atlas["belt_cloak_weaver_hubs"]
+        self.assertEqual(len(hubs), 14)
+        self.assertEqual(sum(1 for h in hubs if h["garment_category"] == "Weaver_Olf_Belt_Loom"), 5)
+        self.assertEqual(sum(1 for h in hubs if h["garment_category"] == "Sovereign_Boss_Cloak_Sanctum"), 5)
+        self.assertEqual(sum(1 for h in hubs if h["garment_category"] == "Castle_Knight_Cloak_Armory"), 4)
+        for h in hubs:
+            self.assertGreaterEqual(len(h["featured_belts_or_cloaks"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas58DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 58)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 58)
+        self.assertIn("58-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
