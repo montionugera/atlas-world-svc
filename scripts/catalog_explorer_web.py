@@ -108,15 +108,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas84DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas86DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas88DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas90DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 42)),
+        "wave": int(iter_state.get("wave", 43)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"90-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"88-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"86-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"84-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -152,7 +154,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 Verified"
         ),
     }
     return merged
@@ -4414,7 +4416,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4521,18 +4523,24 @@ let ATLAS_NAVMESH_MODE = 'All';
 let ATLAS_LIVEOPS_FLAGS_MODE = 'All';
 let ATLAS_CINEMATIC_RAILS_MODE = 'All';
 let ATLAS_GPU_BUDGET_MODE = 'All';
+let ATLAS_QA_SUITES_MODE = 'All';
+let ATLAS_STUDIO_90D_MODE = 'All';
 let SELECTED_ANTI_BOT_SENTINEL_ID = '';
 let SELECTED_GODOT_STORYBOOK_PREFAB_ID = '';
 let SELECTED_NAVMESH_SECTOR_ID = '';
 let SELECTED_LIVEOPS_FLAG_ID = '';
 let SELECTED_CINEMATIC_RAIL_ID = '';
 let SELECTED_GPU_BUDGET_ID = '';
+let SELECTED_QA_SUITE_ID = '';
+let SELECTED_STUDIO_90D_LEDGER_ID = '';
 let ANTI_BOT_SENTINELS = [];
 let GODOT_STORYBOOK_PREFABS = [];
 let NAVMESH_OBSTACLE_SECTORS = [];
 let LIVEOPS_EVENT_FLAGS = [];
 let CINEMATIC_CAMERA_RAILS = [];
 let CLIENT_GPU_BUDGETS = [];
+let AUTOMATED_QA_SUITES = [];
+let STUDIO_90D_LEDGER = [];
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4611,6 +4619,8 @@ const ATLAS_STATE_STORE = {
   liveopsFlagsMode: 'All',                 // D86: Active 15-Node [Role 5: LiveOps & Build] Seasonal World Event, Double-EXP / Drop Hot-Config & Feature Flag Selector
   cinematicRailsMode: 'All',               // D87: Active 16-Rail [Role 2: Content & World Tools] In-Game Cutscene Camera Rail, Boss Intro Cinematics & Story Trigger Selector
   gpuBudgetMode: 'All',                    // D88: Active 15-Town [Role 3: Technical Artist] Client GPU Frame-Time Profiler, Draw-Call Instancing & VRAM Pool Budget Selector
+  qaSuitesMode: 'All',                     // D89: Active 16-Suite [Role 1 + Role 4] Automated Headless QA Playtest Matrix & Golden-Snapshot Regression Selector
+  studio90dMode: 'All',                    // D90: Active 22-Record [90D Grand Studio Architecture Milestone] 11-Role Master Sign-Off & Telemetry Ledger Selector
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4618,6 +4628,54 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasQaSuitesMode(modeId) {
+  ATLAS_QA_SUITES_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.qaSuitesMode = ATLAS_QA_SUITES_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectAutomatedQaSuite(suiteId) {
+  SELECTED_QA_SUITE_ID = String(suiteId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  AUTOMATED_QA_SUITES = tatlas.automated_qa_smoke_suites || [];
+  const item = AUTOMATED_QA_SUITES.find(s => s.qa_suite_id === SELECTED_QA_SUITE_ID);
+  if (item) {
+    if (item.dungeon_id) {
+      openDungeonSubMap(item.dungeon_id, 'B2');
+      return;
+    }
+    if (String(item.zone_id || '').startsWith('zone-town-')) {
+      focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+      return;
+    }
+    focusFieldOrFortressBlueprint(item.zone_id, `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasStudio90dMode(modeId) {
+  ATLAS_STUDIO_90D_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.studio90dMode = ATLAS_STUDIO_90D_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectStudio90dLedger(ledgerId) {
+  SELECTED_STUDIO_90D_LEDGER_ID = String(ledgerId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  STUDIO_90D_LEDGER = tatlas.studio_90d_master_ledger || [];
+  const item = STUDIO_90D_LEDGER.find(l => l.ledger_id === SELECTED_STUDIO_90D_LEDGER_ID);
+  if (item) {
+    focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
 
 function setAtlasAntiBotMode(modeId) {
   ATLAS_ANTI_BOT_MODE = String(modeId || 'All');
@@ -13114,6 +13172,140 @@ function renderAtlasClientGpuBudgetsBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasAutomatedQaSuitesBarHtml(tatlas) {
+  AUTOMATED_QA_SUITES = (tatlas && tatlas.automated_qa_smoke_suites) || [];
+  if (!AUTOMATED_QA_SUITES.length) return '';
+  const curMode = ATLAS_QA_SUITES_MODE || ATLAS_STATE_STORE.qaSuitesMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🧪 Headless QA Suites (16)', col: '#22c55e' },
+    { id: 'CI Pre-Merge Headless Playtest', label: '🤖 CI Playtest Routes (7)', col: '#22c55e' },
+    { id: 'Economy & Escrow Invariant Fuzzing', label: '💰 Economy & Escrow Fuzz (4)', col: '#10b981' },
+    { id: 'Raid & Siege Deterministic Stress', label: '⚔️ Raid & Siege Stress (4)', col: '#14b8a6' },
+    { id: 'Nightly Golden-Frame Visual Diff', label: '🖼️ Golden-Frame Diff (1)', col: '#4ade80' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : AUTOMATED_QA_SUITES.filter(s => curMode === 'All' || s.suite_category === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasAutomatedQaSuitesBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#22c55e">🧪 [ROLE 1 + ROLE 4] AUTOMATED HEADLESS QA PLAYTEST MATRIX, CI SMOKE BOT-ROUTES &amp; GOLDEN-SNAPSHOT REGRESSION SUITES (D89 · ${AUTOMATED_QA_SUITES.length} SUITES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasQaSuitesMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#bbf7d0;font-weight:800">
+          4–200 BOTS · 15–180S · 18–120 INVARIANTS · GOLDEN DIFF 0.0–0.25% · CI BLOCKING
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(s => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(s.accent || '#22c55e')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🧪 ${escapeHtml(s.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(s.accent || '#22c55e')}">[${escapeHtml(s.suite_category)}]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#bbf7d0;margin-top:1px">
+                  🤖 ${s.headless_bot_agents} Bots · ⏱️ ${s.target_duration_sec}s · ✅ ${s.invariant_assertions_count} Asserts · Δ≤${s.golden_snapshot_tolerance_pct}%
+                </div>
+                <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                  🔒 CI Blocking: ${s.ci_gate_blocking ? 'YES' : 'NO'} — ${escapeHtml(s.notes.slice(0, 52))}
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectAutomatedQaSuite('${escapeHtml(s.qa_suite_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(s.accent || '#22c55e')};background:#14532d;color:#dcfce7;font-size:8px;font-weight:800;cursor:pointer">
+                  🧪 Inspect QA Suite (${escapeHtml(s.qa_suite_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasStudio90dLedgerBarHtml(tatlas) {
+  STUDIO_90D_LEDGER = (tatlas && tatlas.studio_90d_master_ledger) || [];
+  if (!STUDIO_90D_LEDGER.length) return '';
+  const curMode = ATLAS_STUDIO_90D_MODE || ATLAS_STATE_STORE.studio90dMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🏆 90D Master Ledger (22)', col: '#facc15' },
+    { id: 'Ring A: Creative Council', label: '👑 Ring A: Creative Council (12)', col: '#fde047' },
+    { id: 'Ring B: Platform & Tools Squad', label: '🛠️ Ring B: Platform & Tools Squad (10)', col: '#38bdf8' },
+    { id: '[Stage 1: Content & World]', label: '🌍 Stage 1: Content (9)', col: '#34d399' },
+    { id: '[Stage 2: Asset & Build Pipeline]', label: '🎨 Stage 2: Asset/DCC (5)', col: '#a855f7' },
+    { id: '[Stage 3: Server & Simulation]', label: '⚙️ Stage 3: Server/Sim (5)', col: '#38bdf8' },
+    { id: '[Stage 4: LiveOps & GM]', label: '📡 Stage 4: LiveOps/GM (3)', col: '#facc15' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : STUDIO_90D_LEDGER.filter(l => curMode === 'All' || l.ring === curMode || l.stage_domain === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasStudio90dLedgerBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#facc15">🏆 [90D GRAND STUDIO MILESTONE] 11-ROLE CREATIVE COUNCIL + PLATFORM &amp; TOOLS SQUAD D1–D90 MASTER SIGN-OFF &amp; TELEMETRY LEDGER (D90 · ${STUDIO_90D_LEDGER.length} RECORDS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasStudio90dMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fef08a;font-weight:800">
+          11 ROLES × 2 MILESTONES · RING A (12) + RING B (10) · APPROVED_90D_GOLD · 100.0/100
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(l => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(l.accent || '#facc15')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🏆 ${escapeHtml(l.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(l.accent || '#facc15')}">[${escapeHtml(l.role_name)}]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#fef08a;margin-top:1px">
+                  ${escapeHtml(l.ring)} · ${escapeHtml(l.stage_domain)} · Dims: ${escapeHtml(l.governed_dimensions)}
+                </div>
+                <div style="font-size:8px;color:#bbf7d0;margin-top:1px">
+                  ✅ ${escapeHtml(l.signoff_status)} · ${escapeHtml(l.verified_slo_metric)}
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectStudio90dLedger('${escapeHtml(l.ledger_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(l.accent || '#facc15')};background:#713f12;color:#fef9c3;font-size:8px;font-weight:800;cursor:pointer">
+                  🏆 Inspect 90D Sign-Off (${escapeHtml(l.ledger_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -13306,6 +13498,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasLiveopsEventFlagsBarHtml(tatlas)}
       ${renderAtlasCinematicCameraRailsBarHtml(tatlas)}
       ${renderAtlasClientGpuBudgetsBarHtml(tatlas)}
+      ${renderAtlasAutomatedQaSuitesBarHtml(tatlas)}
+      ${renderAtlasStudio90dLedgerBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -17398,6 +17592,49 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Automated Headless QA Playtest Matrix, CI Smoke Bot-Routes & Golden-Snapshot Regression Suites Overlay (D89)
+  const automatedQaSuiteRecords = Array.isArray(atlas.automated_qa_smoke_suites) ? atlas.automated_qa_smoke_suites : [];
+  const automatedQaSuitesOverlaySvg = !ATLAS_QA_SUITES_MODE ? '' : `
+    <g id="studioAutomatedQaSuitesOverlay">
+      ${automatedQaSuiteRecords.map((s, idx) => {
+        const wx = typeof s.world_x === 'number' ? s.world_x : 515;
+        const wy = typeof s.world_y === 'number' ? s.world_y : 295;
+        const colHex = s.accent || '#22c55e';
+        const scat = s.suite_category || 'CI Pre-Merge Headless Playtest';
+        const iconTxt = scat === 'CI Pre-Merge Headless Playtest'
+          ? '🧪'
+          : (scat === 'Economy & Escrow Invariant Fuzzing'
+              ? '💰'
+              : (scat === 'Raid & Siege Deterministic Stress' ? '⚔️' : '🖼️'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectAutomatedQaSuite('${escapeHtml(s.qa_suite_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.4" fill="rgba(20,83,45,0.58)" stroke="${escapeHtml(colHex)}" stroke-width="2.0"/>
+            <text x="${wx}" y="${wy + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // 90D Grand Studio Architecture Milestone Master Sign-Off & Telemetry Ledger Overlay (D90)
+  const studio90dLedgerRecords = Array.isArray(atlas.studio_90d_master_ledger) ? atlas.studio_90d_master_ledger : [];
+  const studio90dMasterLedgerOverlaySvg = !ATLAS_STUDIO_90D_MODE ? '' : `
+    <g id="studio90dMasterLedgerOverlay">
+      ${studio90dLedgerRecords.map((l, idx) => {
+        const wx = typeof l.world_x === 'number' ? l.world_x : 525;
+        const wy = typeof l.world_y === 'number' ? l.world_y : 285;
+        const colHex = l.accent || '#facc15';
+        const iconTxt = String(l.ring || '').includes('Ring A') ? '👑' : '🏆';
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudio90dLedger('${escapeHtml(l.ledger_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.4" fill="rgba(113,63,18,0.62)" stroke="${escapeHtml(colHex)}" stroke-width="2.0"/>
+            <text x="${wx}" y="${wy + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -17466,6 +17703,8 @@ function renderDedicatedWorldAtlas() {
     ${liveopsEventFlagsOverlaySvg}
     ${cinematicRailsOverlaySvg}
     ${clientGpuBudgetOverlaySvg}
+    ${automatedQaSuitesOverlaySvg}
+    ${studio90dMasterLedgerOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

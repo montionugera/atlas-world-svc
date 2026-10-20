@@ -728,6 +728,8 @@ def validate_world_governance(
                 "liveopsEventFlagNodesCount": len(t_doc.get("liveops_event_flag_nodes") or []),
                 "cinematicCameraRailsCount": len(t_doc.get("cinematic_camera_rails") or []),
                 "clientGpuVramBudgetsCount": len(t_doc.get("client_gpu_vram_budgets") or []),
+                "automatedQaSmokeSuitesCount": len(t_doc.get("automated_qa_smoke_suites") or []),
+                "studio90dMasterLedgerCount": len(t_doc.get("studio_90d_master_ledger") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1975,6 +1977,43 @@ def validate_world_governance(
                 if gb_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: client_gpu_vram_budgets '{gb_id}' references unknown zone_id '{gb_zid}'"
+                    )
+
+            # Validate 16-Suite Automated Headless QA Playtest Matrix, CI Smoke Bot-Routes & Golden-Snapshot Regression Suites (D89)
+            qa_suites = t_doc.get("automated_qa_smoke_suites") or []
+            if qa_suites and len(qa_suites) < 16:
+                errors.append(
+                    f"GOV-10 violation: automated_qa_smoke_suites must have at least 16 suites, got {len(qa_suites)}"
+                )
+            for qs_item in qa_suites:
+                if not isinstance(qs_item, dict):
+                    continue
+                qs_id = str(qs_item.get("qa_suite_id", ""))
+                qs_zid = str(qs_item.get("zone_id", ""))
+                qs_did = str(qs_item.get("dungeon_id", ""))
+                if qs_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: automated_qa_smoke_suites '{qs_id}' references unknown zone_id '{qs_zid}'"
+                    )
+                if qs_did and qs_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: automated_qa_smoke_suites '{qs_id}' references unknown dungeon_id '{qs_did}'"
+                    )
+
+            # Validate 22-Record 90D Grand Studio Architecture Milestone Master Sign-Off & Telemetry Ledger (D90)
+            studio_90d = t_doc.get("studio_90d_master_ledger") or []
+            if studio_90d and len(studio_90d) < 22:
+                errors.append(
+                    f"GOV-10 violation: studio_90d_master_ledger must have at least 22 records, got {len(studio_90d)}"
+                )
+            for s90_item in studio_90d:
+                if not isinstance(s90_item, dict):
+                    continue
+                s90_id = str(s90_item.get("ledger_id", ""))
+                s90_zid = str(s90_item.get("zone_id", ""))
+                if s90_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: studio_90d_master_ledger '{s90_id}' references unknown zone_id '{s90_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

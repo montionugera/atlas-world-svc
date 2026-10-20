@@ -443,6 +443,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/clientGpuVramBudgetSpec" }
     },
+    "automated_qa_smoke_suites": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/automatedQaSmokeSuiteSpec" }
+    },
+    "studio_90d_master_ledger": {
+      "type": "array",
+      "minItems": 22,
+      "maxItems": 22,
+      "items": { "$ref": "#/$defs/studio90dMasterLedgerSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -4956,6 +4968,160 @@
         "accent": {
           "type": "string",
           "enum": ["#06b6d4", "#22d3ee", "#0891b2", "#38bdf8"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "automatedQaSmokeSuiteSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "qa_suite_id",
+        "title",
+        "zone_id",
+        "town_id",
+        "dungeon_id",
+        "suite_category",
+        "headless_bot_agents",
+        "target_duration_sec",
+        "invariant_assertions_count",
+        "golden_snapshot_tolerance_pct",
+        "ci_gate_blocking",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "qa_suite_id": { "type": "string" },
+        "title": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "town_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "suite_category": {
+          "type": "string",
+          "enum": [
+            "CI Pre-Merge Headless Playtest",
+            "Nightly Golden-Frame Visual Diff",
+            "Economy & Escrow Invariant Fuzzing",
+            "Raid & Siege Deterministic Stress"
+          ]
+        },
+        "headless_bot_agents": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 200
+        },
+        "target_duration_sec": {
+          "type": "number",
+          "minimum": 15,
+          "maximum": 180
+        },
+        "invariant_assertions_count": {
+          "type": "integer",
+          "minimum": 18,
+          "maximum": 120
+        },
+        "golden_snapshot_tolerance_pct": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 0.25
+        },
+        "ci_gate_blocking": {
+          "type": "boolean"
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#22c55e", "#4ade80", "#10b981", "#14b8a6"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "studio90dMasterLedgerSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ledger_id",
+        "title",
+        "ring",
+        "role_name",
+        "stage_domain",
+        "governed_dimensions",
+        "town_id",
+        "zone_id",
+        "verified_slo_metric",
+        "signoff_status",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "ledger_id": { "type": "string" },
+        "title": { "type": "string" },
+        "ring": {
+          "type": "string",
+          "enum": [
+            "Ring A: Creative Council",
+            "Ring B: Platform & Tools Squad"
+          ]
+        },
+        "role_name": {
+          "type": "string",
+          "enum": [
+            "Product Owner",
+            "Game Designer Lead",
+            "Player Growth Path Designer",
+            "Game Story Designer",
+            "Monster & Mob Designer",
+            "Lead Systems & Map Architect",
+            "Lead Tools & Pipeline Architect",
+            "Content & World Tools Engineer",
+            "Technical Artist (Pipeline & DCC)",
+            "Backend Simulation & Infra Tools Engineer",
+            "LiveOps, Build & GM Tools Engineer"
+          ]
+        },
+        "stage_domain": {
+          "type": "string",
+          "enum": [
+            "[Stage 1: Content & World]",
+            "[Stage 2: Asset & Build Pipeline]",
+            "[Stage 3: Server & Simulation]",
+            "[Stage 4: LiveOps & GM]"
+          ]
+        },
+        "governed_dimensions": { "type": "string" },
+        "town_id": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "verified_slo_metric": { "type": "string" },
+        "signoff_status": {
+          "type": "string",
+          "enum": ["APPROVED_90D_GOLD"]
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#facc15", "#fde047", "#38bdf8", "#a855f7", "#34d399"]
         },
         "notes": { "type": "string" }
       }

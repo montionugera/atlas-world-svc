@@ -3647,7 +3647,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 88)
+        self.assertGreaterEqual(len(audit["dimensions"]), 88)
 
         d87 = audit["dimensions"]["D87_in_game_cutscene_camera_rail_and_boss_intro_cinematic_matrix"]
         self.assertEqual(d87["score"], 100.0)
@@ -3723,10 +3723,110 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas88DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 88)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 88)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 88)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 88)
         self.assertIn("88-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave43_automated_qa_smoke_suites_and_studio_90d_master_ledger(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["automatedQaSmokeSuitesCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["studio90dMasterLedgerCount"], 22)
+
+        html = web.INDEX_HTML
+        for token in (
+            "AUTOMATED_QA_SUITES",
+            "STUDIO_90D_LEDGER",
+            "ATLAS_QA_SUITES_MODE",
+            "ATLAS_STUDIO_90D_MODE",
+            "setAtlasQaSuitesMode",
+            "setAtlasStudio90dMode",
+            "selectAutomatedQaSuite",
+            "selectStudio90dLedger",
+            "renderAtlasAutomatedQaSuitesBarHtml",
+            "renderAtlasStudio90dLedgerBarHtml",
+            "studioAutomatedQaSuitesOverlay",
+            "studio90dMasterLedgerOverlay",
+            "🧪 Headless QA Suites (16)",
+            "🏆 90D Master Ledger (22)",
+            "90-Dimension Semantic-Zoom Atlas Score",
+            "D1–D90 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 43 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 90)
+
+        d89 = audit["dimensions"]["D89_automated_headless_qa_playtest_and_golden_snapshot_suites"]
+        self.assertEqual(d89["score"], 100.0)
+        self.assertEqual(d89["verified"], 16)
+        self.assertEqual(d89["target"], 16)
+        self.assertTrue(d89["ui_wired"])
+
+        d90 = audit["dimensions"]["D90_two_ring_11_role_studio_90d_master_signoff_ledger"]
+        self.assertEqual(d90["score"], 100.0)
+        self.assertEqual(d90["verified"], 22)
+        self.assertEqual(d90["target"], 22)
+        self.assertTrue(d90["ui_wired"])
+
+        suites = atlas["automated_qa_smoke_suites"]
+        self.assertEqual(len(suites), 16)
+        for s in suites:
+            self.assertIn(
+                s["suite_category"],
+                {
+                    "CI Pre-Merge Headless Playtest",
+                    "Nightly Golden-Frame Visual Diff",
+                    "Economy & Escrow Invariant Fuzzing",
+                    "Raid & Siege Deterministic Stress",
+                },
+            )
+            self.assertGreaterEqual(s["headless_bot_agents"], 4)
+            self.assertLessEqual(s["headless_bot_agents"], 200)
+            self.assertGreaterEqual(s["target_duration_sec"], 15)
+            self.assertLessEqual(s["target_duration_sec"], 180)
+            self.assertGreaterEqual(s["invariant_assertions_count"], 18)
+            self.assertLessEqual(s["invariant_assertions_count"], 120)
+            self.assertGreaterEqual(s["golden_snapshot_tolerance_pct"], 0.0)
+            self.assertLessEqual(s["golden_snapshot_tolerance_pct"], 0.25)
+            self.assertTrue(s["ci_gate_blocking"])
+
+        ledger = atlas["studio_90d_master_ledger"]
+        self.assertEqual(len(ledger), 22)
+        seen_roles: dict[str, int] = {}
+        for l_row in ledger:
+            self.assertIn(l_row["ring"], {"Ring A: Creative Council", "Ring B: Platform & Tools Squad"})
+            self.assertIn(
+                l_row["stage_domain"],
+                {
+                    "[Stage 1: Content & World]",
+                    "[Stage 2: Asset & Build Pipeline]",
+                    "[Stage 3: Server & Simulation]",
+                    "[Stage 4: LiveOps & GM]",
+                },
+            )
+            self.assertEqual(l_row["signoff_status"], "APPROVED_90D_GOLD")
+            rname = l_row["role_name"]
+            seen_roles[rname] = seen_roles.get(rname, 0) + 1
+        self.assertEqual(len(seen_roles), 11)
+        for rname, cnt in seen_roles.items():
+            self.assertEqual(cnt, 2, f"Expected 2 90D ledger records for role {rname}, got {cnt}")
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas90DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 90)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 90)
+        self.assertIn("90-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
