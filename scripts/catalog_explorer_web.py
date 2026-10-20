@@ -69,7 +69,7 @@ def compute_studio_self_evaluation() -> dict:
             }
             dims = iter_state["dimensions"]
     overall_atlas_score = float(iter_state.get("overall_score", 100.0))
-    dim_count = len(dims) or 38
+    dim_count = len(dims) or 40
     qs = dict(self_eval.get("qualityScorecard") or {})
     qs.setdefault("overallQualityScorePct", 100.0)
     qs["semanticZoomAtlas18DimensionScore"] = overall_atlas_score
@@ -83,15 +83,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas34DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas36DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas38DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas40DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 17)),
+        "wave": int(iter_state.get("wave", 18)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"40-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"38-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"36-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"34-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -102,7 +104,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D38 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D40 Verified"
         ),
     }
     return merged
@@ -4364,7 +4366,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D38 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D40 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4421,6 +4423,8 @@ let ATLAS_AUGMENT_DYE_MODE = 'All';
 let ATLAS_COMPANION_MOUNT_MODE = 'All';
 let ATLAS_CLAN_ACADEMY_MODE = 'All';
 let ATLAS_HERB_BIOME_MODE = 'All';
+let ATLAS_WORKSHOP_MODE = 'All';
+let ATLAS_TERRITORY_WARD_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4449,6 +4453,8 @@ const ATLAS_STATE_STORE = {
   companionMountMode: 'All',               // D36: Active Pet, Strider & Wyvern Mount Selector ('Off' | 'All' | 'Pet_Manager_Kennel' | 'Hatchling_Strider_Sanctum' | 'Castle_Wyvern_Roost')
   clanAcademyMode: 'All',                  // D37: Active Clan Reputation & Academy Selector ('Off' | 'All' | 'Clan_Academy_Hall' | 'Clan_Ambition_Altar' | 'Pledge_Skill_Sanctum')
   herbBiomeMode: 'All',                    // D38: Active 24-Field Elemental & Herb Sustainability Selector ('Off' | 'All' | 'S_Tier_Zero_Downtime' | 'A_Tier_Mystic_Mana_Rich' | 'By_Elemental_Weakness')
+  workshopMode: 'All',                     // D39: Active 15-Town Soulshot & Dwarven Manufacture Selector ('Off' | 'All' | 'Starter_D_C_Plaza' | 'Regional_B_A_Workshop' | 'Capital_S_Grade_Master_Forge')
+  territoryWardMode: 'All',                // D40: Active Territory Ward & Giant's Codex Selector ('Off' | 'All' | 'Sovereign_Territory_Ward' | 'Fortress_Codex_Supply_Vault')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4456,6 +4462,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasWorkshopMode(modeId) {
+  ATLAS_WORKSHOP_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.workshopMode = ATLAS_WORKSHOP_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasTerritoryWardMode(modeId) {
+  ATLAS_TERRITORY_WARD_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.territoryWardMode = ATLAS_TERRITORY_WARD_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasAugmentDyeMode(modeId) {
   ATLAS_AUGMENT_DYE_MODE = String(modeId || 'All');
@@ -8020,6 +8040,190 @@ function renderAtlasHerbBiomeBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasWorkshopPlazaBarHtml(tatlas) {
+  const plazas = (tatlas && tatlas.soulshot_workshop_plazas) || [];
+  if (!plazas.length) return '';
+
+  const curMode = ATLAS_WORKSHOP_MODE || ATLAS_STATE_STORE.workshopMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '💥 All 15 Plazas' },
+    { id: 'Starter_D_C_Plaza', label: '⚒️ D/C Starter Plazas' },
+    { id: 'Regional_B_A_Workshop', label: '⚙️ B/A Guild Workshops' },
+    { id: 'Capital_S_Grade_Master_Forge', label: '👑 S-Grade Master Forges' }
+  ];
+
+  const filteredPlazas = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? plazas : plazas.filter(p => p.workshop_tier === curMode));
+
+  const featuredPlazas = curMode === 'All'
+    ? [
+        ...plazas.filter(p => p.workshop_tier === 'Capital_S_Grade_Master_Forge').slice(0, 2),
+        ...plazas.filter(p => p.workshop_tier === 'Regional_B_A_Workshop').slice(0, 1),
+        ...plazas.filter(p => p.workshop_tier === 'Starter_D_C_Plaza').slice(0, 1)
+      ]
+    : filteredPlazas.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasWorkshopPlazaBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#261409;border:1px solid rgba(251,146,60,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fed7aa">💥 15-TOWN SOULSHOT/SPIRITSHOT &amp; DWARVEN PRIVATE MANUFACTURE WORKSHOP MATRIX (D39 · 15 PLAZAS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasWorkshopMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(251,146,60,0.45)'};background:${isAct ? '#c2410c' : '#090d14'};color:${isAct ? '#ffffff' : '#ffedd5'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 D/C STARTER PLAZAS + 5 B/A GUILD WORKSHOPS + 4 S-GRADE MASTER FORGES (CRYSTAL/ORE RATIOS &amp; 60%/100% RECIPES)
+        </span>
+      </div>
+
+      ${featuredPlazas.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredPlazas.map(p => {
+            const isCap = p.workshop_tier === 'Capital_S_Grade_Master_Forge';
+            const isReg = p.workshop_tier === 'Regional_B_A_Workshop';
+            const tierCol = isCap ? '#f59e0b' : (isReg ? '#fb923c' : '#38bdf8');
+            const tz = byZid[p.town_zone_id] || {};
+            const townNode = tz.studio_node_id || p.town_zone_id.replace('zone-', '');
+            const townJumpJs = `focusTownStreetBlueprint('${escapeHtml(townNode)}', '${escapeHtml(p.plaza_loc)}')`;
+            const spoilJumpJs = `focusFieldTacticalBlueprint('${escapeHtml(p.recipe_spoil_zone_id)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${tierCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">💥 ${escapeHtml(p.town_name.slice(0, 32))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${tierCol}">${escapeHtml(p.workshop_tier.replace(/_/g, ' '))}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fed7aa;margin-top:1px">
+                    ⚒️ ${escapeHtml(p.head_blacksmith_npc)} · 💰 ${Number(p.average_manufacture_fee_adena || 0).toLocaleString()}a Fee
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    📜 ${escapeHtml(p.featured_recipe_tier.slice(0, 56))} · 💎 ${escapeHtml(p.crystal_ore_ratio.slice(0, 44))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${townJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${tierCol};background:#431407;color:#ffedd5;font-size:8px;font-weight:800;cursor:pointer">
+                    ⚒️ Workshop Plaza (5.2×)
+                  </button>
+                  <button type="button" onclick="${spoilJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid #38bdf8;background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    📜 Recipe Spoil Zone
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasTerritoryWardBarHtml(tatlas) {
+  const nodes = (tatlas && tatlas.territory_ward_supply_nodes) || [];
+  if (!nodes.length) return '';
+
+  const curMode = ATLAS_TERRITORY_WARD_MODE || ATLAS_STATE_STORE.territoryWardMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🚩 All 16 Ward/Supply Nodes' },
+    { id: 'Sovereign_Territory_Ward', label: '🚩 8 Sovereign Territory Wards' },
+    { id: 'Fortress_Codex_Supply_Vault', label: '📖 8 Giant\'s Codex & Epaulette Vaults' }
+  ];
+
+  const filteredNodes = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? nodes : nodes.filter(n => n.node_role === curMode));
+
+  const featuredNodes = curMode === 'All'
+    ? [
+        ...nodes.filter(n => n.node_role === 'Sovereign_Territory_Ward').slice(0, 2),
+        ...nodes.filter(n => n.node_role === 'Fortress_Codex_Supply_Vault').slice(0, 2)
+      ]
+    : filteredNodes.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasTerritoryWardBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#240d15;border:1px solid rgba(244,63,94,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fecdd3">🚩 TERRITORY WARD RELIC &amp; FORTRESS GIANT'S CODEX SUPPLY MATRIX (D40 · 16 NODES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasTerritoryWardMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(244,63,94,0.45)'};background:${isAct ? '#be123c' : '#090d14'};color:${isAct ? '#ffffff' : '#ffe4e6'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          8 SOVEREIGN TERRITORY WARD SANCTUMS (+STAT BANNERS) + 8 FORTRESS EPAULETTE &amp; GIANT'S CODEX VAULTS
+        </span>
+      </div>
+
+      ${featuredNodes.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredNodes.map(n => {
+            const isWard = n.node_role === 'Sovereign_Territory_Ward';
+            const roleCol = isWard ? '#f43f5e' : '#eab308';
+            const roleIcon = isWard ? '🚩' : '📖';
+            const vz = byZid[n.linked_vassal_zone_id] || {};
+            const isVassalTown = String(n.linked_vassal_zone_id || '').startsWith('zone-town-');
+            const strongholdJumpJs = `focusFortressBlueprint('${escapeHtml(n.stronghold_zone_id)}', '${escapeHtml(n.loc)}')`;
+            const vassalJumpJs = isVassalTown
+              ? `focusTownStreetBlueprint('${escapeHtml(vz.studio_node_id || n.linked_vassal_zone_id.replace('zone-', ''))}')`
+              : `focusFieldTacticalBlueprint('${escapeHtml(n.linked_vassal_zone_id)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${roleCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${roleIcon} ${escapeHtml(n.node_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${roleCol}">${escapeHtml(n.stat_ward_bonus.slice(0, 22))}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fecdd3;margin-top:1px">
+                    👤 ${escapeHtml(n.mercenary_captain_npc)} · ⏱️ ${escapeHtml(n.territory_battle_window.slice(0, 36))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🏆 ${escapeHtml(n.epaulette_codex_reward.slice(0, 62))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${strongholdJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${roleCol};background:#4c0519;color:#ffe4e6;font-size:8px;font-weight:800;cursor:pointer">
+                    ${roleIcon} Stronghold Ward Altar
+                  </button>
+                  <button type="button" onclick="${vassalJumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid #38bdf8;background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    🔗 Vassal Supply Line
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -8162,6 +8366,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasCompanionMountBarHtml(tatlas)}
       ${renderAtlasClanAcademyBarHtml(tatlas)}
       ${renderAtlasHerbBiomeBarHtml(tatlas)}
+      ${renderAtlasWorkshopPlazaBarHtml(tatlas)}
+      ${renderAtlasTerritoryWardBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -10584,6 +10790,66 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D39: Interactive 15-Town Soulshot/Spiritshot & Dwarven Private Manufacture Workshop Overlay (`studioSoulshotWorkshopOverlay`)
+  const workshopPlazas = (tatlas && tatlas.soulshot_workshop_plazas) || [];
+  const curWorkshopMode = ATLAS_WORKSHOP_MODE || ATLAS_STATE_STORE.workshopMode || 'All';
+  const activeWorkshopPlazas = curWorkshopMode === 'Off'
+    ? []
+    : (curWorkshopMode === 'All'
+      ? workshopPlazas
+      : workshopPlazas.filter(p => p.workshop_tier === curWorkshopMode));
+  const soulshotWorkshopOverlaySvg = `
+    <g id="studioSoulshotWorkshopOverlay">
+      ${activeWorkshopPlazas.map(p => {
+        const pc = clampWorldLocCoord(p.plaza_loc || '-84120:243500');
+        const sz = allZonesById[p.recipe_spoil_zone_id] || {};
+        const tz = allZonesById[p.town_zone_id] || {};
+        const sc = clampWorldLocCoord(sz.loc_coord || '-68180:228620');
+        const isCap = p.workshop_tier === 'Capital_S_Grade_Master_Forge';
+        const isReg = p.workshop_tier === 'Regional_B_A_Workshop';
+        const colHex = isCap ? '#f59e0b' : (isReg ? '#fb923c' : '#38bdf8');
+        const iconTxt = isCap ? '👑' : (isReg ? '⚙️' : '⚒️');
+        const townClickJs = `focusTownStreetBlueprint('${escapeHtml(tz.studio_node_id || p.town_zone_id.replace('zone-', ''))}', '${escapeHtml(p.plaza_loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${townClickJs}">
+            <line x1="${sc.svgX}" y1="${sc.svgY}" x2="${pc.svgX}" y2="${pc.svgY}" stroke="${colHex}" stroke-width="1.6" stroke-dasharray="4 2" opacity="0.78"/>
+            <circle cx="${pc.svgX}" cy="${pc.svgY}" r="10.6" fill="rgba(194,65,12,0.34)" stroke="${colHex}" stroke-width="1.8"/>
+            <text x="${pc.svgX}" y="${pc.svgY + 3.5}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D40: Interactive Territory Ward Relic & Fortress Giant's Codex Supply Overlay (`studioTerritoryWardOverlay`)
+  const territoryWardNodes = (tatlas && tatlas.territory_ward_supply_nodes) || [];
+  const curWardMode = ATLAS_TERRITORY_WARD_MODE || ATLAS_STATE_STORE.territoryWardMode || 'All';
+  const activeTerritoryWardNodes = curWardMode === 'Off'
+    ? []
+    : (curWardMode === 'All'
+      ? territoryWardNodes
+      : territoryWardNodes.filter(n => n.node_role === curWardMode));
+  const territoryWardOverlaySvg = `
+    <g id="studioTerritoryWardOverlay">
+      ${activeTerritoryWardNodes.map(n => {
+        const wc = clampWorldLocCoord(n.loc || '-96020:258560');
+        const vz = allZonesById[n.linked_vassal_zone_id] || {};
+        const vc = clampWorldLocCoord(vz.loc_coord || '-84120:243500');
+        const isWard = n.node_role === 'Sovereign_Territory_Ward';
+        const colHex = isWard ? '#f43f5e' : '#eab308';
+        const iconTxt = isWard ? '🚩' : '📖';
+        const fortClickJs = `focusFortressBlueprint('${escapeHtml(n.stronghold_zone_id)}', '${escapeHtml(n.loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${fortClickJs}">
+            <line x1="${wc.svgX}" y1="${wc.svgY}" x2="${vc.svgX}" y2="${vc.svgY}" stroke="${colHex}" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.75"/>
+            <circle cx="${wc.svgX}" cy="${wc.svgY}" r="10.8" fill="rgba(190,18,60,0.34)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${wc.svgX}" y="${wc.svgY + 3.5}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -10602,6 +10868,8 @@ function renderDedicatedWorldAtlas() {
     ${companionMountOverlaySvg}
     ${clanAcademyOverlaySvg}
     ${herbElementalBiomeOverlaySvg}
+    ${soulshotWorkshopOverlaySvg}
+    ${territoryWardOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

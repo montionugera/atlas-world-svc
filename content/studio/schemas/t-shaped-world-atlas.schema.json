@@ -143,6 +143,18 @@
       "maxItems": 24,
       "items": { "$ref": "#/$defs/fieldHerbElementalBiomeSpec" }
     },
+    "soulshot_workshop_plazas": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/soulshotWorkshopPlazaSpec" }
+    },
+    "territory_ward_supply_nodes": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/territoryWardSupplyNodeSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2312,6 +2324,84 @@
           "maximum": 100
         },
         "solo_sustainability_note": { "type": "string" }
+      }
+    },
+    "soulshotWorkshopPlazaSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workshop_id",
+        "town_zone_id",
+        "town_name",
+        "workshop_tier",
+        "plaza_loc",
+        "head_blacksmith_npc",
+        "shot_compression_grades",
+        "featured_recipe_tier",
+        "recipe_spoil_zone_id",
+        "average_manufacture_fee_adena",
+        "crystal_ore_ratio"
+      ],
+      "properties": {
+        "workshop_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "workshop_tier": {
+          "type": "string",
+          "enum": [
+            "Starter_D_C_Plaza",
+            "Regional_B_A_Workshop",
+            "Capital_S_Grade_Master_Forge"
+          ]
+        },
+        "plaza_loc": { "type": "string" },
+        "head_blacksmith_npc": { "type": "string" },
+        "shot_compression_grades": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "featured_recipe_tier": { "type": "string" },
+        "recipe_spoil_zone_id": { "type": "string" },
+        "average_manufacture_fee_adena": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "crystal_ore_ratio": { "type": "string" }
+      }
+    },
+    "territoryWardSupplyNodeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ward_node_id",
+        "node_name",
+        "node_role",
+        "stronghold_zone_id",
+        "linked_vassal_zone_id",
+        "loc",
+        "mercenary_captain_npc",
+        "stat_ward_bonus",
+        "epaulette_codex_reward",
+        "territory_battle_window"
+      ],
+      "properties": {
+        "ward_node_id": { "type": "string" },
+        "node_name": { "type": "string" },
+        "node_role": {
+          "type": "string",
+          "enum": [
+            "Sovereign_Territory_Ward",
+            "Fortress_Codex_Supply_Vault"
+          ]
+        },
+        "stronghold_zone_id": { "type": "string" },
+        "linked_vassal_zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "mercenary_captain_npc": { "type": "string" },
+        "stat_ward_bonus": { "type": "string" },
+        "epaulette_codex_reward": { "type": "string" },
+        "territory_battle_window": { "type": "string" }
       }
     }
   }

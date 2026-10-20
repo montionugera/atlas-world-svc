@@ -51272,5 +51272,456 @@
       "herb_drop_rate_pct": 24,
       "solo_sustainability_note": "High-density aquatic shoals dropping Life Stones and A/S-grade materials; party sustain augmented by Superior Herbs."
     }
+  ],
+  "soulshot_workshop_plazas": [
+    {
+      "workshop_id": "workshop-01-lantern-hollow",
+      "town_zone_id": "zone-town-lantern-hollow",
+      "town_name": "Lantern Hollow Village (Human Starter)",
+      "workshop_tier": "Starter_D_C_Plaza",
+      "plaza_loc": "-83920:243347",
+      "head_blacksmith_npc": "Head Blacksmith Kluto & Master Warsmith Pinter",
+      "shot_compression_grades": [
+        "Soulshot D-Grade & C-Grade Compressed Pack",
+        "Blessed Spiritshot D-Grade & C-Grade Compressed Pack",
+        "Beast Soulshot & Summon Spiritshot Pack"
+      ],
+      "featured_recipe_tier": "100% D-Grade & 60% C-Grade Saber / Brigandine Recipes",
+      "recipe_spoil_zone_id": "zone-field-clover-south-gate",
+      "average_manufacture_fee_adena": 12500,
+      "crystal_ore_ratio": "3 Crystal D + 9 Soul Ore -> 468 D-Soulshots"
+    },
+    {
+      "workshop_id": "workshop-02-porcelain-loom",
+      "town_zone_id": "zone-town-porcelain-loom",
+      "town_name": "Porcelain Loom Sanctuary (Lunar Starter)",
+      "workshop_tier": "Starter_D_C_Plaza",
+      "plaza_loc": "46010:41039",
+      "head_blacksmith_npc": "Head Blacksmith Aios & Elven Master Artisan",
+      "shot_compression_grades": [
+        "Blessed Spiritshot D-Grade & C-Grade Compressed Pack",
+        "Spiritshot D/C Mystic Resonance Pack",
+        "Soulshot D-Grade Elven Scout Pack"
+      ],
+      "featured_recipe_tier": "100% D-Grade & 60% C-Grade Homunkulus / Karmian Tunic Recipes",
+      "recipe_spoil_zone_id": "zone-field-celadon-causeway",
+      "average_manufacture_fee_adena": 14000,
+      "crystal_ore_ratio": "2 Crystal D + 8 Spirit Ore -> 200 Blessed D-Spiritshots"
+    },
+    {
+      "workshop_id": "workshop-03-draft-kiln-post",
+      "town_zone_id": "zone-town-draft-kiln-post",
+      "town_name": "Draft-Kiln Post (Ogre/Orc Starter)",
+      "workshop_tier": "Starter_D_C_Plaza",
+      "plaza_loc": "-44580:-113369",
+      "head_blacksmith_npc": "Head Blacksmith Sumari & Flame-Anvil Warsmith",
+      "shot_compression_grades": [
+        "Soulshot D-Grade & C-Grade Heavy Brawler Pack",
+        "Compressed Soulshot C-Grade (3,000 Rounds)",
+        "Blessed Spiritshot D-Grade Warcryer Pack"
+      ],
+      "featured_recipe_tier": "100% D-Grade & 60% C-Grade Chakram / Composite Armor Recipes",
+      "recipe_spoil_zone_id": "zone-field-firebrick-duct",
+      "average_manufacture_fee_adena": 15000,
+      "crystal_ore_ratio": "1 Crystal C + 15 Soul Ore -> 476 C-Soulshots"
+    },
+    {
+      "workshop_id": "workshop-04-root-train-roundhouse",
+      "town_zone_id": "zone-town-root-train-roundhouse",
+      "town_name": "Root-Train Roundhouse (Dwarf Starter)",
+      "workshop_tier": "Starter_D_C_Plaza",
+      "plaza_loc": "115330:-178377",
+      "head_blacksmith_npc": "Iron Gate Chief Bronk & Head Blacksmith Silvera",
+      "shot_compression_grades": [
+        "Soulshot D/C Greater Compressed Crate (10,000 Rounds)",
+        "Blessed Spiritshot D/C Compressed Crate",
+        "Mechanical Golem Siege Shot & Beast Soulshot"
+      ],
+      "featured_recipe_tier": "100% D/C-Grade Dwarven Polearm, Yaksa Mace & Mithril Alloy Recipes",
+      "recipe_spoil_zone_id": "zone-field-resin-arch-tunnel",
+      "average_manufacture_fee_adena": 9500,
+      "crystal_ore_ratio": "2 Crystal C + 30 Soul Ore -> 952 C-Soulshots (Dwarven Home Guild Rate)"
+    },
+    {
+      "workshop_id": "workshop-05-carillon-belfry",
+      "town_zone_id": "zone-town-carillon-belfry",
+      "town_name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+      "workshop_tier": "Starter_D_C_Plaza",
+      "plaza_loc": "12640:16615",
+      "head_blacksmith_npc": "Head Blacksmith Karrod & Abyssal Forge-Keeper",
+      "shot_compression_grades": [
+        "Blessed Spiritshot D-Grade & C-Grade Dark Caster Pack",
+        "Soulshot D-Grade & C-Grade Assassin Pack",
+        "Compressed Spiritshot C-Grade Pack"
+      ],
+      "featured_recipe_tier": "100% D-Grade & 60% C-Grade Crystal Dagger / Demon's Tunic Recipes",
+      "recipe_spoil_zone_id": "zone-field-chime-pipe-colonnade",
+      "average_manufacture_fee_adena": 14500,
+      "crystal_ore_ratio": "2 Crystal C + 22 Spirit Ore -> 200 Blessed C-Spiritshots"
+    },
+    {
+      "workshop_id": "workshop-06-cinnamon-mill",
+      "town_zone_id": "zone-town-cinnamon-mill",
+      "town_name": "Cinnamon-Mill Haven (Furral Starter)",
+      "workshop_tier": "Starter_D_C_Plaza",
+      "plaza_loc": "-117950:46607",
+      "head_blacksmith_npc": "Head Blacksmith Feynn & Furral Blade-Factor",
+      "shot_compression_grades": [
+        "Soulshot D-Grade & C-Grade Skirmisher Pack",
+        "Compressed Soulshot D/C Rapid-Fire Quiver Pack",
+        "Beast Soulshot & Companion Fang Pack"
+      ],
+      "featured_recipe_tier": "100% D-Grade & 60% C-Grade Eminence Bow / Theca Leather Recipes",
+      "recipe_spoil_zone_id": "zone-field-cinnamon-bark-viaduct",
+      "average_manufacture_fee_adena": 13500,
+      "crystal_ore_ratio": "3 Crystal D + 9 Soul Ore -> 468 D-Soulshots"
+    },
+    {
+      "workshop_id": "workshop-07-kilnwatch-bastion",
+      "town_zone_id": "zone-town-kilnwatch-bastion",
+      "town_name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+      "workshop_tier": "Regional_B_A_Workshop",
+      "plaza_loc": "-13940:123299",
+      "head_blacksmith_npc": "Head Blacksmith Poitan & Black Anvil Guild Factor",
+      "shot_compression_grades": [
+        "Soulshot C-Grade & B-Grade Compressed Pack",
+        "Blessed Spiritshot C-Grade & B-Grade Compressed Pack",
+        "Greater Compressed Soulshot B-Grade Crate"
+      ],
+      "featured_recipe_tier": "100% C-Grade & 60% B-Grade Damascus / Zubei & Avadon Recipes",
+      "recipe_spoil_zone_id": "zone-field-slag-chasm",
+      "average_manufacture_fee_adena": 45000,
+      "crystal_ore_ratio": "1 Crystal B + 54 Soul Ore -> 450 B-Soulshots"
+    },
+    {
+      "workshop_id": "workshop-08-glaze-barge-quay",
+      "town_zone_id": "zone-town-glaze-barge-quay",
+      "town_name": "Glaze-Barge Quay (River Trade & Raid Port)",
+      "workshop_tier": "Regional_B_A_Workshop",
+      "plaza_loc": "-80930:151191",
+      "head_blacksmith_npc": "Head Blacksmith Kluck & Maritime Trade Warsmith",
+      "shot_compression_grades": [
+        "Blessed Spiritshot B-Grade & A-Grade Compressed Pack",
+        "Soulshot B-Grade Harbor Escort Pack",
+        "Fishing Shot (No/D/C/B/A-Grade Luminous Pack)"
+      ],
+      "featured_recipe_tier": "60% B-Grade & 60% A-Grade Sword of Valhalla / Blue Wolf Recipes",
+      "recipe_spoil_zone_id": "zone-field-cobalt-sandbar-ford",
+      "average_manufacture_fee_adena": 62000,
+      "crystal_ore_ratio": "2 Crystal B + 16 Spirit Ore -> 100 Blessed B-Spiritshots"
+    },
+    {
+      "workshop_id": "workshop-09-saffron-press",
+      "town_zone_id": "zone-town-saffron-press",
+      "town_name": "Saffron Press Village (Manor Agricultural Hub)",
+      "workshop_tier": "Regional_B_A_Workshop",
+      "plaza_loc": "17680:169883",
+      "head_blacksmith_npc": "Head Blacksmith Pushkin & Manor Alloy Factor",
+      "shot_compression_grades": [
+        "Soulshot B-Grade & A-Grade Compressed Pack",
+        "Blessed Spiritshot B-Grade Compressed Pack",
+        "Beast Soulshot & Strider Siege Shot Pack"
+      ],
+      "featured_recipe_tier": "60% B-Grade & 60% A-Grade Kris / Doom Plate & Peril Bow Recipes",
+      "recipe_spoil_zone_id": "zone-field-apricot-aqueduct-terrace",
+      "average_manufacture_fee_adena": 68000,
+      "crystal_ore_ratio": "1 Crystal B + 54 Soul Ore -> 450 B-Soulshots"
+    },
+    {
+      "workshop_id": "workshop-10-pinion-terminus",
+      "town_zone_id": "zone-town-pinion-terminus",
+      "town_name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+      "workshop_tier": "Regional_B_A_Workshop",
+      "plaza_loc": "82690:148375",
+      "head_blacksmith_npc": "Head Blacksmith Rupio & Steppe Gear-Smith",
+      "shot_compression_grades": [
+        "Soulshot B-Grade & A-Grade Greater Compressed Pack",
+        "Blessed Spiritshot B-Grade & A-Grade Compressed Pack",
+        "Summon Beast Shot & Airship Ballista Charge"
+      ],
+      "featured_recipe_tier": "60% A-Grade Carnage Bow, Halberd & Majestic Armor Recipes",
+      "recipe_spoil_zone_id": "zone-field-brass-spur-ridge",
+      "average_manufacture_fee_adena": 85000,
+      "crystal_ore_ratio": "1 Crystal A + 36 Soul Ore -> 300 A-Soulshots"
+    },
+    {
+      "workshop_id": "workshop-11-escapement-anvil",
+      "town_zone_id": "zone-town-escapement-anvil",
+      "town_name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+      "workshop_tier": "Regional_B_A_Workshop",
+      "plaza_loc": "83400:52967",
+      "head_blacksmith_npc": "Head Blacksmith Tatabos & Master Warsmith Roman",
+      "shot_compression_grades": [
+        "Soulshot A-Grade & B-Grade Compressed Pack",
+        "Blessed Spiritshot A-Grade Compressed Pack",
+        "Greater Compressed A-Grade Siege Crate (10,000 Rounds)"
+      ],
+      "featured_recipe_tier": "60% A-Grade Tallum Blade, Dark Legion's Edge & Nightmare Recipes",
+      "recipe_spoil_zone_id": "zone-field-caldera-rim",
+      "average_manufacture_fee_adena": 98000,
+      "crystal_ore_ratio": "2 Crystal A + 70 Spirit Ore -> 200 Blessed A-Spiritshots"
+    },
+    {
+      "workshop_id": "workshop-12-inductor-switchyard",
+      "town_zone_id": "zone-town-inductor-switchyard",
+      "town_name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+      "workshop_tier": "Capital_S_Grade_Master_Forge",
+      "plaza_loc": "147710:-55441",
+      "head_blacksmith_npc": "Head Blacksmith Ferris & Maestro Kusto",
+      "shot_compression_grades": [
+        "Soulshot A-Grade & S-Grade Compressed Pack",
+        "Blessed Spiritshot A-Grade & S-Grade Compressed Pack",
+        "Greater S-Grade Merchant Guild Crate (10,000 Rounds)"
+      ],
+      "featured_recipe_tier": "60% S-Grade Arcana Mace, Draconic Bow & Imperial Crusader Recipes",
+      "recipe_spoil_zone_id": "zone-field-leyden-causeway",
+      "average_manufacture_fee_adena": 185000,
+      "crystal_ore_ratio": "1 Crystal S + 40 Soul Ore -> 350 S-Soulshots"
+    },
+    {
+      "workshop_id": "workshop-13-torque-balance-citadel",
+      "town_zone_id": "zone-town-torque-balance-citadel",
+      "town_name": "Town of Torque-Balance Citadel (Human Ancestral Expedition Hub)",
+      "workshop_tier": "Capital_S_Grade_Master_Forge",
+      "plaza_loc": "116720:-18649",
+      "head_blacksmith_npc": "Head Blacksmith Hilda & Maestro Noel",
+      "shot_compression_grades": [
+        "Soulshot S-Grade Royal Citadel Compressed Pack",
+        "Blessed Spiritshot S-Grade Archmage Compressed Pack",
+        "S-Grade Beast & Wyvern Siege Shot Crate"
+      ],
+      "featured_recipe_tier": "60% S-Grade Forgotten Blade, Basalt Battlehammer & Major Arcana Recipes",
+      "recipe_spoil_zone_id": "zone-field-spiral-wormway-ramp",
+      "average_manufacture_fee_adena": 220000,
+      "crystal_ore_ratio": "2 Crystal S + 50 Spirit Ore -> 200 Blessed S-Spiritshots"
+    },
+    {
+      "workshop_id": "workshop-14-starfall-haven",
+      "town_zone_id": "zone-town-starfall-haven",
+      "town_name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+      "workshop_tier": "Capital_S_Grade_Master_Forge",
+      "plaza_loc": "44130:-48157",
+      "head_blacksmith_npc": "Head Blacksmith Vincenz & Sky-Anvil Maestro",
+      "shot_compression_grades": [
+        "Soulshot S-Grade & A-Grade Astral Compressed Pack",
+        "Blessed Spiritshot S-Grade Starfall Compressed Pack",
+        "Greater Compressed S-Grade Raid Command Crate"
+      ],
+      "featured_recipe_tier": "60% S-GradeHeaven's Divider, Angel Slayer & Draconic Leather Recipes",
+      "recipe_spoil_zone_id": "zone-field-kelp-spiral-reef",
+      "average_manufacture_fee_adena": 240000,
+      "crystal_ore_ratio": "1 Crystal S + 40 Soul Ore -> 350 S-Soulshots"
+    },
+    {
+      "workshop_id": "workshop-15-crown-beacon",
+      "town_zone_id": "zone-town-crown-beacon",
+      "town_name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+      "workshop_tier": "Capital_S_Grade_Master_Forge",
+      "plaza_loc": "148240:26535",
+      "head_blacksmith_npc": "Head Blacksmith Mammon-Envoy & Sovereign Maestro Ishuma",
+      "shot_compression_grades": [
+        "Soulshot S-Grade Sovereign Masterwork Crate",
+        "Blessed Spiritshot S-Grade Olympiad Hero Pack",
+        "Apex S-Grade Compressed Soulshot/Spiritshot Bundle"
+      ],
+      "featured_recipe_tier": "60% & 100% S-Grade Dynasty / Imperial Crusader & Saint Spear Recipes",
+      "recipe_spoil_zone_id": "zone-field-aurora-tether",
+      "average_manufacture_fee_adena": 290000,
+      "crystal_ore_ratio": "2 Crystal S + 80 Soul Ore -> 700 S-Soulshots (Master Forge Yield)"
+    }
+  ],
+  "territory_ward_supply_nodes": [
+    {
+      "ward_node_id": "ward-node-01-lantern-ferry-ward",
+      "node_name": "Lantern Ferry Harbor \u2014 Territory Ward of Gludio Maritime Dominion",
+      "node_role": "Sovereign_Territory_Ward",
+      "stronghold_zone_id": "zone-harbor-lantern-ferry-pier",
+      "linked_vassal_zone_id": "zone-town-lantern-hollow",
+      "loc": "-96020:258560",
+      "mercenary_captain_npc": "Mercenary Captain Devianne",
+      "stat_ward_bonus": "STR +1 / INT +1 Ward Banner",
+      "epaulette_codex_reward": "Territory Badge Exchange: Gludio Noble Vesper Cloak & Belt",
+      "territory_battle_window": "Bi-Weekly Saturday 20:00\u201322:00 UTC (Territory War Flag Capture)"
+    },
+    {
+      "ward_node_id": "ward-node-02-glaze-barge-ward",
+      "node_name": "Glaze-Barge Sky-Harbor \u2014 Territory Ward of Innadril Waterway Dominion",
+      "node_role": "Sovereign_Territory_Ward",
+      "stronghold_zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "linked_vassal_zone_id": "zone-town-glaze-barge-quay",
+      "loc": "-89220:155380",
+      "mercenary_captain_npc": "Mercenary Captain Pierce",
+      "stat_ward_bonus": "WIT +1 / MEN +1 Ward Banner",
+      "epaulette_codex_reward": "Territory Badge Exchange: Innadril Tidal Talisman & Top-Grade Belt",
+      "territory_battle_window": "Bi-Weekly Saturday 20:00\u201322:00 UTC (Territory War Flag Capture)"
+    },
+    {
+      "ward_node_id": "ward-node-03-kilnwatch-accord-ward",
+      "node_name": "Kilnwatch Accord Keep \u2014 Territory Ward of Dion 6-Race Convergence",
+      "node_role": "Sovereign_Territory_Ward",
+      "stronghold_zone_id": "zone-clanhall-kilnwatch-accord",
+      "linked_vassal_zone_id": "zone-town-kilnwatch-bastion",
+      "loc": "-13620:124260",
+      "mercenary_captain_npc": "Mercenary Captainoni",
+      "stat_ward_bonus": "DEX +1 / CON +1 Ward Banner",
+      "epaulette_codex_reward": "Territory Badge Exchange: Dion Vanguard Belt (+PvP P.Atk/Def)",
+      "territory_battle_window": "Bi-Weekly Saturday 20:00\u201322:00 UTC (Territory War Flag Capture)"
+    },
+    {
+      "ward_node_id": "ward-node-04-inductor-conclave-ward",
+      "node_name": "Inductor Conclave Citadel \u2014 Territory Ward of Giran Trade Hegemony",
+      "node_role": "Sovereign_Territory_Ward",
+      "stronghold_zone_id": "zone-clanhall-inductor-conclave",
+      "linked_vassal_zone_id": "zone-town-inductor-switchyard",
+      "loc": "148280:-54620",
+      "mercenary_captain_npc": "Mercenary Captaingk",
+      "stat_ward_bonus": "STR +1 / DEX +1 Ward Banner",
+      "epaulette_codex_reward": "Territory Badge Exchange: Giran Merchant Sovereign Cloak & Strider",
+      "territory_battle_window": "Bi-Weekly Saturday 20:00\u201322:00 UTC (Territory War Flag Capture)"
+    },
+    {
+      "ward_node_id": "ward-node-05-shanty-kiln-ward",
+      "node_name": "Shanty-Kiln Border Fortress \u2014 Territory Ward of Oren Frontier",
+      "node_role": "Sovereign_Territory_Ward",
+      "stronghold_zone_id": "zone-fortress-shanty-kiln",
+      "linked_vassal_zone_id": "zone-field-cinder-apron",
+      "loc": "-5020:134360",
+      "mercenary_captain_npc": "Mercenary Captain Mouen",
+      "stat_ward_bonus": "CON +1 / MEN +1 Ward Banner",
+      "epaulette_codex_reward": "Territory Badge Exchange: Oren Borderland Shield & PvP Rune Belt",
+      "territory_battle_window": "Bi-Weekly Saturday 20:00\u201322:00 UTC (Territory War Flag Capture)"
+    },
+    {
+      "ward_node_id": "ward-node-06-floran-saffron-ward",
+      "node_name": "Saffron Agricultural Fortress \u2014 Territory Ward of Floran Freeholds",
+      "node_role": "Sovereign_Territory_Ward",
+      "stronghold_zone_id": "zone-fortress-floran-saffron",
+      "linked_vassal_zone_id": "zone-town-saffron-press",
+      "loc": "18280:168560",
+      "mercenary_captain_npc": "Mercenary Captain Mathias",
+      "stat_ward_bonus": "INT +1 / WIT +1 Ward Banner",
+      "epaulette_codex_reward": "Territory Badge Exchange: Floran Harvest Talisman of Speed & Belt",
+      "territory_battle_window": "Bi-Weekly Saturday 20:00\u201322:00 UTC (Territory War Flag Capture)"
+    },
+    {
+      "ward_node_id": "ward-node-07-dragonspine-cog-ward",
+      "node_name": "Dragonspine Cog Fortress \u2014 Territory Ward of Schuttgart & Goddard",
+      "node_role": "Sovereign_Territory_Ward",
+      "stronghold_zone_id": "zone-fortress-dragonspine-cog",
+      "linked_vassal_zone_id": "zone-town-escapement-anvil",
+      "loc": "91380:136960",
+      "mercenary_captain_npc": "Mercenary Captain Vishotsky",
+      "stat_ward_bonus": "STR +1 / CON +1 Ward Banner",
+      "epaulette_codex_reward": "Territory Badge Exchange: Dragonspine Siege Golem Crest & Top Belt",
+      "territory_battle_window": "Bi-Weekly Saturday 20:00\u201322:00 UTC (Territory War Flag Capture)"
+    },
+    {
+      "ward_node_id": "ward-node-08-cloud-halo-ward",
+      "node_name": "Cloud-Mountain Halo Fortress \u2014 Territory Ward of Aden & Rune Sovereign",
+      "node_role": "Sovereign_Territory_Ward",
+      "stronghold_zone_id": "zone-fortress-cloud-halo",
+      "linked_vassal_zone_id": "zone-town-crown-beacon",
+      "loc": "46380:-44920",
+      "mercenary_captain_npc": "Mercenary Captainslt",
+      "stat_ward_bonus": "STR +1 / INT +1 / WIT +1 Sovereign Ward Banner",
+      "epaulette_codex_reward": "Territory Badge Exchange: Aden/Rune Sovereign Noble Cloak & Hero Belt",
+      "territory_battle_window": "Bi-Weekly Saturday 20:00\u201322:00 UTC (Grand High-Halo Territory War)"
+    },
+    {
+      "ward_node_id": "ward-node-09-lantern-ferry-codex-vault",
+      "node_name": "Lantern Ferry Garrison Vault \u2014 Knights' Epaulette & Giant's Codex Chest",
+      "node_role": "Fortress_Codex_Supply_Vault",
+      "stronghold_zone_id": "zone-harbor-lantern-ferry-pier",
+      "linked_vassal_zone_id": "zone-field-clover-south-gate",
+      "loc": "-95660:258020",
+      "mercenary_captain_npc": "Support Unit Captain Braddock",
+      "stat_ward_bonus": "STR +1 / INT +1 Ward Banner",
+      "epaulette_codex_reward": "Giant's Codex (+1..+30 Skill Enchant) & Talisman of Speed",
+      "territory_battle_window": "Every 4 Hours (Fortress Siege & 6h Rebel Supply Drop)"
+    },
+    {
+      "ward_node_id": "ward-node-10-glaze-barge-codex-vault",
+      "node_name": "Glaze-Barge Dock Armory \u2014 Epaulette & Giant's Codex: Discipline Vault",
+      "node_role": "Fortress_Codex_Supply_Vault",
+      "stronghold_zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "linked_vassal_zone_id": "zone-field-cobalt-sandbar-ford",
+      "loc": "-88860:154780",
+      "mercenary_captain_npc": "Support Unit Captain Kessel",
+      "stat_ward_bonus": "WIT +1 / MEN +1 Ward Banner",
+      "epaulette_codex_reward": "Giant's Codex: Discipline (Skill Enchant Route Change) & Blood Oath",
+      "territory_battle_window": "Every 4 Hours (Fortress Siege & 6h Rebel Supply Drop)"
+    },
+    {
+      "ward_node_id": "ward-node-11-kilnwatch-accord-codex-vault",
+      "node_name": "Kilnwatch Accord Underground Dungeon \u2014 Epaulette & Mastery Codex Vault",
+      "node_role": "Fortress_Codex_Supply_Vault",
+      "stronghold_zone_id": "zone-clanhall-kilnwatch-accord",
+      "linked_vassal_zone_id": "zone-field-slag-chasm",
+      "loc": "-13280:123680",
+      "mercenary_captain_npc": "Detention Camp Warden Rignos",
+      "stat_ward_bonus": "DEX +1 / CON +1 Ward Banner",
+      "epaulette_codex_reward": "Giant's Codex: Mastery (Safe Skill Enchant No-Reset) & Blood Oath",
+      "territory_battle_window": "Every 4 Hours (Fortress Prison Raid & Supply Level 1\u20136 Chest)"
+    },
+    {
+      "ward_node_id": "ward-node-12-inductor-conclave-codex-vault",
+      "node_name": "Inductor Conclave Treasury \u2014 Royal Epaulette & Oblivion Codex Vault",
+      "node_role": "Fortress_Codex_Supply_Vault",
+      "stronghold_zone_id": "zone-clanhall-inductor-conclave",
+      "linked_vassal_zone_id": "zone-field-leyden-causeway",
+      "loc": "148620:-55220",
+      "mercenary_captain_npc": "Supply Officer Harke",
+      "stat_ward_bonus": "STR +1 / DEX +1 Ward Banner",
+      "epaulette_codex_reward": "Giant's Codex: Oblivion (SP Refund Reset) & Blood Alliance",
+      "territory_battle_window": "Every 4 Hours (Citadel Supply Caravan & Pailaka Rim Dungeon)"
+    },
+    {
+      "ward_node_id": "ward-node-13-shanty-kiln-codex-vault",
+      "node_name": "Shanty-Kiln Barracks Vault \u2014 Knights' Epaulette & Talisman Supply",
+      "node_role": "Fortress_Codex_Supply_Vault",
+      "stronghold_zone_id": "zone-fortress-shanty-kiln",
+      "linked_vassal_zone_id": "zone-town-carillon-belfry",
+      "loc": "-4680:133780",
+      "mercenary_captain_npc": "Supply Officer Torrant",
+      "stat_ward_bonus": "CON +1 / MEN +1 Ward Banner",
+      "epaulette_codex_reward": "Giant's Codex: Mastery (+Skill Enchant Safe) & Talisman of Invincibility",
+      "territory_battle_window": "Every 4 Hours (72h Independent Fortress Contract & Supply Drop)"
+    },
+    {
+      "ward_node_id": "ward-node-14-floran-saffron-codex-vault",
+      "node_name": "Saffron Granary Vault \u2014 Knights' Epaulette & Shirt Enchant Supply",
+      "node_role": "Fortress_Codex_Supply_Vault",
+      "stronghold_zone_id": "zone-fortress-floran-saffron",
+      "linked_vassal_zone_id": "zone-field-apricot-aqueduct-terrace",
+      "loc": "18620:167980",
+      "mercenary_captain_npc": "Foreman Logistics Officer",
+      "stat_ward_bonus": "INT +1 / WIT +1 Ward Banner",
+      "epaulette_codex_reward": "Giant's Codex & Striped Mithril CP Shirt (+4 Safe Enchant)",
+      "territory_battle_window": "Every 4 Hours (Manor Fortress Garrison & Rebel Supply Crate)"
+    },
+    {
+      "ward_node_id": "ward-node-15-dragonspine-cog-codex-vault",
+      "node_name": "Dragonspine Cog Munitions Vault \u2014 Epaulette & Mastery Codex Armory",
+      "node_role": "Fortress_Codex_Supply_Vault",
+      "stronghold_zone_id": "zone-fortress-dragonspine-cog",
+      "linked_vassal_zone_id": "zone-field-brass-spur-ridge",
+      "loc": "91720:136380",
+      "mercenary_captain_npc": "Dwarven Logistics Quartermaster",
+      "stat_ward_bonus": "STR +1 / CON +1 Ward Banner",
+      "epaulette_codex_reward": "Giant's Codex: Mastery (Safe Skill Enchant) & Blood Oath x15",
+      "territory_battle_window": "Every 4 Hours (Ridge Fortress Siege & Castle Supply Level 6)"
+    },
+    {
+      "ward_node_id": "ward-node-16-cloud-halo-codex-vault",
+      "node_name": "Cloud-Mountain Halo Reliquary \u2014 Sovereign Epaulette & Apex Codex Vault",
+      "node_role": "Fortress_Codex_Supply_Vault",
+      "stronghold_zone_id": "zone-fortress-cloud-halo",
+      "linked_vassal_zone_id": "zone-field-aurora-tether",
+      "loc": "46720:-45520",
+      "mercenary_captain_npc": "High-Halo Supply Arbiter",
+      "stat_ward_bonus": "STR +1 / INT +1 / WIT +1 Sovereign Ward Banner",
+      "epaulette_codex_reward": "Giant's Codex: Mastery + Discipline Bundle & Divine Talisman",
+      "territory_battle_window": "Every 4 Hours (High-Halo Citadel Supply & Rim Pailaka Raid)"
+    }
   ]
 }

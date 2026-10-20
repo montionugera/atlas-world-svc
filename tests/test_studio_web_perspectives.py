@@ -1314,7 +1314,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 38)
+        self.assertGreaterEqual(len(audit["dimensions"]), 38)
 
         d37 = audit["dimensions"]["D37_clan_reputation_and_pledge_academies"]
         self.assertEqual(d37["score"], 100.0)
@@ -1376,10 +1376,92 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas38DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 38)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 38)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 38)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 38)
         self.assertIn("38-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave18_soulshot_workshop_plazas_and_territory_ward_supply_nodes(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["soulshotWorkshopPlazasCount"], 15)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["territoryWardSupplyNodesCount"], 16)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_WORKSHOP_MODE",
+            "setAtlasWorkshopMode(",
+            "renderAtlasWorkshopPlazaBarHtml(",
+            "studioSoulshotWorkshopOverlay",
+            "ATLAS_TERRITORY_WARD_MODE",
+            "setAtlasTerritoryWardMode(",
+            "renderAtlasTerritoryWardBarHtml(",
+            "studioTerritoryWardOverlay",
+            "40-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 18 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 40)
+
+        d39 = audit["dimensions"]["D39_soulshot_and_dwarven_manufacture_workshops"]
+        self.assertEqual(d39["score"], 100.0)
+        self.assertEqual(d39["verified"], 15)
+        self.assertEqual(d39["target"], 15)
+        self.assertEqual(d39["starter_plazas"], 6)
+        self.assertEqual(d39["regional_workshops"], 5)
+        self.assertEqual(d39["capital_master_forges"], 4)
+        self.assertEqual(
+            set(d39["workshop_tiers"]),
+            {
+                "Starter_D_C_Plaza",
+                "Regional_B_A_Workshop",
+                "Capital_S_Grade_Master_Forge",
+            },
+        )
+        self.assertTrue(d39["ui_wired"])
+
+        d40 = audit["dimensions"]["D40_territory_ward_and_fortress_codex_supply"]
+        self.assertEqual(d40["score"], 100.0)
+        self.assertEqual(d40["verified"], 16)
+        self.assertEqual(d40["target"], 16)
+        self.assertEqual(d40["sovereign_territory_wards"], 8)
+        self.assertEqual(d40["fortress_codex_vaults"], 8)
+        self.assertEqual(d40["strongholds_covered"], 8)
+        self.assertEqual(
+            set(d40["node_roles"]),
+            {"Sovereign_Territory_Ward", "Fortress_Codex_Supply_Vault"},
+        )
+        self.assertTrue(d40["ui_wired"])
+
+        workshops = atlas["soulshot_workshop_plazas"]
+        self.assertEqual(len(workshops), 15)
+        self.assertEqual(len({w["town_zone_id"] for w in workshops}), 15)
+        self.assertEqual(sum(1 for w in workshops if w["workshop_tier"] == "Starter_D_C_Plaza"), 6)
+        self.assertEqual(sum(1 for w in workshops if w["workshop_tier"] == "Regional_B_A_Workshop"), 5)
+        self.assertEqual(sum(1 for w in workshops if w["workshop_tier"] == "Capital_S_Grade_Master_Forge"), 4)
+        for wp in workshops:
+            self.assertGreaterEqual(len(wp["shot_compression_grades"]), 2)
+            self.assertGreater(wp["average_manufacture_fee_adena"], 0)
+
+        ward_nodes = atlas["territory_ward_supply_nodes"]
+        self.assertEqual(len(ward_nodes), 16)
+        self.assertEqual(sum(1 for n in ward_nodes if n["node_role"] == "Sovereign_Territory_Ward"), 8)
+        self.assertEqual(sum(1 for n in ward_nodes if n["node_role"] == "Fortress_Codex_Supply_Vault"), 8)
+        self.assertEqual(len({n["stronghold_zone_id"] for n in ward_nodes}), 8)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas40DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 40)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 40)
+        self.assertIn("40-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

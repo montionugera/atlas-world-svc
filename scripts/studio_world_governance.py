@@ -678,6 +678,8 @@ def validate_world_governance(
                 "companionMountSanctuariesCount": len(t_doc.get("companion_mount_sanctuaries") or []),
                 "clanReputationAcademiesCount": len(t_doc.get("clan_reputation_academies") or []),
                 "fieldHerbElementalBiomesCount": len(t_doc.get("field_herb_elemental_biomes") or []),
+                "soulshotWorkshopPlazasCount": len(t_doc.get("soulshot_workshop_plazas") or []),
+                "territoryWardSupplyNodesCount": len(t_doc.get("territory_ward_supply_nodes") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1118,6 +1120,48 @@ def validate_world_governance(
                 if hb_fzid not in field_zone_ids_only:
                     errors.append(
                         f"GOV-10 violation: field_herb_elemental_biomes '{hb_id}' references unknown field_zone_id '{hb_fzid}'"
+                    )
+
+            # Validate 15 Town Soulshot/Spiritshot & Dwarven Private Manufacture Workshop Plazas (D39)
+            workshop_plazas = t_doc.get("soulshot_workshop_plazas") or []
+            if workshop_plazas and len(workshop_plazas) != 15:
+                errors.append(
+                    f"GOV-10 violation: soulshot_workshop_plazas must have 15 plazas, got {len(workshop_plazas)}"
+                )
+            for wp_item in workshop_plazas:
+                if not isinstance(wp_item, dict):
+                    continue
+                wp_id = str(wp_item.get("workshop_id", ""))
+                wp_tzid = str(wp_item.get("town_zone_id", ""))
+                wp_szid = str(wp_item.get("recipe_spoil_zone_id", ""))
+                if wp_tzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: soulshot_workshop_plazas '{wp_id}' references unknown town_zone_id '{wp_tzid}'"
+                    )
+                if wp_szid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: soulshot_workshop_plazas '{wp_id}' references unknown recipe_spoil_zone_id '{wp_szid}'"
+                    )
+
+            # Validate 16 Territory War & Fortress Giant's Codex Supply Nodes (D40)
+            ward_nodes = t_doc.get("territory_ward_supply_nodes") or []
+            if ward_nodes and len(ward_nodes) != 16:
+                errors.append(
+                    f"GOV-10 violation: territory_ward_supply_nodes must have 16 nodes, got {len(ward_nodes)}"
+                )
+            for wn_item in ward_nodes:
+                if not isinstance(wn_item, dict):
+                    continue
+                wn_id = str(wn_item.get("ward_node_id", ""))
+                wn_szid = str(wn_item.get("stronghold_zone_id", ""))
+                wn_vzid = str(wn_item.get("linked_vassal_zone_id", ""))
+                if wn_szid not in fort_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: territory_ward_supply_nodes '{wn_id}' references unknown stronghold_zone_id '{wn_szid}'"
+                    )
+                if wn_vzid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: territory_ward_supply_nodes '{wn_id}' references unknown linked_vassal_zone_id '{wn_vzid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

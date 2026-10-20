@@ -5092,6 +5092,487 @@ def _build_field_herb_elemental_biomes(atlas: dict[str, Any]) -> list[dict[str, 
     return rows
 
 
+def _build_soulshot_workshop_plazas(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 Town Soulshot/Spiritshot & Dwarven Private Manufacture Workshop Plazas across all 15 Towns (D39)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 6 Starter_D_C_Plaza Towns (Starter_D_C_Plaza)
+        (
+            "workshop-01-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Starter_D_C_Plaza",
+            "Head Blacksmith Kluto & Master Warsmith Pinter",
+            [
+                "Soulshot D-Grade & C-Grade Compressed Pack",
+                "Blessed Spiritshot D-Grade & C-Grade Compressed Pack",
+                "Beast Soulshot & Summon Spiritshot Pack",
+            ],
+            "100% D-Grade & 60% C-Grade Saber / Brigandine Recipes",
+            "zone-field-clover-south-gate",
+            12500,
+            "3 Crystal D + 9 Soul Ore -> 468 D-Soulshots",
+        ),
+        (
+            "workshop-02-porcelain-loom",
+            "zone-town-porcelain-loom",
+            "Starter_D_C_Plaza",
+            "Head Blacksmith Aios & Elven Master Artisan",
+            [
+                "Blessed Spiritshot D-Grade & C-Grade Compressed Pack",
+                "Spiritshot D/C Mystic Resonance Pack",
+                "Soulshot D-Grade Elven Scout Pack",
+            ],
+            "100% D-Grade & 60% C-Grade Homunkulus / Karmian Tunic Recipes",
+            "zone-field-celadon-causeway",
+            14000,
+            "2 Crystal D + 8 Spirit Ore -> 200 Blessed D-Spiritshots",
+        ),
+        (
+            "workshop-03-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Starter_D_C_Plaza",
+            "Head Blacksmith Sumari & Flame-Anvil Warsmith",
+            [
+                "Soulshot D-Grade & C-Grade Heavy Brawler Pack",
+                "Compressed Soulshot C-Grade (3,000 Rounds)",
+                "Blessed Spiritshot D-Grade Warcryer Pack",
+            ],
+            "100% D-Grade & 60% C-Grade Chakram / Composite Armor Recipes",
+            "zone-field-firebrick-duct",
+            15000,
+            "1 Crystal C + 15 Soul Ore -> 476 C-Soulshots",
+        ),
+        (
+            "workshop-04-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Starter_D_C_Plaza",
+            "Iron Gate Chief Bronk & Head Blacksmith Silvera",
+            [
+                "Soulshot D/C Greater Compressed Crate (10,000 Rounds)",
+                "Blessed Spiritshot D/C Compressed Crate",
+                "Mechanical Golem Siege Shot & Beast Soulshot",
+            ],
+            "100% D/C-Grade Dwarven Polearm, Yaksa Mace & Mithril Alloy Recipes",
+            "zone-field-resin-arch-tunnel",
+            9500,
+            "2 Crystal C + 30 Soul Ore -> 952 C-Soulshots (Dwarven Home Guild Rate)",
+        ),
+        (
+            "workshop-05-carillon-belfry",
+            "zone-town-carillon-belfry",
+            "Starter_D_C_Plaza",
+            "Head Blacksmith Karrod & Abyssal Forge-Keeper",
+            [
+                "Blessed Spiritshot D-Grade & C-Grade Dark Caster Pack",
+                "Soulshot D-Grade & C-Grade Assassin Pack",
+                "Compressed Spiritshot C-Grade Pack",
+            ],
+            "100% D-Grade & 60% C-Grade Crystal Dagger / Demon's Tunic Recipes",
+            "zone-field-chime-pipe-colonnade",
+            14500,
+            "2 Crystal C + 22 Spirit Ore -> 200 Blessed C-Spiritshots",
+        ),
+        (
+            "workshop-06-cinnamon-mill",
+            "zone-town-cinnamon-mill",
+            "Starter_D_C_Plaza",
+            "Head Blacksmith Feynn & Furral Blade-Factor",
+            [
+                "Soulshot D-Grade & C-Grade Skirmisher Pack",
+                "Compressed Soulshot D/C Rapid-Fire Quiver Pack",
+                "Beast Soulshot & Companion Fang Pack",
+            ],
+            "100% D-Grade & 60% C-Grade Eminence Bow / Theca Leather Recipes",
+            "zone-field-cinnamon-bark-viaduct",
+            13500,
+            "3 Crystal D + 9 Soul Ore -> 468 D-Soulshots",
+        ),
+        # 5 Regional_B_A_Workshop Towns (Regional_B_A_Workshop)
+        (
+            "workshop-07-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Regional_B_A_Workshop",
+            "Head Blacksmith Poitan & Black Anvil Guild Factor",
+            [
+                "Soulshot C-Grade & B-Grade Compressed Pack",
+                "Blessed Spiritshot C-Grade & B-Grade Compressed Pack",
+                "Greater Compressed Soulshot B-Grade Crate",
+            ],
+            "100% C-Grade & 60% B-Grade Damascus / Zubei & Avadon Recipes",
+            "zone-field-slag-chasm",
+            45000,
+            "1 Crystal B + 54 Soul Ore -> 450 B-Soulshots",
+        ),
+        (
+            "workshop-08-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Regional_B_A_Workshop",
+            "Head Blacksmith Kluck & Maritime Trade Warsmith",
+            [
+                "Blessed Spiritshot B-Grade & A-Grade Compressed Pack",
+                "Soulshot B-Grade Harbor Escort Pack",
+                "Fishing Shot (No/D/C/B/A-Grade Luminous Pack)",
+            ],
+            "60% B-Grade & 60% A-Grade Sword of Valhalla / Blue Wolf Recipes",
+            "zone-field-cobalt-sandbar-ford",
+            62000,
+            "2 Crystal B + 16 Spirit Ore -> 100 Blessed B-Spiritshots",
+        ),
+        (
+            "workshop-09-saffron-press",
+            "zone-town-saffron-press",
+            "Regional_B_A_Workshop",
+            "Head Blacksmith Pushkin & Manor Alloy Factor",
+            [
+                "Soulshot B-Grade & A-Grade Compressed Pack",
+                "Blessed Spiritshot B-Grade Compressed Pack",
+                "Beast Soulshot & Strider Siege Shot Pack",
+            ],
+            "60% B-Grade & 60% A-Grade Kris / Doom Plate & Peril Bow Recipes",
+            "zone-field-apricot-aqueduct-terrace",
+            68000,
+            "1 Crystal B + 54 Soul Ore -> 450 B-Soulshots",
+        ),
+        (
+            "workshop-10-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "Regional_B_A_Workshop",
+            "Head Blacksmith Rupio & Steppe Gear-Smith",
+            [
+                "Soulshot B-Grade & A-Grade Greater Compressed Pack",
+                "Blessed Spiritshot B-Grade & A-Grade Compressed Pack",
+                "Summon Beast Shot & Airship Ballista Charge",
+            ],
+            "60% A-Grade Carnage Bow, Halberd & Majestic Armor Recipes",
+            "zone-field-brass-spur-ridge",
+            85000,
+            "1 Crystal A + 36 Soul Ore -> 300 A-Soulshots",
+        ),
+        (
+            "workshop-11-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "Regional_B_A_Workshop",
+            "Head Blacksmith Tatabos & Master Warsmith Roman",
+            [
+                "Soulshot A-Grade & B-Grade Compressed Pack",
+                "Blessed Spiritshot A-Grade Compressed Pack",
+                "Greater Compressed A-Grade Siege Crate (10,000 Rounds)",
+            ],
+            "60% A-Grade Tallum Blade, Dark Legion's Edge & Nightmare Recipes",
+            "zone-field-caldera-rim",
+            98000,
+            "2 Crystal A + 70 Spirit Ore -> 200 Blessed A-Spiritshots",
+        ),
+        # 4 Capital_S_Grade_Master_Forge Towns (Capital_S_Grade_Master_Forge)
+        (
+            "workshop-12-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "Capital_S_Grade_Master_Forge",
+            "Head Blacksmith Ferris & Maestro Kusto",
+            [
+                "Soulshot A-Grade & S-Grade Compressed Pack",
+                "Blessed Spiritshot A-Grade & S-Grade Compressed Pack",
+                "Greater S-Grade Merchant Guild Crate (10,000 Rounds)",
+            ],
+            "60% S-Grade Arcana Mace, Draconic Bow & Imperial Crusader Recipes",
+            "zone-field-leyden-causeway",
+            185000,
+            "1 Crystal S + 40 Soul Ore -> 350 S-Soulshots",
+        ),
+        (
+            "workshop-13-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "Capital_S_Grade_Master_Forge",
+            "Head Blacksmith Hilda & Maestro Noel",
+            [
+                "Soulshot S-Grade Royal Citadel Compressed Pack",
+                "Blessed Spiritshot S-Grade Archmage Compressed Pack",
+                "S-Grade Beast & Wyvern Siege Shot Crate",
+            ],
+            "60% S-Grade Forgotten Blade, Basalt Battlehammer & Major Arcana Recipes",
+            "zone-field-spiral-wormway-ramp",
+            220000,
+            "2 Crystal S + 50 Spirit Ore -> 200 Blessed S-Spiritshots",
+        ),
+        (
+            "workshop-14-starfall-haven",
+            "zone-town-starfall-haven",
+            "Capital_S_Grade_Master_Forge",
+            "Head Blacksmith Vincenz & Sky-Anvil Maestro",
+            [
+                "Soulshot S-Grade & A-Grade Astral Compressed Pack",
+                "Blessed Spiritshot S-Grade Starfall Compressed Pack",
+                "Greater Compressed S-Grade Raid Command Crate",
+            ],
+            "60% S-GradeHeaven's Divider, Angel Slayer & Draconic Leather Recipes",
+            "zone-field-kelp-spiral-reef",
+            240000,
+            "1 Crystal S + 40 Soul Ore -> 350 S-Soulshots",
+        ),
+        (
+            "workshop-15-crown-beacon",
+            "zone-town-crown-beacon",
+            "Capital_S_Grade_Master_Forge",
+            "Head Blacksmith Mammon-Envoy & Sovereign Maestro Ishuma",
+            [
+                "Soulshot S-Grade Sovereign Masterwork Crate",
+                "Blessed Spiritshot S-Grade Olympiad Hero Pack",
+                "Apex S-Grade Compressed Soulshot/Spiritshot Bundle",
+            ],
+            "60% & 100% S-Grade Dynasty / Imperial Crusader & Saint Spear Recipes",
+            "zone-field-aurora-tether",
+            290000,
+            "2 Crystal S + 80 Soul Ore -> 700 S-Soulshots (Master Forge Yield)",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (wid, tzid, wtier, smith, shot_grades, rec_tier, spoil_zid, fee_adena, ratio_str) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(tzid) or {}
+        tname = str(t_obj.get("name", tzid))
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        plaza_loc = _fmt_loc(bx + 190 + idx * 10, by - 145 - idx * 8)
+        rows.append(
+            {
+                "workshop_id": wid,
+                "town_zone_id": tzid,
+                "town_name": tname,
+                "workshop_tier": wtier,
+                "plaza_loc": plaza_loc,
+                "head_blacksmith_npc": smith,
+                "shot_compression_grades": shot_grades,
+                "featured_recipe_tier": rec_tier,
+                "recipe_spoil_zone_id": spoil_zid,
+                "average_manufacture_fee_adena": fee_adena,
+                "crystal_ore_ratio": ratio_str,
+            }
+        )
+    return rows
+
+
+def _build_territory_ward_supply_nodes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 Territory War & Fortress Supply Nodes (8 Sovereign_Territory_Ward + 8 Fortress_Codex_Supply_Vault across the 8 Stronghold Domains) (D40)."""
+    specs = [
+        # 8 Sovereign_Territory_Ward (1 per Stronghold Domain)
+        (
+            "ward-node-01-lantern-ferry-ward",
+            "Lantern Ferry Harbor — Territory Ward of Gludio Maritime Dominion",
+            "Sovereign_Territory_Ward",
+            "zone-harbor-lantern-ferry-pier",
+            "zone-town-lantern-hollow",
+            "-96020:258560",
+            "Mercenary Captain Devianne",
+            "STR +1 / INT +1 Ward Banner",
+            "Territory Badge Exchange: Gludio Noble Vesper Cloak & Belt",
+            "Bi-Weekly Saturday 20:00–22:00 UTC (Territory War Flag Capture)",
+        ),
+        (
+            "ward-node-02-glaze-barge-ward",
+            "Glaze-Barge Sky-Harbor — Territory Ward of Innadril Waterway Dominion",
+            "Sovereign_Territory_Ward",
+            "zone-harbor-glaze-barge-airship-dock",
+            "zone-town-glaze-barge-quay",
+            "-89220:155380",
+            "Mercenary Captain Pierce",
+            "WIT +1 / MEN +1 Ward Banner",
+            "Territory Badge Exchange: Innadril Tidal Talisman & Top-Grade Belt",
+            "Bi-Weekly Saturday 20:00–22:00 UTC (Territory War Flag Capture)",
+        ),
+        (
+            "ward-node-03-kilnwatch-accord-ward",
+            "Kilnwatch Accord Keep — Territory Ward of Dion 6-Race Convergence",
+            "Sovereign_Territory_Ward",
+            "zone-clanhall-kilnwatch-accord",
+            "zone-town-kilnwatch-bastion",
+            "-13620:124260",
+            "Mercenary Captainoni",
+            "DEX +1 / CON +1 Ward Banner",
+            "Territory Badge Exchange: Dion Vanguard Belt (+PvP P.Atk/Def)",
+            "Bi-Weekly Saturday 20:00–22:00 UTC (Territory War Flag Capture)",
+        ),
+        (
+            "ward-node-04-inductor-conclave-ward",
+            "Inductor Conclave Citadel — Territory Ward of Giran Trade Hegemony",
+            "Sovereign_Territory_Ward",
+            "zone-clanhall-inductor-conclave",
+            "zone-town-inductor-switchyard",
+            "148280:-54620",
+            "Mercenary Captaingk",
+            "STR +1 / DEX +1 Ward Banner",
+            "Territory Badge Exchange: Giran Merchant Sovereign Cloak & Strider",
+            "Bi-Weekly Saturday 20:00–22:00 UTC (Territory War Flag Capture)",
+        ),
+        (
+            "ward-node-05-shanty-kiln-ward",
+            "Shanty-Kiln Border Fortress — Territory Ward of Oren Frontier",
+            "Sovereign_Territory_Ward",
+            "zone-fortress-shanty-kiln",
+            "zone-field-cinder-apron",
+            "-5020:134360",
+            "Mercenary Captain Mouen",
+            "CON +1 / MEN +1 Ward Banner",
+            "Territory Badge Exchange: Oren Borderland Shield & PvP Rune Belt",
+            "Bi-Weekly Saturday 20:00–22:00 UTC (Territory War Flag Capture)",
+        ),
+        (
+            "ward-node-06-floran-saffron-ward",
+            "Saffron Agricultural Fortress — Territory Ward of Floran Freeholds",
+            "Sovereign_Territory_Ward",
+            "zone-fortress-floran-saffron",
+            "zone-town-saffron-press",
+            "18280:168560",
+            "Mercenary Captain Mathias",
+            "INT +1 / WIT +1 Ward Banner",
+            "Territory Badge Exchange: Floran Harvest Talisman of Speed & Belt",
+            "Bi-Weekly Saturday 20:00–22:00 UTC (Territory War Flag Capture)",
+        ),
+        (
+            "ward-node-07-dragonspine-cog-ward",
+            "Dragonspine Cog Fortress — Territory Ward of Schuttgart & Goddard",
+            "Sovereign_Territory_Ward",
+            "zone-fortress-dragonspine-cog",
+            "zone-town-escapement-anvil",
+            "91380:136960",
+            "Mercenary Captain Vishotsky",
+            "STR +1 / CON +1 Ward Banner",
+            "Territory Badge Exchange: Dragonspine Siege Golem Crest & Top Belt",
+            "Bi-Weekly Saturday 20:00–22:00 UTC (Territory War Flag Capture)",
+        ),
+        (
+            "ward-node-08-cloud-halo-ward",
+            "Cloud-Mountain Halo Fortress — Territory Ward of Aden & Rune Sovereign",
+            "Sovereign_Territory_Ward",
+            "zone-fortress-cloud-halo",
+            "zone-town-crown-beacon",
+            "46380:-44920",
+            "Mercenary Captainslt",
+            "STR +1 / INT +1 / WIT +1 Sovereign Ward Banner",
+            "Territory Badge Exchange: Aden/Rune Sovereign Noble Cloak & Hero Belt",
+            "Bi-Weekly Saturday 20:00–22:00 UTC (Grand High-Halo Territory War)",
+        ),
+        # 8 Fortress_Codex_Supply_Vault (1 per Stronghold Domain)
+        (
+            "ward-node-09-lantern-ferry-codex-vault",
+            "Lantern Ferry Garrison Vault — Knights' Epaulette & Giant's Codex Chest",
+            "Fortress_Codex_Supply_Vault",
+            "zone-harbor-lantern-ferry-pier",
+            "zone-field-clover-south-gate",
+            "-95660:258020",
+            "Support Unit Captain Braddock",
+            "STR +1 / INT +1 Ward Banner",
+            "Giant's Codex (+1..+30 Skill Enchant) & Talisman of Speed",
+            "Every 4 Hours (Fortress Siege & 6h Rebel Supply Drop)",
+        ),
+        (
+            "ward-node-10-glaze-barge-codex-vault",
+            "Glaze-Barge Dock Armory — Epaulette & Giant's Codex: Discipline Vault",
+            "Fortress_Codex_Supply_Vault",
+            "zone-harbor-glaze-barge-airship-dock",
+            "zone-field-cobalt-sandbar-ford",
+            "-88860:154780",
+            "Support Unit Captain Kessel",
+            "WIT +1 / MEN +1 Ward Banner",
+            "Giant's Codex: Discipline (Skill Enchant Route Change) & Blood Oath",
+            "Every 4 Hours (Fortress Siege & 6h Rebel Supply Drop)",
+        ),
+        (
+            "ward-node-11-kilnwatch-accord-codex-vault",
+            "Kilnwatch Accord Underground Dungeon — Epaulette & Mastery Codex Vault",
+            "Fortress_Codex_Supply_Vault",
+            "zone-clanhall-kilnwatch-accord",
+            "zone-field-slag-chasm",
+            "-13280:123680",
+            "Detention Camp Warden Rignos",
+            "DEX +1 / CON +1 Ward Banner",
+            "Giant's Codex: Mastery (Safe Skill Enchant No-Reset) & Blood Oath",
+            "Every 4 Hours (Fortress Prison Raid & Supply Level 1–6 Chest)",
+        ),
+        (
+            "ward-node-12-inductor-conclave-codex-vault",
+            "Inductor Conclave Treasury — Royal Epaulette & Oblivion Codex Vault",
+            "Fortress_Codex_Supply_Vault",
+            "zone-clanhall-inductor-conclave",
+            "zone-field-leyden-causeway",
+            "148620:-55220",
+            "Supply Officer Harke",
+            "STR +1 / DEX +1 Ward Banner",
+            "Giant's Codex: Oblivion (SP Refund Reset) & Blood Alliance",
+            "Every 4 Hours (Citadel Supply Caravan & Pailaka Rim Dungeon)",
+        ),
+        (
+            "ward-node-13-shanty-kiln-codex-vault",
+            "Shanty-Kiln Barracks Vault — Knights' Epaulette & Talisman Supply",
+            "Fortress_Codex_Supply_Vault",
+            "zone-fortress-shanty-kiln",
+            "zone-town-carillon-belfry",
+            "-4680:133780",
+            "Supply Officer Torrant",
+            "CON +1 / MEN +1 Ward Banner",
+            "Giant's Codex: Mastery (+Skill Enchant Safe) & Talisman of Invincibility",
+            "Every 4 Hours (72h Independent Fortress Contract & Supply Drop)",
+        ),
+        (
+            "ward-node-14-floran-saffron-codex-vault",
+            "Saffron Granary Vault — Knights' Epaulette & Shirt Enchant Supply",
+            "Fortress_Codex_Supply_Vault",
+            "zone-fortress-floran-saffron",
+            "zone-field-apricot-aqueduct-terrace",
+            "18620:167980",
+            "Foreman Logistics Officer",
+            "INT +1 / WIT +1 Ward Banner",
+            "Giant's Codex & Striped Mithril CP Shirt (+4 Safe Enchant)",
+            "Every 4 Hours (Manor Fortress Garrison & Rebel Supply Crate)",
+        ),
+        (
+            "ward-node-15-dragonspine-cog-codex-vault",
+            "Dragonspine Cog Munitions Vault — Epaulette & Mastery Codex Armory",
+            "Fortress_Codex_Supply_Vault",
+            "zone-fortress-dragonspine-cog",
+            "zone-field-brass-spur-ridge",
+            "91720:136380",
+            "Dwarven Logistics Quartermaster",
+            "STR +1 / CON +1 Ward Banner",
+            "Giant's Codex: Mastery (Safe Skill Enchant) & Blood Oath x15",
+            "Every 4 Hours (Ridge Fortress Siege & Castle Supply Level 6)",
+        ),
+        (
+            "ward-node-16-cloud-halo-codex-vault",
+            "Cloud-Mountain Halo Reliquary — Sovereign Epaulette & Apex Codex Vault",
+            "Fortress_Codex_Supply_Vault",
+            "zone-fortress-cloud-halo",
+            "zone-field-aurora-tether",
+            "46720:-45520",
+            "High-Halo Supply Arbiter",
+            "STR +1 / INT +1 / WIT +1 Sovereign Ward Banner",
+            "Giant's Codex: Mastery + Discipline Bundle & Divine Talisman",
+            "Every 4 Hours (High-Halo Citadel Supply & Rim Pailaka Raid)",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for wid, nname, nrole, szid, vzid, loc, capt, stat_bon, reward, bwin in specs:
+        rows.append(
+            {
+                "ward_node_id": wid,
+                "node_name": nname,
+                "node_role": nrole,
+                "stronghold_zone_id": szid,
+                "linked_vassal_zone_id": vzid,
+                "loc": loc,
+                "mercenary_captain_npc": capt,
+                "stat_ward_bonus": stat_bon,
+                "epaulette_codex_reward": reward,
+                "territory_battle_window": bwin,
+            }
+        )
+    return rows
+
+
+
 
 
 
@@ -6115,6 +6596,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("field_herb_elemental_biomes") or []) < 24:
         atlas["field_herb_elemental_biomes"] = _build_field_herb_elemental_biomes(atlas)
         actions.append("populated_24_field_herb_elemental_biomes")
+
+    # 23. Ensure all 15 Town Soulshot/Spiritshot & Dwarven Private Manufacture Workshop Plazas exist in `soulshot_workshop_plazas` (D39)
+    if len(atlas.get("soulshot_workshop_plazas") or []) < 15:
+        atlas["soulshot_workshop_plazas"] = _build_soulshot_workshop_plazas(atlas)
+        actions.append("populated_15_soulshot_workshop_plazas")
+
+    # 24. Ensure all 16 Territory War & Fortress Supply Nodes exist in `territory_ward_supply_nodes` (D40)
+    if len(atlas.get("territory_ward_supply_nodes") or []) < 16:
+        atlas["territory_ward_supply_nodes"] = _build_territory_ward_supply_nodes(atlas)
+        actions.append("populated_16_territory_ward_supply_nodes")
 
     return {"actions": actions}
 
@@ -7817,15 +8308,152 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d38_ratio * 80.0, 1)
     )
 
+    # D39: Interactive 15-Town Soulshot/Spiritshot & Dwarven Private Manufacture Workshop Matrix (`soulshot_workshop_plazas` - 15/15 Town Plazas)
+    expected_workshop_tiers = {
+        "Starter_D_C_Plaza",
+        "Regional_B_A_Workshop",
+        "Capital_S_Grade_Master_Forge",
+    }
+    workshop_plazas = atlas.get("soulshot_workshop_plazas") or []
+    valid_workshop_plazas = 0
+    starter_plaza_count = 0
+    regional_workshop_count = 0
+    capital_forge_count = 0
+    seen_workshop_ids: set[str] = set()
+    seen_workshop_town_ids: set[str] = set()
+    seen_workshop_tiers: set[str] = set()
+    for wp in workshop_plazas:
+        if not isinstance(wp, dict):
+            continue
+        wid = str(wp.get("workshop_id") or "")
+        tzid = str(wp.get("town_zone_id") or "")
+        wtier = str(wp.get("workshop_tier") or "")
+        sgrades = wp.get("shot_compression_grades") or []
+        rszid = str(wp.get("recipe_spoil_zone_id") or "")
+        mfee = wp.get("average_manufacture_fee_adena")
+        if (
+            wid
+            and wid not in seen_workshop_ids
+            and tzid in town_zone_id_set
+            and tzid not in seen_workshop_town_ids
+            and wp.get("town_name")
+            and wtier in expected_workshop_tiers
+            and ":" in str(wp.get("plaza_loc", ""))
+            and wp.get("head_blacksmith_npc")
+            and isinstance(sgrades, list)
+            and len(sgrades) >= 2
+            and wp.get("featured_recipe_tier")
+            and rszid in zone_ids_set
+            and isinstance(mfee, int)
+            and mfee >= 0
+            and wp.get("crystal_ore_ratio")
+        ):
+            valid_workshop_plazas += 1
+            seen_workshop_ids.add(wid)
+            seen_workshop_town_ids.add(tzid)
+            seen_workshop_tiers.add(wtier)
+            if wtier == "Starter_D_C_Plaza":
+                starter_plaza_count += 1
+            elif wtier == "Regional_B_A_Workshop":
+                regional_workshop_count += 1
+            elif wtier == "Capital_S_Grade_Master_Forge":
+                capital_forge_count += 1
+
+    has_d39_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_WORKSHOP_MODE",
+            "setAtlasWorkshopMode",
+            "renderAtlasWorkshopPlazaBarHtml",
+            "studioSoulshotWorkshopOverlay",
+        )
+    )
+    d39_ratio = valid_workshop_plazas / 15.0
+    d39_full_coverage = (
+        len(seen_workshop_town_ids) == 15
+        and seen_workshop_tiers == expected_workshop_tiers
+        and starter_plaza_count >= 4
+        and regional_workshop_count >= 4
+        and capital_forge_count >= 3
+    )
+    d39_score = (
+        round(min(100.0, d39_ratio * 100.0), 1)
+        if (has_d39_ui and d39_full_coverage)
+        else round(d39_ratio * 80.0, 1)
+    )
+
+    # D40: Interactive Territory Ward Relic & Fortress Giant's Codex Supply Matrix (`territory_ward_supply_nodes` - 16/16 Nodes = 8 Sovereign_Territory_Ward + 8 Fortress_Codex_Supply_Vault)
+    expected_ward_roles = {
+        "Sovereign_Territory_Ward",
+        "Fortress_Codex_Supply_Vault",
+    }
+    ward_nodes = atlas.get("territory_ward_supply_nodes") or []
+    valid_ward_nodes = 0
+    sovereign_ward_count = 0
+    codex_vault_count = 0
+    seen_ward_node_ids: set[str] = set()
+    seen_ward_roles: set[str] = set()
+    seen_ward_strongholds: set[str] = set()
+    for wn in ward_nodes:
+        if not isinstance(wn, dict):
+            continue
+        wnid = str(wn.get("ward_node_id") or "")
+        nrole = str(wn.get("node_role") or "")
+        szid = str(wn.get("stronghold_zone_id") or "")
+        vzid = str(wn.get("linked_vassal_zone_id") or "")
+        if (
+            wnid
+            and wnid not in seen_ward_node_ids
+            and wn.get("node_name")
+            and nrole in expected_ward_roles
+            and szid in fort_zone_id_set
+            and vzid in zone_ids_set
+            and ":" in str(wn.get("loc", ""))
+            and wn.get("mercenary_captain_npc")
+            and wn.get("stat_ward_bonus")
+            and wn.get("epaulette_codex_reward")
+            and wn.get("territory_battle_window")
+        ):
+            valid_ward_nodes += 1
+            seen_ward_node_ids.add(wnid)
+            seen_ward_roles.add(nrole)
+            seen_ward_strongholds.add(szid)
+            if nrole == "Sovereign_Territory_Ward":
+                sovereign_ward_count += 1
+            elif nrole == "Fortress_Codex_Supply_Vault":
+                codex_vault_count += 1
+
+    has_d40_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_TERRITORY_WARD_MODE",
+            "setAtlasTerritoryWardMode",
+            "renderAtlasTerritoryWardBarHtml",
+            "studioTerritoryWardOverlay",
+        )
+    )
+    d40_ratio = valid_ward_nodes / 16.0
+    d40_full_coverage = (
+        sovereign_ward_count == 8
+        and codex_vault_count == 8
+        and len(seen_ward_strongholds) == 8
+        and seen_ward_roles == expected_ward_roles
+    )
+    d40_score = (
+        round(min(100.0, d40_ratio * 100.0), 1)
+        if (has_d40_ui and d40_full_coverage)
+        else round(d40_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 20.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 22.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 22.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 32.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 21.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 28.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 22.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 24.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 24.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 34.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 23.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score) / 30.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -7868,8 +8496,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d36_score
             + d37_score
             + d38_score
+            + d39_score
+            + d40_score
         )
-        / 38.0,
+        / 40.0,
         1,
     )
 
@@ -8136,6 +8766,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "herb_drop_tiers": sorted(seen_herb_tiers),
                 "ui_wired": has_d38_ui,
             },
+            "D39_soulshot_and_dwarven_manufacture_workshops": {
+                "score": d39_score,
+                "verified": valid_workshop_plazas,
+                "target": 15,
+                "starter_plazas": starter_plaza_count,
+                "regional_workshops": regional_workshop_count,
+                "capital_master_forges": capital_forge_count,
+                "workshop_tiers": sorted(seen_workshop_tiers),
+                "ui_wired": has_d39_ui,
+            },
+            "D40_territory_ward_and_fortress_codex_supply": {
+                "score": d40_score,
+                "verified": valid_ward_nodes,
+                "target": 16,
+                "sovereign_territory_wards": sovereign_ward_count,
+                "fortress_codex_vaults": codex_vault_count,
+                "strongholds_covered": len(seen_ward_strongholds),
+                "node_roles": sorted(seen_ward_roles),
+                "ui_wired": has_d40_ui,
+            },
         },
     }
 
@@ -8218,6 +8868,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D36 (12 Pet/Strider/Wyvern) : {dims['D36_companion_pet_strider_and_wyvern_sanctuaries']['score']}/100 ({dims['D36_companion_pet_strider_and_wyvern_sanctuaries']['verified']}/{dims['D36_companion_pet_strider_and_wyvern_sanctuaries']['target']} sanctuaries)")
         print(f"  D37 (14 Clan/Pledge Nodes)  : {dims['D37_clan_reputation_and_pledge_academies']['score']}/100 ({dims['D37_clan_reputation_and_pledge_academies']['verified']}/{dims['D37_clan_reputation_and_pledge_academies']['target']} clan nodes)")
         print(f"  D38 (24 Field Herb/Elem)    : {dims['D38_field_herb_and_elemental_biomes']['score']}/100 ({dims['D38_field_herb_and_elemental_biomes']['verified']}/{dims['D38_field_herb_and_elemental_biomes']['target']} field biomes)")
+        print(f"  D39 (15 Soulshot/Workshops) : {dims['D39_soulshot_and_dwarven_manufacture_workshops']['score']}/100 ({dims['D39_soulshot_and_dwarven_manufacture_workshops']['verified']}/{dims['D39_soulshot_and_dwarven_manufacture_workshops']['target']} workshop plazas)")
+        print(f"  D40 (16 Territory/Codex)    : {dims['D40_territory_ward_and_fortress_codex_supply']['score']}/100 ({dims['D40_territory_ward_and_fortress_codex_supply']['verified']}/{dims['D40_territory_ward_and_fortress_codex_supply']['target']} ward/supply nodes)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
