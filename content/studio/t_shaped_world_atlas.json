@@ -18504,7 +18504,16 @@
           "weaknesses": [],
           "spawn_count": 2,
           "respawn_sec": 60,
-          "loc_coord": "72950:112900"
+          "loc_coord": "72950:112900",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 32175,
@@ -18521,7 +18530,16 @@
           "weaknesses": [],
           "spawn_count": 2,
           "respawn_sec": 60,
-          "loc_coord": "71800:114500"
+          "loc_coord": "71800:114500",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 22228,
@@ -18538,7 +18556,16 @@
           ],
           "spawn_count": 28,
           "respawn_sec": 15,
-          "loc_coord": "72986:113330"
+          "loc_coord": "72986:113330",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20535,
@@ -18553,7 +18580,16 @@
           "weaknesses": [],
           "spawn_count": 32,
           "respawn_sec": 18,
-          "loc_coord": "73120:113850"
+          "loc_coord": "73120:113850",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 22231,
@@ -18568,7 +18604,16 @@
           "weaknesses": [],
           "spawn_count": 22,
           "respawn_sec": 20,
-          "loc_coord": "72600:114600"
+          "loc_coord": "72600:114600",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20317,
@@ -18585,7 +18630,16 @@
           ],
           "spawn_count": 24,
           "respawn_sec": 25,
-          "loc_coord": "71420:115800"
+          "loc_coord": "71420:115800",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 22233,
@@ -18604,7 +18658,16 @@
           ],
           "spawn_count": 16,
           "respawn_sec": 30,
-          "loc_coord": "71100:116300"
+          "loc_coord": "71100:116300",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20460,
@@ -18623,7 +18686,16 @@
           ],
           "spawn_count": 20,
           "respawn_sec": 30,
-          "loc_coord": "74890:116200"
+          "loc_coord": "74890:116200",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20378,
@@ -18643,7 +18715,16 @@
           ],
           "spawn_count": 14,
           "respawn_sec": 45,
-          "loc_coord": "75200:116500"
+          "loc_coord": "75200:116500",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 22240,
@@ -18662,7 +18743,16 @@
           ],
           "spawn_count": 18,
           "respawn_sec": 35,
-          "loc_coord": "75350:116750"
+          "loc_coord": "75350:116750",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 27016,
@@ -18682,7 +18772,16 @@
           ],
           "spawn_count": 1,
           "respawn_sec": 180,
-          "loc_coord": "75410:116820"
+          "loc_coord": "75410:116820",
+          "refinement_drops": [
+            "Weapon Enchant Scroll Fragment",
+            "Tempered Alloy Plate",
+            "Seal-Stone Cluster"
+          ],
+          "spoil_materials": [
+            "Tempered Alloy Plate (24% Spoil)",
+            "Seal-Stone Cluster (18% Spoil)"
+          ]
         },
         {
           "npc_id": 29503,
@@ -18701,7 +18800,16 @@
           ],
           "spawn_count": 1,
           "respawn_sec": 3600,
-          "loc_coord": "73286:113030"
+          "loc_coord": "73286:113030",
+          "refinement_drops": [
+            "Blessed Enchant Weapon Scroll",
+            "Warden Alloy Core",
+            "Soul Crystal Stage 5"
+          ],
+          "spoil_materials": [
+            "Warden Alloy Core (15% Raid Spoil)",
+            "Blessed Enchant Scroll (12% Drop)"
+          ]
         },
         {
           "npc_id": 29504,
@@ -18720,7 +18828,16 @@
           ],
           "spawn_count": 1,
           "respawn_sec": 7200,
-          "loc_coord": "73386:112930"
+          "loc_coord": "73386:112930",
+          "refinement_drops": [
+            "Divine Apostle Anvil Core",
+            "Ancient Refinement Catalyst",
+            "Architect Seal Crest"
+          ],
+          "spoil_materials": [
+            "Divine Apostle Anvil Core (8.5% MVP Drop)",
+            "Architect Seal Crest (15% Spoil)"
+          ]
         }
       ],
       "field_tactical_blueprint": {
@@ -19008,7 +19125,16 @@
           "weaknesses": [],
           "spawn_count": 1,
           "respawn_sec": 60,
-          "loc_coord": "48550:248400"
+          "loc_coord": "48550:248400",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20450,
@@ -19027,7 +19153,16 @@
           ],
           "spawn_count": 18,
           "respawn_sec": 35,
-          "loc_coord": "48720:247900"
+          "loc_coord": "48720:247900",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20092,
@@ -19046,7 +19181,16 @@
           ],
           "spawn_count": 16,
           "respawn_sec": 35,
-          "loc_coord": "48900:247500"
+          "loc_coord": "48900:247500",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20097,
@@ -19066,7 +19210,16 @@
           ],
           "spawn_count": 22,
           "respawn_sec": 30,
-          "loc_coord": "49120:247100"
+          "loc_coord": "49120:247100",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20099,
@@ -19087,7 +19240,16 @@
           ],
           "spawn_count": 24,
           "respawn_sec": 40,
-          "loc_coord": "49400:246600"
+          "loc_coord": "49400:246600",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20362,
@@ -19104,7 +19266,16 @@
           "weaknesses": [],
           "spawn_count": 18,
           "respawn_sec": 40,
-          "loc_coord": "49650:246200"
+          "loc_coord": "49650:246200",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20100,
@@ -19125,7 +19296,16 @@
           ],
           "spawn_count": 20,
           "respawn_sec": 45,
-          "loc_coord": "49900:245800"
+          "loc_coord": "49900:245800",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20378,
@@ -19146,7 +19326,16 @@
           ],
           "spawn_count": 12,
           "respawn_sec": 50,
-          "loc_coord": "50200:245400"
+          "loc_coord": "50200:245400",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20104,
@@ -19167,7 +19356,16 @@
           ],
           "spawn_count": 10,
           "respawn_sec": 60,
-          "loc_coord": "50600:244900"
+          "loc_coord": "50600:244900",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20462,
@@ -19187,7 +19385,16 @@
           ],
           "spawn_count": 16,
           "respawn_sec": 45,
-          "loc_coord": "51100:244400"
+          "loc_coord": "51100:244400",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20109,
@@ -19207,7 +19414,16 @@
           ],
           "spawn_count": 14,
           "respawn_sec": 55,
-          "loc_coord": "51500:243900"
+          "loc_coord": "51500:243900",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20110,
@@ -19227,7 +19443,16 @@
           ],
           "spawn_count": 14,
           "respawn_sec": 55,
-          "loc_coord": "51800:243600"
+          "loc_coord": "51800:243600",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20114,
@@ -19247,7 +19472,16 @@
           ],
           "spawn_count": 8,
           "respawn_sec": 65,
-          "loc_coord": "52200:243200"
+          "loc_coord": "52200:243200",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 20118,
@@ -19267,7 +19501,16 @@
           ],
           "spawn_count": 4,
           "respawn_sec": 300,
-          "loc_coord": "52750:242800"
+          "loc_coord": "52750:242800",
+          "refinement_drops": [
+            "High-Grade Iron Ore",
+            "Varnish",
+            "Refinement Flux Dust"
+          ],
+          "spoil_materials": [
+            "High-Grade Iron Ore (42% Spoil)",
+            "Refinement Flux Dust (28% Spoil)"
+          ]
         },
         {
           "npc_id": 25372,
@@ -19287,7 +19530,16 @@
           ],
           "spawn_count": 1,
           "respawn_sec": 43200,
-          "loc_coord": "52800:242750"
+          "loc_coord": "52800:242750",
+          "refinement_drops": [
+            "Blessed Enchant Weapon Scroll",
+            "Warden Alloy Core",
+            "Soul Crystal Stage 5"
+          ],
+          "spoil_materials": [
+            "Warden Alloy Core (15% Raid Spoil)",
+            "Blessed Enchant Scroll (12% Drop)"
+          ]
         },
         {
           "npc_id": 29602,
@@ -19306,7 +19558,16 @@
           ],
           "spawn_count": 1,
           "respawn_sec": 240,
-          "loc_coord": "75610:116620"
+          "loc_coord": "75610:116620",
+          "refinement_drops": [
+            "Weapon Enchant Scroll Fragment",
+            "Tempered Alloy Plate",
+            "Seal-Stone Cluster"
+          ],
+          "spoil_materials": [
+            "Tempered Alloy Plate (24% Spoil)",
+            "Seal-Stone Cluster (18% Spoil)"
+          ]
         },
         {
           "npc_id": 29604,
@@ -19325,7 +19586,16 @@
           ],
           "spawn_count": 1,
           "respawn_sec": 7200,
-          "loc_coord": "75810:116420"
+          "loc_coord": "75810:116420",
+          "refinement_drops": [
+            "Divine Apostle Anvil Core",
+            "Ancient Refinement Catalyst",
+            "Architect Seal Crest"
+          ],
+          "spoil_materials": [
+            "Divine Apostle Anvil Core (8.5% MVP Drop)",
+            "Architect Seal Crest (15% Spoil)"
+          ]
         }
       ]
     },
@@ -19838,7 +20108,16 @@
               ],
               "spawn_count": 24,
               "respawn_sec": 30,
-              "loc_coord": "48420:248100"
+              "loc_coord": "48420:248100",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 20048,
@@ -19857,7 +20136,16 @@
               ],
               "spawn_count": 18,
               "respawn_sec": 35,
-              "loc_coord": "48650:247800"
+              "loc_coord": "48650:247800",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 25011,
@@ -19876,7 +20164,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 180,
-              "loc_coord": "48880:247220"
+              "loc_coord": "48880:247220",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 29738,
@@ -19895,7 +20192,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "-113190:235226"
+              "loc_coord": "-113190:235226",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 29739,
@@ -19914,7 +20220,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-113090:235126"
+              "loc_coord": "-113090:235126",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -20007,7 +20322,16 @@
               ],
               "spawn_count": 22,
               "respawn_sec": 40,
-              "loc_coord": "50120:245900"
+              "loc_coord": "50120:245900",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 25064,
@@ -20026,7 +20350,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "51200:244800"
+              "loc_coord": "51200:244800",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 25371,
@@ -20045,7 +20378,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 1800,
-              "loc_coord": "51840:244120"
+              "loc_coord": "51840:244120",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 29744,
@@ -20064,7 +20406,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-113090:235126"
+              "loc_coord": "-113090:235126",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -20143,7 +20494,16 @@
               ],
               "spawn_count": 16,
               "respawn_sec": 45,
-              "loc_coord": "52200:243100"
+              "loc_coord": "52200:243100",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 25102,
@@ -20162,7 +20522,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 300,
-              "loc_coord": "52500:242900"
+              "loc_coord": "52500:242900",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 25372,
@@ -20181,7 +20550,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "52800:242750"
+              "loc_coord": "52800:242750",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 29001,
@@ -20201,7 +20579,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "53100:242600"
+              "loc_coord": "53100:242600",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -20290,7 +20677,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "17210:114800"
+              "loc_coord": "17210:114800",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 20214,
@@ -20309,7 +20705,16 @@
               ],
               "spawn_count": 18,
               "respawn_sec": 45,
-              "loc_coord": "17480:114500"
+              "loc_coord": "17480:114500",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 25120,
@@ -20328,7 +20733,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "17690:114250"
+              "loc_coord": "17690:114250",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 29768,
@@ -20347,7 +20761,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "85700:143900"
+              "loc_coord": "85700:143900",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 29769,
@@ -20366,7 +20789,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "85800:143800"
+              "loc_coord": "85800:143800",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": 20,
@@ -20446,7 +20878,16 @@
               ],
               "spawn_count": 22,
               "respawn_sec": 50,
-              "loc_coord": "17520:111800"
+              "loc_coord": "17520:111800",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 25142,
@@ -20465,7 +20906,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 300,
-              "loc_coord": "17640:110900"
+              "loc_coord": "17640:110900",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 25205,
@@ -20484,7 +20934,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "17710:110100"
+              "loc_coord": "17710:110100",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 29774,
@@ -20503,7 +20962,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "85800:143800"
+              "loc_coord": "85800:143800",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": 85,
@@ -20582,7 +21050,16 @@
               ],
               "spawn_count": 16,
               "respawn_sec": 60,
-              "loc_coord": "17680:108900"
+              "loc_coord": "17680:108900",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 25163,
@@ -20601,7 +21078,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 360,
-              "loc_coord": "17710:108500"
+              "loc_coord": "17710:108500",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 25229,
@@ -20620,7 +21106,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "17720:108300"
+              "loc_coord": "17720:108300",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 29006,
@@ -20640,7 +21135,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 10800,
-              "loc_coord": "17724:108150"
+              "loc_coord": "17724:108150",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": 160,
@@ -20729,7 +21233,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "113800:16800"
+              "loc_coord": "113800:16800",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 25181,
@@ -20748,7 +21261,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "114100:16400"
+              "loc_coord": "114100:16400",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 25241,
@@ -20767,7 +21289,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "114200:16200"
+              "loc_coord": "114200:16200",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 29799,
@@ -20786,7 +21317,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "85200:56000"
+              "loc_coord": "85200:56000",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": 20,
@@ -20865,7 +21405,16 @@
               ],
               "spawn_count": 18,
               "respawn_sec": 50,
-              "loc_coord": "114500:16100"
+              "loc_coord": "114500:16100",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 25194,
@@ -20884,7 +21433,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 300,
-              "loc_coord": "114800:16000"
+              "loc_coord": "114800:16000",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 25260,
@@ -20903,7 +21461,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "115000:159500"
+              "loc_coord": "115000:159500",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 29804,
@@ -20922,7 +21489,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "85200:56000"
+              "loc_coord": "85200:56000",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": 85,
@@ -21000,7 +21576,16 @@
               ],
               "spawn_count": 16,
               "respawn_sec": 60,
-              "loc_coord": "115080:15940"
+              "loc_coord": "115080:15940",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 25211,
@@ -21019,7 +21604,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 360,
-              "loc_coord": "115120:15920"
+              "loc_coord": "115120:15920",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 25279,
@@ -21038,7 +21632,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "115150:15910"
+              "loc_coord": "115150:15910",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 29020,
@@ -21058,7 +21661,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 14400,
-              "loc_coord": "115180:15900"
+              "loc_coord": "115180:15900",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": 160,
@@ -21147,7 +21759,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "50400:43500"
+              "loc_coord": "50400:43500",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21112,
@@ -21166,7 +21787,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "50520:43420"
+              "loc_coord": "50520:43420",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21113,
@@ -21185,7 +21815,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "50640:43340"
+              "loc_coord": "50640:43340",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21114,
@@ -21204,7 +21843,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "50760:43260"
+              "loc_coord": "50760:43260",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -21283,7 +21931,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "51000:42900"
+              "loc_coord": "51000:42900",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21122,
@@ -21302,7 +21959,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "51120:42820"
+              "loc_coord": "51120:42820",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21123,
@@ -21321,7 +21987,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "51240:42740"
+              "loc_coord": "51240:42740",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21124,
@@ -21340,7 +22015,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "51360:42660"
+              "loc_coord": "51360:42660",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -21419,7 +22103,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "51600:42300"
+              "loc_coord": "51600:42300",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21132,
@@ -21438,7 +22131,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "51720:42220"
+              "loc_coord": "51720:42220",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21133,
@@ -21457,7 +22159,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "51840:42140"
+              "loc_coord": "51840:42140",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21134,
@@ -21476,7 +22187,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "51960:42060"
+              "loc_coord": "51960:42060",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -21565,7 +22285,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "-40600:-110400"
+              "loc_coord": "-40600:-110400",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21162,
@@ -21584,7 +22313,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "-40480:-110480"
+              "loc_coord": "-40480:-110480",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21163,
@@ -21603,7 +22341,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "-40360:-110560"
+              "loc_coord": "-40360:-110560",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21164,
@@ -21622,7 +22369,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-40240:-110640"
+              "loc_coord": "-40240:-110640",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -21701,7 +22457,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "-40000:-111000"
+              "loc_coord": "-40000:-111000",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21172,
@@ -21720,7 +22485,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "-39880:-111080"
+              "loc_coord": "-39880:-111080",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21173,
@@ -21739,7 +22513,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "-39760:-111160"
+              "loc_coord": "-39760:-111160",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21174,
@@ -21758,7 +22541,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-39640:-111240"
+              "loc_coord": "-39640:-111240",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -21837,7 +22629,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "-39400:-111600"
+              "loc_coord": "-39400:-111600",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21182,
@@ -21856,7 +22657,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "-39280:-111680"
+              "loc_coord": "-39280:-111680",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21183,
@@ -21875,7 +22685,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "-39160:-111760"
+              "loc_coord": "-39160:-111760",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21184,
@@ -21894,7 +22713,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-39040:-111840"
+              "loc_coord": "-39040:-111840",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -21983,7 +22811,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "120000:-174800"
+              "loc_coord": "120000:-174800",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21212,
@@ -22002,7 +22839,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "120120:-174880"
+              "loc_coord": "120120:-174880",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21213,
@@ -22021,7 +22867,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "120240:-174960"
+              "loc_coord": "120240:-174960",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21214,
@@ -22040,7 +22895,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "120360:-175040"
+              "loc_coord": "120360:-175040",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -22119,7 +22983,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "120600:-175400"
+              "loc_coord": "120600:-175400",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21222,
@@ -22138,7 +23011,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "120720:-175480"
+              "loc_coord": "120720:-175480",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21223,
@@ -22157,7 +23039,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "120840:-175560"
+              "loc_coord": "120840:-175560",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21224,
@@ -22176,7 +23067,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "120960:-175640"
+              "loc_coord": "120960:-175640",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -22255,7 +23155,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "121200:-176000"
+              "loc_coord": "121200:-176000",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21232,
@@ -22274,7 +23183,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "121320:-176080"
+              "loc_coord": "121320:-176080",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21233,
@@ -22293,7 +23211,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "121440:-176160"
+              "loc_coord": "121440:-176160",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21234,
@@ -22312,7 +23239,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "121560:-176240"
+              "loc_coord": "121560:-176240",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -22401,7 +23337,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "15800:18800"
+              "loc_coord": "15800:18800",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21262,
@@ -22420,7 +23365,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "15920:18720"
+              "loc_coord": "15920:18720",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21263,
@@ -22439,7 +23393,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "16040:18640"
+              "loc_coord": "16040:18640",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21264,
@@ -22458,7 +23421,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "16160:18560"
+              "loc_coord": "16160:18560",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -22537,7 +23509,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "16400:18200"
+              "loc_coord": "16400:18200",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21272,
@@ -22556,7 +23537,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "16520:18120"
+              "loc_coord": "16520:18120",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21273,
@@ -22575,7 +23565,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "16640:18040"
+              "loc_coord": "16640:18040",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21274,
@@ -22594,7 +23593,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "16760:17960"
+              "loc_coord": "16760:17960",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -22673,7 +23681,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "17000:17600"
+              "loc_coord": "17000:17600",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21282,
@@ -22692,7 +23709,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "17120:17520"
+              "loc_coord": "17120:17520",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21283,
@@ -22711,7 +23737,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "17240:17440"
+              "loc_coord": "17240:17440",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21284,
@@ -22730,7 +23765,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "17360:17360"
+              "loc_coord": "17360:17360",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -22819,7 +23863,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "-114800:48500"
+              "loc_coord": "-114800:48500",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21312,
@@ -22838,7 +23891,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "-114680:48420"
+              "loc_coord": "-114680:48420",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21313,
@@ -22857,7 +23919,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "-114560:48340"
+              "loc_coord": "-114560:48340",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21314,
@@ -22876,7 +23947,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-114440:48260"
+              "loc_coord": "-114440:48260",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -22955,7 +24035,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "-114200:47900"
+              "loc_coord": "-114200:47900",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21322,
@@ -22974,7 +24063,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "-114080:47820"
+              "loc_coord": "-114080:47820",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21323,
@@ -22993,7 +24091,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "-113960:47740"
+              "loc_coord": "-113960:47740",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21324,
@@ -23012,7 +24119,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-113840:47660"
+              "loc_coord": "-113840:47660",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -23091,7 +24207,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "-113600:47300"
+              "loc_coord": "-113600:47300",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21332,
@@ -23110,7 +24235,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "-113480:47220"
+              "loc_coord": "-113480:47220",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21333,
@@ -23129,7 +24263,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "-113360:47140"
+              "loc_coord": "-113360:47140",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21334,
@@ -23148,7 +24291,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-113240:47060"
+              "loc_coord": "-113240:47060",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -23237,7 +24389,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "-77800:148600"
+              "loc_coord": "-77800:148600",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21362,
@@ -23256,7 +24417,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "-77680:148520"
+              "loc_coord": "-77680:148520",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21363,
@@ -23275,7 +24445,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "-77560:148440"
+              "loc_coord": "-77560:148440",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21364,
@@ -23294,7 +24473,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-77440:148360"
+              "loc_coord": "-77440:148360",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -23373,7 +24561,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "-77200:148000"
+              "loc_coord": "-77200:148000",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21372,
@@ -23392,7 +24589,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "-77080:147920"
+              "loc_coord": "-77080:147920",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21373,
@@ -23411,7 +24617,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "-76960:147840"
+              "loc_coord": "-76960:147840",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21374,
@@ -23430,7 +24645,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-76840:147760"
+              "loc_coord": "-76840:147760",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -23509,7 +24733,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "-76600:147400"
+              "loc_coord": "-76600:147400",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21382,
@@ -23528,7 +24761,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "-76480:147320"
+              "loc_coord": "-76480:147320",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21383,
@@ -23547,7 +24789,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "-76360:147240"
+              "loc_coord": "-76360:147240",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21384,
@@ -23566,7 +24817,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "-76240:147160"
+              "loc_coord": "-76240:147160",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -23655,7 +24915,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "149800:27800"
+              "loc_coord": "149800:27800",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21512,
@@ -23674,7 +24943,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "149920:27720"
+              "loc_coord": "149920:27720",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21513,
@@ -23693,7 +24971,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "150040:27640"
+              "loc_coord": "150040:27640",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21514,
@@ -23712,7 +24999,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "150160:27560"
+              "loc_coord": "150160:27560",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": 20,
@@ -23791,7 +25087,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "150400:27200"
+              "loc_coord": "150400:27200",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21522,
@@ -23810,7 +25115,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "150520:27120"
+              "loc_coord": "150520:27120",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21523,
@@ -23829,7 +25143,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "150640:27040"
+              "loc_coord": "150640:27040",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21524,
@@ -23848,7 +25171,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "150760:26960"
+              "loc_coord": "150760:26960",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": 85,
@@ -23927,7 +25259,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "151000:26600"
+              "loc_coord": "151000:26600",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21532,
@@ -23946,7 +25287,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "151120:26520"
+              "loc_coord": "151120:26520",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21533,
@@ -23965,7 +25315,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "151240:26440"
+              "loc_coord": "151240:26440",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21534,
@@ -23984,7 +25343,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "151360:26360"
+              "loc_coord": "151360:26360",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": 160,
@@ -24073,7 +25441,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "20400:172800"
+              "loc_coord": "20400:172800",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21562,
@@ -24092,7 +25469,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "20520:172720"
+              "loc_coord": "20520:172720",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21563,
@@ -24111,7 +25497,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "20640:172640"
+              "loc_coord": "20640:172640",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21564,
@@ -24130,7 +25525,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "20760:172560"
+              "loc_coord": "20760:172560",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -24209,7 +25613,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "21000:172200"
+              "loc_coord": "21000:172200",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21572,
@@ -24228,7 +25641,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "21120:172120"
+              "loc_coord": "21120:172120",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21573,
@@ -24247,7 +25669,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "21240:172040"
+              "loc_coord": "21240:172040",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21574,
@@ -24266,7 +25697,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "21360:171960"
+              "loc_coord": "21360:171960",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -24345,7 +25785,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "21600:171600"
+              "loc_coord": "21600:171600",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21582,
@@ -24364,7 +25813,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "21720:171520"
+              "loc_coord": "21720:171520",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21583,
@@ -24383,7 +25841,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "21840:171440"
+              "loc_coord": "21840:171440",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21584,
@@ -24402,7 +25869,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "21960:171360"
+              "loc_coord": "21960:171360",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -24491,7 +25967,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "113000:17600"
+              "loc_coord": "113000:17600",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21612,
@@ -24510,7 +25995,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "113120:17520"
+              "loc_coord": "113120:17520",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21613,
@@ -24529,7 +26023,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "113240:17440"
+              "loc_coord": "113240:17440",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21614,
@@ -24548,7 +26051,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "113360:17360"
+              "loc_coord": "113360:17360",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -24627,7 +26139,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "113600:17000"
+              "loc_coord": "113600:17000",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21622,
@@ -24646,7 +26167,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "113720:16920"
+              "loc_coord": "113720:16920",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21623,
@@ -24665,7 +26195,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "113840:16840"
+              "loc_coord": "113840:16840",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21624,
@@ -24684,7 +26223,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "113960:16760"
+              "loc_coord": "113960:16760",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -24763,7 +26311,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "114200:16400"
+              "loc_coord": "114200:16400",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21632,
@@ -24782,7 +26339,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "114320:16320"
+              "loc_coord": "114320:16320",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21633,
@@ -24801,7 +26367,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "114440:16240"
+              "loc_coord": "114440:16240",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21634,
@@ -24820,7 +26395,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "114560:16160"
+              "loc_coord": "114560:16160",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -24909,7 +26493,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "150400:-51800"
+              "loc_coord": "150400:-51800",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21662,
@@ -24928,7 +26521,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "150520:-51880"
+              "loc_coord": "150520:-51880",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21663,
@@ -24947,7 +26549,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "150640:-51960"
+              "loc_coord": "150640:-51960",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21664,
@@ -24966,7 +26577,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "150760:-52040"
+              "loc_coord": "150760:-52040",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -25045,7 +26665,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "151000:-52400"
+              "loc_coord": "151000:-52400",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21672,
@@ -25064,7 +26693,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "151120:-52480"
+              "loc_coord": "151120:-52480",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21673,
@@ -25083,7 +26721,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "151240:-52560"
+              "loc_coord": "151240:-52560",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21674,
@@ -25102,7 +26749,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "151360:-52640"
+              "loc_coord": "151360:-52640",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -25181,7 +26837,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "151600:-53000"
+              "loc_coord": "151600:-53000",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21682,
@@ -25200,7 +26865,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "151720:-53080"
+              "loc_coord": "151720:-53080",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21683,
@@ -25219,7 +26893,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "151840:-53160"
+              "loc_coord": "151840:-53160",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21684,
@@ -25238,7 +26921,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "151960:-53240"
+              "loc_coord": "151960:-53240",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -25327,7 +27019,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "54800:-35400"
+              "loc_coord": "54800:-35400",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21712,
@@ -25346,7 +27047,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "54920:-35480"
+              "loc_coord": "54920:-35480",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21713,
@@ -25365,7 +27075,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "55040:-35560"
+              "loc_coord": "55040:-35560",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21714,
@@ -25384,7 +27103,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "55160:-35640"
+              "loc_coord": "55160:-35640",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -25463,7 +27191,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "55400:-36000"
+              "loc_coord": "55400:-36000",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21722,
@@ -25482,7 +27219,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "55520:-36080"
+              "loc_coord": "55520:-36080",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21723,
@@ -25501,7 +27247,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "55640:-36160"
+              "loc_coord": "55640:-36160",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21724,
@@ -25520,7 +27275,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "55760:-36240"
+              "loc_coord": "55760:-36240",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -25599,7 +27363,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "56000:-36600"
+              "loc_coord": "56000:-36600",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21732,
@@ -25618,7 +27391,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "56120:-36680"
+              "loc_coord": "56120:-36680",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21733,
@@ -25637,7 +27419,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "56240:-36760"
+              "loc_coord": "56240:-36760",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21734,
@@ -25656,7 +27447,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "56360:-36840"
+              "loc_coord": "56360:-36840",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -25745,7 +27545,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "39000:-29500"
+              "loc_coord": "39000:-29500",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21762,
@@ -25764,7 +27573,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "39120:-29580"
+              "loc_coord": "39120:-29580",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21763,
@@ -25783,7 +27601,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "39240:-29660"
+              "loc_coord": "39240:-29660",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21764,
@@ -25802,7 +27629,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "39360:-29740"
+              "loc_coord": "39360:-29740",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -25881,7 +27717,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "39600:-30100"
+              "loc_coord": "39600:-30100",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21772,
@@ -25900,7 +27745,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "39720:-30180"
+              "loc_coord": "39720:-30180",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21773,
@@ -25919,7 +27773,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "39840:-30260"
+              "loc_coord": "39840:-30260",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21774,
@@ -25938,7 +27801,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "39960:-30340"
+              "loc_coord": "39960:-30340",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -26017,7 +27889,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "40200:-30700"
+              "loc_coord": "40200:-30700",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21782,
@@ -26036,7 +27917,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "40320:-30780"
+              "loc_coord": "40320:-30780",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21783,
@@ -26055,7 +27945,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "40440:-30860"
+              "loc_coord": "40440:-30860",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21784,
@@ -26074,7 +27973,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "40560:-30940"
+              "loc_coord": "40560:-30940",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,
@@ -26163,7 +28071,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "19000:-64800"
+              "loc_coord": "19000:-64800",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21812,
@@ -26182,7 +28099,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "19120:-64880"
+              "loc_coord": "19120:-64880",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21813,
@@ -26201,7 +28127,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "19240:-64960"
+              "loc_coord": "19240:-64960",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21814,
@@ -26220,7 +28155,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "19360:-65040"
+              "loc_coord": "19360:-65040",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -45,
@@ -26299,7 +28243,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "19600:-65400"
+              "loc_coord": "19600:-65400",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21822,
@@ -26318,7 +28271,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "19720:-65480"
+              "loc_coord": "19720:-65480",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21823,
@@ -26337,7 +28299,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "19840:-65560"
+              "loc_coord": "19840:-65560",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21824,
@@ -26356,7 +28327,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "19960:-65640"
+              "loc_coord": "19960:-65640",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -110,
@@ -26435,7 +28415,16 @@
               ],
               "spawn_count": 20,
               "respawn_sec": 45,
-              "loc_coord": "20200:-66000"
+              "loc_coord": "20200:-66000",
+              "refinement_drops": [
+                "High-Grade Iron Ore",
+                "Varnish",
+                "Refinement Flux Dust"
+              ],
+              "spoil_materials": [
+                "High-Grade Iron Ore (42% Spoil)",
+                "Refinement Flux Dust (28% Spoil)"
+              ]
             },
             {
               "npc_id": 21832,
@@ -26454,7 +28443,16 @@
               ],
               "spawn_count": 2,
               "respawn_sec": 240,
-              "loc_coord": "20320:-66080"
+              "loc_coord": "20320:-66080",
+              "refinement_drops": [
+                "Weapon Enchant Scroll Fragment",
+                "Tempered Alloy Plate",
+                "Seal-Stone Cluster"
+              ],
+              "spoil_materials": [
+                "Tempered Alloy Plate (24% Spoil)",
+                "Seal-Stone Cluster (18% Spoil)"
+              ]
             },
             {
               "npc_id": 21833,
@@ -26473,7 +28471,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 3600,
-              "loc_coord": "20440:-66160"
+              "loc_coord": "20440:-66160",
+              "refinement_drops": [
+                "Blessed Enchant Weapon Scroll",
+                "Warden Alloy Core",
+                "Soul Crystal Stage 5"
+              ],
+              "spoil_materials": [
+                "Warden Alloy Core (15% Raid Spoil)",
+                "Blessed Enchant Scroll (12% Drop)"
+              ]
             },
             {
               "npc_id": 21834,
@@ -26492,7 +28499,16 @@
               ],
               "spawn_count": 1,
               "respawn_sec": 7200,
-              "loc_coord": "20560:-66240"
+              "loc_coord": "20560:-66240",
+              "refinement_drops": [
+                "Divine Apostle Anvil Core",
+                "Ancient Refinement Catalyst",
+                "Architect Seal Crest"
+              ],
+              "spoil_materials": [
+                "Divine Apostle Anvil Core (8.5% MVP Drop)",
+                "Architect Seal Crest (15% Spoil)"
+              ]
             }
           ],
           "floor_elevation_meters": -195,

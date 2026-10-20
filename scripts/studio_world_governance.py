@@ -596,6 +596,50 @@ def validate_world_governance(
                         for fl in (d.get("floors") or [])
                     )
                 ),
+                "omniSearchIndexedZonesCount": sum(
+                    len(entries) for entries in zdir.values() if isinstance(entries, list)
+                ),
+                "omniSearchIndexedTownNpcsCount": sum(
+                    len((t.get("town_blueprint") or {}).get("npc_roster") or [])
+                    for t in ((zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or []))
+                    if isinstance(t, dict)
+                ),
+                "omniSearchIndexedServiceMarksCount": sum(
+                    len(
+                        {
+                            m.get("mark_type")
+                            for m in ((t.get("town_blueprint") or {}).get("service_marks") or [])
+                            if isinstance(m, dict)
+                            and m.get("mark_type")
+                            in ("equip_shop", "consumable_shop", "blacksmith", "temple", "warehouse", "guild", "gatekeeper")
+                        }
+                    )
+                    for t in ((zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or []))
+                    if isinstance(t, dict)
+                ),
+                "omniSearchIndexedDungeonFloorsCount": sum(
+                    len(d.get("floors") or []) for d in mf_dungeons if isinstance(d, dict)
+                ),
+                "dungeonAndFieldSpawnRefinementDropsCount": sum(
+                    1
+                    for d in mf_dungeons
+                    if isinstance(d, dict)
+                    and all(
+                        all(len(sp.get("refinement_drops") or []) >= 1 for sp in (fl.get("spawns") or []) if isinstance(sp, dict))
+                        for fl in (d.get("floors") or [])
+                        if isinstance(fl, dict)
+                    )
+                )
+                + sum(
+                    1
+                    for f in (zdir.get("fields_and_hunting_areas") or [])
+                    if isinstance(f, dict)
+                    and all(
+                        len(st.get("refinement_drops") or []) >= 1
+                        for st in ((f.get("field_tactical_blueprint") or {}).get("spawn_territories") or [])
+                        if isinstance(st, dict)
+                    )
+                ),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):

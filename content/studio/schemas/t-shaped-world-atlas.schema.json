@@ -286,7 +286,17 @@
         "weaknesses": { "type": "array", "items": { "type": "string" } },
         "spawn_count": { "type": "integer" },
         "respawn_sec": { "type": "integer" },
-        "loc_coord": { "type": "string" }
+        "loc_coord": { "type": "string" },
+        "refinement_drops": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "spoil_materials": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        }
       }
     },
     "deepTownSpec": {

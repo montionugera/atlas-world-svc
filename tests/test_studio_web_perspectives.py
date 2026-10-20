@@ -429,6 +429,67 @@ class TestStudioWebPerspectives(unittest.TestCase):
                     self.assertLess(elev, 0)
                 self.assertTrue(fl["boss_tier_highlight"])
 
+    def test_wave5_omni_search_and_filtered_entity_spawn_matrix(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        summary = report["summary"]["tShapedAtlasSummary"]
+        self.assertEqual(summary["omniSearchIndexedZonesCount"], 63)
+        self.assertEqual(summary["omniSearchIndexedTownNpcsCount"], 180)
+        self.assertEqual(summary["omniSearchIndexedServiceMarksCount"], 105)
+        self.assertEqual(summary["omniSearchIndexedDungeonFloorsCount"], 48)
+        self.assertEqual(summary["dungeonAndFieldSpawnRefinementDropsCount"], 40)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_OMNI_SEARCH_QUERY",
+            "setAtlasOmniSearch",
+            "clearAtlasOmniSearch",
+            "buildAtlasOmniSearchIndex",
+            "searchAtlasOmniIndex",
+            "renderAtlasFilteredEntityMatrixHtml",
+            "studioFilteredEntitySpawnMatrix",
+            "🔎 Search Towns (Gludin, Dion, Oren), Dungeons (Ant Nest, Cruma), NPCs (Shop, Refinement, Warehouse), Races, or Mobs/MVPs...",
+            "Gludin Village",
+            "The Ant Nest",
+            "Refinement +1..+15",
+            "Warehouse",
+            "MVP Bosses",
+            "Raid Bosses",
+            "Cruma Tower",
+            "📍 Locate on Map / Open Floor",
+        ):
+            self.assertIn(token, html, f"Missing Wave 5 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        d13 = audit["dimensions"]["D13_omni_search_and_quick_jump"]
+        self.assertEqual(d13["score"], 100.0)
+        self.assertEqual(d13["indexed_zones"], 63)
+        self.assertEqual(d13["indexed_town_npcs"], 180)
+        self.assertEqual(d13["indexed_service_marks"], 105)
+        self.assertEqual(d13["indexed_dungeon_floors"], 48)
+
+        d14 = audit["dimensions"]["D14_spawn_and_refinement_spoil_matrix"]
+        self.assertEqual(d14["score"], 100.0)
+        self.assertEqual(d14["verified_dungeons"], 16)
+        self.assertEqual(d14["verified_fields"], 24)
+
+        for dng in atlas["multi_floor_dungeons"]:
+            self.assertEqual(len(dng["floors"]), 3)
+            for fl in dng["floors"]:
+                tiers_found = set()
+                for sp in fl["spawns"]:
+                    etype = "Raid" if sp["entity_type"] == "RaidBoss" else sp["entity_type"]
+                    tiers_found.add(etype)
+                    self.assertGreaterEqual(len(sp.get("refinement_drops") or []), 1)
+                    self.assertIn(":", sp["loc_coord"])
+                self.assertTrue({"Monster", "Mini-Boss", "Raid", "MVP"}.issubset(tiers_found))
+
 
 if __name__ == "__main__":
     unittest.main()

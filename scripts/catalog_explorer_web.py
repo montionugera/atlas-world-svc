@@ -4265,11 +4265,13 @@ let STUDIO_MAP_LOC = { x: -84120, y: 243500, svgX: 465, svgY: 442 };
 let ATLAS_FOCUSED_TOWN_ID = 'town-lantern-hollow';
 let ATLAS_FOCUSED_FIELD_ID = '';
 let ATLAS_FOCUSED_FORTRESS_ID = '';
+let ATLAS_OMNI_SEARCH_QUERY = '';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
   levelBand: 'All',      // 'All' | '1-20' | '21-40' | '41-60' | '61-80' | '81-99'
   raceGrowthRoute: 'All', // 'All' | 'Human' | 'Lunar' | 'Ogre/Orc' | 'Dwarf' | 'Dark-Lunar' | 'Furral'
+  omniSearchQuery: '',   // D13: Instant Atlas Omni-Search & Quick-Jump Query
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4277,6 +4279,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasOmniSearch(query) {
+  ATLAS_OMNI_SEARCH_QUERY = String(query || '');
+  ATLAS_STATE_STORE.omniSearchQuery = ATLAS_OMNI_SEARCH_QUERY;
+  writeUrlState(false);
+  render();
+}
+
+function clearAtlasOmniSearch() {
+  ATLAS_OMNI_SEARCH_QUERY = '';
+  ATLAS_STATE_STORE.omniSearchQuery = '';
+  writeUrlState(false);
+  render();
+}
 
 function setTownBlueprintMode(mode) {
   ATLAS_STATE_STORE.townBlueprintMode = mode === 'schematic' ? 'schematic' : 'parchment';
@@ -4506,6 +4522,8 @@ function resetAtlasFilters() {
   ATLAS_STATE_STORE.filter = 'All';
   ATLAS_STATE_STORE.levelBand = 'All';
   ATLAS_STATE_STORE.raceGrowthRoute = 'All';
+  ATLAS_OMNI_SEARCH_QUERY = '';
+  ATLAS_STATE_STORE.omniSearchQuery = '';
   ATLAS_STATE_STORE.toastMessage = '';
   writeUrlState(false);
   render();
@@ -5297,6 +5315,332 @@ function getTownBlueprintData(townNodeOrId, tatlas) {
   };
 }
 
+function buildAtlasOmniSearchIndex(tatlas) {
+  const entries = [];
+  const allTowns = getAllAtlasTownEntries(tatlas);
+  const allFields = getAllAtlasFieldEntries(tatlas);
+  const allFortresses = getAllAtlasFortressEntries(tatlas);
+  const allDungeons = (tatlas && tatlas.multi_floor_dungeons) || [];
+  const raceSpawns = (tatlas && tatlas.race_spawn_locations) || [];
+
+  // 1. 6 Playable Race Spawns
+  raceSpawns.forEach(rs => {
+    entries.push({
+      id: `race-${rs.race_key}`,
+      kind: 'Race Spawn',
+      icon: '🧬',
+      badgeColor: '#10b981',
+      title: `${rs.race_name} — ${rs.starter_shrine_monument}`,
+      subtitle: `${rs.starter_town_name} · Lv.1–10 Starter Spawn`,
+      keywords: `${rs.race_name} ${rs.race_key} ${rs.starter_town_name} ${rs.starter_shrine_monument} race spawn`,
+      actionJs: `focusTownStreetBlueprint('${escapeHtml(rs.starter_town_node_id)}', '${escapeHtml(rs.loc_coord || '')}')`,
+      actionLabel: `🏘️ Jump to ${rs.starter_town_name.split('(')[0].trim()}`
+    });
+  });
+
+  // 2. 15 Towns + 180 Town NPCs (#1..#12) + 105 Town Service Marks (Shop + Refinement +1..+15)
+  allTowns.forEach(t => {
+    const tb = t.town_blueprint || {};
+    const tNode = t.studio_node_id || t.zone_id;
+    const tLoc = t.loc_coord || '-84120:243500';
+    entries.push({
+      id: `town-${t.zone_id}`,
+      kind: 'Town Blueprint',
+      icon: '🏰',
+      badgeColor: '#eab308',
+      title: `${t.name} (${t.l2_reference_analog || ''})`,
+      subtitle: `Archetype: ${tb.layout_archetype || 'polygonal_walled_keep'} · #1..#12 NPCs & 7 Shops`,
+      keywords: `${t.name} ${t.l2_reference_analog || ''} ${tb.layout_archetype || ''} ${t.territory_name || ''} town village castle`,
+      actionJs: `focusTownStreetBlueprint('${escapeHtml(tNode)}', '${escapeHtml(tLoc)}')`,
+      actionLabel: `🏘️ Open Town Blueprint (5.2×)`
+    });
+    (tb.service_marks || []).forEach(m => {
+      const isRefine = m.mark_type === 'blacksmith' || m.mark_type === 'refinement_anvils';
+      entries.push({
+        id: `mark-${t.zone_id}-${m.mark_id}`,
+        kind: 'Town Service Mark',
+        icon: m.icon || '🛍️',
+        badgeColor: '#f59e0b',
+        title: `${m.label} (${m.npc_name || m.mark_type})`,
+        subtitle: `${t.name} · Building #${m.building_number}`,
+        keywords: `${m.label} ${m.mark_type} ${m.npc_name || ''} ${m.description || ''} ${t.name} ${isRefine ? 'Refinement +1..+15 Anvil Blacksmith Spoil' : ''} ${m.mark_type === 'warehouse' ? 'Warehouse Vault' : 'Shop'}`,
+        actionJs: `focusTownStreetBlueprint('${escapeHtml(tNode)}', '${escapeHtml(tLoc)}')`,
+        actionLabel: `🛍️ Inspect #${m.building_number} in ${t.name.split('(')[0].trim()}`
+      });
+    });
+    (tb.npc_roster || []).forEach(npc => {
+      entries.push({
+        id: `npc-${t.zone_id}-${npc.building_number}`,
+        kind: 'Town NPC (#1..#12)',
+        icon: '👤',
+        badgeColor: npc.color_hex || '#38bdf8',
+        title: `#${npc.building_number} ${npc.name} — ${npc.role_title}`,
+        subtitle: `${t.name} · ${npc.role_category}`,
+        keywords: `${npc.name} ${npc.role_title} ${npc.role_category} #${npc.building_number} ${t.name} ${npc.role_category === 'warehouse' ? 'Warehouse' : ''} ${npc.role_category === 'merchant' ? 'Shop Refinement +1..+15' : ''}`,
+        actionJs: `focusTownStreetBlueprint('${escapeHtml(tNode)}', '${escapeHtml(npc.loc_coord || tLoc)}')`,
+        actionLabel: `📍 Locate NPC #${npc.building_number}`
+      });
+    });
+  });
+
+  // 3. 24 Field Hunting Areas & 8 Harbors/ClanHalls/Fortresses
+  allFields.forEach(f => {
+    entries.push({
+      id: `field-${f.zone_id}`,
+      kind: 'Field Hunting Area',
+      icon: '🏕️',
+      badgeColor: '#4ade80',
+      title: `${f.name} (${f.l2_reference_analog || ''})`,
+      subtitle: `${f.level_header || ''} · Field Tactical Blueprint`,
+      keywords: `${f.name} ${f.l2_reference_analog || ''} ${f.territory_name || ''} field hunting zone`,
+      actionJs: `focusFieldTacticalBlueprint('${escapeHtml(f.zone_id)}', '${escapeHtml(f.loc_coord || '')}')`,
+      actionLabel: `🏕️ Open Field Blueprint (4.8×)`
+    });
+  });
+  allFortresses.forEach(h => {
+    entries.push({
+      id: `fort-${h.zone_id}`,
+      kind: 'Fortress / Harbor',
+      icon: '🛡️',
+      badgeColor: '#fb923c',
+      title: `${h.name} (${h.l2_reference_analog || ''})`,
+      subtitle: `${h.category} · ${h.level_header || ''}`,
+      keywords: `${h.name} ${h.l2_reference_analog || ''} ${h.category} fortress harbor clanhall`,
+      actionJs: `focusFortressBlueprint('${escapeHtml(h.zone_id)}', '${escapeHtml(h.loc_coord || '')}')`,
+      actionLabel: `🛡️ Open Fortress Blueprint`
+    });
+  });
+
+  // 4. 16 Multi-Floor Dungeons (48 Floors B1..B3 / 1F..3F) + Boss Spawns
+  allDungeons.forEach(d => {
+    (d.floors || []).forEach(fl => {
+      entries.push({
+        id: `dng-${d.dungeon_id}-${fl.floor_id}`,
+        kind: `Dungeon Floor ${fl.floor_id}`,
+        icon: d.dungeon_kind === 'vertical_tower' ? '🗼' : '🕳️',
+        badgeColor: '#a855f7',
+        title: `${d.name} (${d.l2_archetype_alias || ''}) · Floor ${fl.floor_id}`,
+        subtitle: `${fl.level_range} · ${fl.boss_tier_highlight || ''}`,
+        keywords: `${d.name} ${d.l2_archetype_alias || ''} ${fl.floor_id} ${fl.name} ${fl.boss_tier_highlight || ''} dungeon tower catacomb`,
+        actionJs: `openDungeonSubMap('${escapeHtml(d.dungeon_id)}', '${escapeHtml(fl.floor_id)}')`,
+        actionLabel: `🕳️ Warp to ${fl.floor_id}`
+      });
+      (fl.spawns || []).forEach(sp => {
+        const isMvp = sp.entity_type === 'MVP';
+        const isRaid = sp.entity_type === 'Raid' || sp.entity_type === 'RaidBoss';
+        entries.push({
+          id: `dng-spawn-${d.dungeon_id}-${fl.floor_id}-${sp.npc_id}`,
+          kind: `${sp.entity_type} Spawn`,
+          icon: isMvp ? '👑' : (isRaid ? '🔥' : (sp.entity_type === 'Mini-Boss' ? '⚔️' : '👾')),
+          badgeColor: isMvp ? '#eab308' : (isRaid ? '#f97316' : '#ef4444'),
+          title: `${sp.name} (Lv.${sp.level} ${sp.entity_type})`,
+          subtitle: `${d.name} · Floor ${fl.floor_id} · Drops: ${(sp.refinement_drops || []).slice(0, 2).join(', ')}`,
+          keywords: `${sp.name} ${sp.entity_type} ${d.name} ${d.l2_archetype_alias || ''} ${fl.floor_id} ${(sp.refinement_drops || []).join(' ')} ${isMvp ? 'MVP Bosses' : ''} ${isRaid ? 'Raid Bosses' : ''}`,
+          actionJs: `openDungeonSubMap('${escapeHtml(d.dungeon_id)}', '${escapeHtml(fl.floor_id)}')`,
+          actionLabel: `📍 Open ${fl.floor_id}`
+        });
+      });
+    });
+  });
+
+  return entries;
+}
+
+function searchAtlasOmniIndex(query, tatlas) {
+  const index = buildAtlasOmniSearchIndex(tatlas);
+  const raw = String(query || '').trim().toLowerCase();
+  if (!raw) {
+    return index.slice(0, 8);
+  }
+  const tokens = raw.split(/\s+/).filter(Boolean);
+  return index.filter(item => {
+    const hay = `${item.title} ${item.subtitle} ${item.keywords} ${item.kind}`.toLowerCase();
+    return tokens.every(tk => hay.includes(tk));
+  }).slice(0, 14);
+}
+
+function renderAtlasFilteredEntityMatrixHtml(tatlas) {
+  const activeFilter = ATLAS_STATE_STORE.filter || 'All';
+  const activeBand = ATLAS_STATE_STORE.levelBand || 'All';
+  const searchRaw = String(ATLAS_OMNI_SEARCH_QUERY || ATLAS_STATE_STORE.omniSearchQuery || '').trim().toLowerCase();
+  const allTowns = getAllAtlasTownEntries(tatlas);
+  const allFields = getAllAtlasFieldEntries(tatlas);
+  const allFortresses = getAllAtlasFortressEntries(tatlas);
+  const allDungeons = (tatlas && tatlas.multi_floor_dungeons) || [];
+  const raceSpawns = (tatlas && tatlas.race_spawn_locations) || [];
+
+  const rows = [];
+
+  // 1. Race Spawns
+  if (activeFilter === 'All' || activeFilter === 'RaceSpawns') {
+    raceSpawns.forEach(rs => {
+      if (!matchesAtlasLevelBand([1, 10], activeBand)) return;
+      rows.push({
+        entityType: 'RaceSpawns',
+        badgeLabel: '🧬 Race Spawn',
+        badgeColor: '#10b981',
+        name: `${rs.race_name} — ${rs.starter_shrine_monument}`,
+        zoneOrFloor: `${rs.starter_town_name} · Plaza Shrine #1`,
+        level: 1,
+        levelDisplay: 'Lv.1–10',
+        respawn: 'Starter Sanctuary',
+        drops: 'Starter Accord Emblem · Soulshot Pack · Wayfarer Map',
+        locCoord: rs.loc_coord || '-84120:243500',
+        actionJs: `focusTownStreetBlueprint('${escapeHtml(rs.starter_town_node_id)}', '${escapeHtml(rs.loc_coord || '')}')`,
+        actionLabel: '📍 Locate on Map / Open Town'
+      });
+    });
+  }
+
+  // 2. Town NPCs: Shop + Refinement
+  if (activeFilter === 'All' || activeFilter === 'TownMarks') {
+    allTowns.forEach(t => {
+      const tb = t.town_blueprint || {};
+      const lvBand = t.level_band || [1, 20];
+      if (!matchesAtlasLevelBand(lvBand, activeBand)) return;
+      const tNode = t.studio_node_id || t.zone_id;
+      const tLoc = t.loc_coord || '-84120:243500';
+      (tb.service_marks || []).filter(m => ['equip_shop', 'consumable_shop', 'blacksmith', 'warehouse', 'gatekeeper'].includes(m.mark_type)).slice(0, 3).forEach(m => {
+        rows.push({
+          entityType: 'TownMarks',
+          badgeLabel: '🛍️ Shop + Refinement',
+          badgeColor: '#eab308',
+          name: `${m.icon || '🛍️'} ${m.label} (${m.npc_name || 'Merchant'})`,
+          zoneOrFloor: `${t.name} · Building #${m.building_number}`,
+          level: lvBand[0] || 1,
+          levelDisplay: `Lv.${lvBand[0]}–${lvBand[1]}`,
+          respawn: '24h Town Service',
+          drops: '+1..+15 Refinement Anvil · Weapons · Armor · Potions & Soulshots',
+          locCoord: tLoc,
+          actionJs: `focusTownStreetBlueprint('${escapeHtml(tNode)}', '${escapeHtml(tLoc)}')`,
+          actionLabel: '📍 Locate on Map / Open Shop'
+        });
+      });
+    });
+  }
+
+  // 3. Multi-Floor Dungeon Spawns (Monster, Mini-Boss, Raid, MVP across 16 Dungeons / 48 Floors)
+  allDungeons.forEach(d => {
+    (d.floors || []).forEach(fl => {
+      (fl.spawns || []).forEach(sp => {
+        const normType = sp.entity_type === 'RaidBoss' ? 'Raid' : sp.entity_type;
+        if (activeFilter !== 'All' && normType !== activeFilter) return;
+        if (!matchesAtlasLevelBand(sp.level, activeBand)) return;
+        const isMvp = normType === 'MVP';
+        const isRaid = normType === 'Raid';
+        const isMini = normType === 'Mini-Boss';
+        rows.push({
+          entityType: normType,
+          badgeLabel: isMvp ? '👑 MVP' : (isRaid ? '🔥 Raid' : (isMini ? '⚔️ Mini-Boss' : '👾 Monster')),
+          badgeColor: isMvp ? '#eab308' : (isRaid ? '#f97316' : (isMini ? '#a855f7' : '#ef4444')),
+          name: sp.name,
+          zoneOrFloor: `${d.name} · Floor ${fl.floor_id} (${fl.floor_elevation_meters > 0 ? '+' + fl.floor_elevation_meters : fl.floor_elevation_meters}m)`,
+          level: sp.level,
+          levelDisplay: `Lv.${sp.level}`,
+          respawn: `${sp.respawn_sec}s (×${sp.spawn_count})`,
+          drops: (sp.refinement_drops || ['High-Grade Iron Ore', 'Refinement Flux Dust']).join(' · '),
+          locCoord: sp.loc_coord || d.entrance_loc || '',
+          actionJs: `openDungeonSubMap('${escapeHtml(d.dungeon_id)}', '${escapeHtml(fl.floor_id)}')`,
+          actionLabel: `📍 Locate on Map / Open Floor ${fl.floor_id}`
+        });
+      });
+    });
+  });
+
+  // 4. Field Hunting Area & Fortress Spawn Territories (Monster, Mini-Boss, Raid, MVP across 24 Fields + 8 Fortresses)
+  [...allFields.map(f => ({ entry: f, bp: f.field_tactical_blueprint, isFort: false })), ...allFortresses.map(h => ({ entry: h, bp: h.fortress_blueprint, isFort: true }))].forEach(({ entry, bp, isFort }) => {
+    if (!bp) return;
+    (bp.spawn_territories || []).forEach(st => {
+      if (activeFilter !== 'All' && st.entity_type !== activeFilter) return;
+      if (!matchesAtlasLevelBand(st.level, activeBand)) return;
+      const isMvp = st.entity_type === 'MVP';
+      const isRaid = st.entity_type === 'Raid';
+      const isMini = st.entity_type === 'Mini-Boss';
+      const fnName = isFort ? 'focusFortressBlueprint' : 'focusFieldTacticalBlueprint';
+      rows.push({
+        entityType: st.entity_type,
+        badgeLabel: isMvp ? '👑 MVP' : (isRaid ? '🔥 Raid' : (isMini ? '⚔️ Mini-Boss' : '👾 Monster')),
+        badgeColor: isMvp ? '#eab308' : (isRaid ? '#f97316' : (isMini ? '#a855f7' : '#ef4444')),
+        name: st.mob_name,
+        zoneOrFloor: `${entry.name} · ${isFort ? 'Fortress Ring' : 'Field Ring'}`,
+        level: st.level,
+        levelDisplay: `Lv.${st.level}`,
+        respawn: `${st.respawn} (×${st.count})`,
+        drops: (st.refinement_drops || []).join(' · '),
+        locCoord: st.loc_coord || entry.loc_coord || '',
+        actionJs: `${fnName}('${escapeHtml(entry.zone_id)}', '${escapeHtml(st.loc_coord || entry.loc_coord || '')}')`,
+        actionLabel: '📍 Locate on Map / Open Blueprint'
+      });
+    });
+  });
+
+  const filteredRows = searchRaw
+    ? rows.filter(r => `${r.name} ${r.zoneOrFloor} ${r.drops} ${r.badgeLabel}`.toLowerCase().includes(searchRaw))
+    : rows;
+
+  const displayRows = filteredRows.slice(0, 18);
+  const tabDefs = [
+    { id: 'All', label: '🌐 All Entities' },
+    { id: 'RaceSpawns', label: '🧬 Race Spawns' },
+    { id: 'TownMarks', label: '🛍️ NPCs: Shop + Refinement' },
+    { id: 'Monster', label: '👾 Monster' },
+    { id: 'Mini-Boss', label: '⚔️ Mini-Boss' },
+    { id: 'Raid', label: '🔥 Raid' },
+    { id: 'MVP', label: '👑 MVP' }
+  ];
+
+  return `
+    <div id="studioFilteredEntitySpawnMatrix" style="padding:12px 16px;background:#0c121c;border-top:1px solid rgba(250,204,21,0.28)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div>
+          <div style="font-size:12px;font-weight:900;color:#fde047">
+            🎯 LIVE WORLD &amp; DUNGEON SPAWN &amp; REFINEMENT-SPOIL LOCATOR MATRIX (D14 · ${filteredRows.length} MATCHING ENTITIES)
+          </div>
+          <div style="font-size:10.5px;color:#94a3b8">
+            Synced with Active Filter (${escapeHtml(activeFilter)}) &amp; Level Band (${escapeHtml(activeBand)}) across 16 Multi-Floor Dungeons (48 Floors), 24 Fields, 8 Fortresses &amp; 15 Towns
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px">
+          ${tabDefs.map(tb => {
+            const act = activeFilter === tb.id;
+            return `
+              <button type="button" onclick="setAtlasFilter('${tb.id}')"
+                      style="padding:3px 9px;border-radius:999px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid ${act ? '#fde047' : 'rgba(255,255,255,0.14)'};background:${act ? '#d97706' : '#162032'};color:${act ? '#ffffff' : '#cbd5e1'}">
+                ${tb.label}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:7px">
+        ${displayRows.map(r => `
+          <div style="padding:8px 10px;border-radius:8px;background:#141d2d;border-left:3.5px solid ${r.badgeColor};border-top:1px solid rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;justify-content:space-between;gap:5px">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                <span style="font-size:11px;font-weight:900;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(r.name)}</span>
+                <span class="mono" style="font-size:9.5px;padding:1px 6px;border-radius:4px;background:rgba(15,23,42,0.9);color:${r.badgeColor};border:1px solid ${r.badgeColor};flex-shrink:0">${escapeHtml(r.badgeLabel)} · ${escapeHtml(r.levelDisplay)}</span>
+              </div>
+              <div style="font-size:10px;color:#cbd5e1;margin-top:2px;font-weight:700">
+                🗺️ ${escapeHtml(r.zoneOrFloor)} · <span class="mono" style="color:#38bdf8">⏱️ ${escapeHtml(r.respawn)}</span>
+              </div>
+              <div style="font-size:9.5px;color:#fde68a;margin-top:2px">
+                💎 Drops / Spoils: ${escapeHtml(r.drops)}
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:3px">
+              <span class="mono" style="font-size:9px;color:#94a3b8">loc=${escapeHtml(r.locCoord)}</span>
+              <button type="button" onclick="${r.actionJs}"
+                      style="padding:3px 9px;border-radius:6px;border:1px solid #fde047;background:#1e3a8a;color:#fde047;font-size:9.5px;font-weight:900;cursor:pointer;flex-shrink:0">
+                ${escapeHtml(r.actionLabel)}
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -5304,6 +5648,17 @@ function renderAtlasFilterBarHtml(matchCount) {
   const allFields = getAllAtlasFieldEntries(tatlas);
   const allFortresses = getAllAtlasFortressEntries(tatlas);
   const allDungeons = (tatlas && tatlas.multi_floor_dungeons) || [];
+  const omniQuery = ATLAS_OMNI_SEARCH_QUERY || ATLAS_STATE_STORE.omniSearchQuery || '';
+  const omniResults = searchAtlasOmniIndex(omniQuery, tatlas);
+  const presetSearchChips = [
+    'Gludin Village',
+    'The Ant Nest',
+    'Refinement +1..+15',
+    'Warehouse',
+    'MVP Bosses',
+    'Raid Bosses',
+    'Cruma Tower'
+  ];
   const catPills = [
     { id: 'All', label: '🌐 All Layers' },
     { id: 'RaceSpawns', label: '🧬 Race Spawns (6)' },
@@ -5325,6 +5680,48 @@ function renderAtlasFilterBarHtml(matchCount) {
 
   return `
     <div style="padding:9px 16px;background:#141b26;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;gap:8px">
+      <!-- D13: Instant Atlas Omni-Search & Quick-Jump Bar across 63 Zones, 180 Town NPCs, 105 Service Marks, 48 Dungeon Floors -->
+      <div style="display:flex;flex-direction:column;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fde047">🔎 OMNI-SEARCH (D13):</span>
+          <input id="atlasOmniSearchInput" type="search"
+                 value="${escapeHtml(omniQuery)}"
+                 placeholder="🔎 Search Towns (Gludin, Dion, Oren), Dungeons (Ant Nest, Cruma), NPCs (Shop, Refinement, Warehouse), Races, or Mobs/MVPs..."
+                 onchange="setAtlasOmniSearch(this.value)"
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();setAtlasOmniSearch(this.value);}"
+                 style="flex:1;min-width:290px;height:28px;padding:4px 10px;border-radius:7px;background:#090d14;color:#f8fafc;border:1.5px solid rgba(250,204,21,0.55);font-size:11px;font-weight:700" />
+          ${omniQuery ? `
+            <button type="button" onclick="clearAtlasOmniSearch()"
+                    style="height:28px;padding:0 10px;border-radius:7px;border:1px solid #f87171;background:#7f1d1d;color:#fecaca;font-size:10px;font-weight:800;cursor:pointer">
+              ✕ Clear Search
+            </button>
+          ` : ''}
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+            ${presetSearchChips.map(chip => {
+              const isAct = omniQuery.toLowerCase() === chip.toLowerCase();
+              return `
+                <button type="button" onclick="setAtlasOmniSearch('${escapeHtml(chip)}')"
+                        style="height:24px;padding:2px 8px;border-radius:999px;font-size:9.8px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.4)'};background:${isAct ? '#b45309' : '#0f172a'};color:${isAct ? '#ffffff' : '#bae6fd'}">
+                  ⚡ ${escapeHtml(chip)}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+        <div id="atlasOmniQuickJumpPills" style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:9.5px;font-weight:800;color:#94a3b8">
+            ${omniQuery ? `🎯 Quick-Jump Matches (${omniResults.length}):` : '🚀 Instant Quick-Jump Action Pills:'}
+          </span>
+          ${omniResults.map(res => `
+            <button type="button" onclick="${res.actionJs}"
+                    style="min-height:24px;padding:2px 8px;border-radius:6px;border:1px solid ${res.badgeColor};background:rgba(15,23,42,0.92);color:#f8fafc;font-size:9.8px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:5px">
+              <span>${res.icon} ${escapeHtml(res.title.slice(0, 32))}</span>
+              <span class="mono" style="font-size:9px;color:#fde047">[${escapeHtml(res.actionLabel)}]</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
           <span class="mono" style="font-size:10px;font-weight:800;color:#94a3b8;margin-right:4px">FILTER PINS &amp; MARKS:</span>
@@ -5750,6 +6147,7 @@ function renderDungeonSubMapAtlas(dng, tatlas) {
     defaultPoi,
     drillControls: floorControlsHtml,
     filterBarHtml: renderAtlasFilterBarHtml(filteredSpawns.length),
+    bottomPanelHtml: renderAtlasFilteredEntityMatrixHtml(tatlas),
     svgInnerHtml,
     legendItems: [
       { color: '#a855f7', label: 'Subterranean / Tower Room Chamber' },
@@ -6183,7 +6581,7 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
     defaultPoi,
     drillControls: townControlsHtml,
     filterBarHtml: renderAtlasFilterBarHtml(visibleMarks.length + (bp.npc_roster || []).length),
-    bottomPanelHtml: bottomRosterHtml,
+    bottomPanelHtml: `${bottomRosterHtml}${renderAtlasFilteredEntityMatrixHtml(tatlas)}`,
     svgInnerHtml,
     legendItems: [
       { color: '#ef4444', label: 'Trainer / Guild (#1,#2,#9)' },
@@ -6415,7 +6813,7 @@ function renderFieldOrFortressTacticalBlueprintAtlas(targetIdOrEntry, tatlas) {
     defaultPoi,
     drillControls: drillControlsHtml,
     filterBarHtml: renderAtlasFilterBarHtml(visibleTerritories.length + visibleMarks.length),
-    bottomPanelHtml: bottomTacticalPanelHtml,
+    bottomPanelHtml: `${bottomTacticalPanelHtml}${renderAtlasFilteredEntityMatrixHtml(tatlas)}`,
     svgInnerHtml,
     legendItems: [
       { color: '#ef4444', label: '👾 Monster Pack Ring' },
@@ -7014,7 +7412,7 @@ function renderDedicatedWorldAtlas() {
     activeScaleIndex: lodTier,
     defaultPoi,
     filterBarHtml: renderAtlasFilterBarHtml(matchCount),
-    bottomPanelHtml: bottomRaceGrowthPanelHtml,
+    bottomPanelHtml: `${bottomRaceGrowthPanelHtml}${renderAtlasFilteredEntityMatrixHtml(tatlas)}`,
     svgInnerHtml,
     legendItems: [
       { color: '#10b981', label: '🧬 6 Playable Race Spawns' },

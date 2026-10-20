@@ -1011,6 +1011,8 @@ def _synthesize_multifloor_dungeon(zone_entry: dict[str, Any], idx: int) -> dict
                 "spawn_count": 20,
                 "respawn_sec": 45,
                 "loc_coord": f_loc,
+                "refinement_drops": ["High-Grade Iron Ore", "Varnish", "Refinement Flux Dust"],
+                "spoil_materials": ["High-Grade Iron Ore (42% Spoil)", "Refinement Flux Dust (28% Spoil)"],
             },
             {
                 "npc_id": base_mob_id + f_i * 10 + 2,
@@ -1026,6 +1028,8 @@ def _synthesize_multifloor_dungeon(zone_entry: dict[str, Any], idx: int) -> dict
                 "spawn_count": 2,
                 "respawn_sec": 240,
                 "loc_coord": _fmt_loc(bx + f_i * 600 + 120, by - f_i * 600 - 80),
+                "refinement_drops": ["Weapon Enchant Scroll Fragment", "Tempered Alloy Plate", "Seal-Stone Cluster"],
+                "spoil_materials": ["Tempered Alloy Plate (24% Spoil)", "Seal-Stone Cluster (18% Spoil)"],
             },
             {
                 "npc_id": base_mob_id + f_i * 10 + 3,
@@ -1041,6 +1045,8 @@ def _synthesize_multifloor_dungeon(zone_entry: dict[str, Any], idx: int) -> dict
                 "spawn_count": 1,
                 "respawn_sec": 3600,
                 "loc_coord": _fmt_loc(bx + f_i * 600 + 240, by - f_i * 600 - 160),
+                "refinement_drops": ["Blessed Enchant Weapon Scroll", "Warden Alloy Core", "Soul Crystal Stage 5"],
+                "spoil_materials": ["Warden Alloy Core (15% Raid Spoil)", "Blessed Enchant Scroll (12% Drop)"],
             },
             {
                 "npc_id": base_mob_id + f_i * 10 + 4,
@@ -1056,6 +1062,8 @@ def _synthesize_multifloor_dungeon(zone_entry: dict[str, Any], idx: int) -> dict
                 "spawn_count": 1,
                 "respawn_sec": 7200,
                 "loc_coord": _fmt_loc(bx + f_i * 600 + 360, by - f_i * 600 - 240),
+                "refinement_drops": ["Divine Apostle Anvil Core", "Ancient Refinement Catalyst", "Architect Seal Crest"],
+                "spoil_materials": ["Divine Apostle Anvil Core (8.5% MVP Drop)", "Architect Seal Crest (15% Spoil)"],
             },
         ]
 
@@ -1425,6 +1433,28 @@ def _synthesize_fortress_blueprint(
     }
 
 
+def _default_refinement_drops_and_spoils(entity_type: str) -> tuple[list[str], list[str]]:
+    if entity_type == "MVP":
+        return (
+            ["Divine Apostle Anvil Core", "Ancient Refinement Catalyst", "Architect Seal Crest"],
+            ["Divine Apostle Anvil Core (8.5% MVP Drop)", "Architect Seal Crest (15% Spoil)"],
+        )
+    if entity_type in ("Raid", "RaidBoss"):
+        return (
+            ["Blessed Enchant Weapon Scroll", "Warden Alloy Core", "Soul Crystal Stage 5"],
+            ["Warden Alloy Core (15% Raid Spoil)", "Blessed Enchant Scroll (12% Drop)"],
+        )
+    if entity_type == "Mini-Boss":
+        return (
+            ["Weapon Enchant Scroll Fragment", "Tempered Alloy Plate", "Seal-Stone Cluster"],
+            ["Tempered Alloy Plate (24% Spoil)", "Seal-Stone Cluster (18% Spoil)"],
+        )
+    return (
+        ["High-Grade Iron Ore", "Varnish", "Refinement Flux Dust"],
+        ["High-Grade Iron Ore (42% Spoil)", "Refinement Flux Dust (28% Spoil)"],
+    )
+
+
 def _ensure_spawn_tiers_in_table(rows: list[dict[str, Any]], base_id: int, base_lv: int, loc: str) -> bool:
     changed = False
     present = {r.get("entity_type") for r in rows if isinstance(r, dict)}
@@ -1439,6 +1469,7 @@ def _ensure_spawn_tiers_in_table(rows: list[dict[str, Any]], base_id: int, base_
     ]
     for etype, nid, name, mult, resp, offset in specs:
         if etype not in present:
+            drops, spoils = _default_refinement_drops_and_spoils(etype)
             rows.append(
                 {
                     "npc_id": nid,
@@ -1454,9 +1485,20 @@ def _ensure_spawn_tiers_in_table(rows: list[dict[str, Any]], base_id: int, base_
                     "spawn_count": 1 if etype != "Monster" else 16,
                     "respawn_sec": resp,
                     "loc_coord": _fmt_loc(bx + offset, by - offset),
+                    "refinement_drops": drops,
+                    "spoil_materials": spoils,
                 }
             )
             changed = True
+    for row in rows:
+        if isinstance(row, dict):
+            drops, spoils = _default_refinement_drops_and_spoils(str(row.get("entity_type", "Monster")))
+            if not row.get("refinement_drops"):
+                row["refinement_drops"] = drops
+                changed = True
+            if not row.get("spoil_materials"):
+                row["spoil_materials"] = spoils
+                changed = True
     return changed
 
 
@@ -1833,15 +1875,119 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             valid_dungeon_cutaways += 1
     d12_score = round((valid_dungeon_cutaways / float(target_dungeons)) * 100.0, 1)
 
+    # D13: Instant Atlas Omni-Search & Quick-Jump Index Coverage (63 Zones, 180 Town NPCs, 105 Town Service Marks, 48 Dungeon Floors)
+    indexed_zones = sum(
+        1
+        for z in all_zones
+        if isinstance(z, dict)
+        and z.get("zone_id")
+        and z.get("studio_node_id")
+        and z.get("name")
+        and z.get("l2_reference_analog")
+        and ":" in str(z.get("loc_coord", ""))
+    )
+    indexed_town_npcs = sum(
+        len(
+            [
+                n
+                for n in ((t.get("town_blueprint") or {}).get("npc_roster") or [])
+                if isinstance(n, dict)
+                and n.get("building_number")
+                and n.get("name")
+                and n.get("role_title")
+                and ":" in str(n.get("loc_coord", ""))
+            ]
+        )
+        for t in all_towns
+    )
+    indexed_service_marks = sum(
+        len(
+            {
+                m.get("mark_type")
+                for m in ((t.get("town_blueprint") or {}).get("service_marks") or [])
+                if isinstance(m, dict) and m.get("mark_type") in REQUIRED_SERVICE_MARKS
+            }
+        )
+        for t in all_towns
+    )
+    indexed_dungeon_floors = sum(
+        len(
+            [
+                fl
+                for fl in (d.get("floors") or [])
+                if isinstance(fl, dict) and fl.get("floor_id") and fl.get("name") and fl.get("level_range")
+            ]
+        )
+        for d in mf_dungeons
+    )
+    d13_ratio = (
+        min(1.0, indexed_zones / 63.0)
+        + min(1.0, indexed_town_npcs / 180.0)
+        + min(1.0, indexed_service_marks / 105.0)
+        + min(1.0, indexed_dungeon_floors / 48.0)
+    ) / 4.0
+    d13_score = round(d13_ratio * 100.0, 1)
+
+    # D14: Interactive Monster / Mini-Boss / Raid / MVP Spawn & Refinement-Spoil Matrix (16 Multi-Floor Dungeons + 24 Field Hunting Areas)
+    valid_dng_spawns = 0
+    for d in mf_dungeons:
+        did = d.get("dungeon_id")
+        floors = d.get("floors") or []
+        if did and len(floors) >= 3 and all(
+            isinstance(fl, dict)
+            and fl.get("floor_id")
+            and all(
+                any(
+                    isinstance(sp, dict)
+                    and (sp.get("entity_type") == req_tier or (req_tier == "Raid" and sp.get("entity_type") == "RaidBoss"))
+                    and len(sp.get("refinement_drops") or []) >= 1
+                    and len(sp.get("spoil_materials") or sp.get("refinement_drops") or []) >= 1
+                    and ":" in str(sp.get("loc_coord", ""))
+                    for sp in (fl.get("spawns") or [])
+                )
+                for req_tier in REQUIRED_SPAWN_TIERS
+            )
+            for fl in floors
+        ):
+            valid_dng_spawns += 1
+
+    valid_field_spawns = 0
+    for f_entry in fields_list:
+        ftb = f_entry.get("field_tactical_blueprint") or {}
+        st_list = ftb.get("spawn_territories") or []
+        warps = ftb.get("dungeon_entrance_warps") or []
+        if (
+            f_entry.get("zone_id")
+            and ":" in str(f_entry.get("loc_coord", ""))
+            and len(warps) >= 1
+            and all(
+                any(
+                    isinstance(st, dict)
+                    and st.get("entity_type") == req_tier
+                    and len(st.get("refinement_drops") or []) >= 1
+                    and ":" in str(st.get("loc_coord", ""))
+                    for st in st_list
+                )
+                for req_tier in REQUIRED_SPAWN_TIERS
+            )
+        ):
+            valid_field_spawns += 1
+
+    d14_score = round(
+        ((valid_dng_spawns / float(target_dungeons)) * 0.5 + (valid_field_spawns / float(target_fields)) * 0.5)
+        * 100.0,
+        1,
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
         "Aesthetic": round((d5_score + d11_score + d12_score) / 3.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score) / 3.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score) / 4.0, 1),
         "Narrative": 100.0 if len(whc.get("historical_epochs") or []) >= 4 else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score) / 5.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score) / 7.0, 1),
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score) / 6.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score) / 8.0, 1),
         "Fantasy": round((d1_score + d9_score + d11_score) / 3.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score) / 4.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score) / 6.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -1858,8 +2004,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d10_score
             + d11_score
             + d12_score
+            + d13_score
+            + d14_score
         )
-        / 12.0,
+        / 14.0,
         1,
     )
 
@@ -1895,6 +2043,28 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "score": d12_score,
                 "verified": valid_dungeon_cutaways,
                 "target": target_dungeons,
+            },
+            "D13_omni_search_and_quick_jump": {
+                "score": d13_score,
+                "indexed_zones": indexed_zones,
+                "target_zones": 63,
+                "indexed_town_npcs": indexed_town_npcs,
+                "target_town_npcs": 180,
+                "indexed_service_marks": indexed_service_marks,
+                "target_service_marks": 105,
+                "indexed_dungeon_floors": indexed_dungeon_floors,
+                "target_dungeon_floors": 48,
+                "verified": indexed_zones + indexed_town_npcs + indexed_service_marks + indexed_dungeon_floors,
+                "target": 63 + 180 + 105 + 48,
+            },
+            "D14_spawn_and_refinement_spoil_matrix": {
+                "score": d14_score,
+                "verified_dungeons": valid_dng_spawns,
+                "target_dungeons": target_dungeons,
+                "verified_fields": valid_field_spawns,
+                "target_fields": target_fields,
+                "verified": valid_dng_spawns + valid_field_spawns,
+                "target": target_dungeons + target_fields,
             },
         },
     }
@@ -1952,6 +2122,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D10 (Shop & +1..+15 Refine) : {dims['D10_shop_and_refinement_catalogs']['score']}/100 ({dims['D10_shop_and_refinement_catalogs']['verified']}/{dims['D10_shop_and_refinement_catalogs']['target']})")
         print(f"  D11 (4 Town Archetypes)     : {dims['D11_town_layout_archetypes']['score']}/100 ({dims['D11_town_layout_archetypes']['verified']}/{dims['D11_town_layout_archetypes']['target']})")
         print(f"  D12 (Dungeon Cutaway Elev)  : {dims['D12_dungeon_vertical_cutaways']['score']}/100 ({dims['D12_dungeon_vertical_cutaways']['verified']}/{dims['D12_dungeon_vertical_cutaways']['target']})")
+        print(f"  D13 (Omni-Search & Jump)    : {dims['D13_omni_search_and_quick_jump']['score']}/100 ({dims['D13_omni_search_and_quick_jump']['indexed_zones']}/63 zones · {dims['D13_omni_search_and_quick_jump']['indexed_town_npcs']}/180 NPCs · {dims['D13_omni_search_and_quick_jump']['indexed_service_marks']}/105 marks · {dims['D13_omni_search_and_quick_jump']['indexed_dungeon_floors']}/48 floors)")
+        print(f"  D14 (Spawn & Spoil Matrix)  : {dims['D14_spawn_and_refinement_spoil_matrix']['score']}/100 ({dims['D14_spawn_and_refinement_spoil_matrix']['verified_dungeons']}/{dims['D14_spawn_and_refinement_spoil_matrix']['target_dungeons']} dungeons · {dims['D14_spawn_and_refinement_spoil_matrix']['verified_fields']}/{dims['D14_spawn_and_refinement_spoil_matrix']['target_fields']} fields)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
