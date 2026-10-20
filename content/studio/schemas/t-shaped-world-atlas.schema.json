@@ -131,6 +131,18 @@
       "maxItems": 12,
       "items": { "$ref": "#/$defs/companionMountSanctuarySpec" }
     },
+    "clan_reputation_academies": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": { "$ref": "#/$defs/clanReputationAcademySpec" }
+    },
+    "field_herb_elemental_biomes": {
+      "type": "array",
+      "minItems": 24,
+      "maxItems": 24,
+      "items": { "$ref": "#/$defs/fieldHerbElementalBiomeSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2212,6 +2224,94 @@
         "evolution_level_req": { "type": "integer", "minimum": 1, "maximum": 99 },
         "quest_or_tribute_req": { "type": "string" },
         "tactical_benefit": { "type": "string" }
+      }
+    },
+    "clanReputationAcademySpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "clan_node_id",
+        "node_name",
+        "pledge_category",
+        "zone_id",
+        "loc",
+        "high_prefect_or_grand_master_npc",
+        "clan_level_tier",
+        "crp_yield_or_cost",
+        "unlocked_pledge_benefits"
+      ],
+      "properties": {
+        "clan_node_id": { "type": "string" },
+        "node_name": { "type": "string" },
+        "pledge_category": {
+          "type": "string",
+          "enum": [
+            "Clan_Academy_Hall",
+            "Clan_Ambition_Altar",
+            "Pledge_Skill_Sanctum"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "high_prefect_or_grand_master_npc": { "type": "string" },
+        "clan_level_tier": { "type": "string" },
+        "crp_yield_or_cost": { "type": "string" },
+        "unlocked_pledge_benefits": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "fieldHerbElementalBiomeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "biome_id",
+        "field_zone_id",
+        "field_name",
+        "dominant_element",
+        "counter_element_bonus",
+        "herb_drop_tier",
+        "signature_herbs",
+        "herb_drop_rate_pct",
+        "solo_sustainability_note"
+      ],
+      "properties": {
+        "biome_id": { "type": "string" },
+        "field_zone_id": { "type": "string" },
+        "field_name": { "type": "string" },
+        "dominant_element": {
+          "type": "string",
+          "enum": [
+            "Fire",
+            "Water",
+            "Wind",
+            "Earth",
+            "Holy",
+            "Dark"
+          ]
+        },
+        "counter_element_bonus": { "type": "string" },
+        "herb_drop_tier": {
+          "type": "string",
+          "enum": [
+            "S_Tier_Zero_Downtime",
+            "A_Tier_Mystic_Mana_Rich",
+            "B_Tier_Party_Tough_Mobs"
+          ]
+        },
+        "signature_herbs": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "herb_drop_rate_pct": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 100
+        },
+        "solo_sustainability_note": { "type": "string" }
       }
     }
   }

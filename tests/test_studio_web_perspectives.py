@@ -1228,7 +1228,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 36)
+        self.assertGreaterEqual(len(audit["dimensions"]), 36)
 
         d35 = audit["dimensions"]["D35_weapon_augmentation_and_symbol_dye_hubs"]
         self.assertEqual(d35["score"], 100.0)
@@ -1282,10 +1282,104 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas36DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 36)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 36)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 36)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 36)
         self.assertIn("36-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave17_clan_reputation_academies_and_field_herb_elemental_biomes(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["clanReputationAcademiesCount"], 14)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["fieldHerbElementalBiomesCount"], 24)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_CLAN_ACADEMY_MODE",
+            "setAtlasClanAcademyMode(",
+            "renderAtlasClanAcademyBarHtml(",
+            "studioClanAcademyOverlay",
+            "ATLAS_HERB_BIOME_MODE",
+            "setAtlasHerbBiomeMode(",
+            "renderAtlasHerbBiomeBarHtml(",
+            "studioHerbElementalBiomeOverlay",
+            "38-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 17 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 38)
+
+        d37 = audit["dimensions"]["D37_clan_reputation_and_pledge_academies"]
+        self.assertEqual(d37["score"], 100.0)
+        self.assertEqual(d37["verified"], 14)
+        self.assertEqual(d37["target"], 14)
+        self.assertEqual(d37["clan_academies"], 5)
+        self.assertEqual(d37["ambition_altars"], 5)
+        self.assertEqual(d37["pledge_sanctums"], 4)
+        self.assertEqual(
+            set(d37["pledge_categories"]),
+            {"Clan_Academy_Hall", "Clan_Ambition_Altar", "Pledge_Skill_Sanctum"},
+        )
+        self.assertTrue(d37["ui_wired"])
+
+        d38 = audit["dimensions"]["D38_field_herb_and_elemental_biomes"]
+        self.assertEqual(d38["score"], 100.0)
+        self.assertEqual(d38["verified"], 24)
+        self.assertEqual(d38["target"], 24)
+        self.assertEqual(
+            set(d38["dominant_elements"]),
+            {"Fire", "Water", "Wind", "Earth", "Holy", "Dark"},
+        )
+        self.assertEqual(
+            set(d38["herb_drop_tiers"]),
+            {
+                "S_Tier_Zero_Downtime",
+                "A_Tier_Mystic_Mana_Rich",
+                "B_Tier_Party_Tough_Mobs",
+            },
+        )
+        self.assertTrue(d38["ui_wired"])
+
+        clan_nodes = atlas["clan_reputation_academies"]
+        self.assertEqual(len(clan_nodes), 14)
+        self.assertEqual(sum(1 for n in clan_nodes if n["pledge_category"] == "Clan_Academy_Hall"), 5)
+        self.assertEqual(sum(1 for n in clan_nodes if n["pledge_category"] == "Clan_Ambition_Altar"), 5)
+        self.assertEqual(sum(1 for n in clan_nodes if n["pledge_category"] == "Pledge_Skill_Sanctum"), 4)
+        for cn in clan_nodes:
+            self.assertGreaterEqual(len(cn["unlocked_pledge_benefits"]), 2)
+
+        herb_biomes = atlas["field_herb_elemental_biomes"]
+        self.assertEqual(len(herb_biomes), 24)
+        self.assertEqual(len({b["field_zone_id"] for b in herb_biomes}), 24)
+        self.assertEqual(
+            {b["dominant_element"] for b in herb_biomes},
+            {"Fire", "Water", "Wind", "Earth", "Holy", "Dark"},
+        )
+        self.assertEqual(
+            {b["herb_drop_tier"] for b in herb_biomes},
+            {
+                "S_Tier_Zero_Downtime",
+                "A_Tier_Mystic_Mana_Rich",
+                "B_Tier_Party_Tough_Mobs",
+            },
+        )
+        for hb in herb_biomes:
+            self.assertGreaterEqual(len(hb["signature_herbs"]), 2)
+            self.assertTrue(15 <= hb["herb_drop_rate_pct"] <= 65)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas38DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 38)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 38)
+        self.assertIn("38-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

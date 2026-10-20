@@ -676,6 +676,8 @@ def validate_world_governance(
                 "dimensionalRiftSepulchersCount": len(t_doc.get("dimensional_rift_sepulchers") or []),
                 "weaponAugmentationDyeHubsCount": len(t_doc.get("weapon_augmentation_dye_hubs") or []),
                 "companionMountSanctuariesCount": len(t_doc.get("companion_mount_sanctuaries") or []),
+                "clanReputationAcademiesCount": len(t_doc.get("clan_reputation_academies") or []),
+                "fieldHerbElementalBiomesCount": len(t_doc.get("field_herb_elemental_biomes") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1079,6 +1081,43 @@ def validate_world_governance(
                 if cm_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: companion_mount_sanctuaries '{cm_id}' references unknown zone_id '{cm_zid}'"
+                    )
+
+            # Validate 14 Clan Reputation, Academy & Pledge Skill Sanctums (D37)
+            clan_academies = t_doc.get("clan_reputation_academies") or []
+            if clan_academies and len(clan_academies) != 14:
+                errors.append(
+                    f"GOV-10 violation: clan_reputation_academies must have 14 nodes, got {len(clan_academies)}"
+                )
+            for ca_item in clan_academies:
+                if not isinstance(ca_item, dict):
+                    continue
+                ca_id = str(ca_item.get("clan_node_id", ""))
+                ca_zid = str(ca_item.get("zone_id", ""))
+                if ca_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: clan_reputation_academies '{ca_id}' references unknown zone_id '{ca_zid}'"
+                    )
+
+            # Validate 24 Field Elemental Attribute & Ground Herb Sustainability Biomes (D38)
+            field_zone_ids_only = {
+                str(z.get("zone_id", ""))
+                for z in (zdir.get("fields_and_hunting_areas") or [])
+                if isinstance(z, dict) and z.get("zone_id")
+            }
+            herb_biomes = t_doc.get("field_herb_elemental_biomes") or []
+            if herb_biomes and len(herb_biomes) != 24:
+                errors.append(
+                    f"GOV-10 violation: field_herb_elemental_biomes must have 24 biomes, got {len(herb_biomes)}"
+                )
+            for hb_item in herb_biomes:
+                if not isinstance(hb_item, dict):
+                    continue
+                hb_id = str(hb_item.get("biome_id", ""))
+                hb_fzid = str(hb_item.get("field_zone_id", ""))
+                if hb_fzid not in field_zone_ids_only:
+                    errors.append(
+                        f"GOV-10 violation: field_herb_elemental_biomes '{hb_id}' references unknown field_zone_id '{hb_fzid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

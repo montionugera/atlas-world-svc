@@ -50698,5 +50698,579 @@
       "quest_or_tribute_req": "High-Halo Sovereign + Mounted Strider Lv.55+ + 25 Crystals: B-Grade",
       "tactical_benefit": "Sovereign aerial dominance over Continent 03 sky-spans with AoE Wyvern Flame Breath."
     }
+  ],
+  "clan_reputation_academies": [
+    {
+      "clan_node_id": "clan-academy-01-lantern-hollow",
+      "node_name": "Lantern Hollow Grand Master Hall \u2014 Human & Fighter Clan Academy",
+      "pledge_category": "Clan_Academy_Hall",
+      "zone_id": "zone-town-lantern-hollow",
+      "loc": "-84320:243280",
+      "high_prefect_or_grand_master_npc": "Grand Master Ramos & Apprentice Tutor Pinter",
+      "clan_level_tier": "Clan Lv.5 Academy",
+      "crp_yield_or_cost": "+400 CRP per Lv.40 2nd-Class Academy Graduate",
+      "unlocked_pledge_benefits": [
+        "Clan Oath Heavy/Light/Robe Armor Set (D-Grade)",
+        "Academy Circlet (Zero EXP Loss Penalty Lv.1\u201339)",
+        "20-Slot Clan Academy Regiment Roster"
+      ]
+    },
+    {
+      "clan_node_id": "clan-academy-02-kilnwatch-bastion",
+      "node_name": "Kilnwatch Bastion Convergence Academy \u2014 All-Race Oath Armor Hall",
+      "pledge_category": "Clan_Academy_Hall",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "loc": "-14420:123280",
+      "high_prefect_or_grand_master_npc": "High Prefect Levian & Master Tobald",
+      "clan_level_tier": "Clan Lv.5 Academy",
+      "crp_yield_or_cost": "+400 CRP per Academy Graduate (+150 Bonus CRP from Lv.16 Sponsor)",
+      "unlocked_pledge_benefits": [
+        "Clan Oath Armor Set (D-Grade +P.Def/MP Regen Set Bonus)",
+        "Sponsor-Apprentice Bond Ring (Instant Recall to Sponsor)",
+        "Commemorative Academy Graduation Tiara"
+      ]
+    },
+    {
+      "clan_node_id": "clan-academy-03-escapement-anvil",
+      "node_name": "Escapement Anvil Guild Hall \u2014 Stage D Trial & Academy Charter",
+      "pledge_category": "Clan_Academy_Hall",
+      "zone_id": "zone-town-escapement-anvil",
+      "loc": "82920:53420",
+      "high_prefect_or_grand_master_npc": "Grand Master Maximilian & High Priest Hollint",
+      "clan_level_tier": "Clan Lv.5 Academy",
+      "crp_yield_or_cost": "+400 CRP per 2nd-Class Promotion Graduate",
+      "unlocked_pledge_benefits": [
+        "Clan Oath Armor Set (D-Grade) via Sponsor Quest: Lead and Be Led",
+        "Reduced 2nd-Class Trial Token Cost for Academy Recruits",
+        "Academy Graduate CRP Milestone Bonus"
+      ]
+    },
+    {
+      "clan_node_id": "clan-academy-04-inductor-switchyard",
+      "node_name": "Inductor Switchyard Trade Guild \u2014 Royal Guard & Academy Registry",
+      "pledge_category": "Clan_Academy_Hall",
+      "zone_id": "zone-town-inductor-switchyard",
+      "loc": "147180:-55420",
+      "high_prefect_or_grand_master_npc": "Grand Master Jurek & Warehouse Chief Gesto",
+      "clan_level_tier": "Clan Lv.6 Royal Guard",
+      "crp_yield_or_cost": "5,000 CRP + 30 Academy Graduates (Unlocks 1st & 2nd Royal Guard)",
+      "unlocked_pledge_benefits": [
+        "1st & 2nd Royal Guard Sub-Unit (20 Members Each)",
+        "Expanded Clan Capacity (Up to 100 Active Pledge Members)",
+        "Clan Oath Armor Set (D-Grade) & Clan Imperium Eligibility"
+      ]
+    },
+    {
+      "clan_node_id": "clan-academy-05-starfall-haven",
+      "node_name": "Starfall Haven Sky-Guild \u2014 Continent 03 Vanguard Academy Hall",
+      "pledge_category": "Clan_Academy_Hall",
+      "zone_id": "zone-town-starfall-haven",
+      "loc": "43580:-48120",
+      "high_prefect_or_grand_master_npc": "Grand Magister Valdis & High Prefect Karia",
+      "clan_level_tier": "Clan Lv.6 Royal Guard",
+      "crp_yield_or_cost": "+650 CRP per Elite Academy Graduate + 100 Blood Marks",
+      "unlocked_pledge_benefits": [
+        "Clan Oath Armor Set (D-Grade) & Apella Armor Eligibility",
+        "Sky-Harbor Clan Warehouse & Airship Dock Charter",
+        "Royal Guard Captain Crest & Command Channel Access"
+      ]
+    },
+    {
+      "clan_node_id": "clan-ambition-01-cinder-apron-martyrs",
+      "node_name": "Cinder Apron Viaduct \u2014 Altar of Sir Gustaf's Proof of Clan Alliance",
+      "pledge_category": "Clan_Ambition_Altar",
+      "zone_id": "zone-field-cinder-apron",
+      "loc": "-6180:132120",
+      "high_prefect_or_grand_master_npc": "Sir Gustaf Athebaldt & Witch Athrea",
+      "clan_level_tier": "Clan Lv.4\u20135 Ambition",
+      "crp_yield_or_cost": "3,500,000 SP + 3 Loyalist Poison Antidote Herbs (Lord Sacrifice)",
+      "unlocked_pledge_benefits": [
+        "Alliance Manifesto (Unlocks Clan Level 4 & Castle Siege Registration)",
+        "Clan Crest & Alliance Crest Banner Entitlement",
+        "Pledge Death Penalty Reduction Lv.1"
+      ]
+    },
+    {
+      "clan_node_id": "clan-ambition-02-caldera-drake-eggs",
+      "node_name": "Mainspring Caldera Rim \u2014 Grave of the Dwarven Scouts & Drake Egg Altar",
+      "pledge_category": "Clan_Ambition_Altar",
+      "zone_id": "zone-field-caldera-rim",
+      "loc": "86640:61420",
+      "high_prefect_or_grand_master_npc": "Sir Kristof Rodemai & Head Blacksmith Roman",
+      "clan_level_tier": "Clan Lv.5 Academy",
+      "crp_yield_or_cost": "Seal of Aspiration (Pursuit of Clan Ambition: 40 Drake/Wyrm Eggs)",
+      "unlocked_pledge_benefits": [
+        "Clan Level 5 Unlock (Founding of the Clan Academy)",
+        "Clan Imperium (Command Channel for Multi-Party Raids)",
+        "Clan Hall Auction & Fortress Siege Eligibility"
+      ]
+    },
+    {
+      "clan_node_id": "clan-ambition-03-spiral-wormway-scepter",
+      "node_name": "Spiral Wormway Ramp \u2014 Imperial Graveyard Scepter of Judgment Altar",
+      "pledge_category": "Clan_Ambition_Altar",
+      "zone_id": "zone-field-spiral-wormway-ramp",
+      "loc": "134480:-24380",
+      "high_prefect_or_grand_master_npc": "Sir Eric Rodemai & Witch Cleo",
+      "clan_level_tier": "Clan Lv.6 Royal Guard",
+      "crp_yield_or_cost": "10,000 CRP + 100 Blood Oaths (Fortress Tribute)",
+      "unlocked_pledge_benefits": [
+        "Clan Level 6 Unlock & 2 Royal Guard Divisions",
+        "Clan Shield Defense Lv.2 & Clan Magic Barrier Lv.2",
+        "Apella Combat/Plate/Brigandine/Doublet Armor Access"
+      ]
+    },
+    {
+      "clan_node_id": "clan-ambition-04-orrery-bridge-oath",
+      "node_name": "The Orrery Bridge \u2014 Astral Blood Alliance & Order of Knights Altar",
+      "pledge_category": "Clan_Ambition_Altar",
+      "zone_id": "zone-field-orrery-bridge",
+      "loc": "-28120:-107940",
+      "high_prefect_or_grand_master_npc": "High Inquisitor Kalis & Herald of the Knights",
+      "clan_level_tier": "Clan Lv.7 Order of Knights",
+      "crp_yield_or_cost": "20,000 CRP + 120 Member Roster + 10 Blood Alliances",
+      "unlocked_pledge_benefits": [
+        "Clan Level 7 Unlock & 4 Order of Knights Divisions (10 Knights Each)",
+        "Knighthood Baron / Viscount Social Rank Entitlement",
+        "Clan Vitality Lv.3 (+Max HP) & Clan Spirituality Lv.3 (+Max MP)"
+      ]
+    },
+    {
+      "clan_node_id": "clan-ambition-05-aurora-tether-sovereign",
+      "node_name": "Aurora Tether Span \u2014 High-Halo Sovereign Crown &Lv.8 Pledge Altar",
+      "pledge_category": "Clan_Ambition_Altar",
+      "zone_id": "zone-field-aurora-tether",
+      "loc": "152620:31440",
+      "high_prefect_or_grand_master_npc": "Grand Chamberlain Ilia & Sovereign Arbiter",
+      "clan_level_tier": "Clan Lv.8 Sovereign",
+      "crp_yield_or_cost": "40,000 CRP + 140 Member Roster + 100 Blood Oaths / Alliances",
+      "unlocked_pledge_benefits": [
+        "Clan Level 8 Apex Sovereign Status (Max 140 Clan Members)",
+        "Full Tier-3 Passive Pledge Skill Tree Unlock",
+        "Sovereign Castle Wyvern & Capital Citadel Tax Dominance"
+      ]
+    },
+    {
+      "clan_node_id": "clan-sanctum-01-kilnwatch-accord-pledge",
+      "node_name": "Kilnwatch Accord Clan Hall \u2014 Continent 01 Apella & Pledge Skill Sanctum",
+      "pledge_category": "Pledge_Skill_Sanctum",
+      "zone_id": "zone-clanhall-kilnwatch-accord",
+      "loc": "-13620:124320",
+      "high_prefect_or_grand_master_npc": "Court Wizard Mulia & Rapidus (Clan Trader)",
+      "clan_level_tier": "Clan Lv.6 Royal Guard",
+      "crp_yield_or_cost": "1,500\u20138,600 CRP + Earth/Angelic Eggs (Raid Boss Soul Drops)",
+      "unlocked_pledge_benefits": [
+        "Apella Plate / Brigandine / Doublet Set (A-Grade Zero PK Drop)",
+        "Clan Body Lv.3 (+6% Max HP) & Clan Shield Defense Lv.3",
+        "Clan Imperium (Multi-Party Command Channel Coordination)"
+      ]
+    },
+    {
+      "clan_node_id": "clan-sanctum-02-inductor-conclave-pledge",
+      "node_name": "Inductor Conclave Citadel \u2014 Continent 02 Pledge Skill & Egg Altar",
+      "pledge_category": "Pledge_Skill_Sanctum",
+      "zone_id": "zone-clanhall-inductor-conclave",
+      "loc": "148320:-54580",
+      "high_prefect_or_grand_master_npc": "Grand MagisterScipio & Clan Trader Hullia",
+      "clan_level_tier": "Clan Lv.7 Order of Knights",
+      "crp_yield_or_cost": "3,000\u201312,000 CRP + Dragon Hearts & False Nuclei of Life",
+      "unlocked_pledge_benefits": [
+        "Clan Might Lv.3 (+6% P.Atk) & Clan Empower Lv.3 (+10% M.Atk)",
+        "Clan Magic Barrier Lv.3 & Clan Clarity Lv.3 (-MP Cost)",
+        "Apella Masterwork Combat Armor Exchange"
+      ]
+    },
+    {
+      "clan_node_id": "clan-sanctum-03-torque-balance-pledge",
+      "node_name": "Torque-Balance Citadel \u2014 Aden Imperial Pledge Skill & Seal Sanctum",
+      "pledge_category": "Pledge_Skill_Sanctum",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "loc": "116640:-18160",
+      "high_prefect_or_grand_master_npc": "High Priest Orven & Grand Master Sedrick",
+      "clan_level_tier": "Clan Lv.7 Order of Knights",
+      "crp_yield_or_cost": "5,000\u201315,000 CRP +Cradle of Creation & Destruction",
+      "unlocked_pledge_benefits": [
+        "Clan Guidance Lv.3 (+Accuracy) & Clan Agility Lv.3 (+Evasion)",
+        "Clan Cyclonic/Magma/Withstand-Attack Elemental Resistances",
+        "Clan Morale Lv.3 (CP Regeneration in Siege Zones)"
+      ]
+    },
+    {
+      "clan_node_id": "clan-sanctum-04-crown-beacon-pledge",
+      "node_name": "Crown-Beacon Citadel \u2014 Continent 03 Sovereign Pledge Skill Sanctum",
+      "pledge_category": "Pledge_Skill_Sanctum",
+      "zone_id": "zone-town-crown-beacon",
+      "loc": "148140:27040",
+      "high_prefect_or_grand_master_npc": "Imperial Chancellor Valon & High Priestess Morelyn",
+      "clan_level_tier": "Clan Lv.8 Sovereign",
+      "crp_yield_or_cost": "10,000\u201325,000 CRP + Skull of the Dead & Angel's Soul",
+      "unlocked_pledge_benefits": [
+        "Clan Lifeblood Lv.3 & Clan March Lv.2 (+Movement Speed)",
+        "Clan Luck Lv.3 (Drastic EXP Loss Reduction on PvP/Raid Death)",
+        "Sovereign Apella Crown & Full 22-Skill Pledge Mastery"
+      ]
+    }
+  ],
+  "field_herb_elemental_biomes": [
+    {
+      "biome_id": "biome-01-clover-south-gate",
+      "field_zone_id": "zone-field-clover-south-gate",
+      "field_name": "Clover South-Gate Meadow (Human Starter Field)",
+      "dominant_element": "Earth",
+      "counter_element_bonus": "Wind +25% Dmg vs Meadow Golems & Keltirs",
+      "herb_drop_tier": "S_Tier_Zero_Downtime",
+      "signature_herbs": [
+        "Herb of Life (Instant +35% HP)",
+        "Herb of Warrior (Haste + Might Lv.2)",
+        "Superior Giant's Herb (2m Full Fighter Buff)"
+      ],
+      "herb_drop_rate_pct": 58,
+      "solo_sustainability_note": "S-Tier Zero-Downtime 1x HP meadow mobs; continuous ground herb drops eliminate potion costs for Lv.1\u201312 solo starters."
+    },
+    {
+      "biome_id": "biome-02-kiln-east-orchard",
+      "field_zone_id": "zone-field-kiln-east-orchard",
+      "field_name": "Kiln-East Glaze Orchard (Human Farming & Convergence Highway)",
+      "dominant_element": "Fire",
+      "counter_element_bonus": "Water +25% Dmg vs Kiln Sprites & Glaze Hounds",
+      "herb_drop_tier": "S_Tier_Zero_Downtime",
+      "signature_herbs": [
+        "Herb of Life",
+        "Herb of Mana (Instant +28% MP)",
+        "Herb of Speed (Wind Walk Lv.2)"
+      ],
+      "herb_drop_rate_pct": 54,
+      "solo_sustainability_note": "High-density orchard packs drop abundant HP/MP herbs for fast Lv.5\u201314 solo and duo convergence progression."
+    },
+    {
+      "biome_id": "biome-03-celadon-causeway",
+      "field_zone_id": "zone-field-celadon-causeway",
+      "field_name": "Celadon Glaze Causeway (Lunar & Ogre Shared Field)",
+      "dominant_element": "Water",
+      "counter_element_bonus": "Wind +25% Dmg vs Celadon Toads & Undines",
+      "herb_drop_tier": "A_Tier_Mystic_Mana_Rich",
+      "signature_herbs": [
+        "Greater Herb of Mana (Instant +50% MP)",
+        "Herb of Mystic (Acumen Lv.3 + Empower Lv.3)",
+        "Herb of Magic"
+      ],
+      "herb_drop_rate_pct": 52,
+      "solo_sustainability_note": "Mystic-friendly causeway where 1x HP elemental sprites drop Greater Herbs of Mana for nonstop nuke casting."
+    },
+    {
+      "biome_id": "biome-04-firebrick-duct",
+      "field_zone_id": "zone-field-firebrick-duct",
+      "field_name": "Firebrick Bellows Duct (Ogre Starter Field & Kilnwatch Approach)",
+      "dominant_element": "Fire",
+      "counter_element_bonus": "Water +25% Dmg vs Firebrick Salamanders",
+      "herb_drop_tier": "S_Tier_Zero_Downtime",
+      "signature_herbs": [
+        "Greater Herb of Life",
+        "Herb of Warrior (Vampiric Rage + Fury)",
+        "Herb of Critical Attack"
+      ],
+      "herb_drop_rate_pct": 55,
+      "solo_sustainability_note": "Brawler-optimized thermal duct where Vampiric Rage and Critical herbs sustain continuous Ogre/Fighter melee chains."
+    },
+    {
+      "biome_id": "biome-05-resin-arch-tunnel",
+      "field_zone_id": "zone-field-resin-arch-tunnel",
+      "field_name": "Resin-Arch Root Tunnel (Dwarf & Lunar Farming Zone)",
+      "dominant_element": "Earth",
+      "counter_element_bonus": "Wind +25% Dmg vs Resin Beetles & Root Tarantulas",
+      "herb_drop_tier": "S_Tier_Zero_Downtime",
+      "signature_herbs": [
+        "Herb of Life",
+        "Herb of Mana",
+        "Herb of Defense (Shield Lv.3)"
+      ],
+      "herb_drop_rate_pct": 50,
+      "solo_sustainability_note": "Dwarf spoil-scavenger paradise: Herb of Mana refills Sweeper/Spoil MP pools with zero sitting downtime."
+    },
+    {
+      "biome_id": "biome-06-cobalt-sandbar-ford",
+      "field_zone_id": "zone-field-cobalt-sandbar-ford",
+      "field_name": "Cobalt Sandbar Ford (Dwarf Hunting & River Delta Crossing)",
+      "dominant_element": "Water",
+      "counter_element_bonus": "Wind +25% Dmg vs River Striders & Crokian Scouts",
+      "herb_drop_tier": "A_Tier_Mystic_Mana_Rich",
+      "signature_herbs": [
+        "Greater Herb of Mana",
+        "Herb of Casting Speed (Acumen Lv.3)",
+        "Herb of Life"
+      ],
+      "herb_drop_rate_pct": 46,
+      "solo_sustainability_note": "Open river sandbars with long sightlines and rich Mystic/Mana herb drops ideal for ranged nukers and archers."
+    },
+    {
+      "biome_id": "biome-07-chime-pipe-colonnade",
+      "field_zone_id": "zone-field-chime-pipe-colonnade",
+      "field_name": "Chime-Pipe Colonnade (Dark-Lunar Acoustic Marsh)",
+      "dominant_element": "Wind",
+      "counter_element_bonus": "Earth +25% Dmg vs Whispering Harpies & Sylphs",
+      "herb_drop_tier": "A_Tier_Mystic_Mana_Rich",
+      "signature_herbs": [
+        "Herb of Mana",
+        "Herb of Mystic (Empower + Acumen)",
+        "Superior Herb of Life"
+      ],
+      "herb_drop_rate_pct": 51,
+      "solo_sustainability_note": "Acoustic marshland yielding high-frequency Mystic herbs for Dark-Lunar spellcasters and summoners."
+    },
+    {
+      "biome_id": "biome-08-apricot-aqueduct-terrace",
+      "field_zone_id": "zone-field-apricot-aqueduct-terrace",
+      "field_name": "Apricot Aqueduct Terrace (Dark-Lunar & Manor Field)",
+      "dominant_element": "Holy",
+      "counter_element_bonus": "Dark +25% Dmg vs Sanctuary Sentinels",
+      "herb_drop_tier": "S_Tier_Zero_Downtime",
+      "signature_herbs": [
+        "Superior Giant's Herb (2m Full Buff)",
+        "Herb of Life",
+        "Herb of Warrior (Haste + Focus)"
+      ],
+      "herb_drop_rate_pct": 56,
+      "solo_sustainability_note": "Terraced manor fields with top-tier Giant's Herb drops that enable solo seed-harvesters to chain-pull effortlessly."
+    },
+    {
+      "biome_id": "biome-09-cinnamon-bark-viaduct",
+      "field_zone_id": "zone-field-cinnamon-bark-viaduct",
+      "field_name": "Cinnamon-Bark Viaduct (Furral Farming & Spice Highway)",
+      "dominant_element": "Wind",
+      "counter_element_bonus": "Earth +25% Dmg vs Bark-Glider Raptors",
+      "herb_drop_tier": "S_Tier_Zero_Downtime",
+      "signature_herbs": [
+        "Herb of Speed (Wind Walk Lv.2)",
+        "Herb of Warrior",
+        "Herb of Life"
+      ],
+      "herb_drop_rate_pct": 60,
+      "solo_sustainability_note": "Highest starter herb drop rate (60%) on Continent 01, tailored for Furral skirmishers and daggers."
+    },
+    {
+      "biome_id": "biome-10-ginger-aqueduct-bridge",
+      "field_zone_id": "zone-field-ginger-aqueduct-bridge",
+      "field_name": "Ginger-Steam Aqueduct Bridge (Furral Hunting Grounds)",
+      "dominant_element": "Fire",
+      "counter_element_bonus": "Water +25% Dmg vs Steam-Pipe Constructs",
+      "herb_drop_tier": "A_Tier_Mystic_Mana_Rich",
+      "signature_herbs": [
+        "Herb of Mana",
+        "Herb of Life",
+        "Herb of Alacrity"
+      ],
+      "herb_drop_rate_pct": 48,
+      "solo_sustainability_note": "Balanced hybrid herb table supporting both solo melee progression and duo spoiler-mage partners."
+    },
+    {
+      "biome_id": "biome-11-cinder-apron",
+      "field_zone_id": "zone-field-cinder-apron",
+      "field_name": "Cinder Apron Viaduct (Stage B->C Party Field & C01->C02 Bridge)",
+      "dominant_element": "Dark",
+      "counter_element_bonus": "Holy +30% Dmg vs Undead Cinder Legionnaires",
+      "herb_drop_tier": "B_Tier_Party_Tough_Mobs",
+      "signature_herbs": [
+        "Greater Herb of Life",
+        "Greater Herb of Mana",
+        "Herb of Recovery (Cure Poison/Bleed)"
+      ],
+      "herb_drop_rate_pct": 30,
+      "solo_sustainability_note": "2x\u20133x HP Undead/Construct bridge field; lower herb rate (30%) rewards Bishop/Elven Elder Holy nukes and small parties."
+    },
+    {
+      "biome_id": "biome-12-brass-spur-ridge",
+      "field_zone_id": "zone-field-brass-spur-ridge",
+      "field_name": "Brass-Spur Gear Ridge (Stage C Continent 02 Frontier)",
+      "dominant_element": "Earth",
+      "counter_element_bonus": "Wind +25% Dmg vs Brass-Spur Clockwork Automats",
+      "herb_drop_tier": "S_Tier_Zero_Downtime",
+      "signature_herbs": [
+        "Superior Giant's Herb (2m Full Buff)",
+        "Greater Herb of Life",
+        "Herb of Warrior"
+      ],
+      "herb_drop_rate_pct": 49,
+      "solo_sustainability_note": "Continent 02 frontier ridge with generous Giant's Herbs allowing Lv.20\u201326 soloists to farm without out-of-party buffers."
+    },
+    {
+      "biome_id": "biome-13-caldera-rim",
+      "field_zone_id": "zone-field-caldera-rim",
+      "field_name": "Mainspring Caldera Rim (Stage D Pre-2nd-Class Trial Grounds)",
+      "dominant_element": "Fire",
+      "counter_element_bonus": "Water +30% Dmg vs Caldera Wyrms & Magma Drakes",
+      "herb_drop_tier": "B_Tier_Party_Tough_Mobs",
+      "signature_herbs": [
+        "Greater Herb of Life",
+        "Herb of Fire Resistance",
+        "Herb of Warrior"
+      ],
+      "herb_drop_rate_pct": 26,
+      "solo_sustainability_note": "Tough 2x HP draconic mobs for 2nd-class trials; bring a trio or Water-infused weapons alongside ground Life herbs."
+    },
+    {
+      "biome_id": "biome-14-leyden-causeway",
+      "field_zone_id": "zone-field-leyden-causeway",
+      "field_name": "Leyden Capacitor Causeway (Stage E 2nd-Class Grinding Field)",
+      "dominant_element": "Wind",
+      "counter_element_bonus": "Earth +25% Dmg vs Leyden Arc-Stalkers",
+      "herb_drop_tier": "S_Tier_Zero_Downtime",
+      "signature_herbs": [
+        "Superior Herb of Life",
+        "Superior Herb of Mana",
+        "Superior Giant's Herb (2m Full Buff)"
+      ],
+      "herb_drop_rate_pct": 53,
+      "solo_sustainability_note": "Premier Lv.30\u201340 solo grinding highway (Death Pass analog) with nonstop Superior Herbs for post-2nd-class leveling."
+    },
+    {
+      "biome_id": "biome-15-tether-causeway",
+      "field_zone_id": "zone-field-tether-causeway",
+      "field_name": "Star-Tether Causeway (Stage F Continent 03 Arrival Field)",
+      "dominant_element": "Holy",
+      "counter_element_bonus": "Dark +25% Dmg vs Astral Tether Watchers",
+      "herb_drop_tier": "A_Tier_Mystic_Mana_Rich",
+      "signature_herbs": [
+        "Superior Herb of Mana",
+        "Herb of Mystic (Empower Lv.3 + Wild Magic)",
+        "Greater Herb of Life"
+      ],
+      "herb_drop_rate_pct": 45,
+      "solo_sustainability_note": "Continent 03 arrival causeway where Wild Magic and Superior Mana herbs fuel C/B-grade spellhowlers and necromancers."
+    },
+    {
+      "biome_id": "biome-16-aurora-tether",
+      "field_zone_id": "zone-field-aurora-tether",
+      "field_name": "Aurora Tether Span (Stage G-L High-Halo Endgame Field)",
+      "dominant_element": "Holy",
+      "counter_element_bonus": "Dark +30% Dmg vs High-Halo Seraphim & Nephilim",
+      "herb_drop_tier": "B_Tier_Party_Tough_Mobs",
+      "signature_herbs": [
+        "Superior Herb of Life",
+        "Superior Herb of Mana",
+        "Herb of Doubt (AoE Over-hit Bonus)"
+      ],
+      "herb_drop_rate_pct": 22,
+      "solo_sustainability_note": "Endgame 4x HP angelic/astral elites (Lv.55\u201385); low herb drop rate requires full 9-player Command Channel or Covenant buffs."
+    },
+    {
+      "biome_id": "biome-17-whispering-mire",
+      "field_zone_id": "zone-field-whispering-mire",
+      "field_name": "The Whispering Teapot Mire (Human & Dark-Lunar Border Marsh)",
+      "dominant_element": "Dark",
+      "counter_element_bonus": "Holy +30% Dmg vs Marsh Phantoms & Mire Zombies",
+      "herb_drop_tier": "A_Tier_Mystic_Mana_Rich",
+      "signature_herbs": [
+        "Greater Herb of Mana",
+        "Herb of Mystic",
+        "Herb of Recovery (Anti-Venom)"
+      ],
+      "herb_drop_rate_pct": 47,
+      "solo_sustainability_note": "Undead marshland where Clerics/Oracles and mages chain-cast Disrupt Undead with abundant ground MP herbs."
+    },
+    {
+      "biome_id": "biome-18-slag-chasm",
+      "field_zone_id": "zone-field-slag-chasm",
+      "field_name": "The Vitrified Slag Chasm (Kilnwatch Convergence Badlands)",
+      "dominant_element": "Earth",
+      "counter_element_bonus": "Wind +25% Dmg vs Vitrified Slag Basilisks",
+      "herb_drop_tier": "B_Tier_Party_Tough_Mobs",
+      "signature_herbs": [
+        "Greater Herb of Life",
+        "Herb of Defense",
+        "Herb of Warrior"
+      ],
+      "herb_drop_rate_pct": 28,
+      "solo_sustainability_note": "Reinforced carapace monsters in the Kilnwatch badlands; best tackled by duo spoilers and polearm sweepers."
+    },
+    {
+      "biome_id": "biome-19-astrolabe-rift",
+      "field_zone_id": "zone-field-astrolabe-rift",
+      "field_name": "The Astrolabe Rift Promontory (Steppe Gear Escarpment)",
+      "dominant_element": "Wind",
+      "counter_element_bonus": "Earth +25% Dmg vs Rift Gargoyles & Wind Shriekers",
+      "herb_drop_tier": "S_Tier_Zero_Downtime",
+      "signature_herbs": [
+        "Superior Giant's Herb (2m Full Buff)",
+        "Greater Herb of Life",
+        "Herb of Critical Attack"
+      ],
+      "herb_drop_rate_pct": 50,
+      "solo_sustainability_note": "Brittle 1/2x HP winged gargoyles shatter quickly and drop frequent Giant's Herbs for rapid solo EXP/hr."
+    },
+    {
+      "biome_id": "biome-20-siphon-sluice",
+      "field_zone_id": "zone-field-siphon-sluice",
+      "field_name": "The Verdigris Siphon Sluiceway (Mercury Canal Hunting Lock)",
+      "dominant_element": "Water",
+      "counter_element_bonus": "Wind +30% Dmg vs Mercury Sluice Elementals",
+      "herb_drop_tier": "A_Tier_Mystic_Mana_Rich",
+      "signature_herbs": [
+        "Superior Herb of Mana",
+        "Herb of Mystic",
+        "Greater Herb of Life"
+      ],
+      "herb_drop_rate_pct": 44,
+      "solo_sustainability_note": "Elemental canal lock prized by Spellsingers and Elemental Summoners for its high Superior Mana herb yield."
+    },
+    {
+      "biome_id": "biome-21-metronome-bridge",
+      "field_zone_id": "zone-field-metronome-bridge",
+      "field_name": "Metronome Suspension Bridge (Highland Escapement Crossing)",
+      "dominant_element": "Dark",
+      "counter_element_bonus": "Holy +30% Dmg vs Execution Grounds Specters",
+      "herb_drop_tier": "S_Tier_Zero_Downtime",
+      "signature_herbs": [
+        "Greater Herb of Life",
+        "Greater Herb of Mana",
+        "Herb of Warrior (Vampiric Rage)"
+      ],
+      "herb_drop_rate_pct": 49,
+      "solo_sustainability_note": "Highland undead/construct crossing with steady Vampiric and Mana herbs enabling zero-rest solo grinding at Lv.34\u201336."
+    },
+    {
+      "biome_id": "biome-22-spiral-wormway-ramp",
+      "field_zone_id": "zone-field-spiral-wormway-ramp",
+      "field_name": "Spiral Wormway Ramp (Deep Quarry Helical Trench)",
+      "dominant_element": "Dark",
+      "counter_element_bonus": "Holy +30% Dmg vs Imperial Graveyard Liches",
+      "herb_drop_tier": "B_Tier_Party_Tough_Mobs",
+      "signature_herbs": [
+        "Superior Herb of Life",
+        "Superior Herb of Mana",
+        "Herb of Mystic"
+      ],
+      "herb_drop_rate_pct": 25,
+      "solo_sustainability_note": "Deep helical quarry trench with social aggro undead packs; designed for AoE polearm/mage parties with Holy buffs."
+    },
+    {
+      "biome_id": "biome-23-orrery-bridge",
+      "field_zone_id": "zone-field-orrery-bridge",
+      "field_name": "The Orrery Bridge (Astral Refractory Sky-Span)",
+      "dominant_element": "Holy",
+      "counter_element_bonus": "Dark +25% Dmg vs Refractory Light-Golems",
+      "herb_drop_tier": "A_Tier_Mystic_Mana_Rich",
+      "signature_herbs": [
+        "Superior Herb of Mana",
+        "Superior Giant's Herb (2m Full Buff)",
+        "Herb of Mystic"
+      ],
+      "herb_drop_rate_pct": 43,
+      "solo_sustainability_note": "Sky-span bridge on Continent 03 where Dark-attribute mages and archers sustain long farm sessions off ground herbs."
+    },
+    {
+      "biome_id": "biome-24-kelp-spiral-reef",
+      "field_zone_id": "zone-field-kelp-spiral-reef",
+      "field_name": "Kelp Spiral Reef (Bioluminescent Undertide Hunting Shoals)",
+      "dominant_element": "Water",
+      "counter_element_bonus": "Wind +30% Dmg vs Bioluminescent Reef Krakens",
+      "herb_drop_tier": "B_Tier_Party_Tough_Mobs",
+      "signature_herbs": [
+        "Superior Herb of Life",
+        "Superior Herb of Mana",
+        "Herb of Aquatic Brilliance"
+      ],
+      "herb_drop_rate_pct": 24,
+      "solo_sustainability_note": "High-density aquatic shoals dropping Life Stones and A/S-grade materials; party sustain augmented by Superior Herbs."
+    }
   ]
 }

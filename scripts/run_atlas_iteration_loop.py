@@ -4490,6 +4490,608 @@ def _build_companion_mount_sanctuaries(atlas: dict[str, Any]) -> list[dict[str, 
     return rows
 
 
+def _build_clan_reputation_academies(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 14 Clan Progression & Pledge Nodes (5 Clan_Academy_Hall + 5 Clan_Ambition_Altar + 4 Pledge_Skill_Sanctum) (D37)."""
+    specs = [
+        # 5 Clan_Academy_Hall (Clan Academy Graduation & Clan Oath Armor Halls)
+        (
+            "clan-academy-01-lantern-hollow",
+            "Lantern Hollow Grand Master Hall — Human & Fighter Clan Academy",
+            "Clan_Academy_Hall",
+            "zone-town-lantern-hollow",
+            "-84320:243280",
+            "Grand Master Ramos & Apprentice Tutor Pinter",
+            "Clan Lv.5 Academy",
+            "+400 CRP per Lv.40 2nd-Class Academy Graduate",
+            [
+                "Clan Oath Heavy/Light/Robe Armor Set (D-Grade)",
+                "Academy Circlet (Zero EXP Loss Penalty Lv.1–39)",
+                "20-Slot Clan Academy Regiment Roster",
+            ],
+        ),
+        (
+            "clan-academy-02-kilnwatch-bastion",
+            "Kilnwatch Bastion Convergence Academy — All-Race Oath Armor Hall",
+            "Clan_Academy_Hall",
+            "zone-town-kilnwatch-bastion",
+            "-14420:123280",
+            "High Prefect Levian & Master Tobald",
+            "Clan Lv.5 Academy",
+            "+400 CRP per Academy Graduate (+150 Bonus CRP from Lv.16 Sponsor)",
+            [
+                "Clan Oath Armor Set (D-Grade +P.Def/MP Regen Set Bonus)",
+                "Sponsor-Apprentice Bond Ring (Instant Recall to Sponsor)",
+                "Commemorative Academy Graduation Tiara",
+            ],
+        ),
+        (
+            "clan-academy-03-escapement-anvil",
+            "Escapement Anvil Guild Hall — Stage D Trial & Academy Charter",
+            "Clan_Academy_Hall",
+            "zone-town-escapement-anvil",
+            "82920:53420",
+            "Grand Master Maximilian & High Priest Hollint",
+            "Clan Lv.5 Academy",
+            "+400 CRP per 2nd-Class Promotion Graduate",
+            [
+                "Clan Oath Armor Set (D-Grade) via Sponsor Quest: Lead and Be Led",
+                "Reduced 2nd-Class Trial Token Cost for Academy Recruits",
+                "Academy Graduate CRP Milestone Bonus",
+            ],
+        ),
+        (
+            "clan-academy-04-inductor-switchyard",
+            "Inductor Switchyard Trade Guild — Royal Guard & Academy Registry",
+            "Clan_Academy_Hall",
+            "zone-town-inductor-switchyard",
+            "147180:-55420",
+            "Grand Master Jurek & Warehouse Chief Gesto",
+            "Clan Lv.6 Royal Guard",
+            "5,000 CRP + 30 Academy Graduates (Unlocks 1st & 2nd Royal Guard)",
+            [
+                "1st & 2nd Royal Guard Sub-Unit (20 Members Each)",
+                "Expanded Clan Capacity (Up to 100 Active Pledge Members)",
+                "Clan Oath Armor Set (D-Grade) & Clan Imperium Eligibility",
+            ],
+        ),
+        (
+            "clan-academy-05-starfall-haven",
+            "Starfall Haven Sky-Guild — Continent 03 Vanguard Academy Hall",
+            "Clan_Academy_Hall",
+            "zone-town-starfall-haven",
+            "43580:-48120",
+            "Grand Magister Valdis & High Prefect Karia",
+            "Clan Lv.6 Royal Guard",
+            "+650 CRP per Elite Academy Graduate + 100 Blood Marks",
+            [
+                "Clan Oath Armor Set (D-Grade) & Apella Armor Eligibility",
+                "Sky-Harbor Clan Warehouse & Airship Dock Charter",
+                "Royal Guard Captain Crest & Command Channel Access",
+            ],
+        ),
+        # 5 Clan_Ambition_Altar (Clan Level 5..8 Ambition Quest Altars)
+        (
+            "clan-ambition-01-cinder-apron-martyrs",
+            "Cinder Apron Viaduct — Altar of Sir Gustaf's Proof of Clan Alliance",
+            "Clan_Ambition_Altar",
+            "zone-field-cinder-apron",
+            "-6180:132120",
+            "Sir Gustaf Athebaldt & Witch Athrea",
+            "Clan Lv.4–5 Ambition",
+            "3,500,000 SP + 3 Loyalist Poison Antidote Herbs (Lord Sacrifice)",
+            [
+                "Alliance Manifesto (Unlocks Clan Level 4 & Castle Siege Registration)",
+                "Clan Crest & Alliance Crest Banner Entitlement",
+                "Pledge Death Penalty Reduction Lv.1",
+            ],
+        ),
+        (
+            "clan-ambition-02-caldera-drake-eggs",
+            "Mainspring Caldera Rim — Grave of the Dwarven Scouts & Drake Egg Altar",
+            "Clan_Ambition_Altar",
+            "zone-field-caldera-rim",
+            "86640:61420",
+            "Sir Kristof Rodemai & Head Blacksmith Roman",
+            "Clan Lv.5 Academy",
+            "Seal of Aspiration (Pursuit of Clan Ambition: 40 Drake/Wyrm Eggs)",
+            [
+                "Clan Level 5 Unlock (Founding of the Clan Academy)",
+                "Clan Imperium (Command Channel for Multi-Party Raids)",
+                "Clan Hall Auction & Fortress Siege Eligibility",
+            ],
+        ),
+        (
+            "clan-ambition-03-spiral-wormway-scepter",
+            "Spiral Wormway Ramp — Imperial Graveyard Scepter of Judgment Altar",
+            "Clan_Ambition_Altar",
+            "zone-field-spiral-wormway-ramp",
+            "134480:-24380",
+            "Sir Eric Rodemai & Witch Cleo",
+            "Clan Lv.6 Royal Guard",
+            "10,000 CRP + 100 Blood Oaths (Fortress Tribute)",
+            [
+                "Clan Level 6 Unlock & 2 Royal Guard Divisions",
+                "Clan Shield Defense Lv.2 & Clan Magic Barrier Lv.2",
+                "Apella Combat/Plate/Brigandine/Doublet Armor Access",
+            ],
+        ),
+        (
+            "clan-ambition-04-orrery-bridge-oath",
+            "The Orrery Bridge — Astral Blood Alliance & Order of Knights Altar",
+            "Clan_Ambition_Altar",
+            "zone-field-orrery-bridge",
+            "-28120:-107940",
+            "High Inquisitor Kalis & Herald of the Knights",
+            "Clan Lv.7 Order of Knights",
+            "20,000 CRP + 120 Member Roster + 10 Blood Alliances",
+            [
+                "Clan Level 7 Unlock & 4 Order of Knights Divisions (10 Knights Each)",
+                "Knighthood Baron / Viscount Social Rank Entitlement",
+                "Clan Vitality Lv.3 (+Max HP) & Clan Spirituality Lv.3 (+Max MP)",
+            ],
+        ),
+        (
+            "clan-ambition-05-aurora-tether-sovereign",
+            "Aurora Tether Span — High-Halo Sovereign Crown &Lv.8 Pledge Altar",
+            "Clan_Ambition_Altar",
+            "zone-field-aurora-tether",
+            "152620:31440",
+            "Grand Chamberlain Ilia & Sovereign Arbiter",
+            "Clan Lv.8 Sovereign",
+            "40,000 CRP + 140 Member Roster + 100 Blood Oaths / Alliances",
+            [
+                "Clan Level 8 Apex Sovereign Status (Max 140 Clan Members)",
+                "Full Tier-3 Passive Pledge Skill Tree Unlock",
+                "Sovereign Castle Wyvern & Capital Citadel Tax Dominance",
+            ],
+        ),
+        # 4 Pledge_Skill_Sanctum (Apella Armor & Pledge Skill Sanctums across the 3 continents)
+        (
+            "clan-sanctum-01-kilnwatch-accord-pledge",
+            "Kilnwatch Accord Clan Hall — Continent 01 Apella & Pledge Skill Sanctum",
+            "Pledge_Skill_Sanctum",
+            "zone-clanhall-kilnwatch-accord",
+            "-13620:124320",
+            "Court Wizard Mulia & Rapidus (Clan Trader)",
+            "Clan Lv.6 Royal Guard",
+            "1,500–8,600 CRP + Earth/Angelic Eggs (Raid Boss Soul Drops)",
+            [
+                "Apella Plate / Brigandine / Doublet Set (A-Grade Zero PK Drop)",
+                "Clan Body Lv.3 (+6% Max HP) & Clan Shield Defense Lv.3",
+                "Clan Imperium (Multi-Party Command Channel Coordination)",
+            ],
+        ),
+        (
+            "clan-sanctum-02-inductor-conclave-pledge",
+            "Inductor Conclave Citadel — Continent 02 Pledge Skill & Egg Altar",
+            "Pledge_Skill_Sanctum",
+            "zone-clanhall-inductor-conclave",
+            "148320:-54580",
+            "Grand MagisterScipio & Clan Trader Hullia",
+            "Clan Lv.7 Order of Knights",
+            "3,000–12,000 CRP + Dragon Hearts & False Nuclei of Life",
+            [
+                "Clan Might Lv.3 (+6% P.Atk) & Clan Empower Lv.3 (+10% M.Atk)",
+                "Clan Magic Barrier Lv.3 & Clan Clarity Lv.3 (-MP Cost)",
+                "Apella Masterwork Combat Armor Exchange",
+            ],
+        ),
+        (
+            "clan-sanctum-03-torque-balance-pledge",
+            "Torque-Balance Citadel — Aden Imperial Pledge Skill & Seal Sanctum",
+            "Pledge_Skill_Sanctum",
+            "zone-town-torque-balance-citadel",
+            "116640:-18160",
+            "High Priest Orven & Grand Master Sedrick",
+            "Clan Lv.7 Order of Knights",
+            "5,000–15,000 CRP +Cradle of Creation & Destruction",
+            [
+                "Clan Guidance Lv.3 (+Accuracy) & Clan Agility Lv.3 (+Evasion)",
+                "Clan Cyclonic/Magma/Withstand-Attack Elemental Resistances",
+                "Clan Morale Lv.3 (CP Regeneration in Siege Zones)",
+            ],
+        ),
+        (
+            "clan-sanctum-04-crown-beacon-pledge",
+            "Crown-Beacon Citadel — Continent 03 Sovereign Pledge Skill Sanctum",
+            "Pledge_Skill_Sanctum",
+            "zone-town-crown-beacon",
+            "148140:27040",
+            "Imperial Chancellor Valon & High Priestess Morelyn",
+            "Clan Lv.8 Sovereign",
+            "10,000–25,000 CRP + Skull of the Dead & Angel's Soul",
+            [
+                "Clan Lifeblood Lv.3 & Clan March Lv.2 (+Movement Speed)",
+                "Clan Luck Lv.3 (Drastic EXP Loss Reduction on PvP/Raid Death)",
+                "Sovereign Apella Crown & Full 22-Skill Pledge Mastery",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for cid, nname, pcat, zid, loc, npc, ctier, crp, benefits in specs:
+        rows.append(
+            {
+                "clan_node_id": cid,
+                "node_name": nname,
+                "pledge_category": pcat,
+                "zone_id": zid,
+                "loc": loc,
+                "high_prefect_or_grand_master_npc": npc,
+                "clan_level_tier": ctier,
+                "crp_yield_or_cost": crp,
+                "unlocked_pledge_benefits": benefits,
+            }
+        )
+    return rows
+
+
+def _build_field_herb_elemental_biomes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 24 Field Elemental Attribute & Ground Herb Sustainability Biomes across all 24 field zones (D38)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    fields = zdir.get("fields_and_hunting_areas") or []
+    field_by_id = {
+        str(f.get("zone_id")): f
+        for f in fields
+        if isinstance(f, dict) and f.get("zone_id")
+    }
+    specs = [
+        (
+            "biome-01-clover-south-gate",
+            "zone-field-clover-south-gate",
+            "Earth",
+            "Wind +25% Dmg vs Meadow Golems & Keltirs",
+            "S_Tier_Zero_Downtime",
+            [
+                "Herb of Life (Instant +35% HP)",
+                "Herb of Warrior (Haste + Might Lv.2)",
+                "Superior Giant's Herb (2m Full Fighter Buff)",
+            ],
+            58,
+            "S-Tier Zero-Downtime 1x HP meadow mobs; continuous ground herb drops eliminate potion costs for Lv.1–12 solo starters.",
+        ),
+        (
+            "biome-02-kiln-east-orchard",
+            "zone-field-kiln-east-orchard",
+            "Fire",
+            "Water +25% Dmg vs Kiln Sprites & Glaze Hounds",
+            "S_Tier_Zero_Downtime",
+            [
+                "Herb of Life",
+                "Herb of Mana (Instant +28% MP)",
+                "Herb of Speed (Wind Walk Lv.2)",
+            ],
+            54,
+            "High-density orchard packs drop abundant HP/MP herbs for fast Lv.5–14 solo and duo convergence progression.",
+        ),
+        (
+            "biome-03-celadon-causeway",
+            "zone-field-celadon-causeway",
+            "Water",
+            "Wind +25% Dmg vs Celadon Toads & Undines",
+            "A_Tier_Mystic_Mana_Rich",
+            [
+                "Greater Herb of Mana (Instant +50% MP)",
+                "Herb of Mystic (Acumen Lv.3 + Empower Lv.3)",
+                "Herb of Magic",
+            ],
+            52,
+            "Mystic-friendly causeway where 1x HP elemental sprites drop Greater Herbs of Mana for nonstop nuke casting.",
+        ),
+        (
+            "biome-04-firebrick-duct",
+            "zone-field-firebrick-duct",
+            "Fire",
+            "Water +25% Dmg vs Firebrick Salamanders",
+            "S_Tier_Zero_Downtime",
+            [
+                "Greater Herb of Life",
+                "Herb of Warrior (Vampiric Rage + Fury)",
+                "Herb of Critical Attack",
+            ],
+            55,
+            "Brawler-optimized thermal duct where Vampiric Rage and Critical herbs sustain continuous Ogre/Fighter melee chains.",
+        ),
+        (
+            "biome-05-resin-arch-tunnel",
+            "zone-field-resin-arch-tunnel",
+            "Earth",
+            "Wind +25% Dmg vs Resin Beetles & Root Tarantulas",
+            "S_Tier_Zero_Downtime",
+            [
+                "Herb of Life",
+                "Herb of Mana",
+                "Herb of Defense (Shield Lv.3)",
+            ],
+            50,
+            "Dwarf spoil-scavenger paradise: Herb of Mana refills Sweeper/Spoil MP pools with zero sitting downtime.",
+        ),
+        (
+            "biome-06-cobalt-sandbar-ford",
+            "zone-field-cobalt-sandbar-ford",
+            "Water",
+            "Wind +25% Dmg vs River Striders & Crokian Scouts",
+            "A_Tier_Mystic_Mana_Rich",
+            [
+                "Greater Herb of Mana",
+                "Herb of Casting Speed (Acumen Lv.3)",
+                "Herb of Life",
+            ],
+            46,
+            "Open river sandbars with long sightlines and rich Mystic/Mana herb drops ideal for ranged nukers and archers.",
+        ),
+        (
+            "biome-07-chime-pipe-colonnade",
+            "zone-field-chime-pipe-colonnade",
+            "Wind",
+            "Earth +25% Dmg vs Whispering Harpies & Sylphs",
+            "A_Tier_Mystic_Mana_Rich",
+            [
+                "Herb of Mana",
+                "Herb of Mystic (Empower + Acumen)",
+                "Superior Herb of Life",
+            ],
+            51,
+            "Acoustic marshland yielding high-frequency Mystic herbs for Dark-Lunar spellcasters and summoners.",
+        ),
+        (
+            "biome-08-apricot-aqueduct-terrace",
+            "zone-field-apricot-aqueduct-terrace",
+            "Holy",
+            "Dark +25% Dmg vs Sanctuary Sentinels",
+            "S_Tier_Zero_Downtime",
+            [
+                "Superior Giant's Herb (2m Full Buff)",
+                "Herb of Life",
+                "Herb of Warrior (Haste + Focus)",
+            ],
+            56,
+            "Terraced manor fields with top-tier Giant's Herb drops that enable solo seed-harvesters to chain-pull effortlessly.",
+        ),
+        (
+            "biome-09-cinnamon-bark-viaduct",
+            "zone-field-cinnamon-bark-viaduct",
+            "Wind",
+            "Earth +25% Dmg vs Bark-Glider Raptors",
+            "S_Tier_Zero_Downtime",
+            [
+                "Herb of Speed (Wind Walk Lv.2)",
+                "Herb of Warrior",
+                "Herb of Life",
+            ],
+            60,
+            "Highest starter herb drop rate (60%) on Continent 01, tailored for Furral skirmishers and daggers.",
+        ),
+        (
+            "biome-10-ginger-aqueduct-bridge",
+            "zone-field-ginger-aqueduct-bridge",
+            "Fire",
+            "Water +25% Dmg vs Steam-Pipe Constructs",
+            "A_Tier_Mystic_Mana_Rich",
+            [
+                "Herb of Mana",
+                "Herb of Life",
+                "Herb of Alacrity",
+            ],
+            48,
+            "Balanced hybrid herb table supporting both solo melee progression and duo spoiler-mage partners.",
+        ),
+        (
+            "biome-11-cinder-apron",
+            "zone-field-cinder-apron",
+            "Dark",
+            "Holy +30% Dmg vs Undead Cinder Legionnaires",
+            "B_Tier_Party_Tough_Mobs",
+            [
+                "Greater Herb of Life",
+                "Greater Herb of Mana",
+                "Herb of Recovery (Cure Poison/Bleed)",
+            ],
+            30,
+            "2x–3x HP Undead/Construct bridge field; lower herb rate (30%) rewards Bishop/Elven Elder Holy nukes and small parties.",
+        ),
+        (
+            "biome-12-brass-spur-ridge",
+            "zone-field-brass-spur-ridge",
+            "Earth",
+            "Wind +25% Dmg vs Brass-Spur Clockwork Automats",
+            "S_Tier_Zero_Downtime",
+            [
+                "Superior Giant's Herb (2m Full Buff)",
+                "Greater Herb of Life",
+                "Herb of Warrior",
+            ],
+            49,
+            "Continent 02 frontier ridge with generous Giant's Herbs allowing Lv.20–26 soloists to farm without out-of-party buffers.",
+        ),
+        (
+            "biome-13-caldera-rim",
+            "zone-field-caldera-rim",
+            "Fire",
+            "Water +30% Dmg vs Caldera Wyrms & Magma Drakes",
+            "B_Tier_Party_Tough_Mobs",
+            [
+                "Greater Herb of Life",
+                "Herb of Fire Resistance",
+                "Herb of Warrior",
+            ],
+            26,
+            "Tough 2x HP draconic mobs for 2nd-class trials; bring a trio or Water-infused weapons alongside ground Life herbs.",
+        ),
+        (
+            "biome-14-leyden-causeway",
+            "zone-field-leyden-causeway",
+            "Wind",
+            "Earth +25% Dmg vs Leyden Arc-Stalkers",
+            "S_Tier_Zero_Downtime",
+            [
+                "Superior Herb of Life",
+                "Superior Herb of Mana",
+                "Superior Giant's Herb (2m Full Buff)",
+            ],
+            53,
+            "Premier Lv.30–40 solo grinding highway (Death Pass analog) with nonstop Superior Herbs for post-2nd-class leveling.",
+        ),
+        (
+            "biome-15-tether-causeway",
+            "zone-field-tether-causeway",
+            "Holy",
+            "Dark +25% Dmg vs Astral Tether Watchers",
+            "A_Tier_Mystic_Mana_Rich",
+            [
+                "Superior Herb of Mana",
+                "Herb of Mystic (Empower Lv.3 + Wild Magic)",
+                "Greater Herb of Life",
+            ],
+            45,
+            "Continent 03 arrival causeway where Wild Magic and Superior Mana herbs fuel C/B-grade spellhowlers and necromancers.",
+        ),
+        (
+            "biome-16-aurora-tether",
+            "zone-field-aurora-tether",
+            "Holy",
+            "Dark +30% Dmg vs High-Halo Seraphim & Nephilim",
+            "B_Tier_Party_Tough_Mobs",
+            [
+                "Superior Herb of Life",
+                "Superior Herb of Mana",
+                "Herb of Doubt (AoE Over-hit Bonus)",
+            ],
+            22,
+            "Endgame 4x HP angelic/astral elites (Lv.55–85); low herb drop rate requires full 9-player Command Channel or Covenant buffs.",
+        ),
+        (
+            "biome-17-whispering-mire",
+            "zone-field-whispering-mire",
+            "Dark",
+            "Holy +30% Dmg vs Marsh Phantoms & Mire Zombies",
+            "A_Tier_Mystic_Mana_Rich",
+            [
+                "Greater Herb of Mana",
+                "Herb of Mystic",
+                "Herb of Recovery (Anti-Venom)",
+            ],
+            47,
+            "Undead marshland where Clerics/Oracles and mages chain-cast Disrupt Undead with abundant ground MP herbs.",
+        ),
+        (
+            "biome-18-slag-chasm",
+            "zone-field-slag-chasm",
+            "Earth",
+            "Wind +25% Dmg vs Vitrified Slag Basilisks",
+            "B_Tier_Party_Tough_Mobs",
+            [
+                "Greater Herb of Life",
+                "Herb of Defense",
+                "Herb of Warrior",
+            ],
+            28,
+            "Reinforced carapace monsters in the Kilnwatch badlands; best tackled by duo spoilers and polearm sweepers.",
+        ),
+        (
+            "biome-19-astrolabe-rift",
+            "zone-field-astrolabe-rift",
+            "Wind",
+            "Earth +25% Dmg vs Rift Gargoyles & Wind Shriekers",
+            "S_Tier_Zero_Downtime",
+            [
+                "Superior Giant's Herb (2m Full Buff)",
+                "Greater Herb of Life",
+                "Herb of Critical Attack",
+            ],
+            50,
+            "Brittle 1/2x HP winged gargoyles shatter quickly and drop frequent Giant's Herbs for rapid solo EXP/hr.",
+        ),
+        (
+            "biome-20-siphon-sluice",
+            "zone-field-siphon-sluice",
+            "Water",
+            "Wind +30% Dmg vs Mercury Sluice Elementals",
+            "A_Tier_Mystic_Mana_Rich",
+            [
+                "Superior Herb of Mana",
+                "Herb of Mystic",
+                "Greater Herb of Life",
+            ],
+            44,
+            "Elemental canal lock prized by Spellsingers and Elemental Summoners for its high Superior Mana herb yield.",
+        ),
+        (
+            "biome-21-metronome-bridge",
+            "zone-field-metronome-bridge",
+            "Dark",
+            "Holy +30% Dmg vs Execution Grounds Specters",
+            "S_Tier_Zero_Downtime",
+            [
+                "Greater Herb of Life",
+                "Greater Herb of Mana",
+                "Herb of Warrior (Vampiric Rage)",
+            ],
+            49,
+            "Highland undead/construct crossing with steady Vampiric and Mana herbs enabling zero-rest solo grinding at Lv.34–36.",
+        ),
+        (
+            "biome-22-spiral-wormway-ramp",
+            "zone-field-spiral-wormway-ramp",
+            "Dark",
+            "Holy +30% Dmg vs Imperial Graveyard Liches",
+            "B_Tier_Party_Tough_Mobs",
+            [
+                "Superior Herb of Life",
+                "Superior Herb of Mana",
+                "Herb of Mystic",
+            ],
+            25,
+            "Deep helical quarry trench with social aggro undead packs; designed for AoE polearm/mage parties with Holy buffs.",
+        ),
+        (
+            "biome-23-orrery-bridge",
+            "zone-field-orrery-bridge",
+            "Holy",
+            "Dark +25% Dmg vs Refractory Light-Golems",
+            "A_Tier_Mystic_Mana_Rich",
+            [
+                "Superior Herb of Mana",
+                "Superior Giant's Herb (2m Full Buff)",
+                "Herb of Mystic",
+            ],
+            43,
+            "Sky-span bridge on Continent 03 where Dark-attribute mages and archers sustain long farm sessions off ground herbs.",
+        ),
+        (
+            "biome-24-kelp-spiral-reef",
+            "zone-field-kelp-spiral-reef",
+            "Water",
+            "Wind +30% Dmg vs Bioluminescent Reef Krakens",
+            "B_Tier_Party_Tough_Mobs",
+            [
+                "Superior Herb of Life",
+                "Superior Herb of Mana",
+                "Herb of Aquatic Brilliance",
+            ],
+            24,
+            "High-density aquatic shoals dropping Life Stones and A/S-grade materials; party sustain augmented by Superior Herbs.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for bid, fzid, dom_elem, counter_bon, htier, sherbs, drate, snote in specs:
+        f_obj = field_by_id.get(fzid) or {}
+        fname = str(f_obj.get("name", fzid))
+        rows.append(
+            {
+                "biome_id": bid,
+                "field_zone_id": fzid,
+                "field_name": fname,
+                "dominant_element": dom_elem,
+                "counter_element_bonus": counter_bon,
+                "herb_drop_tier": htier,
+                "signature_herbs": sherbs,
+                "herb_drop_rate_pct": drate,
+                "solo_sustainability_note": snote,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -5503,6 +6105,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("companion_mount_sanctuaries") or []) < 12:
         atlas["companion_mount_sanctuaries"] = _build_companion_mount_sanctuaries(atlas)
         actions.append("populated_12_companion_mount_sanctuaries")
+
+    # 21. Ensure all 14 Clan Reputation, Academy & Pledge Skill Nodes exist in `clan_reputation_academies` (D37)
+    if len(atlas.get("clan_reputation_academies") or []) < 14:
+        atlas["clan_reputation_academies"] = _build_clan_reputation_academies(atlas)
+        actions.append("populated_14_clan_reputation_academies")
+
+    # 22. Ensure all 24 Field Elemental Attribute & Ground Herb Sustainability Biomes exist in `field_herb_elemental_biomes` (D38)
+    if len(atlas.get("field_herb_elemental_biomes") or []) < 24:
+        atlas["field_herb_elemental_biomes"] = _build_field_herb_elemental_biomes(atlas)
+        actions.append("populated_24_field_herb_elemental_biomes")
 
     return {"actions": actions}
 
@@ -7077,15 +7689,143 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d36_ratio * 80.0, 1)
     )
 
+    # D37: Interactive Clan Reputation, Academy & Pledge Skill Altar Matrix (`clan_reputation_academies` - 14/14 Nodes = 5 Clan_Academy_Hall + 5 Clan_Ambition_Altar + 4 Pledge_Skill_Sanctum)
+    expected_pledge_categories = {
+        "Clan_Academy_Hall",
+        "Clan_Ambition_Altar",
+        "Pledge_Skill_Sanctum",
+    }
+    clan_nodes = atlas.get("clan_reputation_academies") or []
+    valid_clan_nodes = 0
+    clan_academy_count = 0
+    clan_ambition_count = 0
+    pledge_sanctum_count = 0
+    seen_clan_node_ids: set[str] = set()
+    seen_pledge_categories: set[str] = set()
+    for cn in clan_nodes:
+        if not isinstance(cn, dict):
+            continue
+        cnid = str(cn.get("clan_node_id") or "")
+        pcat = str(cn.get("pledge_category") or "")
+        czid = str(cn.get("zone_id") or "")
+        pben = cn.get("unlocked_pledge_benefits") or []
+        if (
+            cnid
+            and cnid not in seen_clan_node_ids
+            and cn.get("node_name")
+            and pcat in expected_pledge_categories
+            and czid in zone_ids_set
+            and ":" in str(cn.get("loc", ""))
+            and cn.get("high_prefect_or_grand_master_npc")
+            and cn.get("clan_level_tier")
+            and cn.get("crp_yield_or_cost")
+            and isinstance(pben, list)
+            and len(pben) >= 2
+        ):
+            valid_clan_nodes += 1
+            seen_clan_node_ids.add(cnid)
+            seen_pledge_categories.add(pcat)
+            if pcat == "Clan_Academy_Hall":
+                clan_academy_count += 1
+            elif pcat == "Clan_Ambition_Altar":
+                clan_ambition_count += 1
+            elif pcat == "Pledge_Skill_Sanctum":
+                pledge_sanctum_count += 1
+
+    has_d37_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_CLAN_ACADEMY_MODE",
+            "setAtlasClanAcademyMode",
+            "renderAtlasClanAcademyBarHtml",
+            "studioClanAcademyOverlay",
+        )
+    )
+    d37_ratio = valid_clan_nodes / 14.0
+    d37_full_coverage = (
+        clan_academy_count == 5
+        and clan_ambition_count == 5
+        and pledge_sanctum_count == 4
+        and seen_pledge_categories == expected_pledge_categories
+    )
+    d37_score = (
+        round(min(100.0, d37_ratio * 100.0), 1)
+        if (has_d37_ui and d37_full_coverage)
+        else round(d37_ratio * 80.0, 1)
+    )
+
+    # D38: Interactive 24-Field Elemental Attribute & Ground Herb Sustainability Biome Overlay (`field_herb_elemental_biomes` - 24/24 Field Biomes)
+    expected_dominant_elements = {"Fire", "Water", "Wind", "Earth", "Holy", "Dark"}
+    expected_herb_tiers = {
+        "S_Tier_Zero_Downtime",
+        "A_Tier_Mystic_Mana_Rich",
+        "B_Tier_Party_Tough_Mobs",
+    }
+    herb_biomes = atlas.get("field_herb_elemental_biomes") or []
+    valid_herb_biomes = 0
+    seen_biome_ids: set[str] = set()
+    seen_biome_field_ids: set[str] = set()
+    seen_dominant_elements: set[str] = set()
+    seen_herb_tiers: set[str] = set()
+    for hb in herb_biomes:
+        if not isinstance(hb, dict):
+            continue
+        bid = str(hb.get("biome_id") or "")
+        fzid = str(hb.get("field_zone_id") or "")
+        delem = str(hb.get("dominant_element") or "")
+        htier = str(hb.get("herb_drop_tier") or "")
+        sherbs = hb.get("signature_herbs") or []
+        drate = int(hb.get("herb_drop_rate_pct") or 0)
+        if (
+            bid
+            and bid not in seen_biome_ids
+            and fzid in field_zone_id_set
+            and fzid not in seen_biome_field_ids
+            and hb.get("field_name")
+            and delem in expected_dominant_elements
+            and hb.get("counter_element_bonus")
+            and htier in expected_herb_tiers
+            and isinstance(sherbs, list)
+            and len(sherbs) >= 2
+            and 10 <= drate <= 80
+            and hb.get("solo_sustainability_note")
+        ):
+            valid_herb_biomes += 1
+            seen_biome_ids.add(bid)
+            seen_biome_field_ids.add(fzid)
+            seen_dominant_elements.add(delem)
+            seen_herb_tiers.add(htier)
+
+    has_d38_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_HERB_BIOME_MODE",
+            "setAtlasHerbBiomeMode",
+            "renderAtlasHerbBiomeBarHtml",
+            "studioHerbElementalBiomeOverlay",
+        )
+    )
+    d38_ratio = valid_herb_biomes / 24.0
+    d38_full_coverage = (
+        len(seen_biome_field_ids) == 24
+        and seen_dominant_elements == expected_dominant_elements
+        and seen_herb_tiers == expected_herb_tiers
+    )
+    d38_score = (
+        round(min(100.0, d38_ratio * 100.0), 1)
+        if (has_d38_ui and d38_full_coverage)
+        else round(d38_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score) / 18.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score) / 20.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score) / 20.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score) / 30.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score) / 19.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score) / 26.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 20.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 22.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 22.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 32.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 21.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score) / 28.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -7126,8 +7866,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d34_score
             + d35_score
             + d36_score
+            + d37_score
+            + d38_score
         )
-        / 36.0,
+        / 38.0,
         1,
     )
 
@@ -7376,6 +8118,24 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "mount_categories": sorted(seen_mount_categories),
                 "ui_wired": has_d36_ui,
             },
+            "D37_clan_reputation_and_pledge_academies": {
+                "score": d37_score,
+                "verified": valid_clan_nodes,
+                "target": 14,
+                "clan_academies": clan_academy_count,
+                "ambition_altars": clan_ambition_count,
+                "pledge_sanctums": pledge_sanctum_count,
+                "pledge_categories": sorted(seen_pledge_categories),
+                "ui_wired": has_d37_ui,
+            },
+            "D38_field_herb_and_elemental_biomes": {
+                "score": d38_score,
+                "verified": valid_herb_biomes,
+                "target": 24,
+                "dominant_elements": sorted(seen_dominant_elements),
+                "herb_drop_tiers": sorted(seen_herb_tiers),
+                "ui_wired": has_d38_ui,
+            },
         },
     }
 
@@ -7456,6 +8216,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D34 (16 Rift/4-Sepulchers)  : {dims['D34_dimensional_rift_and_four_sepulchers']['score']}/100 ({dims['D34_dimensional_rift_and_four_sepulchers']['verified']}/{dims['D34_dimensional_rift_and_four_sepulchers']['target']} portals)")
         print(f"  D35 (15 Augment/Dye Hubs)   : {dims['D35_weapon_augmentation_and_symbol_dye_hubs']['score']}/100 ({dims['D35_weapon_augmentation_and_symbol_dye_hubs']['verified']}/{dims['D35_weapon_augmentation_and_symbol_dye_hubs']['target']} hubs)")
         print(f"  D36 (12 Pet/Strider/Wyvern) : {dims['D36_companion_pet_strider_and_wyvern_sanctuaries']['score']}/100 ({dims['D36_companion_pet_strider_and_wyvern_sanctuaries']['verified']}/{dims['D36_companion_pet_strider_and_wyvern_sanctuaries']['target']} sanctuaries)")
+        print(f"  D37 (14 Clan/Pledge Nodes)  : {dims['D37_clan_reputation_and_pledge_academies']['score']}/100 ({dims['D37_clan_reputation_and_pledge_academies']['verified']}/{dims['D37_clan_reputation_and_pledge_academies']['target']} clan nodes)")
+        print(f"  D38 (24 Field Herb/Elem)    : {dims['D38_field_herb_and_elemental_biomes']['score']}/100 ({dims['D38_field_herb_and_elemental_biomes']['verified']}/{dims['D38_field_herb_and_elemental_biomes']['target']} field biomes)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")
