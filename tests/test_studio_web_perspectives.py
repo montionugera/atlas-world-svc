@@ -3979,7 +3979,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 94)
+        self.assertGreaterEqual(len(audit["dimensions"]), 94)
 
         d93 = audit["dimensions"]["D93_dynamic_world_boss_invasion_rift_incursion_and_public_quest_matrix"]
         self.assertEqual(d93["score"], 100.0)
@@ -4060,10 +4060,125 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas94DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 94)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 94)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 94)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 94)
         self.assertIn("94-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_dedicated_world_atlas_wave46_player_housing_estates_and_global_cdn_webrtc_relays(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+        from scripts import studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["playerHousingTrophyEstatesCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["globalCdnWebrtcRelaysCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "PLAYER_HOUSING_ESTATES",
+            "GLOBAL_CDN_RELAYS",
+            "ATLAS_HOUSING_ESTATES_MODE",
+            "ATLAS_CDN_WEBRTC_MODE",
+            "setAtlasHousingEstatesMode",
+            "setAtlasCdnWebrtcMode",
+            "selectPlayerHousingEstate",
+            "selectGlobalCdnRelay",
+            "renderAtlasHousingEstatesBarHtml",
+            "renderAtlasCdnWebrtcBarHtml",
+            "studioPlayerHousingEstateOverlay",
+            "studioGlobalCdnRelayOverlay",
+            "🏡 Housing & Trophies (16)",
+            "🌐 CDN & Voice SFU (15)",
+            "96-Dimension Semantic-Zoom Atlas Score",
+            "D1–D96 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 46 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 96)
+
+        d95 = audit["dimensions"]["D95_player_housing_citadel_customization_and_boss_trophy_matrix"]
+        self.assertEqual(d95["score"], 100.0)
+        self.assertEqual(d95["verified"], 16)
+        self.assertEqual(d95["target"], 16)
+        self.assertTrue(d95["ui_wired"])
+
+        d96 = audit["dimensions"]["D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix"]
+        self.assertEqual(d96["score"], 100.0)
+        self.assertEqual(d96["verified"], 15)
+        self.assertEqual(d96["target"], 15)
+        self.assertTrue(d96["ui_wired"])
+
+        estates = atlas["player_housing_trophy_estates"]
+        self.assertEqual(len(estates), 16)
+        for e_row in estates:
+            self.assertIn(
+                e_row["estate_category"],
+                {
+                    "Solo Instanced Homestead",
+                    "Guild Shared Trophy Gallery",
+                    "Sovereign Noble Villa",
+                    "Master Crafter Workshop",
+                },
+            )
+            self.assertGreaterEqual(e_row["furniture_slot_cap"], 60)
+            self.assertLessEqual(e_row["furniture_slot_cap"], 320)
+            self.assertGreaterEqual(e_row["boss_trophy_pedestals"], 2)
+            self.assertLessEqual(e_row["boss_trophy_pedestals"], 16)
+            self.assertGreaterEqual(e_row["rested_vitality_regen_bonus_pct"], 15.0)
+            self.assertLessEqual(e_row["rested_vitality_regen_bonus_pct"], 50.0)
+            self.assertEqual(
+                e_row["crafting_station_tier"],
+                "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            )
+            self.assertGreaterEqual(e_row["weekly_upkeep_adena_k"], 25)
+            self.assertLessEqual(e_row["weekly_upkeep_adena_k"], 2500)
+
+        relays = atlas["global_cdn_webrtc_relays"]
+        self.assertEqual(len(relays), 15)
+        for r_row in relays:
+            self.assertIn(
+                r_row["pop_region"],
+                {
+                    "AP-Southeast-Bangkok",
+                    "AP-Northeast-Tokyo",
+                    "AP-Northeast-Seoul",
+                    "AP-Southeast-Singapore",
+                    "EU-Central-Frankfurt",
+                    "US-West-Oregon",
+                    "US-East-Virginia",
+                },
+            )
+            self.assertIn(
+                r_row["edge_service_tier"],
+                {
+                    "Anycast L4/L7 DDoS Scrubber",
+                    "Spatial 3D Proximity Voice SFU",
+                    "200-v-200 Siege Command Channel Audio",
+                    "Delta-Patch Pak CDN Edge Cache",
+                },
+            )
+            self.assertGreaterEqual(r_row["target_rtt_p95_ms"], 14.0)
+            self.assertLessEqual(r_row["target_rtt_p95_ms"], 58.0)
+            self.assertGreaterEqual(r_row["ddos_scrubbing_capacity_tbps"], 1.5)
+            self.assertLessEqual(r_row["ddos_scrubbing_capacity_tbps"], 12.0)
+            self.assertGreaterEqual(r_row["webrtc_opus_bitrate_kbps"], 24)
+            self.assertLessEqual(r_row["webrtc_opus_bitrate_kbps"], 64)
+            self.assertGreaterEqual(r_row["max_voice_room_peers"], 50)
+            self.assertLessEqual(r_row["max_voice_room_peers"], 400)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas96DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 96)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 96)
+        self.assertIn("96-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

@@ -20629,6 +20629,598 @@ def inject_clan_treasury_payroll_ledgers(atlas: dict[str, Any]) -> list[dict[str
     return rows
 
 
+def _build_player_housing_trophy_estates(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16-Record [Role 2: Content & World Tools — Player Housing, Clan Citadel Interior Customization & Trophy Taxidermy Matrix] (D95)."""
+    specs = [
+        (
+            "housing-estate-01-talking-island-harbor-cottage-row",
+            "Talking Island Harbor Cottage Row — Lantern Hollow Coastal Homestead & Novice Trophy Nook",
+            "zone-town-lantern-hollow",
+            "town-lantern-hollow",
+            "Solo Instanced Homestead",
+            60,
+            2,
+            15.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            25,
+            450,
+            438,
+            "#a855f7",
+            "Starter instanced coastal cottages overlooking Talking Island Harbor with 60 furniture slots, 2 boss taxidermy pedestals, and +15% rested Vitality recovery.",
+        ),
+        (
+            "housing-estate-02-elven-canopy-treehouse-enclave",
+            "Elven Canopy Treehouse Enclave — Mother Tree Glade Living Bough Villa & Herbal Conservatory",
+            "zone-town-porcelain-loom",
+            "town-porcelain-loom-sanctuary",
+            "Solo Instanced Homestead",
+            95,
+            4,
+            20.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            65,
+            540,
+            290,
+            "#c084fc",
+            "Suspended Mother Tree canopy villas featuring hydroponic Elven herb planters, 4 raid trophy pedestals, and ambient harp wind-chime acoustics.",
+        ),
+        (
+            "housing-estate-03-dark-elven-obsidian-cavern-lofts",
+            "Dark Elven Obsidian Cavern Lofts — Shilen Undercroft Bioluminescent Gallery & Alchemy Den",
+            "zone-town-carillon-belfry",
+            "town-carillon-hearth-belfry",
+            "Solo Instanced Homestead",
+            110,
+            4,
+            22.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            80,
+            510,
+            264,
+            "#a855f7",
+            "Carved obsidian stalactite lofts beneath Carillon Belfry equipped with dark crystal sconces, 110 furniture slots, and Lesser Demon trophy mounts.",
+        ),
+        (
+            "housing-estate-04-orc-flamecrest-war-lodge",
+            "Orc Flamecrest War-Lodge — Pa'agrio Brazier Longhouse & Tribal Raid Trophy Hall",
+            "zone-town-draft-kiln-post",
+            "town-draft-kiln-post",
+            "Guild Shared Trophy Gallery",
+            180,
+            10,
+            28.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            240,
+            464,
+            134,
+            "#ec4899",
+            "Shared warband timber-and-basalt lodge on the Immortal Plateau displaying 10 mounted World Boss skulls that radiate clan-wide fire resistance.",
+        ),
+        (
+            "housing-estate-05-dwarven-mithril-hearth-workshops",
+            "Dwarven Mithril Hearth Workshops — Spine Mines Steam-Driven Masterwork Foundry & Blueprint Loft",
+            "zone-town-root-train-roundhouse",
+            "town-root-train-roundhouse",
+            "Master Crafter Workshop",
+            220,
+            6,
+            30.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            350,
+            620,
+            84,
+            "#f472b6",
+            "Geothermal Dwarven foundry lofts with integrated Lv.5 Masterwork Soul-Anvils, automated recipe bookcases, and +3% Foundation Rare craft proc aura.",
+        ),
+        (
+            "housing-estate-06-kamael-soul-spire-sky-suites",
+            "Kamael Soul-Spire Sky Suites — Isle of Souls Nornil Clockwork Atelier & Crimson Wing Roost",
+            "zone-town-cinnamon-mill",
+            "town-cinnamon-mill-haven",
+            "Solo Instanced Homestead",
+            100,
+            4,
+            20.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            75,
+            384,
+            302,
+            "#c084fc",
+            "Brass-and-marble Nornil sky suites featuring Soul Crystal display cases, Kamael wing-grooming perches, and Spicula automaton trophy busts.",
+        ),
+        (
+            "housing-estate-07-gludin-seaside-merchant-villas",
+            "Gludin Seaside Merchant Villas — Harbor Quay Maritime Trade Manor & Private Yacht Pier",
+            "zone-town-glaze-barge-quay",
+            "town-glaze-barge-quay",
+            "Master Crafter Workshop",
+            160,
+            6,
+            25.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            190,
+            420,
+            404,
+            "#f472b6",
+            "Seaside merchant villas overlooking Gludin Harbor Pier with private cargo ledger desks, 160 decor slots, and Zaken ghost-ship figurehead mounts.",
+        ),
+        (
+            "housing-estate-08-gludio-frontier-manor-court",
+            "Gludio Frontier Manor Court — Kilnwatch Walled Courtyard & Ant Nest Chitin Trophy Hall",
+            "zone-town-kilnwatch-bastion",
+            "town-kilnwatch-bastion",
+            "Guild Shared Trophy Gallery",
+            190,
+            8,
+            28.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            310,
+            490,
+            378,
+            "#ec4899",
+            "Fortified Gludio courtyard manors where guilds mount Queen Ant mandibles and Ol Mahum war banners to buff party P.Atk before frontier raids.",
+        ),
+        (
+            "housing-estate-09-dion-pastoral-homesteads",
+            "Dion Pastoral Homesteads — Floran Mill Windmill Cottages & Cruma Automaton Curio Barn",
+            "zone-town-saffron-press",
+            "town-saffron-press-village",
+            "Solo Instanced Homestead",
+            130,
+            5,
+            24.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            120,
+            520,
+            418,
+            "#a855f7",
+            "Rustic Dion windmill estates surrounded by saffron fields with private crop seedbeds, beehives, and Core Titan gear-core display pedestals.",
+        ),
+        (
+            "housing-estate-10-giran-golden-mile-townhouses",
+            "Giran Golden Mile Townhouses — Pinion Terminus Merchant Prince Palazzo & Private Auction Parlor",
+            "zone-town-pinion-terminus",
+            "town-pinion-terminus",
+            "Sovereign Noble Villa",
+            280,
+            12,
+            40.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            1250,
+            586,
+            400,
+            "#ec4899",
+            "Prestigious Giran Golden Mile three-story palazzos with private consignment tickers, 280 luxury furniture slots, and Antharas earth-scale tapestries.",
+        ),
+        (
+            "housing-estate-11-oren-arcane-scholar-quarters",
+            "Oren Arcane Scholar Quarters — Ivory Tower Floating Sanctum & Orfen Spore Reliquary",
+            "zone-town-escapement-anvil",
+            "town-escapement-anvil",
+            "Master Crafter Workshop",
+            210,
+            8,
+            32.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            480,
+            592,
+            304,
+            "#f472b6",
+            "Levitation-lit arcane study quarters linked to Ivory Tower alchemists, supporting Lv.5 dye/scroll workbenches and Orfen bioluminescent spore jars.",
+        ),
+        (
+            "housing-estate-12-hunters-valley-trophy-cabins",
+            "Hunters Valley Trophy Cabins — Enchanted Waterfall Timber Lodge & Master Taxidermy Gallery",
+            "zone-town-torque-balance-citadel",
+            "town-torque-balance-citadel",
+            "Guild Shared Trophy Gallery",
+            240,
+            14,
+            35.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            560,
+            624,
+            234,
+            "#c084fc",
+            "Premier taxidermy hunting lodges in Hunters Village featuring 14 full-scale Raid Boss dioramas (Karul Bugbear, Tamlin Orc, Guardian Wyvern).",
+        ),
+        (
+            "housing-estate-13-aden-sovereign-noble-palaces",
+            "Aden Sovereign Noble Palaces — Crown-Beacon Marble colonnade Estate & Baium Wing Rotunda",
+            "zone-town-crown-beacon",
+            "town-crown-beacon-citadel",
+            "Sovereign Noble Villa",
+            320,
+            16,
+            50.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            2500,
+            658,
+            280,
+            "#ec4899",
+            "Grand Imperial Aden marble palaces with 320 furniture slots, 16 epic boss pedestals (Baium, Beleth, Frintezza), and +50% Stage-4 Vitality rest regen.",
+        ),
+        (
+            "housing-estate-14-goddard-volcano-thermal-chalets",
+            "Goddard Volcano Thermal Chalets — Hot Springs Obsidian Onsen Villa & Valakas Ember Forge",
+            "zone-town-inductor-switchyard",
+            "town-inductor-switchyard",
+            "Master Crafter Workshop",
+            250,
+            10,
+            38.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            890,
+            658,
+            198,
+            "#f472b6",
+            "Volcanic thermal chalets piped with Goddard Hot Springs mineral waters that cleanse debuffs and power Lv.5 S80/S84 magma soul-anvils.",
+        ),
+        (
+            "housing-estate-15-rune-cliffside-sky-citadel-lofts",
+            "Rune Cliffside Sky-Citadel Lofts — Starfall Haven Vertical Penthouses & Freya Ice Sculpture Hall",
+            "zone-town-starfall-haven",
+            "town-starfall-haven",
+            "Sovereign Noble Villa",
+            290,
+            12,
+            44.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            1650,
+            554,
+            204,
+            "#a855f7",
+            "High-altitude Rune cliffside penthouses with private airship mooring balconies and climate-chilled pedestals for Ice Queen Freya & Tiat trophies.",
+        ),
+        (
+            "housing-estate-16-rainbow-springs-clan-chateau",
+            "Rainbow Springs Clan Chateau — Contested Siege Estate Grand Banquet Hall & 16-Boss Pantheon",
+            "zone-clanhall-inductor-conclave",
+            "town-inductor-switchyard",
+            "Guild Shared Trophy Gallery",
+            320,
+            16,
+            50.0,
+            "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil",
+            2200,
+            642,
+            174,
+            "#c084fc",
+            "Sovereign clan citadel interior in Goddard borderlands supporting 100-member banquet buffs, 16-Boss Pantheon taxidermy wing, and +50% Vitality regen.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        eid,
+        title,
+        zid,
+        tid,
+        ecat,
+        fcap,
+        peds,
+        vregen,
+        ctier,
+        upkeep,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "estate_id": eid,
+                "title": title,
+                "zone_id": zid,
+                "town_id": tid,
+                "estate_category": ecat,
+                "furniture_slot_cap": fcap,
+                "boss_trophy_pedestals": peds,
+                "rested_vitality_regen_bonus_pct": vregen,
+                "crafting_station_tier": ctier,
+                "weekly_upkeep_adena_k": upkeep,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_player_housing_trophy_estates(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_player_housing_trophy_estates(atlas)
+    atlas["player_housing_trophy_estates"] = rows
+    return rows
+
+
+def _build_global_cdn_webrtc_relays(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15-Record [Role 5: LiveOps & Build — Global CDN Region Routing, Anycast DDoS Scrubbing & Voice-Chat WebRTC Relay Matrix] (D96)."""
+    specs = [
+        (
+            "cdn-webrtc-01-talking-island",
+            "Talking Island (Lantern Hollow) — Starter Pak CDN Edge Cache & Novice Proximity Voice PoP",
+            "town-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "AP-Southeast-Bangkok",
+            "Delta-Patch Pak CDN Edge Cache",
+            14.0,
+            2.5,
+            32,
+            120,
+            454,
+            440,
+            "#38bdf8",
+            "Pre-warms initial 180 MB Godot starter chunk paks at Bangkok Anycast PoP with 14ms p95 RTT and spatial proximity voice for Lv.1-20 tutorials.",
+        ),
+        (
+            "cdn-webrtc-02-elven-village",
+            "Elven Village (Porcelain Loom) — Singapore Anycast Edge & Mother Tree Spatial Voice SFU",
+            "town-porcelain-loom-sanctuary",
+            "zone-town-porcelain-loom",
+            "AP-Southeast-Singapore",
+            "Spatial 3D Proximity Voice SFU",
+            19.5,
+            3.2,
+            48,
+            150,
+            542,
+            294,
+            "#2dd4bf",
+            "Hosts HRTF-attenuated 3D spatial voice SFU rooms (48 kbps Opus stereo) across Elven Glade and Elven Fortress party channels.",
+        ),
+        (
+            "cdn-webrtc-03-dark-elven-village",
+            "Dark Elven Village (Carillon Belfry) — Tokyo Low-Jitter Ingress & Undercroft Voice Relay",
+            "town-carillon-hearth-belfry",
+            "zone-town-carillon-belfry",
+            "AP-Northeast-Tokyo",
+            "Spatial 3D Proximity Voice SFU",
+            24.0,
+            4.0,
+            48,
+            150,
+            514,
+            268,
+            "#818cf8",
+            "Low-jitter QUIC/WebRTC relay in Tokyo handling Swampland PK alert channels and subterranean catacomb acoustic voice occlusion.",
+        ),
+        (
+            "cdn-webrtc-04-orc-village",
+            "Orc Village (Draft-Kiln Post) — Seoul Anycast L4/L7 DDoS Scrubber & Warband Voice Trunk",
+            "town-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "AP-Northeast-Seoul",
+            "Anycast L4/L7 DDoS Scrubber",
+            26.5,
+            6.5,
+            40,
+            200,
+            466,
+            138,
+            "#60a5fa",
+            "Absorbs volumetric UDP amplification bursts up to 6.5 Tbps via eBPF/XDP packet filters while keeping Orc Plateau warband voice under 27ms.",
+        ),
+        (
+            "cdn-webrtc-05-dwarven-village",
+            "Dwarven Village (Root-Train Roundhouse) — Frankfurt Asset Pak CDN & Trade Guild Voice Relay",
+            "town-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "EU-Central-Frankfurt",
+            "Delta-Patch Pak CDN Edge Cache",
+            38.0,
+            5.0,
+            32,
+            160,
+            624,
+            86,
+            "#38bdf8",
+            "Serves Zstd-compressed workshop texture bundles and Dwarven manufacture market voice channels across EU-Central Frankfurt PoP.",
+        ),
+        (
+            "cdn-webrtc-06-kamael-village",
+            "Kamael Village (Cinnamon-Mill Haven) — Bangkok Nornil Delta-Patch Edge & Squad Voice SFU",
+            "town-cinnamon-mill-haven",
+            "zone-town-cinnamon-mill",
+            "AP-Southeast-Bangkok",
+            "Delta-Patch Pak CDN Edge Cache",
+            15.5,
+            2.8,
+            36,
+            140,
+            386,
+            304,
+            "#2dd4bf",
+            "Zero-downtime Bsdiff4 binary delta edge cache delivering sub-5 MB Isle of Souls hotfixes and 5-player Nornil instance WebRTC voice.",
+        ),
+        (
+            "cdn-webrtc-07-gludin-village",
+            "Gludin Village (Glaze-Barge Quay) — Singapore Maritime Anycast Scrubber & Harbor Voice SFU",
+            "town-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "AP-Southeast-Singapore",
+            "Anycast L4/L7 DDoS Scrubber",
+            21.0,
+            5.5,
+            40,
+            220,
+            424,
+            406,
+            "#60a5fa",
+            "Protects Gludin Harbor ship/airship authority handoffs with 5.5 Tbps Anycast scrubbing and 220-peer maritime tavern proximity voice.",
+        ),
+        (
+            "cdn-webrtc-08-gludio-town",
+            "Town of Gludio (Kilnwatch Bastion) — Tokyo Siege Command Channel Audio & Border Scrubber",
+            "town-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "AP-Northeast-Tokyo",
+            "200-v-200 Siege Command Channel Audio",
+            25.0,
+            7.2,
+            56,
+            300,
+            494,
+            380,
+            "#818cf8",
+            "Hierarchical Whisper-Down Command Channel SFU supporting 300 concurrent Gludio Castle siege raiders with priority Raid Leader ducking.",
+        ),
+        (
+            "cdn-webrtc-09-dion-town",
+            "Town of Dion (Saffron Press) — Seoul Cruma Raid Voice SFU & Floran Lawless Zone Scrubber",
+            "town-saffron-press-village",
+            "zone-town-saffron-press",
+            "AP-Northeast-Seoul",
+            "Spatial 3D Proximity Voice SFU",
+            28.0,
+            6.0,
+            48,
+            250,
+            524,
+            420,
+            "#2dd4bf",
+            "Provides directional 3D proximity voice in lawless Floran PvP fields and multi-floor Cruma Tower party frequency isolation.",
+        ),
+        (
+            "cdn-webrtc-10-giran-castle-town",
+            "Giran Castle Town (Pinion Terminus) — Singapore 12-Tbps Sovereign Scrubber & 400-Peer Trade SFU",
+            "town-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "AP-Southeast-Singapore",
+            "Anycast L4/L7 DDoS Scrubber",
+            18.5,
+            12.0,
+            64,
+            400,
+            590,
+            402,
+            "#38bdf8",
+            "Flagship 12.0 Tbps Anycast L4/L7 DDoS mitigation cluster and 400-peer Opus 64 kbps WebRTC mesh for Giran Central Plaza and Antharas raids.",
+        ),
+        (
+            "cdn-webrtc-11-oren-town",
+            "Town of Oren (Escapement Anvil) — US-West Oregon Cross-Border Relay & Ivory Tower CDN Edge",
+            "town-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "US-West-Oregon",
+            "Delta-Patch Pak CDN Edge Cache",
+            46.0,
+            8.0,
+            40,
+            240,
+            594,
+            306,
+            "#60a5fa",
+            "Trans-Pacific Oregon edge cache and Territory War voice relay serving North American diaspora clans with BBRv3 congestion control.",
+        ),
+        (
+            "cdn-webrtc-12-hunters-village",
+            "Hunters Village (Torque-Balance Citadel) — Bangkok Spatial Hunting Party SFU & Acoustic Relay",
+            "town-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "AP-Southeast-Bangkok",
+            "Spatial 3D Proximity Voice SFU",
+            14.5,
+            3.5,
+            52,
+            180,
+            626,
+            236,
+            "#2dd4bf",
+            "Ultra-low-latency 14.5ms Bangkok WebRTC SFU tuned for Enchanted Valley scout callouts and Forest of Mirrors ambush alerts.",
+        ),
+        (
+            "cdn-webrtc-13-aden-imperial-capital",
+            "Town of Aden (Crown-Beacon Citadel) — Tokyo 400-Peer Imperial Siege Command Channel Audio Matrix",
+            "town-crown-beacon-citadel",
+            "zone-town-crown-beacon",
+            "AP-Northeast-Tokyo",
+            "200-v-200 Siege Command Channel Audio",
+            22.5,
+            12.0,
+            64,
+            400,
+            660,
+            282,
+            "#818cf8",
+            "Supreme 200-vs-200 Aden Castle siege audio matrix with Sovereign -> Clan Leader -> Party Leader priority broadcast and 12 Tbps DDoS shield.",
+        ),
+        (
+            "cdn-webrtc-14-goddard-town",
+            "Town of Goddard (Inductor Switchyard) — US-East Virginia Global Failover PoP & Valakas Raid SFU",
+            "town-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "US-East-Virginia",
+            "200-v-200 Siege Command Channel Audio",
+            58.0,
+            9.5,
+            56,
+            360,
+            660,
+            200,
+            "#60a5fa",
+            "Global East-Coast failover PoP and 360-peer Valakas Command Channel voice relay with FEC packet-loss recovery up to 25% loss.",
+        ),
+        (
+            "cdn-webrtc-15-rune-township",
+            "Rune Township (Starfall Haven) — Frankfurt Sovereign Anycast Scrubber & Seed Raid Voice SFU",
+            "town-starfall-haven",
+            "zone-town-starfall-haven",
+            "EU-Central-Frankfurt",
+            "Anycast L4/L7 DDoS Scrubber",
+            36.0,
+            10.5,
+            64,
+            380,
+            556,
+            206,
+            "#38bdf8",
+            "10.5 Tbps Frankfurt Anycast DDoS scrubber and 380-peer WebRTC voice cluster supporting Rune Castle sieges and Gracia Seed expeditions.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for (
+        rid,
+        title,
+        tid,
+        zid,
+        pop,
+        stier,
+        rtt,
+        ddos,
+        opus,
+        peers,
+        wx,
+        wy,
+        acc,
+        notes,
+    ) in specs:
+        rows.append(
+            {
+                "relay_id": rid,
+                "title": title,
+                "town_id": tid,
+                "zone_id": zid,
+                "pop_region": pop,
+                "edge_service_tier": stier,
+                "target_rtt_p95_ms": rtt,
+                "ddos_scrubbing_capacity_tbps": ddos,
+                "webrtc_opus_bitrate_kbps": opus,
+                "max_voice_room_peers": peers,
+                "world_x": wx,
+                "world_y": wy,
+                "accent": acc,
+                "notes": notes,
+            }
+        )
+    return rows
+
+
+def inject_global_cdn_webrtc_relays(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = _build_global_cdn_webrtc_relays(atlas)
+    atlas["global_cdn_webrtc_relays"] = rows
+    return rows
+
+
 
 
 
@@ -21934,6 +22526,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("clan_treasury_payroll_ledgers") or []) < 15:
         inject_clan_treasury_payroll_ledgers(atlas)
         actions.append("populated_15_clan_treasury_payroll_ledgers")
+
+    # 79. Ensure all 16 Player Housing, Clan Citadel Interior Customization & Trophy Taxidermy Matrix records exist in `player_housing_trophy_estates` (D95)
+    if len(atlas.get("player_housing_trophy_estates") or []) < 16:
+        inject_player_housing_trophy_estates(atlas)
+        actions.append("populated_16_player_housing_trophy_estates")
+
+    # 80. Ensure all 15 Global CDN Region Routing, Anycast DDoS Scrubbing & Voice-Chat WebRTC Relay Matrix records exist in `global_cdn_webrtc_relays` (D96)
+    if len(atlas.get("global_cdn_webrtc_relays") or []) < 15:
+        inject_global_cdn_webrtc_relays(atlas)
+        actions.append("populated_15_global_cdn_webrtc_relays")
 
     return {"actions": actions}
 
@@ -26770,15 +27372,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     d94_eval = score_d94_clan_treasury_payroll_ledgers(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
     d94_score = d94_eval["score"]
 
+    # D95: Interactive 16-Record [Role 2: Content & World Tools — Player Housing, Clan Citadel Interior Customization & Trophy Taxidermy Matrix] (`player_housing_trophy_estates` - 16 Estates)
+    d95_eval = score_d95_player_housing_trophy_estates(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d95_score = d95_eval["score"]
+
+    # D96: Interactive 15-Record [Role 5: LiveOps & Build — Global CDN Region Routing, Anycast DDoS Scrubbing & Voice-Chat WebRTC Relay Matrix] (`global_cdn_webrtc_relays` - 15 Relays)
+    d96_eval = score_d96_global_cdn_webrtc_relays(atlas, zone_ids_set=zone_ids_set, web_txt=web_txt)
+    d96_score = d96_eval["score"]
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 76.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 78.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 78.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 88.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 77.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score) / 84.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 78.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 80.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0 and d71_score == 100.0 and d72_score == 100.0 and d73_score == 100.0 and d74_score == 100.0 and d75_score == 100.0 and d76_score == 100.0 and d77_score == 100.0 and d78_score == 100.0 and d79_score == 100.0 and d80_score == 100.0 and d81_score == 100.0 and d82_score == 100.0 and d83_score == 100.0 and d84_score == 100.0 and d85_score == 100.0 and d86_score == 100.0 and d87_score == 100.0 and d88_score == 100.0 and d89_score == 100.0 and d90_score == 100.0 and d91_score == 100.0 and d92_score == 100.0 and d93_score == 100.0 and d94_score == 100.0 and d95_score == 100.0 and d96_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 80.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 90.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 79.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score + d71_score + d72_score + d73_score + d74_score + d75_score + d76_score + d77_score + d78_score + d79_score + d80_score + d81_score + d82_score + d83_score + d84_score + d85_score + d86_score + d87_score + d88_score + d89_score + d90_score + d91_score + d92_score + d93_score + d94_score + d95_score + d96_score) / 86.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -26877,8 +27487,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d92_score
             + d93_score
             + d94_score
+            + d95_score
+            + d96_score
         )
-        / 94.0,
+        / 96.0,
         1,
     )
 
@@ -27617,7 +28229,198 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             "D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix": d92_eval,
             "D93_dynamic_world_boss_invasion_rift_incursion_and_public_quest_matrix": d93_eval,
             "D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix": d94_eval,
+            "D95_player_housing_citadel_customization_and_boss_trophy_matrix": d95_eval,
+            "D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix": d96_eval,
         },
+    }
+
+
+def score_d95_player_housing_trophy_estates(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_categories = {
+        "Solo Instanced Homestead",
+        "Guild Shared Trophy Gallery",
+        "Sovereign Noble Villa",
+        "Master Crafter Workshop",
+    }
+    rows = atlas.get("player_housing_trophy_estates") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_cats: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        eid = str(row.get("estate_id") or "")
+        zid = str(row.get("zone_id") or "")
+        tid = str(row.get("town_id") or "")
+        ecat = str(row.get("estate_category") or "")
+        fcap = int(row.get("furniture_slot_cap") or 0)
+        peds = int(row.get("boss_trophy_pedestals") or 0)
+        vregen = float(row.get("rested_vitality_regen_bonus_pct") or 0.0)
+        ctier = str(row.get("crafting_station_tier") or "")
+        upkeep = int(row.get("weekly_upkeep_adena_k") or 0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            eid
+            and eid not in seen_ids
+            and row.get("title")
+            and zid in zone_ids_set
+            and tid
+            and ecat in expected_categories
+            and 60 <= fcap <= 320
+            and 2 <= peds <= 16
+            and 15.0 <= vregen <= 50.0
+            and ctier == "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil"
+            and 25 <= upkeep <= 2500
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#a855f7", "#c084fc", "#ec4899", "#f472b6")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(eid)
+            seen_cats.add(ecat)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_HOUSING_ESTATES_MODE",
+            "setAtlasHousingEstatesMode",
+            "selectPlayerHousingEstate",
+            "renderAtlasHousingEstatesBarHtml",
+            "studioPlayerHousingEstateOverlay",
+        )
+    )
+    ratio = valid_count / 16.0
+    full_cov = valid_count == 16 and seen_cats == expected_categories
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 16,
+        "estate_categories": sorted(seen_cats),
+        "ui_wired": has_ui,
+    }
+
+
+def score_d96_global_cdn_webrtc_relays(
+    atlas: dict[str, Any],
+    *,
+    zone_ids_set: set[str] | None = None,
+    web_txt: str | None = None,
+) -> dict[str, Any]:
+    if zone_ids_set is None:
+        zdir = atlas.get("t_breadth_zone_directory") or {}
+        zone_ids_set = {
+            str(e.get("zone_id"))
+            for entries in zdir.values()
+            if isinstance(entries, list)
+            for e in entries
+            if isinstance(e, dict) and e.get("zone_id")
+        }
+    if web_txt is None:
+        web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+
+    expected_regions = {
+        "AP-Southeast-Bangkok",
+        "AP-Northeast-Tokyo",
+        "AP-Northeast-Seoul",
+        "AP-Southeast-Singapore",
+        "EU-Central-Frankfurt",
+        "US-West-Oregon",
+        "US-East-Virginia",
+    }
+    expected_tiers = {
+        "Anycast L4/L7 DDoS Scrubber",
+        "Spatial 3D Proximity Voice SFU",
+        "200-v-200 Siege Command Channel Audio",
+        "Delta-Patch Pak CDN Edge Cache",
+    }
+    rows = atlas.get("global_cdn_webrtc_relays") or []
+    valid_count = 0
+    seen_ids: set[str] = set()
+    seen_towns: set[str] = set()
+    seen_regions: set[str] = set()
+    seen_tiers: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        rid = str(row.get("relay_id") or "")
+        tid = str(row.get("town_id") or "")
+        zid = str(row.get("zone_id") or "")
+        pop = str(row.get("pop_region") or "")
+        stier = str(row.get("edge_service_tier") or "")
+        rtt = float(row.get("target_rtt_p95_ms") or 0.0)
+        ddos = float(row.get("ddos_scrubbing_capacity_tbps") or 0.0)
+        opus = int(row.get("webrtc_opus_bitrate_kbps") or 0)
+        peers = int(row.get("max_voice_room_peers") or 0)
+        wx = float(row.get("world_x") or 0.0)
+        wy = float(row.get("world_y") or 0.0)
+        acc = str(row.get("accent") or "")
+        if (
+            rid
+            and rid not in seen_ids
+            and row.get("title")
+            and tid
+            and tid not in seen_towns
+            and zid in zone_ids_set
+            and pop in expected_regions
+            and stier in expected_tiers
+            and 14.0 <= rtt <= 58.0
+            and 1.5 <= ddos <= 12.0
+            and 24 <= opus <= 64
+            and 50 <= peers <= 400
+            and 60 <= wx <= 940
+            and 60 <= wy <= 560
+            and acc in ("#38bdf8", "#60a5fa", "#818cf8", "#2dd4bf")
+            and row.get("notes")
+        ):
+            valid_count += 1
+            seen_ids.add(rid)
+            seen_towns.add(tid)
+            seen_regions.add(pop)
+            seen_tiers.add(stier)
+
+    has_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_CDN_WEBRTC_MODE",
+            "setAtlasCdnWebrtcMode",
+            "selectGlobalCdnRelay",
+            "renderAtlasCdnWebrtcBarHtml",
+            "studioGlobalCdnRelayOverlay",
+        )
+    )
+    ratio = valid_count / 15.0
+    full_cov = valid_count == 15 and seen_regions == expected_regions and seen_tiers == expected_tiers
+    score = round(min(100.0, ratio * 100.0), 1) if (has_ui and full_cov) else round(ratio * 80.0, 1)
+    return {
+        "score": score,
+        "verified": valid_count,
+        "target": 15,
+        "pop_regions": sorted(seen_regions),
+        "edge_service_tiers": sorted(seen_tiers),
+        "ui_wired": has_ui,
     }
 
 
@@ -28834,7 +29637,7 @@ def evaluate_80d_atlas(whc: dict[str, Any] | None = None, atlas: dict[str, Any] 
     if atlas is None:
         atlas = json.loads(ATLAS_PATH.read_text(encoding="utf-8"))
     res = audit_world_atlas(whc, atlas)
-    res["wave"] = 45
+    res["wave"] = 46
     return res
 
 
@@ -28972,6 +29775,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D92 (15 Auction Escrows)    : {dims['D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix']['score']}/100 ({dims['D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix']['verified']}/{dims['D92_cross_realm_auction_house_escrow_and_circuit_breaker_matrix']['target']} cross-realm auction escrows)")
         print(f"  D93 (16 World Incursions)   : {dims['D93_dynamic_world_boss_invasion_rift_incursion_and_public_quest_matrix']['score']}/100 ({dims['D93_dynamic_world_boss_invasion_rift_incursion_and_public_quest_matrix']['verified']}/{dims['D93_dynamic_world_boss_invasion_rift_incursion_and_public_quest_matrix']['target']} world invasion incursions)")
         print(f"  D94 (15 Clan Treasuries)    : {dims['D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix']['score']}/100 ({dims['D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix']['verified']}/{dims['D94_clan_treasury_ledger_mercenary_payroll_and_tax_dividend_matrix']['target']} clan treasury payroll ledgers)")
+        print(f"  D95 (16 Housing Estates)    : {dims['D95_player_housing_citadel_customization_and_boss_trophy_matrix']['score']}/100 ({dims['D95_player_housing_citadel_customization_and_boss_trophy_matrix']['verified']}/{dims['D95_player_housing_citadel_customization_and_boss_trophy_matrix']['target']} player housing trophy estates)")
+        print(f"  D96 (15 Global CDN/WebRTC)  : {dims['D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix']['score']}/100 ({dims['D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix']['verified']}/{dims['D96_global_cdn_anycast_ddos_and_spatial_webrtc_voice_relay_matrix']['target']} global cdn webrtc relays)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

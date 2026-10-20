@@ -111,15 +111,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas90DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas92DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas94DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas96DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 45)),
+        "wave": int(iter_state.get("wave", 46)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"96-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"94-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"92-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"90-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -158,7 +160,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 · D1–D72 · D1–D74 · D1–D76 · D1–D78 · D1–D80 · D1–D82 · D1–D84 · D1–D86 · D1–D88 · D1–D90 · D1–D92 · D1–D94 · D1–D96 Verified"
         ),
     }
     return merged
@@ -4420,7 +4422,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4533,6 +4535,8 @@ let ATLAS_FACTION_DISPOSITION_MODE = 'All';
 let ATLAS_AUCTION_ESCROW_MODE = 'All';
 let ATLAS_WORLD_INCURSION_MODE = 'All';
 let ATLAS_CLAN_TREASURY_MODE = 'All';
+let ATLAS_HOUSING_ESTATES_MODE = 'All';
+let ATLAS_CDN_WEBRTC_MODE = 'All';
 let SELECTED_ANTI_BOT_SENTINEL_ID = '';
 let SELECTED_GODOT_STORYBOOK_PREFAB_ID = '';
 let SELECTED_NAVMESH_SECTOR_ID = '';
@@ -4545,6 +4549,8 @@ let SELECTED_FACTION_DISPOSITION_ID = '';
 let SELECTED_CROSS_REALM_ESCROW_ID = '';
 let SELECTED_WORLD_INCURSION_ID = '';
 let SELECTED_CLAN_TREASURY_ID = '';
+let SELECTED_HOUSING_ESTATE_ID = '';
+let SELECTED_CDN_WEBRTC_RELAY_ID = '';
 let ANTI_BOT_SENTINELS = [];
 let GODOT_STORYBOOK_PREFABS = [];
 let NAVMESH_OBSTACLE_SECTORS = [];
@@ -4557,6 +4563,8 @@ let FACTION_DISPOSITIONS = [];
 let CROSS_REALM_ESCROWS = [];
 let WORLD_INVASION_INCURSIONS = [];
 let CLAN_TREASURY_LEDGERS = [];
+let PLAYER_HOUSING_ESTATES = [];
+let GLOBAL_CDN_RELAYS = [];
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4641,6 +4649,8 @@ const ATLAS_STATE_STORE = {
   auctionEscrowMode: 'All',                // D92: Active 15-Town [Role 4: Backend Infra] Cross-Realm Auction House, Escrow Settlement & Price-Circuit-Breaker Selector
   worldIncursionMode: 'All',               // D93: Active 16-Record [Role 2: Content & World Tools] Dynamic World Boss Invasion, Rift Incursion & Public Quest Selector
   clanTreasuryMode: 'All',                 // D94: Active 15-Town [Role 4: Backend Infra] Guild / Clan Treasury Ledger, Siege Mercenary Payroll & Tax Dividend Selector
+  housingEstatesMode: 'All',               // D95: Active 16-Record [Role 2: Content & World Tools] Player Housing, Clan Citadel Interior Customization & Trophy Taxidermy Selector
+  cdnWebrtcMode: 'All',                    // D96: Active 15-Town [Role 5: LiveOps & Build] Global CDN Region Routing, Anycast DDoS Scrubbing & Voice-Chat WebRTC Relay Selector
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4648,6 +4658,50 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasHousingEstatesMode(modeId) {
+  ATLAS_HOUSING_ESTATES_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.housingEstatesMode = ATLAS_HOUSING_ESTATES_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectPlayerHousingEstate(estateId) {
+  SELECTED_HOUSING_ESTATE_ID = String(estateId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  PLAYER_HOUSING_ESTATES = tatlas.player_housing_trophy_estates || [];
+  const item = PLAYER_HOUSING_ESTATES.find(e => e.estate_id === SELECTED_HOUSING_ESTATE_ID);
+  if (item) {
+    if (String(item.zone_id || '').startsWith('zone-town-')) {
+      focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+      return;
+    }
+    focusFieldOrFortressBlueprint(item.zone_id, `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
+
+function setAtlasCdnWebrtcMode(modeId) {
+  ATLAS_CDN_WEBRTC_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.cdnWebrtcMode = ATLAS_CDN_WEBRTC_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function selectGlobalCdnRelay(relayId) {
+  SELECTED_CDN_WEBRTC_RELAY_ID = String(relayId || '');
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  GLOBAL_CDN_RELAYS = tatlas.global_cdn_webrtc_relays || [];
+  const item = GLOBAL_CDN_RELAYS.find(r => r.relay_id === SELECTED_CDN_WEBRTC_RELAY_ID);
+  if (item) {
+    focusTownStreetBlueprint(item.town_id || item.zone_id.replace('zone-', ''), `${item.world_x}:${item.world_y}`);
+    return;
+  }
+  render();
+}
 
 function setAtlasWorldIncursionMode(modeId) {
   ATLAS_WORLD_INCURSION_MODE = String(modeId || 'All');
@@ -13686,6 +13740,138 @@ function renderAtlasClanTreasuryBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasHousingEstatesBarHtml(tatlas) {
+  PLAYER_HOUSING_ESTATES = (tatlas && tatlas.player_housing_trophy_estates) || [];
+  if (!PLAYER_HOUSING_ESTATES.length) return '';
+  const curMode = ATLAS_HOUSING_ESTATES_MODE || ATLAS_STATE_STORE.housingEstatesMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🏡 Housing & Trophies (16)', col: '#a855f7' },
+    { id: 'Solo Instanced Homestead', label: '🏠 Solo Homesteads (5)', col: '#c084fc' },
+    { id: 'Guild Shared Trophy Gallery', label: '🏆 Guild Trophy Galleries (4)', col: '#ec4899' },
+    { id: 'Sovereign Noble Villa', label: '👑 Sovereign Noble Villas (3)', col: '#f472b6' },
+    { id: 'Master Crafter Workshop', label: '⚒️ Master Crafter Workshops (4)', col: '#a855f7' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : PLAYER_HOUSING_ESTATES.filter(e => curMode === 'All' || e.estate_category === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasHousingEstatesBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#c084fc">🏡 [ROLE 2: CONTENT &amp; WORLD TOOLS] PLAYER HOUSING, CLAN CITADEL INTERIOR CUSTOMIZATION &amp; TROPHY TAXIDERMY MATRIX (D95 · ${PLAYER_HOUSING_ESTATES.length} ESTATES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasHousingEstatesMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#f5d0fe;font-weight:800">
+          60–320 FURNITURE SLOTS · 2–16 BOSS TROPHY PEDESTALS · +15–50% VITALITY REGEN · LV.1–5 WORKBENCHES
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(e => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(e.accent || '#a855f7')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🏡 ${escapeHtml(e.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(e.accent || '#a855f7')}">[${e.furniture_slot_cap} Slots · +${e.rested_vitality_regen_bonus_pct}% Vit]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#f5d0fe;margin-top:1px">
+                  ${escapeHtml(e.estate_category)} · Trophies: ${e.boss_trophy_pedestals} Pedestals
+                </div>
+                <div style="font-size:8px;color:#fbcfe8;margin-top:1px">
+                  ⚒️ ${escapeHtml(e.crafting_station_tier)} · Upkeep: ${e.weekly_upkeep_adena_k}k/wk
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectPlayerHousingEstate('${escapeHtml(e.estate_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(e.accent || '#a855f7')};background:#4a044e;color:#fae8ff;font-size:8px;font-weight:800;cursor:pointer">
+                  🏡 Inspect Housing Estate (${escapeHtml(e.estate_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasCdnWebrtcBarHtml(tatlas) {
+  GLOBAL_CDN_RELAYS = (tatlas && tatlas.global_cdn_webrtc_relays) || [];
+  if (!GLOBAL_CDN_RELAYS.length) return '';
+  const curMode = ATLAS_CDN_WEBRTC_MODE || ATLAS_STATE_STORE.cdnWebrtcMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '🚫 Hide Overlay', col: '#64748b' },
+    { id: 'All', label: '🌐 CDN & Voice SFU (15)', col: '#38bdf8' },
+    { id: 'Anycast L4/L7 DDoS Scrubber', label: '🛡️ Anycast DDoS Scrubbers (4)', col: '#60a5fa' },
+    { id: 'Spatial 3D Proximity Voice SFU', label: '🎙️ 3D Proximity Voice SFU (4)', col: '#2dd4bf' },
+    { id: '200-v-200 Siege Command Channel Audio', label: '📯 200v200 Siege Audio (3)', col: '#818cf8' },
+    { id: 'Delta-Patch Pak CDN Edge Cache', label: '⚡ Delta-Patch CDN Edges (4)', col: '#38bdf8' }
+  ];
+  const filtered = curMode === 'Off'
+    ? []
+    : GLOBAL_CDN_RELAYS.filter(r => curMode === 'All' || r.edge_service_tier === curMode);
+  const featured = filtered.slice(0, 4);
+
+  return `
+    <div id="atlasCdnWebrtcBar" style="display:flex;flex-direction:column;gap:5px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#38bdf8">🌐 [ROLE 5: LIVEOPS &amp; BUILD] GLOBAL CDN REGION ROUTING, ANYCAST DDOS SCRUBBING &amp; VOICE-CHAT WEBRTC RELAY MATRIX (D96 · ${GLOBAL_CDN_RELAYS.length} POPS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasCdnWebrtcMode('${escapeHtml(mp.id)}')"
+                      style="min-height:23px;padding:2px 8px;border-radius:999px;font-size:9.3px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#ffffff' : mp.col};background:${isAct ? mp.col : '#0f172a'};color:${isAct ? '#090d14' : '#f8fafc'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#bae6fd;font-weight:800">
+          7 GLOBAL POPS · 14–58MS P95 RTT · 1.5–12.0 TBPS SCRUBBING · OPUS 24–64 KBPS · 50–400 PEERS
+        </span>
+      </div>
+      ${featured.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featured.map(r => `
+            <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${escapeHtml(r.accent || '#38bdf8')};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                  <span style="font-size:9.3px;font-weight:900;color:#f8fafc">🌐 ${escapeHtml(r.title.slice(0, 38))}</span>
+                  <span class="mono" style="font-size:8px;font-weight:900;color:${escapeHtml(r.accent || '#38bdf8')}">[${r.target_rtt_p95_ms}ms · ${r.ddos_scrubbing_capacity_tbps}Tbps]</span>
+                </div>
+                <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                  ${escapeHtml(r.pop_region)} · ${escapeHtml(r.edge_service_tier)}
+                </div>
+                <div style="font-size:8px;color:#99f6e4;margin-top:1px">
+                  🎙️ Opus ${r.webrtc_opus_bitrate_kbps}kbps · Max ${r.max_voice_room_peers} Voice Peers
+                </div>
+              </div>
+              <div style="display:flex;gap:4px;margin-top:2px">
+                <button type="button" onclick="selectGlobalCdnRelay('${escapeHtml(r.relay_id)}')"
+                        style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${escapeHtml(r.accent || '#38bdf8')};background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                  🌐 Inspect CDN/Voice PoP (${escapeHtml(r.relay_id.slice(0, 22))})
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -13884,6 +14070,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasAuctionEscrowBarHtml(tatlas)}
       ${renderAtlasWorldIncursionBarHtml(tatlas)}
       ${renderAtlasClanTreasuryBarHtml(tatlas)}
+      ${renderAtlasHousingEstatesBarHtml(tatlas)}
+      ${renderAtlasCdnWebrtcBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -18115,6 +18303,54 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // Player Housing, Clan Citadel Interior Customization & Trophy Taxidermy Matrix Overlay (D95)
+  const playerHousingEstateRecords = Array.isArray(atlas.player_housing_trophy_estates) ? atlas.player_housing_trophy_estates : [];
+  const playerHousingEstateOverlaySvg = !ATLAS_HOUSING_ESTATES_MODE ? '' : `
+    <g id="studioPlayerHousingEstateOverlay">
+      ${playerHousingEstateRecords.map((h, idx) => {
+        const wx = typeof h.world_x === 'number' ? h.world_x : 545;
+        const wy = typeof h.world_y === 'number' ? h.world_y : 285;
+        const colHex = h.accent || '#10b981';
+        const etier = h.estate_tier || 'Sovereign Clan Citadel Interior';
+        const iconTxt = etier === 'Sovereign Clan Citadel Interior'
+          ? '🏰'
+          : (etier === 'Noble Manor Villa & Garden'
+              ? '🏡'
+              : (etier === 'Artisan Townhouse Workshop' ? '🔨' : '⛺'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectPlayerHousingEstate('${escapeHtml(h.estate_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.4" fill="rgba(6,78,59,0.62)" stroke="${escapeHtml(colHex)}" stroke-width="2.0"/>
+            <text x="${wx}" y="${wy + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // Global CDN Region Routing, Anycast DDoS Scrubbing & Voice-Chat WebRTC Relay Matrix Overlay (D96)
+  const globalCdnRelayRecords = Array.isArray(atlas.global_cdn_webrtc_relays) ? atlas.global_cdn_webrtc_relays : [];
+  const globalCdnRelayOverlaySvg = !ATLAS_CDN_WEBRTC_MODE ? '' : `
+    <g id="studioGlobalCdnRelayOverlay">
+      ${globalCdnRelayRecords.map((r, idx) => {
+        const wx = typeof r.world_x === 'number' ? r.world_x : 550;
+        const wy = typeof r.world_y === 'number' ? r.world_y : 290;
+        const colHex = r.accent || '#0ea5e9';
+        const stier = r.edge_service_tier || 'Anycast L4/L7 Game Ingress Scrubbing';
+        const iconTxt = stier === 'Anycast L4/L7 Game Ingress Scrubbing'
+          ? '🛡️'
+          : (stier === 'WebRTC Spatial Voice SFU Mesh'
+              ? '🎙️'
+              : (stier === 'Delta-Pak CDN Origin Shield' ? '📦' : '🌐'));
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="selectGlobalCdnRelay('${escapeHtml(r.relay_id)}')">
+            <circle cx="${wx}" cy="${wy}" r="10.4" fill="rgba(12,74,110,0.62)" stroke="${escapeHtml(colHex)}" stroke-width="2.0"/>
+            <text x="${wx}" y="${wy + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -18189,6 +18425,8 @@ function renderDedicatedWorldAtlas() {
     ${crossRealmEscrowOverlaySvg}
     ${worldIncursionOverlaySvg}
     ${clanTreasuryOverlaySvg}
+    ${playerHousingEstateOverlaySvg}
+    ${globalCdnRelayOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

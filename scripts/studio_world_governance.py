@@ -734,6 +734,8 @@ def validate_world_governance(
                 "crossRealmAuctionEscrowsCount": len(t_doc.get("cross_realm_auction_escrows") or []),
                 "worldInvasionIncursionsCount": len(t_doc.get("world_invasion_incursions") or []),
                 "clanTreasuryPayrollLedgersCount": len(t_doc.get("clan_treasury_payroll_ledgers") or []),
+                "playerHousingTrophyEstatesCount": len(t_doc.get("player_housing_trophy_estates") or []),
+                "globalCdnWebrtcRelaysCount": len(t_doc.get("global_cdn_webrtc_relays") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -2092,6 +2094,38 @@ def validate_world_governance(
                 if ct_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: clan_treasury_payroll_ledgers '{ct_id}' references unknown zone_id '{ct_zid}'"
+                    )
+
+            # Validate 16-Record Player Housing, Clan Citadel Interior Customization & Trophy Taxidermy Matrix (D95)
+            housing_estates = t_doc.get("player_housing_trophy_estates") or []
+            if housing_estates and len(housing_estates) < 16:
+                errors.append(
+                    f"GOV-10 violation: player_housing_trophy_estates must have at least 16 records, got {len(housing_estates)}"
+                )
+            for he_item in housing_estates:
+                if not isinstance(he_item, dict):
+                    continue
+                he_id = str(he_item.get("estate_id", ""))
+                he_zid = str(he_item.get("zone_id", ""))
+                if he_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: player_housing_trophy_estates '{he_id}' references unknown zone_id '{he_zid}'"
+                    )
+
+            # Validate 15-Record Global CDN Region Routing, Anycast DDoS Scrubbing & Voice-Chat WebRTC Relay Matrix (D96)
+            cdn_relays = t_doc.get("global_cdn_webrtc_relays") or []
+            if cdn_relays and len(cdn_relays) < 15:
+                errors.append(
+                    f"GOV-10 violation: global_cdn_webrtc_relays must have at least 15 records, got {len(cdn_relays)}"
+                )
+            for cr_item in cdn_relays:
+                if not isinstance(cr_item, dict):
+                    continue
+                cr_id = str(cr_item.get("relay_id", ""))
+                cr_zid = str(cr_item.get("zone_id", ""))
+                if cr_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: global_cdn_webrtc_relays '{cr_id}' references unknown zone_id '{cr_zid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

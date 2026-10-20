@@ -479,6 +479,18 @@
       "maxItems": 15,
       "items": { "$ref": "#/$defs/clanTreasuryPayrollLedgerSpec" }
     },
+    "player_housing_trophy_estates": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/playerHousingTrophyEstateSpec" }
+    },
+    "global_cdn_webrtc_relays": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/globalCdnWebrtcRelaySpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -5455,6 +5467,162 @@
         "accent": {
           "type": "string",
           "enum": ["#eab308", "#facc15", "#f59e0b", "#10b981"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "playerHousingTrophyEstateSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "estate_id",
+        "title",
+        "zone_id",
+        "town_id",
+        "estate_category",
+        "furniture_slot_cap",
+        "boss_trophy_pedestals",
+        "rested_vitality_regen_bonus_pct",
+        "crafting_station_tier",
+        "weekly_upkeep_adena_k",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "estate_id": { "type": "string" },
+        "title": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "town_id": { "type": "string" },
+        "estate_category": {
+          "type": "string",
+          "enum": [
+            "Solo Instanced Homestead",
+            "Guild Shared Trophy Gallery",
+            "Sovereign Noble Villa",
+            "Master Crafter Workshop"
+          ]
+        },
+        "furniture_slot_cap": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 320
+        },
+        "boss_trophy_pedestals": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 16
+        },
+        "rested_vitality_regen_bonus_pct": {
+          "type": "number",
+          "minimum": 15.0,
+          "maximum": 50.0
+        },
+        "crafting_station_tier": {
+          "type": "string",
+          "const": "Lv.1 Basic Workbench .. Lv.5 Masterwork Soul-Anvil"
+        },
+        "weekly_upkeep_adena_k": {
+          "type": "integer",
+          "minimum": 25,
+          "maximum": 2500
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#a855f7", "#c084fc", "#ec4899", "#f472b6"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "globalCdnWebrtcRelaySpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relay_id",
+        "title",
+        "town_id",
+        "zone_id",
+        "pop_region",
+        "edge_service_tier",
+        "target_rtt_p95_ms",
+        "ddos_scrubbing_capacity_tbps",
+        "webrtc_opus_bitrate_kbps",
+        "max_voice_room_peers",
+        "world_x",
+        "world_y",
+        "accent",
+        "notes"
+      ],
+      "properties": {
+        "relay_id": { "type": "string" },
+        "title": { "type": "string" },
+        "town_id": { "type": "string" },
+        "zone_id": { "type": "string" },
+        "pop_region": {
+          "type": "string",
+          "enum": [
+            "AP-Southeast-Bangkok",
+            "AP-Northeast-Tokyo",
+            "AP-Northeast-Seoul",
+            "AP-Southeast-Singapore",
+            "EU-Central-Frankfurt",
+            "US-West-Oregon",
+            "US-East-Virginia"
+          ]
+        },
+        "edge_service_tier": {
+          "type": "string",
+          "enum": [
+            "Anycast L4/L7 DDoS Scrubber",
+            "Spatial 3D Proximity Voice SFU",
+            "200-v-200 Siege Command Channel Audio",
+            "Delta-Patch Pak CDN Edge Cache"
+          ]
+        },
+        "target_rtt_p95_ms": {
+          "type": "number",
+          "minimum": 14.0,
+          "maximum": 58.0
+        },
+        "ddos_scrubbing_capacity_tbps": {
+          "type": "number",
+          "minimum": 1.5,
+          "maximum": 12.0
+        },
+        "webrtc_opus_bitrate_kbps": {
+          "type": "integer",
+          "minimum": 24,
+          "maximum": 64
+        },
+        "max_voice_room_peers": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 400
+        },
+        "world_x": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 940
+        },
+        "world_y": {
+          "type": "number",
+          "minimum": 60,
+          "maximum": 560
+        },
+        "accent": {
+          "type": "string",
+          "enum": ["#38bdf8", "#60a5fa", "#818cf8", "#2dd4bf"]
         },
         "notes": { "type": "string" }
       }
