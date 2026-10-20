@@ -87,15 +87,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas42DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas44DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas46DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas48DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 21)),
+        "wave": int(iter_state.get("wave", 22)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"48-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"46-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"44-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"42-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -110,7 +112,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D46 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D48 Verified"
         ),
     }
     return merged
@@ -4372,7 +4374,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D46 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D48 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4437,6 +4439,8 @@ let ATLAS_ARMOR_SET_MODE = 'All';
 let ATLAS_KAMALOKA_MODE = 'All';
 let ATLAS_SKILL_SCROLL_MODE = 'All';
 let ATLAS_ELEMENTAL_QUARRY_MODE = 'All';
+let ATLAS_CLAN_HALL_MODE = 'All';
+let ATLAS_TRANSFORMATION_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4473,6 +4477,8 @@ const ATLAS_STATE_STORE = {
   kamalokaMode: 'All',                     // D44: Active 15-Portal Kamaloka, Pailaka & Seed Selector ('Off' | 'All' | 'Kamaloka_Abyss_Hall' | 'Pailaka_Vitality_Trial' | 'Seed_Delusion_Conduit')
   skillScrollMode: 'All',                  // D45: Active 16-Sanctum Forgotten Scroll & Skill Mastery Selector ('Off' | 'All' | 'Martial_Will_Scroll' | 'Arcane_Enlightenment_Scroll' | 'Ancient_Tome_Codex_Sanctum')
   elementalQuarryMode: 'All',              // D46: Active 14-Node Elemental Stone/Crystal & Caravan Quarry Selector ('Off' | 'All' | 'Elemental_Stone_Quarry_150' | 'Elemental_Crystal_Sanctum_300' | 'Caravan_Trust_Oasis')
+  clanHallMode: 'All',                     // D47: Active 16-Estate Clan Hall Auction & Siege Chateau Selector ('Off' | 'All' | 'Town_Luxury_Auction_Hall' | 'Contested_Siege_Chateau')
+  transformationMode: 'All',               // D48: Active 15-Sanctum Transformation, Talisman & Agathion Selector ('Off' | 'All' | 'Avant_Garde_Transformation_Sanctum' | 'Epaulette_Talisman_Vault' | 'Agathion_Bracelet_Altar')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4480,6 +4486,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasClanHallMode(modeId) {
+  ATLAS_CLAN_HALL_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.clanHallMode = ATLAS_CLAN_HALL_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasTransformationMode(modeId) {
+  ATLAS_TRANSFORMATION_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.transformationMode = ATLAS_TRANSFORMATION_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasSkillScrollMode(modeId) {
   ATLAS_SKILL_SCROLL_MODE = String(modeId || 'All');
@@ -8837,6 +8857,194 @@ function renderAtlasElementalQuarryBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasClanHallBarHtml(tatlas) {
+  const estates = (tatlas && tatlas.clan_hall_auction_estates) || [];
+  if (!estates.length) return '';
+
+  const curMode = ATLAS_CLAN_HALL_MODE || ATLAS_STATE_STORE.clanHallMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🏛️ All 16 Estates' },
+    { id: 'Town_Luxury_Auction_Hall', label: '💰 10 Town Luxury Auction Halls' },
+    { id: 'Contested_Siege_Chateau', label: '⚔️ 6 Contested Siege Chateaus' }
+  ];
+
+  const filteredEstates = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? estates : estates.filter(e => e.acquisition_mode === curMode));
+
+  const featuredEstates = curMode === 'All'
+    ? [
+        ...estates.filter(e => e.acquisition_mode === 'Town_Luxury_Auction_Hall').slice(0, 2),
+        ...estates.filter(e => e.acquisition_mode === 'Contested_Siege_Chateau').slice(0, 2)
+      ]
+    : filteredEstates.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasClanHallBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1f190b;border:1px solid rgba(250,204,21,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fef08a">🏛️ 16-ESTATE CLAN HALL AUCTION &amp; SIEGE CHATEAU REAL-ESTATE MATRIX (D47 · 16 ESTATES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasClanHallMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(250,204,21,0.45)'};background:${isAct ? '#a16207' : '#090d14'};color:${isAct ? '#ffffff' : '#fef9c3'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          10 TOWN LUXURY AUCTION HALLS (B/A-GRADE) + 6 CONTESTED SIEGE CHATEAUS (S-GRADE ZERO-RENT)
+        </span>
+      </div>
+
+      ${featuredEstates.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredEstates.map(e => {
+            const isAuction = e.acquisition_mode === 'Town_Luxury_Auction_Hall';
+            const catCol = isAuction ? '#facc15' : '#f43f5e';
+            const catIcon = isAuction ? '💰' : '⚔️';
+            const zObj = byZid[e.zone_id] || {};
+            const zidStr = String(e.zone_id || '');
+            let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(e.loc)}')`;
+            let jumpBtnLabel = '⚔️ Siege Chateau (4.8×)';
+            if (zidStr.startsWith('zone-town-')) {
+              jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(e.loc)}')`;
+              jumpBtnLabel = '🏛️ Town Auction Hall (5.2×)';
+            } else if (zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(e.loc)}')`;
+              jumpBtnLabel = '🏰 Contested Stronghold (3.8×)';
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(e.estate_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(e.estate_grade.replace(/_/g, ' '))}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fef08a;margin-top:1px">
+                    📜 ${escapeHtml(e.min_bid_or_siege_rule.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#bae6fd;margin-top:1px">
+                    ✨ ${escapeHtml(e.facility_buff_stage.slice(0, 56))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#422006;color:#fef9c3;font-size:8px;font-weight:800;cursor:pointer">
+                    ${jumpBtnLabel}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasTransformationBarHtml(tatlas) {
+  const sanctums = (tatlas && tatlas.transformation_talisman_sanctums) || [];
+  if (!sanctums.length) return '';
+
+  const curMode = ATLAS_TRANSFORMATION_MODE || ATLAS_STATE_STORE.transformationMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🦋 All 15 Sanctums' },
+    { id: 'Avant_Garde_Transformation_Sanctum', label: '🦋 6 Avant-Garde Transformations' },
+    { id: 'Epaulette_Talisman_Vault', label: '🔮 5 Epaulette Talisman Vaults' },
+    { id: 'Agathion_Bracelet_Altar', label: '🧚 4 Agathion Bracelet Altars' }
+  ];
+
+  const filteredSanctums = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? sanctums : sanctums.filter(s => s.relic_category === curMode));
+
+  const featuredSanctums = curMode === 'All'
+    ? [
+        ...sanctums.filter(s => s.relic_category === 'Avant_Garde_Transformation_Sanctum').slice(0, 2),
+        ...sanctums.filter(s => s.relic_category === 'Epaulette_Talisman_Vault').slice(0, 1),
+        ...sanctums.filter(s => s.relic_category === 'Agathion_Bracelet_Altar').slice(0, 1)
+      ]
+    : filteredSanctums.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasTransformationBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0c1f2c;border:1px solid rgba(56,189,248,0.55)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#bae6fd">🦋 15-SANCTUM TRANSFORMATION SEALBOOK, TALISMAN &amp; AGATHION SUMMON MATRIX (D48 · 15 SANCTUMS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasTransformationMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.45)'};background:${isAct ? '#0284c7' : '#090d14'};color:${isAct ? '#ffffff' : '#e0f2fe'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 AVANT-GARDE SEALBOOKS + 5 EPAULETTE TALISMAN VAULTS + 4 AGATHION BRACELET ALTARS
+        </span>
+      </div>
+
+      ${featuredSanctums.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredSanctums.map(s => {
+            const isTrans = s.relic_category === 'Avant_Garde_Transformation_Sanctum';
+            const isTalisman = s.relic_category === 'Epaulette_Talisman_Vault';
+            const catCol = isTrans ? '#38bdf8' : (isTalisman ? '#a855f7' : '#f472b6');
+            const catIcon = isTrans ? '🦋' : (isTalisman ? '🔮' : '🧚');
+            const zObj = byZid[s.zone_id] || {};
+            const zidStr = String(s.zone_id || '');
+            let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+            if (s.dungeon_id) {
+              jumpJs = `openDungeonSubMap('${escapeHtml(s.dungeon_id)}', '${escapeHtml(s.floor_id || '3F')}')`;
+            } else if (zidStr.startsWith('zone-town-')) {
+              jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`;
+            } else if (zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(s.sanctum_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(s.relic_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                    ✨ ${escapeHtml(((s.featured_transformations_or_talismans && s.featured_transformations_or_talismans[0]) || '').slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    🧙 ${escapeHtml(s.steward_npc_name.slice(0, 30))} · 🔑 ${escapeHtml(s.unlock_requirement.slice(0, 28))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#082f49;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    ${s.dungeon_id ? `🕳️ Boss Sanctum (${escapeHtml(s.floor_id || '3F')})` : `${catIcon} Warp to Sanctum / Vault`}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -8987,6 +9195,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasKamalokaBarHtml(tatlas)}
       ${renderAtlasSkillScrollBarHtml(tatlas)}
       ${renderAtlasElementalQuarryBarHtml(tatlas)}
+      ${renderAtlasClanHallBarHtml(tatlas)}
+      ${renderAtlasTransformationBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -11661,6 +11871,75 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D47: Interactive 16-Estate Clan Hall Auction & Siege Chateau Overlay (`studioClanHallAuctionOverlay`)
+  const clanHallRows = (tatlas && tatlas.clan_hall_auction_estates) || [];
+  const curClanHallMode = ATLAS_CLAN_HALL_MODE || ATLAS_STATE_STORE.clanHallMode || 'All';
+  const activeClanHalls = curClanHallMode === 'Off'
+    ? []
+    : (curClanHallMode === 'All'
+      ? clanHallRows
+      : clanHallRows.filter(e => e.acquisition_mode === curClanHallMode));
+  const clanHallAuctionOverlaySvg = `
+    <g id="studioClanHallAuctionOverlay">
+      ${activeClanHalls.map(e => {
+        const ec = clampWorldLocCoord(e.loc || '-84120:243500');
+        const zObj = allZonesById[e.zone_id] || {};
+        const zidStr = String(e.zone_id || '');
+        const isAuction = e.acquisition_mode === 'Town_Luxury_Auction_Hall';
+        const colHex = isAuction ? '#facc15' : '#f43f5e';
+        const iconTxt = isAuction ? '💰' : '⚔️';
+        let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(e.loc)}')`;
+        if (zidStr.startsWith('zone-town-')) {
+          jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(e.loc)}')`;
+        } else if (zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(e.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${ec.svgX}" cy="${ec.svgY}" r="10.8" fill="rgba(161,98,7,0.38)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${ec.svgX}" y="${ec.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D48: Interactive 15-Sanctum Transformation Sealbook, Talisman & Agathion Summon Overlay (`studioTransformationTalismanOverlay`)
+  const transSanctumRows = (tatlas && tatlas.transformation_talisman_sanctums) || [];
+  const curTransMode = ATLAS_TRANSFORMATION_MODE || ATLAS_STATE_STORE.transformationMode || 'All';
+  const activeTransSanctums = curTransMode === 'Off'
+    ? []
+    : (curTransMode === 'All'
+      ? transSanctumRows
+      : transSanctumRows.filter(s => s.relic_category === curTransMode));
+  const transformationTalismanOverlaySvg = `
+    <g id="studioTransformationTalismanOverlay">
+      ${activeTransSanctums.map(s => {
+        const sc = clampWorldLocCoord(s.loc || '-84120:243500');
+        const zObj = allZonesById[s.zone_id] || {};
+        const zidStr = String(s.zone_id || '');
+        const isTrans = s.relic_category === 'Avant_Garde_Transformation_Sanctum';
+        const isTalisman = s.relic_category === 'Epaulette_Talisman_Vault';
+        const colHex = isTrans ? '#38bdf8' : (isTalisman ? '#a855f7' : '#f472b6');
+        const iconTxt = isTrans ? '🦋' : (isTalisman ? '🔮' : '🧚');
+        let jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+        if (s.dungeon_id) {
+          jumpJs = `openDungeonSubMap('${escapeHtml(s.dungeon_id)}', '${escapeHtml(s.floor_id || '3F')}')`;
+        } else if (zidStr.startsWith('zone-town-')) {
+          jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`;
+        } else if (zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${sc.svgX}" cy="${sc.svgY}" r="10.8" fill="rgba(2,132,199,0.38)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${sc.svgX}" y="${sc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -11687,6 +11966,8 @@ function renderDedicatedWorldAtlas() {
     ${kamalokaPailakaOverlaySvg}
     ${forgottenScrollOverlaySvg}
     ${elementalQuarryOverlaySvg}
+    ${clanHallAuctionOverlaySvg}
+    ${transformationTalismanOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

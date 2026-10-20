@@ -191,6 +191,18 @@
       "maxItems": 14,
       "items": { "$ref": "#/$defs/elementalStoneCaravanQuarrySpec" }
     },
+    "clan_hall_auction_estates": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/clanHallAuctionEstateSpec" }
+    },
+    "transformation_talisman_sanctums": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/transformationTalismanSanctumSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -2700,6 +2712,92 @@
         "attribute_master_npc": { "type": "string" },
         "hourly_stone_yield": { "type": "string" },
         "combat_multiplier_effect": { "type": "string" }
+      }
+    },
+    "clanHallAuctionEstateSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "estate_id",
+        "estate_name",
+        "acquisition_mode",
+        "estate_grade",
+        "zone_id",
+        "loc",
+        "auctioneer_or_messenger_npc",
+        "min_bid_or_siege_rule",
+        "facility_buff_stage",
+        "exclusive_item_production"
+      ],
+      "properties": {
+        "estate_id": { "type": "string" },
+        "estate_name": { "type": "string" },
+        "acquisition_mode": {
+          "type": "string",
+          "enum": [
+            "Town_Luxury_Auction_Hall",
+            "Contested_Siege_Chateau"
+          ]
+        },
+        "estate_grade": {
+          "type": "string",
+          "enum": [
+            "B_Grade_Provincial",
+            "A_Grade_Metropolitan",
+            "S_Grade_Sovereign_Chateau"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "auctioneer_or_messenger_npc": { "type": "string" },
+        "min_bid_or_siege_rule": { "type": "string" },
+        "facility_buff_stage": { "type": "string" },
+        "exclusive_item_production": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "transformationTalismanSanctumSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sanctum_id",
+        "sanctum_name",
+        "relic_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "steward_npc_name",
+        "featured_transformations_or_talismans",
+        "unlock_requirement",
+        "combat_tactical_role"
+      ],
+      "properties": {
+        "sanctum_id": { "type": "string" },
+        "sanctum_name": { "type": "string" },
+        "relic_category": {
+          "type": "string",
+          "enum": [
+            "Avant_Garde_Transformation_Sanctum",
+            "Epaulette_Talisman_Vault",
+            "Agathion_Bracelet_Altar"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "steward_npc_name": { "type": "string" },
+        "featured_transformations_or_talismans": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "unlock_requirement": { "type": "string" },
+        "combat_tactical_role": { "type": "string" }
       }
     }
   }

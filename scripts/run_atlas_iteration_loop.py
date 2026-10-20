@@ -7155,6 +7155,577 @@ def _build_elemental_stone_caravan_quarries(atlas: dict[str, Any]) -> list[dict[
     return rows
 
 
+def _build_clan_hall_auction_estates(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 Clan Hall Auction & Siege Chateau Estates (10 Town_Luxury_Auction_Hall + 6 Contested_Siege_Chateau) (D47)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones: list[dict[str, Any]] = []
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            all_zones.extend(e for e in entries if isinstance(e, dict))
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if z.get("zone_id")}
+    specs = [
+        # 10 Town_Luxury_Auction_Hall (4 B_Grade_Provincial + 6 A_Grade_Metropolitan)
+        (
+            "estate-01-gludin-jade-harbor-hall",
+            "Jade Harbor Villa — Lantern Hollow (Gludin) Luxury Clan Hall",
+            "Town_Luxury_Auction_Hall",
+            "B_Grade_Provincial",
+            "zone-town-lantern-hollow",
+            "Auctioneer Galatea (Lantern Hollow Plaza)",
+            "20,000,000 Adena Min Bid + 2,000,000 Adena Weekly Rent (Clan Lv.2+)",
+            "Stage 5 Support Magic (Lv.25–62 Wind Walk / Shield / Empower) + 30% EXP Resurrection",
+            [
+                "Blessed Scroll of Escape: Clan Hall",
+                "Mid-Grade Elixir of Life/Mental (C/B-Grade)",
+                "Regional Harbor & Ant Nest Gatekeeper Teleport Grid",
+            ],
+        ),
+        (
+            "estate-02-dion-amber-barracks-hall",
+            "Amber Accord Lodge — Kilnwatch Bastion (Dion) Auction Hall",
+            "Town_Luxury_Auction_Hall",
+            "B_Grade_Provincial",
+            "zone-town-kilnwatch-bastion",
+            "Auctioneer Hendrick (Kilnwatch Guild Row)",
+            "25,000,000 Adena Min Bid + 2,500,000 Adena Weekly Rent (Clan Lv.3+)",
+            "Stage 5 Support Magic (Lv.25–62 Haste / Acumen / Magic Barrier) + 30% EXP Resurrection",
+            [
+                "Blessed Scroll of Escape: Clan Hall",
+                "Clan Hall Curtain & Teleport Stage 2 (Cruma Tower / Floran)",
+                "Greater Healing & Quick Healing Potion Bundles",
+            ],
+        ),
+        (
+            "estate-03-giran-golden-chamber-hall",
+            "Golden Chamber Manor — Glaze-Barge Quay (Giran) Merchant Hall",
+            "Town_Luxury_Auction_Hall",
+            "A_Grade_Metropolitan",
+            "zone-town-glaze-barge-quay",
+            "Auctioneer Valerius (Giran Luxury Mile)",
+            "50,000,000 Adena Min Bid + 5,000,000 Adena Weekly Rent (Clan Lv.4+)",
+            "Stage 7 Support Magic (Lv.43–75 Wind Walk / Death Whisper / Guidance) + 40% EXP Resurrection",
+            [
+                "Blessed Scroll of Escape: Clan Hall",
+                "High-Grade Elixir of Life/Mental (A-Grade)",
+                "Metropolitan Giran Trade & Dragon Valley Gatekeeper Grid",
+            ],
+        ),
+        (
+            "estate-04-oren-ivory-sentinel-hall",
+            "Ivory Sentinel Keep — Escapement Anvil (Oren) Auction Hall",
+            "Town_Luxury_Auction_Hall",
+            "B_Grade_Provincial",
+            "zone-town-escapement-anvil",
+            "Auctioneer Doran (Escapement Anvil Keep)",
+            "28,000,000 Adena Min Bid + 2,800,000 Adena Weekly Rent (Clan Lv.3+)",
+            "Stage 6 Support Magic (Lv.35–68 Focus /Wild Magic / Blessed Shield) + 35% EXP Resurrection",
+            [
+                "Blessed Scroll of Escape: Clan Hall",
+                "Mid-Grade Elixir of CP (B-Grade)",
+                "Oren Border & Cruma/Timak Outpost Teleport Grid",
+            ],
+        ),
+        (
+            "estate-05-heine-pearl-lagoon-hall",
+            "Pearl Lagoon Conservatory — Saffron Press (Heine) Waterfront Hall",
+            "Town_Luxury_Auction_Hall",
+            "A_Grade_Metropolitan",
+            "zone-town-saffron-press",
+            "Auctioneer Coralie (Saffron Canal Arcade)",
+            "45,000,000 Adena Min Bid + 4,500,000 Adena Weekly Rent (Clan Lv.4+)",
+            "Stage 7 Support Magic (Lv.43–75 Clarity / Empower / Agility) + 40% EXP Resurrection",
+            [
+                "Blessed Scroll of Escape: Clan Hall",
+                "High-Grade Elixir of Mental Strength (A-Grade)",
+                "Sunken Hold & Chromatic Lagoon Gatekeeper Teleport Grid",
+            ],
+        ),
+        (
+            "estate-06-aden-silver-crown-hall",
+            "Silver Crown Basilica — Crown Beacon (Aden) Imperial Auction Hall",
+            "Town_Luxury_Auction_Hall",
+            "A_Grade_Metropolitan",
+            "zone-town-crown-beacon",
+            "Imperial Auctioneer Cassian (Crown Beacon Grand Plaza)",
+            "80,000,000 Adena Min Bid + 8,000,000 Adena Weekly Rent (Clan Lv.5+)",
+            "Stage 8 Support Magic (Lv.43–75 Wind Walk / Acumen / Blessed Body) + 50% EXP Resurrection",
+            [
+                "Blessed Scroll of Escape: Clan Hall",
+                "Top-Grade Elixir of Life/Mental/CP (S-Grade)",
+                "Imperial Aden & Tower of Insolence Gatekeeper Teleport Grid",
+            ],
+        ),
+        (
+            "estate-07-aden-crimson-velvet-hall",
+            "Crimson Velvet Mansion — Crown Beacon (Aden) Noble Quarter Hall",
+            "Town_Luxury_Auction_Hall",
+            "A_Grade_Metropolitan",
+            "zone-town-crown-beacon",
+            "Imperial Auctioneer Cassian (Crown Beacon West Wing)",
+            "85,000,000 Adena Min Bid + 8,500,000 Adena Weekly Rent (Clan Lv.5+)",
+            "Stage 8 Support Magic (Lv.43–75 Haste / Death Whisper / Vampiric Rage) + 50% EXP Resurrection",
+            [
+                "Blessed Scroll of Escape: Clan Hall",
+                "Blessed Scroll of Resurrection: Pet & Clan Member",
+                "Silent Valley, Blazing Swamp & Forbidden Gateway Teleport Grid",
+            ],
+        ),
+        (
+            "estate-08-goddard-obsidian-forge-hall",
+            "Obsidian Forge Residence — Inductor Switchyard (Goddard) Hall",
+            "Town_Luxury_Auction_Hall",
+            "A_Grade_Metropolitan",
+            "zone-town-inductor-switchyard",
+            "Auctioneer Vulkan (Inductor Upper Terrace)",
+            "65,000,000 Adena Min Bid + 6,500,000 Adena Weekly Rent (Clan Lv.5+)",
+            "Stage 8 Support Magic (Lv.43–75 Berserker Spirit / Might / Greater Shield) + 50% EXP Resurrection",
+            [
+                "Blessed Scroll of Escape: Clan Hall",
+                "Top-Grade Elixir of Life/CP (S-Grade)",
+                "Forge of the Gods, Varka/Ketra & Hot Springs Teleport Grid",
+            ],
+        ),
+        (
+            "estate-09-rune-sky-spire-hall",
+            "Sky-Spire Sanctuary — Starfall Haven (Rune) Grand Cliff Hall",
+            "Town_Luxury_Auction_Hall",
+            "A_Grade_Metropolitan",
+            "zone-town-starfall-haven",
+            "Auctioneer Alastair (Starfall Upper Citadel)",
+            "75,000,000 Adena Min Bid + 7,500,000 Adena Weekly Rent (Clan Lv.5+)",
+            "Stage 8 Support Magic (Lv.43–75 Clarity / Wild Magic / Blessed Soul) + 50% EXP Resurrection",
+            [
+                "Blessed Scroll of Escape: Clan Hall",
+                "High-Grade & Top-Grade Elixir Bundles (A/S-Grade)",
+                "Monastery of Silence, Pagan Temple & Primeval Dock Teleport Grid",
+            ],
+        ),
+        (
+            "estate-10-schuttgart-iron-hearth-hall",
+            "Iron-Hearth Guildhall — Pinion Terminus (Schuttgart) Auction Hall",
+            "Town_Luxury_Auction_Hall",
+            "B_Grade_Provincial",
+            "zone-town-pinion-terminus",
+            "Auctioneer Greta (Pinion Rail Concourse)",
+            "35,000,000 Adena Min Bid + 3,500,000 Adena Weekly Rent (Clan Lv.4+)",
+            "Stage 6 Support Magic (Lv.35–68 Wind Walk / Shield / Empower) + 35% EXP Resurrection",
+            [
+                "Blessed Scroll of Escape: Clan Hall",
+                "Dwarven Craft & Mineral Compression Supplies",
+                "Crypts of Disgrace, Den of Evil & Ice Merchant Teleport Grid",
+            ],
+        ),
+        # 6 Contested_Siege_Chateau (S_Grade_Sovereign_Chateau won via PvP/PvE Siege & Tournament)
+        (
+            "estate-11-bandit-stronghold-chateau",
+            "Bandit Stronghold Chateau — Escapement Mountain Outlaw Keep",
+            "Contested_Siege_Chateau",
+            "S_Grade_Sovereign_Chateau",
+            "zone-clanhall-kilnwatch-accord",
+            "Messenger Jacquard (Bandit Stronghold Registration)",
+            "Bi-Weekly 1h 5-Clan Team Elimination Tournament (Quest: Test of the Bandit)",
+            "Stage 8 Sovereign Support Magic + 50% EXP Resurrection + Zero Weekly Rent",
+            [
+                "Bandit Stronghold Sovereign Cloak & Clan Shield",
+                "Wyvern Manager Access (Strider -> Contested Wyvern Flight)",
+                "Exclusive Outlaw Pass Teleport & Free Elixir Production",
+            ],
+        ),
+        (
+            "estate-12-devastated-castle-chateau",
+            "Devastated Castle Keep — Cursed Sovereign Siege Hall (Aden Border)",
+            "Contested_Siege_Chateau",
+            "S_Grade_Sovereign_Chateau",
+            "zone-field-cinder-apron",
+            "Messenger Sherwood (Devastated Castle Gates)",
+            "Bi-Weekly 1h Siege vs. Doom Lord Mikhail & Rival Clans (+300 CRP Victory)",
+            "Stage 8 Sovereign Support Magic + 50% EXP Resurrection + Zero Weekly Rent",
+            [
+                "Blessed Scroll of Escape: Devastated Castle",
+                "Wyvern Manager Roost & Sovereign Gatekeeper Grid",
+                "Secret Book of Giants & Top-Grade Elixir Supply Chests",
+            ],
+        ),
+        (
+            "estate-13-fortress-of-the-dead-chateau",
+            "Fortress of the Dead Chateau — Nocturnal Vampire Siege Hall",
+            "Contested_Siege_Chateau",
+            "S_Grade_Sovereign_Chateau",
+            "zone-field-whispering-mire",
+            "Messenger Brakel (Cursed Forest Outpost)",
+            "Bi-Weekly 1h Nocturnal Siege vs. Lidia von Hellmann & Alfred (+300 CRP)",
+            "Stage 8 Sovereign Support Magic + 50% EXP Resurrection + Zero Weekly Rent",
+            [
+                "Von Hellmann Sovereign Crest & Dark Cloak",
+                "Wyvern Manager Roost & Forest of the Dead Direct Warp",
+                "Top-Grade Elixir of Life/Mental & Blood Oath Bundles",
+            ],
+        ),
+        (
+            "estate-14-wild-beast-reserve-chateau",
+            "Wild Beast Reserve Chateau — Tamed Behemoth Contested Hall",
+            "Contested_Siege_Chateau",
+            "S_Grade_Sovereign_Chateau",
+            "zone-clanhall-inductor-conclave",
+            "Messenger Messenger-Karel (Beast Reserve Stockade)",
+            "Bi-Weekly 5-Clan Capture Flag & Tamed Beast Commander Tournament",
+            "Stage 8 Sovereign Support Magic + 50% EXP Resurrection + Zero Weekly Rent",
+            [
+                "Beast Reserve Sovereign Banner & Tamed Pet Food Rations",
+                "Wyvern Manager Roost & Goddard/Rune Fast-Transit Grid",
+                "High-Grade & Top-Grade Elixir Production Engine",
+            ],
+        ),
+        (
+            "estate-15-rainbow-springs-chateau",
+            "Rainbow Springs Chateau — Thermal Yeti Arena & Hot Springs Hall",
+            "Contested_Siege_Chateau",
+            "S_Grade_Sovereign_Chateau",
+            "zone-field-caldera-rim",
+            "Messenger Yeti-Steward (Hot Springs Geyser Pavilion)",
+            "Rainbow Springs War Decree Certificates (Fishing/Mobs) + 1h Yeti Word-Gourd Game",
+            "Stage 8 Sovereign Support Magic + Malaria/Cholera Purge + 50% EXP Resurrection",
+            [
+                "Rainbow Springs Sovereign Yukata & Hot Springs Mineral Phials",
+                "Wyvern Manager Roost & Forge of the Gods Direct Teleport",
+                "Zero-Rent Top-Grade Elixir & Blessed Escape Production",
+            ],
+        ),
+        (
+            "estate-16-fortress-of-resistance-chateau",
+            "Fortress of Resistance — Partisan Highway Contested Stronghold",
+            "Contested_Siege_Chateau",
+            "S_Grade_Sovereign_Chateau",
+            "zone-fortress-floran-saffron",
+            "Messenger Braddock (Partisan Resistance Bastion)",
+            "Bi-Weekly 1h Siege vs. Bloody Lord Nurka (+300 CRP & Clan Oath Supply)",
+            "Stage 8 Sovereign Support Magic + 50% EXP Resurrection + Zero Weekly Rent",
+            [
+                "Partisan Sovereign Cloak & Blessed Scroll of Escape: Clan Hall",
+                "Direct Dion/Giran/Heine Tactical Gatekeeper Network",
+                "High-Grade Elixir & Clan Reputation Supply Bundles",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        eid,
+        ename,
+        amode,
+        egrade,
+        zid,
+        anpc,
+        brule,
+        fstage,
+        items,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx + 225 + idx * 13, by - 180 - idx * 9)
+        rows.append(
+            {
+                "estate_id": eid,
+                "estate_name": ename,
+                "acquisition_mode": amode,
+                "estate_grade": egrade,
+                "zone_id": zid,
+                "loc": loc,
+                "auctioneer_or_messenger_npc": anpc,
+                "min_bid_or_siege_rule": brule,
+                "facility_buff_stage": fstage,
+                "exclusive_item_production": items,
+            }
+        )
+    return rows
+
+
+def _build_transformation_talisman_sanctums(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 Transformation Sealbook, Talisman & Agathion Summon Sanctums (6 Avant_Garde_Transformation_Sanctum + 5 Epaulette_Talisman_Vault + 4 Agathion_Bracelet_Altar) (D48)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones: list[dict[str, Any]] = []
+    for entries in zdir.values():
+        if isinstance(entries, list):
+            all_zones.extend(e for e in entries if isinstance(e, dict))
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if z.get("zone_id")}
+    specs = [
+        # 6 Avant_Garde_Transformation_Sanctum (Wizard Avant-Garde + Rare Boss/Apostle Sealbooks)
+        (
+            "trans-01-avant-garde-ivory-sanctum",
+            "Ivory Tower 2F — Transformation Wizard Avant-Garde Prime Sanctum",
+            "Avant_Garde_Transformation_Sanctum",
+            "zone-town-escapement-anvil",
+            "",
+            "",
+            "Transformation Wizard Avant-Garde (Ivory Tower 2F)",
+            [
+                "Onyx Beast & Doom Wraith Sealbook (Lv.50–55 Starter Transformations)",
+                "Vanguard / Inquisitor Stance Toggle (Tank & Healer Solo Grind Mode)",
+                "Sub-Class Skill Certification & Transformation Skill Tome Training",
+            ],
+            "Complete Quest 'More Than Meets the Eye' (Lv.50, Hardin's Academy -> Ivory Tower)",
+            "Unlocks base combat morphs, solo healer/tank stance toggles, and Lv.65/70/75/80 Subclass Certifications.",
+        ),
+        (
+            "trans-02-divine-subclass-80-sanctum",
+            "Divine Transformation Sanctum — Lv.80 Subclass Sealbook Archive",
+            "Avant_Garde_Transformation_Sanctum",
+            "zone-town-crown-beacon",
+            "",
+            "",
+            "Transformation Wizard Avant-Garde & High Priestess of Light",
+            [
+                "Divine Healer (Full-Party Instant Cast Restore & Cleanse Sacrifice)",
+                "Divine Enchanter (Mass Heroic Spirit / Prophecy Buffs)",
+                "Divine Knight / Divine Warrior / Divine Rogue / Divine Wizard / Divine Summoner",
+            ],
+            "Reach Lv.80 on any Subclass + Obtain Divine Transformation Sealbook",
+            "Provides 30m raid-saving cooldowns (Divine Healer sacrifice, Divine Enchanter party prophecies, Divine Knight AoE aggro).",
+        ),
+        (
+            "trans-03-anakim-lilith-apostle-sanctum",
+            "Apostle Sealbook Sanctum — Anakim & Lilith Seven-Signs Morphs",
+            "Avant_Garde_Transformation_Sanctum",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "Merchant of Mammon & Anakim Sanctum Reliquary",
+            [
+                "Transformation Sealbook: Anakim (Holy Light Burst + Party Cleanse)",
+                "Transformation Sealbook: Lilith (Dark Hurricane + Vampiric Drain)",
+                "Transformation Sealbook: Gordon & Rankin (Hellbound Demon Lords)",
+            ],
+            "Defeat Anakim/Lilith Raid or Exchange Seven-Signs Ancient Adena & Seal Gnosis",
+            "Apex PvP/Siege Burst Transformation granting massive long-range AoE Holy/Dark nukes.",
+        ),
+        (
+            "trans-04-zaken-demon-prince-sanctum",
+            "Pirate & Demon Prince Sealbook Sanctum — Zaken & Kiyachi Morphs",
+            "Avant_Garde_Transformation_Sanctum",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B3",
+            "Pirate King Zaken Reliquary & Pathfinder Steward",
+            [
+                "Transformation Sealbook: Zaken (Dual-Sword Vampire Slash & Night Teleport)",
+                "Transformation Sealbook: Demon Prince &echidna (Tower of Infinitum)",
+                "Transformation Sealbook: Kechi & Baylor (Crystal Cavern Boss Morphs)",
+            ],
+            "Drop from Night/Daytime Zaken (B3) or Demon Prince / Kechi Instance",
+            "High-crit melee duelist & boss-stance morph with vampiric lifesteal and stun immunity windows.",
+        ),
+        (
+            "trans-05-aurabird-gracia-aerial-sanctum",
+            "Gracia Sky-Dock — Aurabird Falcon & Owl Aerial Transformation Sanctum",
+            "Avant_Garde_Transformation_Sanctum",
+            "zone-harbor-glaze-barge-airship-dock",
+            "",
+            "",
+            "Engineer Lekon & Special Product Broker Kutran (Airship Wharf)",
+            [
+                "Spellbook: Aurabird Falcon (High-Speed Aerial Fighter & Star Stone Collector)",
+                "Spellbook: Aurabird Owl (High-Precision Aerial Mage & Aerial Cleft Nuker)",
+                "Final Flying Form (Lv.79 Mastery Aerial Raid Combat)",
+            ],
+            "Complete Quest 'Good Day to Fly' (Lv.75, Keucereus Alliance Base)",
+            "Required for 3D aerial flight across Gracia, Star Stone extraction, and Aerial Cleft/Tiat sky battles.",
+        ),
+        (
+            "trans-06-valfar-oblivion-heretic-sanctum",
+            "Pagan & Heretic Sealbook Vault — Doll Blader, Vale Master & Saber Tooth",
+            "Avant_Garde_Transformation_Sanctum",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B2",
+            "Black Marketeer of Mammon & Shadai Caravan Broker",
+            [
+                "Transformation Sealbook: Vale Master & Doll Blader (Lv.70–76 Rare Morphs)",
+                "Transformation Sealbook: Saber Tooth Tiger & Oel Mahum",
+                "Transformation Sealbook: Golem Guardian & Dragon Bomber",
+            ],
+            "Spoil/Drop from High-Level Catacomb Guardians or Purchase at Black Marketeer",
+            "Tactical stealth (Dragon Bomber), siege wall-breaker (Golem Guardian), and fast-strike PvP morphs.",
+        ),
+        # 5 Epaulette_Talisman_Vault (Fortress Supply Captain & Castle Court Magician Talisman Exchange)
+        (
+            "trans-07-shanty-fortress-talisman-vault",
+            "Shanty Kiln Fortress — Blue Talisman of Divine Protection Vault",
+            "Epaulette_Talisman_Vault",
+            "zone-fortress-shanty-kiln",
+            "",
+            "",
+            "Fortress Supply Captain & Detention Camp Warden (Shanty Kiln)",
+            [
+                "Blue Talisman of Divine Protection (+3600 P.Def / +2700 M.Def for 10s)",
+                "Blue Talisman of Explosion & Berserker (+P.Atk / Atk.Spd Burst)",
+                "Iron Bracelet (2 Talisman Slots) & Bronze Bracelet (1 Slot)",
+            ],
+            "Exchange 10x Knights' Epaulettes per Talisman Roll at Fortress Supply Captain",
+            "Essential Grand Olympiad & Siege survival active skill (10s near-invincibility vs. burst).",
+        ),
+        (
+            "trans-08-floran-saffron-talisman-vault",
+            "Floran Saffron Fortress — Red Talisman of Maximum Clarity & Life Force",
+            "Epaulette_Talisman_Vault",
+            "zone-fortress-floran-saffron",
+            "",
+            "",
+            "Fortress Supply Captain & Court Magician (Floran Saffron)",
+            [
+                "Red Talisman of Maximum Clarity (-100% Physical/Magic Skill MP Cost for 90s)",
+                "Red Talisman of Life Force (Instant Full HP/MP Restoration)",
+                "Red Talisman of Minimum Clarity & Meditation",
+            ],
+            "Exchange 10x Knights' Epaulettes + Castle/Fortress Ownership Access",
+            "Zero-MP skill casting during Olympiad matches and emergency full HP/MP recovery.",
+        ),
+        (
+            "trans-09-dragonspine-fortress-talisman-vault",
+            "Dragonspine Cog Fortress — Yellow Talisman of Speed, Alacrity & Crit",
+            "Epaulette_Talisman_Vault",
+            "zone-fortress-dragonspine-cog",
+            "",
+            "",
+            "Fortress Supply Captain (Dragonspine Garrison)",
+            [
+                "Yellow Talisman of Speed (+5 Run Speed Passive while Equipped)",
+                "Yellow Talisman of Alacrity (+Atk.Spd / Casting Spd / Evasion Passive)",
+                "Yellow Talisman of Critical Reduction & Violent Haste",
+            ],
+            "Exchange 10x Knights' Epaulettes at Dragonspine Supply Captain",
+            "Stackable passive movement speed and casting/attack speed bonuses for kiting and chasing.",
+        ),
+        (
+            "trans-10-cloud-halo-citadel-talisman-vault",
+            "Cloud-Halo Fortress — Black Talisman of Vocalization & Free Speech",
+            "Epaulette_Talisman_Vault",
+            "zone-fortress-cloud-halo",
+            "",
+            "",
+            "Fortress Supply Captain & Imperial Court Magician (Cloud-Halo)",
+            [
+                "Black Talisman of Vocalization (Instant Self-Purge of Physical/Magical Silence)",
+                "Black Talisman of Free Speech & Arcane Freedom (Root/Hold Cleanse)",
+                "White Talisman of Storm / Fire / Water / Earth / Light / Darkness Resistance",
+            ],
+            "Exchange 10x Knights' Epaulettes or Territory Badges at Court Magician",
+            "Breaks Doom/Silence/Anchor/Root debuffs mid-combat and boosts elemental attribute defense.",
+        ),
+        (
+            "trans-11-torque-balance-castle-talisman-vault",
+            "Torque-Balance Sovereign Castle — Mithril Bracelet (4-Slot) & Territory Talismans",
+            "Epaulette_Talisman_Vault",
+            "zone-town-torque-balance-citadel",
+            "",
+            "",
+            "Castle Court Magician & Territory Mercenary Captain",
+            [
+                "Mithril Bracelet (4 Active Talisman Slots — S-Grade)",
+                "Orange Talisman of Hot Springs CP Potion & Elixir Synthesis",
+                "Territory Talisman of Painkiller (8s Complete Damage Immunity)",
+            ],
+            "Castle Pailaka / Rim Kamaloka Essence + 50x Territory Badges",
+            "Unlocks 4 simultaneous Talisman slots (Divine Protection + Max Clarity + Vocalization + Speed).",
+        ),
+        # 4 Agathion_Bracelet_Altar (Left-Wrist Summon Companion & Resurrection/Teleport Altars)
+        (
+            "trans-12-giran-luxury-agathion-altar",
+            "Giran Luxury Gallery — Little Angel & Little Devil Agathion Altar",
+            "Agathion_Bracelet_Altar",
+            "zone-town-glaze-barge-quay",
+            "",
+            "",
+            "Luxury Gallerist Alexandria (Giran Luxury Shop)",
+            [
+                "Agathion Seal Bracelet: Little Angel (Blessed Resurrection & Big Head Firework)",
+                "Agathion Seal Bracelet: Little Devil (Blessed Escape: Castle/Clan Hall)",
+                "Shadow & Permanent Agathion Exchange (Fish Gems + Great Codrans + Adena)",
+            ],
+            "25x Big Red Nimble Fish + 50x Great Codrans + 4x Memento Mori + 5x Earth Eggs",
+            "Left-wrist fairy companion granting non-consumable Blessed Escape and Blessed Resurrection cooldowns.",
+        ),
+        (
+            "trans-13-aden-castle-fortress-agathion-altar",
+            "Imperial Aden Court — Castle & Fortress Sovereign Agathion Altar",
+            "Agathion_Bracelet_Altar",
+            "zone-town-crown-beacon",
+            "",
+            "",
+            "Chamberlain Logan & Court Magician (Crown Beacon Castle)",
+            [
+                "Agathion Seal Bracelet: Fortress / Castle Guardian Knight",
+                "Agathion Skill: Blessed Return to Sovereign Castle / Clan Hall (30m CD)",
+                "Agathion Passive: Weight Gauge +5,000 & Inventory Slot Expansion Resonance",
+            ],
+            "Sovereign Clan Ownership of Castle/Fortress + 500x Knights' Epaulettes",
+            "Provides instant siege recall to the Castle Throne Room and extra inventory/weight capacity.",
+        ),
+        (
+            "trans-14-rune-dawn-dusk-agathion-altar",
+            "Starfall Sanctuary — Rainbow Clan Hall & Dawn/Dusk Spirit Agathion Altar",
+            "Agathion_Bracelet_Altar",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            "Priest of Dawn & Adventure Guildsman (Starfall Haven)",
+            [
+                "Agathion Seal Bracelet: Rainbow Clan Hall Spirit (Siege Chateau Exclusive)",
+                "Agathion Seal Bracelet: Rudolph & Pegasus (Vitality Sustenance Buff)",
+                "Agathion Skill: Vitality Replenishment & Party Celebration Aura",
+            ],
+            "Contested Clan Hall Ownership or Raid Memento / Life Crystal Exchange",
+            "Sustains Stage-4 Vitality during 2h dungeon grinds and provides instant Clan Hall recall.",
+        ),
+        (
+            "trans-15-gracia-collection-agathion-altar",
+            "Gracia Collection Altar — Star Stone & Seed Fairy Agathion Reliquary",
+            "Agathion_Bracelet_Altar",
+            "zone-harbor-lantern-ferry-pier",
+            "",
+            "",
+            "Officer Tolonis & Special Product Broker Kutran",
+            [
+                "Agathion Seal Bracelet: Fairy of Enria & Attribute Collection",
+                "Agathion Skill: +20% Star Stone & Energy Compression Extraction Rate",
+                "Agathion Skill: Seed of Infinity / Destruction Instant Harbor Recall",
+            ],
+            "400x Extracted Red/Blue/Green Star Stones + 30x Keucereus Marks",
+            "Doubles aerial Star Stone harvesting efficiency and grants instant Gracia Wharf recall.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        sid,
+        sname,
+        rcat,
+        zid,
+        did,
+        fid,
+        snpc,
+        fitems,
+        ureq,
+        crole,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx - 235 - idx * 11, by + 190 + idx * 8)
+        rows.append(
+            {
+                "sanctum_id": sid,
+                "sanctum_name": sname,
+                "relic_category": rcat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "steward_npc_name": snpc,
+                "featured_transformations_or_talismans": fitems,
+                "unlock_requirement": ureq,
+                "combat_tactical_role": crole,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -8219,6 +8790,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("elemental_stone_caravan_quarries") or []) < 14:
         atlas["elemental_stone_caravan_quarries"] = _build_elemental_stone_caravan_quarries(atlas)
         actions.append("populated_14_elemental_stone_caravan_quarries")
+
+    # 31. Ensure all 16 Clan Hall Auction & Siege Chateau Estates exist in `clan_hall_auction_estates` (D47)
+    if len(atlas.get("clan_hall_auction_estates") or []) < 16:
+        atlas["clan_hall_auction_estates"] = _build_clan_hall_auction_estates(atlas)
+        actions.append("populated_16_clan_hall_auction_estates")
+
+    # 32. Ensure all 15 Transformation Sealbook, Talisman & Agathion Summon Sanctums exist in `transformation_talisman_sanctums` (D48)
+    if len(atlas.get("transformation_talisman_sanctums") or []) < 15:
+        atlas["transformation_talisman_sanctums"] = _build_transformation_talisman_sanctums(atlas)
+        actions.append("populated_15_transformation_talisman_sanctums")
 
     return {"actions": actions}
 
@@ -10495,15 +11076,152 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d46_ratio * 80.0, 1)
     )
 
+    # D47: Interactive 16-Estate Clan Hall Auction & Siege Chateau Real-Estate Matrix (`clan_hall_auction_estates` - 16/16 Estates = 10 Town_Luxury_Auction_Hall + 6 Contested_Siege_Chateau)
+    expected_acquisition_modes = {
+        "Town_Luxury_Auction_Hall",
+        "Contested_Siege_Chateau",
+    }
+    expected_estate_grades = {
+        "B_Grade_Provincial",
+        "A_Grade_Metropolitan",
+        "S_Grade_Sovereign_Chateau",
+    }
+    estate_rows = atlas.get("clan_hall_auction_estates") or []
+    valid_estates = 0
+    town_auction_hall_count = 0
+    contested_siege_chateau_count = 0
+    seen_estate_ids: set[str] = set()
+    seen_acquisition_modes: set[str] = set()
+    seen_estate_grades: set[str] = set()
+    for er in estate_rows:
+        if not isinstance(er, dict):
+            continue
+        eid = str(er.get("estate_id") or "")
+        amode = str(er.get("acquisition_mode") or "")
+        egrade = str(er.get("estate_grade") or "")
+        zid = str(er.get("zone_id") or "")
+        eitems = er.get("exclusive_item_production") or []
+        if (
+            eid
+            and eid not in seen_estate_ids
+            and er.get("estate_name")
+            and amode in expected_acquisition_modes
+            and egrade in expected_estate_grades
+            and zid in zone_ids_set
+            and ":" in str(er.get("loc", ""))
+            and er.get("auctioneer_or_messenger_npc")
+            and er.get("min_bid_or_siege_rule")
+            and er.get("facility_buff_stage")
+            and isinstance(eitems, list)
+            and len(eitems) >= 2
+        ):
+            valid_estates += 1
+            seen_estate_ids.add(eid)
+            seen_acquisition_modes.add(amode)
+            seen_estate_grades.add(egrade)
+            if amode == "Town_Luxury_Auction_Hall":
+                town_auction_hall_count += 1
+            elif amode == "Contested_Siege_Chateau":
+                contested_siege_chateau_count += 1
+
+    has_d47_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_CLAN_HALL_MODE",
+            "setAtlasClanHallMode",
+            "renderAtlasClanHallBarHtml",
+            "studioClanHallAuctionOverlay",
+        )
+    )
+    d47_ratio = valid_estates / 16.0
+    d47_full_coverage = (
+        town_auction_hall_count == 10
+        and contested_siege_chateau_count == 6
+        and seen_acquisition_modes == expected_acquisition_modes
+        and seen_estate_grades == expected_estate_grades
+    )
+    d47_score = (
+        round(min(100.0, d47_ratio * 100.0), 1)
+        if (has_d47_ui and d47_full_coverage)
+        else round(d47_ratio * 80.0, 1)
+    )
+
+    # D48: Interactive 15-Sanctum Transformation Sealbook, Talisman & Agathion Summon Matrix (`transformation_talisman_sanctums` - 15/15 Sanctums = 6 Avant_Garde_Transformation_Sanctum + 5 Epaulette_Talisman_Vault + 4 Agathion_Bracelet_Altar)
+    expected_relic_categories = {
+        "Avant_Garde_Transformation_Sanctum",
+        "Epaulette_Talisman_Vault",
+        "Agathion_Bracelet_Altar",
+    }
+    trans_rows = atlas.get("transformation_talisman_sanctums") or []
+    valid_trans_sanctums = 0
+    avant_garde_count = 0
+    talisman_vault_count = 0
+    agathion_altar_count = 0
+    seen_trans_ids: set[str] = set()
+    seen_relic_categories: set[str] = set()
+    for tr in trans_rows:
+        if not isinstance(tr, dict):
+            continue
+        sid = str(tr.get("sanctum_id") or "")
+        rcat = str(tr.get("relic_category") or "")
+        zid = str(tr.get("zone_id") or "")
+        fitems = tr.get("featured_transformations_or_talismans") or []
+        if (
+            sid
+            and sid not in seen_trans_ids
+            and tr.get("sanctum_name")
+            and rcat in expected_relic_categories
+            and zid in zone_ids_set
+            and isinstance(tr.get("dungeon_id"), str)
+            and isinstance(tr.get("floor_id"), str)
+            and ":" in str(tr.get("loc", ""))
+            and tr.get("steward_npc_name")
+            and isinstance(fitems, list)
+            and len(fitems) >= 2
+            and tr.get("unlock_requirement")
+            and tr.get("combat_tactical_role")
+        ):
+            valid_trans_sanctums += 1
+            seen_trans_ids.add(sid)
+            seen_relic_categories.add(rcat)
+            if rcat == "Avant_Garde_Transformation_Sanctum":
+                avant_garde_count += 1
+            elif rcat == "Epaulette_Talisman_Vault":
+                talisman_vault_count += 1
+            elif rcat == "Agathion_Bracelet_Altar":
+                agathion_altar_count += 1
+
+    has_d48_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_TRANSFORMATION_MODE",
+            "setAtlasTransformationMode",
+            "renderAtlasTransformationBarHtml",
+            "studioTransformationTalismanOverlay",
+        )
+    )
+    d48_ratio = valid_trans_sanctums / 15.0
+    d48_full_coverage = (
+        avant_garde_count == 6
+        and talisman_vault_count == 5
+        and agathion_altar_count == 4
+        and seen_relic_categories == expected_relic_categories
+    )
+    d48_score = (
+        round(min(100.0, d48_ratio * 100.0), 1)
+        if (has_d48_ui and d48_full_coverage)
+        else round(d48_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 28.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 30.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 30.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 40.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 29.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score) / 36.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 30.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 32.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 32.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 42.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 31.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score) / 38.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -10554,8 +11272,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d44_score
             + d45_score
             + d46_score
+            + d47_score
+            + d48_score
         )
-        / 46.0,
+        / 48.0,
         1,
     )
 
@@ -10905,6 +11625,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "element_types": sorted(seen_quarry_elements),
                 "ui_wired": has_d46_ui,
             },
+            "D47_clan_hall_auction_and_siege_estates": {
+                "score": d47_score,
+                "verified": valid_estates,
+                "target": 16,
+                "town_luxury_auction_halls": town_auction_hall_count,
+                "contested_siege_chateaus": contested_siege_chateau_count,
+                "acquisition_modes": sorted(seen_acquisition_modes),
+                "estate_grades": sorted(seen_estate_grades),
+                "ui_wired": has_d47_ui,
+            },
+            "D48_transformation_sealbook_and_talisman_sanctums": {
+                "score": d48_score,
+                "verified": valid_trans_sanctums,
+                "target": 15,
+                "avant_garde_transformation_sanctums": avant_garde_count,
+                "epaulette_talisman_vaults": talisman_vault_count,
+                "agathion_bracelet_altars": agathion_altar_count,
+                "relic_categories": sorted(seen_relic_categories),
+                "ui_wired": has_d48_ui,
+            },
         },
     }
 
@@ -10995,6 +11735,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D44 (15 Kamaloka/Pailaka)   : {dims['D44_kamaloka_pailaka_and_seed_instances']['score']}/100 ({dims['D44_kamaloka_pailaka_and_seed_instances']['verified']}/{dims['D44_kamaloka_pailaka_and_seed_instances']['target']} instance portals)")
         print(f"  D45 (16 Forgotten Scrolls)  : {dims['D45_forgotten_scroll_and_skill_mastery_sanctums']['score']}/100 ({dims['D45_forgotten_scroll_and_skill_mastery_sanctums']['verified']}/{dims['D45_forgotten_scroll_and_skill_mastery_sanctums']['target']} skill sanctums)")
         print(f"  D46 (14 Elemental Quarries) : {dims['D46_elemental_stone_crystal_and_caravan_quarries']['score']}/100 ({dims['D46_elemental_stone_crystal_and_caravan_quarries']['verified']}/{dims['D46_elemental_stone_crystal_and_caravan_quarries']['target']} attribute quarries)")
+        print(f"  D47 (16 Clan Hall Estates)  : {dims['D47_clan_hall_auction_and_siege_estates']['score']}/100 ({dims['D47_clan_hall_auction_and_siege_estates']['verified']}/{dims['D47_clan_hall_auction_and_siege_estates']['target']} clan hall estates)")
+        print(f"  D48 (15 Trans/Talismans)    : {dims['D48_transformation_sealbook_and_talisman_sanctums']['score']}/100 ({dims['D48_transformation_sealbook_and_talisman_sanctums']['verified']}/{dims['D48_transformation_sealbook_and_talisman_sanctums']['target']} relic sanctums)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

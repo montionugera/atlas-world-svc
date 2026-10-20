@@ -53138,5 +53138,520 @@
       "hourly_stone_yield": "80x Fiery Demon Blood + 20x Dim Life Force / hr (Chimeras)",
       "combat_multiplier_effect": "Exchanges 60% Dynasty Weapon/Armor/Jewelry Recipes & Unsealed S80 Class Shoulders"
     }
+  ],
+  "clan_hall_auction_estates": [
+    {
+      "estate_id": "estate-01-gludin-jade-harbor-hall",
+      "estate_name": "Jade Harbor Villa \u2014 Lantern Hollow (Gludin) Luxury Clan Hall",
+      "acquisition_mode": "Town_Luxury_Auction_Hall",
+      "estate_grade": "B_Grade_Provincial",
+      "zone_id": "zone-town-lantern-hollow",
+      "loc": "-83882:243311",
+      "auctioneer_or_messenger_npc": "Auctioneer Galatea (Lantern Hollow Plaza)",
+      "min_bid_or_siege_rule": "20,000,000 Adena Min Bid + 2,000,000 Adena Weekly Rent (Clan Lv.2+)",
+      "facility_buff_stage": "Stage 5 Support Magic (Lv.25\u201362 Wind Walk / Shield / Empower) + 30% EXP Resurrection",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Clan Hall",
+        "Mid-Grade Elixir of Life/Mental (C/B-Grade)",
+        "Regional Harbor & Ant Nest Gatekeeper Teleport Grid"
+      ]
+    },
+    {
+      "estate_id": "estate-02-dion-amber-barracks-hall",
+      "estate_name": "Amber Accord Lodge \u2014 Kilnwatch Bastion (Dion) Auction Hall",
+      "acquisition_mode": "Town_Luxury_Auction_Hall",
+      "estate_grade": "B_Grade_Provincial",
+      "zone_id": "zone-town-kilnwatch-bastion",
+      "loc": "-13949:123302",
+      "auctioneer_or_messenger_npc": "Auctioneer Hendrick (Kilnwatch Guild Row)",
+      "min_bid_or_siege_rule": "25,000,000 Adena Min Bid + 2,500,000 Adena Weekly Rent (Clan Lv.3+)",
+      "facility_buff_stage": "Stage 5 Support Magic (Lv.25\u201362 Haste / Acumen / Magic Barrier) + 30% EXP Resurrection",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Clan Hall",
+        "Clan Hall Curtain & Teleport Stage 2 (Cruma Tower / Floran)",
+        "Greater Healing & Quick Healing Potion Bundles"
+      ]
+    },
+    {
+      "estate_id": "estate-03-giran-golden-chamber-hall",
+      "estate_name": "Golden Chamber Manor \u2014 Glaze-Barge Quay (Giran) Merchant Hall",
+      "acquisition_mode": "Town_Luxury_Auction_Hall",
+      "estate_grade": "A_Grade_Metropolitan",
+      "zone_id": "zone-town-glaze-barge-quay",
+      "loc": "-80936:151193",
+      "auctioneer_or_messenger_npc": "Auctioneer Valerius (Giran Luxury Mile)",
+      "min_bid_or_siege_rule": "50,000,000 Adena Min Bid + 5,000,000 Adena Weekly Rent (Clan Lv.4+)",
+      "facility_buff_stage": "Stage 7 Support Magic (Lv.43\u201375 Wind Walk / Death Whisper / Guidance) + 40% EXP Resurrection",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Clan Hall",
+        "High-Grade Elixir of Life/Mental (A-Grade)",
+        "Metropolitan Giran Trade & Dragon Valley Gatekeeper Grid"
+      ]
+    },
+    {
+      "estate_id": "estate-04-oren-ivory-sentinel-hall",
+      "estate_name": "Ivory Sentinel Keep \u2014 Escapement Anvil (Oren) Auction Hall",
+      "acquisition_mode": "Town_Luxury_Auction_Hall",
+      "estate_grade": "B_Grade_Provincial",
+      "zone_id": "zone-town-escapement-anvil",
+      "loc": "83377:52984",
+      "auctioneer_or_messenger_npc": "Auctioneer Doran (Escapement Anvil Keep)",
+      "min_bid_or_siege_rule": "28,000,000 Adena Min Bid + 2,800,000 Adena Weekly Rent (Clan Lv.3+)",
+      "facility_buff_stage": "Stage 6 Support Magic (Lv.35\u201368 Focus /Wild Magic / Blessed Shield) + 35% EXP Resurrection",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Clan Hall",
+        "Mid-Grade Elixir of CP (B-Grade)",
+        "Oren Border & Cruma/Timak Outpost Teleport Grid"
+      ]
+    },
+    {
+      "estate_id": "estate-05-heine-pearl-lagoon-hall",
+      "estate_name": "Pearl Lagoon Conservatory \u2014 Saffron Press (Heine) Waterfront Hall",
+      "acquisition_mode": "Town_Luxury_Auction_Hall",
+      "estate_grade": "A_Grade_Metropolitan",
+      "zone_id": "zone-town-saffron-press",
+      "loc": "17690:169875",
+      "auctioneer_or_messenger_npc": "Auctioneer Coralie (Saffron Canal Arcade)",
+      "min_bid_or_siege_rule": "45,000,000 Adena Min Bid + 4,500,000 Adena Weekly Rent (Clan Lv.4+)",
+      "facility_buff_stage": "Stage 7 Support Magic (Lv.43\u201375 Clarity / Empower / Agility) + 40% EXP Resurrection",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Clan Hall",
+        "High-Grade Elixir of Mental Strength (A-Grade)",
+        "Sunken Hold & Chromatic Lagoon Gatekeeper Teleport Grid"
+      ]
+    },
+    {
+      "estate_id": "estate-06-aden-silver-crown-hall",
+      "estate_name": "Silver Crown Basilica \u2014 Crown Beacon (Aden) Imperial Auction Hall",
+      "acquisition_mode": "Town_Luxury_Auction_Hall",
+      "estate_grade": "A_Grade_Metropolitan",
+      "zone_id": "zone-town-crown-beacon",
+      "loc": "148203:26566",
+      "auctioneer_or_messenger_npc": "Imperial Auctioneer Cassian (Crown Beacon Grand Plaza)",
+      "min_bid_or_siege_rule": "80,000,000 Adena Min Bid + 8,000,000 Adena Weekly Rent (Clan Lv.5+)",
+      "facility_buff_stage": "Stage 8 Support Magic (Lv.43\u201375 Wind Walk / Acumen / Blessed Body) + 50% EXP Resurrection",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Clan Hall",
+        "Top-Grade Elixir of Life/Mental/CP (S-Grade)",
+        "Imperial Aden & Tower of Insolence Gatekeeper Teleport Grid"
+      ]
+    },
+    {
+      "estate_id": "estate-07-aden-crimson-velvet-hall",
+      "estate_name": "Crimson Velvet Mansion \u2014 Crown Beacon (Aden) Noble Quarter Hall",
+      "acquisition_mode": "Town_Luxury_Auction_Hall",
+      "estate_grade": "A_Grade_Metropolitan",
+      "zone_id": "zone-town-crown-beacon",
+      "loc": "148216:26557",
+      "auctioneer_or_messenger_npc": "Imperial Auctioneer Cassian (Crown Beacon West Wing)",
+      "min_bid_or_siege_rule": "85,000,000 Adena Min Bid + 8,500,000 Adena Weekly Rent (Clan Lv.5+)",
+      "facility_buff_stage": "Stage 8 Support Magic (Lv.43\u201375 Haste / Death Whisper / Vampiric Rage) + 50% EXP Resurrection",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Clan Hall",
+        "Blessed Scroll of Resurrection: Pet & Clan Member",
+        "Silent Valley, Blazing Swamp & Forbidden Gateway Teleport Grid"
+      ]
+    },
+    {
+      "estate_id": "estate-08-goddard-obsidian-forge-hall",
+      "estate_name": "Obsidian Forge Residence \u2014 Inductor Switchyard (Goddard) Hall",
+      "acquisition_mode": "Town_Luxury_Auction_Hall",
+      "estate_grade": "A_Grade_Metropolitan",
+      "zone_id": "zone-town-inductor-switchyard",
+      "loc": "147729:-55452",
+      "auctioneer_or_messenger_npc": "Auctioneer Vulkan (Inductor Upper Terrace)",
+      "min_bid_or_siege_rule": "65,000,000 Adena Min Bid + 6,500,000 Adena Weekly Rent (Clan Lv.5+)",
+      "facility_buff_stage": "Stage 8 Support Magic (Lv.43\u201375 Berserker Spirit / Might / Greater Shield) + 50% EXP Resurrection",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Clan Hall",
+        "Top-Grade Elixir of Life/CP (S-Grade)",
+        "Forge of the Gods, Varka/Ketra & Hot Springs Teleport Grid"
+      ]
+    },
+    {
+      "estate_id": "estate-09-rune-sky-spire-hall",
+      "estate_name": "Sky-Spire Sanctuary \u2014 Starfall Haven (Rune) Grand Cliff Hall",
+      "acquisition_mode": "Town_Luxury_Auction_Hall",
+      "estate_grade": "A_Grade_Metropolitan",
+      "zone_id": "zone-town-starfall-haven",
+      "loc": "44142:-48161",
+      "auctioneer_or_messenger_npc": "Auctioneer Alastair (Starfall Upper Citadel)",
+      "min_bid_or_siege_rule": "75,000,000 Adena Min Bid + 7,500,000 Adena Weekly Rent (Clan Lv.5+)",
+      "facility_buff_stage": "Stage 8 Support Magic (Lv.43\u201375 Clarity / Wild Magic / Blessed Soul) + 50% EXP Resurrection",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Clan Hall",
+        "High-Grade & Top-Grade Elixir Bundles (A/S-Grade)",
+        "Monastery of Silence, Pagan Temple & Primeval Dock Teleport Grid"
+      ]
+    },
+    {
+      "estate_id": "estate-10-schuttgart-iron-hearth-hall",
+      "estate_name": "Iron-Hearth Guildhall \u2014 Pinion Terminus (Schuttgart) Auction Hall",
+      "acquisition_mode": "Town_Luxury_Auction_Hall",
+      "estate_grade": "B_Grade_Provincial",
+      "zone_id": "zone-town-pinion-terminus",
+      "loc": "82755:148330",
+      "auctioneer_or_messenger_npc": "Auctioneer Greta (Pinion Rail Concourse)",
+      "min_bid_or_siege_rule": "35,000,000 Adena Min Bid + 3,500,000 Adena Weekly Rent (Clan Lv.4+)",
+      "facility_buff_stage": "Stage 6 Support Magic (Lv.35\u201368 Wind Walk / Shield / Empower) + 35% EXP Resurrection",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Clan Hall",
+        "Dwarven Craft & Mineral Compression Supplies",
+        "Crypts of Disgrace, Den of Evil & Ice Merchant Teleport Grid"
+      ]
+    },
+    {
+      "estate_id": "estate-11-bandit-stronghold-chateau",
+      "estate_name": "Bandit Stronghold Chateau \u2014 Escapement Mountain Outlaw Keep",
+      "acquisition_mode": "Contested_Siege_Chateau",
+      "estate_grade": "S_Grade_Sovereign_Chateau",
+      "zone_id": "zone-clanhall-kilnwatch-accord",
+      "loc": "-13432:123821",
+      "auctioneer_or_messenger_npc": "Messenger Jacquard (Bandit Stronghold Registration)",
+      "min_bid_or_siege_rule": "Bi-Weekly 1h 5-Clan Team Elimination Tournament (Quest: Test of the Bandit)",
+      "facility_buff_stage": "Stage 8 Sovereign Support Magic + 50% EXP Resurrection + Zero Weekly Rent",
+      "exclusive_item_production": [
+        "Bandit Stronghold Sovereign Cloak & Clan Shield",
+        "Wyvern Manager Access (Strider -> Contested Wyvern Flight)",
+        "Exclusive Outlaw Pass Teleport & Free Elixir Production"
+      ]
+    },
+    {
+      "estate_id": "estate-12-devastated-castle-chateau",
+      "estate_name": "Devastated Castle Keep \u2014 Cursed Sovereign Siege Hall (Aden Border)",
+      "acquisition_mode": "Contested_Siege_Chateau",
+      "estate_grade": "S_Grade_Sovereign_Chateau",
+      "zone_id": "zone-field-cinder-apron",
+      "loc": "-6019:131512",
+      "auctioneer_or_messenger_npc": "Messenger Sherwood (Devastated Castle Gates)",
+      "min_bid_or_siege_rule": "Bi-Weekly 1h Siege vs. Doom Lord Mikhail & Rival Clans (+300 CRP Victory)",
+      "facility_buff_stage": "Stage 8 Sovereign Support Magic + 50% EXP Resurrection + Zero Weekly Rent",
+      "exclusive_item_production": [
+        "Blessed Scroll of Escape: Devastated Castle",
+        "Wyvern Manager Roost & Sovereign Gatekeeper Grid",
+        "Secret Book of Giants & Top-Grade Elixir Supply Chests"
+      ]
+    },
+    {
+      "estate_id": "estate-13-fortress-of-the-dead-chateau",
+      "estate_name": "Fortress of the Dead Chateau \u2014 Nocturnal Vampire Siege Hall",
+      "acquisition_mode": "Contested_Siege_Chateau",
+      "estate_grade": "S_Grade_Sovereign_Chateau",
+      "zone_id": "zone-field-whispering-mire",
+      "loc": "-68006:228103",
+      "auctioneer_or_messenger_npc": "Messenger Brakel (Cursed Forest Outpost)",
+      "min_bid_or_siege_rule": "Bi-Weekly 1h Nocturnal Siege vs. Lidia von Hellmann & Alfred (+300 CRP)",
+      "facility_buff_stage": "Stage 8 Sovereign Support Magic + 50% EXP Resurrection + Zero Weekly Rent",
+      "exclusive_item_production": [
+        "Von Hellmann Sovereign Crest & Dark Cloak",
+        "Wyvern Manager Roost & Forest of the Dead Direct Warp",
+        "Top-Grade Elixir of Life/Mental & Blood Oath Bundles"
+      ]
+    },
+    {
+      "estate_id": "estate-14-wild-beast-reserve-chateau",
+      "estate_name": "Wild Beast Reserve Chateau \u2014 Tamed Behemoth Contested Hall",
+      "acquisition_mode": "Contested_Siege_Chateau",
+      "estate_grade": "S_Grade_Sovereign_Chateau",
+      "zone_id": "zone-clanhall-inductor-conclave",
+      "loc": "148507:-55106",
+      "auctioneer_or_messenger_npc": "Messenger Messenger-Karel (Beast Reserve Stockade)",
+      "min_bid_or_siege_rule": "Bi-Weekly 5-Clan Capture Flag & Tamed Beast Commander Tournament",
+      "facility_buff_stage": "Stage 8 Sovereign Support Magic + 50% EXP Resurrection + Zero Weekly Rent",
+      "exclusive_item_production": [
+        "Beast Reserve Sovereign Banner & Tamed Pet Food Rations",
+        "Wyvern Manager Roost & Goddard/Rune Fast-Transit Grid",
+        "High-Grade & Top-Grade Elixir Production Engine"
+      ]
+    },
+    {
+      "estate_id": "estate-15-rainbow-springs-chateau",
+      "estate_name": "Rainbow Springs Chateau \u2014 Thermal Yeti Arena & Hot Springs Hall",
+      "acquisition_mode": "Contested_Siege_Chateau",
+      "estate_grade": "S_Grade_Sovereign_Chateau",
+      "zone_id": "zone-field-caldera-rim",
+      "loc": "86820:60885",
+      "auctioneer_or_messenger_npc": "Messenger Yeti-Steward (Hot Springs Geyser Pavilion)",
+      "min_bid_or_siege_rule": "Rainbow Springs War Decree Certificates (Fishing/Mobs) + 1h Yeti Word-Gourd Game",
+      "facility_buff_stage": "Stage 8 Sovereign Support Magic + Malaria/Cholera Purge + 50% EXP Resurrection",
+      "exclusive_item_production": [
+        "Rainbow Springs Sovereign Yukata & Hot Springs Mineral Phials",
+        "Wyvern Manager Roost & Forge of the Gods Direct Teleport",
+        "Zero-Rent Top-Grade Elixir & Blessed Escape Production"
+      ]
+    },
+    {
+      "estate_id": "estate-16-fortress-of-resistance-chateau",
+      "estate_name": "Fortress of Resistance \u2014 Partisan Highway Contested Stronghold",
+      "acquisition_mode": "Contested_Siege_Chateau",
+      "estate_grade": "S_Grade_Sovereign_Chateau",
+      "zone_id": "zone-fortress-floran-saffron",
+      "loc": "18533:168076",
+      "auctioneer_or_messenger_npc": "Messenger Braddock (Partisan Resistance Bastion)",
+      "min_bid_or_siege_rule": "Bi-Weekly 1h Siege vs. Bloody Lord Nurka (+300 CRP & Clan Oath Supply)",
+      "facility_buff_stage": "Stage 8 Sovereign Support Magic + 50% EXP Resurrection + Zero Weekly Rent",
+      "exclusive_item_production": [
+        "Partisan Sovereign Cloak & Blessed Scroll of Escape: Clan Hall",
+        "Direct Dion/Giran/Heine Tactical Gatekeeper Network",
+        "High-Grade Elixir & Clan Reputation Supply Bundles"
+      ]
+    }
+  ],
+  "transformation_talisman_sanctums": [
+    {
+      "sanctum_id": "trans-01-avant-garde-ivory-sanctum",
+      "sanctum_name": "Ivory Tower 2F \u2014 Transformation Wizard Avant-Garde Prime Sanctum",
+      "relic_category": "Avant_Garde_Transformation_Sanctum",
+      "zone_id": "zone-town-escapement-anvil",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "82854:53398",
+      "steward_npc_name": "Transformation Wizard Avant-Garde (Ivory Tower 2F)",
+      "featured_transformations_or_talismans": [
+        "Onyx Beast & Doom Wraith Sealbook (Lv.50\u201355 Starter Transformations)",
+        "Vanguard / Inquisitor Stance Toggle (Tank & Healer Solo Grind Mode)",
+        "Sub-Class Skill Certification & Transformation Skill Tome Training"
+      ],
+      "unlock_requirement": "Complete Quest 'More Than Meets the Eye' (Lv.50, Hardin's Academy -> Ivory Tower)",
+      "combat_tactical_role": "Unlocks base combat morphs, solo healer/tank stance toggles, and Lv.65/70/75/80 Subclass Certifications."
+    },
+    {
+      "sanctum_id": "trans-02-divine-subclass-80-sanctum",
+      "sanctum_name": "Divine Transformation Sanctum \u2014 Lv.80 Subclass Sealbook Archive",
+      "relic_category": "Avant_Garde_Transformation_Sanctum",
+      "zone_id": "zone-town-crown-beacon",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147643:27006",
+      "steward_npc_name": "Transformation Wizard Avant-Garde & High Priestess of Light",
+      "featured_transformations_or_talismans": [
+        "Divine Healer (Full-Party Instant Cast Restore & Cleanse Sacrifice)",
+        "Divine Enchanter (Mass Heroic Spirit / Prophecy Buffs)",
+        "Divine Knight / Divine Warrior / Divine Rogue / Divine Wizard / Divine Summoner"
+      ],
+      "unlock_requirement": "Reach Lv.80 on any Subclass + Obtain Divine Transformation Sealbook",
+      "combat_tactical_role": "Provides 30m raid-saving cooldowns (Divine Healer sacrifice, Divine Enchanter party prophecies, Divine Knight AoE aggro)."
+    },
+    {
+      "sanctum_id": "trans-03-anakim-lilith-apostle-sanctum",
+      "sanctum_name": "Apostle Sealbook Sanctum \u2014 Anakim & Lilith Seven-Signs Morphs",
+      "relic_category": "Avant_Garde_Transformation_Sanctum",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "148932:28614",
+      "steward_npc_name": "Merchant of Mammon & Anakim Sanctum Reliquary",
+      "featured_transformations_or_talismans": [
+        "Transformation Sealbook: Anakim (Holy Light Burst + Party Cleanse)",
+        "Transformation Sealbook: Lilith (Dark Hurricane + Vampiric Drain)",
+        "Transformation Sealbook: Gordon & Rankin (Hellbound Demon Lords)"
+      ],
+      "unlock_requirement": "Defeat Anakim/Lilith Raid or Exchange Seven-Signs Ancient Adena & Seal Gnosis",
+      "combat_tactical_role": "Apex PvP/Siege Burst Transformation granting massive long-range AoE Holy/Dark nukes."
+    },
+    {
+      "sanctum_id": "trans-04-zaken-demon-prince-sanctum",
+      "sanctum_name": "Pirate & Demon Prince Sealbook Sanctum \u2014 Zaken & Kiyachi Morphs",
+      "relic_category": "Avant_Garde_Transformation_Sanctum",
+      "zone_id": "zone-dungeon-sunken-potter-hold",
+      "dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "floor_id": "B3",
+      "loc": "-78679:149422",
+      "steward_npc_name": "Pirate King Zaken Reliquary & Pathfinder Steward",
+      "featured_transformations_or_talismans": [
+        "Transformation Sealbook: Zaken (Dual-Sword Vampire Slash & Night Teleport)",
+        "Transformation Sealbook: Demon Prince &echidna (Tower of Infinitum)",
+        "Transformation Sealbook: Kechi & Baylor (Crystal Cavern Boss Morphs)"
+      ],
+      "unlock_requirement": "Drop from Night/Daytime Zaken (B3) or Demon Prince / Kechi Instance",
+      "combat_tactical_role": "High-crit melee duelist & boss-stance morph with vampiric lifesteal and stun immunity windows."
+    },
+    {
+      "sanctum_id": "trans-05-aurabird-gracia-aerial-sanctum",
+      "sanctum_name": "Gracia Sky-Dock \u2014 Aurabird Falcon & Owl Aerial Transformation Sanctum",
+      "relic_category": "Avant_Garde_Transformation_Sanctum",
+      "zone_id": "zone-harbor-glaze-barge-airship-dock",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-89690:155430",
+      "steward_npc_name": "Engineer Lekon & Special Product Broker Kutran (Airship Wharf)",
+      "featured_transformations_or_talismans": [
+        "Spellbook: Aurabird Falcon (High-Speed Aerial Fighter & Star Stone Collector)",
+        "Spellbook: Aurabird Owl (High-Precision Aerial Mage & Aerial Cleft Nuker)",
+        "Final Flying Form (Lv.79 Mastery Aerial Raid Combat)"
+      ],
+      "unlock_requirement": "Complete Quest 'Good Day to Fly' (Lv.75, Keucereus Alliance Base)",
+      "combat_tactical_role": "Required for 3D aerial flight across Gracia, Star Stone extraction, and Aerial Cleft/Tiat sky battles."
+    },
+    {
+      "sanctum_id": "trans-06-valfar-oblivion-heretic-sanctum",
+      "sanctum_name": "Pagan & Heretic Sealbook Vault \u2014 Doll Blader, Vale Master & Saber Tooth",
+      "relic_category": "Avant_Garde_Transformation_Sanctum",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B2",
+      "loc": "18099:-63962",
+      "steward_npc_name": "Black Marketeer of Mammon & Shadai Caravan Broker",
+      "featured_transformations_or_talismans": [
+        "Transformation Sealbook: Vale Master & Doll Blader (Lv.70\u201376 Rare Morphs)",
+        "Transformation Sealbook: Saber Tooth Tiger & Oel Mahum",
+        "Transformation Sealbook: Golem Guardian & Dragon Bomber"
+      ],
+      "unlock_requirement": "Spoil/Drop from High-Level Catacomb Guardians or Purchase at Black Marketeer",
+      "combat_tactical_role": "Tactical stealth (Dragon Bomber), siege wall-breaker (Golem Guardian), and fast-strike PvP morphs."
+    },
+    {
+      "sanctum_id": "trans-07-shanty-fortress-talisman-vault",
+      "sanctum_name": "Shanty Kiln Fortress \u2014 Blue Talisman of Divine Protection Vault",
+      "relic_category": "Epaulette_Talisman_Vault",
+      "zone_id": "zone-fortress-shanty-kiln",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-5512:134446",
+      "steward_npc_name": "Fortress Supply Captain & Detention Camp Warden (Shanty Kiln)",
+      "featured_transformations_or_talismans": [
+        "Blue Talisman of Divine Protection (+3600 P.Def / +2700 M.Def for 10s)",
+        "Blue Talisman of Explosion & Berserker (+P.Atk / Atk.Spd Burst)",
+        "Iron Bracelet (2 Talisman Slots) & Bronze Bracelet (1 Slot)"
+      ],
+      "unlock_requirement": "Exchange 10x Knights' Epaulettes per Talisman Roll at Fortress Supply Captain",
+      "combat_tactical_role": "Essential Grand Olympiad & Siege survival active skill (10s near-invincibility vs. burst)."
+    },
+    {
+      "sanctum_id": "trans-08-floran-saffron-talisman-vault",
+      "sanctum_name": "Floran Saffron Fortress \u2014 Red Talisman of Maximum Clarity & Life Force",
+      "relic_category": "Epaulette_Talisman_Vault",
+      "zone_id": "zone-fortress-floran-saffron",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "17777:168654",
+      "steward_npc_name": "Fortress Supply Captain & Court Magician (Floran Saffron)",
+      "featured_transformations_or_talismans": [
+        "Red Talisman of Maximum Clarity (-100% Physical/Magic Skill MP Cost for 90s)",
+        "Red Talisman of Life Force (Instant Full HP/MP Restoration)",
+        "Red Talisman of Minimum Clarity & Meditation"
+      ],
+      "unlock_requirement": "Exchange 10x Knights' Epaulettes + Castle/Fortress Ownership Access",
+      "combat_tactical_role": "Zero-MP skill casting during Olympiad matches and emergency full HP/MP recovery."
+    },
+    {
+      "sanctum_id": "trans-09-dragonspine-fortress-talisman-vault",
+      "sanctum_name": "Dragonspine Cog Fortress \u2014 Yellow Talisman of Speed, Alacrity & Crit",
+      "relic_category": "Epaulette_Talisman_Vault",
+      "zone_id": "zone-fortress-dragonspine-cog",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "90866:137062",
+      "steward_npc_name": "Fortress Supply Captain (Dragonspine Garrison)",
+      "featured_transformations_or_talismans": [
+        "Yellow Talisman of Speed (+5 Run Speed Passive while Equipped)",
+        "Yellow Talisman of Alacrity (+Atk.Spd / Casting Spd / Evasion Passive)",
+        "Yellow Talisman of Critical Reduction & Violent Haste"
+      ],
+      "unlock_requirement": "Exchange 10x Knights' Epaulettes at Dragonspine Supply Captain",
+      "combat_tactical_role": "Stackable passive movement speed and casting/attack speed bonuses for kiting and chasing."
+    },
+    {
+      "sanctum_id": "trans-10-cloud-halo-citadel-talisman-vault",
+      "sanctum_name": "Cloud-Halo Fortress \u2014 Black Talisman of Vocalization & Free Speech",
+      "relic_category": "Epaulette_Talisman_Vault",
+      "zone_id": "zone-fortress-cloud-halo",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "45855:-44830",
+      "steward_npc_name": "Fortress Supply Captain & Imperial Court Magician (Cloud-Halo)",
+      "featured_transformations_or_talismans": [
+        "Black Talisman of Vocalization (Instant Self-Purge of Physical/Magical Silence)",
+        "Black Talisman of Free Speech & Arcane Freedom (Root/Hold Cleanse)",
+        "White Talisman of Storm / Fire / Water / Earth / Light / Darkness Resistance"
+      ],
+      "unlock_requirement": "Exchange 10x Knights' Epaulettes or Territory Badges at Court Magician",
+      "combat_tactical_role": "Breaks Doom/Silence/Anchor/Root debuffs mid-combat and boosts elemental attribute defense."
+    },
+    {
+      "sanctum_id": "trans-11-torque-balance-castle-talisman-vault",
+      "sanctum_name": "Torque-Balance Sovereign Castle \u2014 Mithril Bracelet (4-Slot) & Territory Talismans",
+      "relic_category": "Epaulette_Talisman_Vault",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "116044:-18122",
+      "steward_npc_name": "Castle Court Magician & Territory Mercenary Captain",
+      "featured_transformations_or_talismans": [
+        "Mithril Bracelet (4 Active Talisman Slots \u2014 S-Grade)",
+        "Orange Talisman of Hot Springs CP Potion & Elixir Synthesis",
+        "Territory Talisman of Painkiller (8s Complete Damage Immunity)"
+      ],
+      "unlock_requirement": "Castle Pailaka / Rim Kamaloka Essence + 50x Territory Badges",
+      "combat_tactical_role": "Unlocks 4 simultaneous Talisman slots (Divine Protection + Max Clarity + Vocalization + Speed)."
+    },
+    {
+      "sanctum_id": "trans-12-giran-luxury-agathion-altar",
+      "sanctum_name": "Giran Luxury Gallery \u2014 Little Angel & Little Devil Agathion Altar",
+      "relic_category": "Agathion_Bracelet_Altar",
+      "zone_id": "zone-town-glaze-barge-quay",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-81567:151686",
+      "steward_npc_name": "Luxury Gallerist Alexandria (Giran Luxury Shop)",
+      "featured_transformations_or_talismans": [
+        "Agathion Seal Bracelet: Little Angel (Blessed Resurrection & Big Head Firework)",
+        "Agathion Seal Bracelet: Little Devil (Blessed Escape: Castle/Clan Hall)",
+        "Shadow & Permanent Agathion Exchange (Fish Gems + Great Codrans + Adena)"
+      ],
+      "unlock_requirement": "25x Big Red Nimble Fish + 50x Great Codrans + 4x Memento Mori + 5x Earth Eggs",
+      "combat_tactical_role": "Left-wrist fairy companion granting non-consumable Blessed Escape and Blessed Resurrection cooldowns."
+    },
+    {
+      "sanctum_id": "trans-13-aden-castle-fortress-agathion-altar",
+      "sanctum_name": "Imperial Aden Court \u2014 Castle & Fortress Sovereign Agathion Altar",
+      "relic_category": "Agathion_Bracelet_Altar",
+      "zone_id": "zone-town-crown-beacon",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "147522:27094",
+      "steward_npc_name": "Chamberlain Logan & Court Magician (Crown Beacon Castle)",
+      "featured_transformations_or_talismans": [
+        "Agathion Seal Bracelet: Fortress / Castle Guardian Knight",
+        "Agathion Skill: Blessed Return to Sovereign Castle / Clan Hall (30m CD)",
+        "Agathion Passive: Weight Gauge +5,000 & Inventory Slot Expansion Resonance"
+      ],
+      "unlock_requirement": "Sovereign Clan Ownership of Castle/Fortress + 500x Knights' Epaulettes",
+      "combat_tactical_role": "Provides instant siege recall to the Castle Throne Room and extra inventory/weight capacity."
+    },
+    {
+      "sanctum_id": "trans-14-rune-dawn-dusk-agathion-altar",
+      "sanctum_name": "Starfall Sanctuary \u2014 Rainbow Clan Hall & Dawn/Dusk Spirit Agathion Altar",
+      "relic_category": "Agathion_Bracelet_Altar",
+      "zone_id": "zone-town-starfall-haven",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "43411:-47598",
+      "steward_npc_name": "Priest of Dawn & Adventure Guildsman (Starfall Haven)",
+      "featured_transformations_or_talismans": [
+        "Agathion Seal Bracelet: Rainbow Clan Hall Spirit (Siege Chateau Exclusive)",
+        "Agathion Seal Bracelet: Rudolph & Pegasus (Vitality Sustenance Buff)",
+        "Agathion Skill: Vitality Replenishment & Party Celebration Aura"
+      ],
+      "unlock_requirement": "Contested Clan Hall Ownership or Raid Memento / Life Crystal Exchange",
+      "combat_tactical_role": "Sustains Stage-4 Vitality during 2h dungeon grinds and provides instant Clan Hall recall."
+    },
+    {
+      "sanctum_id": "trans-15-gracia-collection-agathion-altar",
+      "sanctum_name": "Gracia Collection Altar \u2014 Star Stone & Seed Fairy Agathion Reliquary",
+      "relic_category": "Agathion_Bracelet_Altar",
+      "zone_id": "zone-harbor-lantern-ferry-pier",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-96600:258710",
+      "steward_npc_name": "Officer Tolonis & Special Product Broker Kutran",
+      "featured_transformations_or_talismans": [
+        "Agathion Seal Bracelet: Fairy of Enria & Attribute Collection",
+        "Agathion Skill: +20% Star Stone & Energy Compression Extraction Rate",
+        "Agathion Skill: Seed of Infinity / Destruction Instant Harbor Recall"
+      ],
+      "unlock_requirement": "400x Extracted Red/Blue/Green Star Stones + 30x Keucereus Marks",
+      "combat_tactical_role": "Doubles aerial Star Stone harvesting efficiency and grants instant Gracia Wharf recall."
+    }
   ]
 }

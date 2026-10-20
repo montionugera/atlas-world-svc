@@ -686,6 +686,8 @@ def validate_world_governance(
                 "kamalokaPailakaInstancesCount": len(t_doc.get("kamaloka_pailaka_instances") or []),
                 "forgottenScrollSkillSanctumsCount": len(t_doc.get("forgotten_scroll_skill_sanctums") or []),
                 "elementalStoneCaravanQuarriesCount": len(t_doc.get("elemental_stone_caravan_quarries") or []),
+                "clanHallAuctionEstatesCount": len(t_doc.get("clan_hall_auction_estates") or []),
+                "transformationTalismanSanctumsCount": len(t_doc.get("transformation_talisman_sanctums") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):

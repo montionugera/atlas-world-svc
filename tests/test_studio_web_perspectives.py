@@ -1662,7 +1662,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 46)
+        self.assertGreaterEqual(len(audit["dimensions"]), 46)
 
         d45 = audit["dimensions"]["D45_forgotten_scroll_and_skill_mastery_sanctums"]
         self.assertEqual(d45["score"], 100.0)
@@ -1720,10 +1720,104 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas46DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 46)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 46)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 46)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 46)
         self.assertIn("46-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave22_clan_hall_auction_estates_and_transformation_talisman_sanctums(self) -> None:
+        """Wave 22 (D47–D48): 16 Clan Hall Auction/Siege Estates & 15 Transformation/Talisman/Agathion Sanctums."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["clanHallAuctionEstatesCount"], 16)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["transformationTalismanSanctumsCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_CLAN_HALL_MODE",
+            "setAtlasClanHallMode(",
+            "renderAtlasClanHallBarHtml(",
+            "studioClanHallAuctionOverlay",
+            "ATLAS_TRANSFORMATION_MODE",
+            "setAtlasTransformationMode(",
+            "renderAtlasTransformationBarHtml(",
+            "studioTransformationTalismanOverlay",
+            "48-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 22 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 48)
+
+        d47 = audit["dimensions"]["D47_clan_hall_auction_and_siege_estates"]
+        self.assertEqual(d47["score"], 100.0)
+        self.assertEqual(d47["verified"], 16)
+        self.assertEqual(d47["target"], 16)
+        self.assertEqual(d47["town_luxury_auction_halls"], 10)
+        self.assertEqual(d47["contested_siege_chateaus"], 6)
+        self.assertEqual(
+            set(d47["acquisition_modes"]),
+            {
+                "Town_Luxury_Auction_Hall",
+                "Contested_Siege_Chateau",
+            },
+        )
+        self.assertEqual(
+            set(d47["estate_grades"]),
+            {
+                "B_Grade_Provincial",
+                "A_Grade_Metropolitan",
+                "S_Grade_Sovereign_Chateau",
+            },
+        )
+        self.assertTrue(d47["ui_wired"])
+
+        d48 = audit["dimensions"]["D48_transformation_sealbook_and_talisman_sanctums"]
+        self.assertEqual(d48["score"], 100.0)
+        self.assertEqual(d48["verified"], 15)
+        self.assertEqual(d48["target"], 15)
+        self.assertEqual(d48["avant_garde_transformation_sanctums"], 6)
+        self.assertEqual(d48["epaulette_talisman_vaults"], 5)
+        self.assertEqual(d48["agathion_bracelet_altars"], 4)
+        self.assertEqual(
+            set(d48["relic_categories"]),
+            {
+                "Avant_Garde_Transformation_Sanctum",
+                "Epaulette_Talisman_Vault",
+                "Agathion_Bracelet_Altar",
+            },
+        )
+        self.assertTrue(d48["ui_wired"])
+
+        estates = atlas["clan_hall_auction_estates"]
+        self.assertEqual(len(estates), 16)
+        self.assertEqual(sum(1 for e in estates if e["acquisition_mode"] == "Town_Luxury_Auction_Hall"), 10)
+        self.assertEqual(sum(1 for e in estates if e["acquisition_mode"] == "Contested_Siege_Chateau"), 6)
+        for e in estates:
+            self.assertGreaterEqual(len(e["exclusive_item_production"]), 2)
+
+        sanctums = atlas["transformation_talisman_sanctums"]
+        self.assertEqual(len(sanctums), 15)
+        self.assertEqual(sum(1 for s in sanctums if s["relic_category"] == "Avant_Garde_Transformation_Sanctum"), 6)
+        self.assertEqual(sum(1 for s in sanctums if s["relic_category"] == "Epaulette_Talisman_Vault"), 5)
+        self.assertEqual(sum(1 for s in sanctums if s["relic_category"] == "Agathion_Bracelet_Altar"), 4)
+        for s in sanctums:
+            self.assertGreaterEqual(len(s["featured_transformations_or_talismans"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas48DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 48)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 48)
+        self.assertIn("48-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
