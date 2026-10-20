@@ -4268,6 +4268,7 @@ const ATLAS_STATE_STORE = {
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
   activeTownId: 'town-lantern-hollow',
+  activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
 
@@ -4332,6 +4333,7 @@ function zoomStudioMap(delta, reset = false, targetZoom = null) {
     STUDIO_MAP_PAN_Y = 0;
     ATLAS_STATE_STORE.activeDungeonId = '';
     ATLAS_STATE_STORE.activeFloorId = '';
+    ATLAS_STATE_STORE.activeFieldOrFortId = '';
   } else if (targetZoom !== null && Number.isFinite(targetZoom)) {
     STUDIO_MAP_ZOOM = Math.max(0.85, Math.min(12.0, +targetZoom.toFixed(2)));
   } else {
@@ -4399,6 +4401,7 @@ function resetAtlasFilters() {
 
 function focusTownStreetBlueprint(townId, locCoord) {
   ATLAS_STATE_STORE.activeTownId = townId || 'town-lantern-hollow';
+  ATLAS_STATE_STORE.activeFieldOrFortId = '';
   ATLAS_STATE_STORE.activeDungeonId = '';
   ATLAS_STATE_STORE.activeFloorId = '';
   if (locCoord) {
@@ -4408,6 +4411,23 @@ function focusTownStreetBlueprint(townId, locCoord) {
   STUDIO_MAP_PAN_X = 0;
   STUDIO_MAP_PAN_Y = 0;
   zoomStudioMap(0, false, 5.2);
+}
+
+function focusFieldTacticalBlueprint(fieldOrFortId, locCoord = '') {
+  ATLAS_STATE_STORE.activeFieldOrFortId = fieldOrFortId || 'zone-field-clover-south-gate';
+  ATLAS_STATE_STORE.activeDungeonId = '';
+  ATLAS_STATE_STORE.activeFloorId = '';
+  if (locCoord) {
+    STUDIO_MAP_LOC = clampWorldLocCoord(locCoord);
+  }
+  STUDIO_SELECTED_NODE_ID = ATLAS_STATE_STORE.activeFieldOrFortId;
+  STUDIO_MAP_PAN_X = 0;
+  STUDIO_MAP_PAN_Y = 0;
+  zoomStudioMap(0, false, 4.8);
+}
+
+function focusFortressBlueprint(fortId, locCoord = '') {
+  focusFieldTacticalBlueprint(fortId || 'zone-harbor-lantern-ferry-pier', locCoord);
 }
 
 function openDungeonSubMap(dungeonId, floorId = '') {
@@ -4805,6 +4825,10 @@ function renderCartoShellHtml({
             <button type="button" onclick="openDungeonSubMap('${escapeHtml(poi.dungeonWarpId)}', '${escapeHtml(poi.dungeonFloorId || '')}')" style="height:36px;border-radius:10px;border:1.5px solid #e9d5ff;background:#7e22ce;color:#ffffff;font-weight:800;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(126,34,206,0.45)">
               🕳️ ${escapeHtml(poi.drillLabel || 'Enter Dungeon Map')}
             </button>
+          ` : (poi.fieldTacticalBlueprintId ? `
+            <button type="button" onclick="focusFieldTacticalBlueprint('${escapeHtml(poi.fieldTacticalBlueprintId)}', '${escapeHtml(poi.locCoord || '')}')" style="height:36px;border-radius:10px;border:1.5px solid #86efac;background:#15803d;color:#ffffff;font-weight:800;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(21,128,61,0.4)">
+              🏕️ ${escapeHtml(poi.drillLabel || 'Field Tactical Blueprint')}
+            </button>
           ` : (poi.townBlueprintId ? `
             <button type="button" onclick="focusTownStreetBlueprint('${escapeHtml(poi.townBlueprintId)}', '${escapeHtml(poi.locCoord || '')}')" style="height:36px;border-radius:10px;border:1.5px solid #fde047;background:#2563eb;color:#ffffff;font-weight:800;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(37,99,235,0.35)">
               🔍 ${escapeHtml(poi.drillLabel || 'Zoom to Street Map')}
@@ -4817,7 +4841,7 @@ function renderCartoShellHtml({
             <button type="button" onclick="zoomStudioMap(0.65, false)" style="height:36px;border-radius:10px;border:none;background:#2563eb;color:#ffffff;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px">
               🔍 Zoom Closer
             </button>
-          `))}
+          `)))}
           <button type="button" onclick="zoomStudioMap(0, true)" style="height:36px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:#243244;color:#e2e8f0;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px">
             🧭 Reset 1:1 View
           </button>
@@ -5023,6 +5047,36 @@ function getAllAtlasTownEntries(tatlas) {
   return list;
 }
 
+function getAllAtlasFieldEntries(tatlas) {
+  const zdir = (tatlas && tatlas.t_breadth_zone_directory) || {};
+  return zdir.fields_and_hunting_areas || [];
+}
+
+function getAllAtlasFortressEntries(tatlas) {
+  const zdir = (tatlas && tatlas.t_breadth_zone_directory) || {};
+  return zdir.harbors_clanhalls_and_forts || [];
+}
+
+function getFieldOrFortressBlueprintData(zoneOrNodeId, tatlas) {
+  const targetId = typeof zoneOrNodeId === 'string'
+    ? zoneOrNodeId
+    : ((zoneOrNodeId && (zoneOrNodeId.zone_id || zoneOrNodeId.studio_node_id || zoneOrNodeId.id)) || ATLAS_STATE_STORE.activeFieldOrFortId || 'zone-field-clover-south-gate');
+  const allFields = getAllAtlasFieldEntries(tatlas);
+  const allForts = getAllAtlasFortressEntries(tatlas);
+  const matchedField = allFields.find(f => f.zone_id === targetId || f.studio_node_id === targetId);
+  if (matchedField && matchedField.field_tactical_blueprint) {
+    return { kind: 'field', entry: matchedField, bp: matchedField.field_tactical_blueprint };
+  }
+  const matchedFort = allForts.find(h => h.zone_id === targetId || h.studio_node_id === targetId);
+  if (matchedFort && matchedFort.fortress_blueprint) {
+    return { kind: 'fortress', entry: matchedFort, bp: matchedFort.fortress_blueprint };
+  }
+  if (allFields.length > 0 && allFields[0].field_tactical_blueprint) {
+    return { kind: 'field', entry: allFields[0], bp: allFields[0].field_tactical_blueprint };
+  }
+  return null;
+}
+
 function getTownBlueprintData(townNodeOrId, tatlas) {
   const targetId = typeof townNodeOrId === 'string'
     ? townNodeOrId
@@ -5054,6 +5108,8 @@ function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
   const allTowns = getAllAtlasTownEntries(tatlas);
+  const allFields = getAllAtlasFieldEntries(tatlas);
+  const allFortresses = getAllAtlasFortressEntries(tatlas);
   const allDungeons = (tatlas && tatlas.multi_floor_dungeons) || [];
   const catPills = [
     { id: 'All', label: '🌐 All Layers' },
@@ -5071,6 +5127,7 @@ function renderAtlasFilterBarHtml(matchCount) {
     { id: 'zone-dungeon-chronometer-foundry', label: '⚙️ Chronometer Foundry (Tower of Insolence 1F–3F)' }
   ];
   const activeTownId = ATLAS_STATE_STORE.activeTownId || 'town-lantern-hollow';
+  const activeFieldOrFortId = ATLAS_STATE_STORE.activeFieldOrFortId || '';
   const activeDungeonId = ATLAS_STATE_STORE.activeDungeonId || '';
 
   return `
@@ -5108,7 +5165,7 @@ function renderAtlasFilterBarHtml(matchCount) {
         </div>
       </div>
 
-      <!-- Quick Semantic Zoom, All 15 Town Street Blueprints Selector & All 16 Multi-Floor Dungeons Selector -->
+      <!-- Quick Semantic Zoom, All 15 Town Street Blueprints, 24 Field Tactical Blueprints, 8 Fortress Blueprints & 16 Multi-Floor Dungeons -->
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.06)">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
           <span class="mono" style="font-size:10px;font-weight:800;color:#fde047">⚡ QUICK WARP &amp; BLUEPRINTS:</span>
@@ -5116,21 +5173,47 @@ function renderAtlasFilterBarHtml(matchCount) {
                   style="min-height:25px;padding:2px 9px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid ${!ATLAS_STATE_STORE.activeDungeonId && getSemanticZoomLodTier() === 1 ? '#fde047' : 'rgba(255,255,255,0.15)'};background:${!ATLAS_STATE_STORE.activeDungeonId && getSemanticZoomLodTier() === 1 ? '#854d0e' : '#1e293b'};color:#fde68a">
             🌍 Overland Macro (1.0×)
           </button>
-          <button type="button" onclick="ATLAS_STATE_STORE.activeDungeonId=''; zoomStudioMap(0, false, 2.8)"
+          <button type="button" onclick="ATLAS_STATE_STORE.activeDungeonId=''; ATLAS_STATE_STORE.activeFieldOrFortId=''; zoomStudioMap(0, false, 2.8)"
                   style="min-height:25px;padding:2px 9px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid ${!ATLAS_STATE_STORE.activeDungeonId && getSemanticZoomLodTier() === 2 ? '#38bdf8' : 'rgba(255,255,255,0.15)'};background:${!ATLAS_STATE_STORE.activeDungeonId && getSemanticZoomLodTier() === 2 ? '#0369a1' : '#1e293b'};color:#bae6fd">
             🛤️ Regional Roads &amp; Portals (2.8×)
           </button>
           <button type="button" onclick="focusTownStreetBlueprint(ATLAS_STATE_STORE.activeTownId || 'town-lantern-hollow')"
-                  style="min-height:25px;padding:2px 9px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid ${!ATLAS_STATE_STORE.activeDungeonId && getSemanticZoomLodTier() === 3 ? '#4ade80' : 'rgba(255,255,255,0.15)'};background:${!ATLAS_STATE_STORE.activeDungeonId && getSemanticZoomLodTier() === 3 ? '#065f46' : '#1e293b'};color:#bbf7d0">
+                  style="min-height:25px;padding:2px 9px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid ${!ATLAS_STATE_STORE.activeDungeonId && !activeFieldOrFortId && getSemanticZoomLodTier() === 3 ? '#4ade80' : 'rgba(255,255,255,0.15)'};background:${!ATLAS_STATE_STORE.activeDungeonId && !activeFieldOrFortId && getSemanticZoomLodTier() === 3 ? '#065f46' : '#1e293b'};color:#bbf7d0">
             🏘️ Town Street &amp; Shop/Refinement Blueprint (5.2×)
+          </button>
+          <button type="button" onclick="focusFieldTacticalBlueprint(ATLAS_STATE_STORE.activeFieldOrFortId || 'zone-field-clover-south-gate')"
+                  style="min-height:25px;padding:2px 9px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid ${activeFieldOrFortId ? '#86efac' : 'rgba(255,255,255,0.15)'};background:${activeFieldOrFortId ? '#14532d' : '#1e293b'};color:#dcfce7">
+            🏕️ Field Tactical Blueprint (4.8×)
           </button>
           <label style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#bbf7d0">
             <span>🏰 Town (${allTowns.length}):</span>
             <select aria-label="Select Town Blueprint" onchange="if(this.value){const [tid,loc]=this.value.split('|');focusTownStreetBlueprint(tid,loc);}"
                     style="height:25px;padding:1px 6px;border-radius:6px;background:#0f172a;color:#f8fafc;border:1px solid rgba(74,222,128,0.5);font-size:10px;font-weight:700;cursor:pointer">
               ${allTowns.map(t => {
-                const sel = (t.studio_node_id === activeTownId || t.zone_id === activeTownId) ? 'selected' : '';
+                const sel = (!activeFieldOrFortId && (t.studio_node_id === activeTownId || t.zone_id === activeTownId)) ? 'selected' : '';
                 return `<option value="${escapeHtml(t.studio_node_id)}|${escapeHtml(t.loc_coord || '')}" ${sel}>${escapeHtml(t.name)}</option>`;
+              }).join('')}
+            </select>
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#86efac">
+            <span>🏕️ Field (${allFields.length}):</span>
+            <select aria-label="Select Field Tactical Blueprint" onchange="if(this.value){const [fid,loc]=this.value.split('|');focusFieldTacticalBlueprint(fid,loc);}"
+                    style="height:25px;padding:1px 6px;border-radius:6px;background:#052e16;color:#f0fdf4;border:1px solid rgba(134,239,172,0.55);font-size:10px;font-weight:700;cursor:pointer">
+              <option value="" ${!activeFieldOrFortId ? 'selected' : ''}>— Select Any of ${allFields.length} Field Hunting Areas —</option>
+              ${allFields.map(f => {
+                const sel = (f.zone_id === activeFieldOrFortId || f.studio_node_id === activeFieldOrFortId) ? 'selected' : '';
+                return `<option value="${escapeHtml(f.zone_id)}|${escapeHtml(f.loc_coord || '')}" ${sel}>${escapeHtml(f.name)} (Lv.${(f.level_band || [1, 12]).join('–')})</option>`;
+              }).join('')}
+            </select>
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:#fed7aa">
+            <span>🛡️ Fortress/Harbor (${allFortresses.length}):</span>
+            <select aria-label="Select Fortress Blueprint" onchange="if(this.value){const [hid,loc]=this.value.split('|');focusFortressBlueprint(hid,loc);}"
+                    style="height:25px;padding:1px 6px;border-radius:6px;background:#431407;color:#ffedd5;border:1px solid rgba(251,146,60,0.55);font-size:10px;font-weight:700;cursor:pointer">
+              <option value="" ${!activeFieldOrFortId ? 'selected' : ''}>— Select Any of ${allFortresses.length} Harbors/ClanHalls/Fortresses —</option>
+              ${allFortresses.map(h => {
+                const sel = (h.zone_id === activeFieldOrFortId || h.studio_node_id === activeFieldOrFortId) ? 'selected' : '';
+                return `<option value="${escapeHtml(h.zone_id)}|${escapeHtml(h.loc_coord || '')}" ${sel}>${escapeHtml(h.name)} [${escapeHtml(h.category)}]</option>`;
               }).join('')}
             </select>
           </label>
@@ -5597,6 +5680,238 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
   });
 }
 
+function renderFieldOrFortressTacticalBlueprintAtlas(targetIdOrEntry, tatlas) {
+  const resolved = getFieldOrFortressBlueprintData(targetIdOrEntry, tatlas);
+  if (!resolved) {
+    return '';
+  }
+  const { kind, entry, bp } = resolved;
+  const isFort = kind === 'fortress';
+  const allFields = getAllAtlasFieldEntries(tatlas);
+  const allForts = getAllAtlasFortressEntries(tatlas);
+  const fFilter = ATLAS_STATE_STORE.filter;
+
+  const perimArr = bp.terrain_perimeter_pct || bp.bastion_wall_pct || [[10, 14], [88, 12], [92, 48], [86, 86], [14, 88], [8, 50]];
+  const perimPts = perimArr.map(([px, py]) => `${Math.round((px / 100) * 1040)},${Math.round((py / 100) * 500)}`).join(' ');
+
+  const trailsSvg = (bp.patrol_trails || []).map(tr => {
+    const pts = (tr.path_pct || []).map(([px, py]) => `${Math.round((px / 100) * 1040)},${Math.round((py / 100) * 500)}`).join(' ');
+    const sw = Math.max(8, Math.round((tr.width_meters || 9) * 1.3));
+    return `
+      <g pointer-events="none">
+        <polyline points="${pts}" fill="none" stroke="#1c1917" stroke-width="${sw + 5}" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="${pts}" fill="none" stroke="#78716c" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="${pts}" fill="none" stroke="#fde047" stroke-width="1.5" stroke-dasharray="7 5"/>
+      </g>
+    `;
+  }).join('');
+
+  // Camp & Shrine Marks (Supply Camp, Wayfarer Shrine, Gatekeeper Waypoint, Refinement Ore Vein)
+  const visibleMarks = (bp.camp_and_shrine_marks || []).filter(() => fFilter === 'All' || fFilter === 'TownMarks');
+  const marksSvg = visibleMarks.map(m => {
+    const mx = Math.round((m.x_pct / 100) * 1040);
+    const my = Math.round((m.y_pct / 100) * 500);
+    const poiMark = {
+      title: `${m.icon} ${m.label} (${m.mark_type})`,
+      category: `${isFort ? 'Fortress / Harbor' : 'Field Hunting Area'} Tactical Mark · ${m.npc_or_node}`,
+      thumb: '/thumbs/props/chest.webp',
+      hoursOrStatus: `ACTIVE ${m.mark_type.toUpperCase()} · ${entry.name}`,
+      summary: m.description,
+      address: `${m.label} · ${bp.archetype_subtitle}`,
+      coordinates: `Mark ID: ${m.mark_id} · Node: ${m.npc_or_node}`,
+      scaleSpecs: `Clearance ≥6.0m · Wayfarer & Refinement Vein Access`,
+      inspectId: entry.studio_node_id,
+      connections: [{ label: `📍 ${m.npc_or_node}`, badge: m.mark_type }]
+    };
+    return `
+      <g data-poi-clickable="1" tabindex="0" role="button" aria-label="${escapeHtml(m.label)}"
+         style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiMark, svgX: mx, svgY: my })}', event)"
+         filter="url(#cartoDropShadow)">
+        <circle cx="${mx}" cy="${my}" r="15" fill="#064e3b" stroke="#fde047" stroke-width="2.2"/>
+        <text x="${mx}" y="${my + 5}" text-anchor="middle" font-size="13">${m.icon}</text>
+        <rect x="${mx - 74}" y="${my + 17}" width="148" height="17" rx="4" fill="rgba(6,78,59,0.94)" stroke="#34d399" stroke-width="1"/>
+        <text x="${mx}" y="${my + 28}" text-anchor="middle" fill="#ecfdf5" font-size="8.5" font-weight="800" font-family="monospace">
+          ${escapeHtml(m.mark_type.slice(0, 20))}
+        </text>
+      </g>
+    `;
+  }).join('');
+
+  // Spawn Territories (Monster Pack Rings, Mini-Boss Patrols, Raid Boss Arenas, MVP Sanctums + Refinement Drop Badges)
+  const visibleTerritories = (bp.spawn_territories || []).filter(st => {
+    if (!matchesAtlasLevelBand(st.level)) return false;
+    if (fFilter === 'All') return true;
+    return st.entity_type === fFilter;
+  });
+
+  const territoriesSvg = visibleTerritories.map(st => {
+    const sx = Math.round((st.x_pct / 100) * 1040);
+    const sy = Math.round((st.y_pct / 100) * 500);
+    const rPx = Math.max(32, Math.round((st.radius_pct / 100) * 500));
+    const isMvp = st.entity_type === 'MVP';
+    const isRaid = st.entity_type === 'Raid';
+    const isMini = st.entity_type === 'Mini-Boss';
+    const col = isMvp ? '#eab308' : (isRaid ? '#f97316' : (isMini ? '#a855f7' : '#ef4444'));
+    const fillRgba = isMvp ? 'rgba(234,179,8,0.18)' : (isRaid ? 'rgba(249,115,22,0.18)' : (isMini ? 'rgba(168,85,247,0.18)' : 'rgba(239,68,68,0.16)'));
+    const icon = isMvp ? '👑' : (isRaid ? '🔥' : (isMini ? '⚔️' : '👾'));
+    const ringKindLabel = isMvp ? 'MVP Boss Sanctum' : (isRaid ? 'Raid Boss Arena' : (isMini ? 'Mini-Boss Patrol' : 'Monster Pack Ring'));
+    const dropsStr = (st.refinement_drops || []).join(' · ');
+    const poiTerr = {
+      title: `${icon} ${st.mob_name} (Lv.${st.level} ${st.entity_type})`,
+      category: `${ringKindLabel} · ×${st.count} (${st.respawn}) · loc=${st.loc_coord}`,
+      thumb: '/thumbs/creatures/god-sola-hearth-weaver.webp',
+      hoursOrStatus: `${ringKindLabel.toUpperCase()} · Respawn ${st.respawn}`,
+      summary: `Refinement Drops: ${dropsStr}`,
+      address: `${entry.name} · loc=${st.loc_coord}`,
+      coordinates: `Territory: ${st.territory_id} · Radius: ${st.radius_pct}%`,
+      scaleSpecs: `Refinement Drops: ${dropsStr}`,
+      inspectId: entry.studio_node_id,
+      connections: (st.refinement_drops || []).map(d => ({ label: `💎 Refinement Drop: ${d}`, badge: st.entity_type }))
+    };
+    return `
+      <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiTerr, svgX: sx, svgY: sy })}', event)" filter="url(#cartoDropShadow)">
+        <circle cx="${sx}" cy="${sy}" r="${rPx}" fill="${fillRgba}" stroke="${col}" stroke-width="2.2" stroke-dasharray="${isMvp || isRaid ? 'none' : '6 4'}"/>
+        <circle cx="${sx}" cy="${sy}" r="14" fill="${col}" stroke="#ffffff" stroke-width="2"/>
+        <text x="${sx}" y="${sy + 4}" text-anchor="middle" font-size="12">${icon}</text>
+        <rect x="${sx - 88}" y="${sy + 17}" width="176" height="17" rx="4" fill="rgba(9,13,20,0.92)" stroke="${col}" stroke-width="1.2"/>
+        <text x="${sx}" y="${sy + 28}" text-anchor="middle" fill="#f8fafc" font-size="8.5" font-weight="800" font-family="monospace">
+          ${escapeHtml(st.mob_name.slice(0, 21))} (Lv.${st.level} ×${st.count})
+        </text>
+        <rect x="${sx - 84}" y="${sy + 36}" width="168" height="15" rx="4" fill="rgba(30,27,75,0.92)" stroke="#38bdf8" stroke-width="1"/>
+        <text x="${sx}" y="${sy + 46}" text-anchor="middle" fill="#bae6fd" font-size="7.8" font-weight="800" font-family="monospace">
+          💎 ${escapeHtml(((st.refinement_drops && st.refinement_drops[0]) || 'Refinement Ore').slice(0, 24))}
+        </text>
+      </g>
+    `;
+  }).join('');
+
+  // Clickable Dungeon Entrance Warps (calling openDungeonSubMap(dungeonId, 'B1' / '1F'))
+  const warpsSvg = (bp.dungeon_entrance_warps || []).map(dw => {
+    const wx = Math.round((dw.x_pct / 100) * 1040);
+    const wy = Math.round((dw.y_pct / 100) * 500);
+    const clickCall = `openDungeonSubMap('${escapeHtml(dw.dungeon_id)}', '${escapeHtml(dw.floor_id || 'B1')}')`;
+    return `
+      <g data-poi-clickable="1" tabindex="0" role="button" aria-label="${escapeHtml(dw.label)}"
+         style="cursor:pointer" onclick="${clickCall}"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${clickCall};}"
+         filter="url(#cartoDropShadow)">
+        <circle cx="${wx}" cy="${wy}" r="24" fill="rgba(168,85,247,0.28)" stroke="#fde047" stroke-width="2.2" stroke-dasharray="4 3"/>
+        <circle cx="${wx}" cy="${wy}" r="16" fill="#581c87" stroke="#ffffff" stroke-width="2.2"/>
+        <text x="${wx}" y="${wy + 5}" text-anchor="middle" font-size="13">🕳️</text>
+        <rect x="${wx - 108}" y="${wy - 38}" width="216" height="20" rx="6" fill="#3b0764" stroke="#fde047" stroke-width="1.5"/>
+        <text x="${wx}" y="${wy - 25}" text-anchor="middle" fill="#fde047" font-size="8.8" font-weight="900" font-family="monospace">
+          ${escapeHtml(dw.label.slice(0, 34))}
+        </text>
+      </g>
+    `;
+  }).join('');
+
+  const primaryWarp = (bp.dungeon_entrance_warps && bp.dungeon_entrance_warps[0]) || { dungeon_id: 'zone-dungeon-kiln-cellar', floor_id: 'B1', label: '🕳️ Enter Connected Dungeon (B1)' };
+
+  const drillControlsHtml = `
+    <button type="button" onclick="zoomStudioMap(0, true)"
+            style="min-height:28px;padding:5px 11px;border-radius:7px;font-size:11px;font-weight:900;cursor:pointer;border:1.5px solid #fde047;background:#0f172a;color:#fde047">
+      ⬅ Zoom Out to Overland World Map (1.0×)
+    </button>
+    <select aria-label="Switch Active Field Tactical Blueprint" onchange="if(this.value){const [fid,loc]=this.value.split('|');focusFieldTacticalBlueprint(fid,loc);}"
+            style="min-height:28px;padding:4px 9px;border-radius:7px;font-size:11px;font-weight:900;cursor:pointer;border:1.5px solid #86efac;background:#052e16;color:#f0fdf4">
+      ${allFields.map(f => {
+        const sel = (f.zone_id === entry.zone_id || f.studio_node_id === entry.studio_node_id) ? 'selected' : '';
+        return `<option value="${escapeHtml(f.zone_id)}|${escapeHtml(f.loc_coord || '')}" ${sel}>🏕️ ${escapeHtml(f.name)}</option>`;
+      }).join('')}
+      ${allForts.map(h => {
+        const sel = (h.zone_id === entry.zone_id) ? 'selected' : '';
+        return `<option value="${escapeHtml(h.zone_id)}|${escapeHtml(h.loc_coord || '')}" ${sel}>🛡️ ${escapeHtml(h.name)}</option>`;
+      }).join('')}
+    </select>
+    <button type="button" onclick="openDungeonSubMap('${escapeHtml(primaryWarp.dungeon_id)}', '${escapeHtml(primaryWarp.floor_id || 'B1')}')"
+            style="min-height:28px;padding:5px 11px;border-radius:7px;font-size:11px;font-weight:900;cursor:pointer;border:1.5px solid #e9d5ff;background:#7e22ce;color:#ffffff">
+      🕳️ Dungeon Entrance Warp: ${escapeHtml(primaryWarp.dungeon_id)} (${escapeHtml(primaryWarp.floor_id || 'B1')}) ➔
+    </button>
+  `;
+
+  const bottomTacticalPanelHtml = `
+    <div style="padding:12px 16px;background:#0f1520;border-top:1px solid rgba(255,255,255,0.12)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:900;color:#86efac">
+          🏕️ FIELD &amp; FORTRESS TACTICAL BLUEPRINT — MONSTER PACK RINGS, MINI-BOSS PATROLS, RAID ARENAS, REFINEMENT DROPS &amp; DUNGEON WARPS
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${(bp.dungeon_entrance_warps || []).map(dw => `
+            <button type="button" onclick="openDungeonSubMap('${escapeHtml(dw.dungeon_id)}', '${escapeHtml(dw.floor_id || 'B1')}')"
+                    style="padding:3px 9px;border-radius:6px;border:1px solid #fde047;background:#581c87;color:#fde047;font-size:10px;font-weight:800;cursor:pointer">
+              ${escapeHtml(dw.label)} (${escapeHtml(dw.dungeon_id)} · ${escapeHtml(dw.floor_id || 'B1')})
+            </button>
+          `).join('')}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px">
+        ${(bp.spawn_territories || []).map(st => `
+          <div onclick="STUDIO_MAP_LOC=clampWorldLocCoord('${escapeHtml(st.loc_coord)}'); render();"
+               style="padding:7px 10px;border-radius:6px;background:#161f2e;border-left:3.5px solid ${st.entity_type === 'MVP' ? '#eab308' : (st.entity_type === 'Raid' ? '#f97316' : (st.entity_type === 'Mini-Boss' ? '#a855f7' : '#ef4444'))};cursor:pointer">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+              <span style="font-size:11px;font-weight:800;color:#f8fafc">${escapeHtml(st.mob_name)}</span>
+              <span class="mono" style="font-size:9.5px;color:#fde047">Lv.${st.level} · ${escapeHtml(st.entity_type)}</span>
+            </div>
+            <div style="font-size:10px;color:#bae6fd;margin-top:3px">
+              💎 Refinement Drops: ${escapeHtml((st.refinement_drops || []).join(', '))}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  const svgInnerHtml = `
+    <rect x="0" y="0" width="1040" height="500" fill="${isFort ? '#1e2433' : '#14291e'}"/>
+    <image href="/studio-maps/d01_hunting_zone_radar.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.32"/>
+    <polygon points="${perimPts}" fill="${isFort ? 'rgba(30,41,59,0.68)' : 'rgba(20,83,45,0.52)'}" stroke="${isFort ? '#fb923c' : '#4ade80'}" stroke-width="4" stroke-linejoin="round" stroke-dasharray="${isFort ? 'none' : '10 5'}"/>
+    ${trailsSvg}
+    ${territoriesSvg}
+    ${marksSvg}
+    ${warpsSvg}
+  `;
+
+  const defaultPoi = {
+    title: bp.archetype_subtitle,
+    category: `${isFort ? '🛡️ Harbor / Clan Hall / Fortress Blueprint' : '🏕️ Field Hunting Area Tactical Blueprint'} · ${entry.level_header || ''}`,
+    thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+    hoursOrStatus: `4 SPAWN TERRITORIES (MONSTER/MINI-BOSS/RAID/MVP) · 4 CAMP/SHRINE/ORE MARKS · DUNGEON WARP`,
+    summary: `Features Monster Pack Rings, Mini-Boss Patrols, Raid Boss Arenas, Refinement Drop Badges, and a clickable Dungeon Entrance Warp to ${primaryWarp.dungeon_id} (${primaryWarp.floor_id}).`,
+    address: `${entry.name} · ${entry.territory_name || ''}`,
+    coordinates: `loc=${entry.loc_coord} · Grid ${entry.grid_sector || ''}`,
+    scaleSpecs: `Patrol Trails: 7.5m–9.5m · Dungeon Entrance Warp: ${primaryWarp.dungeon_id} (${primaryWarp.floor_id})`,
+    dungeonWarpId: primaryWarp.dungeon_id,
+    dungeonFloorId: primaryWarp.floor_id || 'B1',
+    drillLabel: `Warp to ${primaryWarp.dungeon_id} (${primaryWarp.floor_id || 'B1'})`,
+    inspectId: entry.studio_node_id,
+    connections: [
+      ...(bp.dungeon_entrance_warps || []).map(w => ({ label: w.label, badge: `${w.dungeon_id} (${w.floor_id})` })),
+      ...(bp.camp_and_shrine_marks || []).map(m => ({ label: `${m.icon} ${m.label}`, badge: m.mark_type }))
+    ]
+  };
+
+  return renderCartoShellHtml({
+    stepLabel: `${isFort ? '🛡️ FORTRESS, HARBOR & CLAN HALL' : '🏕️ FIELD HUNTING AREA'} TACTICAL BLUEPRINT (${STUDIO_MAP_ZOOM.toFixed(2)}×)`,
+    title: `${escapeHtml(bp.archetype_subtitle)} — Monster Pack Rings, Mini-Boss Patrols, Raid Arenas, Refinement Drops & Dungeon Entrance Warps`,
+    subtitle: 'Click any Spawn Ring (👾/⚔️/🔥/👑) for Refinement Drops, Camp/Shrine/Ore Mark (⛺/⛩️/🌀/💎), or 🕳️ Dungeon Entrance Warp to open the Connected Dungeon Sub-Map',
+    activeScaleIndex: 4,
+    defaultPoi,
+    drillControls: drillControlsHtml,
+    filterBarHtml: renderAtlasFilterBarHtml(visibleTerritories.length + visibleMarks.length),
+    bottomPanelHtml: bottomTacticalPanelHtml,
+    svgInnerHtml,
+    legendItems: [
+      { color: '#ef4444', label: '👾 Monster Pack Ring' },
+      { color: '#a855f7', label: '⚔️ Mini-Boss Patrol' },
+      { color: '#f97316', label: '🔥 Raid Boss Arena' },
+      { color: '#eab308', label: '👑 MVP Sanctum' },
+      { color: '#38bdf8', label: '💎 Refinement Drop / Ore Vein' },
+      { color: '#c084fc', label: '🕳️ Clickable Dungeon Entrance Warp' }
+    ]
+  });
+}
+
 function renderDedicatedWorldAtlas() {
   const isL2 = STUDIO_CARTO_THEME === 'l2hub';
   const sp = (DATA && DATA.studioPerspectives) || {};
@@ -5614,8 +5929,20 @@ function renderDedicatedWorldAtlas() {
     }
   }
 
-  // 2. If Semantic Zoom >= 4.5x (Tier 3), automatically transition to the Town Street, Building & Service-Mark Blueprint!
+  // 2. If a Field Hunting Area (24) or Harbor/ClanHall/Fortress (8) Tactical Blueprint is active (or selected at zoom >= 3.5x), render it!
   const lodTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
+  const allFields = getAllAtlasFieldEntries(tatlas);
+  const allForts = getAllAtlasFortressEntries(tatlas);
+  const candidateFieldOrFortId = ATLAS_STATE_STORE.activeFieldOrFortId || (STUDIO_MAP_ZOOM >= 3.5 ? STUDIO_SELECTED_NODE_ID : '');
+  if (candidateFieldOrFortId) {
+    const matchedFieldOrFort = allFields.find(f => f.zone_id === candidateFieldOrFortId || f.studio_node_id === candidateFieldOrFortId)
+      || allForts.find(h => h.zone_id === candidateFieldOrFortId || h.studio_node_id === candidateFieldOrFortId);
+    if (matchedFieldOrFort) {
+      return renderFieldOrFortressTacticalBlueprintAtlas(matchedFieldOrFort, tatlas);
+    }
+  }
+
+  // 3. If Semantic Zoom >= 4.5x (Tier 3), automatically transition to the Town Street, Building & Service-Mark Blueprint!
   if (lodTier === 3) {
     const allTownEntries = getAllAtlasTownEntries(tatlas);
     const targetTownId = ATLAS_STATE_STORE.activeTownId || STUDIO_SELECTED_NODE_ID || 'town-lantern-hollow';

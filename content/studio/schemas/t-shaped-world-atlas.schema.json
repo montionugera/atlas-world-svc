@@ -33,6 +33,14 @@
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
     },
+    "field_tactical_blueprints": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fieldTacticalBlueprintSpec" }
+    },
+    "fortress_blueprints": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/fortressBlueprintSpec" }
+    },
     "reference_benchmarks": {
       "type": "array",
       "minItems": 3,
@@ -183,7 +191,9 @@
         "race_or_seal_affinity": { "type": "string" },
         "connected_zone_ids": { "type": "array", "items": { "type": "string" } },
         "t_depth_status": { "type": "string", "enum": ["t_breadth_indexed", "t_deep_validated"] },
-        "town_blueprint": { "$ref": "#/$defs/townBlueprintSpec" }
+        "town_blueprint": { "$ref": "#/$defs/townBlueprintSpec" },
+        "field_tactical_blueprint": { "$ref": "#/$defs/fieldTacticalBlueprintSpec" },
+        "fortress_blueprint": { "$ref": "#/$defs/fortressBlueprintSpec" }
       }
     },
     "raceSpawnLocationSpec": {
@@ -714,7 +724,8 @@
           "type": "array",
           "minItems": 10,
           "items": { "$ref": "#/$defs/spawnRow" }
-        }
+        },
+        "field_tactical_blueprint": { "$ref": "#/$defs/fieldTacticalBlueprintSpec" }
       }
     },
     "deepDungeonSpec": {
@@ -916,6 +927,216 @@
               "chance_pct": { "type": "number" }
             }
           }
+        }
+      }
+    },
+    "campAndShrineMarkSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mark_id",
+        "mark_type",
+        "label",
+        "icon",
+        "x_pct",
+        "y_pct",
+        "npc_or_node",
+        "description"
+      ],
+      "properties": {
+        "mark_id": { "type": "string" },
+        "mark_type": {
+          "type": "string",
+          "enum": [
+            "Supply Camp",
+            "Wayfarer Shrine",
+            "Gatekeeper Waypoint",
+            "Refinement Ore Vein"
+          ]
+        },
+        "label": { "type": "string" },
+        "icon": { "type": "string" },
+        "x_pct": { "type": "number" },
+        "y_pct": { "type": "number" },
+        "npc_or_node": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "spawnTerritorySpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "territory_id",
+        "x_pct",
+        "y_pct",
+        "radius_pct",
+        "entity_type",
+        "mob_name",
+        "level",
+        "count",
+        "respawn",
+        "refinement_drops",
+        "loc_coord"
+      ],
+      "properties": {
+        "territory_id": { "type": "string" },
+        "x_pct": { "type": "number" },
+        "y_pct": { "type": "number" },
+        "radius_pct": { "type": "number" },
+        "entity_type": {
+          "type": "string",
+          "enum": ["Monster", "Mini-Boss", "Raid", "MVP"]
+        },
+        "mob_name": { "type": "string" },
+        "level": { "type": "integer" },
+        "count": { "type": "integer" },
+        "respawn": { "type": "string" },
+        "refinement_drops": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "loc_coord": { "type": "string" }
+      }
+    },
+    "dungeonEntranceWarpSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "warp_id",
+        "label",
+        "dungeon_id",
+        "floor_id",
+        "x_pct",
+        "y_pct",
+        "loc_coord"
+      ],
+      "properties": {
+        "warp_id": { "type": "string" },
+        "label": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "x_pct": { "type": "number" },
+        "y_pct": { "type": "number" },
+        "loc_coord": { "type": "string" }
+      }
+    },
+    "fieldTacticalBlueprintSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "zone_id",
+        "studio_node_id",
+        "archetype_subtitle",
+        "terrain_perimeter_pct",
+        "patrol_trails",
+        "camp_and_shrine_marks",
+        "spawn_territories",
+        "dungeon_entrance_warps"
+      ],
+      "properties": {
+        "zone_id": { "type": "string" },
+        "studio_node_id": { "type": "string" },
+        "archetype_subtitle": { "type": "string" },
+        "terrain_perimeter_pct": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "patrol_trails": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["trail_id", "name", "width_meters", "path_pct"],
+            "properties": {
+              "trail_id": { "type": "string" },
+              "name": { "type": "string" },
+              "width_meters": { "type": "number" },
+              "path_pct": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "array",
+                  "items": { "type": "number" },
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              }
+            }
+          }
+        },
+        "camp_and_shrine_marks": {
+          "type": "array",
+          "minItems": 4,
+          "items": { "$ref": "#/$defs/campAndShrineMarkSpec" }
+        },
+        "spawn_territories": {
+          "type": "array",
+          "minItems": 4,
+          "items": { "$ref": "#/$defs/spawnTerritorySpec" }
+        },
+        "dungeon_entrance_warps": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/dungeonEntranceWarpSpec" }
+        }
+      }
+    },
+    "fortressBlueprintSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "zone_id",
+        "studio_node_id",
+        "fortress_kind",
+        "archetype_subtitle",
+        "bastion_wall_pct",
+        "camp_and_shrine_marks",
+        "spawn_territories",
+        "dungeon_entrance_warps"
+      ],
+      "properties": {
+        "zone_id": { "type": "string" },
+        "studio_node_id": { "type": "string" },
+        "fortress_kind": {
+          "type": "string",
+          "enum": ["harbor", "clan_hall", "fortress"]
+        },
+        "archetype_subtitle": { "type": "string" },
+        "bastion_wall_pct": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "camp_and_shrine_marks": {
+          "type": "array",
+          "minItems": 4,
+          "items": { "$ref": "#/$defs/campAndShrineMarkSpec" }
+        },
+        "spawn_territories": {
+          "type": "array",
+          "minItems": 4,
+          "items": { "$ref": "#/$defs/spawnTerritorySpec" }
+        },
+        "dungeon_entrance_warps": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/dungeonEntranceWarpSpec" }
         }
       }
     }

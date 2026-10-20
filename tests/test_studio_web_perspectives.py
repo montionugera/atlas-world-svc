@@ -261,6 +261,61 @@ class TestStudioWebPerspectives(unittest.TestCase):
             self.assertEqual(len(t_entry["town_blueprint"]["npc_roster"]), 12)
         self.assertEqual(len(atlas["multi_floor_dungeons"]), 16)
 
+    def test_field_tactical_and_fortress_blueprints_and_dungeon_warps(self) -> None:
+        errors, _ = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+
+        html = web.INDEX_HTML
+        for token in (
+            "focusFieldTacticalBlueprint",
+            "focusFortressBlueprint",
+            "renderFieldOrFortressTacticalBlueprintAtlas",
+            "Select Field Tactical Blueprint",
+            "Select Fortress Blueprint",
+            "Switch Active Field Tactical Blueprint",
+            "Monster Pack Ring",
+            "Mini-Boss Patrol",
+            "Raid Boss Arena",
+            "Refinement Drops",
+            "Dungeon Entrance Warp",
+        ):
+            self.assertIn(token, html, f"Missing token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        atlas = bundle["tShapedWorldAtlas"]
+        zdir = atlas["t_breadth_zone_directory"]
+        mf_ids = {d["dungeon_id"] for d in atlas["multi_floor_dungeons"]}
+
+        fields = zdir["fields_and_hunting_areas"]
+        self.assertEqual(len(fields), 24)
+        for f_entry in fields:
+            self.assertIn("field_tactical_blueprint", f_entry)
+            ftb = f_entry["field_tactical_blueprint"]
+            marks = {m["mark_type"] for m in ftb["camp_and_shrine_marks"]}
+            for req_mark in ("Supply Camp", "Wayfarer Shrine", "Gatekeeper Waypoint", "Refinement Ore Vein"):
+                self.assertIn(req_mark, marks)
+            tiers = {st["entity_type"] for st in ftb["spawn_territories"]}
+            self.assertEqual(tiers, {"Monster", "Mini-Boss", "Raid", "MVP"})
+            for st in ftb["spawn_territories"]:
+                self.assertGreaterEqual(len(st["refinement_drops"]), 1)
+            self.assertGreaterEqual(len(ftb["dungeon_entrance_warps"]), 1)
+            for dw in ftb["dungeon_entrance_warps"]:
+                self.assertIn(dw["dungeon_id"], mf_ids)
+                self.assertIn(dw["floor_id"], ("B1", "1F"))
+
+        forts = zdir["harbors_clanhalls_and_forts"]
+        self.assertEqual(len(forts), 8)
+        for h_entry in forts:
+            self.assertIn("fortress_blueprint", h_entry)
+            fbp = h_entry["fortress_blueprint"]
+            self.assertIn(fbp["fortress_kind"], ("harbor", "clan_hall", "fortress"))
+            tiers = {st["entity_type"] for st in fbp["spawn_territories"]}
+            self.assertEqual(tiers, {"Monster", "Mini-Boss", "Raid", "MVP"})
+            self.assertGreaterEqual(len(fbp["dungeon_entrance_warps"]), 1)
+            for dw in fbp["dungeon_entrance_warps"]:
+                self.assertIn(dw["dungeon_id"], mf_ids)
+                self.assertIn(dw["floor_id"], ("B1", "1F"))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -559,6 +559,12 @@ def validate_world_governance(
                 "harborsClanhallsFortsCount": len(zdir.get("harbors_clanhalls_and_forts") or []),
                 "deepMobsCount": len((t_doc.get("t_deep_validation_slice") or {}).get("deep_mob_database") or []),
                 "multiFloorDungeonsCount": len(mf_dungeons),
+                "fieldTacticalBlueprintsCount": sum(
+                    1 for f in (zdir.get("fields_and_hunting_areas") or []) if isinstance(f, dict) and isinstance(f.get("field_tactical_blueprint"), dict)
+                ),
+                "fortressBlueprintsCount": sum(
+                    1 for h in (zdir.get("harbors_clanhalls_and_forts") or []) if isinstance(h, dict) and isinstance(h.get("fortress_blueprint"), dict)
+                ),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -623,6 +629,43 @@ def validate_world_governance(
                             if tf != "OVERLAND" and tf not in floor_ids:
                                 errors.append(
                                     f"GOV-10 violation: dungeon '{did}' warp '{wp.get('warp_id')}' targets unknown floor '{tf}'"
+                                )
+
+            # Validate Field Tactical Blueprints & Fortress Blueprints dungeon_entrance_warps
+            mf_by_id = {
+                str(d.get("dungeon_id", "")): {f.get("floor_id") for f in (d.get("floors") or []) if isinstance(f, dict)}
+                for d in mf_dungeons
+                if isinstance(d, dict) and d.get("dungeon_id")
+            }
+            for f_item in zdir.get("fields_and_hunting_areas") or []:
+                ftb = (f_item or {}).get("field_tactical_blueprint")
+                if isinstance(ftb, dict):
+                    for dw in ftb.get("dungeon_entrance_warps") or []:
+                        if isinstance(dw, dict):
+                            did = str(dw.get("dungeon_id", ""))
+                            fid = str(dw.get("floor_id", ""))
+                            if did not in mf_by_id:
+                                errors.append(
+                                    f"GOV-10 violation: field_tactical_blueprint '{f_item.get('zone_id')}' warp references unknown dungeon_id '{did}'"
+                                )
+                            elif fid not in mf_by_id[did]:
+                                errors.append(
+                                    f"GOV-10 violation: field_tactical_blueprint '{f_item.get('zone_id')}' warp references unknown floor_id '{fid}' in '{did}'"
+                                )
+            for h_item in zdir.get("harbors_clanhalls_and_forts") or []:
+                fbp = (h_item or {}).get("fortress_blueprint")
+                if isinstance(fbp, dict):
+                    for dw in fbp.get("dungeon_entrance_warps") or []:
+                        if isinstance(dw, dict):
+                            did = str(dw.get("dungeon_id", ""))
+                            fid = str(dw.get("floor_id", ""))
+                            if did not in mf_by_id:
+                                errors.append(
+                                    f"GOV-10 violation: fortress_blueprint '{h_item.get('zone_id')}' warp references unknown dungeon_id '{did}'"
+                                )
+                            elif fid not in mf_by_id[did]:
+                                errors.append(
+                                    f"GOV-10 violation: fortress_blueprint '{h_item.get('zone_id')}' warp references unknown floor_id '{fid}' in '{did}'"
                                 )
         except Exception as exc:
             errors.append(f"GOV-10 violation: t_shaped_world_atlas validation error: {exc}")

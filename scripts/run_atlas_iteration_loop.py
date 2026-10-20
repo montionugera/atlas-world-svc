@@ -53,6 +53,13 @@ REQUIRED_SERVICE_MARKS = (
 
 REQUIRED_SPAWN_TIERS = ("Monster", "Mini-Boss", "Raid", "MVP")
 
+REQUIRED_FIELD_MARKS = (
+    "Supply Camp",
+    "Wayfarer Shrine",
+    "Gatekeeper Waypoint",
+    "Refinement Ore Vein",
+)
+
 MDA_PILLARS = (
     "Aesthetic",
     "Continuity",
@@ -83,6 +90,169 @@ NINTH_HUB_TOWN: dict[str, Any] = {
     ],
     "t_depth_status": "t_breadth_indexed",
 }
+
+ADDITIONAL_FIELD_ZONES: list[dict[str, Any]] = [
+    {
+        "zone_id": "zone-field-whispering-mire",
+        "studio_node_id": "hunting-area-whispering-mire",
+        "name": "The Whispering Teapot Mire (Human & Dark-Lunar Border Marsh)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Teacup Meadows (D01)",
+        "level_header": "Whispering Teapot Mire: lvl.10 [10-15]",
+        "level_band": [10, 15],
+        "grid_sector": "18_24",
+        "loc_coord": "-68400:228400",
+        "l2_reference_analog": "Swamp of Screams / Cruma Marshlands: lvl.10 [10-15]",
+        "race_or_seal_affinity": "human_demi_human",
+        "connected_zone_ids": [
+            "zone-town-lantern-hollow",
+            "zone-dungeon-kiln-cellar",
+            "zone-town-kilnwatch-bastion",
+        ],
+        "t_depth_status": "t_breadth_indexed",
+    },
+    {
+        "zone_id": "zone-field-slag-chasm",
+        "studio_node_id": "hunting-area-slag-chasm",
+        "name": "The Vitrified Slag Chasm (Kilnwatch Convergence Badlands)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "territory_name": "Kilnfire Terraces (D06)",
+        "level_header": "Vitrified Slag Chasm: lvl.16 [16-20]",
+        "level_band": [16, 20],
+        "grid_sector": "20_23",
+        "loc_coord": "24800:136200",
+        "l2_reference_analog": "Ruins of Despair / Execution Grounds: lvl.16 [16-20]",
+        "race_or_seal_affinity": "all_races_convergence",
+        "connected_zone_ids": [
+            "zone-town-kilnwatch-bastion",
+            "zone-dungeon-ember-bellows-chamber",
+            "zone-field-cinder-apron",
+        ],
+        "t_depth_status": "t_breadth_indexed",
+    },
+    {
+        "zone_id": "zone-field-astrolabe-rift",
+        "studio_node_id": "hunting-area-astrolabe-rift",
+        "name": "The Astrolabe Rift Promontory (Steppe Gear Escarpment)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Rustcog Downs (D01)",
+        "level_header": "Astrolabe Rift Promontory: lvl.25 [25-30]",
+        "level_band": [25, 30],
+        "grid_sector": "21_20",
+        "loc_coord": "76400:68200",
+        "l2_reference_analog": "Plains of the Lizardmen / Sea of Spores: lvl.25 [25-30]",
+        "race_or_seal_affinity": "robotic",
+        "connected_zone_ids": [
+            "zone-town-pinion-terminus",
+            "zone-dungeon-pendulum-shaft",
+            "zone-field-brass-spur-ridge",
+        ],
+        "t_depth_status": "t_breadth_indexed",
+    },
+    {
+        "zone_id": "zone-field-siphon-sluice",
+        "studio_node_id": "hunting-area-siphon-sluice",
+        "name": "The Verdigris Siphon Sluiceway (Mercury Canal Hunting Lock)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Verdigris Canal Lock (D03)",
+        "level_header": "Verdigris Siphon Sluiceway: lvl.25 [25-29]",
+        "level_band": [25, 29],
+        "grid_sector": "21_18",
+        "loc_coord": "64200:34800",
+        "l2_reference_analog": "Alligator Island / Breka's Stronghold: lvl.25 [25-29]",
+        "race_or_seal_affinity": "lunar",
+        "connected_zone_ids": [
+            "zone-town-mercury-sluice-bazaar",
+            "zone-dungeon-pendulum-shaft",
+            "zone-town-escapement-anvil",
+        ],
+        "t_depth_status": "t_breadth_indexed",
+    },
+    {
+        "zone_id": "zone-field-metronome-bridge",
+        "studio_node_id": "hunting-area-metronome-bridge",
+        "name": "Metronome Suspension Bridge (Highland Escapement Crossing)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Pendulum Escapement Reach (D06)",
+        "level_header": "Metronome Suspension Bridge: lvl.34 [34-36]",
+        "level_band": [34, 36],
+        "grid_sector": "23_16",
+        "loc_coord": "118600:-8400",
+        "l2_reference_analog": "Death Pass / Dragon Valley Approach: lvl.34 [34-36]",
+        "race_or_seal_affinity": "dark_lunar",
+        "connected_zone_ids": [
+            "zone-town-metronome-pivot",
+            "zone-dungeon-chronometer-foundry",
+            "zone-town-torque-balance-citadel",
+        ],
+        "t_depth_status": "t_breadth_indexed",
+    },
+    {
+        "zone_id": "zone-field-spiral-wormway-ramp",
+        "studio_node_id": "hunting-area-spiral-wormway-ramp",
+        "name": "Spiral Wormway Ramp (Deep Quarry Helical Trench)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-02-clockwork-steppe",
+        "territory_name": "Worm-Gear Trench (D07)",
+        "level_header": "Spiral Wormway Ramp: lvl.38 [38-39]",
+        "level_band": [38, 39],
+        "grid_sector": "24_16",
+        "loc_coord": "134200:-24600",
+        "l2_reference_analog": "Enchanted Valley / Mithril Mines Surface: lvl.38 [38-39]",
+        "race_or_seal_affinity": "dwarf",
+        "connected_zone_ids": [
+            "zone-town-inductor-switchyard",
+            "zone-catacomb-apostate-dynamo",
+            "zone-town-metronome-pivot",
+        ],
+        "t_depth_status": "t_breadth_indexed",
+    },
+    {
+        "zone_id": "zone-field-orrery-bridge",
+        "studio_node_id": "hunting-area-orrery-bridge",
+        "name": "The Orrery Bridge (Astral Refractory Sky-Span)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Zenith Refractory (D02)",
+        "level_header": "The Orrery Bridge: lvl.36 [36-42]",
+        "level_band": [36, 42],
+        "grid_sector": "19_13",
+        "loc_coord": "-28400:-108200",
+        "l2_reference_analog": "Blazing Swamp / Cemetery of Aden: lvl.36 [36-42]",
+        "race_or_seal_affinity": "seal_of_gnosis",
+        "connected_zone_ids": [
+            "zone-town-starfall-haven",
+            "zone-dungeon-star-heart-nave",
+            "zone-field-tether-causeway",
+        ],
+        "t_depth_status": "t_breadth_indexed",
+    },
+    {
+        "zone_id": "zone-field-kelp-spiral-reef",
+        "studio_node_id": "hunting-area-kelp-spiral-reef",
+        "name": "Kelp Spiral Reef (Bioluminescent Undertide Hunting Shoals)",
+        "category": "field_hunting_zone",
+        "continent_id": "continent-03-shattered-halo",
+        "territory_name": "Abyssal Undertide Reef (D03)",
+        "level_header": "Kelp Spiral Reef: lvl.42 [42-46]",
+        "level_band": [42, 46],
+        "grid_sector": "18_13",
+        "loc_coord": "-52400:-138600",
+        "l2_reference_analog": "Field of Silence / Field of Whispers: lvl.42 [42-46]",
+        "race_or_seal_affinity": "leviathan",
+        "connected_zone_ids": [
+            "zone-town-undertide-lantern",
+            "zone-catacomb-dark-omens-coral",
+            "zone-town-starfall-haven",
+        ],
+        "t_depth_status": "t_breadth_indexed",
+    },
+]
 
 
 def _parse_loc(loc_str: str) -> tuple[int, int]:
@@ -456,6 +626,323 @@ def _synthesize_multifloor_dungeon(zone_entry: dict[str, Any], idx: int) -> dict
     }
 
 
+def _resolve_linked_dungeon_warp(
+    zone_entry: dict[str, Any],
+    mf_by_id: dict[str, dict[str, Any]],
+) -> tuple[str, str, str]:
+    conns = list(zone_entry.get("connected_zone_ids") or [])
+    for cid in conns:
+        if cid in mf_by_id:
+            d_obj = mf_by_id[cid]
+            floors = d_obj.get("floors") or []
+            f0 = str((floors[0] if floors else {}).get("floor_id", "B1"))
+            return cid, f0, str(d_obj.get("name", cid))
+    cont = str(zone_entry.get("continent_id", "continent-01-hearthbloom-basin"))
+    fallback_did = (
+        "zone-dungeon-kiln-cellar"
+        if "01" in cont
+        else ("zone-dungeon-pendulum-shaft" if "02" in cont else "zone-dungeon-star-heart-nave")
+    )
+    if fallback_did in mf_by_id:
+        d_obj = mf_by_id[fallback_did]
+        floors = d_obj.get("floors") or []
+        f0 = str((floors[0] if floors else {}).get("floor_id", "B1"))
+        return fallback_did, f0, str(d_obj.get("name", fallback_did))
+    return "zone-dungeon-kiln-cellar", "B1", "Kiln Cellar Ruins (The Ant Nest)"
+
+
+def _synthesize_field_tactical_blueprint(
+    zone_entry: dict[str, Any],
+    idx: int,
+    mf_by_id: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    zid = str(zone_entry.get("zone_id", f"zone-field-{idx}"))
+    snid = str(zone_entry.get("studio_node_id", f"hunting-area-{idx}"))
+    fname = str(zone_entry.get("name", snid))
+    short_name = fname.split("(")[0].strip()
+    analog = str(zone_entry.get("l2_reference_analog", "Lineage II Open Hunting Field"))
+    lmin, lmax = (zone_entry.get("level_band") or [1, 12])[:2]
+    lmid = max(lmin, (lmin + lmax) // 2)
+    bx, by = _parse_loc(zone_entry.get("loc_coord", "72986:113330"))
+    did, dfid, dname = _resolve_linked_dungeon_warp(zone_entry, mf_by_id)
+
+    return {
+        "zone_id": zid,
+        "studio_node_id": snid,
+        "archetype_subtitle": f"{fname} ({analog})",
+        "terrain_perimeter_pct": [
+            [10, 14],
+            [88, 12],
+            [92, 48],
+            [86, 86],
+            [14, 88],
+            [8, 50],
+        ],
+        "patrol_trails": [
+            {
+                "trail_id": f"{snid}-trail-main",
+                "name": f"{short_name} Expedition Supply Trail",
+                "width_meters": 9.5,
+                "path_pct": [[14, 52], [44, 48], [82, 34]],
+            },
+            {
+                "trail_id": f"{snid}-trail-boss",
+                "name": "Mini-Boss & Raid Ambush Spur",
+                "width_meters": 7.5,
+                "path_pct": [[44, 48], [62, 68], [80, 74]],
+            },
+        ],
+        "camp_and_shrine_marks": [
+            {
+                "mark_id": f"{snid}-camp",
+                "mark_type": "Supply Camp",
+                "label": f"{short_name} Vanguard Supply Camp",
+                "icon": "⛺",
+                "x_pct": 18,
+                "y_pct": 52,
+                "npc_or_node": f"[Field Quartermaster] Bram ({snid})",
+                "description": "Field soulshot resupply, campfire recovery buff, and bounty turn-in.",
+            },
+            {
+                "mark_id": f"{snid}-shrine",
+                "mark_type": "Wayfarer Shrine",
+                "label": f"{short_name} Wayfarer Seal Shrine",
+                "icon": "⛩️",
+                "x_pct": 36,
+                "y_pct": 24,
+                "npc_or_node": f"Seal Respawn Obelisk ({snid})",
+                "description": "Attunes field respawn anchor and grants 20-minute Seal Wind-Step.",
+            },
+            {
+                "mark_id": f"{snid}-gatekeeper",
+                "mark_type": "Gatekeeper Waypoint",
+                "label": f"{short_name} Gatekeeper Relay Pillar",
+                "icon": "🌀",
+                "x_pct": 22,
+                "y_pct": 76,
+                "npc_or_node": f"[Waypoint Keeper] Elen ({snid})",
+                "description": "Fast-travel relay back to the nearest racial starter or castle hub town.",
+            },
+            {
+                "mark_id": f"{snid}-ore-vein",
+                "mark_type": "Refinement Ore Vein",
+                "label": f"{short_name} High-Purity Refinement Vein",
+                "icon": "💎",
+                "x_pct": 54,
+                "y_pct": 28,
+                "npc_or_node": f"Blacksmith Clan Ore Outcrop #{idx}",
+                "description": "Yields Orichalcum Ore, Seal-Stone Shards, and Anvil Flux for +1..+16 weapon refinement.",
+            },
+        ],
+        "spawn_territories": [
+            {
+                "territory_id": f"{snid}-pack-monster",
+                "x_pct": 38,
+                "y_pct": 54,
+                "radius_pct": 14,
+                "entity_type": "Monster",
+                "mob_name": f"{short_name} Pack Stalker",
+                "level": lmin,
+                "count": 24,
+                "respawn": "35s",
+                "refinement_drops": ["High-Grade Iron Ore", "Varnish", "Refinement Flux Dust"],
+                "loc_coord": _fmt_loc(bx + 180, by - 140),
+            },
+            {
+                "territory_id": f"{snid}-patrol-miniboss",
+                "x_pct": 58,
+                "y_pct": 44,
+                "radius_pct": 11,
+                "entity_type": "Mini-Boss",
+                "mob_name": f"[Mini-Boss] {short_name} Patrol Captain",
+                "level": lmid,
+                "count": 3,
+                "respawn": "240s",
+                "refinement_drops": ["Weapon Enchant Scroll Fragment", "Tempered Alloy Plate", "Seal-Stone Cluster"],
+                "loc_coord": _fmt_loc(bx + 420, by - 280),
+            },
+            {
+                "territory_id": f"{snid}-arena-raid",
+                "x_pct": 72,
+                "y_pct": 68,
+                "radius_pct": 12,
+                "entity_type": "Raid",
+                "mob_name": f"[Raid Boss] {short_name} Sovereign Warden",
+                "level": lmax,
+                "count": 1,
+                "respawn": "3600s",
+                "refinement_drops": ["Blessed Enchant Weapon Scroll", "Warden Alloy Core", "Soul Crystal Stage 5"],
+                "loc_coord": _fmt_loc(bx + 760, by - 520),
+            },
+            {
+                "territory_id": f"{snid}-sanctum-mvp",
+                "x_pct": 80,
+                "y_pct": 26,
+                "radius_pct": 10,
+                "entity_type": "MVP",
+                "mob_name": f"[MVP] {short_name} Apostle Overseer",
+                "level": lmax,
+                "count": 1,
+                "respawn": "7200s",
+                "refinement_drops": ["Divine Apostle Anvil Core", "Ancient Refinement Catalyst", "Architect Seal Crest"],
+                "loc_coord": _fmt_loc(bx + 980, by - 740),
+            },
+        ],
+        "dungeon_entrance_warps": [
+            {
+                "warp_id": f"warp-{snid}-to-{did}",
+                "label": f"🕳️ Enter {dname.split('(')[0].strip()} ({dfid})",
+                "dungeon_id": did,
+                "floor_id": dfid,
+                "x_pct": 84,
+                "y_pct": 46,
+                "loc_coord": _fmt_loc(bx + 1120, by - 460),
+            }
+        ],
+    }
+
+
+def _synthesize_fortress_blueprint(
+    zone_entry: dict[str, Any],
+    idx: int,
+    mf_by_id: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    zid = str(zone_entry.get("zone_id", f"zone-fortress-{idx}"))
+    snid = str(zone_entry.get("studio_node_id", f"fortress-{idx}"))
+    fname = str(zone_entry.get("name", snid))
+    short_name = fname.split("(")[0].strip()
+    fkind = str(zone_entry.get("category", "fortress"))
+    if fkind not in ("harbor", "clan_hall", "fortress"):
+        fkind = "fortress"
+    analog = str(zone_entry.get("l2_reference_analog", "Lineage II Border Fortress / Harbor"))
+    lmin, lmax = (zone_entry.get("level_band") or [15, 30])[:2]
+    lmid = max(lmin, (lmin + lmax) // 2)
+    bx, by = _parse_loc(zone_entry.get("loc_coord", "-96200:258400"))
+    did, dfid, dname = _resolve_linked_dungeon_warp(zone_entry, mf_by_id)
+
+    return {
+        "zone_id": zid,
+        "studio_node_id": snid,
+        "fortress_kind": fkind,
+        "archetype_subtitle": f"{fname} ({analog})",
+        "bastion_wall_pct": [
+            [18, 16],
+            [82, 16],
+            [88, 50],
+            [82, 84],
+            [18, 84],
+            [12, 50],
+        ],
+        "camp_and_shrine_marks": [
+            {
+                "mark_id": f"{zid}-camp",
+                "mark_type": "Supply Camp",
+                "label": f"{short_name} Quartermaster & Siege Armory",
+                "icon": "⛺",
+                "x_pct": 26,
+                "y_pct": 48,
+                "npc_or_node": f"[Fortress Steward] Vane ({zid})",
+                "description": "Clan siege consumables, Wyvern/Airship fuel rations, and fortress vault access.",
+            },
+            {
+                "mark_id": f"{zid}-shrine",
+                "mark_type": "Wayfarer Shrine",
+                "label": f"{short_name} Flagpole & Accord Altar",
+                "icon": "⛩️",
+                "x_pct": 50,
+                "y_pct": 32,
+                "npc_or_node": f"Clan Crest Banner Altar ({zid})",
+                "description": "Central banner sanctum for Clan Hall / Fortress ownership rites and buffs.",
+            },
+            {
+                "mark_id": f"{zid}-gatekeeper",
+                "mark_type": "Gatekeeper Waypoint",
+                "label": f"{short_name} Harbor / Bastion Teleporter",
+                "icon": "🌀",
+                "x_pct": 32,
+                "y_pct": 72,
+                "npc_or_node": f"[Bastion Envoy] Mira ({zid})",
+                "description": "Direct teleport to connected Castle Towns, Harbors, and Overland Hunting Grounds.",
+            },
+            {
+                "mark_id": f"{zid}-ore-vein",
+                "mark_type": "Refinement Ore Vein",
+                "label": f"{short_name} Clan Refinement Forge & Smeltery",
+                "icon": "💎",
+                "x_pct": 66,
+                "y_pct": 34,
+                "npc_or_node": f"Clan Master Anvil #{idx}",
+                "description": "Refines Blood Alliance badges, Epaulettes, and high-tier weapon over-enchants.",
+            },
+        ],
+        "spawn_territories": [
+            {
+                "territory_id": f"{zid}-pack-monster",
+                "x_pct": 40,
+                "y_pct": 58,
+                "radius_pct": 12,
+                "entity_type": "Monster",
+                "mob_name": f"{short_name} Garrison Sentinel",
+                "level": lmin,
+                "count": 18,
+                "respawn": "45s",
+                "refinement_drops": ["Knight's Epaulette", "Fortress Iron Ingot", "Refinement Stone"],
+                "loc_coord": _fmt_loc(bx + 150, by - 150),
+            },
+            {
+                "territory_id": f"{zid}-patrol-miniboss",
+                "x_pct": 58,
+                "y_pct": 52,
+                "radius_pct": 10,
+                "entity_type": "Mini-Boss",
+                "mob_name": f"[Mini-Boss] {short_name} Ballista Captain",
+                "level": lmid,
+                "count": 2,
+                "respawn": "300s",
+                "refinement_drops": ["Captain's Seal Crest", "Armor Enchant Scroll", "Tempered Steel"],
+                "loc_coord": _fmt_loc(bx + 360, by - 260),
+            },
+            {
+                "territory_id": f"{zid}-arena-raid",
+                "x_pct": 72,
+                "y_pct": 66,
+                "radius_pct": 11,
+                "entity_type": "Raid",
+                "mob_name": f"[Raid Boss] {short_name} Siege Commander",
+                "level": lmax,
+                "count": 1,
+                "respawn": "3600s",
+                "refinement_drops": ["Blood Alliance", "Blessed Weapon Enchant", "Fortress Forge Core"],
+                "loc_coord": _fmt_loc(bx + 620, by - 480),
+            },
+            {
+                "territory_id": f"{zid}-sanctum-mvp",
+                "x_pct": 76,
+                "y_pct": 28,
+                "radius_pct": 10,
+                "entity_type": "MVP",
+                "mob_name": f"[MVP] {short_name} Dreadnought Overlord",
+                "level": lmax,
+                "count": 1,
+                "respawn": "7200s",
+                "refinement_drops": ["Sovereign Bastion Heart", "Divine Refinement Catalyst", "Oath Blood"],
+                "loc_coord": _fmt_loc(bx + 840, by - 640),
+            },
+        ],
+        "dungeon_entrance_warps": [
+            {
+                "warp_id": f"warp-{zid}-to-{did}",
+                "label": f"🕳️ Undercroft Warp to {dname.split('(')[0].strip()} ({dfid})",
+                "dungeon_id": did,
+                "floor_id": dfid,
+                "x_pct": 84,
+                "y_pct": 50,
+                "loc_coord": _fmt_loc(bx + 960, by - 320),
+            }
+        ],
+    }
+
+
 def _ensure_spawn_tiers_in_table(rows: list[dict[str, Any]], base_id: int, base_lv: int, loc: str) -> bool:
     changed = False
     present = {r.get("entity_type") for r in rows if isinstance(r, dict)}
@@ -584,11 +1071,74 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
                 ):
                     actions.append(f"completed_floor_spawns:{mf['dungeon_id']}:{fl.get('floor_id')}")
 
+    # 5. Ensure all 24 Field Hunting Areas exist in `fields_and_hunting_areas`
+    fields_list: list[dict[str, Any]] = zdir.setdefault("fields_and_hunting_areas", [])
+    existing_field_ids = {f.get("zone_id") for f in fields_list if isinstance(f, dict)}
+    for add_f in ADDITIONAL_FIELD_ZONES:
+        if len(fields_list) >= 24:
+            break
+        if add_f["zone_id"] not in existing_field_ids:
+            fields_list.append(dict(add_f))
+            existing_field_ids.add(add_f["zone_id"])
+            actions.append(f"added_field_hunting_zone:{add_f['zone_id']}")
+
+    mf_by_id = {d["dungeon_id"]: d for d in mf_list if isinstance(d, dict) and d.get("dungeon_id")}
+
+    # 6. Expand next unbuilt Field Tactical Blueprint among the 24 Field Hunting Areas
+    for idx, f_entry in enumerate(fields_list, start=1):
+        if "field_tactical_blueprint" not in f_entry:
+            f_entry["field_tactical_blueprint"] = _synthesize_field_tactical_blueprint(f_entry, idx, mf_by_id)
+            f_entry["t_depth_status"] = "t_deep_validated"
+            actions.append(f"expanded_field_tactical_blueprint:{f_entry['zone_id']}")
+            break
+
+    # Sync deep_field_zone.field_tactical_blueprint with fields_and_hunting_areas[0]
+    deep_field = (atlas.get("t_deep_validation_slice") or {}).get("deep_field_zone")
+    if isinstance(deep_field, dict) and fields_list and isinstance(fields_list[0].get("field_tactical_blueprint"), dict):
+        deep_field["field_tactical_blueprint"] = fields_list[0]["field_tactical_blueprint"]
+
+    atlas["field_tactical_blueprints"] = [
+        f["field_tactical_blueprint"]
+        for f in fields_list
+        if isinstance(f.get("field_tactical_blueprint"), dict)
+    ]
+
+    # 7. Expand next unbuilt Harbor / Clan Hall / Fortress Blueprint among the 8 Harbors/ClanHalls/Forts
+    forts_list: list[dict[str, Any]] = zdir.setdefault("harbors_clanhalls_and_forts", [])
+    for idx, h_entry in enumerate(forts_list, start=1):
+        if "fortress_blueprint" not in h_entry:
+            h_entry["fortress_blueprint"] = _synthesize_fortress_blueprint(h_entry, idx, mf_by_id)
+            h_entry["t_depth_status"] = "t_deep_validated"
+            actions.append(f"expanded_fortress_blueprint:{h_entry['zone_id']}")
+            break
+
+    atlas["fortress_blueprints"] = [
+        h["fortress_blueprint"]
+        for h in forts_list
+        if isinstance(h.get("fortress_blueprint"), dict)
+    ]
+
     return {"actions": actions}
 
 
+def _is_valid_tactical_blueprint(bp: Any) -> bool:
+    if not isinstance(bp, dict):
+        return False
+    marks = {m.get("mark_type") for m in (bp.get("camp_and_shrine_marks") or []) if isinstance(m, dict)}
+    if not all(req in marks for req in REQUIRED_FIELD_MARKS):
+        return False
+    territories = bp.get("spawn_territories") or []
+    t_types = {t.get("entity_type") for t in territories if isinstance(t, dict) and t.get("refinement_drops")}
+    if not all(req in t_types for req in REQUIRED_SPAWN_TIERS):
+        return False
+    warps = bp.get("dungeon_entrance_warps") or []
+    if not warps or not all(isinstance(w, dict) and w.get("dungeon_id") and w.get("floor_id") for w in warps):
+        return False
+    return True
+
+
 def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, Any]:
-    """Compute 0-100 scores across D1..D6."""
+    """Compute 0-100 scores across D1..D8."""
     zdir = atlas.get("t_breadth_zone_directory") or {}
     starting_towns = zdir.get("starting_towns") or []
     hub_towns = zdir.get("other_castle_and_hub_towns") or []
@@ -596,6 +1146,8 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     reg_dungeons = zdir.get("regular_dungeons") or []
     catacombs = zdir.get("seven_signs_seal_catacombs") or []
     all_dungeons = reg_dungeons + catacombs
+    fields_list = zdir.get("fields_and_hunting_areas") or []
+    forts_list = zdir.get("harbors_clanhalls_and_forts") or []
 
     # D1: 6 Playable Race Spawn Locations
     r_spawns = atlas.get("race_spawn_locations") or []
@@ -649,6 +1201,14 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         for fl in d.get("floors") or []:
             if isinstance(fl.get("spawns"), list):
                 spawn_containers.append(fl["spawns"])
+    for f_entry in fields_list:
+        ftb = f_entry.get("field_tactical_blueprint")
+        if isinstance(ftb, dict) and isinstance(ftb.get("spawn_territories"), list):
+            spawn_containers.append(ftb["spawn_territories"])
+    for h_entry in forts_list:
+        fbp = h_entry.get("fortress_blueprint")
+        if isinstance(fbp, dict) and isinstance(fbp.get("spawn_territories"), list):
+            spawn_containers.append(fbp["spawn_territories"])
     full_tier_containers = 0
     for rows in spawn_containers:
         types = {r.get("entity_type") for r in rows if isinstance(r, dict)}
@@ -672,18 +1232,28 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     conn_ratio = len(connected_zones) / float(max(1, len(all_zones)))
     d5_score = round((0.6 * conn_ratio + 0.4 * unique_coords_ratio) * 100.0, 1)
 
+    # D7: 24 Field Hunting Area Tactical Blueprints
+    valid_field_bps = sum(1 for f in fields_list if _is_valid_tactical_blueprint(f.get("field_tactical_blueprint")))
+    target_fields = max(24, len(fields_list))
+    d7_score = round((valid_field_bps / float(target_fields)) * 100.0, 1)
+
+    # D8: 8 Harbor, Clan Hall & Fortress Tactical Blueprints
+    valid_fort_bps = sum(1 for h in forts_list if _is_valid_tactical_blueprint(h.get("fortress_blueprint")))
+    target_forts = max(8, len(forts_list))
+    d8_score = round((valid_fort_bps / float(target_forts)) * 100.0, 1)
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
         "Aesthetic": d5_score,
         "Continuity": round((d1_score + d5_score) / 2.0, 1),
         "Narrative": 100.0 if len(whc.get("historical_epochs") or []) >= 4 else 75.0,
-        "Challenge": d4_score,
-        "Discovery": round((d2_score + d3_score) / 2.0, 1),
+        "Challenge": round((d4_score + d7_score + d8_score) / 3.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score) / 4.0, 1),
         "Fantasy": d1_score,
-        "Submission": round((d2_score + d4_score) / 2.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score) / 3.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
-    overall = round((d1_score + d2_score + d3_score + d4_score + d5_score + d6_score) / 6.0, 1)
+    overall = round((d1_score + d2_score + d3_score + d4_score + d5_score + d6_score + d7_score + d8_score) / 8.0, 1)
 
     return {
         "overall_score": overall,
@@ -703,6 +1273,8 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "unique_coords": len(set(coords)),
             },
             "D6_mda_experience_pillars": {"score": d6_score, "pillars": pillar_scores},
+            "D7_field_tactical_blueprints": {"score": d7_score, "verified": valid_field_bps, "target": target_fields},
+            "D8_fortress_harbor_clanhall_blueprints": {"score": d8_score, "verified": valid_fort_bps, "target": target_forts},
         },
     }
 
@@ -753,6 +1325,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D4 (Mob/Mini/Raid/MVP)     : {dims['D4_monster_miniboss_raid_mvp_spawns']['score']}/100 ({dims['D4_monster_miniboss_raid_mvp_spawns']['verified']}/{dims['D4_monster_miniboss_raid_mvp_spawns']['target']})")
         print(f"  D5 (Travel & Anti-Clutter) : {dims['D5_geographic_travel_and_anticlutter']['score']}/100 ({dims['D5_geographic_travel_and_anticlutter']['connected_zones']}/{dims['D5_geographic_travel_and_anticlutter']['total_zones']} zones)")
         print(f"  D6 (7 MDA Pillars)         : {dims['D6_mda_experience_pillars']['score']}/100 {dims['D6_mda_experience_pillars']['pillars']}")
+        print(f"  D7 (24 Field Blueprints)   : {dims['D7_field_tactical_blueprints']['score']}/100 ({dims['D7_field_tactical_blueprints']['verified']}/{dims['D7_field_tactical_blueprints']['target']})")
+        print(f"  D8 (8 Fortress Blueprints) : {dims['D8_fortress_harbor_clanhall_blueprints']['score']}/100 ({dims['D8_fortress_harbor_clanhall_blueprints']['verified']}/{dims['D8_fortress_harbor_clanhall_blueprints']['target']})")
         if executed_actions:
             print(f"  Actions                    : {', '.join(executed_actions)}")
         print(f"  Compact State Written      : {STATE_PATH}")
