@@ -56927,5 +56927,416 @@
         "Circlet of Innadril Supremacy & Top-Grade Life Stone (Lv.84)"
       ]
     }
+  ],
+  "elemental_jewel_rune_sanctums": [
+    {
+      "sanctum_id": "sanctum-01-jewel-fire-chronometer-foundry-3f",
+      "sanctum_name": "Chronometer Foundry Core Smeltery \u2014 Fire Elemental Jewel Forge",
+      "relic_tier_category": "Elemental_Jewel_Forge",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84634:56557",
+      "guardian_or_master_npc": "Attribute Master Yang & Scarlet Magma Anvil Warden (3F)",
+      "featured_jewel_or_rune": "Fire Elemental Jewel (Lv.82+ 300+ Fire Mastery Catalyst)",
+      "infusion_power_bonus": "Elevates Weapon Fire Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Fire Attack Cap / +180 Fire Resist)",
+      "acquisition_trial_rule": "Synthesize 5 Fire Elemental Crystals (150->300) + 1 Magma Apostle Heart at Chronometer Foundry 3F Core Anvil"
+    },
+    {
+      "sanctum_id": "sanctum-02-jewel-water-sunken-potter-hold-b3",
+      "sanctum_name": "Sunken Potter Hold Abyssal Vault \u2014 Water Elemental Jewel Forge",
+      "relic_tier_category": "Elemental_Jewel_Forge",
+      "zone_id": "zone-dungeon-sunken-potter-hold",
+      "dungeon_id": "zone-dungeon-sunken-potter-hold",
+      "floor_id": "B3",
+      "loc": "-78552:149344",
+      "guardian_or_master_npc": "Attribute Master Yin & Fafurion's Tidal Prism Keeper (B3)",
+      "featured_jewel_or_rune": "Water Elemental Jewel (Lv.82+ 300+ Water Mastery Catalyst)",
+      "infusion_power_bonus": "Elevates Weapon Water Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Water Attack Cap / +180 Water Resist)",
+      "acquisition_trial_rule": "Purify 5 Water Elemental Crystals + 1 Abyssal Leviathan Tear inside Sunken Potter Hold B3 Sanctum"
+    },
+    {
+      "sanctum_id": "sanctum-03-jewel-wind-aurora-tether-vortex",
+      "sanctum_name": "Aurora Tether Sky-Spire \u2014 Wind Elemental Jewel Forge",
+      "relic_tier_category": "Elemental_Jewel_Forge",
+      "zone_id": "zone-field-aurora-tether",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "152262:31331",
+      "guardian_or_master_npc": "Magister Dilios & Lindvior Gale-Prism Artificer",
+      "featured_jewel_or_rune": "Wind Elemental Jewel (Lv.82+ 300+ Wind Mastery Catalyst)",
+      "infusion_power_bonus": "Elevates Weapon Wind Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Wind Attack Cap / +180 Wind Resist)",
+      "acquisition_trial_rule": "Condense 5 Wind Elemental Crystals + 20 Extracted Blue Star Stones at Aurora Tether Upper Vortex Altar"
+    },
+    {
+      "sanctum_id": "sanctum-04-jewel-earth-pendulum-shaft-3f",
+      "sanctum_name": "Pendulum Shaft Titan Core \u2014 Earth Elemental Jewel Forge",
+      "relic_tier_category": "Elemental_Jewel_Forge",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "3F",
+      "loc": "85276:144318",
+      "guardian_or_master_npc": "Blacksmith of Mammon & Cruma Titan Core Artificer (3F)",
+      "featured_jewel_or_rune": "Earth Elemental Jewel (Lv.82+ 300+ Earth Mastery Catalyst)",
+      "infusion_power_bonus": "Elevates Weapon Earth Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Earth Attack Cap / +180 Earth Resist)",
+      "acquisition_trial_rule": "Temper 5 Earth Elemental Crystals + 1 Cruma Core Resonance Gear at Pendulum Shaft 3F Escapement Anvil"
+    },
+    {
+      "sanctum_id": "sanctum-05-jewel-holy-star-heart-nave-3f",
+      "sanctum_name": "Star-Heart Nave Seraphim Choir \u2014 Holy Elemental Jewel Forge",
+      "relic_tier_category": "Elemental_Jewel_Forge",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149090:28505",
+      "guardian_or_master_npc": "High Priestess Anakim's Herald & Attribute Master Yin (3F)",
+      "featured_jewel_or_rune": "Holy Elemental Jewel (Lv.82+ 300+ Holy Mastery Catalyst)",
+      "infusion_power_bonus": "Elevates Weapon Holy Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Holy Attack Cap / +180 Holy Resist)",
+      "acquisition_trial_rule": "Consecrate 5 Holy Elemental Crystals + 1 Sacred Feather of Anakim at Star-Heart Nave 3F Choir Altar"
+    },
+    {
+      "sanctum_id": "sanctum-06-jewel-dark-dark-omens-catacomb-b3",
+      "sanctum_name": "Dark Omens Necropolis Abyss \u2014 Dark Elemental Jewel Forge",
+      "relic_tier_category": "Elemental_Jewel_Forge",
+      "zone_id": "zone-catacomb-dark-omens-coral",
+      "dungeon_id": "zone-catacomb-dark-omens-coral",
+      "floor_id": "B3",
+      "loc": "38304:-28808",
+      "guardian_or_master_npc": "Dusk Seer Lilith's Apostle & Attribute Master Yang (B3)",
+      "featured_jewel_or_rune": "Dark Elemental Jewel (Lv.82+ 300+ Dark Mastery Catalyst)",
+      "infusion_power_bonus": "Elevates Weapon Dark Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Dark Attack Cap / +180 Dark Resist)",
+      "acquisition_trial_rule": "Infuse 5 Dark Elemental Crystals + 1 Seal of Lilith / Ekimus Essence in Dark Omens Catacomb B3 Sanctum"
+    },
+    {
+      "sanctum_id": "sanctum-07-rune-stone-forbidden-path-catacomb-b3",
+      "sanctum_name": "Forbidden Path Catacomb B3 \u2014 Sovereign Raid Rune Stone Altar I",
+      "relic_tier_category": "Raid_Rune_Stone_Altar",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B3",
+      "loc": "18318:-64121",
+      "guardian_or_master_npc": "Elder Nephilim Rune Keeper & Grand Magister Hardin's Envoy (B3)",
+      "featured_jewel_or_rune": "Sovereign Rune Stone (Lv.83 Awakening Skill Unlock)",
+      "infusion_power_bonus": "Unlocks Lv.83 Ultimate Class Awakening Skills (Flame Icon, Spirit of Shilen, Lucky Strike, Group Heal Mastery) & +5% Skill Power",
+      "acquisition_trial_rule": "Defeat Command-Channel MVP Apostle on B3 or Exchange 12 Raid Boss Life Crystals at the Forbidden Path Rune Altar"
+    },
+    {
+      "sanctum_id": "sanctum-08-rune-stone-witch-pendulum-catacomb-b3",
+      "sanctum_name": "Astral Witch Catacomb B3 \u2014 Sovereign Raid Rune Stone Altar II",
+      "relic_tier_category": "Raid_Rune_Stone_Altar",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "54132:-34734",
+      "guardian_or_master_npc": "Shadow Archon Halisha's Steward & Rune Engraver (B3)",
+      "featured_jewel_or_rune": "Sovereign Rune Stone & Forgotten Scroll: Seven Arrow / Meteor",
+      "infusion_power_bonus": "Unlocks Lv.82\u201383 High-Awakening Archer & Archmage Skills (+10% PvP Skill Critical Damage & Cooldown Reduction)",
+      "acquisition_trial_rule": "Clear 4-Sepulcher / Catacomb B3 Shadow Archon Trial with 18+ Command Channel & Claim Engraved Rune Stone"
+    },
+    {
+      "sanctum_id": "sanctum-09-rune-stone-kiln-cellar-b3",
+      "sanctum_name": "Kiln Cellar B3 Royal Nursery \u2014 Sovereign Raid Rune Stone Altar III",
+      "relic_tier_category": "Raid_Rune_Stone_Altar",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B3",
+      "loc": "75356:116873",
+      "guardian_or_master_npc": "Blacksmith Clan Grand Forger & Queen Ant Sanctum Warden (B3)",
+      "featured_jewel_or_rune": "Sovereign Rune Stone & Vanguard Mutual Response Tome",
+      "infusion_power_bonus": "Unlocks Lv.81\u201383 Dual-Dagger, Vanguard Tank & Titan Frenzy Awakening Passives (+8% P.Atk & Stun Penetration)",
+      "acquisition_trial_rule": "Harvest Royal Apostle Core on B3 + 3,000 Clan Reputation Points to Engrave a Bound Sovereign Rune Stone"
+    },
+    {
+      "sanctum_id": "sanctum-10-rune-stone-heretic-kiln-catacomb-b3",
+      "sanctum_name": "Heretic Kiln Catacomb B3 \u2014 Sovereign Raid Rune Stone Altar IV",
+      "relic_tier_category": "Raid_Rune_Stone_Altar",
+      "zone_id": "zone-catacomb-heretic-kiln",
+      "dungeon_id": "zone-catacomb-heretic-kiln",
+      "floor_id": "B3",
+      "loc": "19760:173440",
+      "guardian_or_master_npc": "Priest of Dawn/Dusk High Rune Arbiter (B3)",
+      "featured_jewel_or_rune": "Sovereign Rune Stone & Sublime Self-Sacrifice / Counter Critical",
+      "infusion_power_bonus": "Unlocks Lv.83 Healer & Enchanter Awakening Skills (Counter Critical, Mutual Response, Servitor Barrier)",
+      "acquisition_trial_rule": "Win Seven-Seals Seal of Gnosis Ownership & Sacrifice 500,000 Ancient Adena at Heretic Kiln B3 Rune Altar"
+    },
+    {
+      "sanctum_id": "sanctum-11-giants-relic-orrery-bridge-cave",
+      "sanctum_name": "The Orrery Bridge Giant's Chasm \u2014 Hekaton's Ancient Relic Vault",
+      "relic_tier_category": "Ancient_Giants_Relic_Vault",
+      "zone_id": "zone-field-orrery-bridge",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-28426:-108173",
+      "guardian_or_master_npc": "Head Researcher Sobling & Giant's Chasm Sentinel",
+      "featured_jewel_or_rune": "Ancient Giant's Codex: Mastery / Oblivion & Lesser Giant's Essence",
+      "infusion_power_bonus": "Enables Safe +16..+30 Skill Enchanting (Zero Reset Penalty on Failure) & Dual-Route Skill Specialization Re-Spec",
+      "acquisition_trial_rule": "Exchange 200 Ancient Books of the Demon + Defeat Hekaton Prime in the Lower Giant's Chasm Vault"
+    },
+    {
+      "sanctum_id": "sanctum-12-giants-relic-tether-causeway-citadel",
+      "sanctum_name": "Tether Causeway Steel Citadel \u2014 Beleth's Ancient Giant Reliquary",
+      "relic_tier_category": "Ancient_Giants_Relic_Vault",
+      "zone_id": "zone-field-tether-causeway",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "49188:-41186",
+      "guardian_or_master_npc": "Caravan Hierarch Matras & Ancient Giant Automaton",
+      "featured_jewel_or_rune": "Ancient Giant's Codex: Discipline & Dynasty/Vesper Soul Core",
+      "infusion_power_bonus": "Allows Free Skill Enchant Route Switching (Power \u21c4 Cost \u21c4 Element) While Retaining +15..+30 Enchant Level",
+      "acquisition_trial_rule": "Ascend Tully's Workshop & Tower of Naia Lockboxes With Caravan Trust Certificate Stage 11"
+    },
+    {
+      "sanctum_id": "sanctum-13-giants-relic-astrolabe-rift-observatory",
+      "sanctum_name": "Astrolabe Rift Star-Vault \u2014 Cruma & Marph's Relic Archive",
+      "relic_tier_category": "Ancient_Giants_Relic_Vault",
+      "zone_id": "zone-field-astrolabe-rift",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "76402:68201",
+      "guardian_or_master_npc": "Elder Arin & Star-Vault Archivist Lorain",
+      "featured_jewel_or_rune": "Ancient Giant's Codex Chapter I\u2013IV Bundle & Star Stone Core",
+      "infusion_power_bonus": "Boosts Skill Enchant Success Rate by +25% for Lv.76\u201385 3rd-Class Skills & Unlocks +30 Elemental Skill Attack",
+      "acquisition_trial_rule": "Recover 4 Sealed Titan Astrolabe Plates from Astrolabe Rift Elite Constructs & Decode at Lorain's Vault"
+    },
+    {
+      "sanctum_id": "sanctum-14-giants-relic-cloud-halo-fortress",
+      "sanctum_name": "Cloud-Halo Sky Fortress \u2014 Imperial Giant's Sovereign Treasury",
+      "relic_tier_category": "Ancient_Giants_Relic_Vault",
+      "zone_id": "zone-fortress-cloud-halo",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "46216:-45112",
+      "guardian_or_master_npc": "Suspicious Merchant & Fortress Supply Captain",
+      "featured_jewel_or_rune": "Ancient Giant's Codex: Mastery Crate & Knights' Epaulette Relic",
+      "infusion_power_bonus": "Grants Sovereign Clan Members Safe +1..+30 Skill Enchant Mastery & +10% PvE/PvP Skill Damage Amplification",
+      "acquisition_trial_rule": "Hold Cloud-Halo Fortress With Independent Status & Trade 5,000 Knights' Epaulettes at the Underground Treasury"
+    }
+  ],
+  "reputation_fame_monuments": [
+    {
+      "monument_id": "fame-mon-01-lantern-hollow",
+      "town_zone_id": "zone-town-lantern-hollow",
+      "town_name": "Lantern Hollow Village (Human Starter)",
+      "fame_service_category": "PvP_Weapon_Infusion_Obelisk",
+      "reputation_manager_npc": "Reputation Manager Rapidus (Lantern Hollow Fame Obelisk)",
+      "monument_loc": "-84314:243673",
+      "fame_earning_sources": "Castle/Fortress Siege (+125 Fame/5m), Territory War (+375 Fame/5m), Underground Coliseum Streak",
+      "pvp_seal_infusions": [
+        "PvP Weapon Might (+5% PvP Damage & Cancel/Haste Proc on Crit)",
+        "PvP Dagger/Rapier Cancel (Strips 1\u20132 Enemy Buffs on Critical Hit)",
+        "PvP Bow/Crossbow Rapid Fire (+15% Atk.Spd Proc & Slow)"
+      ],
+      "fame_point_cost_band": "5,000\u201336,700 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-02-draft-kiln-post",
+      "town_zone_id": "zone-town-draft-kiln-post",
+      "town_name": "Draft-Kiln Post (Ogre/Orc Starter)",
+      "fame_service_category": "PvP_Weapon_Infusion_Obelisk",
+      "reputation_manager_npc": "Reputation Manager Scipio (Draft-Kiln War Obelisk)",
+      "monument_loc": "-45003:-113019",
+      "fame_earning_sources": "Fortress Siege (+31 Fame/5m), Castle Siege (+125 Fame/5m), Kratei's Cube & Clan War Ring",
+      "pvp_seal_infusions": [
+        "PvP Two-Handed / Dualfist Savage Might (+5% PvP Skill/Normal Damage & +100 CP Restore)",
+        "PvP Polearm Whirlwind (Multi-Target Cancel & Stun Resistance Shred)",
+        "PvP Blunt Shield-Breaker (Ignores 25% Target Shield Defense in Siege)"
+      ],
+      "fame_point_cost_band": "8,000\u201336,700 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-03-cinnamon-mill",
+      "town_zone_id": "zone-town-cinnamon-mill",
+      "town_name": "Cinnamon-Mill Haven (Furral Starter)",
+      "fame_service_category": "PvP_Weapon_Infusion_Obelisk",
+      "reputation_manager_npc": "Reputation Manager Rapidus (Cinnamon-Mill Soul Obelisk)",
+      "monument_loc": "-118412:46989",
+      "fame_earning_sources": "Territory War (+375 Fame/5m), Aerial Cleft 9v9 (+1,000 Fame), Underground Coliseum",
+      "pvp_seal_infusions": [
+        "PvP Ancient Sword / Rapier Soul-Surge (+5% PvP Damage & 15% Chance +15% Atk.Spd)",
+        "PvP Crossbow Counter-Shot (+5% PvP Damage & Range Slow Proc)",
+        "PvP Dualsword Gladiator Edge (+5% PvP Sonic/Triple Slash Damage)"
+      ],
+      "fame_point_cost_band": "11,500\u201336,700 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-04-kilnwatch-bastion",
+      "town_zone_id": "zone-town-kilnwatch-bastion",
+      "town_name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+      "fame_service_category": "PvP_Weapon_Infusion_Obelisk",
+      "reputation_manager_npc": "Reputation Manager Scipio (Kilnwatch Dion Siege Obelisk)",
+      "monument_loc": "-14421:123697",
+      "fame_earning_sources": "Dion Castle Siege (+125 Fame/5m), Territory Ward Defense (+375 Fame/5m), Ring I\u2013III Coliseum",
+      "pvp_seal_infusions": [
+        "PvP Weapon Might (+5% PvP Physical/Magical Damage Across All A/S/S80/S84 Weapons)",
+        "PvP Caster/Scepter Acumen (+5% PvP M.Atk & +15% Cast Speed Proc when Attacked)",
+        "PvP Dual-Dagger Mortal Strike (+5% Backstab/Lethal Blow Damage & Buff Cancel)"
+      ],
+      "fame_point_cost_band": "11,500\u201350,000 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-05-pinion-terminus",
+      "town_zone_id": "zone-town-pinion-terminus",
+      "town_name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+      "fame_service_category": "PvP_Weapon_Infusion_Obelisk",
+      "reputation_manager_npc": "Reputation Manager Rapidus (Pinion Terminus Hunters Obelisk)",
+      "monument_loc": "82170:148805",
+      "fame_earning_sources": "Fortress Siege (+31 Fame/5m), Ring III Silver Coliseum (+700 Fame/Win), Territory War",
+      "pvp_seal_infusions": [
+        "PvP Longbow / Crossbow Sniper Infusion (+5% PvP Damage & Instant Speed/Atk.Spd Trigger)",
+        "PvP Assassin Dagger Mirage-Breaker (+5% PvP Crit Damage & Cancel Target Buff)",
+        "PvP Spear Vanguard Sweep (+5% PvP Damage & Multi-Target Knockback Chance)"
+      ],
+      "fame_point_cost_band": "15,000\u201350,000 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-06-porcelain-loom",
+      "town_zone_id": "zone-town-porcelain-loom",
+      "town_name": "Porcelain Loom Sanctuary (Lunar Starter)",
+      "fame_service_category": "PvP_Armor_Mirage_Obelisk",
+      "reputation_manager_npc": "Reputation Manager Scipio (Porcelain Loom Lunar Obelisk)",
+      "monument_loc": "45561:41413",
+      "fame_earning_sources": "Innadril/Oren Territory War (+375 Fame/5m), Castle Siege (+125 Fame/5m), Olympiad Token Exchange",
+      "pvp_seal_infusions": [
+        "PvP Tunic / Robe Arcane Barrier (-5% Incoming PvP Damage & -30% Critical Damage Taken)",
+        "PvP Light Armor Mirage (Forces Attacker to Drop Target on Hit + +5% PvP Defense)",
+        "PvP Sigil / Shield Resilience (+15% Shield Defense Rate Against Archers & Daggers)"
+      ],
+      "fame_point_cost_band": "6,500\u201338,200 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-07-carillon-belfry",
+      "town_zone_id": "zone-town-carillon-belfry",
+      "town_name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+      "fame_service_category": "PvP_Armor_Mirage_Obelisk",
+      "reputation_manager_npc": "Reputation Manager Rapidus (Carillon Belfry Shadow Obelisk)",
+      "monument_loc": "12152:17021",
+      "fame_earning_sources": "Schuttgart/Rune Territory War (+375 Fame/5m), Fortress Siege (+31 Fame/5m), Underground Coliseum",
+      "pvp_seal_infusions": [
+        "PvP Light Armor Mirage (High-Frequency Target-Cancel Proc When Struck in PvP + -5% PvP Damage)",
+        "PvP Robe Speed-Weave (-5% Incoming PvP Damage & -20% Enemy Attack/Cast Speed Proc)",
+        "PvP Belt Ornament Seal (+6% PvP Defense & Stun/Mental Resistance)"
+      ],
+      "fame_point_cost_band": "8,200\u201338,200 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-08-escapement-anvil",
+      "town_zone_id": "zone-town-escapement-anvil",
+      "town_name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+      "fame_service_category": "PvP_Armor_Mirage_Obelisk",
+      "reputation_manager_npc": "Reputation Manager Scipio (Escapement Anvil Oren Obelisk)",
+      "monument_loc": "82843:53429",
+      "fame_earning_sources": "Oren Castle Siege (+125 Fame/5m), Ring II Bronze Coliseum (+550 Fame/Win), Territory War",
+      "pvp_seal_infusions": [
+        "PvP Heavy Breastplate Fortress Seal (-5% Incoming PvP Damage & -20% Attacker Speed/Atk.Spd/Cast.Spd)",
+        "PvP Light Armor Mirage (-5% Incoming PvP Damage & Instant Target-Drop Illusion)",
+        "PvP Robe Critical Ward (-5% Incoming PvP Damage & -30% Incoming Crit Rate/Multiplier)"
+      ],
+      "fame_point_cost_band": "10,400\u201342,600 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-09-starfall-haven",
+      "town_zone_id": "zone-town-starfall-haven",
+      "town_name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+      "fame_service_category": "PvP_Armor_Mirage_Obelisk",
+      "reputation_manager_npc": "Reputation Manager Rapidus (Starfall Haven Rune Obelisk)",
+      "monument_loc": "43534:-47663",
+      "fame_earning_sources": "Rune Castle Siege (+125 Fame/5m), Seed/Aerial Cleft Tournaments (+1,000 Fame), Territory War",
+      "pvp_seal_infusions": [
+        "PvP S80 Dynasty / S84 Vesper Heavy Armor Seal (-5% PvP Damage & AoE Speed/Cast Chill Proc)",
+        "PvP S80/S84 Light Armor Mirage (Forces Enemy Daggers/Archers to Lose Target Lock)",
+        "PvP S80/S84 Robe Tunic Sanctuary (-5% PvP Damage & Critical Damage Reduction Aura)"
+      ],
+      "fame_point_cost_band": "12,800\u201348,500 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-10-crown-beacon",
+      "town_zone_id": "zone-town-crown-beacon",
+      "town_name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+      "fame_service_category": "PvP_Armor_Mirage_Obelisk",
+      "reputation_manager_npc": "Reputation Manager Scipio (Crown-Beacon Sovereign Obelisk)",
+      "monument_loc": "147625:27045",
+      "fame_earning_sources": "Sovereign Castle Siege (+125 Fame/5m), Ring V Lv.80\u201385 Coliseum (+1,200 Fame/Win), Territory War",
+      "pvp_seal_infusions": [
+        "PvP Vesper / Vorpal / Elegia Heavy Armor Seal (-5% PvP Dmg & Chills Attacker Speed by -25%)",
+        "PvP Vesper / Vorpal Light Armor Mirage (Supreme Target-Drop Proc & +5% PvP Evasion)",
+        "PvP Vesper / Vorpal Robe Tunic Aegis (-5% PvP Dmg & -35% Incoming Critical Hit Damage)"
+      ],
+      "fame_point_cost_band": "16,000\u201352,000 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-11-root-train-roundhouse",
+      "town_zone_id": "zone-town-root-train-roundhouse",
+      "town_name": "Root-Train Roundhouse (Dwarf Starter)",
+      "fame_service_category": "PK_Pardon_And_CRP_Monument",
+      "reputation_manager_npc": "Reputation Manager Rapidus (Root-Train Roundhouse Pardon Monument)",
+      "monument_loc": "114816:-177947",
+      "fame_earning_sources": "Schuttgart Siege (+125 Fame/5m), Bandit/Beast Clan War Ring (+850 Fame), Fortress Siege",
+      "pvp_seal_infusions": [
+        "Reduce PK Count by 1 (-1 PK per 5,000 Individual Fame Points \u00b7 Requires 0 Karma)",
+        "Convert 1,000 Individual Fame -> +50 Clan Reputation Points (CRP) for Pledge Skills",
+        "Redeem Fame for Elixir of CP / Life / Mind (A/S-Grade Instant Siege Recovery)"
+      ],
+      "fame_point_cost_band": "1,000\u201325,000 Individual Fame Points"
+    },
+    {
+      "monument_id": "fame-mon-12-glaze-barge-quay",
+      "town_zone_id": "zone-town-glaze-barge-quay",
+      "town_name": "Glaze-Barge Quay (River Trade & Raid Port)",
+      "fame_service_category": "PK_Pardon_And_CRP_Monument",
+      "reputation_manager_npc": "Reputation Manager Scipio (Glaze-Barge Maritime Pardon Monument)",
+      "monument_loc": "-81493:151661",
+      "fame_earning_sources": "Gludio Siege (+125 Fame/5m), Gludin Harbor Exhibition Ring (+600 Fame), Territory War",
+      "pvp_seal_infusions": [
+        "Reduce PK Count (-1 PK per 5,000 Fame \u00b7 Instant Red-Name Prevention Before Harbor Boarding)",
+        "Exchange Fame for Clan Reputation Points (+50..+500 CRP Toward Clan Lv.5\u201311)",
+        "Purchase Battleground Spellbooks & Warrior's Temporary Healing Potions"
+      ],
+      "fame_point_cost_band": "1,000\u201330,000 Individual Fame Points"
+    },
+    {
+      "monument_id": "fame-mon-13-saffron-press",
+      "town_zone_id": "zone-town-saffron-press",
+      "town_name": "Saffron Press Village (Manor Agricultural Hub)",
+      "fame_service_category": "PK_Pardon_And_CRP_Monument",
+      "reputation_manager_npc": "Reputation Manager Rapidus (Saffron Press Freeholds Pardon Monument)",
+      "monument_loc": "17098:170369",
+      "fame_earning_sources": "Floran/Dion Frontier Skirmishes, Fortress Siege (+31 Fame/5m), Underground Coliseum",
+      "pvp_seal_infusions": [
+        "Lawless Freeholds PK Pardon (-1..5 PK Count Reduction via 5,000 Fame per PK)",
+        "PvP Weapon/Armor Seal Removal & Re-Infusion Service (Preserves Enchant & Augmentation)",
+        "Redeem Fame for Blessed Scroll of Escape (Battleground) & Greater CP Potions"
+      ],
+      "fame_point_cost_band": "1,000\u201335,000 Individual Fame Points"
+    },
+    {
+      "monument_id": "fame-mon-14-inductor-switchyard",
+      "town_zone_id": "zone-town-inductor-switchyard",
+      "town_name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+      "fame_service_category": "PK_Pardon_And_CRP_Monument",
+      "reputation_manager_npc": "Reputation Manager Scipio (Inductor Switchyard Giran Fame Monument)",
+      "monument_loc": "147089:-54923",
+      "fame_earning_sources": "Giran/Goddard Castle Siege (+125 Fame/5m), Ring IV Gold Coliseum (+800 Fame), Territory War",
+      "pvp_seal_infusions": [
+        "Metropolitan PK Pardon (-1 PK per 5,000 Fame) & Clan Reputation Bulk Conversion",
+        "Redeem 26,000\u201350,000 Fame -> Forgotten Scroll: Fighter's Will / Archer's Will / Magician's Will",
+        "Redeem Fame -> Giant's Codex: Mastery, Discipline & Oblivion Chapters"
+      ],
+      "fame_point_cost_band": "5,000\u201350,000 Individual Fame Points + Adena"
+    },
+    {
+      "monument_id": "fame-mon-15-torque-balance-citadel",
+      "town_zone_id": "zone-town-torque-balance-citadel",
+      "town_name": "Town of Torque-Balance Citadel (Human Ancestral Expedition Hub)",
+      "fame_service_category": "PK_Pardon_And_CRP_Monument",
+      "reputation_manager_npc": "Reputation Manager Rapidus (Torque-Balance Imperial Aden Fame Monument)",
+      "monument_loc": "116080:-18115",
+      "fame_earning_sources": "Aden/Innadril Castle Siege (+125 Fame/5m), Aden Royal Exhibition (+900 Fame), Territory War (+375 Fame/5m)",
+      "pvp_seal_infusions": [
+        "Imperial PK Pardon (-1 PK per 5,000 Fame) & Sovereign Clan Reputation Point (CRP) Grant",
+        "Full S/S80/S84 PvP Weapon & Armor Seal Infusion + Top-Grade Belt PvP Ornament",
+        "Redeem Fame -> Apella Combat Set Pieces, Talisman of Baden & Battleground Elixirs"
+      ],
+      "fame_point_cost_band": "5,000\u201352,000 Individual Fame Points + Adena"
+    }
   ]
 }

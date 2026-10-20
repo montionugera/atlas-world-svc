@@ -95,15 +95,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas58DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas60DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas62DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas64DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 29)),
+        "wave": int(iter_state.get("wave", 30)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"64-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"62-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"60-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"58-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -126,7 +128,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 Verified"
         ),
     }
     return merged
@@ -4388,7 +4390,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4469,6 +4471,8 @@ let ATLAS_WEDDING_MODE = 'All';
 let ATLAS_COUNCIL_BENCHMARK_MODE = 'All';
 let ATLAS_SEED_CYCLE_MODE = 'All';
 let ATLAS_COLISEUM_TOURNAMENT_MODE = 'All';
+let ATLAS_ELEMENTAL_JEWEL_MODE = 'All';
+let ATLAS_FAME_MONUMENT_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4521,6 +4525,8 @@ const ATLAS_STATE_STORE = {
   councilBenchmarkMode: 'All',             // D60: Active 18-Benchmark 6-Role Studio Council 60D Audit Selector ('Off' | 'All' | 'Product_Owner' | 'Game_Designer_Lead' | 'Player_Growth_Path_Designer' | 'Game_Story_Designer' | 'Monster_And_Mob_Designer' | 'Lead_Systems_Map_Architect')
   seedCycleMode: 'All',                    // D61: Active 14-Node Continental Seed Cycle (Stage 1-5) Selector ('Off' | 'All' | 'Seed_of_Infinity_Stage' | 'Seed_of_Destruction_Stage' | 'Energy_Compression_Well')
   coliseumTournamentMode: 'All',           // D62: Active 12-Arena Underground Coliseum & Clan Tournament Selector ('Off' | 'All' | 'Underground_Coliseum_Bracket' | 'Clan_War_Tournament_Ring' | 'Royal_Fame_Exhibition_Arena')
+  elementalJewelMode: 'All',               // D63: Active 14-Sanctum Elemental Jewel, Raid Rune Stone & Giant's Relic Selector ('Off' | 'All' | 'Elemental_Jewel_Forge' | 'Raid_Rune_Stone_Altar' | 'Ancient_Giants_Relic_Vault')
+  fameMonumentMode: 'All',                 // D64: Active 15-Town Reputation Manager (Rapidus / Scipio) Fame & PvP Infusion Selector ('Off' | 'All' | 'PvP_Weapon_Infusion_Obelisk' | 'PvP_Armor_Mirage_Obelisk' | 'PK_Pardon_And_CRP_Monument')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4637,6 +4643,20 @@ function setAtlasSeedCycleMode(modeId) {
 function setAtlasColiseumTournamentMode(modeId) {
   ATLAS_COLISEUM_TOURNAMENT_MODE = String(modeId || 'All');
   ATLAS_STATE_STORE.coliseumTournamentMode = ATLAS_COLISEUM_TOURNAMENT_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasElementalJewelMode(modeId) {
+  ATLAS_ELEMENTAL_JEWEL_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.elementalJewelMode = ATLAS_ELEMENTAL_JEWEL_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasFameMonumentMode(modeId) {
+  ATLAS_FAME_MONUMENT_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.fameMonumentMode = ATLAS_FAME_MONUMENT_MODE;
   writeUrlState(false);
   render();
 }
@@ -10479,6 +10499,191 @@ function renderAtlasColiseumTournamentBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasElementalJewelBarHtml(tatlas) {
+  const sanctums = (tatlas && tatlas.elemental_jewel_rune_sanctums) || [];
+  if (!sanctums.length) return '';
+
+  const curMode = ATLAS_ELEMENTAL_JEWEL_MODE || ATLAS_STATE_STORE.elementalJewelMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '💎 All 14 Sanctums' },
+    { id: 'Elemental_Jewel_Forge', label: '🔥💧🌪️🪨 6 Elemental Jewel Forges' },
+    { id: 'Raid_Rune_Stone_Altar', label: '🪨 4 Raid Rune Stone Altars' },
+    { id: 'Ancient_Giants_Relic_Vault', label: '🏛️ 4 Ancient Giant\'s Relic Vaults' }
+  ];
+
+  const filteredSanctums = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? sanctums : sanctums.filter(s => s.relic_tier_category === curMode));
+
+  const featuredSanctums = curMode === 'All'
+    ? [
+        ...sanctums.filter(s => s.relic_tier_category === 'Elemental_Jewel_Forge').slice(0, 2),
+        ...sanctums.filter(s => s.relic_tier_category === 'Raid_Rune_Stone_Altar').slice(0, 1),
+        ...sanctums.filter(s => s.relic_tier_category === 'Ancient_Giants_Relic_Vault').slice(0, 1)
+      ]
+    : filteredSanctums.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasElementalJewelBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0f1d2e;border:1px solid rgba(56,189,248,0.62)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#bae6fd">💎 14-SANCTUM ELEMENTAL JEWEL, RAID RUNE STONE &amp; ANCIENT GIANT'S RELIC MATRIX (D63 · 14 SANCTUMS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasElementalJewelMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.45)'};background:${isAct ? '#0369a1' : '#090d14'};color:${isAct ? '#ffffff' : '#e0f2fe'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 ELEMENTAL JEWEL FORGES + 4 RAID RUNE STONE ALTARS (LV.83 SKILLS) + 4 ANCIENT GIANT'S RELIC VAULTS
+        </span>
+      </div>
+
+      ${featuredSanctums.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredSanctums.map(s => {
+            const isJewel = s.relic_tier_category === 'Elemental_Jewel_Forge';
+            const isRune = s.relic_tier_category === 'Raid_Rune_Stone_Altar';
+            const catCol = isJewel ? '#38bdf8' : (isRune ? '#c084fc' : '#facc15');
+            const catIcon = isJewel ? '💎' : (isRune ? '🪨' : '🏛️');
+            const zObj = byZid[s.zone_id] || {};
+            const zidStr = String(s.zone_id || '');
+            const didStr = String(s.dungeon_id || '');
+            const fidStr = String(s.floor_id || 'B3');
+            let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`;
+            if (didStr) {
+              jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+            } else if (zidStr.startsWith('zone-field-')) {
+              jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+            } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(s.sanctum_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(s.relic_tier_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                    🔮 ${escapeHtml(s.featured_jewel_or_rune.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ⚡ ${escapeHtml(s.infusion_power_bonus.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#0c4a6e;color:#e0f2fe;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} ${didStr ? `Open Sanctum Floor (${escapeHtml(fidStr)})` : 'Jump to Overland Forge / Vault'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasFameMonumentBarHtml(tatlas) {
+  const monuments = (tatlas && tatlas.reputation_fame_monuments) || [];
+  if (!monuments.length) return '';
+
+  const curMode = ATLAS_FAME_MONUMENT_MODE || ATLAS_STATE_STORE.fameMonumentMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🎖️ All 15 Fame Monuments' },
+    { id: 'PvP_Weapon_Infusion_Obelisk', label: '⚔️ 5 PvP Weapon Obelisks' },
+    { id: 'PvP_Armor_Mirage_Obelisk', label: '🛡️ 5 PvP Armor Mirage Obelisks' },
+    { id: 'PK_Pardon_And_CRP_Monument', label: '⚖️ 5 PK Pardon & CRP Monuments' }
+  ];
+
+  const filteredMonuments = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? monuments : monuments.filter(m => m.fame_service_category === curMode));
+
+  const featuredMonuments = curMode === 'All'
+    ? [
+        ...monuments.filter(m => m.fame_service_category === 'PvP_Weapon_Infusion_Obelisk').slice(0, 2),
+        ...monuments.filter(m => m.fame_service_category === 'PvP_Armor_Mirage_Obelisk').slice(0, 1),
+        ...monuments.filter(m => m.fame_service_category === 'PK_Pardon_And_CRP_Monument').slice(0, 1)
+      ]
+    : filteredMonuments.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasFameMonumentBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1f160c;border:1px solid rgba(251,191,36,0.62)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fde68a">🎖️ 15-TOWN REPUTATION MANAGER (RAPIDUS / SCIPIO) FAME &amp; PVP INFUSION MATRIX (D64 · 15 MONUMENTS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasFameMonumentMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(251,191,36,0.45)'};background:${isAct ? '#b45309' : '#090d14'};color:${isAct ? '#ffffff' : '#fef3c7'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 PVP WEAPON OBELISKS + 5 PVP ARMOR MIRAGE OBELISKS + 5 PK PARDON &amp; CRP MONUMENTS · RAPIDUS / SCIPIO
+        </span>
+      </div>
+
+      ${featuredMonuments.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredMonuments.map(m => {
+            const isWep = m.fame_service_category === 'PvP_Weapon_Infusion_Obelisk';
+            const isArm = m.fame_service_category === 'PvP_Armor_Mirage_Obelisk';
+            const catCol = isWep ? '#f87171' : (isArm ? '#60a5fa' : '#fbbf24');
+            const catIcon = isWep ? '⚔️' : (isArm ? '🛡️' : '⚖️');
+            const zObj = byZid[m.town_zone_id] || {};
+            const tidStr = String(zObj.studio_node_id || String(m.town_zone_id || '').replace('zone-', ''));
+            const jumpJs = `focusTownStreetBlueprint('${escapeHtml(tidStr)}', '${escapeHtml(m.monument_loc)}')`;
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(m.town_name.slice(0, 32))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(m.fame_point_cost_band.slice(0, 18))}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fde68a;margin-top:1px">
+                    🎖️ ${escapeHtml(m.reputation_manager_npc.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fed7aa;margin-top:1px">
+                    ⚡ ${escapeHtml(((m.pvp_seal_infusions && m.pvp_seal_infusions[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#78350f;color:#fef3c7;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} Jump to Town Fame Monument (5.2×)
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -10645,6 +10850,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasCouncilBenchmarkBarHtml(tatlas)}
       ${renderAtlasSeedCycleBarHtml(tatlas)}
       ${renderAtlasColiseumTournamentBarHtml(tatlas)}
+      ${renderAtlasElementalJewelBarHtml(tatlas)}
+      ${renderAtlasFameMonumentBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -13873,6 +14080,73 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D63: Interactive 14-Sanctum Elemental Jewel, Raid Rune Stone & Ancient Giant's Relic Overlay (`studioElementalJewelOverlay`)
+  const jewelRuneRows = (tatlas && tatlas.elemental_jewel_rune_sanctums) || [];
+  const curElementalJewelMode = ATLAS_ELEMENTAL_JEWEL_MODE || ATLAS_STATE_STORE.elementalJewelMode || 'All';
+  const activeJewelSanctums = curElementalJewelMode === 'Off'
+    ? []
+    : (curElementalJewelMode === 'All'
+        ? jewelRuneRows
+        : jewelRuneRows.filter(s => s.relic_tier_category === curElementalJewelMode));
+  const elementalJewelOverlaySvg = `
+    <g id="studioElementalJewelOverlay">
+      ${activeJewelSanctums.map(s => {
+        const jc = clampWorldLocCoord(s.loc || '146800:46700');
+        const zObj = allZonesById[s.zone_id] || {};
+        const zidStr = String(s.zone_id || '');
+        const didStr = String(s.dungeon_id || '');
+        const fidStr = String(s.floor_id || 'B3');
+        const isJewel = s.relic_tier_category === 'Elemental_Jewel_Forge';
+        const isRune = s.relic_tier_category === 'Raid_Rune_Stone_Altar';
+        const colHex = isJewel ? '#38bdf8' : (isRune ? '#c084fc' : '#facc15');
+        const iconTxt = isJewel ? '💎' : (isRune ? '🪨' : '🏛️');
+        let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`;
+        if (didStr) {
+          jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+        } else if (zidStr.startsWith('zone-field-')) {
+          jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+        } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${jc.svgX}" cy="${jc.svgY}" r="10.6" fill="rgba(12,74,110,0.46)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${jc.svgX}" y="${jc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D64: Interactive 15-Town Reputation Manager (`Rapidus / Scipio`) Fame & PvP Infusion Monument Overlay (`studioFameMonumentOverlay`)
+  const fameMonumentRows = (tatlas && tatlas.reputation_fame_monuments) || [];
+  const curFameMonumentMode = ATLAS_FAME_MONUMENT_MODE || ATLAS_STATE_STORE.fameMonumentMode || 'All';
+  const activeFameMonuments = curFameMonumentMode === 'Off'
+    ? []
+    : (curFameMonumentMode === 'All'
+        ? fameMonumentRows
+        : fameMonumentRows.filter(m => m.fame_service_category === curFameMonumentMode));
+  const fameMonumentOverlaySvg = `
+    <g id="studioFameMonumentOverlay">
+      ${activeFameMonuments.map(m => {
+        const mc = clampWorldLocCoord(m.monument_loc || '-84120:243500');
+        const zObj = allZonesById[m.town_zone_id] || {};
+        const tidStr = String(zObj.studio_node_id || String(m.town_zone_id || '').replace('zone-', ''));
+        const isWep = m.fame_service_category === 'PvP_Weapon_Infusion_Obelisk';
+        const isArm = m.fame_service_category === 'PvP_Armor_Mirage_Obelisk';
+        const colHex = isWep ? '#f87171' : (isArm ? '#60a5fa' : '#fbbf24');
+        const iconTxt = isWep ? '⚔️' : (isArm ? '🛡️' : '⚖️');
+        const jumpJs = `focusTownStreetBlueprint('${escapeHtml(tidStr)}', '${escapeHtml(m.monument_loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${mc.svgX}" cy="${mc.svgY}" r="10.6" fill="rgba(120,53,15,0.46)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${mc.svgX}" y="${mc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -13915,6 +14189,8 @@ function renderDedicatedWorldAtlas() {
     ${councilBenchmarkOverlaySvg}
     ${continentalSeedOverlaySvg}
     ${coliseumTournamentOverlaySvg}
+    ${elementalJewelOverlaySvg}
+    ${fameMonumentOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

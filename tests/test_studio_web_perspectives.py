@@ -2396,7 +2396,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 62)
+        self.assertGreaterEqual(len(audit["dimensions"]), 62)
 
         d61 = audit["dimensions"]["D61_continental_seed_cycles_and_ekimus_tiat_stages"]
         self.assertEqual(d61["score"], 100.0)
@@ -2450,10 +2450,100 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas62DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 62)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 62)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 62)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 62)
         self.assertIn("62-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave30_elemental_jewel_rune_sanctums_and_reputation_fame_monuments(self) -> None:
+        """Wave 30 (D63–D64): 14 Elemental Jewel, Raid Rune Stone & Ancient Giant's Relic Sanctums & 15 Town Reputation Manager Fame & PvP Infusion Monuments."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["elementalJewelRuneSanctumsCount"], 14)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["reputationFameMonumentsCount"], 15)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_ELEMENTAL_JEWEL_MODE",
+            "setAtlasElementalJewelMode(",
+            "renderAtlasElementalJewelBarHtml(",
+            "studioElementalJewelOverlay",
+            "ATLAS_FAME_MONUMENT_MODE",
+            "setAtlasFameMonumentMode(",
+            "renderAtlasFameMonumentBarHtml(",
+            "studioFameMonumentOverlay",
+            "64-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 30 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 64)
+
+        d63 = audit["dimensions"]["D63_elemental_jewel_raid_rune_and_giants_relic_sanctums"]
+        self.assertEqual(d63["score"], 100.0)
+        self.assertEqual(d63["verified"], 14)
+        self.assertEqual(d63["target"], 14)
+        self.assertEqual(d63["elemental_jewel_forges"], 6)
+        self.assertEqual(d63["raid_rune_stone_altars"], 4)
+        self.assertEqual(d63["ancient_giants_relic_vaults"], 4)
+        self.assertEqual(
+            set(d63["relic_tier_categories"]),
+            {
+                "Elemental_Jewel_Forge",
+                "Raid_Rune_Stone_Altar",
+                "Ancient_Giants_Relic_Vault",
+            },
+        )
+        self.assertTrue(d63["ui_wired"])
+
+        d64 = audit["dimensions"]["D64_town_reputation_manager_fame_and_pvp_monuments"]
+        self.assertEqual(d64["score"], 100.0)
+        self.assertEqual(d64["verified"], 15)
+        self.assertEqual(d64["target"], 15)
+        self.assertEqual(d64["pvp_weapon_infusion_obelisks"], 5)
+        self.assertEqual(d64["pvp_armor_mirage_obelisks"], 5)
+        self.assertEqual(d64["pk_pardon_and_crp_monuments"], 5)
+        self.assertEqual(
+            set(d64["fame_service_categories"]),
+            {
+                "PvP_Weapon_Infusion_Obelisk",
+                "PvP_Armor_Mirage_Obelisk",
+                "PK_Pardon_And_CRP_Monument",
+            },
+        )
+        self.assertTrue(d64["ui_wired"])
+
+        sanctums = atlas["elemental_jewel_rune_sanctums"]
+        self.assertEqual(len(sanctums), 14)
+        self.assertEqual(sum(1 for s in sanctums if s["relic_tier_category"] == "Elemental_Jewel_Forge"), 6)
+        self.assertEqual(sum(1 for s in sanctums if s["relic_tier_category"] == "Raid_Rune_Stone_Altar"), 4)
+        self.assertEqual(sum(1 for s in sanctums if s["relic_tier_category"] == "Ancient_Giants_Relic_Vault"), 4)
+        for s in sanctums:
+            self.assertTrue(s["featured_jewel_or_rune"])
+            self.assertTrue(s["infusion_power_bonus"])
+
+        monuments = atlas["reputation_fame_monuments"]
+        self.assertEqual(len(monuments), 15)
+        self.assertEqual(sum(1 for m in monuments if m["fame_service_category"] == "PvP_Weapon_Infusion_Obelisk"), 5)
+        self.assertEqual(sum(1 for m in monuments if m["fame_service_category"] == "PvP_Armor_Mirage_Obelisk"), 5)
+        self.assertEqual(sum(1 for m in monuments if m["fame_service_category"] == "PK_Pardon_And_CRP_Monument"), 5)
+        for m in monuments:
+            self.assertGreaterEqual(len(m["pvp_seal_infusions"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas64DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 64)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 64)
+        self.assertIn("64-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

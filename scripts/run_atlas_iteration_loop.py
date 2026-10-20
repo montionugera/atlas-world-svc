@@ -11158,6 +11158,465 @@ def _build_party_coliseum_tournaments(atlas: dict[str, Any]) -> list[dict[str, A
     return rows
 
 
+def _build_elemental_jewel_rune_sanctums(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 14 Elemental Jewel, Raid Rune Stone & Ancient Giant's Relic Sanctums (6 Elemental_Jewel_Forge + 4 Raid_Rune_Stone_Altar + 4 Ancient_Giants_Relic_Vault) (D63)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 6 Elemental_Jewel_Forge Sanctums (Fire / Water / Wind / Earth / Holy / Dark Elemental Jewels)
+        (
+            "sanctum-01-jewel-fire-chronometer-foundry-3f",
+            "Chronometer Foundry Core Smeltery — Fire Elemental Jewel Forge",
+            "Elemental_Jewel_Forge",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "Attribute Master Yang & Scarlet Magma Anvil Warden (3F)",
+            "Fire Elemental Jewel (Lv.82+ 300+ Fire Mastery Catalyst)",
+            "Elevates Weapon Fire Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Fire Attack Cap / +180 Fire Resist)",
+            "Synthesize 5 Fire Elemental Crystals (150->300) + 1 Magma Apostle Heart at Chronometer Foundry 3F Core Anvil",
+        ),
+        (
+            "sanctum-02-jewel-water-sunken-potter-hold-b3",
+            "Sunken Potter Hold Abyssal Vault — Water Elemental Jewel Forge",
+            "Elemental_Jewel_Forge",
+            "zone-dungeon-sunken-potter-hold",
+            "zone-dungeon-sunken-potter-hold",
+            "B3",
+            "Attribute Master Yin & Fafurion's Tidal Prism Keeper (B3)",
+            "Water Elemental Jewel (Lv.82+ 300+ Water Mastery Catalyst)",
+            "Elevates Weapon Water Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Water Attack Cap / +180 Water Resist)",
+            "Purify 5 Water Elemental Crystals + 1 Abyssal Leviathan Tear inside Sunken Potter Hold B3 Sanctum",
+        ),
+        (
+            "sanctum-03-jewel-wind-aurora-tether-vortex",
+            "Aurora Tether Sky-Spire — Wind Elemental Jewel Forge",
+            "Elemental_Jewel_Forge",
+            "zone-field-aurora-tether",
+            "",
+            "",
+            "Magister Dilios & Lindvior Gale-Prism Artificer",
+            "Wind Elemental Jewel (Lv.82+ 300+ Wind Mastery Catalyst)",
+            "Elevates Weapon Wind Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Wind Attack Cap / +180 Wind Resist)",
+            "Condense 5 Wind Elemental Crystals + 20 Extracted Blue Star Stones at Aurora Tether Upper Vortex Altar",
+        ),
+        (
+            "sanctum-04-jewel-earth-pendulum-shaft-3f",
+            "Pendulum Shaft Titan Core — Earth Elemental Jewel Forge",
+            "Elemental_Jewel_Forge",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "Blacksmith of Mammon & Cruma Titan Core Artificer (3F)",
+            "Earth Elemental Jewel (Lv.82+ 300+ Earth Mastery Catalyst)",
+            "Elevates Weapon Earth Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Earth Attack Cap / +180 Earth Resist)",
+            "Temper 5 Earth Elemental Crystals + 1 Cruma Core Resonance Gear at Pendulum Shaft 3F Escapement Anvil",
+        ),
+        (
+            "sanctum-05-jewel-holy-star-heart-nave-3f",
+            "Star-Heart Nave Seraphim Choir — Holy Elemental Jewel Forge",
+            "Elemental_Jewel_Forge",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "High Priestess Anakim's Herald & Attribute Master Yin (3F)",
+            "Holy Elemental Jewel (Lv.82+ 300+ Holy Mastery Catalyst)",
+            "Elevates Weapon Holy Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Holy Attack Cap / +180 Holy Resist)",
+            "Consecrate 5 Holy Elemental Crystals + 1 Sacred Feather of Anakim at Star-Heart Nave 3F Choir Altar",
+        ),
+        (
+            "sanctum-06-jewel-dark-dark-omens-catacomb-b3",
+            "Dark Omens Necropolis Abyss — Dark Elemental Jewel Forge",
+            "Elemental_Jewel_Forge",
+            "zone-catacomb-dark-omens-coral",
+            "zone-catacomb-dark-omens-coral",
+            "B3",
+            "Dusk Seer Lilith's Apostle & Attribute Master Yang (B3)",
+            "Dark Elemental Jewel (Lv.82+ 300+ Dark Mastery Catalyst)",
+            "Elevates Weapon Dark Elemental Mastery & Unlocks Dual-Attribute Synergy (+450 Dark Attack Cap / +180 Dark Resist)",
+            "Infuse 5 Dark Elemental Crystals + 1 Seal of Lilith / Ekimus Essence in Dark Omens Catacomb B3 Sanctum",
+        ),
+        # 4 Raid_Rune_Stone_Altar Sanctums (Sovereign Rune Stones for Lv.83 Awakening Skills)
+        (
+            "sanctum-07-rune-stone-forbidden-path-catacomb-b3",
+            "Forbidden Path Catacomb B3 — Sovereign Raid Rune Stone Altar I",
+            "Raid_Rune_Stone_Altar",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "Elder Nephilim Rune Keeper & Grand Magister Hardin's Envoy (B3)",
+            "Sovereign Rune Stone (Lv.83 Awakening Skill Unlock)",
+            "Unlocks Lv.83 Ultimate Class Awakening Skills (Flame Icon, Spirit of Shilen, Lucky Strike, Group Heal Mastery) & +5% Skill Power",
+            "Defeat Command-Channel MVP Apostle on B3 or Exchange 12 Raid Boss Life Crystals at the Forbidden Path Rune Altar",
+        ),
+        (
+            "sanctum-08-rune-stone-witch-pendulum-catacomb-b3",
+            "Astral Witch Catacomb B3 — Sovereign Raid Rune Stone Altar II",
+            "Raid_Rune_Stone_Altar",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "Shadow Archon Halisha's Steward & Rune Engraver (B3)",
+            "Sovereign Rune Stone & Forgotten Scroll: Seven Arrow / Meteor",
+            "Unlocks Lv.82–83 High-Awakening Archer & Archmage Skills (+10% PvP Skill Critical Damage & Cooldown Reduction)",
+            "Clear 4-Sepulcher / Catacomb B3 Shadow Archon Trial with 18+ Command Channel & Claim Engraved Rune Stone",
+        ),
+        (
+            "sanctum-09-rune-stone-kiln-cellar-b3",
+            "Kiln Cellar B3 Royal Nursery — Sovereign Raid Rune Stone Altar III",
+            "Raid_Rune_Stone_Altar",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "Blacksmith Clan Grand Forger & Queen Ant Sanctum Warden (B3)",
+            "Sovereign Rune Stone & Vanguard Mutual Response Tome",
+            "Unlocks Lv.81–83 Dual-Dagger, Vanguard Tank & Titan Frenzy Awakening Passives (+8% P.Atk & Stun Penetration)",
+            "Harvest Royal Apostle Core on B3 + 3,000 Clan Reputation Points to Engrave a Bound Sovereign Rune Stone",
+        ),
+        (
+            "sanctum-10-rune-stone-heretic-kiln-catacomb-b3",
+            "Heretic Kiln Catacomb B3 — Sovereign Raid Rune Stone Altar IV",
+            "Raid_Rune_Stone_Altar",
+            "zone-catacomb-heretic-kiln",
+            "zone-catacomb-heretic-kiln",
+            "B3",
+            "Priest of Dawn/Dusk High Rune Arbiter (B3)",
+            "Sovereign Rune Stone & Sublime Self-Sacrifice / Counter Critical",
+            "Unlocks Lv.83 Healer & Enchanter Awakening Skills (Counter Critical, Mutual Response, Servitor Barrier)",
+            "Win Seven-Seals Seal of Gnosis Ownership & Sacrifice 500,000 Ancient Adena at Heretic Kiln B3 Rune Altar",
+        ),
+        # 4 Ancient_Giants_Relic_Vault Sanctums (Ancient Giant's Codex & Lesser Giant's Essence)
+        (
+            "sanctum-11-giants-relic-orrery-bridge-cave",
+            "The Orrery Bridge Giant's Chasm — Hekaton's Ancient Relic Vault",
+            "Ancient_Giants_Relic_Vault",
+            "zone-field-orrery-bridge",
+            "",
+            "",
+            "Head Researcher Sobling & Giant's Chasm Sentinel",
+            "Ancient Giant's Codex: Mastery / Oblivion & Lesser Giant's Essence",
+            "Enables Safe +16..+30 Skill Enchanting (Zero Reset Penalty on Failure) & Dual-Route Skill Specialization Re-Spec",
+            "Exchange 200 Ancient Books of the Demon + Defeat Hekaton Prime in the Lower Giant's Chasm Vault",
+        ),
+        (
+            "sanctum-12-giants-relic-tether-causeway-citadel",
+            "Tether Causeway Steel Citadel — Beleth's Ancient Giant Reliquary",
+            "Ancient_Giants_Relic_Vault",
+            "zone-field-tether-causeway",
+            "",
+            "",
+            "Caravan Hierarch Matras & Ancient Giant Automaton",
+            "Ancient Giant's Codex: Discipline & Dynasty/Vesper Soul Core",
+            "Allows Free Skill Enchant Route Switching (Power ⇄ Cost ⇄ Element) While Retaining +15..+30 Enchant Level",
+            "Ascend Tully's Workshop & Tower of Naia Lockboxes With Caravan Trust Certificate Stage 11",
+        ),
+        (
+            "sanctum-13-giants-relic-astrolabe-rift-observatory",
+            "Astrolabe Rift Star-Vault — Cruma & Marph's Relic Archive",
+            "Ancient_Giants_Relic_Vault",
+            "zone-field-astrolabe-rift",
+            "",
+            "",
+            "Elder Arin & Star-Vault Archivist Lorain",
+            "Ancient Giant's Codex Chapter I–IV Bundle & Star Stone Core",
+            "Boosts Skill Enchant Success Rate by +25% for Lv.76–85 3rd-Class Skills & Unlocks +30 Elemental Skill Attack",
+            "Recover 4 Sealed Titan Astrolabe Plates from Astrolabe Rift Elite Constructs & Decode at Lorain's Vault",
+        ),
+        (
+            "sanctum-14-giants-relic-cloud-halo-fortress",
+            "Cloud-Halo Sky Fortress — Imperial Giant's Sovereign Treasury",
+            "Ancient_Giants_Relic_Vault",
+            "zone-fortress-cloud-halo",
+            "",
+            "",
+            "Suspicious Merchant & Fortress Supply Captain",
+            "Ancient Giant's Codex: Mastery Crate & Knights' Epaulette Relic",
+            "Grants Sovereign Clan Members Safe +1..+30 Skill Enchant Mastery & +10% PvE/PvP Skill Damage Amplification",
+            "Hold Cloud-Halo Fortress With Independent Status & Trade 5,000 Knights' Epaulettes at the Underground Treasury",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        sid,
+        sname,
+        rcat,
+        zid,
+        did,
+        fid,
+        gnpc,
+        fjewel,
+        ibonus,
+        arule,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "146800:46700"))
+        loc = _fmt_loc(bx - 180 + idx * 14, by + 170 - idx * 13)
+        rows.append(
+            {
+                "sanctum_id": sid,
+                "sanctum_name": sname,
+                "relic_tier_category": rcat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "guardian_or_master_npc": gnpc,
+                "featured_jewel_or_rune": fjewel,
+                "infusion_power_bonus": ibonus,
+                "acquisition_trial_rule": arule,
+            }
+        )
+    return rows
+
+
+def _build_reputation_fame_monuments(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 Town Reputation Manager (Rapidus / Scipio) Fame & PvP Infusion Monuments (5 PvP_Weapon_Infusion_Obelisk + 5 PvP_Armor_Mirage_Obelisk + 5 PK_Pardon_And_CRP_Monument) (D64)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 5 PvP_Weapon_Infusion_Obelisk Towns
+        (
+            "fame-mon-01-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "PvP_Weapon_Infusion_Obelisk",
+            "Reputation Manager Rapidus (Lantern Hollow Fame Obelisk)",
+            "Castle/Fortress Siege (+125 Fame/5m), Territory War (+375 Fame/5m), Underground Coliseum Streak",
+            [
+                "PvP Weapon Might (+5% PvP Damage & Cancel/Haste Proc on Crit)",
+                "PvP Dagger/Rapier Cancel (Strips 1–2 Enemy Buffs on Critical Hit)",
+                "PvP Bow/Crossbow Rapid Fire (+15% Atk.Spd Proc & Slow)",
+            ],
+            "5,000–36,700 Individual Fame Points + Adena",
+        ),
+        (
+            "fame-mon-02-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "PvP_Weapon_Infusion_Obelisk",
+            "Reputation Manager Scipio (Draft-Kiln War Obelisk)",
+            "Fortress Siege (+31 Fame/5m), Castle Siege (+125 Fame/5m), Kratei's Cube & Clan War Ring",
+            [
+                "PvP Two-Handed / Dualfist Savage Might (+5% PvP Skill/Normal Damage & +100 CP Restore)",
+                "PvP Polearm Whirlwind (Multi-Target Cancel & Stun Resistance Shred)",
+                "PvP Blunt Shield-Breaker (Ignores 25% Target Shield Defense in Siege)",
+            ],
+            "8,000–36,700 Individual Fame Points + Adena",
+        ),
+        (
+            "fame-mon-03-cinnamon-mill",
+            "zone-town-cinnamon-mill",
+            "PvP_Weapon_Infusion_Obelisk",
+            "Reputation Manager Rapidus (Cinnamon-Mill Soul Obelisk)",
+            "Territory War (+375 Fame/5m), Aerial Cleft 9v9 (+1,000 Fame), Underground Coliseum",
+            [
+                "PvP Ancient Sword / Rapier Soul-Surge (+5% PvP Damage & 15% Chance +15% Atk.Spd)",
+                "PvP Crossbow Counter-Shot (+5% PvP Damage & Range Slow Proc)",
+                "PvP Dualsword Gladiator Edge (+5% PvP Sonic/Triple Slash Damage)",
+            ],
+            "11,500–36,700 Individual Fame Points + Adena",
+        ),
+        (
+            "fame-mon-04-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "PvP_Weapon_Infusion_Obelisk",
+            "Reputation Manager Scipio (Kilnwatch Dion Siege Obelisk)",
+            "Dion Castle Siege (+125 Fame/5m), Territory Ward Defense (+375 Fame/5m), Ring I–III Coliseum",
+            [
+                "PvP Weapon Might (+5% PvP Physical/Magical Damage Across All A/S/S80/S84 Weapons)",
+                "PvP Caster/Scepter Acumen (+5% PvP M.Atk & +15% Cast Speed Proc when Attacked)",
+                "PvP Dual-Dagger Mortal Strike (+5% Backstab/Lethal Blow Damage & Buff Cancel)",
+            ],
+            "11,500–50,000 Individual Fame Points + Adena",
+        ),
+        (
+            "fame-mon-05-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "PvP_Weapon_Infusion_Obelisk",
+            "Reputation Manager Rapidus (Pinion Terminus Hunters Obelisk)",
+            "Fortress Siege (+31 Fame/5m), Ring III Silver Coliseum (+700 Fame/Win), Territory War",
+            [
+                "PvP Longbow / Crossbow Sniper Infusion (+5% PvP Damage & Instant Speed/Atk.Spd Trigger)",
+                "PvP Assassin Dagger Mirage-Breaker (+5% PvP Crit Damage & Cancel Target Buff)",
+                "PvP Spear Vanguard Sweep (+5% PvP Damage & Multi-Target Knockback Chance)",
+            ],
+            "15,000–50,000 Individual Fame Points + Adena",
+        ),
+        # 5 PvP_Armor_Mirage_Obelisk Towns
+        (
+            "fame-mon-06-porcelain-loom",
+            "zone-town-porcelain-loom",
+            "PvP_Armor_Mirage_Obelisk",
+            "Reputation Manager Scipio (Porcelain Loom Lunar Obelisk)",
+            "Innadril/Oren Territory War (+375 Fame/5m), Castle Siege (+125 Fame/5m), Olympiad Token Exchange",
+            [
+                "PvP Tunic / Robe Arcane Barrier (-5% Incoming PvP Damage & -30% Critical Damage Taken)",
+                "PvP Light Armor Mirage (Forces Attacker to Drop Target on Hit + +5% PvP Defense)",
+                "PvP Sigil / Shield Resilience (+15% Shield Defense Rate Against Archers & Daggers)",
+            ],
+            "6,500–38,200 Individual Fame Points + Adena",
+        ),
+        (
+            "fame-mon-07-carillon-belfry",
+            "zone-town-carillon-belfry",
+            "PvP_Armor_Mirage_Obelisk",
+            "Reputation Manager Rapidus (Carillon Belfry Shadow Obelisk)",
+            "Schuttgart/Rune Territory War (+375 Fame/5m), Fortress Siege (+31 Fame/5m), Underground Coliseum",
+            [
+                "PvP Light Armor Mirage (High-Frequency Target-Cancel Proc When Struck in PvP + -5% PvP Damage)",
+                "PvP Robe Speed-Weave (-5% Incoming PvP Damage & -20% Enemy Attack/Cast Speed Proc)",
+                "PvP Belt Ornament Seal (+6% PvP Defense & Stun/Mental Resistance)",
+            ],
+            "8,200–38,200 Individual Fame Points + Adena",
+        ),
+        (
+            "fame-mon-08-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "PvP_Armor_Mirage_Obelisk",
+            "Reputation Manager Scipio (Escapement Anvil Oren Obelisk)",
+            "Oren Castle Siege (+125 Fame/5m), Ring II Bronze Coliseum (+550 Fame/Win), Territory War",
+            [
+                "PvP Heavy Breastplate Fortress Seal (-5% Incoming PvP Damage & -20% Attacker Speed/Atk.Spd/Cast.Spd)",
+                "PvP Light Armor Mirage (-5% Incoming PvP Damage & Instant Target-Drop Illusion)",
+                "PvP Robe Critical Ward (-5% Incoming PvP Damage & -30% Incoming Crit Rate/Multiplier)",
+            ],
+            "10,400–42,600 Individual Fame Points + Adena",
+        ),
+        (
+            "fame-mon-09-starfall-haven",
+            "zone-town-starfall-haven",
+            "PvP_Armor_Mirage_Obelisk",
+            "Reputation Manager Rapidus (Starfall Haven Rune Obelisk)",
+            "Rune Castle Siege (+125 Fame/5m), Seed/Aerial Cleft Tournaments (+1,000 Fame), Territory War",
+            [
+                "PvP S80 Dynasty / S84 Vesper Heavy Armor Seal (-5% PvP Damage & AoE Speed/Cast Chill Proc)",
+                "PvP S80/S84 Light Armor Mirage (Forces Enemy Daggers/Archers to Lose Target Lock)",
+                "PvP S80/S84 Robe Tunic Sanctuary (-5% PvP Damage & Critical Damage Reduction Aura)",
+            ],
+            "12,800–48,500 Individual Fame Points + Adena",
+        ),
+        (
+            "fame-mon-10-crown-beacon",
+            "zone-town-crown-beacon",
+            "PvP_Armor_Mirage_Obelisk",
+            "Reputation Manager Scipio (Crown-Beacon Sovereign Obelisk)",
+            "Sovereign Castle Siege (+125 Fame/5m), Ring V Lv.80–85 Coliseum (+1,200 Fame/Win), Territory War",
+            [
+                "PvP Vesper / Vorpal / Elegia Heavy Armor Seal (-5% PvP Dmg & Chills Attacker Speed by -25%)",
+                "PvP Vesper / Vorpal Light Armor Mirage (Supreme Target-Drop Proc & +5% PvP Evasion)",
+                "PvP Vesper / Vorpal Robe Tunic Aegis (-5% PvP Dmg & -35% Incoming Critical Hit Damage)",
+            ],
+            "16,000–52,000 Individual Fame Points + Adena",
+        ),
+        # 5 PK_Pardon_And_CRP_Monument Towns
+        (
+            "fame-mon-11-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "PK_Pardon_And_CRP_Monument",
+            "Reputation Manager Rapidus (Root-Train Roundhouse Pardon Monument)",
+            "Schuttgart Siege (+125 Fame/5m), Bandit/Beast Clan War Ring (+850 Fame), Fortress Siege",
+            [
+                "Reduce PK Count by 1 (-1 PK per 5,000 Individual Fame Points · Requires 0 Karma)",
+                "Convert 1,000 Individual Fame -> +50 Clan Reputation Points (CRP) for Pledge Skills",
+                "Redeem Fame for Elixir of CP / Life / Mind (A/S-Grade Instant Siege Recovery)",
+            ],
+            "1,000–25,000 Individual Fame Points",
+        ),
+        (
+            "fame-mon-12-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "PK_Pardon_And_CRP_Monument",
+            "Reputation Manager Scipio (Glaze-Barge Maritime Pardon Monument)",
+            "Gludio Siege (+125 Fame/5m), Gludin Harbor Exhibition Ring (+600 Fame), Territory War",
+            [
+                "Reduce PK Count (-1 PK per 5,000 Fame · Instant Red-Name Prevention Before Harbor Boarding)",
+                "Exchange Fame for Clan Reputation Points (+50..+500 CRP Toward Clan Lv.5–11)",
+                "Purchase Battleground Spellbooks & Warrior's Temporary Healing Potions",
+            ],
+            "1,000–30,000 Individual Fame Points",
+        ),
+        (
+            "fame-mon-13-saffron-press",
+            "zone-town-saffron-press",
+            "PK_Pardon_And_CRP_Monument",
+            "Reputation Manager Rapidus (Saffron Press Freeholds Pardon Monument)",
+            "Floran/Dion Frontier Skirmishes, Fortress Siege (+31 Fame/5m), Underground Coliseum",
+            [
+                "Lawless Freeholds PK Pardon (-1..5 PK Count Reduction via 5,000 Fame per PK)",
+                "PvP Weapon/Armor Seal Removal & Re-Infusion Service (Preserves Enchant & Augmentation)",
+                "Redeem Fame for Blessed Scroll of Escape (Battleground) & Greater CP Potions",
+            ],
+            "1,000–35,000 Individual Fame Points",
+        ),
+        (
+            "fame-mon-14-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "PK_Pardon_And_CRP_Monument",
+            "Reputation Manager Scipio (Inductor Switchyard Giran Fame Monument)",
+            "Giran/Goddard Castle Siege (+125 Fame/5m), Ring IV Gold Coliseum (+800 Fame), Territory War",
+            [
+                "Metropolitan PK Pardon (-1 PK per 5,000 Fame) & Clan Reputation Bulk Conversion",
+                "Redeem 26,000–50,000 Fame -> Forgotten Scroll: Fighter's Will / Archer's Will / Magician's Will",
+                "Redeem Fame -> Giant's Codex: Mastery, Discipline & Oblivion Chapters",
+            ],
+            "5,000–50,000 Individual Fame Points + Adena",
+        ),
+        (
+            "fame-mon-15-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "PK_Pardon_And_CRP_Monument",
+            "Reputation Manager Rapidus (Torque-Balance Imperial Aden Fame Monument)",
+            "Aden/Innadril Castle Siege (+125 Fame/5m), Aden Royal Exhibition (+900 Fame), Territory War (+375 Fame/5m)",
+            [
+                "Imperial PK Pardon (-1 PK per 5,000 Fame) & Sovereign Clan Reputation Point (CRP) Grant",
+                "Full S/S80/S84 PvP Weapon & Armor Seal Infusion + Top-Grade Belt PvP Ornament",
+                "Redeem Fame -> Apella Combat Set Pieces, Talisman of Baden & Battleground Elixirs",
+            ],
+            "5,000–52,000 Individual Fame Points + Adena",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        mid,
+        tzid,
+        fcat,
+        rnpc,
+        fsources,
+        pinfusions,
+        fcost,
+    ) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(tzid) or {}
+        tname = str(t_obj.get("name", tzid))
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        mloc = _fmt_loc(bx - 185 - idx * 9, by + 165 + idx * 8)
+        rows.append(
+            {
+                "monument_id": mid,
+                "town_zone_id": tzid,
+                "town_name": tname,
+                "fame_service_category": fcat,
+                "reputation_manager_npc": rnpc,
+                "monument_loc": mloc,
+                "fame_earning_sources": fsources,
+                "pvp_seal_infusions": pinfusions,
+                "fame_point_cost_band": fcost,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -12302,6 +12761,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("party_coliseum_tournaments") or []) < 12:
         atlas["party_coliseum_tournaments"] = _build_party_coliseum_tournaments(atlas)
         actions.append("populated_12_party_coliseum_tournaments")
+
+    # 47. Ensure all 14 Elemental Jewel, Raid Rune Stone & Ancient Giant's Relic Sanctums exist in `elemental_jewel_rune_sanctums` (D63)
+    if len(atlas.get("elemental_jewel_rune_sanctums") or []) < 14:
+        atlas["elemental_jewel_rune_sanctums"] = _build_elemental_jewel_rune_sanctums(atlas)
+        actions.append("populated_14_elemental_jewel_rune_sanctums")
+
+    # 48. Ensure all 15 Town Reputation Manager (Rapidus / Scipio) Fame & PvP Infusion Monuments exist in `reputation_fame_monuments` (D64)
+    if len(atlas.get("reputation_fame_monuments") or []) < 15:
+        atlas["reputation_fame_monuments"] = _build_reputation_fame_monuments(atlas)
+        actions.append("populated_15_reputation_fame_monuments")
 
     return {"actions": actions}
 
@@ -15661,15 +16130,151 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d62_ratio * 80.0, 1)
     )
 
+    # D63: Interactive 14-Sanctum Elemental Jewel, Raid Rune Stone & Ancient Giant's Relic Matrix (`elemental_jewel_rune_sanctums` - 14 Sanctums = 6 Elemental_Jewel_Forge + 4 Raid_Rune_Stone_Altar + 4 Ancient_Giants_Relic_Vault)
+    expected_relic_tier_categories = {
+        "Elemental_Jewel_Forge",
+        "Raid_Rune_Stone_Altar",
+        "Ancient_Giants_Relic_Vault",
+    }
+    jewel_rune_rows = atlas.get("elemental_jewel_rune_sanctums") or []
+    valid_jewel_rune_sanctums = 0
+    elemental_jewel_forge_count = 0
+    raid_rune_stone_altar_count = 0
+    ancient_giants_relic_vault_count = 0
+    seen_jewel_sanctum_ids: set[str] = set()
+    seen_relic_tier_categories: set[str] = set()
+    for jrow in jewel_rune_rows:
+        if not isinstance(jrow, dict):
+            continue
+        sid = str(jrow.get("sanctum_id") or "")
+        rcat = str(jrow.get("relic_tier_category") or "")
+        zid = str(jrow.get("zone_id") or "")
+        did = str(jrow.get("dungeon_id") or "")
+        fid = str(jrow.get("floor_id") or "")
+        if (
+            sid
+            and sid not in seen_jewel_sanctum_ids
+            and jrow.get("sanctum_name")
+            and rcat in expected_relic_tier_categories
+            and zid in zone_ids_set
+            and (did == "" or did in mf_dungeon_id_set)
+            and fid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(jrow.get("loc", ""))
+            and jrow.get("guardian_or_master_npc")
+            and jrow.get("featured_jewel_or_rune")
+            and jrow.get("infusion_power_bonus")
+            and jrow.get("acquisition_trial_rule")
+        ):
+            valid_jewel_rune_sanctums += 1
+            seen_jewel_sanctum_ids.add(sid)
+            seen_relic_tier_categories.add(rcat)
+            if rcat == "Elemental_Jewel_Forge":
+                elemental_jewel_forge_count += 1
+            elif rcat == "Raid_Rune_Stone_Altar":
+                raid_rune_stone_altar_count += 1
+            elif rcat == "Ancient_Giants_Relic_Vault":
+                ancient_giants_relic_vault_count += 1
+
+    has_d63_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_ELEMENTAL_JEWEL_MODE",
+            "setAtlasElementalJewelMode",
+            "renderAtlasElementalJewelBarHtml",
+            "studioElementalJewelOverlay",
+        )
+    )
+    d63_ratio = valid_jewel_rune_sanctums / 14.0
+    d63_full_coverage = (
+        elemental_jewel_forge_count == 6
+        and raid_rune_stone_altar_count == 4
+        and ancient_giants_relic_vault_count == 4
+        and seen_relic_tier_categories == expected_relic_tier_categories
+    )
+    d63_score = (
+        round(min(100.0, d63_ratio * 100.0), 1)
+        if (has_d63_ui and d63_full_coverage)
+        else round(d63_ratio * 80.0, 1)
+    )
+
+    # D64: Interactive 15-Town Reputation Manager (Rapidus / Scipio) Fame & PvP Infusion Monument Matrix (`reputation_fame_monuments` - 15 Monuments = 5 PvP_Weapon_Infusion_Obelisk + 5 PvP_Armor_Mirage_Obelisk + 5 PK_Pardon_And_CRP_Monument)
+    expected_fame_service_categories = {
+        "PvP_Weapon_Infusion_Obelisk",
+        "PvP_Armor_Mirage_Obelisk",
+        "PK_Pardon_And_CRP_Monument",
+    }
+    fame_monument_rows = atlas.get("reputation_fame_monuments") or []
+    valid_fame_monuments = 0
+    pvp_weapon_obelisk_count = 0
+    pvp_armor_obelisk_count = 0
+    pk_pardon_monument_count = 0
+    seen_fame_monument_ids: set[str] = set()
+    seen_fame_town_ids: set[str] = set()
+    seen_fame_service_categories: set[str] = set()
+    for frow in fame_monument_rows:
+        if not isinstance(frow, dict):
+            continue
+        mid = str(frow.get("monument_id") or "")
+        tzid = str(frow.get("town_zone_id") or "")
+        fcat = str(frow.get("fame_service_category") or "")
+        pinf = frow.get("pvp_seal_infusions") or []
+        if (
+            mid
+            and mid not in seen_fame_monument_ids
+            and tzid in town_zone_id_set
+            and tzid not in seen_fame_town_ids
+            and frow.get("town_name")
+            and fcat in expected_fame_service_categories
+            and frow.get("reputation_manager_npc")
+            and ":" in str(frow.get("monument_loc", ""))
+            and frow.get("fame_earning_sources")
+            and isinstance(pinf, list)
+            and len(pinf) >= 2
+            and frow.get("fame_point_cost_band")
+        ):
+            valid_fame_monuments += 1
+            seen_fame_monument_ids.add(mid)
+            seen_fame_town_ids.add(tzid)
+            seen_fame_service_categories.add(fcat)
+            if fcat == "PvP_Weapon_Infusion_Obelisk":
+                pvp_weapon_obelisk_count += 1
+            elif fcat == "PvP_Armor_Mirage_Obelisk":
+                pvp_armor_obelisk_count += 1
+            elif fcat == "PK_Pardon_And_CRP_Monument":
+                pk_pardon_monument_count += 1
+
+    has_d64_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_FAME_MONUMENT_MODE",
+            "setAtlasFameMonumentMode",
+            "renderAtlasFameMonumentBarHtml",
+            "studioFameMonumentOverlay",
+        )
+    )
+    d64_ratio = valid_fame_monuments / 15.0
+    d64_full_coverage = (
+        len(seen_fame_town_ids) == 15
+        and pvp_weapon_obelisk_count == 5
+        and pvp_armor_obelisk_count == 5
+        and pk_pardon_monument_count == 5
+        and seen_fame_service_categories == expected_fame_service_categories
+    )
+    d64_score = (
+        round(min(100.0, d64_ratio * 100.0), 1)
+        if (has_d64_ui and d64_full_coverage)
+        else round(d64_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 44.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 46.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 46.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 56.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 45.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score) / 52.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 46.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 48.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 48.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 58.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 47.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score) / 54.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -15736,8 +16341,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d60_score
             + d61_score
             + d62_score
+            + d63_score
+            + d64_score
         )
-        / 62.0,
+        / 64.0,
         1,
     )
 
@@ -16250,6 +16857,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "tournament_categories": sorted(seen_tournament_categories),
                 "ui_wired": has_d62_ui,
             },
+            "D63_elemental_jewel_raid_rune_and_giants_relic_sanctums": {
+                "score": d63_score,
+                "verified": valid_jewel_rune_sanctums,
+                "target": 14,
+                "elemental_jewel_forges": elemental_jewel_forge_count,
+                "raid_rune_stone_altars": raid_rune_stone_altar_count,
+                "ancient_giants_relic_vaults": ancient_giants_relic_vault_count,
+                "relic_tier_categories": sorted(seen_relic_tier_categories),
+                "ui_wired": has_d63_ui,
+            },
+            "D64_town_reputation_manager_fame_and_pvp_monuments": {
+                "score": d64_score,
+                "verified": valid_fame_monuments,
+                "target": 15,
+                "pvp_weapon_infusion_obelisks": pvp_weapon_obelisk_count,
+                "pvp_armor_mirage_obelisks": pvp_armor_obelisk_count,
+                "pk_pardon_and_crp_monuments": pk_pardon_monument_count,
+                "fame_service_categories": sorted(seen_fame_service_categories),
+                "ui_wired": has_d64_ui,
+            },
         },
     }
 
@@ -16356,6 +16983,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D60 (18 Council Benchmarks) : {dims['D60_studio_council_60d_audit_benchmarks']['score']}/100 ({dims['D60_studio_council_60d_audit_benchmarks']['verified']}/{dims['D60_studio_council_60d_audit_benchmarks']['target']} council benchmarks)")
         print(f"  D61 (14 Seed Cycle Stages)  : {dims['D61_continental_seed_cycles_and_ekimus_tiat_stages']['score']}/100 ({dims['D61_continental_seed_cycles_and_ekimus_tiat_stages']['verified']}/{dims['D61_continental_seed_cycles_and_ekimus_tiat_stages']['target']} seed cycle nodes)")
         print(f"  D62 (12 Coliseum Rings)     : {dims['D62_underground_coliseum_and_clan_tournament_arenas']['score']}/100 ({dims['D62_underground_coliseum_and_clan_tournament_arenas']['verified']}/{dims['D62_underground_coliseum_and_clan_tournament_arenas']['target']} tournament arenas)")
+        print(f"  D63 (14 Jewel/Rune Sanctums): {dims['D63_elemental_jewel_raid_rune_and_giants_relic_sanctums']['score']}/100 ({dims['D63_elemental_jewel_raid_rune_and_giants_relic_sanctums']['verified']}/{dims['D63_elemental_jewel_raid_rune_and_giants_relic_sanctums']['target']} jewel/rune sanctums)")
+        print(f"  D64 (15 Fame Monuments)     : {dims['D64_town_reputation_manager_fame_and_pvp_monuments']['score']}/100 ({dims['D64_town_reputation_manager_fame_and_pvp_monuments']['verified']}/{dims['D64_town_reputation_manager_fame_and_pvp_monuments']['target']} fame monuments)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

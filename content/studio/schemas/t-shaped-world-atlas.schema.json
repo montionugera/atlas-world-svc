@@ -287,6 +287,18 @@
       "maxItems": 12,
       "items": { "$ref": "#/$defs/partyColiseumTournamentSpec" }
     },
+    "elemental_jewel_rune_sanctums": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": { "$ref": "#/$defs/elementalJewelRuneSanctumSpec" }
+    },
+    "reputation_fame_monuments": {
+      "type": "array",
+      "minItems": 15,
+      "maxItems": 15,
+      "items": { "$ref": "#/$defs/reputationFameMonumentSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -3441,6 +3453,83 @@
           "minItems": 2,
           "items": { "type": "string" }
         }
+      }
+    },
+    "elementalJewelRuneSanctumSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sanctum_id",
+        "sanctum_name",
+        "relic_tier_category",
+        "zone_id",
+        "dungeon_id",
+        "floor_id",
+        "loc",
+        "guardian_or_master_npc",
+        "featured_jewel_or_rune",
+        "infusion_power_bonus",
+        "acquisition_trial_rule"
+      ],
+      "properties": {
+        "sanctum_id": { "type": "string" },
+        "sanctum_name": { "type": "string" },
+        "relic_tier_category": {
+          "type": "string",
+          "enum": [
+            "Elemental_Jewel_Forge",
+            "Raid_Rune_Stone_Altar",
+            "Ancient_Giants_Relic_Vault"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "dungeon_id": { "type": "string" },
+        "floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "guardian_or_master_npc": { "type": "string" },
+        "featured_jewel_or_rune": { "type": "string" },
+        "infusion_power_bonus": { "type": "string" },
+        "acquisition_trial_rule": { "type": "string" }
+      }
+    },
+    "reputationFameMonumentSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "monument_id",
+        "town_zone_id",
+        "town_name",
+        "fame_service_category",
+        "reputation_manager_npc",
+        "monument_loc",
+        "fame_earning_sources",
+        "pvp_seal_infusions",
+        "fame_point_cost_band"
+      ],
+      "properties": {
+        "monument_id": { "type": "string" },
+        "town_zone_id": { "type": "string" },
+        "town_name": { "type": "string" },
+        "fame_service_category": {
+          "type": "string",
+          "enum": [
+            "PvP_Weapon_Infusion_Obelisk",
+            "PvP_Armor_Mirage_Obelisk",
+            "PK_Pardon_And_CRP_Monument"
+          ]
+        },
+        "reputation_manager_npc": { "type": "string" },
+        "monument_loc": { "type": "string" },
+        "fame_earning_sources": { "type": "string" },
+        "pvp_seal_infusions": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "fame_point_cost_band": { "type": "string" }
       }
     }
   }

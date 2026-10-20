@@ -702,6 +702,8 @@ def validate_world_governance(
                 "studioCouncilAuditBenchmarksCount": len(t_doc.get("studio_council_audit_benchmarks") or []),
                 "continentalSeedCyclesCount": len(t_doc.get("continental_seed_cycles") or []),
                 "partyColiseumTournamentsCount": len(t_doc.get("party_coliseum_tournaments") or []),
+                "elementalJewelRuneSanctumsCount": len(t_doc.get("elemental_jewel_rune_sanctums") or []),
+                "reputationFameMonumentsCount": len(t_doc.get("reputation_fame_monuments") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1448,6 +1450,43 @@ def validate_world_governance(
                 if ct_zid not in all_zone_ids:
                     errors.append(
                         f"GOV-10 violation: party_coliseum_tournaments '{ct_id}' references unknown zone_id '{ct_zid}'"
+                    )
+
+            # Validate 14 Elemental Jewel, Raid Rune Stone & Ancient Giant's Relic Sanctums (D63)
+            jewel_rune_sanctums = t_doc.get("elemental_jewel_rune_sanctums") or []
+            if jewel_rune_sanctums and len(jewel_rune_sanctums) != 14:
+                errors.append(
+                    f"GOV-10 violation: elemental_jewel_rune_sanctums must have 14 elemental jewel/rune sanctums, got {len(jewel_rune_sanctums)}"
+                )
+            for jrs_item in jewel_rune_sanctums:
+                if not isinstance(jrs_item, dict):
+                    continue
+                jrs_id = str(jrs_item.get("sanctum_id", ""))
+                jrs_zid = str(jrs_item.get("zone_id", ""))
+                jrs_did = str(jrs_item.get("dungeon_id", ""))
+                if jrs_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: elemental_jewel_rune_sanctums '{jrs_id}' references unknown zone_id '{jrs_zid}'"
+                    )
+                if jrs_did and jrs_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: elemental_jewel_rune_sanctums '{jrs_id}' references unknown dungeon_id '{jrs_did}'"
+                    )
+
+            # Validate 15 Town Reputation Manager Fame & PvP Infusion Monuments (D64)
+            fame_monuments = t_doc.get("reputation_fame_monuments") or []
+            if fame_monuments and len(fame_monuments) != 15:
+                errors.append(
+                    f"GOV-10 violation: reputation_fame_monuments must have 15 reputation fame monuments, got {len(fame_monuments)}"
+                )
+            for fm_item in fame_monuments:
+                if not isinstance(fm_item, dict):
+                    continue
+                fm_id = str(fm_item.get("monument_id", ""))
+                fm_tzid = str(fm_item.get("town_zone_id", ""))
+                if fm_tzid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: reputation_fame_monuments '{fm_id}' references unknown town_zone_id '{fm_tzid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)
