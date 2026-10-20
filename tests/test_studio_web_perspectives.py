@@ -700,7 +700,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 22)
+        self.assertGreaterEqual(len(audit["dimensions"]), 22)
 
         d21 = audit["dimensions"]["D21_boss_hierarchy_and_sealed_god_chains"]
         self.assertEqual(d21["score"], 100.0)
@@ -734,10 +734,84 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas22DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 22)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 22)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 22)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 22)
         self.assertIn("22-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave10_quest_trial_chains_and_farming_efficiency_heatmap(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["questTrialChainsCount"], 18)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["farmingEfficiencyProfilesCount"], 40)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_QUEST_TRACK",
+            "ATLAS_ACTIVE_QUEST_ID",
+            "setAtlasQuestTrack(",
+            "selectAtlasQuestChain(",
+            "renderAtlasQuestTrialOverlayBarHtml(",
+            "studioQuestTrialChainOverlay",
+            "ATLAS_FARMING_MODE",
+            "setAtlasFarmingMode(",
+            "renderAtlasFarmingHeatmapBarHtml(",
+            "studioFarmingEfficiencyHeatmapOverlay",
+            "24-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 10 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 24)
+
+        d23 = audit["dimensions"]["D23_quest_trial_chains_and_class_transfers"]
+        self.assertEqual(d23["score"], 100.0)
+        self.assertEqual(d23["verified"], 18)
+        self.assertEqual(d23["target"], 18)
+        self.assertTrue(d23["ui_wired"])
+
+        d24 = audit["dimensions"]["D24_party_and_farming_efficiency_heatmap"]
+        self.assertEqual(d24["score"], 100.0)
+        self.assertEqual(d24["verified"], 40)
+        self.assertEqual(d24["target"], 40)
+        self.assertTrue(d24["ui_wired"])
+
+        quests = atlas["quest_trial_chains"]
+        self.assertEqual(len(quests), 18)
+        self.assertEqual(
+            {q["quest_track"] for q in quests},
+            {"main_story", "class_transfer", "racial_heritage"},
+        )
+        self.assertEqual(
+            {q["race_id"] for q in quests},
+            {"Human", "Lunar", "Ogre/Orc", "Dwarf", "Dark-Lunar", "Furral"},
+        )
+        self.assertEqual(
+            {q["class_tier"] for q in quests},
+            {"None", "1st_Class_Lv20", "2nd_Class_Lv40", "3rd_Awakening_Lv76"},
+        )
+
+        profiles = atlas["farming_efficiency_profiles"]
+        self.assertEqual(len(profiles), 40)
+        self.assertEqual(sum(1 for p in profiles if p["zone_kind"] == "field"), 24)
+        self.assertEqual(sum(1 for p in profiles if p["zone_kind"] == "dungeon"), 16)
+        self.assertEqual(
+            {p["recommended_party_mode"] for p in profiles},
+            {"solo_grinding", "duo_spoil_scavenger", "full_9p_aoe_party", "clan_raid_force"},
+        )
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas24DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 24)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 24)
+        self.assertIn("24-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

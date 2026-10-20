@@ -47,6 +47,18 @@
       "maxItems": 6,
       "items": { "$ref": "#/$defs/bossHierarchyChainSpec" }
     },
+    "quest_trial_chains": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": { "$ref": "#/$defs/questTrialChainSpec" }
+    },
+    "farming_efficiency_profiles": {
+      "type": "array",
+      "minItems": 40,
+      "maxItems": 40,
+      "items": { "$ref": "#/$defs/farmingEfficiencyProfileSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -1539,6 +1551,99 @@
             }
           }
         }
+      }
+    },
+    "questTrialChainSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quest_id",
+        "quest_name",
+        "quest_track",
+        "race_id",
+        "min_level",
+        "class_tier",
+        "giver_npc_name",
+        "giver_zone_id",
+        "giver_loc",
+        "objective_target",
+        "objective_zone_id",
+        "objective_dungeon_id",
+        "objective_floor_id",
+        "objective_loc",
+        "turn_in_npc_name",
+        "turn_in_zone_id",
+        "turn_in_loc",
+        "reward_summary"
+      ],
+      "properties": {
+        "quest_id": { "type": "string" },
+        "quest_name": { "type": "string" },
+        "quest_track": {
+          "type": "string",
+          "enum": ["main_story", "class_transfer", "racial_heritage"]
+        },
+        "race_id": {
+          "type": "string",
+          "enum": ["Human", "Lunar", "Ogre/Orc", "Dwarf", "Dark-Lunar", "Furral"]
+        },
+        "min_level": { "type": "integer", "minimum": 1, "maximum": 99 },
+        "class_tier": {
+          "type": "string",
+          "enum": ["None", "1st_Class_Lv20", "2nd_Class_Lv40", "3rd_Awakening_Lv76"]
+        },
+        "giver_npc_name": { "type": "string" },
+        "giver_zone_id": { "type": "string" },
+        "giver_loc": { "type": "string" },
+        "objective_target": { "type": "string" },
+        "objective_zone_id": { "type": "string" },
+        "objective_dungeon_id": { "type": "string" },
+        "objective_floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "objective_loc": { "type": "string" },
+        "turn_in_npc_name": { "type": "string" },
+        "turn_in_zone_id": { "type": "string" },
+        "turn_in_loc": { "type": "string" },
+        "reward_summary": { "type": "string" }
+      }
+    },
+    "farmingEfficiencyProfileSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "zone_id",
+        "zone_name",
+        "zone_kind",
+        "recommended_party_mode",
+        "xp_per_hour_index",
+        "adena_per_hour_index",
+        "spoil_grade",
+        "key_spoil_material",
+        "mob_pack_density",
+        "elemental_weakness"
+      ],
+      "properties": {
+        "zone_id": { "type": "string" },
+        "zone_name": { "type": "string" },
+        "zone_kind": {
+          "type": "string",
+          "enum": ["field", "dungeon"]
+        },
+        "recommended_party_mode": {
+          "type": "string",
+          "enum": ["solo_grinding", "duo_spoil_scavenger", "full_9p_aoe_party", "clan_raid_force"]
+        },
+        "xp_per_hour_index": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "adena_per_hour_index": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "spoil_grade": {
+          "type": "string",
+          "enum": ["No-Grade", "D-Grade", "C-Grade", "B-Grade", "A-Grade", "S-Grade"]
+        },
+        "key_spoil_material": { "type": "string" },
+        "mob_pack_density": { "type": "string" },
+        "elemental_weakness": { "type": "string" }
       }
     }
   }

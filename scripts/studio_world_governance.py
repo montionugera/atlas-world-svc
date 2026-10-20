@@ -662,6 +662,8 @@ def validate_world_governance(
                 ),
                 "refinementGradeMatrixCount": len(t_doc.get("refinement_grade_matrix") or []),
                 "bossHierarchyChainsCount": len(t_doc.get("boss_hierarchy_chains") or []),
+                "questTrialChainsCount": len(t_doc.get("quest_trial_chains") or []),
+                "farmingEfficiencyProfilesCount": len(t_doc.get("farming_efficiency_profiles") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -797,6 +799,40 @@ def validate_world_governance(
                                 errors.append(
                                     f"GOV-10 violation: boss_hierarchy_chains '{gid}' Minion family '{mf_fam.get('family_name')}' references unknown zone_id '{fz}'"
                                 )
+
+            # Validate 18 Canonical 3-Track Quest & Class Transfer Trial Chains (D23)
+            quest_chains = t_doc.get("quest_trial_chains") or []
+            if quest_chains and len(quest_chains) != 18:
+                errors.append(f"GOV-10 violation: quest_trial_chains must have 18 canonical quests, got {len(quest_chains)}")
+            for q_chain in quest_chains:
+                if not isinstance(q_chain, dict):
+                    continue
+                qid = str(q_chain.get("quest_id", ""))
+                gzid = str(q_chain.get("giver_zone_id", ""))
+                ozid = str(q_chain.get("objective_zone_id", ""))
+                odid = str(q_chain.get("objective_dungeon_id", ""))
+                tzid = str(q_chain.get("turn_in_zone_id", ""))
+                if gzid not in town_zone_ids:
+                    errors.append(f"GOV-10 violation: quest_trial_chains '{qid}' references unknown giver_zone_id '{gzid}'")
+                if ozid not in all_zone_ids:
+                    errors.append(f"GOV-10 violation: quest_trial_chains '{qid}' references unknown objective_zone_id '{ozid}'")
+                if odid and odid not in mf_dungeon_ids:
+                    errors.append(f"GOV-10 violation: quest_trial_chains '{qid}' references unknown objective_dungeon_id '{odid}'")
+                if tzid not in town_zone_ids:
+                    errors.append(f"GOV-10 violation: quest_trial_chains '{qid}' references unknown turn_in_zone_id '{tzid}'")
+
+            # Validate 40 Combat Zone Farming Efficiency Profiles (D24)
+            farming_profiles = t_doc.get("farming_efficiency_profiles") or []
+            if farming_profiles and len(farming_profiles) != 40:
+                errors.append(f"GOV-10 violation: farming_efficiency_profiles must have 40 combat zones, got {len(farming_profiles)}")
+            for f_prof in farming_profiles:
+                if not isinstance(f_prof, dict):
+                    continue
+                fp_zid = str(f_prof.get("zone_id", ""))
+                if fp_zid not in drop_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: farming_efficiency_profiles references unknown combat zone_id '{fp_zid}'"
+                    )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)
             tb = (deep_slice.get("deep_town") or {}).get("town_blueprint") or {}

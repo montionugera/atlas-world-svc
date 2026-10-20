@@ -1633,6 +1633,507 @@ def _synthesize_shop_and_refinement_catalog(zone_entry: dict[str, Any], idx: int
     }
 
 
+def _build_quest_trial_chains() -> list[dict[str, Any]]:
+    """Build 18 canonical quests across 3 tracks (main_story, class_transfer, racial_heritage) and all 6 Playable Races (D23)."""
+    return [
+        # --- Track 1: Main Story Quests (6) ---
+        {
+            "quest_id": "quest-ms-01-human",
+            "quest_name": "Ch.I: First Meridian Ember Accord",
+            "quest_track": "main_story",
+            "race_id": "Human",
+            "min_level": 5,
+            "class_tier": "None",
+            "giver_npc_name": "[Guide] Steward of First Meridian Obelisk",
+            "giver_zone_id": "zone-town-lantern-hollow",
+            "giver_loc": "-84120:243500",
+            "objective_target": "Defeat Kiln Cellar Ash-Weaver Scout & Recover Sola's Seal Shard",
+            "objective_zone_id": "zone-dungeon-kiln-cellar",
+            "objective_dungeon_id": "zone-dungeon-kiln-cellar",
+            "objective_floor_id": "B1",
+            "objective_loc": "75410:116820",
+            "turn_in_npc_name": "[High Priest] Lyra (town-kilnwatch-bastion)",
+            "turn_in_zone_id": "zone-town-kilnwatch-bastion",
+            "turn_in_loc": "-14200:123500",
+            "reward_summary": "12,500 Adena · No-Grade Soulshot Pack (500) · Kilnwatch Accord Seal Token",
+        },
+        {
+            "quest_id": "quest-ms-02-lunar",
+            "quest_name": "Ch.I: Celadon Loom Resonance",
+            "quest_track": "main_story",
+            "race_id": "Lunar",
+            "min_level": 8,
+            "class_tier": "None",
+            "giver_npc_name": "[High Priest] Lyra (town-porcelain-loom-sanctuary)",
+            "giver_zone_id": "zone-town-porcelain-loom",
+            "giver_loc": "45800:41200",
+            "objective_target": "Purify Medallion Heart Vault Astral Conduit in B2",
+            "objective_zone_id": "zone-dungeon-medallion-heart-vault",
+            "objective_dungeon_id": "zone-dungeon-medallion-heart-vault",
+            "objective_floor_id": "B2",
+            "objective_loc": "49800:44100",
+            "turn_in_npc_name": "[High Priest] Lyra (town-kilnwatch-bastion)",
+            "turn_in_zone_id": "zone-town-kilnwatch-bastion",
+            "turn_in_loc": "-14200:123500",
+            "reward_summary": "15,000 Adena · Blessed Spiritshot (No-Grade) ×300 · Astral Loom Ring",
+        },
+        {
+            "quest_id": "quest-ms-03-ogre-orc",
+            "quest_name": "Ch.II: Flame of the Bellows Covenant",
+            "quest_track": "main_story",
+            "race_id": "Ogre/Orc",
+            "min_level": 12,
+            "class_tier": "None",
+            "giver_npc_name": "[Grand Master] Kael (town-draft-kiln-post)",
+            "giver_zone_id": "zone-town-draft-kiln-post",
+            "giver_loc": "-44800:-113200",
+            "objective_target": "Slay Ember Bellows Trial Overlord in B2 Sanctum",
+            "objective_zone_id": "zone-dungeon-ember-bellows-chamber",
+            "objective_dungeon_id": "zone-dungeon-ember-bellows-chamber",
+            "objective_floor_id": "B2",
+            "objective_loc": "-41200:-109800",
+            "turn_in_npc_name": "[Adventure Guildsman] Rowan (town-kilnwatch-bastion)",
+            "turn_in_zone_id": "zone-town-kilnwatch-bastion",
+            "turn_in_loc": "-14200:123500",
+            "reward_summary": "18,000 Adena · Pa'agrio Bellows Totem · D-Grade Weapon Enchant Fragment",
+        },
+        {
+            "quest_id": "quest-ms-04-dwarf",
+            "quest_name": "Ch.II: Pendulum Shaft Gear Survey",
+            "quest_track": "main_story",
+            "race_id": "Dwarf",
+            "min_level": 22,
+            "class_tier": "None",
+            "giver_npc_name": "[Warehouse Keeper] Brom (town-root-train-roundhouse)",
+            "giver_zone_id": "zone-town-root-train-roundhouse",
+            "giver_loc": "115100:-178200",
+            "objective_target": "Extract Krono's Escapement Core in Pendulum Shaft 2F",
+            "objective_zone_id": "zone-dungeon-pendulum-shaft",
+            "objective_dungeon_id": "zone-dungeon-pendulum-shaft",
+            "objective_floor_id": "2F",
+            "objective_loc": "85400:144200",
+            "turn_in_npc_name": "[Blacksmith] Torin (town-pinion-terminus)",
+            "turn_in_zone_id": "zone-town-pinion-terminus",
+            "turn_in_loc": "82400:148600",
+            "reward_summary": "35,000 Adena · D-Grade Recipe: Compound Braid · +3 Safe Anvil Voucher",
+        },
+        {
+            "quest_id": "quest-ms-05-dark-lunar",
+            "quest_name": "Ch.III: Catacomb of the Astral Witch",
+            "quest_track": "main_story",
+            "race_id": "Dark-Lunar",
+            "min_level": 42,
+            "class_tier": "None",
+            "giver_npc_name": "[High Priest] Lyra (town-carillon-hearth-belfry)",
+            "giver_zone_id": "zone-town-carillon-belfry",
+            "giver_loc": "12400:16800",
+            "objective_target": "Vanquish Vesper's Seal Apostle in Witch Pendulum Catacomb B3",
+            "objective_zone_id": "zone-catacomb-witch-pendulum",
+            "objective_dungeon_id": "zone-catacomb-witch-pendulum",
+            "objective_floor_id": "B3",
+            "objective_loc": "54200:-34800",
+            "turn_in_npc_name": "[High Priest] Lyra (town-starfall-haven)",
+            "turn_in_zone_id": "zone-town-starfall-haven",
+            "turn_in_loc": "43800:-47900",
+            "reward_summary": "120,000 Adena · Ancient Seal Stone ×2,000 · C-Grade Enchant Armor Scroll",
+        },
+        {
+            "quest_id": "quest-ms-06-furral",
+            "quest_name": "Ch.IV: Star-Heart Spire Ascension",
+            "quest_track": "main_story",
+            "race_id": "Furral",
+            "min_level": 60,
+            "class_tier": "None",
+            "giver_npc_name": "[Grand Master] Kael (town-cinnamon-mill-haven)",
+            "giver_zone_id": "zone-town-cinnamon-mill",
+            "giver_loc": "-118200:46800",
+            "objective_target": "Conquer Aurelia's Sanctum Sentinel on Star-Heart Spire 3F",
+            "objective_zone_id": "zone-dungeon-star-heart-nave",
+            "objective_dungeon_id": "zone-dungeon-star-heart-nave",
+            "objective_floor_id": "3F",
+            "objective_loc": "149200:28400",
+            "turn_in_npc_name": "[Grand Master] Kael (town-crown-beacon)",
+            "turn_in_zone_id": "zone-town-crown-beacon",
+            "turn_in_loc": "147900:26800",
+            "reward_summary": "450,000 Adena · A-Grade Soul Crystal Stage 10 · High-Halo Sovereign Crest",
+        },
+        # --- Track 2: 1st/2nd/3rd Class Transfer Trials Lv.20/40/76 (6) ---
+        {
+            "quest_id": "quest-ct-01-human-lv20",
+            "quest_name": "Path of the Hearth-Knight (1st Class Transfer Lv.20)",
+            "quest_track": "class_transfer",
+            "race_id": "Human",
+            "min_level": 20,
+            "class_tier": "1st_Class_Lv20",
+            "giver_npc_name": "[Grand Master] Kael (town-lantern-hollow)",
+            "giver_zone_id": "zone-town-lantern-hollow",
+            "giver_loc": "-84120:243500",
+            "objective_target": "Collect 10 Mandible Trophies inside Kiln Cellar B2",
+            "objective_zone_id": "zone-dungeon-kiln-cellar",
+            "objective_dungeon_id": "zone-dungeon-kiln-cellar",
+            "objective_floor_id": "B2",
+            "objective_loc": "75410:116820",
+            "turn_in_npc_name": "[Grand Master] Kael (town-kilnwatch-bastion)",
+            "turn_in_zone_id": "zone-town-kilnwatch-bastion",
+            "turn_in_loc": "-14200:123500",
+            "reward_summary": "1st Class Promotion Badge · D-Grade Shadow Weapon Coupon · 15 Dimensional Diamonds",
+        },
+        {
+            "quest_id": "quest-ct-02-lunar-lv20",
+            "quest_name": "Path of the Porcelain Oracle (1st Class Transfer Lv.20)",
+            "quest_track": "class_transfer",
+            "race_id": "Lunar",
+            "min_level": 20,
+            "class_tier": "1st_Class_Lv20",
+            "giver_npc_name": "[High Priest] Lyra (town-porcelain-loom-sanctuary)",
+            "giver_zone_id": "zone-town-porcelain-loom",
+            "giver_loc": "45800:41200",
+            "objective_target": "Subdue Sunken Potter Hold Tide-Caller in B2",
+            "objective_zone_id": "zone-dungeon-sunken-potter-hold",
+            "objective_dungeon_id": "zone-dungeon-sunken-potter-hold",
+            "objective_floor_id": "B2",
+            "objective_loc": "-78400:149200",
+            "turn_in_npc_name": "[High Priest] Lyra (town-glaze-barge-quay)",
+            "turn_in_zone_id": "zone-town-glaze-barge-quay",
+            "turn_in_loc": "-81200:151400",
+            "reward_summary": "1st Class Oracle Seal · D-Grade Mystic Tunic Set · 15 Dimensional Diamonds",
+        },
+        {
+            "quest_id": "quest-ct-03-ogre-lv40",
+            "quest_name": "Trial of the Bellows Tyrant (2nd Class Transfer Lv.40)",
+            "quest_track": "class_transfer",
+            "race_id": "Ogre/Orc",
+            "min_level": 40,
+            "class_tier": "2nd_Class_Lv40",
+            "giver_npc_name": "[Grand Master] Kael (town-escapement-anvil)",
+            "giver_zone_id": "zone-town-escapement-anvil",
+            "giver_loc": "83100:53200",
+            "objective_target": "Crush Chronometer Foundry Automaton Warden on 3F",
+            "objective_zone_id": "zone-dungeon-chronometer-foundry",
+            "objective_dungeon_id": "zone-dungeon-chronometer-foundry",
+            "objective_floor_id": "3F",
+            "objective_loc": "84800:56400",
+            "turn_in_npc_name": "[Grand Master] Kael (town-inductor-switchyard)",
+            "turn_in_zone_id": "zone-town-inductor-switchyard",
+            "turn_in_loc": "147400:-55200",
+            "reward_summary": "Mark of the Challenger · Mark of Glory · C-Grade Weapon Exchange Coupon",
+        },
+        {
+            "quest_id": "quest-ct-04-dwarf-lv40",
+            "quest_name": "Testimony of the Master Warsmith (2nd Class Transfer Lv.40)",
+            "quest_track": "class_transfer",
+            "race_id": "Dwarf",
+            "min_level": 40,
+            "class_tier": "2nd_Class_Lv40",
+            "giver_npc_name": "[Blacksmith] Torin (town-escapement-anvil)",
+            "giver_zone_id": "zone-town-escapement-anvil",
+            "giver_loc": "83100:53200",
+            "objective_target": "Spoil 5 Dynamo Seal Ingots in Catacomb of the Branded Bellows B3",
+            "objective_zone_id": "zone-catacomb-branded-bellows",
+            "objective_dungeon_id": "zone-catacomb-branded-bellows",
+            "objective_floor_id": "B3",
+            "objective_loc": "112400:18200",
+            "turn_in_npc_name": "[Blacksmith] Torin (town-inductor-switchyard)",
+            "turn_in_zone_id": "zone-town-inductor-switchyard",
+            "turn_in_loc": "147400:-55200",
+            "reward_summary": "Mark of the Guildsman · Mark of Prosperity · Siege Golem Summon Blueprint",
+        },
+        {
+            "quest_id": "quest-ct-05-dark-lunar-lv76",
+            "quest_name": "Saga of the Spectral Dancer (3rd Class Awakening Lv.76)",
+            "quest_track": "class_transfer",
+            "race_id": "Dark-Lunar",
+            "min_level": 76,
+            "class_tier": "3rd_Awakening_Lv76",
+            "giver_npc_name": "[Grand Master] Kael (town-starfall-haven)",
+            "giver_zone_id": "zone-town-starfall-haven",
+            "giver_loc": "43800:-47900",
+            "objective_target": "Resonate 6 Tablets of Vision & Slay Archon of Star-Heart Spire 3F",
+            "objective_zone_id": "zone-dungeon-star-heart-nave",
+            "objective_dungeon_id": "zone-dungeon-star-heart-nave",
+            "objective_floor_id": "3F",
+            "objective_loc": "149200:28400",
+            "turn_in_npc_name": "[Grand Master] Kael (town-crown-beacon)",
+            "turn_in_zone_id": "zone-town-crown-beacon",
+            "turn_in_loc": "147900:26800",
+            "reward_summary": "Secret Book of Giants · 5,000,000 Adena · S-Grade Dual-Sword Mastery Tome",
+        },
+        {
+            "quest_id": "quest-ct-06-furral-lv76",
+            "quest_name": "Saga of the Storm-Tail Doombringer (3rd Class Awakening Lv.76)",
+            "quest_track": "class_transfer",
+            "race_id": "Furral",
+            "min_level": 76,
+            "class_tier": "3rd_Awakening_Lv76",
+            "giver_npc_name": "[High Priest] Lyra (town-starfall-haven)",
+            "giver_zone_id": "zone-town-starfall-haven",
+            "giver_loc": "43800:-47900",
+            "objective_target": "Defeat Forbidden Architect Apostle in Forbidden Path Orrery Catacomb B3",
+            "objective_zone_id": "zone-catacomb-forbidden-path-orrery",
+            "objective_dungeon_id": "zone-catacomb-forbidden-path-orrery",
+            "objective_floor_id": "B3",
+            "objective_loc": "18400:-64200",
+            "turn_in_npc_name": "[High Priest] Lyra (town-crown-beacon)",
+            "turn_in_zone_id": "zone-town-crown-beacon",
+            "turn_in_loc": "147900:26800",
+            "reward_summary": "Secret Book of Giants · 5,000,000 Adena · S-Grade Electro-Glaive Catalyst",
+        },
+        # --- Track 3: Racial Heritage Side Quests (6) ---
+        {
+            "quest_id": "quest-rh-01-human",
+            "quest_name": "Heritage of the Terracotta Hearth",
+            "quest_track": "racial_heritage",
+            "race_id": "Human",
+            "min_level": 10,
+            "class_tier": "None",
+            "giver_npc_name": "[Blacksmith] Altran (town-lantern-hollow)",
+            "giver_zone_id": "zone-town-lantern-hollow",
+            "giver_loc": "-84120:243500",
+            "objective_target": "Gather 20 Glazed Clay Cores across Clover South-Gate Meadow",
+            "objective_zone_id": "zone-field-clover-south-gate",
+            "objective_dungeon_id": "",
+            "objective_floor_id": "",
+            "objective_loc": "72986:113330",
+            "turn_in_npc_name": "[Blacksmith] Altran (town-lantern-hollow)",
+            "turn_in_zone_id": "zone-town-lantern-hollow",
+            "turn_in_loc": "-84120:243500",
+            "reward_summary": "Lantern Hollow Heritage Cloak · +3 Safe Weapon Enchant Scroll (No-Grade)",
+        },
+        {
+            "quest_id": "quest-rh-02-lunar",
+            "quest_name": "Hymn of the Celadon Water-Shrine",
+            "quest_track": "racial_heritage",
+            "race_id": "Lunar",
+            "min_level": 12,
+            "class_tier": "None",
+            "giver_npc_name": "[High Priest] Lyra (town-porcelain-loom-sanctuary)",
+            "giver_zone_id": "zone-town-porcelain-loom",
+            "giver_loc": "45800:41200",
+            "objective_target": "Harvest 12 Dew-Glaze Lotuses along Celadon Glaze Causeway",
+            "objective_zone_id": "zone-field-celadon-causeway",
+            "objective_dungeon_id": "",
+            "objective_floor_id": "",
+            "objective_loc": "48200:49600",
+            "turn_in_npc_name": "[High Priest] Lyra (town-porcelain-loom-sanctuary)",
+            "turn_in_zone_id": "zone-town-porcelain-loom",
+            "turn_in_loc": "45800:41200",
+            "reward_summary": "Porcelain Moon Circlet · Spiritshot Pack (1,000) · 9,500 Adena",
+        },
+        {
+            "quest_id": "quest-rh-03-ogre-orc",
+            "quest_name": "Oath of the Firebrick Ancestors",
+            "quest_track": "racial_heritage",
+            "race_id": "Ogre/Orc",
+            "min_level": 14,
+            "class_tier": "None",
+            "giver_npc_name": "[Grand Master] Kael (town-draft-kiln-post)",
+            "giver_zone_id": "zone-town-draft-kiln-post",
+            "giver_loc": "-44800:-113200",
+            "objective_target": "Hunt Ash-Tusk Boars across Firebrick Bellows Duct",
+            "objective_zone_id": "zone-field-firebrick-duct",
+            "objective_dungeon_id": "",
+            "objective_floor_id": "",
+            "objective_loc": "-39200:-105400",
+            "turn_in_npc_name": "[Grand Master] Kael (town-draft-kiln-post)",
+            "turn_in_zone_id": "zone-town-draft-kiln-post",
+            "turn_in_loc": "-44800:-113200",
+            "reward_summary": "Draft-Kiln War Gauntlets · Greater Haste Potion ×10 · 11,000 Adena",
+        },
+        {
+            "quest_id": "quest-rh-04-dwarf",
+            "quest_name": "Ledger of the Sap-Heart Guild",
+            "quest_track": "racial_heritage",
+            "race_id": "Dwarf",
+            "min_level": 15,
+            "class_tier": "None",
+            "giver_npc_name": "[Warehouse Keeper] Brom (town-root-train-roundhouse)",
+            "giver_zone_id": "zone-town-root-train-roundhouse",
+            "giver_loc": "115100:-178200",
+            "objective_target": "Recover 8 Amber Resin Ledger Plates in Sap-Heart Cistern B1",
+            "objective_zone_id": "zone-dungeon-sap-heart-cistern",
+            "objective_dungeon_id": "zone-dungeon-sap-heart-cistern",
+            "objective_floor_id": "B1",
+            "objective_loc": "119400:-174200",
+            "turn_in_npc_name": "[Warehouse Keeper] Brom (town-root-train-roundhouse)",
+            "turn_in_zone_id": "zone-town-root-train-roundhouse",
+            "turn_in_loc": "115100:-178200",
+            "reward_summary": "Tontatta Master Spoil Gloves (+8% Spoil Rate) · 14,000 Adena",
+        },
+        {
+            "quest_id": "quest-rh-05-dark-lunar",
+            "quest_name": "Echoes of the Carillon Belfry",
+            "quest_track": "racial_heritage",
+            "race_id": "Dark-Lunar",
+            "min_level": 15,
+            "class_tier": "None",
+            "giver_npc_name": "[High Priest] Lyra (town-carillon-hearth-belfry)",
+            "giver_zone_id": "zone-town-carillon-belfry",
+            "giver_loc": "12400:16800",
+            "objective_target": "Retrieve 6 Acoustic Bronze Bells from Ceramic Resonator Crypt B1",
+            "objective_zone_id": "zone-dungeon-ceramic-resonator-crypt",
+            "objective_dungeon_id": "zone-dungeon-ceramic-resonator-crypt",
+            "objective_floor_id": "B1",
+            "objective_loc": "15200:19400",
+            "turn_in_npc_name": "[High Priest] Lyra (town-carillon-hearth-belfry)",
+            "turn_in_zone_id": "zone-town-carillon-belfry",
+            "turn_in_loc": "12400:16800",
+            "reward_summary": "Umbral Chime Earring · Lesser Mana Potion ×20 · 13,500 Adena",
+        },
+        {
+            "quest_id": "quest-rh-06-furral",
+            "quest_name": "Spice-Kiln Wind-Runner Rite",
+            "quest_track": "racial_heritage",
+            "race_id": "Furral",
+            "min_level": 14,
+            "class_tier": "None",
+            "giver_npc_name": "[Trader] Valen (town-cinnamon-mill-haven)",
+            "giver_zone_id": "zone-town-cinnamon-mill",
+            "giver_loc": "-118200:46800",
+            "objective_target": "Clear Static Spark-Hounds in Spice-Kiln Cellar B1",
+            "objective_zone_id": "zone-dungeon-spice-kiln-cellar",
+            "objective_dungeon_id": "zone-dungeon-spice-kiln-cellar",
+            "objective_floor_id": "B1",
+            "objective_loc": "-115400:49100",
+            "turn_in_npc_name": "[Trader] Valen (town-cinnamon-mill-haven)",
+            "turn_in_zone_id": "zone-town-cinnamon-mill",
+            "turn_in_loc": "-118200:46800",
+            "reward_summary": "Wind-Tail Furral Boots (+7 Move Speed) · 12,000 Adena",
+        },
+    ]
+
+
+def _build_farming_efficiency_profiles(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 40 combat zone farming efficiency profiles (24 Field Hunting Areas + 16 Multi-Floor Dungeons) (D24)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    fields_list = zdir.get("fields_and_hunting_areas") or []
+    dungeons_list = (zdir.get("regular_dungeons") or []) + (zdir.get("seven_signs_seal_catacombs") or [])
+
+    spoil_by_grade = {
+        "No-Grade": "Terracotta Coal, Animal Bone & Stem (38% Spoil)",
+        "D-Grade": "Mithril Ore, Compound Braid & Varnish of Purity (29% Spoil)",
+        "C-Grade": "Oriharukon Ore, Crafted Leather & Karmian Fabric (24% Spoil)",
+        "B-Grade": "Enria, Mold Hardener & Damascus Blade Core (19% Spoil)",
+        "A-Grade": "Asofe, Thons & Tallum Alloy Plate (15% Spoil)",
+        "S-Grade": "Imperial Star-Steel Ingot & Divine Apostle Catalyst (11% Spoil)",
+    }
+    weakness_cycle = [
+        "Water / Blunt Weak (-25% Resist)",
+        "Fire / Slash Weak (-25% Resist)",
+        "Wind / Pierce Weak (-25% Resist)",
+        "Earth / Crush Weak (-25% Resist)",
+        "Holy / Radiant Weak (-30% Undead/Seal Resist)",
+        "Dark / Arcane Weak (-20% Construct Resist)",
+    ]
+
+    profiles: list[dict[str, Any]] = []
+    for idx, f_entry in enumerate(fields_list):
+        if not isinstance(f_entry, dict):
+            continue
+        zid = str(f_entry.get("zone_id", ""))
+        zname = str(f_entry.get("name", zid))
+        lband = f_entry.get("level_band") or [1, 15]
+        lmin = int(lband[0]) if len(lband) > 0 else 1
+        lmax = int(lband[1]) if len(lband) > 1 else lmin + 10
+
+        if lmax <= 15:
+            grade = "No-Grade"
+            mode = "solo_grinding" if idx % 2 == 0 else "duo_spoil_scavenger"
+            density = "Medium (4–6 Non-Social Mobs / 25s Respawn)"
+        elif lmax <= 28:
+            grade = "D-Grade"
+            mode = "duo_spoil_scavenger" if idx % 2 == 0 else "solo_grinding"
+            density = "High (6–8 Assisted Packs / 30s Respawn)"
+        elif lmax <= 38:
+            grade = "C-Grade"
+            mode = "duo_spoil_scavenger" if idx % 3 != 0 else "full_9p_aoe_party"
+            density = "High (8–10 Polearm AoE Packs / 35s Respawn)"
+        elif lmax <= 44:
+            grade = "B-Grade"
+            mode = "full_9p_aoe_party"
+            density = "Very High (10–14 Social Guard Packs / 40s Respawn)"
+        elif lmax <= 60:
+            grade = "A-Grade"
+            mode = "full_9p_aoe_party" if idx % 2 == 0 else "clan_raid_force"
+            density = "Extreme (12–16 High-Halo Elite Packs / 45s Respawn)"
+        else:
+            grade = "S-Grade"
+            mode = "clan_raid_force"
+            density = "Apex Raid Density (16+ Sovereign Guards & World MVP / 60s Respawn)"
+
+        xp_idx = min(100, max(52, 48 + int(lmax * 0.52) + (idx % 5)))
+        adena_idx = min(100, max(50, 45 + int(lmax * 0.54) + ((idx * 3) % 6)))
+
+        profiles.append(
+            {
+                "zone_id": zid,
+                "zone_name": zname,
+                "zone_kind": "field",
+                "recommended_party_mode": mode,
+                "xp_per_hour_index": xp_idx,
+                "adena_per_hour_index": adena_idx,
+                "spoil_grade": grade,
+                "key_spoil_material": spoil_by_grade[grade],
+                "mob_pack_density": density,
+                "elemental_weakness": weakness_cycle[idx % len(weakness_cycle)],
+            }
+        )
+
+    for idx, d_entry in enumerate(dungeons_list):
+        if not isinstance(d_entry, dict):
+            continue
+        zid = str(d_entry.get("zone_id", ""))
+        zname = str(d_entry.get("name", zid))
+        lband = d_entry.get("level_band") or [15, 30]
+        lmin = int(lband[0]) if len(lband) > 0 else 15
+        lmax = int(lband[1]) if len(lband) > 1 else lmin + 12
+
+        if lmax <= 20:
+            grade = "No-Grade"
+            mode = "duo_spoil_scavenger"
+            density = "High Dungeon Rooms (8–10 Social Mobs per Chamber / 35s Respawn)"
+        elif lmax <= 28:
+            grade = "D-Grade"
+            mode = "full_9p_aoe_party" if idx % 2 == 0 else "duo_spoil_scavenger"
+            density = "Very High Labyrinth (10–14 Multi-Floor Room Packs / 40s Respawn)"
+        elif lmax <= 40:
+            grade = "C-Grade"
+            mode = "full_9p_aoe_party"
+            density = "Dense Catacomb Chambers (12–16 Seal-Stone Guardians / 42s Respawn)"
+        elif lmax <= 55:
+            grade = "B-Grade"
+            mode = "full_9p_aoe_party" if idx % 2 == 0 else "clan_raid_force"
+            density = "Extreme Necropolis Vaults (14–18 Aggro Apostle Packs / 45s Respawn)"
+        elif lmax <= 70:
+            grade = "A-Grade"
+            mode = "clan_raid_force"
+            density = "Sanctum Garrison (16–20 Raid-Linked Chambers / 50s Respawn)"
+        else:
+            grade = "S-Grade"
+            mode = "clan_raid_force"
+            density = "Apex God-Seal Sanctum (20+ Primordial Apostle Packs / 60s Respawn)"
+
+        xp_idx = min(100, max(64, 58 + int(lmax * 0.44) + (idx % 4)))
+        adena_idx = min(100, max(62, 55 + int(lmax * 0.46) + ((idx * 2) % 5)))
+
+        profiles.append(
+            {
+                "zone_id": zid,
+                "zone_name": zname,
+                "zone_kind": "dungeon",
+                "recommended_party_mode": mode,
+                "xp_per_hour_index": xp_idx,
+                "adena_per_hour_index": adena_idx,
+                "spoil_grade": grade,
+                "key_spoil_material": spoil_by_grade[grade],
+                "mob_pack_density": density,
+                "elemental_weakness": weakness_cycle[(idx + 2) % len(weakness_cycle)],
+            }
+        )
+
+    return profiles
+
+
+
 
 def _resolve_town_layout_archetype(zone_entry: dict[str, Any], idx: int) -> str:
     zid = str(zone_entry.get("zone_id", "")).lower()
@@ -2413,6 +2914,11 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
         atlas["boss_hierarchy_chains"] = _build_boss_hierarchy_chains()
         actions.append("populated_6_god_boss_hierarchy_chains")
 
+    # 1e. Ensure all 18 Canonical 3-Track Quest & Class Transfer Trial Chains exist in `quest_trial_chains` (D23)
+    if len(atlas.get("quest_trial_chains") or []) < 18:
+        atlas["quest_trial_chains"] = _build_quest_trial_chains()
+        actions.append("populated_18_quest_trial_chains")
+
     # Ensure deep_town.town_blueprint also has race_spawn_point & refinement_anvils & zone_id & shop_and_refinement_catalog
     deep_town = (atlas.get("t_deep_validation_slice") or {}).get("deep_town") or {}
     deep_tb = deep_town.get("town_blueprint")
@@ -2574,6 +3080,11 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
         for h in forts_list
         if isinstance(h.get("fortress_blueprint"), dict)
     ]
+
+    # 8. Ensure all 40 Combat Zone Farming Efficiency Profiles exist in `farming_efficiency_profiles` (D24)
+    if len(atlas.get("farming_efficiency_profiles") or []) < 40:
+        atlas["farming_efficiency_profiles"] = _build_farming_efficiency_profiles(atlas)
+        actions.append("populated_40_farming_efficiency_profiles")
 
     return {"actions": actions}
 
@@ -3189,15 +3700,147 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     ]
     d22_score = round((sum(1 for c in d22_checks if c) / float(len(d22_checks))) * 100.0, 1)
 
+    # D23: Interactive 3-Track Quest & Class Transfer Trial Map Overlay (`quest_trial_chains` - 18 Quests across 3 Tracks & 6 Playable Races)
+    expected_quest_tracks = {"main_story", "class_transfer", "racial_heritage"}
+    expected_quest_races = {"Human", "Lunar", "Ogre/Orc", "Dwarf", "Dark-Lunar", "Furral"}
+    expected_class_tiers = {"None", "1st_Class_Lv20", "2nd_Class_Lv40", "3rd_Awakening_Lv76"}
+    quest_chains = atlas.get("quest_trial_chains") or []
+    valid_quest_chains = 0
+    seen_quest_tracks: set[str] = set()
+    seen_quest_races: set[str] = set()
+    seen_class_tiers: set[str] = set()
+    for q_entry in quest_chains:
+        if not isinstance(q_entry, dict):
+            continue
+        qtrack = str(q_entry.get("quest_track") or "")
+        qrace = str(q_entry.get("race_id") or "")
+        ctier = str(q_entry.get("class_tier") or "")
+        gzid = str(q_entry.get("giver_zone_id") or "")
+        ozid = str(q_entry.get("objective_zone_id") or "")
+        odid = str(q_entry.get("objective_dungeon_id") or "")
+        ofid = str(q_entry.get("objective_floor_id") or "")
+        tzid = str(q_entry.get("turn_in_zone_id") or "")
+        if (
+            q_entry.get("quest_id")
+            and q_entry.get("quest_name")
+            and qtrack in expected_quest_tracks
+            and qrace in expected_quest_races
+            and isinstance(q_entry.get("min_level"), int)
+            and ctier in expected_class_tiers
+            and q_entry.get("giver_npc_name")
+            and gzid in town_zone_id_set
+            and ":" in str(q_entry.get("giver_loc", ""))
+            and q_entry.get("objective_target")
+            and ozid in zone_ids_set
+            and (odid == "" or odid in mf_dungeon_id_set)
+            and ofid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(q_entry.get("objective_loc", ""))
+            and q_entry.get("turn_in_npc_name")
+            and tzid in town_zone_id_set
+            and ":" in str(q_entry.get("turn_in_loc", ""))
+            and q_entry.get("reward_summary")
+        ):
+            valid_quest_chains += 1
+            seen_quest_tracks.add(qtrack)
+            seen_quest_races.add(qrace)
+            seen_class_tiers.add(ctier)
+
+    has_d23_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_QUEST_TRACK",
+            "ATLAS_ACTIVE_QUEST_ID",
+            "setAtlasQuestTrack",
+            "selectAtlasQuestChain",
+            "renderAtlasQuestTrialOverlayBarHtml",
+            "studioQuestTrialChainOverlay",
+        )
+    )
+    d23_ratio = valid_quest_chains / 18.0
+    d23_full_coverage = (
+        seen_quest_tracks == expected_quest_tracks
+        and seen_quest_races == expected_quest_races
+        and seen_class_tiers == expected_class_tiers
+    )
+    d23_score = (
+        round(min(100.0, d23_ratio * 100.0), 1)
+        if (has_d23_ui and d23_full_coverage)
+        else round(d23_ratio * 80.0, 1)
+    )
+
+    # D24: Interactive Party & Farming Efficiency Heatmap / Grinding Calculator (`farming_efficiency_profiles` - 40 Combat Zones = 24 Fields + 16 Dungeons)
+    expected_party_modes = {"solo_grinding", "duo_spoil_scavenger", "full_9p_aoe_party", "clan_raid_force"}
+    expected_spoil_grades = {"No-Grade", "D-Grade", "C-Grade", "B-Grade", "A-Grade", "S-Grade"}
+    combat_zone_id_set = {
+        str(f.get("zone_id"))
+        for f in fields_list
+        if isinstance(f, dict) and f.get("zone_id")
+    } | {
+        str(d.get("zone_id"))
+        for d in all_dungeons
+        if isinstance(d, dict) and d.get("zone_id")
+    }
+    farming_profiles = atlas.get("farming_efficiency_profiles") or []
+    valid_farming_profiles = 0
+    seen_farming_zone_ids: set[str] = set()
+    seen_party_modes: set[str] = set()
+    seen_spoil_grades: set[str] = set()
+    for fp in farming_profiles:
+        if not isinstance(fp, dict):
+            continue
+        fzid = str(fp.get("zone_id") or "")
+        fkind = str(fp.get("zone_kind") or "")
+        pmode = str(fp.get("recommended_party_mode") or "")
+        sgrade = str(fp.get("spoil_grade") or "")
+        if (
+            fzid in combat_zone_id_set
+            and fzid not in seen_farming_zone_ids
+            and fp.get("zone_name")
+            and fkind in ("field", "dungeon")
+            and pmode in expected_party_modes
+            and isinstance(fp.get("xp_per_hour_index"), int)
+            and 1 <= int(fp.get("xp_per_hour_index", 0)) <= 100
+            and isinstance(fp.get("adena_per_hour_index"), int)
+            and 1 <= int(fp.get("adena_per_hour_index", 0)) <= 100
+            and sgrade in expected_spoil_grades
+            and fp.get("key_spoil_material")
+            and fp.get("mob_pack_density")
+            and fp.get("elemental_weakness")
+        ):
+            valid_farming_profiles += 1
+            seen_farming_zone_ids.add(fzid)
+            seen_party_modes.add(pmode)
+            seen_spoil_grades.add(sgrade)
+
+    has_d24_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_FARMING_MODE",
+            "setAtlasFarmingMode",
+            "renderAtlasFarmingHeatmapBarHtml",
+            "studioFarmingEfficiencyHeatmapOverlay",
+        )
+    )
+    d24_ratio = valid_farming_profiles / 40.0
+    d24_full_coverage = (
+        seen_party_modes == expected_party_modes
+        and seen_spoil_grades == expected_spoil_grades
+    )
+    d24_score = (
+        round(min(100.0, d24_ratio * 100.0), 1)
+        if (has_d24_ui and d24_full_coverage)
+        else round(d24_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score) / 6.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score) / 8.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score) / 9.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score) / 16.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score) / 6.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score) / 12.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score) / 7.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score) / 9.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score) / 11.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score) / 18.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score) / 7.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score) / 14.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -3224,8 +3867,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d20_score
             + d21_score
             + d22_score
+            + d23_score
+            + d24_score
         )
-        / 22.0,
+        / 24.0,
         1,
     )
 
@@ -3340,6 +3985,23 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "target": len(d22_checks),
                 "pip_renderer_wired": all(d22_checks),
             },
+            "D23_quest_trial_chains_and_class_transfers": {
+                "score": d23_score,
+                "verified": valid_quest_chains,
+                "target": 18,
+                "tracks": sorted(seen_quest_tracks),
+                "races": sorted(seen_quest_races),
+                "class_tiers": sorted(seen_class_tiers),
+                "ui_wired": has_d23_ui,
+            },
+            "D24_party_and_farming_efficiency_heatmap": {
+                "score": d24_score,
+                "verified": valid_farming_profiles,
+                "target": 40,
+                "party_modes": sorted(seen_party_modes),
+                "spoil_grades": sorted(seen_spoil_grades),
+                "ui_wired": has_d24_ui,
+            },
         },
     }
 
@@ -3406,6 +4068,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D20 (Studio/Atlas 20D Sync) : {dims['D20_bidirectional_studio_atlas_sync_and_docs']['score']}/100 ({dims['D20_bidirectional_studio_atlas_sync_and_docs']['verified']}/{dims['D20_bidirectional_studio_atlas_sync_and_docs']['target']} checks)")
         print(f"  D21 (6-God Boss Hierarchy)  : {dims['D21_boss_hierarchy_and_sealed_god_chains']['score']}/100 ({dims['D21_boss_hierarchy_and_sealed_god_chains']['verified']}/{dims['D21_boss_hierarchy_and_sealed_god_chains']['target']} Sealed-God chains)")
         print(f"  D22 (PiP World Radar Map)   : {dims['D22_pip_world_radar_minimap_in_zoomed_views']['score']}/100 ({dims['D22_pip_world_radar_minimap_in_zoomed_views']['verified']}/{dims['D22_pip_world_radar_minimap_in_zoomed_views']['target']} checks)")
+        print(f"  D23 (3-Track Quest Trials)  : {dims['D23_quest_trial_chains_and_class_transfers']['score']}/100 ({dims['D23_quest_trial_chains_and_class_transfers']['verified']}/{dims['D23_quest_trial_chains_and_class_transfers']['target']} quests)")
+        print(f"  D24 (40-Zone Farm Heatmap)  : {dims['D24_party_and_farming_efficiency_heatmap']['score']}/100 ({dims['D24_party_and_farming_efficiency_heatmap']['verified']}/{dims['D24_party_and_farming_efficiency_heatmap']['target']} combat zones)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

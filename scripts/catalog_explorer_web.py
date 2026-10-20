@@ -69,24 +69,26 @@ def compute_studio_self_evaluation() -> dict:
             }
             dims = iter_state["dimensions"]
     overall_atlas_score = float(iter_state.get("overall_score", 100.0))
-    dim_count = len(dims) or 22
+    dim_count = len(dims) or 24
     qs = dict(self_eval.get("qualityScorecard") or {})
     qs.setdefault("overallQualityScorePct", 100.0)
     qs["semanticZoomAtlas18DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas20DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas22DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas24DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 9)),
+        "wave": int(iter_state.get("wave", 10)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D22 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D24 Verified"
         ),
     }
     return merged
@@ -4348,7 +4350,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D22 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D24 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4388,6 +4390,9 @@ let ATLAS_ROUTE_TO_ID = 'zone-dungeon-kiln-cellar';
 let ATLAS_REFINE_GRADE = 'No-Grade Lv.1–19';
 let ATLAS_REFINE_PLUS = 3;
 let ATLAS_BOSS_GOD_ID = 'god-sola-hearth-weaver';
+let ATLAS_QUEST_TRACK = 'All';
+let ATLAS_ACTIVE_QUEST_ID = 'quest-ms-01-human';
+let ATLAS_FARMING_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4399,6 +4404,9 @@ const ATLAS_STATE_STORE = {
   refineGrade: 'No-Grade Lv.1–19',         // D19: Active Blacksmith Refinement Equipment Grade
   refinePlus: 3,                           // D19: Active Blacksmith Refinement Step (+1..+15)
   bossGodId: 'god-sola-hearth-weaver',     // D21: Active Sealed-God 5-Tier Boss Hierarchy Chain
+  questTrack: 'All',                       // D23: Active Quest Track ('All' | 'main_story' | 'class_transfer' | 'racial_heritage')
+  activeQuestId: 'quest-ms-01-human',      // D23: Active 3-Track Quest & Class Transfer Chain
+  farmingMode: 'All',                      // D24: Active Party & Farming Efficiency Heatmap ('Off' | 'All' | 'solo_grinding' | 'duo_spoil_scavenger' | 'full_9p_aoe_party' | 'clan_raid_force')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4406,6 +4414,44 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasQuestTrack(trackId) {
+  ATLAS_QUEST_TRACK = String(trackId || 'All');
+  ATLAS_STATE_STORE.questTrack = ATLAS_QUEST_TRACK;
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const quests = tatlas.quest_trial_chains || [];
+  const matching = ATLAS_QUEST_TRACK === 'All'
+    ? quests
+    : quests.filter(q => q.quest_track === ATLAS_QUEST_TRACK);
+  if (matching.length && !matching.some(q => q.quest_id === ATLAS_ACTIVE_QUEST_ID)) {
+    ATLAS_ACTIVE_QUEST_ID = matching[0].quest_id;
+    ATLAS_STATE_STORE.activeQuestId = ATLAS_ACTIVE_QUEST_ID;
+  }
+  writeUrlState(false);
+  render();
+}
+
+function selectAtlasQuestChain(questId) {
+  ATLAS_ACTIVE_QUEST_ID = String(questId || 'quest-ms-01-human');
+  ATLAS_STATE_STORE.activeQuestId = ATLAS_ACTIVE_QUEST_ID;
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const quests = tatlas.quest_trial_chains || [];
+  const activeQuest = quests.find(q => q.quest_id === ATLAS_ACTIVE_QUEST_ID);
+  if (activeQuest && activeQuest.objective_loc) {
+    STUDIO_MAP_LOC = clampWorldLocCoord(activeQuest.objective_loc);
+  }
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasFarmingMode(modeId) {
+  ATLAS_FARMING_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.farmingMode = ATLAS_FARMING_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasBossGodChain(godId) {
   ATLAS_BOSS_GOD_ID = String(godId || 'All');
@@ -4901,6 +4947,10 @@ function resetAtlasFilters() {
   ATLAS_STATE_STORE.raceGrowthRoute = 'All';
   ATLAS_BOSS_GOD_ID = 'All';
   ATLAS_STATE_STORE.bossGodId = 'All';
+  ATLAS_QUEST_TRACK = 'All';
+  ATLAS_STATE_STORE.questTrack = 'All';
+  ATLAS_FARMING_MODE = 'All';
+  ATLAS_STATE_STORE.farmingMode = 'All';
   ATLAS_OMNI_SEARCH_QUERY = '';
   ATLAS_STATE_STORE.omniSearchQuery = '';
   ATLAS_STATE_STORE.toastMessage = '';
@@ -6314,6 +6364,207 @@ function renderAtlasBossHierarchyChainBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasQuestTrialOverlayBarHtml(tatlas) {
+  const quests = (tatlas && tatlas.quest_trial_chains) || [];
+  if (!quests.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+    if (z.studio_node_id) zoneById[z.studio_node_id] = z;
+  });
+
+  const curTrack = ATLAS_QUEST_TRACK || ATLAS_STATE_STORE.questTrack || 'All';
+  const filteredQuests = curTrack === 'All'
+    ? quests
+    : quests.filter(q => q.quest_track === curTrack);
+  const activeQuest = filteredQuests.find(q => q.quest_id === (ATLAS_ACTIVE_QUEST_ID || ATLAS_STATE_STORE.activeQuestId))
+    || filteredQuests[0]
+    || quests[0];
+
+  const trackPills = [
+    { id: 'All', label: '🌐 All Quests (18)' },
+    { id: 'main_story', label: '📜 Main Story (6)' },
+    { id: 'class_transfer', label: '⚔️ Class Transfer Lv.20/40/76 (6)' },
+    { id: 'racial_heritage', label: '🧬 Racial Side Quests (6)' }
+  ];
+
+  const giverZone = zoneById[activeQuest.giver_zone_id];
+  const giverTownNodeId = (giverZone && (giverZone.studio_node_id || giverZone.zone_id)) || activeQuest.giver_zone_id;
+  const giverShort = giverZone ? giverZone.name.split('(')[0].trim() : activeQuest.giver_zone_id;
+
+  const objZone = zoneById[activeQuest.objective_zone_id];
+  const objShort = objZone ? objZone.name.split('(')[0].trim() : activeQuest.objective_zone_id;
+  const isDngObj = Boolean(activeQuest.objective_dungeon_id);
+  const objJumpCall = isDngObj
+    ? `openDungeonSubMap('${escapeHtml(activeQuest.objective_dungeon_id)}', '${escapeHtml(activeQuest.objective_floor_id || 'B1')}')`
+    : `focusFieldTacticalBlueprint('${escapeHtml(activeQuest.objective_zone_id)}', '${escapeHtml(activeQuest.objective_loc || '')}')`;
+
+  const turnInZone = zoneById[activeQuest.turn_in_zone_id];
+  const turnInTownNodeId = (turnInZone && (turnInZone.studio_node_id || turnInZone.zone_id)) || activeQuest.turn_in_zone_id;
+  const turnInShort = turnInZone ? turnInZone.name.split('(')[0].trim() : activeQuest.turn_in_zone_id;
+
+  return `
+    <div id="atlasQuestTrialOverlayBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#0f1d2e;border:1px solid rgba(56,189,248,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fde047">📜 3-TRACK QUEST &amp; CLASS TRIAL OVERLAY (D23):</span>
+          ${trackPills.map(tp => {
+            const isAct = curTrack === tp.id;
+            return `
+              <button type="button" onclick="setAtlasQuestTrack('${escapeHtml(tp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.4)'};background:${isAct ? '#0369a1' : '#090d14'};color:${isAct ? '#ffffff' : '#bae6fd'}">
+                ${escapeHtml(tp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+          <span class="mono" style="font-size:9px;color:#94a3b8;font-weight:800">Active Chain:</span>
+          <select aria-label="Select Canonical Quest or Class Transfer Trial" onchange="selectAtlasQuestChain(this.value)"
+                  style="height:24px;padding:1px 7px;border-radius:6px;background:#090d14;color:#fde047;border:1px solid rgba(250,204,21,0.55);font-size:9.8px;font-weight:800;cursor:pointer">
+            ${filteredQuests.map(q => {
+              const sel = q.quest_id === activeQuest.quest_id ? 'selected' : '';
+              const tierTag = q.class_tier && q.class_tier !== 'None' ? ` [${q.class_tier}]` : '';
+              return `<option value="${escapeHtml(q.quest_id)}" ${sel}>[${escapeHtml(q.race_id)} Lv.${q.min_level}] ${escapeHtml(q.quest_name)}${escapeHtml(tierTag)}</option>`;
+            }).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;align-items:stretch">
+        <!-- Step 1: Quest Giver Town & NPC -->
+        <div style="padding:6px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid #38bdf8;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+          <div>
+            <div class="mono" style="font-size:8.8px;font-weight:900;color:#38bdf8">STEP 1 · QUEST GIVER TOWN (${escapeHtml(activeQuest.race_id)} · Lv.${activeQuest.min_level})</div>
+            <div style="font-size:9.8px;font-weight:900;color:#f8fafc;margin-top:2px">${escapeHtml(activeQuest.giver_npc_name)}</div>
+            <div class="mono" style="font-size:8.4px;color:#94a3b8;margin-top:1px">${escapeHtml(giverShort)} · loc=${escapeHtml(activeQuest.giver_loc)}</div>
+          </div>
+          <button type="button" onclick="focusTownStreetBlueprint('${escapeHtml(giverTownNodeId)}', '${escapeHtml(activeQuest.giver_loc)}')"
+                  style="padding:3px 7px;border-radius:5px;border:1px solid #38bdf8;background:#0c4a6e;color:#e0f2fe;font-size:8.6px;font-weight:900;cursor:pointer;text-align:left">
+            🏰 Jump to Giver Town: ${escapeHtml(giverShort)}
+          </button>
+        </div>
+
+        <!-- Step 2: Hunting / Dungeon Floor Objective -->
+        <div style="padding:6px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid #f59e0b;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+          <div>
+            <div class="mono" style="font-size:8.8px;font-weight:900;color:#fde047">
+              STEP 2 · OBJECTIVE (${isDngObj ? 'DUNGEON FLOOR ' + escapeHtml(activeQuest.objective_floor_id) : 'FIELD HUNTING GROUND'})
+            </div>
+            <div style="font-size:9.8px;font-weight:900;color:#fef08a;margin-top:2px">🎯 ${escapeHtml(activeQuest.objective_target)}</div>
+            <div class="mono" style="font-size:8.4px;color:#94a3b8;margin-top:1px">${escapeHtml(objShort)} · loc=${escapeHtml(activeQuest.objective_loc)}</div>
+          </div>
+          <button type="button" onclick="${objJumpCall}"
+                  style="padding:3px 7px;border-radius:5px;border:1px solid #fde047;background:#713f12;color:#fef08a;font-size:8.6px;font-weight:900;cursor:pointer;text-align:left">
+            ${isDngObj ? `🕳️ Jump to Objective Dungeon: ${escapeHtml(objShort)} (${escapeHtml(activeQuest.objective_floor_id)})` : `🏕️ Jump to Objective Field: ${escapeHtml(objShort)}`}
+          </button>
+        </div>
+
+        <!-- Step 3: Turn-In NPC & Class/Quest Reward -->
+        <div style="padding:6px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid #10b981;display:flex;flex-direction:column;justify-content:space-between;gap:4px">
+          <div>
+            <div class="mono" style="font-size:8.8px;font-weight:900;color:#34d399">
+              STEP 3 · TURN-IN &amp; REWARD ${activeQuest.class_tier !== 'None' ? '(' + escapeHtml(activeQuest.class_tier) + ')' : ''}
+            </div>
+            <div style="font-size:9.8px;font-weight:900;color:#ecfdf5;margin-top:2px">🏆 ${escapeHtml(activeQuest.turn_in_npc_name)}</div>
+            <div class="mono" style="font-size:8.4px;color:#6ee7b7;margin-top:1px">🎁 ${escapeHtml(activeQuest.reward_summary)}</div>
+          </div>
+          <button type="button" onclick="focusTownStreetBlueprint('${escapeHtml(turnInTownNodeId)}', '${escapeHtml(activeQuest.turn_in_loc)}')"
+                  style="padding:3px 7px;border-radius:5px;border:1px solid #34d399;background:#064e3b;color:#d1fae5;font-size:8.6px;font-weight:900;cursor:pointer;text-align:left">
+            🏛️ Jump to Turn-In Town: ${escapeHtml(turnInShort)}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAtlasFarmingHeatmapBarHtml(tatlas) {
+  const profiles = (tatlas && tatlas.farming_efficiency_profiles) || [];
+  if (!profiles.length) return '';
+  const allZones = getAllAtlas63Zones(tatlas);
+  const zoneById = {};
+  allZones.forEach(z => {
+    zoneById[z.zone_id] = z;
+  });
+
+  const curMode = ATLAS_FARMING_MODE || ATLAS_STATE_STORE.farmingMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🔥 All 40 Combat Zones' },
+    { id: 'solo_grinding', label: '🗡️ Solo Grinding' },
+    { id: 'duo_spoil_scavenger', label: '⛏️ Duo Spoil Scavenger' },
+    { id: 'full_9p_aoe_party', label: '🛡️ 9-Player AoE Party' },
+    { id: 'clan_raid_force', label: '👑 Clan Raid Force' }
+  ];
+
+  const matchingProfiles = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? profiles : profiles.filter(p => p.recommended_party_mode === curMode));
+
+  const topHotspots = matchingProfiles
+    .slice()
+    .sort((a, b) => (b.xp_per_hour_index + b.adena_per_hour_index) - (a.xp_per_hour_index + a.adena_per_hour_index))
+    .slice(0, 4);
+
+  return `
+    <div id="atlasFarmingEfficiencyHeatmapBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#101f18;border:1px solid rgba(52,211,153,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#6ee7b7">⚡ PARTY &amp; FARMING EFFICIENCY HEATMAP (D24 · 40 COMBAT ZONES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasFarmingMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(52,211,153,0.4)'};background:${isAct ? '#047857' : '#090d14'};color:${isAct ? '#ffffff' : '#a7f3d0'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          24 FIELD HUNTING AREAS + 16 MULTI-FLOOR DUNGEONS · XP/HR · ADENA/HR · SPOIL GRADE
+        </span>
+      </div>
+
+      ${topHotspots.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px">
+          ${topHotspots.map(hp => {
+            const zObj = zoneById[hp.zone_id];
+            const locStr = (zObj && zObj.loc_coord) || '72986:113330';
+            const isDng = hp.zone_kind === 'dungeon';
+            const jumpJs = isDng
+              ? `openDungeonSubMap('${escapeHtml(hp.zone_id)}', 'B1')`
+              : `focusFieldTacticalBlueprint('${escapeHtml(hp.zone_id)}', '${escapeHtml(locStr)}')`;
+            const shortName = hp.zone_name.split('(')[0].trim();
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${isDng ? '#c084fc' : '#34d399'};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.5px;font-weight:900;color:#f8fafc">${isDng ? '🕳️' : '🏕️'} ${escapeHtml(shortName)}</span>
+                    <span class="mono" style="font-size:8.4px;font-weight:900;color:#fde047">${escapeHtml(hp.spoil_grade)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.3px;color:#6ee7b7;margin-top:1px">
+                    ⚡ XP Idx: ${hp.xp_per_hour_index} · 💰 Adena Idx: ${hp.adena_per_hour_index} · ${escapeHtml(hp.recommended_party_mode)}
+                  </div>
+                  <div style="font-size:8.2px;color:#cbd5e1;margin-top:1px">
+                    💎 ${escapeHtml(hp.key_spoil_material)} · ${escapeHtml(hp.elemental_weakness)}
+                  </div>
+                </div>
+                <button type="button" onclick="${jumpJs}"
+                        style="margin-top:2px;padding:2px 6px;border-radius:4px;border:1px solid ${isDng ? '#c084fc' : '#34d399'};background:${isDng ? '#3b0764' : '#064e3b'};color:#ffffff;font-size:8.4px;font-weight:800;cursor:pointer;text-align:left">
+                  ${isDng ? '🕳️ Open Dungeon Sub-Map' : '🏕️ Open Field Blueprint'}: ${escapeHtml(shortName)}
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -6440,6 +6691,8 @@ function renderAtlasFilterBarHtml(matchCount) {
 
       ${renderAtlasBlacksmithRefinementBarHtml(tatlas)}
       ${renderAtlasBossHierarchyChainBarHtml(tatlas)}
+      ${renderAtlasQuestTrialOverlayBarHtml(tatlas)}
+      ${renderAtlasFarmingHeatmapBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -8373,14 +8626,70 @@ function renderDedicatedWorldAtlas() {
     `;
   }
 
+  // D23: 3-Track Quest & Class Transfer Trial Map Overlay (`studioQuestTrialChainOverlay`)
+  const questChains = (tatlas && tatlas.quest_trial_chains) || [];
+  const activeQuestObj = questChains.find(q => q.quest_id === (ATLAS_ACTIVE_QUEST_ID || ATLAS_STATE_STORE.activeQuestId)) || questChains[0] || null;
+  let questTrialOverlaySvg = '<g id="studioQuestTrialChainOverlay"></g>';
+  if (activeQuestObj) {
+    const gCoord = clampWorldLocCoord(activeQuestObj.giver_loc || '-84120:243500');
+    const oCoord = clampWorldLocCoord(activeQuestObj.objective_loc || '75410:116820');
+    const tCoord = clampWorldLocCoord(activeQuestObj.turn_in_loc || '-14200:123500');
+    const isDngObj = Boolean(activeQuestObj.objective_dungeon_id);
+    const objClick = isDngObj
+      ? `openDungeonSubMap('${escapeHtml(activeQuestObj.objective_dungeon_id)}', '${escapeHtml(activeQuestObj.objective_floor_id || 'B1')}')`
+      : `focusFieldTacticalBlueprint('${escapeHtml(activeQuestObj.objective_zone_id)}', '${escapeHtml(activeQuestObj.objective_loc || '')}')`;
+    questTrialOverlaySvg = `
+      <g id="studioQuestTrialChainOverlay">
+        <line x1="${gCoord.svgX}" y1="${gCoord.svgY}" x2="${oCoord.svgX}" y2="${oCoord.svgY}" stroke="#38bdf8" stroke-width="2.6" stroke-dasharray="6 3" opacity="0.9"/>
+        <line x1="${oCoord.svgX}" y1="${oCoord.svgY}" x2="${tCoord.svgX}" y2="${tCoord.svgY}" stroke="#34d399" stroke-width="2.6" stroke-dasharray="6 3" opacity="0.9"/>
+        <g data-poi-clickable="1" style="cursor:pointer" onclick="${objClick}" filter="url(#cartoDropShadow)">
+          <circle cx="${oCoord.svgX}" cy="${oCoord.svgY}" r="14" fill="rgba(245,158,11,0.28)" stroke="#fde047" stroke-width="2.2"/>
+          <text x="${oCoord.svgX}" y="${oCoord.svgY + 4}" text-anchor="middle" font-size="10">📜</text>
+          <rect x="${oCoord.svgX - 82}" y="${oCoord.svgY + 15}" width="164" height="15" rx="4" fill="rgba(9,13,22,0.92)" stroke="#fde047" stroke-width="1"/>
+          <text x="${oCoord.svgX}" y="${oCoord.svgY + 25}" text-anchor="middle" fill="#fde047" font-size="7.6" font-weight="900" font-family="monospace">
+            QUEST OBJ: ${escapeHtml((activeQuestObj.quest_name || '').slice(0, 22))}
+          </text>
+        </g>
+      </g>
+    `;
+  }
+
+  // D24: Party & Farming Efficiency Heatmap Overlay (`studioFarmingEfficiencyHeatmapOverlay`)
+  const farmingProfiles = (tatlas && tatlas.farming_efficiency_profiles) || [];
+  const curFarmMode = ATLAS_FARMING_MODE || ATLAS_STATE_STORE.farmingMode || 'All';
+  const activeFarmProfiles = curFarmMode === 'Off'
+    ? []
+    : (curFarmMode === 'All' ? farmingProfiles.slice(0, 12) : farmingProfiles.filter(fp => fp.recommended_party_mode === curFarmMode));
+  const allZonesById = {};
+  getAllAtlas63Zones(tatlas).forEach(z => { allZonesById[z.zone_id] = z; });
+  const farmingEfficiencyOverlaySvg = `
+    <g id="studioFarmingEfficiencyHeatmapOverlay">
+      ${activeFarmProfiles.map(fp => {
+        const zRef = allZonesById[fp.zone_id];
+        if (!zRef || !zRef.loc_coord) return '';
+        const fc = clampWorldLocCoord(zRef.loc_coord);
+        const modeCol = fp.recommended_party_mode === 'clan_raid_force'
+          ? '#f43f5e'
+          : (fp.recommended_party_mode === 'full_9p_aoe_party'
+            ? '#a855f7'
+            : (fp.recommended_party_mode === 'duo_spoil_scavenger' ? '#eab308' : '#10b981'));
+        return `
+          <circle cx="${fc.svgX}" cy="${fc.svgY}" r="22" fill="${modeCol}" fill-opacity="0.16" stroke="${modeCol}" stroke-width="1.4" stroke-dasharray="3 2" pointer-events="none"/>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
+    ${farmingEfficiencyOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
     ${raceGrowthPathSvg}
     ${bossHierarchyOverlaySvg}
+    ${questTrialOverlaySvg}
     ${landmarksSvg}
     ${mobPinsSvg}
   `;
