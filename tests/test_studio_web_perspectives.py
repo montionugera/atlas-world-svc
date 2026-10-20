@@ -2206,7 +2206,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 58)
+        self.assertGreaterEqual(len(audit["dimensions"]), 58)
 
         d57 = audit["dimensions"]["D57_aerial_airship_docks_and_star_stone_raids"]
         self.assertEqual(d57["score"], 100.0)
@@ -2260,10 +2260,111 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas58DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 58)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 58)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 58)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 58)
         self.assertIn("58-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave28_wedding_ceremony_cathedrals_and_studio_council_audit_benchmarks(self) -> None:
+        """Wave 28 (D59–D60, 60-Dimension Milestone): 12 Wedding Cathedrals, Formal Wear & Couple Teleport Sanctuaries & 18 6-Role Studio Council 60D Audit Benchmarks."""
+        import scripts.catalog_explorer_web as web
+        import scripts.run_atlas_iteration_loop as loop
+        import scripts.studio_world_governance as gov
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["weddingCeremonyCathedralsCount"], 12)
+        self.assertEqual(report["summary"]["tShapedAtlasSummary"]["studioCouncilAuditBenchmarksCount"], 18)
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_WEDDING_MODE",
+            "setAtlasWeddingMode(",
+            "renderAtlasWeddingBarHtml(",
+            "studioWeddingCathedralOverlay",
+            "ATLAS_COUNCIL_BENCHMARK_MODE",
+            "setAtlasCouncilBenchmarkMode(",
+            "renderAtlasCouncilBenchmarkBarHtml(",
+            "studioCouncilBenchmarkOverlay",
+            "60-Dimension Semantic-Zoom Atlas Score",
+        ):
+            self.assertIn(token, html, f"Missing Wave 28 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 60)
+
+        d59 = audit["dimensions"]["D59_wedding_cathedrals_and_couple_teleport_matrix"]
+        self.assertEqual(d59["score"], 100.0)
+        self.assertEqual(d59["verified"], 12)
+        self.assertEqual(d59["target"], 12)
+        self.assertEqual(d59["grand_wedding_cathedrals"], 4)
+        self.assertEqual(d59["formal_wear_couture_tailors"], 4)
+        self.assertEqual(d59["bridal_procession_gardens"], 4)
+        self.assertEqual(
+            set(d59["ceremony_categories"]),
+            {
+                "Grand_Wedding_Cathedral",
+                "Formal_Wear_Couture_Tailor",
+                "Bridal_Procession_Garden",
+            },
+        )
+        self.assertTrue(d59["ui_wired"])
+
+        d60 = audit["dimensions"]["D60_studio_council_60d_audit_benchmarks"]
+        self.assertEqual(d60["score"], 100.0)
+        self.assertEqual(d60["verified"], 18)
+        self.assertEqual(d60["target"], 18)
+        self.assertEqual(d60["product_owner_benchmarks"], 3)
+        self.assertEqual(d60["game_designer_lead_benchmarks"], 3)
+        self.assertEqual(d60["player_growth_path_benchmarks"], 3)
+        self.assertEqual(d60["game_story_designer_benchmarks"], 3)
+        self.assertEqual(d60["monster_and_mob_designer_benchmarks"], 3)
+        self.assertEqual(d60["lead_systems_map_architect_benchmarks"], 3)
+        self.assertEqual(
+            set(d60["council_roles"]),
+            {
+                "Product_Owner",
+                "Game_Designer_Lead",
+                "Player_Growth_Path_Designer",
+                "Game_Story_Designer",
+                "Monster_And_Mob_Designer",
+                "Lead_Systems_Map_Architect",
+            },
+        )
+        self.assertTrue(d60["ui_wired"])
+
+        cathedrals = atlas["wedding_ceremony_cathedrals"]
+        self.assertEqual(len(cathedrals), 12)
+        self.assertEqual(sum(1 for c in cathedrals if c["ceremony_category"] == "Grand_Wedding_Cathedral"), 4)
+        self.assertEqual(sum(1 for c in cathedrals if c["ceremony_category"] == "Formal_Wear_Couture_Tailor"), 4)
+        self.assertEqual(sum(1 for c in cathedrals if c["ceremony_category"] == "Bridal_Procession_Garden"), 4)
+        for c in cathedrals:
+            self.assertGreaterEqual(len(c["couple_privileges_unlocked"]), 2)
+
+        benchmarks = atlas["studio_council_audit_benchmarks"]
+        self.assertEqual(len(benchmarks), 18)
+        for role in (
+            "Product_Owner",
+            "Game_Designer_Lead",
+            "Player_Growth_Path_Designer",
+            "Game_Story_Designer",
+            "Monster_And_Mob_Designer",
+            "Lead_Systems_Map_Architect",
+        ):
+            self.assertEqual(sum(1 for b in benchmarks if b["council_role"] == role), 3)
+        for b in benchmarks:
+            self.assertGreaterEqual(len(b["audited_dimension_ids"]), 3)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas60DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 60)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 60)
+        self.assertIn("60-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":

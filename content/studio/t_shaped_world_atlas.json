@@ -55978,5 +55978,532 @@
       "unseal_badge_cost": "Territory Badge (x80) or 750 Knights' Epaulettes + 350,000 Adena",
       "stat_enhancement_summary": "Endgame Continent 03 armory unlocking S80/S84 armor set Cloak slots and Top-Grade Mithril Belts."
     }
+  ],
+  "wedding_ceremony_cathedrals": [
+    {
+      "sanctuary_id": "wedding-01-aden-crown-beacon-grand-cathedral",
+      "sanctuary_name": "Crown-Beacon Imperial Basilica \u2014 High Cathedral of Einhasad & Andromeda",
+      "ceremony_category": "Grand_Wedding_Cathedral",
+      "zone_id": "zone-town-crown-beacon",
+      "loc": "148036:26651",
+      "officiant_npc_name": "Wedding Manager Andromeda & High Priestess Seraphina",
+      "attire_and_fee_requirement": "Formal Wear Equipped + 500,000 Adena Engagement & Nuptial Fee",
+      "couple_privileges_unlocked": [
+        "Instant Partner Warp (/coupleteleport \u2014 30s Cast, 500 MP)",
+        "Salvation Bow & Cupid's Heart Arrows (Festive Confetti Volley)",
+        "Fireworks & Silver Bell Imperial Procession Aura"
+      ],
+      "teleport_restriction_rule": "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege, Olympiad & Boss Sanctums"
+    },
+    {
+      "sanctuary_id": "wedding-02-giran-pinion-terminus-cathedral",
+      "sanctuary_name": "Pinion Terminus Grand Sanctuary \u2014 Merchant Sovereign Nuptial Nave",
+      "ceremony_category": "Grand_Wedding_Cathedral",
+      "zone_id": "zone-town-pinion-terminus",
+      "loc": "82522:148462",
+      "officiant_npc_name": "Wedding Manager Andromeda & High Priest Maximilian",
+      "attire_and_fee_requirement": "Formal Wear Equipped + 500,000 Adena Engagement & Nuptial Fee",
+      "couple_privileges_unlocked": [
+        "Instant Partner Warp (/coupleteleport \u2014 30s Cast across Continents)",
+        "Salvation Bow & Cupid's Heart Arrows + Double Large Fireworks",
+        "Married Couple Title Color & Shared Warehouse Priority Signet"
+      ],
+      "teleport_restriction_rule": "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege, Olympiad & Boss Sanctums"
+    },
+    {
+      "sanctuary_id": "wedding-03-heine-torque-balance-water-cathedral",
+      "sanctuary_name": "Torque-Balance Maritime Cathedral \u2014 Innadril Canal Nuptial Rotunda",
+      "ceremony_category": "Grand_Wedding_Cathedral",
+      "zone_id": "zone-town-torque-balance-citadel",
+      "loc": "116508:-18527",
+      "officiant_npc_name": "Wedding Manager Andromeda & Priestess of Eva Clarissa",
+      "attire_and_fee_requirement": "Formal Wear Equipped + 500,000 Adena Engagement & Nuptial Fee",
+      "couple_privileges_unlocked": [
+        "Instant Partner Warp (/coupleteleport \u2014 30s Cast, Zero Gatekeeper Fee)",
+        "Cupid's Bow of Salvation & Moonlight Gondola Procession Buff",
+        "Couple Vitality Harmony (+10% Shared Party Rest Recovery)"
+      ],
+      "teleport_restriction_rule": "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege, Olympiad & Boss Sanctums"
+    },
+    {
+      "sanctuary_id": "wedding-04-rune-starfall-haven-sky-cathedral",
+      "sanctuary_name": "Starfall Haven Astral Cathedral \u2014 Upper Rune Sovereign Chapel",
+      "ceremony_category": "Grand_Wedding_Cathedral",
+      "zone_id": "zone-town-starfall-haven",
+      "loc": "43894:-48016",
+      "officiant_npc_name": "Wedding Manager Andromeda & High Priest Innocentin",
+      "attire_and_fee_requirement": "Formal Wear Equipped + 500,000 Adena Engagement & Nuptial Fee",
+      "couple_privileges_unlocked": [
+        "Instant Partner Warp (/coupleteleport \u2014 30s Cast to Continent 03 Frontiers)",
+        "Salvation Bow, Cupid's Arrows & Starfall Choir Fanfare",
+        "Blessed Ring of Devotion (Immunity to Divorce Penalty on Quest Reset)"
+      ],
+      "teleport_restriction_rule": "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege, Olympiad & Boss Sanctums"
+    },
+    {
+      "sanctuary_id": "wedding-05-aden-alexis-formal-wear-atelier",
+      "sanctuary_name": "Crown-Beacon Couture Atelier \u2014 Trader Alexis & Leikar's Bridal Salon",
+      "ceremony_category": "Formal_Wear_Couture_Tailor",
+      "zone_id": "zone-town-crown-beacon",
+      "loc": "147980:26695",
+      "officiant_npc_name": "Trader Alexis & Maid Leikar (Make A Sewing Kit Quest)",
+      "attire_and_fee_requirement": "Lv.60+ Quest 'Make A Sewing Kit' & 'Find Glittering Jewelry' + 5 Oriharukon, 500 Artisans Frame, 1,000 Thread",
+      "couple_privileges_unlocked": [
+        "Permanent Formal Wear Wedding Tuxedo / Bridal Gown (All-Slot Armor Appearance)",
+        "Signet Ring, Sewing Kit & Leikar's Dress Shoe Box Assembly",
+        "Unlocks Wedding Manager Andromeda's /engage & /marry Ceremony Prompt"
+      ],
+      "teleport_restriction_rule": "Town Couture Service; Equippable in All Non-Combat & Ceremonial Sanctuaries"
+    },
+    {
+      "sanctuary_id": "wedding-06-giran-galladucci-bridal-boutique",
+      "sanctuary_name": "Pinion Terminus Luxury Emporium \u2014 Galladucci's Silk Tuxedo & Veil Parlor",
+      "ceremony_category": "Formal_Wear_Couture_Tailor",
+      "zone_id": "zone-town-pinion-terminus",
+      "loc": "82466:148506",
+      "officiant_npc_name": "Luxury Trader Galladucci & Jeweler Ellie",
+      "attire_and_fee_requirement": "1,500,000 Adena Direct Boutique Purchase or 5 Thons + 5 Enria + 10 Oriharukon",
+      "couple_privileges_unlocked": [
+        "Galladucci's Aristocratic Formal Wear & White Lace Bridal Veil",
+        "Romantic Gold Chapeau, Top Hat & Monocle Ceremonial Headpieces",
+        "Instant Eligibility for Cathedral Nuptial Vows & Procession Fireworks"
+      ],
+      "teleport_restriction_rule": "Town Couture Service; Equippable in All Non-Combat & Ceremonial Sanctuaries"
+    },
+    {
+      "sanctuary_id": "wedding-07-goddard-inductor-imperial-tailor",
+      "sanctuary_name": "Inductor Switchyard Silk Guild \u2014 Master Tailor Mist & Jeremy's Banquet Hall",
+      "ceremony_category": "Formal_Wear_Couture_Tailor",
+      "zone_id": "zone-town-inductor-switchyard",
+      "loc": "147452:-55283",
+      "officiant_npc_name": "Master Tailor Mist & Chef Jeremy (Wedding Wine & Dress Shoes)",
+      "attire_and_fee_requirement": "Jeremy's Special Seal Wine Delivery + 300,000 Adena Dress Shoe Polish Fee",
+      "couple_privileges_unlocked": [
+        "Formal Dress Shoes & Embroidered Crimson/Ivory Ceremonial Attire",
+        "Chef Jeremy's Vintage Wedding Banquet Wine & Celebration Cake",
+        "Unlocks Couple Teleportation & Salvation Bow Quiver Synthesis"
+      ],
+      "teleport_restriction_rule": "Town Couture Service; Equippable in All Non-Combat & Ceremonial Sanctuaries"
+    },
+    {
+      "sanctuary_id": "wedding-08-oren-escapement-ivory-couture",
+      "sanctuary_name": "Escapement Anvil Ivory Loom \u2014 Weaver Olf & Trader Radia's Bridal Annex",
+      "ceremony_category": "Formal_Wear_Couture_Tailor",
+      "zone_id": "zone-town-escapement-anvil",
+      "loc": "83138:53128",
+      "officiant_npc_name": "Armor Trader Radia & Weaver Olf's Bridal Seamstress",
+      "attire_and_fee_requirement": "500 Suede + 1,000 Thread + 250,000 Adena Tailoring Commission",
+      "couple_privileges_unlocked": [
+        "Ivory Tower Ceremonial Robe & Formal Wear Silk Suit",
+        "Silver Bell Bouquet & Couple's Commemorative Hair Accessory",
+        "Grants Full Formal Attire Flag Required by Wedding Manager Andromeda"
+      ],
+      "teleport_restriction_rule": "Town Couture Service; Equippable in All Non-Combat & Ceremonial Sanctuaries"
+    },
+    {
+      "sanctuary_id": "wedding-09-elven-porcelain-mother-tree-garden",
+      "sanctuary_name": "Porcelain Loom Mother-Tree Glade \u2014 Lunar Starlight Bridal Pavilion",
+      "ceremony_category": "Bridal_Procession_Garden",
+      "zone_id": "zone-town-porcelain-loom",
+      "loc": "45824:41139",
+      "officiant_npc_name": "Wedding Manager Andromeda's Lunar Envoy & Hierophant Asterios",
+      "attire_and_fee_requirement": "Married or Engaged Couple in Formal Wear + Silver Bell Procession Permit",
+      "couple_privileges_unlocked": [
+        "Instant Partner Warp (/coupleteleport \u2014 30s Cast) to Mother Tree Pavilion",
+        "Mother Tree Blossom Rain & Cupid's Salvation Bow Photo-Mode Aura",
+        "1-Hour Nuptial Blessing (+5% Movement Speed & +15% MP Regeneration)"
+      ],
+      "teleport_restriction_rule": "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege & Boss Sanctums"
+    },
+    {
+      "sanctuary_id": "wedding-10-celadon-causeway-lotus-bridal-garden",
+      "sanctuary_name": "Celadon Glaze Causeway Lotus Promenade \u2014 Neutral Zone Bridal Meadow",
+      "ceremony_category": "Bridal_Procession_Garden",
+      "zone_id": "zone-field-celadon-causeway",
+      "loc": "48210:49550",
+      "officiant_npc_name": "Festival Fairy & Andromeda's Procession Herald",
+      "attire_and_fee_requirement": "Married Couple Status (/coupleteleport Unlocked) + Formal Wear",
+      "couple_privileges_unlocked": [
+        "Cross-Race Elven & Dark-Lunar Neutral Zone Bridal Procession",
+        "Unlimited Cupid's Heart Arrow Salvos & Large Firework Bursts",
+        "Direct Couple Warp Anchor Outside Safe-Zone Town Gates"
+      ],
+      "teleport_restriction_rule": "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege & Boss Sanctums"
+    },
+    {
+      "sanctuary_id": "wedding-11-apricot-aqueduct-floran-rose-terrace",
+      "sanctuary_name": "Apricot Aqueduct Rose Terrace \u2014 Saffron-Floran Vineyard Bridal Arbor",
+      "ceremony_category": "Bridal_Procession_Garden",
+      "zone_id": "zone-field-apricot-aqueduct-terrace",
+      "loc": "21396:157961",
+      "officiant_npc_name": "Wedding Steward Clarissa & Vineyard Harper",
+      "attire_and_fee_requirement": "Married Couple Status + 50,000 Adena Acoustic Choir Reservation",
+      "couple_privileges_unlocked": [
+        "Pastoral Aqueduct Rose Arbor & Acoustic Harp Procession",
+        "Instant Partner Warp (/coupleteleport) for Duo Farming & Herb Runs",
+        "Couple's Sweet Fruit Cocktail Buff (+Haste, +Acumen & +Wind Walk)"
+      ],
+      "teleport_restriction_rule": "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege & Boss Sanctums"
+    },
+    {
+      "sanctuary_id": "wedding-12-tether-causeway-enchanted-waterfall-garden",
+      "sanctuary_name": "Star-Tether Enchanted Waterfall \u2014 Valley of Saints Bridal Sanctuary",
+      "ceremony_category": "Bridal_Procession_Garden",
+      "zone_id": "zone-field-tether-causeway",
+      "loc": "49182:-41228",
+      "officiant_npc_name": "Fairy Mymyu's Bridal Attendant & Andromeda's Sky-Steward",
+      "attire_and_fee_requirement": "Married Couple Status + Starlight Procession Lantern",
+      "couple_privileges_unlocked": [
+        "Enchanted Valley Rainbow Waterfall Bridal Procession",
+        "Zero-Cooldown Couple Warp Rally Point Before Continent 03 Expeditions",
+        "Salvation Bow Heart-Trail & Blessed Couple's Scroll of Escape"
+      ],
+      "teleport_restriction_rule": "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege & Boss Sanctums"
+    }
+  ],
+  "studio_council_audit_benchmarks": [
+    {
+      "benchmark_id": "council-01-po-63-zone-breadth-depth-contract",
+      "council_role": "Product_Owner",
+      "benchmark_title": "63-Zone T-Breadth & T-Depth World Completeness Sign-Off",
+      "exemplar_zone_id": "zone-town-lantern-hollow",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "-84248:243635",
+      "audited_dimension_ids": [
+        "D1",
+        "D13",
+        "D15",
+        "D16",
+        "D20",
+        "D50",
+        "D60"
+      ],
+      "mda_pillar_focus": "Continuity & Submission",
+      "verification_evidence": "Verified 63/63 zones across 3 continents, 396/396 Omni-Search entities, 11/11 archetype raster plates, and 10/10 GOV gates."
+    },
+    {
+      "benchmark_id": "council-02-po-castle-siege-manor-estate-economy",
+      "council_role": "Product_Owner",
+      "benchmark_title": "8-Stronghold Tax, 15-Town Manor & 16-Estate Clan Hall Loop",
+      "exemplar_zone_id": "zone-town-crown-beacon",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "147784:26925",
+      "audited_dimension_ids": [
+        "D25",
+        "D28",
+        "D37",
+        "D40",
+        "D47",
+        "D49",
+        "D60"
+      ],
+      "mda_pillar_focus": "Submission & Challenge",
+      "verification_evidence": "Verified 8 Castle/Fortress tax domains, 15 Manor crop routes, 16 Clan Hall auctions/sieges, and 15 Iron Gate freight hubs."
+    },
+    {
+      "benchmark_id": "council-03-po-social-ceremony-and-60d-milestone",
+      "council_role": "Product_Owner",
+      "benchmark_title": "60-Dimension Milestone, Wedding Cathedrals & Luxury Plazas",
+      "exemplar_zone_id": "zone-town-pinion-terminus",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "82296:148715",
+      "audited_dimension_ids": [
+        "D51",
+        "D52",
+        "D54",
+        "D58",
+        "D59",
+        "D60"
+      ],
+      "mda_pillar_focus": "Aesthetic & Fantasy",
+      "verification_evidence": "Verified 12 Wedding Cathedrals (/coupleteleport), 14 Weaver Olf Belt/Cloak hubs, 12 Luxury Boutiques, and 60/60 dimensions at 100.0/100."
+    },
+    {
+      "benchmark_id": "council-04-gd-blacksmith-refinement-augment-elemental",
+      "council_role": "Game_Designer_Lead",
+      "benchmark_title": "6-Grade +1..+15 Refinement, Life Stone Augmentation & 150/300 Attribute Matrix",
+      "exemplar_zone_id": "zone-town-inductor-switchyard",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "147308:-55095",
+      "audited_dimension_ids": [
+        "D10",
+        "D19",
+        "D31",
+        "D35",
+        "D39",
+        "D43",
+        "D46"
+      ],
+      "mda_pillar_focus": "Challenge & Submission",
+      "verification_evidence": "Verified +1..+15 anvil rates, 18 Soul Crystal stages, 15 Life Stone/Dye hubs, 16 Masterwork Armor Sets, and 14 Attribute Quarries."
+    },
+    {
+      "benchmark_id": "council-05-gd-olympiad-hero-cursed-pvp-ecosystem",
+      "council_role": "Game_Designer_Lead",
+      "benchmark_title": "Grand Olympiad Infinity Armaments, Cursed Weapons & PvP Karma Arenas",
+      "exemplar_zone_id": "zone-town-escapement-anvil",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "83020:53295",
+      "audited_dimension_ids": [
+        "D29",
+        "D33",
+        "D48",
+        "D53",
+        "D55",
+        "D58"
+      ],
+      "mda_pillar_focus": "Challenge & Fantasy",
+      "verification_evidence": "Verified 21 Subclass/Noblesse/Olympiad nodes, 15 Infinity Weapon exchanges, 14 Zariche/Akamanah PvP hotspots, and 14 Faction War camps."
+    },
+    {
+      "benchmark_id": "council-06-gd-aerial-airship-fishing-chest-systems",
+      "council_role": "Game_Designer_Lead",
+      "benchmark_title": "Gracia Clan Airships, Star Stone Extraction, Lockpick Chests & Fishing Sanctuaries",
+      "exemplar_zone_id": "zone-town-starfall-haven",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "43732:-47815",
+      "audited_dimension_ids": [
+        "D32",
+        "D36",
+        "D56",
+        "D57",
+        "D59",
+        "D60"
+      ],
+      "mda_pillar_focus": "Discovery & Aesthetic",
+      "verification_evidence": "Verified 12 Clan Airship & Star Stone docks, 16 Grade 1-8 Lockpick Chest grounds, 16 Fishing/Hot Springs sanctuaries, and 12 Mounts."
+    },
+    {
+      "benchmark_id": "council-07-pg-stage-abc-starter-to-kilnwatch-convergence",
+      "council_role": "Player_Growth_Path_Designer",
+      "benchmark_title": "Stage A-C (Lv.1-25) 6-Race Spoke-to-Kilnwatch Convergence & Vitality Curve",
+      "exemplar_zone_id": "zone-town-kilnwatch-bastion",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "-14256:123575",
+      "audited_dimension_ids": [
+        "D1",
+        "D9",
+        "D17",
+        "D23",
+        "D42",
+        "D44"
+      ],
+      "mda_pillar_focus": "Continuity & Discovery",
+      "verification_evidence": "Verified 6 racial starter spokes converging at Kilnwatch Bastion (Lv.10-20), 372/372 BFS route pairs, and 15 Vitality/Shadow Weapon hubs."
+    },
+    {
+      "benchmark_id": "council-08-pg-40-zone-party-aoe-and-herb-sustainability",
+      "council_role": "Player_Growth_Path_Designer",
+      "benchmark_title": "40-Zone Solo/Duo/9-Player AoE Farming Heatmap & 24-Field Herb Sustainability",
+      "exemplar_zone_id": "zone-field-cinder-apron",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "-6444:131865",
+      "audited_dimension_ids": [
+        "D7",
+        "D14",
+        "D24",
+        "D38",
+        "D44",
+        "D45"
+      ],
+      "mda_pillar_focus": "Submission & Continuity",
+      "verification_evidence": "Verified 40 combat farming profiles (Solo, Duo Spoil, 9P AoE, Clan Raid), 24 Elemental/Herb fields, and 15 Kamaloka/Pailaka instances."
+    },
+    {
+      "benchmark_id": "council-09-pg-stage-gl-awakening-and-forgotten-scrolls",
+      "council_role": "Player_Growth_Path_Designer",
+      "benchmark_title": "Stage G-L (Lv.76-99) 3rd-Class Awakening, Forgotten Scrolls & High-Halo Endgame",
+      "exemplar_zone_id": "zone-field-aurora-tether",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "152368:31255",
+      "audited_dimension_ids": [
+        "D9",
+        "D23",
+        "D29",
+        "D45",
+        "D46",
+        "D55"
+      ],
+      "mda_pillar_focus": "Challenge & Fantasy",
+      "verification_evidence": "Verified 16 Lv.81-83 Forgotten Scroll & Giant's Codex sanctums, 6-race Stage A..L growth routes, and 18 3-track class transfer trials."
+    },
+    {
+      "benchmark_id": "council-10-gs-4-epoch-architect-seal-and-6-god-mythos",
+      "council_role": "Game_Story_Designer",
+      "benchmark_title": "4-Chapter World History, The Architect's Seal & 6 Primordial Gods",
+      "exemplar_zone_id": "zone-catacomb-forbidden-path-orrery",
+      "exemplar_dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "exemplar_floor_id": "B3",
+      "loc": "18380:-64155",
+      "audited_dimension_ids": [
+        "D6",
+        "D21",
+        "D27",
+        "D51",
+        "D60"
+      ],
+      "mda_pillar_focus": "Narrative & Fantasy",
+      "verification_evidence": "Verified 4 canonical historical epochs, 6 Sealed Gods in B3 Catacombs, 16 Seven-Seals Dawn/Dusk sanctums, and 15 Festival of Darkness altars."
+    },
+    {
+      "benchmark_id": "council-11-gs-6-playable-races-and-heritage-trials",
+      "council_role": "Game_Story_Designer",
+      "benchmark_title": "6 Playable Race Origin Lore, Neutral Adventure Guild & Racial Heritage Quests",
+      "exemplar_zone_id": "zone-town-porcelain-loom",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "45792:41235",
+      "audited_dimension_ids": [
+        "D1",
+        "D6",
+        "D9",
+        "D23",
+        "D59",
+        "D60"
+      ],
+      "mda_pillar_focus": "Narrative & Aesthetic",
+      "verification_evidence": "Verified 6 playable race home towns, Neutral Adventure Guild & Blacksmith Clan lore, 18 quest chains, and cross-race Bridal Gardens."
+    },
+    {
+      "benchmark_id": "council-12-gs-dimensional-rift-and-imperial-mausoleum-lore",
+      "council_role": "Game_Story_Designer",
+      "benchmark_title": "Dimensional Rift, Four Sepulchers & Imperial Tomb Symphony Lore",
+      "exemplar_zone_id": "zone-dungeon-chronometer-foundry",
+      "exemplar_dungeon_id": "zone-dungeon-chronometer-foundry",
+      "exemplar_floor_id": "3F",
+      "loc": "84804:56425",
+      "audited_dimension_ids": [
+        "D3",
+        "D12",
+        "D34",
+        "D41",
+        "D58"
+      ],
+      "mda_pillar_focus": "Narrative & Discovery",
+      "verification_evidence": "Verified 16 Dimensional Rift & Four Sepulchers portals, Scarlet van Halisha / Frintezza 3F sanctum lore, and Sovereign Boss Cloaks."
+    },
+    {
+      "benchmark_id": "council-13-mm-strict-5-tier-boss-hierarchy-law",
+      "council_role": "Monster_And_Mob_Designer",
+      "benchmark_title": "Strict 5-Tier Boss Power Law (God > MVP Apostle > Raid > Mini-Boss > Mob)",
+      "exemplar_zone_id": "zone-dungeon-star-heart-nave",
+      "exemplar_dungeon_id": "zone-dungeon-star-heart-nave",
+      "exemplar_floor_id": "3F",
+      "loc": "149216:28415",
+      "audited_dimension_ids": [
+        "D4",
+        "D14",
+        "D21",
+        "D26",
+        "D41"
+      ],
+      "mda_pillar_focus": "Challenge & Fantasy",
+      "verification_evidence": "Verified 40/40 combat containers with all 4 spawn tiers, 6 God->MVP->Raid chains, 32-Boss Respawn Radar, and 12 Epic Boss Jewelry relics."
+    },
+    {
+      "benchmark_id": "council-14-mm-ant-nest-and-sunken-hold-raid-ecology",
+      "council_role": "Monster_And_Mob_Designer",
+      "benchmark_title": "Subterranean Insectoid & Pirate King Zaken Multi-Floor Ecology",
+      "exemplar_zone_id": "zone-dungeon-kiln-cellar",
+      "exemplar_dungeon_id": "zone-dungeon-kiln-cellar",
+      "exemplar_floor_id": "B3",
+      "loc": "75438:116825",
+      "audited_dimension_ids": [
+        "D3",
+        "D4",
+        "D14",
+        "D18",
+        "D26",
+        "D56"
+      ],
+      "mda_pillar_focus": "Challenge & Discovery",
+      "verification_evidence": "Verified B1->B2->B3 Queen Ant / Zaken subterranean ecology, 144 clickable dungeon chambers, 192 spawn pins, and Mimic chest traps."
+    },
+    {
+      "benchmark_id": "council-15-mm-6-monster-ecologies-and-spoil-tables",
+      "council_role": "Monster_And_Mob_Designer",
+      "benchmark_title": "6 Monster-Only Ecology Families, Elemental Weaknesses & Dwarven Spoil Drops",
+      "exemplar_zone_id": "zone-field-leyden-causeway",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "141240:-48605",
+      "audited_dimension_ids": [
+        "D4",
+        "D14",
+        "D19",
+        "D24",
+        "D38",
+        "D53"
+      ],
+      "mda_pillar_focus": "Challenge & Submission",
+      "verification_evidence": "Verified 6 monster-only ecology races, 24 field elemental weakness biomes, +1..+15 catalyst spoil tables, and Ketra/Varka totem bosses."
+    },
+    {
+      "benchmark_id": "council-16-sa-3-tier-semantic-zoom-and-pip-radar",
+      "council_role": "Lead_Systems_Map_Architect",
+      "benchmark_title": "3-Tier Semantic Zoom (1.0x -> 2.2x -> 4.5x+), 4 Town Archetypes & PiP World Radar",
+      "exemplar_zone_id": "zone-town-glaze-barge-quay",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "-81148:151385",
+      "audited_dimension_ids": [
+        "D2",
+        "D5",
+        "D11",
+        "D15",
+        "D22",
+        "D50"
+      ],
+      "mda_pillar_focus": "Aesthetic & Continuity",
+      "verification_evidence": "Verified 15 Town Street Blueprints (#1..#12 NPCs, 13.0m roads), 4 layout archetypes, PiP World Radar mini-map, and 63 unique zone coordinates."
+    },
+    {
+      "benchmark_id": "council-17-sa-16-dungeon-vertical-cutaways-and-6m-corridors",
+      "council_role": "Lead_Systems_Map_Architect",
+      "benchmark_title": "16 Multi-Floor Dungeon Cutaways (-12m..-68m / +18m..+96m) & >=6.0m Corridor Law",
+      "exemplar_zone_id": "zone-dungeon-pendulum-shaft",
+      "exemplar_dungeon_id": "zone-dungeon-pendulum-shaft",
+      "exemplar_floor_id": "3F",
+      "loc": "85464:144175",
+      "audited_dimension_ids": [
+        "D3",
+        "D8",
+        "D12",
+        "D18",
+        "D30",
+        "D34"
+      ],
+      "mda_pillar_focus": "Discovery & Aesthetic",
+      "verification_evidence": "Verified 8 Underground Labyrinths (B1-B3) + 8 Vertical Towers (1F-3F), >=6.0m corridor width law, and 18 Inter-Continental transit lines."
+    },
+    {
+      "benchmark_id": "council-18-sa-bidirectional-studio-sync-and-60d-governance",
+      "council_role": "Lead_Systems_Map_Architect",
+      "benchmark_title": "Bidirectional Studio <-> Atlas Sync, Draw.io Architecture & 60-Dimension Telemetry",
+      "exemplar_zone_id": "zone-fortress-cloud-halo",
+      "exemplar_dungeon_id": "",
+      "exemplar_floor_id": "",
+      "loc": "46276:-45135",
+      "audited_dimension_ids": [
+        "D8",
+        "D13",
+        "D16",
+        "D20",
+        "D50",
+        "D57",
+        "D60"
+      ],
+      "mda_pillar_focus": "Continuity & Submission",
+      "verification_evidence": "Verified 8 Harbor/ClanHall/Fortress blueprints, bidirectional Studio<->Atlas state sync, Draw.io score=0, and 60-Dimension 100.0/100 audit."
+    }
   ]
 }

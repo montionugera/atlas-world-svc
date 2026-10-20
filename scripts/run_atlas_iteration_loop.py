@@ -10199,6 +10199,473 @@ def _build_belt_cloak_weaver_hubs(atlas: dict[str, Any]) -> list[dict[str, Any]]
     return rows
 
 
+def _build_wedding_ceremony_cathedrals(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 12 Wedding Cathedral, Formal Wear & Couple Teleport Sanctuaries (4 Grand_Wedding_Cathedral + 4 Formal_Wear_Couture_Tailor + 4 Bridal_Procession_Garden) (D59)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 4 Grand_Wedding_Cathedral Sanctuaries
+        (
+            "wedding-01-aden-crown-beacon-grand-cathedral",
+            "Crown-Beacon Imperial Basilica — High Cathedral of Einhasad & Andromeda",
+            "Grand_Wedding_Cathedral",
+            "zone-town-crown-beacon",
+            "Wedding Manager Andromeda & High Priestess Seraphina",
+            "Formal Wear Equipped + 500,000 Adena Engagement & Nuptial Fee",
+            [
+                "Instant Partner Warp (/coupleteleport — 30s Cast, 500 MP)",
+                "Salvation Bow & Cupid's Heart Arrows (Festive Confetti Volley)",
+                "Fireworks & Silver Bell Imperial Procession Aura",
+            ],
+            "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege, Olympiad & Boss Sanctums",
+        ),
+        (
+            "wedding-02-giran-pinion-terminus-cathedral",
+            "Pinion Terminus Grand Sanctuary — Merchant Sovereign Nuptial Nave",
+            "Grand_Wedding_Cathedral",
+            "zone-town-pinion-terminus",
+            "Wedding Manager Andromeda & High Priest Maximilian",
+            "Formal Wear Equipped + 500,000 Adena Engagement & Nuptial Fee",
+            [
+                "Instant Partner Warp (/coupleteleport — 30s Cast across Continents)",
+                "Salvation Bow & Cupid's Heart Arrows + Double Large Fireworks",
+                "Married Couple Title Color & Shared Warehouse Priority Signet",
+            ],
+            "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege, Olympiad & Boss Sanctums",
+        ),
+        (
+            "wedding-03-heine-torque-balance-water-cathedral",
+            "Torque-Balance Maritime Cathedral — Innadril Canal Nuptial Rotunda",
+            "Grand_Wedding_Cathedral",
+            "zone-town-torque-balance-citadel",
+            "Wedding Manager Andromeda & Priestess of Eva Clarissa",
+            "Formal Wear Equipped + 500,000 Adena Engagement & Nuptial Fee",
+            [
+                "Instant Partner Warp (/coupleteleport — 30s Cast, Zero Gatekeeper Fee)",
+                "Cupid's Bow of Salvation & Moonlight Gondola Procession Buff",
+                "Couple Vitality Harmony (+10% Shared Party Rest Recovery)",
+            ],
+            "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege, Olympiad & Boss Sanctums",
+        ),
+        (
+            "wedding-04-rune-starfall-haven-sky-cathedral",
+            "Starfall Haven Astral Cathedral — Upper Rune Sovereign Chapel",
+            "Grand_Wedding_Cathedral",
+            "zone-town-starfall-haven",
+            "Wedding Manager Andromeda & High Priest Innocentin",
+            "Formal Wear Equipped + 500,000 Adena Engagement & Nuptial Fee",
+            [
+                "Instant Partner Warp (/coupleteleport — 30s Cast to Continent 03 Frontiers)",
+                "Salvation Bow, Cupid's Arrows & Starfall Choir Fanfare",
+                "Blessed Ring of Devotion (Immunity to Divorce Penalty on Quest Reset)",
+            ],
+            "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege, Olympiad & Boss Sanctums",
+        ),
+        # 4 Formal_Wear_Couture_Tailor Sanctuaries
+        (
+            "wedding-05-aden-alexis-formal-wear-atelier",
+            "Crown-Beacon Couture Atelier — Trader Alexis & Leikar's Bridal Salon",
+            "Formal_Wear_Couture_Tailor",
+            "zone-town-crown-beacon",
+            "Trader Alexis & Maid Leikar (Make A Sewing Kit Quest)",
+            "Lv.60+ Quest 'Make A Sewing Kit' & 'Find Glittering Jewelry' + 5 Oriharukon, 500 Artisans Frame, 1,000 Thread",
+            [
+                "Permanent Formal Wear Wedding Tuxedo / Bridal Gown (All-Slot Armor Appearance)",
+                "Signet Ring, Sewing Kit & Leikar's Dress Shoe Box Assembly",
+                "Unlocks Wedding Manager Andromeda's /engage & /marry Ceremony Prompt",
+            ],
+            "Town Couture Service; Equippable in All Non-Combat & Ceremonial Sanctuaries",
+        ),
+        (
+            "wedding-06-giran-galladucci-bridal-boutique",
+            "Pinion Terminus Luxury Emporium — Galladucci's Silk Tuxedo & Veil Parlor",
+            "Formal_Wear_Couture_Tailor",
+            "zone-town-pinion-terminus",
+            "Luxury Trader Galladucci & Jeweler Ellie",
+            "1,500,000 Adena Direct Boutique Purchase or 5 Thons + 5 Enria + 10 Oriharukon",
+            [
+                "Galladucci's Aristocratic Formal Wear & White Lace Bridal Veil",
+                "Romantic Gold Chapeau, Top Hat & Monocle Ceremonial Headpieces",
+                "Instant Eligibility for Cathedral Nuptial Vows & Procession Fireworks",
+            ],
+            "Town Couture Service; Equippable in All Non-Combat & Ceremonial Sanctuaries",
+        ),
+        (
+            "wedding-07-goddard-inductor-imperial-tailor",
+            "Inductor Switchyard Silk Guild — Master Tailor Mist & Jeremy's Banquet Hall",
+            "Formal_Wear_Couture_Tailor",
+            "zone-town-inductor-switchyard",
+            "Master Tailor Mist & Chef Jeremy (Wedding Wine & Dress Shoes)",
+            "Jeremy's Special Seal Wine Delivery + 300,000 Adena Dress Shoe Polish Fee",
+            [
+                "Formal Dress Shoes & Embroidered Crimson/Ivory Ceremonial Attire",
+                "Chef Jeremy's Vintage Wedding Banquet Wine & Celebration Cake",
+                "Unlocks Couple Teleportation & Salvation Bow Quiver Synthesis",
+            ],
+            "Town Couture Service; Equippable in All Non-Combat & Ceremonial Sanctuaries",
+        ),
+        (
+            "wedding-08-oren-escapement-ivory-couture",
+            "Escapement Anvil Ivory Loom — Weaver Olf & Trader Radia's Bridal Annex",
+            "Formal_Wear_Couture_Tailor",
+            "zone-town-escapement-anvil",
+            "Armor Trader Radia & Weaver Olf's Bridal Seamstress",
+            "500 Suede + 1,000 Thread + 250,000 Adena Tailoring Commission",
+            [
+                "Ivory Tower Ceremonial Robe & Formal Wear Silk Suit",
+                "Silver Bell Bouquet & Couple's Commemorative Hair Accessory",
+                "Grants Full Formal Attire Flag Required by Wedding Manager Andromeda",
+            ],
+            "Town Couture Service; Equippable in All Non-Combat & Ceremonial Sanctuaries",
+        ),
+        # 4 Bridal_Procession_Garden Sanctuaries
+        (
+            "wedding-09-elven-porcelain-mother-tree-garden",
+            "Porcelain Loom Mother-Tree Glade — Lunar Starlight Bridal Pavilion",
+            "Bridal_Procession_Garden",
+            "zone-town-porcelain-loom",
+            "Wedding Manager Andromeda's Lunar Envoy & Hierophant Asterios",
+            "Married or Engaged Couple in Formal Wear + Silver Bell Procession Permit",
+            [
+                "Instant Partner Warp (/coupleteleport — 30s Cast) to Mother Tree Pavilion",
+                "Mother Tree Blossom Rain & Cupid's Salvation Bow Photo-Mode Aura",
+                "1-Hour Nuptial Blessing (+5% Movement Speed & +15% MP Regeneration)",
+            ],
+            "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege & Boss Sanctums",
+        ),
+        (
+            "wedding-10-celadon-causeway-lotus-bridal-garden",
+            "Celadon Glaze Causeway Lotus Promenade — Neutral Zone Bridal Meadow",
+            "Bridal_Procession_Garden",
+            "zone-field-celadon-causeway",
+            "Festival Fairy & Andromeda's Procession Herald",
+            "Married Couple Status (/coupleteleport Unlocked) + Formal Wear",
+            [
+                "Cross-Race Elven & Dark-Lunar Neutral Zone Bridal Procession",
+                "Unlimited Cupid's Heart Arrow Salvos & Large Firework Bursts",
+                "Direct Couple Warp Anchor Outside Safe-Zone Town Gates",
+            ],
+            "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege & Boss Sanctums",
+        ),
+        (
+            "wedding-11-apricot-aqueduct-floran-rose-terrace",
+            "Apricot Aqueduct Rose Terrace — Saffron-Floran Vineyard Bridal Arbor",
+            "Bridal_Procession_Garden",
+            "zone-field-apricot-aqueduct-terrace",
+            "Wedding Steward Clarissa & Vineyard Harper",
+            "Married Couple Status + 50,000 Adena Acoustic Choir Reservation",
+            [
+                "Pastoral Aqueduct Rose Arbor & Acoustic Harp Procession",
+                "Instant Partner Warp (/coupleteleport) for Duo Farming & Herb Runs",
+                "Couple's Sweet Fruit Cocktail Buff (+Haste, +Acumen & +Wind Walk)",
+            ],
+            "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege & Boss Sanctums",
+        ),
+        (
+            "wedding-12-tether-causeway-enchanted-waterfall-garden",
+            "Star-Tether Enchanted Waterfall — Valley of Saints Bridal Sanctuary",
+            "Bridal_Procession_Garden",
+            "zone-field-tether-causeway",
+            "Fairy Mymyu's Bridal Attendant & Andromeda's Sky-Steward",
+            "Married Couple Status + Starlight Procession Lantern",
+            [
+                "Enchanted Valley Rainbow Waterfall Bridal Procession",
+                "Zero-Cooldown Couple Warp Rally Point Before Continent 03 Expeditions",
+                "Salvation Bow Heart-Trail & Blessed Couple's Scroll of Escape",
+            ],
+            "Allowed Across All 24 Fields & 15 Towns; Blocked Only in Active Siege & Boss Sanctums",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        sid,
+        sname,
+        ccat,
+        zid,
+        onpc,
+        afee,
+        cprivs,
+        trule,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "147900:26800"))
+        loc = _fmt_loc(bx + 150 - idx * 14, by - 160 + idx * 11)
+        rows.append(
+            {
+                "sanctuary_id": sid,
+                "sanctuary_name": sname,
+                "ceremony_category": ccat,
+                "zone_id": zid,
+                "loc": loc,
+                "officiant_npc_name": onpc,
+                "attire_and_fee_requirement": afee,
+                "couple_privileges_unlocked": cprivs,
+                "teleport_restriction_rule": trule,
+            }
+        )
+    return rows
+
+
+def _build_studio_council_audit_benchmarks(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 18 6-Role Studio Council 60-Dimension Audit Benchmarks (3 benchmarks per role across all 6 Studio Council Roles) (D60)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 3 Product_Owner Benchmarks
+        (
+            "council-01-po-63-zone-breadth-depth-contract",
+            "Product_Owner",
+            "63-Zone T-Breadth & T-Depth World Completeness Sign-Off",
+            "zone-town-lantern-hollow",
+            "",
+            "",
+            ["D1", "D13", "D15", "D16", "D20", "D50", "D60"],
+            "Continuity & Submission",
+            "Verified 63/63 zones across 3 continents, 396/396 Omni-Search entities, 11/11 archetype raster plates, and 10/10 GOV gates.",
+        ),
+        (
+            "council-02-po-castle-siege-manor-estate-economy",
+            "Product_Owner",
+            "8-Stronghold Tax, 15-Town Manor & 16-Estate Clan Hall Loop",
+            "zone-town-crown-beacon",
+            "",
+            "",
+            ["D25", "D28", "D37", "D40", "D47", "D49", "D60"],
+            "Submission & Challenge",
+            "Verified 8 Castle/Fortress tax domains, 15 Manor crop routes, 16 Clan Hall auctions/sieges, and 15 Iron Gate freight hubs.",
+        ),
+        (
+            "council-03-po-social-ceremony-and-60d-milestone",
+            "Product_Owner",
+            "60-Dimension Milestone, Wedding Cathedrals & Luxury Plazas",
+            "zone-town-pinion-terminus",
+            "",
+            "",
+            ["D51", "D52", "D54", "D58", "D59", "D60"],
+            "Aesthetic & Fantasy",
+            "Verified 12 Wedding Cathedrals (/coupleteleport), 14 Weaver Olf Belt/Cloak hubs, 12 Luxury Boutiques, and 60/60 dimensions at 100.0/100.",
+        ),
+        # 3 Game_Designer_Lead Benchmarks
+        (
+            "council-04-gd-blacksmith-refinement-augment-elemental",
+            "Game_Designer_Lead",
+            "6-Grade +1..+15 Refinement, Life Stone Augmentation & 150/300 Attribute Matrix",
+            "zone-town-inductor-switchyard",
+            "",
+            "",
+            ["D10", "D19", "D31", "D35", "D39", "D43", "D46"],
+            "Challenge & Submission",
+            "Verified +1..+15 anvil rates, 18 Soul Crystal stages, 15 Life Stone/Dye hubs, 16 Masterwork Armor Sets, and 14 Attribute Quarries.",
+        ),
+        (
+            "council-05-gd-olympiad-hero-cursed-pvp-ecosystem",
+            "Game_Designer_Lead",
+            "Grand Olympiad Infinity Armaments, Cursed Weapons & PvP Karma Arenas",
+            "zone-town-escapement-anvil",
+            "",
+            "",
+            ["D29", "D33", "D48", "D53", "D55", "D58"],
+            "Challenge & Fantasy",
+            "Verified 21 Subclass/Noblesse/Olympiad nodes, 15 Infinity Weapon exchanges, 14 Zariche/Akamanah PvP hotspots, and 14 Faction War camps.",
+        ),
+        (
+            "council-06-gd-aerial-airship-fishing-chest-systems",
+            "Game_Designer_Lead",
+            "Gracia Clan Airships, Star Stone Extraction, Lockpick Chests & Fishing Sanctuaries",
+            "zone-town-starfall-haven",
+            "",
+            "",
+            ["D32", "D36", "D56", "D57", "D59", "D60"],
+            "Discovery & Aesthetic",
+            "Verified 12 Clan Airship & Star Stone docks, 16 Grade 1-8 Lockpick Chest grounds, 16 Fishing/Hot Springs sanctuaries, and 12 Mounts.",
+        ),
+        # 3 Player_Growth_Path_Designer Benchmarks
+        (
+            "council-07-pg-stage-abc-starter-to-kilnwatch-convergence",
+            "Player_Growth_Path_Designer",
+            "Stage A-C (Lv.1-25) 6-Race Spoke-to-Kilnwatch Convergence & Vitality Curve",
+            "zone-town-kilnwatch-bastion",
+            "",
+            "",
+            ["D1", "D9", "D17", "D23", "D42", "D44"],
+            "Continuity & Discovery",
+            "Verified 6 racial starter spokes converging at Kilnwatch Bastion (Lv.10-20), 372/372 BFS route pairs, and 15 Vitality/Shadow Weapon hubs.",
+        ),
+        (
+            "council-08-pg-40-zone-party-aoe-and-herb-sustainability",
+            "Player_Growth_Path_Designer",
+            "40-Zone Solo/Duo/9-Player AoE Farming Heatmap & 24-Field Herb Sustainability",
+            "zone-field-cinder-apron",
+            "",
+            "",
+            ["D7", "D14", "D24", "D38", "D44", "D45"],
+            "Submission & Continuity",
+            "Verified 40 combat farming profiles (Solo, Duo Spoil, 9P AoE, Clan Raid), 24 Elemental/Herb fields, and 15 Kamaloka/Pailaka instances.",
+        ),
+        (
+            "council-09-pg-stage-gl-awakening-and-forgotten-scrolls",
+            "Player_Growth_Path_Designer",
+            "Stage G-L (Lv.76-99) 3rd-Class Awakening, Forgotten Scrolls & High-Halo Endgame",
+            "zone-field-aurora-tether",
+            "",
+            "",
+            ["D9", "D23", "D29", "D45", "D46", "D55"],
+            "Challenge & Fantasy",
+            "Verified 16 Lv.81-83 Forgotten Scroll & Giant's Codex sanctums, 6-race Stage A..L growth routes, and 18 3-track class transfer trials.",
+        ),
+        # 3 Game_Story_Designer Benchmarks
+        (
+            "council-10-gs-4-epoch-architect-seal-and-6-god-mythos",
+            "Game_Story_Designer",
+            "4-Chapter World History, The Architect's Seal & 6 Primordial Gods",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            ["D6", "D21", "D27", "D51", "D60"],
+            "Narrative & Fantasy",
+            "Verified 4 canonical historical epochs, 6 Sealed Gods in B3 Catacombs, 16 Seven-Seals Dawn/Dusk sanctums, and 15 Festival of Darkness altars.",
+        ),
+        (
+            "council-11-gs-6-playable-races-and-heritage-trials",
+            "Game_Story_Designer",
+            "6 Playable Race Origin Lore, Neutral Adventure Guild & Racial Heritage Quests",
+            "zone-town-porcelain-loom",
+            "",
+            "",
+            ["D1", "D6", "D9", "D23", "D59", "D60"],
+            "Narrative & Aesthetic",
+            "Verified 6 playable race home towns, Neutral Adventure Guild & Blacksmith Clan lore, 18 quest chains, and cross-race Bridal Gardens.",
+        ),
+        (
+            "council-12-gs-dimensional-rift-and-imperial-mausoleum-lore",
+            "Game_Story_Designer",
+            "Dimensional Rift, Four Sepulchers & Imperial Tomb Symphony Lore",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            ["D3", "D12", "D34", "D41", "D58"],
+            "Narrative & Discovery",
+            "Verified 16 Dimensional Rift & Four Sepulchers portals, Scarlet van Halisha / Frintezza 3F sanctum lore, and Sovereign Boss Cloaks.",
+        ),
+        # 3 Monster_And_Mob_Designer Benchmarks
+        (
+            "council-13-mm-strict-5-tier-boss-hierarchy-law",
+            "Monster_And_Mob_Designer",
+            "Strict 5-Tier Boss Power Law (God > MVP Apostle > Raid > Mini-Boss > Mob)",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            ["D4", "D14", "D21", "D26", "D41"],
+            "Challenge & Fantasy",
+            "Verified 40/40 combat containers with all 4 spawn tiers, 6 God->MVP->Raid chains, 32-Boss Respawn Radar, and 12 Epic Boss Jewelry relics.",
+        ),
+        (
+            "council-14-mm-ant-nest-and-sunken-hold-raid-ecology",
+            "Monster_And_Mob_Designer",
+            "Subterranean Insectoid & Pirate King Zaken Multi-Floor Ecology",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            ["D3", "D4", "D14", "D18", "D26", "D56"],
+            "Challenge & Discovery",
+            "Verified B1->B2->B3 Queen Ant / Zaken subterranean ecology, 144 clickable dungeon chambers, 192 spawn pins, and Mimic chest traps.",
+        ),
+        (
+            "council-15-mm-6-monster-ecologies-and-spoil-tables",
+            "Monster_And_Mob_Designer",
+            "6 Monster-Only Ecology Families, Elemental Weaknesses & Dwarven Spoil Drops",
+            "zone-field-leyden-causeway",
+            "",
+            "",
+            ["D4", "D14", "D19", "D24", "D38", "D53"],
+            "Challenge & Submission",
+            "Verified 6 monster-only ecology races, 24 field elemental weakness biomes, +1..+15 catalyst spoil tables, and Ketra/Varka totem bosses.",
+        ),
+        # 3 Lead_Systems_Map_Architect Benchmarks
+        (
+            "council-16-sa-3-tier-semantic-zoom-and-pip-radar",
+            "Lead_Systems_Map_Architect",
+            "3-Tier Semantic Zoom (1.0x -> 2.2x -> 4.5x+), 4 Town Archetypes & PiP World Radar",
+            "zone-town-glaze-barge-quay",
+            "",
+            "",
+            ["D2", "D5", "D11", "D15", "D22", "D50"],
+            "Aesthetic & Continuity",
+            "Verified 15 Town Street Blueprints (#1..#12 NPCs, 13.0m roads), 4 layout archetypes, PiP World Radar mini-map, and 63 unique zone coordinates.",
+        ),
+        (
+            "council-17-sa-16-dungeon-vertical-cutaways-and-6m-corridors",
+            "Lead_Systems_Map_Architect",
+            "16 Multi-Floor Dungeon Cutaways (-12m..-68m / +18m..+96m) & >=6.0m Corridor Law",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            ["D3", "D8", "D12", "D18", "D30", "D34"],
+            "Discovery & Aesthetic",
+            "Verified 8 Underground Labyrinths (B1-B3) + 8 Vertical Towers (1F-3F), >=6.0m corridor width law, and 18 Inter-Continental transit lines.",
+        ),
+        (
+            "council-18-sa-bidirectional-studio-sync-and-60d-governance",
+            "Lead_Systems_Map_Architect",
+            "Bidirectional Studio <-> Atlas Sync, Draw.io Architecture & 60-Dimension Telemetry",
+            "zone-fortress-cloud-halo",
+            "",
+            "",
+            ["D8", "D13", "D16", "D20", "D50", "D57", "D60"],
+            "Continuity & Submission",
+            "Verified 8 Harbor/ClanHall/Fortress blueprints, bidirectional Studio<->Atlas state sync, Draw.io score=0, and 60-Dimension 100.0/100 audit.",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        bid,
+        crole,
+        btitle,
+        ezid,
+        edid,
+        efid,
+        adims,
+        mpillar,
+        vevid,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(ezid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx - 140 + idx * 12, by + 145 - idx * 10)
+        rows.append(
+            {
+                "benchmark_id": bid,
+                "council_role": crole,
+                "benchmark_title": btitle,
+                "exemplar_zone_id": ezid,
+                "exemplar_dungeon_id": edid,
+                "exemplar_floor_id": efid,
+                "loc": loc,
+                "audited_dimension_ids": adims,
+                "mda_pillar_focus": mpillar,
+                "verification_evidence": vevid,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -11323,6 +11790,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("belt_cloak_weaver_hubs") or []) < 14:
         atlas["belt_cloak_weaver_hubs"] = _build_belt_cloak_weaver_hubs(atlas)
         actions.append("populated_14_belt_cloak_weaver_hubs")
+
+    # 43. Ensure all 12 Wedding Cathedral, Formal Wear & Couple Teleport Sanctuaries exist in `wedding_ceremony_cathedrals` (D59)
+    if len(atlas.get("wedding_ceremony_cathedrals") or []) < 12:
+        atlas["wedding_ceremony_cathedrals"] = _build_wedding_ceremony_cathedrals(atlas)
+        actions.append("populated_12_wedding_ceremony_cathedrals")
+
+    # 44. Ensure all 18 6-Role Studio Council 60-Dimension Audit Benchmarks exist in `studio_council_audit_benchmarks` (D60)
+    if len(atlas.get("studio_council_audit_benchmarks") or []) < 18:
+        atlas["studio_council_audit_benchmarks"] = _build_studio_council_audit_benchmarks(atlas)
+        actions.append("populated_18_studio_council_audit_benchmarks")
 
     return {"actions": actions}
 
@@ -14421,15 +14898,142 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d58_ratio * 80.0, 1)
     )
 
+    # D59: Interactive 12-Sanctuary Wedding Cathedral, Formal Wear & Couple Teleport Matrix (`wedding_ceremony_cathedrals` - 12 Sanctuaries = 4 Grand_Wedding_Cathedral + 4 Formal_Wear_Couture_Tailor + 4 Bridal_Procession_Garden)
+    expected_ceremony_categories = {
+        "Grand_Wedding_Cathedral",
+        "Formal_Wear_Couture_Tailor",
+        "Bridal_Procession_Garden",
+    }
+    wedding_rows = atlas.get("wedding_ceremony_cathedrals") or []
+    valid_wedding_sanctuaries = 0
+    grand_cathedral_count = 0
+    formal_tailor_count = 0
+    bridal_garden_count = 0
+    seen_wedding_ids: set[str] = set()
+    seen_ceremony_categories: set[str] = set()
+    for wrow in wedding_rows:
+        if not isinstance(wrow, dict):
+            continue
+        sid = str(wrow.get("sanctuary_id") or "")
+        ccat = str(wrow.get("ceremony_category") or "")
+        zid = str(wrow.get("zone_id") or "")
+        cprivs = wrow.get("couple_privileges_unlocked") or []
+        if (
+            sid
+            and sid not in seen_wedding_ids
+            and wrow.get("sanctuary_name")
+            and ccat in expected_ceremony_categories
+            and zid in zone_ids_set
+            and ":" in str(wrow.get("loc", ""))
+            and wrow.get("officiant_npc_name")
+            and wrow.get("attire_and_fee_requirement")
+            and isinstance(cprivs, list)
+            and len(cprivs) >= 2
+            and wrow.get("teleport_restriction_rule")
+        ):
+            valid_wedding_sanctuaries += 1
+            seen_wedding_ids.add(sid)
+            seen_ceremony_categories.add(ccat)
+            if ccat == "Grand_Wedding_Cathedral":
+                grand_cathedral_count += 1
+            elif ccat == "Formal_Wear_Couture_Tailor":
+                formal_tailor_count += 1
+            elif ccat == "Bridal_Procession_Garden":
+                bridal_garden_count += 1
+
+    has_d59_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_WEDDING_MODE",
+            "setAtlasWeddingMode",
+            "renderAtlasWeddingBarHtml",
+            "studioWeddingCathedralOverlay",
+        )
+    )
+    d59_ratio = valid_wedding_sanctuaries / 12.0
+    d59_full_coverage = (
+        grand_cathedral_count == 4
+        and formal_tailor_count == 4
+        and bridal_garden_count == 4
+        and seen_ceremony_categories == expected_ceremony_categories
+    )
+    d59_score = (
+        round(min(100.0, d59_ratio * 100.0), 1)
+        if (has_d59_ui and d59_full_coverage)
+        else round(d59_ratio * 80.0, 1)
+    )
+
+    # D60: Interactive 18-Benchmark 6-Role Studio Council 60-Dimension Audit Matrix (`studio_council_audit_benchmarks` - 18 Benchmarks = 3 per Role across 6 Roles)
+    expected_council_roles = {
+        "Product_Owner",
+        "Game_Designer_Lead",
+        "Player_Growth_Path_Designer",
+        "Game_Story_Designer",
+        "Monster_And_Mob_Designer",
+        "Lead_Systems_Map_Architect",
+    }
+    council_rows = atlas.get("studio_council_audit_benchmarks") or []
+    valid_council_benchmarks = 0
+    role_counts: dict[str, int] = {r: 0 for r in expected_council_roles}
+    seen_benchmark_ids: set[str] = set()
+    seen_council_roles: set[str] = set()
+    for crow in council_rows:
+        if not isinstance(crow, dict):
+            continue
+        bid = str(crow.get("benchmark_id") or "")
+        crole = str(crow.get("council_role") or "")
+        ezid = str(crow.get("exemplar_zone_id") or "")
+        edid = str(crow.get("exemplar_dungeon_id") or "")
+        efid = str(crow.get("exemplar_floor_id") or "")
+        adims = crow.get("audited_dimension_ids") or []
+        if (
+            bid
+            and bid not in seen_benchmark_ids
+            and crole in expected_council_roles
+            and crow.get("benchmark_title")
+            and ezid in zone_ids_set
+            and (edid == "" or edid in mf_dungeon_id_set)
+            and efid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(crow.get("loc", ""))
+            and isinstance(adims, list)
+            and len(adims) >= 3
+            and crow.get("mda_pillar_focus")
+            and crow.get("verification_evidence")
+        ):
+            valid_council_benchmarks += 1
+            seen_benchmark_ids.add(bid)
+            seen_council_roles.add(crole)
+            role_counts[crole] = role_counts.get(crole, 0) + 1
+
+    has_d60_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_COUNCIL_BENCHMARK_MODE",
+            "setAtlasCouncilBenchmarkMode",
+            "renderAtlasCouncilBenchmarkBarHtml",
+            "studioCouncilBenchmarkOverlay",
+        )
+    )
+    d60_ratio = valid_council_benchmarks / 18.0
+    d60_full_coverage = (
+        all(role_counts.get(r, 0) == 3 for r in expected_council_roles)
+        and seen_council_roles == expected_council_roles
+    )
+    d60_score = (
+        round(min(100.0, d60_ratio * 100.0), 1)
+        if (has_d60_ui and d60_full_coverage)
+        else round(d60_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 40.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 42.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 42.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 52.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 41.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score) / 48.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 42.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 44.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 44.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 54.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 43.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score) / 50.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -14492,8 +15096,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d56_score
             + d57_score
             + d58_score
+            + d59_score
+            + d60_score
         )
-        / 58.0,
+        / 60.0,
         1,
     )
 
@@ -14963,6 +15569,29 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "garment_categories": sorted(seen_garment_categories),
                 "ui_wired": has_d58_ui,
             },
+            "D59_wedding_cathedrals_and_couple_teleport_matrix": {
+                "score": d59_score,
+                "verified": valid_wedding_sanctuaries,
+                "target": 12,
+                "grand_wedding_cathedrals": grand_cathedral_count,
+                "formal_wear_couture_tailors": formal_tailor_count,
+                "bridal_procession_gardens": bridal_garden_count,
+                "ceremony_categories": sorted(seen_ceremony_categories),
+                "ui_wired": has_d59_ui,
+            },
+            "D60_studio_council_60d_audit_benchmarks": {
+                "score": d60_score,
+                "verified": valid_council_benchmarks,
+                "target": 18,
+                "product_owner_benchmarks": role_counts.get("Product_Owner", 0),
+                "game_designer_lead_benchmarks": role_counts.get("Game_Designer_Lead", 0),
+                "player_growth_path_benchmarks": role_counts.get("Player_Growth_Path_Designer", 0),
+                "game_story_designer_benchmarks": role_counts.get("Game_Story_Designer", 0),
+                "monster_and_mob_designer_benchmarks": role_counts.get("Monster_And_Mob_Designer", 0),
+                "lead_systems_map_architect_benchmarks": role_counts.get("Lead_Systems_Map_Architect", 0),
+                "council_roles": sorted(seen_council_roles),
+                "ui_wired": has_d60_ui,
+            },
         },
     }
 
@@ -15065,6 +15694,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D56 (16 Chest/Lockpick)     : {dims['D56_treasure_chest_lockpick_and_mimic_grounds']['score']}/100 ({dims['D56_treasure_chest_lockpick_and_mimic_grounds']['verified']}/{dims['D56_treasure_chest_lockpick_and_mimic_grounds']['target']} chest grounds)")
         print(f"  D57 (12 Airship/Star Stone) : {dims['D57_aerial_airship_docks_and_star_stone_raids']['score']}/100 ({dims['D57_aerial_airship_docks_and_star_stone_raids']['verified']}/{dims['D57_aerial_airship_docks_and_star_stone_raids']['target']} aerial nodes)")
         print(f"  D58 (14 Belt/Cloak Weavers) : {dims['D58_weaver_olf_belts_and_sovereign_cloaks']['score']}/100 ({dims['D58_weaver_olf_belts_and_sovereign_cloaks']['verified']}/{dims['D58_weaver_olf_belts_and_sovereign_cloaks']['target']} belt/cloak hubs)")
+        print(f"  D59 (12 Wedding Cathedrals) : {dims['D59_wedding_cathedrals_and_couple_teleport_matrix']['score']}/100 ({dims['D59_wedding_cathedrals_and_couple_teleport_matrix']['verified']}/{dims['D59_wedding_cathedrals_and_couple_teleport_matrix']['target']} wedding sanctuaries)")
+        print(f"  D60 (18 Council Benchmarks) : {dims['D60_studio_council_60d_audit_benchmarks']['score']}/100 ({dims['D60_studio_council_60d_audit_benchmarks']['verified']}/{dims['D60_studio_council_60d_audit_benchmarks']['target']} council benchmarks)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

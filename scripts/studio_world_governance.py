@@ -698,6 +698,8 @@ def validate_world_governance(
                 "treasureChestLockpickGroundsCount": len(t_doc.get("treasure_chest_lockpick_grounds") or []),
                 "aerialStarStoneDocksCount": len(t_doc.get("aerial_star_stone_docks") or []),
                 "beltCloakWeaverHubsCount": len(t_doc.get("belt_cloak_weaver_hubs") or []),
+                "weddingCeremonyCathedralsCount": len(t_doc.get("wedding_ceremony_cathedrals") or []),
+                "studioCouncilAuditBenchmarksCount": len(t_doc.get("studio_council_audit_benchmarks") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1370,6 +1372,43 @@ def validate_world_governance(
                 if wh_did and wh_did not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: belt_cloak_weaver_hubs '{wh_id}' references unknown dungeon_id '{wh_did}'"
+                    )
+
+            # Validate 12 Wedding Cathedral, Formal Wear & Couple Teleport Sanctuaries (D59)
+            wedding_cathedrals = t_doc.get("wedding_ceremony_cathedrals") or []
+            if wedding_cathedrals and len(wedding_cathedrals) != 12:
+                errors.append(
+                    f"GOV-10 violation: wedding_ceremony_cathedrals must have 12 wedding sanctuaries, got {len(wedding_cathedrals)}"
+                )
+            for wc_item in wedding_cathedrals:
+                if not isinstance(wc_item, dict):
+                    continue
+                wc_id = str(wc_item.get("sanctuary_id", ""))
+                wc_zid = str(wc_item.get("zone_id", ""))
+                if wc_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: wedding_ceremony_cathedrals '{wc_id}' references unknown zone_id '{wc_zid}'"
+                    )
+
+            # Validate 18 6-Role Studio Council 60-Dimension Audit Benchmarks (D60)
+            council_benchmarks = t_doc.get("studio_council_audit_benchmarks") or []
+            if council_benchmarks and len(council_benchmarks) != 18:
+                errors.append(
+                    f"GOV-10 violation: studio_council_audit_benchmarks must have 18 council benchmarks, got {len(council_benchmarks)}"
+                )
+            for cb_item in council_benchmarks:
+                if not isinstance(cb_item, dict):
+                    continue
+                cb_id = str(cb_item.get("benchmark_id", ""))
+                cb_zid = str(cb_item.get("exemplar_zone_id", ""))
+                cb_did = str(cb_item.get("exemplar_dungeon_id", ""))
+                if cb_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: studio_council_audit_benchmarks '{cb_id}' references unknown exemplar_zone_id '{cb_zid}'"
+                    )
+                if cb_did and cb_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: studio_council_audit_benchmarks '{cb_id}' references unknown exemplar_dungeon_id '{cb_did}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

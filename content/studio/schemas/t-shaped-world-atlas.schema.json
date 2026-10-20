@@ -263,6 +263,18 @@
       "maxItems": 14,
       "items": { "$ref": "#/$defs/beltCloakWeaverHubSpec" }
     },
+    "wedding_ceremony_cathedrals": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": { "$ref": "#/$defs/weddingCeremonyCathedralSpec" }
+    },
+    "studio_council_audit_benchmarks": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": { "$ref": "#/$defs/studioCouncilAuditBenchmarkSpec" }
+    },
     "town_blueprints": {
       "type": "array",
       "items": { "$ref": "#/$defs/townBlueprintSpec" }
@@ -3254,6 +3266,88 @@
         },
         "unseal_badge_cost": { "type": "string" },
         "stat_enhancement_summary": { "type": "string" }
+      }
+    },
+    "weddingCeremonyCathedralSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sanctuary_id",
+        "sanctuary_name",
+        "ceremony_category",
+        "zone_id",
+        "loc",
+        "officiant_npc_name",
+        "attire_and_fee_requirement",
+        "couple_privileges_unlocked",
+        "teleport_restriction_rule"
+      ],
+      "properties": {
+        "sanctuary_id": { "type": "string" },
+        "sanctuary_name": { "type": "string" },
+        "ceremony_category": {
+          "type": "string",
+          "enum": [
+            "Grand_Wedding_Cathedral",
+            "Formal_Wear_Couture_Tailor",
+            "Bridal_Procession_Garden"
+          ]
+        },
+        "zone_id": { "type": "string" },
+        "loc": { "type": "string" },
+        "officiant_npc_name": { "type": "string" },
+        "attire_and_fee_requirement": { "type": "string" },
+        "couple_privileges_unlocked": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "teleport_restriction_rule": { "type": "string" }
+      }
+    },
+    "studioCouncilAuditBenchmarkSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "benchmark_id",
+        "council_role",
+        "benchmark_title",
+        "exemplar_zone_id",
+        "exemplar_dungeon_id",
+        "exemplar_floor_id",
+        "loc",
+        "audited_dimension_ids",
+        "mda_pillar_focus",
+        "verification_evidence"
+      ],
+      "properties": {
+        "benchmark_id": { "type": "string" },
+        "council_role": {
+          "type": "string",
+          "enum": [
+            "Product_Owner",
+            "Game_Designer_Lead",
+            "Player_Growth_Path_Designer",
+            "Game_Story_Designer",
+            "Monster_And_Mob_Designer",
+            "Lead_Systems_Map_Architect"
+          ]
+        },
+        "benchmark_title": { "type": "string" },
+        "exemplar_zone_id": { "type": "string" },
+        "exemplar_dungeon_id": { "type": "string" },
+        "exemplar_floor_id": {
+          "type": "string",
+          "enum": ["", "B1", "B2", "B3", "1F", "2F", "3F"]
+        },
+        "loc": { "type": "string" },
+        "audited_dimension_ids": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "type": "string" }
+        },
+        "mda_pillar_focus": { "type": "string" },
+        "verification_evidence": { "type": "string" }
       }
     }
   }

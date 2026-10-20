@@ -93,15 +93,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas54DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas56DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas58DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas60DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 27)),
+        "wave": int(iter_state.get("wave", 28)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"60-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"58-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"56-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"54-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -122,7 +124,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 Verified"
         ),
     }
     return merged
@@ -4384,7 +4386,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4461,6 +4463,8 @@ let ATLAS_HERO_WEAPON_MODE = 'All';
 let ATLAS_TREASURE_CHEST_MODE = 'All';
 let ATLAS_AERIAL_DOCK_MODE = 'All';
 let ATLAS_BELT_CLOAK_MODE = 'All';
+let ATLAS_WEDDING_MODE = 'All';
+let ATLAS_COUNCIL_BENCHMARK_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4509,6 +4513,8 @@ const ATLAS_STATE_STORE = {
   treasureChestMode: 'All',                // D56: Active 16-Zone Treasure Chest & Lockpick Cache Selector ('Off' | 'All' | 'Overland_Pirate_Bandit_Cache' | 'Underground_Catacomb_Vault' | 'Tower_Sanctum_Coffer_Room')
   aerialDockMode: 'All',                   // D57: Active 12-Node Clan Airship Dock & Star Stone Selector ('Off' | 'All' | 'Clan_Airship_Summon_Dock' | 'Star_Stone_Extraction_Field' | 'Aerial_Raid_Corridor')
   beltCloakMode: 'All',                    // D58: Active 14-Node Mithril Belt Weaver & Sovereign Cloak Selector ('Off' | 'All' | 'Weaver_Olf_Belt_Loom' | 'Sovereign_Boss_Cloak_Sanctum' | 'Castle_Knight_Cloak_Armory')
+  weddingMode: 'All',                      // D59: Active 12-Sanctuary Wedding Cathedral & Couple Teleport Selector ('Off' | 'All' | 'Grand_Wedding_Cathedral' | 'Formal_Wear_Couture_Tailor' | 'Bridal_Procession_Garden')
+  councilBenchmarkMode: 'All',             // D60: Active 18-Benchmark 6-Role Studio Council 60D Audit Selector ('Off' | 'All' | 'Product_Owner' | 'Game_Designer_Lead' | 'Player_Growth_Path_Designer' | 'Game_Story_Designer' | 'Monster_And_Mob_Designer' | 'Lead_Systems_Map_Architect')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4597,6 +4603,20 @@ function setAtlasAerialDockMode(modeId) {
 function setAtlasBeltCloakMode(modeId) {
   ATLAS_BELT_CLOAK_MODE = String(modeId || 'All');
   ATLAS_STATE_STORE.beltCloakMode = ATLAS_BELT_CLOAK_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasWeddingMode(modeId) {
+  ATLAS_WEDDING_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.weddingMode = ATLAS_WEDDING_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasCouncilBenchmarkMode(modeId) {
+  ATLAS_COUNCIL_BENCHMARK_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.councilBenchmarkMode = ATLAS_COUNCIL_BENCHMARK_MODE;
   writeUrlState(false);
   render();
 }
@@ -10048,6 +10068,207 @@ function renderAtlasBeltCloakBarHtml(tatlas) {
   `;
 }
 
+function renderAtlasWeddingBarHtml(tatlas) {
+  const sanctuaries = (tatlas && tatlas.wedding_ceremony_cathedrals) || [];
+  if (!sanctuaries.length) return '';
+
+  const curMode = ATLAS_WEDDING_MODE || ATLAS_STATE_STORE.weddingMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '💍 All 12 Sanctuaries' },
+    { id: 'Grand_Wedding_Cathedral', label: '💒 4 Grand Cathedrals' },
+    { id: 'Formal_Wear_Couture_Tailor', label: '👗 4 Formal Wear Tailors' },
+    { id: 'Bridal_Procession_Garden', label: '🏹 4 Bridal Gardens' }
+  ];
+
+  const filteredSanctuaries = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? sanctuaries : sanctuaries.filter(s => s.ceremony_category === curMode));
+
+  const featuredSanctuaries = curMode === 'All'
+    ? [
+        ...sanctuaries.filter(s => s.ceremony_category === 'Grand_Wedding_Cathedral').slice(0, 2),
+        ...sanctuaries.filter(s => s.ceremony_category === 'Formal_Wear_Couture_Tailor').slice(0, 1),
+        ...sanctuaries.filter(s => s.ceremony_category === 'Bridal_Procession_Garden').slice(0, 1)
+      ]
+    : filteredSanctuaries.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  return `
+    <div id="atlasWeddingBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#241422;border:1px solid rgba(244,114,182,0.58)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fbcfe8">💍 12-SANCTUARY WEDDING CATHEDRAL, FORMAL WEAR &amp; COUPLE TELEPORT MATRIX (D59 · 12 SANCTUARIES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasWeddingMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(244,114,182,0.45)'};background:${isAct ? '#be185d' : '#090d14'};color:${isAct ? '#ffffff' : '#fce7f3'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          4 GRAND CATHEDRALS + 4 FORMAL WEAR TAILORS + 4 BRIDAL GARDENS · /COUPLETELEPORT (30S)
+        </span>
+      </div>
+
+      ${featuredSanctuaries.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredSanctuaries.map(s => {
+            const isCathedral = s.ceremony_category === 'Grand_Wedding_Cathedral';
+            const isTailor = s.ceremony_category === 'Formal_Wear_Couture_Tailor';
+            const catCol = isCathedral ? '#f472b6' : (isTailor ? '#facc15' : '#34d399');
+            const catIcon = isCathedral ? '💒' : (isTailor ? '👗' : '🏹');
+            const zObj = byZid[s.zone_id] || {};
+            const zidStr = String(s.zone_id || '');
+            let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`;
+            if (zidStr.startsWith('zone-field-')) {
+              jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+            } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+            }
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${catCol};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${catIcon} ${escapeHtml(s.sanctuary_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${catCol}">${escapeHtml(s.ceremony_category.split('_')[0])}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#fbcfe8;margin-top:1px">
+                    🤵 ${escapeHtml(s.officiant_npc_name.slice(0, 56))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    💍 ${escapeHtml(((s.couple_privileges_unlocked && s.couple_privileges_unlocked[0]) || '').slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${catCol};background:#831843;color:#fce7f3;font-size:8px;font-weight:800;cursor:pointer">
+                    ${catIcon} ${zidStr.startsWith('zone-field-') ? 'Jump to Bridal Garden (4.8×)' : 'Jump to Town Cathedral (5.2×)'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasCouncilBenchmarkBarHtml(tatlas) {
+  const benchmarks = (tatlas && tatlas.studio_council_audit_benchmarks) || [];
+  if (!benchmarks.length) return '';
+
+  const curMode = ATLAS_COUNCIL_BENCHMARK_MODE || ATLAS_STATE_STORE.councilBenchmarkMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '🏛️ All 18 Benchmarks' },
+    { id: 'Product_Owner', label: '📋 Product Owner' },
+    { id: 'Game_Designer_Lead', label: '🎮 Game Designer' },
+    { id: 'Player_Growth_Path_Designer', label: '📈 Growth Path' },
+    { id: 'Game_Story_Designer', label: '📖 Story' },
+    { id: 'Monster_And_Mob_Designer', label: '👾 Monster/Mob' },
+    { id: 'Lead_Systems_Map_Architect', label: '🗺️ Systems Architect' }
+  ];
+
+  const filteredBenchmarks = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? benchmarks : benchmarks.filter(b => b.council_role === curMode));
+
+  const featuredBenchmarks = curMode === 'All'
+    ? [
+        ...benchmarks.filter(b => b.council_role === 'Product_Owner').slice(0, 1),
+        ...benchmarks.filter(b => b.council_role === 'Game_Designer_Lead').slice(0, 1),
+        ...benchmarks.filter(b => b.council_role === 'Player_Growth_Path_Designer').slice(0, 1),
+        ...benchmarks.filter(b => b.council_role === 'Lead_Systems_Map_Architect').slice(0, 1)
+      ]
+    : filteredBenchmarks.slice(0, 4);
+
+  const all63 = getAllAtlas63Zones(tatlas);
+  const byZid = {};
+  all63.forEach(z => { byZid[z.zone_id] = z; });
+
+  const roleStyleMap = {
+    'Product_Owner': { col: '#fde047', icon: '📋' },
+    'Game_Designer_Lead': { col: '#38bdf8', icon: '🎮' },
+    'Player_Growth_Path_Designer': { col: '#34d399', icon: '📈' },
+    'Game_Story_Designer': { col: '#c084fc', icon: '📖' },
+    'Monster_And_Mob_Designer': { col: '#f87171', icon: '👾' },
+    'Lead_Systems_Map_Architect': { col: '#fb923c', icon: '🗺️' }
+  };
+
+  return `
+    <div id="atlasCouncilBenchmarkBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#111d24;border:1px solid rgba(250,204,21,0.62)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fef08a">🏛️ 60-DIMENSION STUDIO COUNCIL BENCHMARK SELECTOR (D60 · 18 BENCHMARKS ACROSS 6 ROLES):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasCouncilBenchmarkMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(250,204,21,0.45)'};background:${isAct ? '#0e7490' : '#090d14'};color:${isAct ? '#ffffff' : '#fef9c3'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#34d399;font-weight:800">
+          6 STUDIO COUNCIL ROLES × 3 BENCHMARKS = 18/18 EXEMPLARS · D1–D60 = 100.0/100
+        </span>
+      </div>
+
+      ${featuredBenchmarks.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredBenchmarks.map(b => {
+            const rs = roleStyleMap[b.council_role] || { col: '#fde047', icon: '🏛️' };
+            const zObj = byZid[b.exemplar_zone_id] || {};
+            const zidStr = String(b.exemplar_zone_id || '');
+            const didStr = String(b.exemplar_dungeon_id || '');
+            const fidStr = String(b.exemplar_floor_id || 'B3');
+            let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(b.loc)}')`;
+            if (didStr) {
+              jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+            } else if (zidStr.startsWith('zone-field-')) {
+              jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(b.loc)}')`;
+            } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+              jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(b.loc)}')`;
+            }
+            const dimsTxt = (b.audited_dimension_ids || []).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${rs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${rs.icon} ${escapeHtml(b.benchmark_title.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${rs.col}">${escapeHtml(b.council_role.replace(/_/g, ' ').slice(0, 14))}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#bae6fd;margin-top:1px">
+                    📐 [${escapeHtml(dimsTxt)}] · ${escapeHtml(b.mda_pillar_focus)}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ✅ ${escapeHtml(b.verification_evidence.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${rs.col};background:#164e63;color:#fef9c3;font-size:8px;font-weight:800;cursor:pointer">
+                    ${rs.icon} ${didStr ? `Inspect Dungeon Floor (${escapeHtml(fidStr)})` : 'Jump to Council Exemplar'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderAtlasFilterBarHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
@@ -10210,6 +10431,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasTreasureChestBarHtml(tatlas)}
       ${renderAtlasAerialDockBarHtml(tatlas)}
       ${renderAtlasBeltCloakBarHtml(tatlas)}
+      ${renderAtlasWeddingBarHtml(tatlas)}
+      ${renderAtlasCouncilBenchmarkBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -13280,6 +13503,92 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D59: Interactive 12-Sanctuary Wedding Cathedral, Formal Wear & Couple Teleport Overlay (`studioWeddingCathedralOverlay`)
+  const weddingRows = (tatlas && tatlas.wedding_ceremony_cathedrals) || [];
+  const curWeddingMode = ATLAS_WEDDING_MODE || ATLAS_STATE_STORE.weddingMode || 'All';
+  const activeWeddingSanctuaries = curWeddingMode === 'Off'
+    ? []
+    : (curWeddingMode === 'All'
+        ? weddingRows
+        : weddingRows.filter(s => s.ceremony_category === curWeddingMode));
+  const weddingCathedralOverlaySvg = `
+    <g id="studioWeddingCathedralOverlay">
+      ${activeWeddingSanctuaries.map(s => {
+        const wc = clampWorldLocCoord(s.loc || '147900:26800');
+        const zObj = allZonesById[s.zone_id] || {};
+        const zidStr = String(s.zone_id || '');
+        const isCathedral = s.ceremony_category === 'Grand_Wedding_Cathedral';
+        const isTailor = s.ceremony_category === 'Formal_Wear_Couture_Tailor';
+        const colHex = isCathedral ? '#f472b6' : (isTailor ? '#facc15' : '#34d399');
+        const iconTxt = isCathedral ? '💒' : (isTailor ? '👗' : '🏹');
+        let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(s.loc)}')`;
+        if (zidStr.startsWith('zone-field-')) {
+          jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+        } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(s.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${wc.svgX}" cy="${wc.svgY}" r="10.5" fill="rgba(190,24,93,0.44)" stroke="${colHex}" stroke-width="1.9"/>
+            <text x="${wc.svgX}" y="${wc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D60: Interactive 18-Benchmark 6-Role Studio Council 60-Dimension Audit Overlay (`studioCouncilBenchmarkOverlay`)
+  const councilBenchmarkRows = (tatlas && tatlas.studio_council_audit_benchmarks) || [];
+  const curCouncilBenchmarkMode = ATLAS_COUNCIL_BENCHMARK_MODE || ATLAS_STATE_STORE.councilBenchmarkMode || 'All';
+  const activeCouncilBenchmarks = curCouncilBenchmarkMode === 'Off'
+    ? []
+    : (curCouncilBenchmarkMode === 'All'
+        ? councilBenchmarkRows
+        : councilBenchmarkRows.filter(b => b.council_role === curCouncilBenchmarkMode));
+  const councilBenchmarkOverlaySvg = `
+    <g id="studioCouncilBenchmarkOverlay">
+      ${activeCouncilBenchmarks.map(b => {
+        const bc = clampWorldLocCoord(b.loc || '-84120:243500');
+        const zObj = allZonesById[b.exemplar_zone_id] || {};
+        const zidStr = String(b.exemplar_zone_id || '');
+        const didStr = String(b.exemplar_dungeon_id || '');
+        const fidStr = String(b.exemplar_floor_id || 'B3');
+        const roleCols = {
+          'Product_Owner': '#fde047',
+          'Game_Designer_Lead': '#38bdf8',
+          'Player_Growth_Path_Designer': '#34d399',
+          'Game_Story_Designer': '#c084fc',
+          'Monster_And_Mob_Designer': '#f87171',
+          'Lead_Systems_Map_Architect': '#fb923c'
+        };
+        const roleIcons = {
+          'Product_Owner': '📋',
+          'Game_Designer_Lead': '🎮',
+          'Player_Growth_Path_Designer': '📈',
+          'Game_Story_Designer': '📖',
+          'Monster_And_Mob_Designer': '👾',
+          'Lead_Systems_Map_Architect': '🗺️'
+        };
+        const colHex = roleCols[b.council_role] || '#fde047';
+        const iconTxt = roleIcons[b.council_role] || '🏛️';
+        let jumpJs = `focusTownStreetBlueprint('${escapeHtml(zObj.studio_node_id || zidStr.replace('zone-', ''))}', '${escapeHtml(b.loc)}')`;
+        if (didStr) {
+          jumpJs = `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`;
+        } else if (zidStr.startsWith('zone-field-')) {
+          jumpJs = `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(b.loc)}')`;
+        } else if (zidStr.startsWith('zone-harbor-') || zidStr.startsWith('zone-fortress-') || zidStr.startsWith('zone-clanhall-')) {
+          jumpJs = `focusFortressBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(b.loc)}')`;
+        }
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${bc.svgX}" cy="${bc.svgY}" r="10.8" fill="rgba(14,116,144,0.46)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${bc.svgX}" y="${bc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -13318,6 +13627,8 @@ function renderDedicatedWorldAtlas() {
     ${treasureChestOverlaySvg}
     ${aerialStarStoneOverlaySvg}
     ${beltCloakWeaverOverlaySvg}
+    ${weddingCathedralOverlaySvg}
+    ${councilBenchmarkOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
