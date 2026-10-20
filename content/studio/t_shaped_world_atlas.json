@@ -58452,5 +58452,491 @@
       "signoff_verdict": "APPROVED 100.0/100 \u2014 Verified Live on :8788",
       "architectural_proof_note": "GOV-01..GOV-10 0 errors, Draw.io score=0, and all 68 Semantic-Zoom Atlas dimensions verified at 100.0/100 across 32 Waves."
     }
+  ],
+  "champion_mob_herd_grounds": [
+    {
+      "ground_id": "champ-01-blue-cinder-apron-enforcer",
+      "ground_name": "Cinder-Apron Outlands \u2014 Blue Aura 10\u00d7 Champion Enforcer Grounds",
+      "champion_category": "Blue_Aura_10x_Champion_Field",
+      "zone_id": "zone-field-cinder-apron",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-6552:131939",
+      "signature_champion_mob": "[Blue Champion 10\u00d7] Cinder-Apron Enforcer & Bugbear Raider",
+      "level_bracket": "Lv.24\u201334 Overland Field",
+      "hp_and_xp_multiplier": "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+      "spoil_and_drop_jackpot": [
+        "8x\u201318x High-Grade Iron Ore, Coal & Charcoal Sweeper Yield",
+        "Festival Adena & D-Grade Enchant Weapon/Armor Scroll Burst",
+        "Brigandine / Elven Mithril Key Piece Multi-Drop"
+      ]
+    },
+    {
+      "ground_id": "champ-02-blue-brass-spur-wyrm-stalker",
+      "ground_name": "Brass-Spur Gear Ridge \u2014 Blue Aura 10\u00d7 Champion Death Pass Wyrm",
+      "champion_category": "Blue_Aura_10x_Champion_Field",
+      "zone_id": "zone-field-brass-spur-ridge",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "89061:138528",
+      "signature_champion_mob": "[Blue Champion 10\u00d7] Brass-Spur Wyrm & Road Scavenger",
+      "level_bracket": "Lv.35\u201344 Overland Field",
+      "hp_and_xp_multiplier": "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+      "spoil_and_drop_jackpot": [
+        "10x\u201322x Oriharukon Ore, Crafted Leather & Metallic Fiber Spoil",
+        "Scroll: Enchant Weapon (C-Grade) & Mid-Grade Life Stone (Lv.46)",
+        "Full Plate & Karmian Key Material Burst"
+      ]
+    },
+    {
+      "ground_id": "champ-03-blue-siphon-sluice-alligator-champion",
+      "ground_name": "Verdigris Siphon Sluice \u2014 Blue Aura 10\u00d7 Champion Crokian Warrior",
+      "champion_category": "Blue_Aura_10x_Champion_Field",
+      "zone_id": "zone-field-siphon-sluice",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "64074:34917",
+      "signature_champion_mob": "[Blue Champion 10\u00d7] Crokian Lad & Nos Lad Champion",
+      "level_bracket": "Lv.42\u201352 Overland Field",
+      "hp_and_xp_multiplier": "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+      "spoil_and_drop_jackpot": [
+        "10x\u201320x Mithril Ore, Varnish of Purity & Compound Braid Spoil",
+        "Blessed Scroll of Escape & C-Grade Weapon Key Part Stack",
+        "Greater Haste / Swift Attack Potion & Festival Adena Bundle"
+      ]
+    },
+    {
+      "ground_id": "champ-04-blue-leyden-causeway-doom-champion",
+      "ground_name": "Leyden Capacitor Causeway \u2014 Blue Aura 10\u00d7 Champion Doom Knight",
+      "champion_category": "Blue_Aura_10x_Champion_Field",
+      "zone_id": "zone-field-leyden-causeway",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "141087:-48494",
+      "signature_champion_mob": "[Blue Champion 10\u00d7] Arc-Tesla Construct & Doom Knight",
+      "level_bracket": "Lv.58\u201368 Overland Field",
+      "hp_and_xp_multiplier": "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+      "spoil_and_drop_jackpot": [
+        "12x\u201325x Enria, Asofe & Thons Sweeper Spoil Jackpot",
+        "Scroll: Enchant Weapon / Armor (B-Grade & A-Grade)",
+        "High-Grade Life Stone (Lv.64\u201367) & Tallum / Dark Crystal Parts"
+      ]
+    },
+    {
+      "ground_id": "champ-05-blue-caldera-rim-hot-springs-yeti",
+      "ground_name": "Mainspring Caldera Rim \u2014 Blue Aura 10\u00d7 Champion Hot Springs Yeti",
+      "champion_category": "Blue_Aura_10x_Champion_Field",
+      "zone_id": "zone-field-caldera-rim",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "86300:61295",
+      "signature_champion_mob": "[Blue Champion 10\u00d7] Hot Springs Bandersnatch & Yeti",
+      "level_bracket": "Lv.72\u201378 Overland Field",
+      "hp_and_xp_multiplier": "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+      "spoil_and_drop_jackpot": [
+        "15x\u201330x Durable Metal Plate, Mold Hardener & Mold Lubricant",
+        "60% S-Grade Arcana Mace / Draconic Bow / Imperial Crusader Recipes",
+        "High-Grade Life Stone (Lv.76) & Fire Elemental Stone"
+      ]
+    },
+    {
+      "ground_id": "champ-06-blue-aurora-tether-astral-drake",
+      "ground_name": "Aurora Tether Span \u2014 Blue Aura 10\u00d7 Champion Star-Forged Drake",
+      "champion_category": "Blue_Aura_10x_Champion_Field",
+      "zone_id": "zone-field-aurora-tether",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "152313:31284",
+      "signature_champion_mob": "[Blue Champion 10\u00d7] Star-Forged Drake & Halo Arbiter",
+      "level_bracket": "Lv.78\u201385 Overland Field",
+      "hp_and_xp_multiplier": "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+      "spoil_and_drop_jackpot": [
+        "15x\u201335x Leonard, Adamantine & Orichalcum S80 Spoil Yield",
+        "Icarus & Vesper Weapon Key Pieces + Top-Grade Life Stone (Lv.80\u201382)",
+        "Holy / Wind Elemental Stone (150-Cap) Multi-Drop"
+      ]
+    },
+    {
+      "ground_id": "champ-07-red-kiln-cellar-b3-crimson-ant-overseer",
+      "ground_name": "Kiln Cellar B3 \u2014 Crimson Aura 50\u00d7 Champion Royal Cave Servant",
+      "champion_category": "Crimson_Aura_50x_Champion_Sanctum",
+      "zone_id": "zone-dungeon-kiln-cellar",
+      "dungeon_id": "zone-dungeon-kiln-cellar",
+      "floor_id": "B3",
+      "loc": "75336:116893",
+      "signature_champion_mob": "[Red Champion 50\u00d7] Royal Cave Servant & Noble Ant Overseer",
+      "level_bracket": "Lv.36\u201342 Underground Dungeon B3",
+      "hp_and_xp_multiplier": "50x HP / 50x EXP & SP / Guaranteed Blessed Scroll or Festival Adena Drop (Red Aura)",
+      "spoil_and_drop_jackpot": [
+        "25x\u201350x Mithril Alloy, Synthetic Cokes & Oriharukon Sweeper Burst",
+        "Blessed Scroll: Enchant Weapon / Armor (C-Grade)",
+        "Full C-Grade Weapon / Armor Piece Drop & Festival Adena Stack"
+      ]
+    },
+    {
+      "ground_id": "champ-08-red-pendulum-shaft-3f-crimson-krator",
+      "ground_name": "Pendulum Shaft 3F \u2014 Crimson Aura 50\u00d7 Champion Cruma Krator",
+      "champion_category": "Crimson_Aura_50x_Champion_Sanctum",
+      "zone_id": "zone-dungeon-pendulum-shaft",
+      "dungeon_id": "zone-dungeon-pendulum-shaft",
+      "floor_id": "3F",
+      "loc": "85339:144262",
+      "signature_champion_mob": "[Red Champion 50\u00d7] Cruma Tower Krator & Catherok",
+      "level_bracket": "Lv.46\u201354 Vertical Tower 3F",
+      "hp_and_xp_multiplier": "50x HP / 50x EXP & SP / Guaranteed Blessed Scroll or Festival Adena Drop (Red Aura)",
+      "spoil_and_drop_jackpot": [
+        "30x\u201360x Enria, Mold Glue & Artisan's Frame Spoil Jackpot",
+        "Blessed Scroll: Enchant Weapon / Armor (B-Grade)",
+        "Avadon / Zubei / Blue Wolf Tunic & Breastplate Full Drop Chance"
+      ]
+    },
+    {
+      "ground_id": "champ-09-red-witch-pendulum-b3-crimson-nephilim",
+      "ground_name": "Catacomb of the Astral Witch B3 \u2014 Crimson Aura 50\u00d7 Nephilim Royal Guard",
+      "champion_category": "Crimson_Aura_50x_Champion_Sanctum",
+      "zone_id": "zone-catacomb-witch-pendulum",
+      "dungeon_id": "zone-catacomb-witch-pendulum",
+      "floor_id": "B3",
+      "loc": "54152:-34749",
+      "signature_champion_mob": "[Red Champion 50\u00d7] Nephilim Royal Guard & Lilim Great Mystic",
+      "level_bracket": "Lv.66\u201375 Seal Catacomb B3",
+      "hp_and_xp_multiplier": "50x HP / 50x EXP & SP / Guaranteed Blessed Scroll or 80,000+ Seal Stone Jackpot (Red Aura)",
+      "spoil_and_drop_jackpot": [
+        "50,000\u2013120,000 Red & Green Seal Stones (350,000+ Ancient Adena Value)",
+        "Blessed Scroll: Enchant Weapon (A-Grade) & High-Grade Life Stone (Lv.70)",
+        "30x\u201360x Asofe, Thons & Tallum Blade Key Materials"
+      ]
+    },
+    {
+      "ground_id": "champ-10-red-chronometer-foundry-3f-crimson-ashuras",
+      "ground_name": "Chronometer Foundry 3F \u2014 Crimson Aura 50\u00d7 Forge of the Gods Ashuras",
+      "champion_category": "Crimson_Aura_50x_Champion_Sanctum",
+      "zone_id": "zone-dungeon-chronometer-foundry",
+      "dungeon_id": "zone-dungeon-chronometer-foundry",
+      "floor_id": "3F",
+      "loc": "84765:56440",
+      "signature_champion_mob": "[Red Champion 50\u00d7] Scarlet Stakato Noble & Ashuras of Destruction",
+      "level_bracket": "Lv.76\u201382 Vertical Foundry 3F",
+      "hp_and_xp_multiplier": "50x HP / 50x EXP & SP / Guaranteed Blessed S-Scroll or Top-Grade Life Stone (Red Aura)",
+      "spoil_and_drop_jackpot": [
+        "35x\u201375x Mold Hardener, Enria & S-Grade Weapon Key Pieces",
+        "Blessed Scroll: Enchant Weapon / Armor (S-Grade)",
+        "Fire Elemental Stone (x5\u2013x12 Burst) & Top-Grade Life Stone (Lv.76\u201380)"
+      ]
+    },
+    {
+      "ground_id": "champ-11-red-star-heart-nave-3f-crimson-archangel",
+      "ground_name": "Star-Heart Nave 3F \u2014 Crimson Aura 50\u00d7 Platinum Guardian Prefect",
+      "champion_category": "Crimson_Aura_50x_Champion_Sanctum",
+      "zone_id": "zone-dungeon-star-heart-nave",
+      "dungeon_id": "zone-dungeon-star-heart-nave",
+      "floor_id": "3F",
+      "loc": "149178:28429",
+      "signature_champion_mob": "[Red Champion 50\u00d7] Platinum Guardian Prefect & Seal Archangel",
+      "level_bracket": "Lv.78\u201385 Vertical Spire 3F",
+      "hp_and_xp_multiplier": "50x HP / 50x EXP & SP / Guaranteed Blessed S-Scroll & Dynasty/Vesper Spoil Jackpot (Red Aura)",
+      "spoil_and_drop_jackpot": [
+        "40x\u201380x Leonard, Adamantine & Orichalcum S80/S84 Spoil Jackpot",
+        "Blessed Scroll: Enchant Weapon (S-Grade) & Giant's Codex: Mastery",
+        "Dynasty / Vesper Sealed Weapon & Armor Full Box Drop"
+      ]
+    },
+    {
+      "ground_id": "champ-12-herd-whispering-mire-mahum-squad",
+      "ground_name": "Whispering Teapot Mire \u2014 Ol Mahum Herd Leader & 4-Minion Patrol Pack",
+      "champion_category": "Social_Herd_Leader_Pack_Ground",
+      "zone_id": "zone-field-whispering-mire",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-68409:228418",
+      "signature_champion_mob": "[Herd Leader] Ol Mahum Transcender Captain (+4 Linked Escort Guards)",
+      "level_bracket": "Lv.25\u201335 Pack Hunting Field",
+      "hp_and_xp_multiplier": "Leader + 4 Escorts Linked Aggro / Polearm & Mage AoE Bonus EXP (+220% Pack Clear)",
+      "spoil_and_drop_jackpot": [
+        "Mass Sweeper Festival Spoil: Animal Bone, Coarse Bone Powder & Varnish",
+        "D-Grade Top Weapon Blades & Scroll: Enchant Armor (D-Grade)",
+        "Herb of Life / Mana / Mystic Empower Ground Burst"
+      ]
+    },
+    {
+      "ground_id": "champ-13-herd-spiral-wormway-timak-orc-troop",
+      "ground_name": "Spiral Wormway Ramp \u2014 Timak Orc Overlord Herd Leader & Retinue",
+      "champion_category": "Social_Herd_Leader_Pack_Ground",
+      "zone_id": "zone-field-spiral-wormway-ramp",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "134204:-24593",
+      "signature_champion_mob": "[Herd Leader] Timak Orc Troop Leader (+4 Shaman & Archer Minions)",
+      "level_bracket": "Lv.44\u201354 Pack Hunting Field",
+      "hp_and_xp_multiplier": "Leader + 4 Minions Coordinated Formation / Killing Leader Breaks Minion Morale (-35% P.Def)",
+      "spoil_and_drop_jackpot": [
+        "Mass Sweeper Spoil: Steel, Coal, Mithril Ore & C-Grade Enchant Scrolls",
+        "60% B-Grade Zubei / Avadon Armor Recipes & Key Parts",
+        "Mid-Grade Life Stone (Lv.49\u201352) & Greater Healing Potion Stacks"
+      ]
+    },
+    {
+      "ground_id": "champ-14-herd-kelp-spiral-stakato-brood-pack",
+      "ground_name": "Kelp Spiral Undertide Reef \u2014 Cannibalistic Stakato Chief Herd Pack",
+      "champion_category": "Social_Herd_Leader_Pack_Ground",
+      "zone_id": "zone-field-kelp-spiral-reef",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-52383:-138604",
+      "signature_champion_mob": "[Herd Leader] Cannibalistic Stakato Chief (+5 Follower Nurse & Spike Drones)",
+      "level_bracket": "Lv.66\u201376 Pack Hunting Field",
+      "hp_and_xp_multiplier": "Leader Teleports Pack on Aggro / Nurse Heals Leader -> 9P AoE Burst Yield",
+      "spoil_and_drop_jackpot": [
+        "Stakato Fang Quest Crates + 20x\u201340x Asofe / Enria Mass Sweeper Yield",
+        "A-Grade / S-Grade Weapon Key Parts & High-Grade Life Stone (Lv.70\u201376)",
+        "Water Elemental Stone (+6..+150 Attribute) & Forgotten Scroll Fragment"
+      ]
+    },
+    {
+      "ground_id": "champ-15-herd-orrery-bridge-ketra-varka-warband",
+      "ground_name": "The Orrery Bridge \u2014 Ketra/Varka Battalion Commander Herd Warband",
+      "champion_category": "Social_Herd_Leader_Pack_Ground",
+      "zone_id": "zone-field-orrery-bridge",
+      "dungeon_id": "",
+      "floor_id": "",
+      "loc": "-28370:-108215",
+      "signature_champion_mob": "[Herd Leader] Ketra's Head Shaman / Varka's Head Magus (+5 Elite Footmen)",
+      "level_bracket": "Lv.76\u201382 Pack Hunting Field",
+      "hp_and_xp_multiplier": "6-Mob Linked Warband / Polearm Dreadnought & Fortune Seeker Mass Sweeper Paradise",
+      "spoil_and_drop_jackpot": [
+        "Ketra/Varka Mane & Molar Badges + S-Grade Imperial / Draconic Key Parts",
+        "Scroll: Enchant Weapon / Armor (S-Grade) & Top-Grade Life Stone (Lv.76)",
+        "Fire / Wind Elemental Stone & Giant's Codex Chapter Drops"
+      ]
+    },
+    {
+      "ground_id": "champ-16-herd-forbidden-path-b3-crypts-chieftain-pack",
+      "ground_name": "Catacomb of the Forbidden Path B3 \u2014 Turka Bugbear Chieftain Grave Pack",
+      "champion_category": "Social_Herd_Leader_Pack_Ground",
+      "zone_id": "zone-catacomb-forbidden-path-orrery",
+      "dungeon_id": "zone-catacomb-forbidden-path-orrery",
+      "floor_id": "B3",
+      "loc": "18443:-64226",
+      "signature_champion_mob": "[Herd Leader] Graveyard Chieftain & Restless Warrior Pack (+5 Minion Spirits)",
+      "level_bracket": "Lv.78\u201385 Underground Sanctum B3",
+      "hp_and_xp_multiplier": "Chieftain + 5 Undead Retainers + Burial Ground Guardian Pyramid Spawn Mechanic",
+      "spoil_and_drop_jackpot": [
+        "Dynasty S80 Weapon / Armor Sealed Pieces & Leonard / Orichalcum Mass Spoil",
+        "Blessed Scroll: Enchant Armor (S-Grade) & Top-Grade Life Stone (Lv.82)",
+        "Earth / Dark Elemental Stone & Ancient Tome of the Demon"
+      ]
+    }
+  ],
+  "dualsword_craft_unseal_forges": [
+    {
+      "forge_id": "dualsword-01-lantern-hollow",
+      "town_zone_id": "zone-town-lantern-hollow",
+      "town_name": "Lantern Hollow Village (Human Starter)",
+      "dualsword_tier_category": "Starter_C_B_Dualsword_Anvil",
+      "blacksmith_or_maestro_npc": "Blacksmith Kluto & Dualsword Apprentice (Lantern Hollow Gludin Forge)",
+      "anvil_loc": "-84270:243636",
+      "signature_dualsword_pairings": [
+        "Saber*Saber / Bastard Sword*Crimson Sword (D-Grade Starter Duals)",
+        "Katana*Katana / Raid Sword*Raid Sword (C-Grade Gladiator & Bladedancer Core)"
+      ],
+      "stamp_and_purity_cost": "50\u2013250 Stones of Purity + Crystal: D/C-Grade (No Dualsword Craft Stamp Required for D/C-Grade)",
+      "plus_four_enchant_passive": "+4 Dualsword Enchant Unlocks Passive Focus (+55..+68 Critical Rate) or Haste (+6%..+8% Atk.Spd)"
+    },
+    {
+      "forge_id": "dualsword-02-porcelain-loom",
+      "town_zone_id": "zone-town-porcelain-loom",
+      "town_name": "Porcelain Loom Sanctuary (Lunar Starter)",
+      "dualsword_tier_category": "Starter_C_B_Dualsword_Anvil",
+      "blacksmith_or_maestro_npc": "Blacksmith Aios & Elven Blade Binder (Porcelain Loom Forge)",
+      "anvil_loc": "45660:41327",
+      "signature_dualsword_pairings": [
+        "Elven Long Sword*Elven Long Sword (D-Grade High-Parry Dualsword)",
+        "Stormbringer*Stormbringer / Shamshir*Katana (C-Grade Sws/BD Tempo Duals)"
+      ],
+      "stamp_and_purity_cost": "75\u2013315 Stones of Purity + Crystal: D/C-Grade (Zero Failure Rate at Town Blacksmith)",
+      "plus_four_enchant_passive": "+4 Stormbringer*Stormbringer Grants +61 Critical Rate (Focus Passive) for Song/Dance Frontliners"
+    },
+    {
+      "forge_id": "dualsword-03-draft-kiln-post",
+      "town_zone_id": "zone-town-draft-kiln-post",
+      "town_name": "Draft-Kiln Post (Ogre/Orc Starter)",
+      "dualsword_tier_category": "Starter_C_B_Dualsword_Anvil",
+      "blacksmith_or_maestro_npc": "Blacksmith Sumari & Flame-Anvil Forger (Draft-Kiln Orc Forge)",
+      "anvil_loc": "-44930:-113082",
+      "signature_dualsword_pairings": [
+        "Spinebone Sword*Artisan's Sword (D-Grade Vanguard Duals)",
+        "Spirit's Sword*Raid Sword / Caliburs*Caliburs (C-Grade Top Duals)"
+      ],
+      "stamp_and_purity_cost": "95\u2013430 Stones of Purity + Crystal: C-Grade (Preserves Neither Individual Enchant on Combination)",
+      "plus_four_enchant_passive": "+4 Caliburs*Caliburs Triggers +15% Max HP / +10% Max CP & +4% PvP Damage Bonus"
+    },
+    {
+      "forge_id": "dualsword-04-carillon-belfry",
+      "town_zone_id": "zone-town-carillon-belfry",
+      "town_name": "Carillon Hearth Belfry (Dark-Lunar Starter)",
+      "dualsword_tier_category": "Starter_C_B_Dualsword_Anvil",
+      "blacksmith_or_maestro_npc": "Blacksmith Karrod & Dark-Lunar Twin-Blade Smith (Carillon Belfry)",
+      "anvil_loc": "12280:16909",
+      "signature_dualsword_pairings": [
+        "Tsurugi*Tsurugi / Homunkulus's Sword*Sword of Limit (Top C-Grade Duals)",
+        "Samurai Longsword*Samurai Longsword ( Iconic B-Grade Bladedancer/Gladiator Duals)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp (B-Grade) + 550 Stones of Purity + 240 Crystal: B-Grade",
+      "plus_four_enchant_passive": "+4 Samurai Longsword*Samurai Longsword Grants +4% Atk.Spd & +5% P.Atk (Built-In Haste Passive)"
+    },
+    {
+      "forge_id": "dualsword-05-kilnwatch-bastion",
+      "town_zone_id": "zone-town-kilnwatch-bastion",
+      "town_name": "Town of Kilnwatch Bastion (All-Race Lv.10-20 Convergence Castle Town)",
+      "dualsword_tier_category": "Starter_C_B_Dualsword_Anvil",
+      "blacksmith_or_maestro_npc": "Blacksmith Poitan & Dion Mercenary Blade Binder (Kilnwatch Bastion)",
+      "anvil_loc": "-14310:123600",
+      "signature_dualsword_pairings": [
+        "Katana*Spirit's Sword / Raid Sword*Tsurugi (C-Grade Mercenary Duals)",
+        "Great Sword*Great Sword / Keshanberk*Keshanberk (Top B-Grade Duals)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp + 400\u2013650 Stones of Purity + Crystal: C/B-Grade",
+      "plus_four_enchant_passive": "+4 Keshanberk*Keshanberk Unlocks +8% Atk.Spd (Haste) & +5% PvP Sonic Triple Slash Damage"
+    },
+    {
+      "forge_id": "dualsword-06-escapement-anvil",
+      "town_zone_id": "zone-town-escapement-anvil",
+      "town_name": "Town of Escapement Anvil (Stage D 2nd-Class [Learn & Try] Arena)",
+      "dualsword_tier_category": "A_S_Grade_Craft_Stamp_Forge",
+      "blacksmith_or_maestro_npc": "Blacksmith of Mammon & Head Blacksmith Vergara (Escapement Anvil Oren)",
+      "anvil_loc": "83000:53291",
+      "signature_dualsword_pairings": [
+        "Keshanberk*Damascus (Low A-Grade Dualsword \u00b7 +25% Max HP at +4)",
+        "Damascus*Damascus (Mid A-Grade Dualsword \u00b7 +84 Accuracy & +6% Atk.Spd at +4)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp (Castle Manor) + 520 Stones of Purity + 195 Crystal: A-Grade + Ancient Adena",
+      "plus_four_enchant_passive": "+4 Keshanberk*Damascus Grants +25% Max HP (Health Passive); +4 Damascus*Damascus Grants +6% Atk.Spd"
+    },
+    {
+      "forge_id": "dualsword-07-pinion-terminus",
+      "town_zone_id": "zone-town-pinion-terminus",
+      "town_name": "Pinion Terminus Township (Continent 01->02 Gateway)",
+      "dualsword_tier_category": "A_S_Grade_Craft_Stamp_Forge",
+      "blacksmith_or_maestro_npc": "Blacksmith Duning & Blacksmith of Mammon Envoy (Pinion Terminus Hunters)",
+      "anvil_loc": "82310:148682",
+      "signature_dualsword_pairings": [
+        "Tallum Blade*Damascus (High A-Grade Dualsword \u00b7 +8% Atk.Spd at +4)",
+        "Tallum Blade*Dark Legion's Edge (Top A-Grade Dualsword \u00b7 +15% Max HP / +20% Max MP / +30% Max CP)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp + 715 Stones of Purity + 286 Crystal: A-Grade (Mammon Seven-Seals Anvil)",
+      "plus_four_enchant_passive": "+4 Tallum Blade*Dark Legion's Edge Grants +15% Max HP, +20% Max MP, +30% Max CP & +5% PvP Skill Power"
+    },
+    {
+      "forge_id": "dualsword-08-saffron-press",
+      "town_zone_id": "zone-town-saffron-press",
+      "town_name": "Saffron Press Village (Manor Agricultural Hub)",
+      "dualsword_tier_category": "A_S_Grade_Craft_Stamp_Forge",
+      "blacksmith_or_maestro_npc": "Blacksmith Pushkin & Mammon Dualsword Forger (Saffron Press Freeholds)",
+      "anvil_loc": "17320:170173",
+      "signature_dualsword_pairings": [
+        "Sword of Miracles*Sword of Miracles (A-Grade Mystic/Muse Hybrid Dualsword)",
+        "Tallum Blade*Dark Legion's Edge (S-Grade Dualsword \u00b7 Duelist & Spectral Dancer Benchmark)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp (Manor Lord Crop Exchange) + 2,160,000 Ancient Adena + 143 Crystal: S-Grade",
+      "plus_four_enchant_passive": "+4 Tallum*Dark Legion's Edge Unlocks Built-In Health/MP/CP Boost + 150\u2013300 Elemental Attribute Cap"
+    },
+    {
+      "forge_id": "dualsword-09-inductor-switchyard",
+      "town_zone_id": "zone-town-inductor-switchyard",
+      "town_name": "Town of Inductor Switchyard (Stage E 2nd-Class Promotion Capital)",
+      "dualsword_tier_category": "A_S_Grade_Craft_Stamp_Forge",
+      "blacksmith_or_maestro_npc": "Head Blacksmith Kusto & Blacksmith of Mammon (Inductor Switchyard Giran)",
+      "anvil_loc": "147330:-55136",
+      "signature_dualsword_pairings": [
+        "Tallum Blade*Dark Legion's Edge (S-Grade Standard Dualsword)",
+        "Forgotten Blade*Forgotten Blade (S-Grade High-Tier Dualsword \u00b7 +109 Crit Rate at +4)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp + 550 Stones of Purity + 215 Crystal: S-Grade + 3,500,000 Adena",
+      "plus_four_enchant_passive": "+4 Enhanced S-Grade Dualsword Triggers Passive Focus (+109 Crit) & +10% PvP Sonic Rage Damage"
+    },
+    {
+      "forge_id": "dualsword-10-torque-balance-citadel",
+      "town_zone_id": "zone-town-torque-balance-citadel",
+      "town_name": "Town of Torque-Balance Citadel (Human Ancestral Expedition Hub)",
+      "dualsword_tier_category": "A_S_Grade_Craft_Stamp_Forge",
+      "blacksmith_or_maestro_npc": "Head Blacksmith Ferris & Imperial Mammon Forger (Torque-Balance Aden)",
+      "anvil_loc": "116340:-18345",
+      "signature_dualsword_pairings": [
+        "Tallum Blade*Dark Legion's Edge {PvP} (Fame-Infused S-Grade Dualsword)",
+        "Dynasty Sword*Dark Legion's Edge (S80 Hybrid Dualsword \u00b7 +15% Max HP & +7% Atk.Spd)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp (Aden Castle Manor) + 680 Stones of Purity + 295 Crystal: S-Grade",
+      "plus_four_enchant_passive": "+4 Dynasty*Dark Legion's Edge Grants +15% Max HP, +7% Atk.Spd & Rapidus PvP Cancel Proc"
+    },
+    {
+      "forge_id": "dualsword-11-glaze-barge-quay",
+      "town_zone_id": "zone-town-glaze-barge-quay",
+      "town_name": "Glaze-Barge Quay (River Trade & Raid Port)",
+      "dualsword_tier_category": "Maestro_Ishuma_S80_S84_Unseal_Dock",
+      "blacksmith_or_maestro_npc": "Maestro Ishuma & Airship Wharf Master Smith (Glaze-Barge Quay)",
+      "anvil_loc": "-81250:151446",
+      "signature_dualsword_pairings": [
+        "Dynasty Dual Sword (Dynasty Sword*Dynasty Sword \u00b7 S80 \u00b7 +109 Crit Rate & +10% Max HP at +4)",
+        "Icarus Dual Sword (Icarus Sawsword*Icarus Sawsword \u00b7 S80 \u00b7 +109 Crit Rate & +10% Max HP at +4)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp + 890 Stones of Purity + 425 Crystal: S-Grade (Maestro Ishuma Wharf Anvil)",
+      "plus_four_enchant_passive": "+4 Icarus Dual Sword Unlocks +109 Critical Rate, +10% Max HP & 300 Elemental Attribute Cap"
+    },
+    {
+      "forge_id": "dualsword-12-cinnamon-mill",
+      "town_zone_id": "zone-town-cinnamon-mill",
+      "town_name": "Cinnamon-Mill Haven (Furral Starter)",
+      "dualsword_tier_category": "Maestro_Ishuma_S80_S84_Unseal_Dock",
+      "blacksmith_or_maestro_npc": "Maestro Ishuma's Envoy & Kamael Blade Artificer (Cinnamon-Mill Harbor)",
+      "anvil_loc": "-118240:46837",
+      "signature_dualsword_pairings": [
+        "Icarus Dual Sword (S80 High-Crit Dualsword + Masterwork Earth/Chaos Option)",
+        "Dynasty Dual Daggers (Dynasty Knife + Soul Separator \u00b7Lv.81 Adventurer/Wind Rider/Ghost Hunter)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp + 950 Stones of Purity + 510 Crystal: S-Grade + Mammon's Varnish Enhancer",
+      "plus_four_enchant_passive": "+4 Dual Daggers / Icarus Dual Sword Grants +109 Crit Rate & +5% Mortal Blow / Lethal Strike Land Rate"
+    },
+    {
+      "forge_id": "dualsword-13-root-train-roundhouse",
+      "town_zone_id": "zone-town-root-train-roundhouse",
+      "town_name": "Root-Train Roundhouse (Dwarf Starter)",
+      "dualsword_tier_category": "Maestro_Ishuma_S80_S84_Unseal_Dock",
+      "blacksmith_or_maestro_npc": "Head Blacksmith Newyear & Maestro Ishuma Relay (Root-Train Schuttgart)",
+      "anvil_loc": "115070:-178172",
+      "signature_dualsword_pairings": [
+        "Vesper Dual Sword (Vesper Cutter*Sirra's Blade \u00b7 S84 \u00b7 +109 Crit Rate & +10% Max HP at +4)",
+        "Icarus Dual Daggers (Icarus Disperser + Angel Slayer \u00b7 S80 Assassin Dual Daggers)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp + 1,148 Stones of Purity + 574 Crystal: S-Grade + 7,172,000 Adena",
+      "plus_four_enchant_passive": "+4 Vesper Dual Sword Grants +109 Critical Rate, +10% Max HP & +5% PvP Damage Bonus"
+    },
+    {
+      "forge_id": "dualsword-14-starfall-haven",
+      "town_zone_id": "zone-town-starfall-haven",
+      "town_name": "Starfall Haven Township (Continent 03 Sky-Harbor Capital)",
+      "dualsword_tier_category": "Maestro_Ishuma_S80_S84_Unseal_Dock",
+      "blacksmith_or_maestro_npc": "Maestro Ishuma & Keucereus Alliance Forge Master (Starfall Haven Rune)",
+      "anvil_loc": "43780:-47881",
+      "signature_dualsword_pairings": [
+        "Vesper Dual Sword (Vesper Cutter*Sirra's Blade \u00b7 S84 Standard & Noble Upgrade)",
+        "Vesper Dual Daggers (Vesper Shaper + Naga Storm \u00b7 S84 \u00b7 +109 Crit & +4% Atk.Spd at +4)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp + Vesper Noble Enhancement Stone + 1,148 Stones of Purity + 574 Crystal: S-Grade",
+      "plus_four_enchant_passive": "+4 Vesper Dual Sword / Dual Daggers Unlocks +109 Crit Rate, +10% Max HP & Sovereign Cloak Slot"
+    },
+    {
+      "forge_id": "dualsword-15-crown-beacon",
+      "town_zone_id": "zone-town-crown-beacon",
+      "town_name": "Town of Crown-Beacon Citadel (High-Halo Imperial Capital)",
+      "dualsword_tier_category": "Maestro_Ishuma_S80_S84_Unseal_Dock",
+      "blacksmith_or_maestro_npc": "Maestro Ishuma & Grand Goddard Sovereign Forger (Crown-Beacon Citadel)",
+      "anvil_loc": "147890:26810",
+      "signature_dualsword_pairings": [
+        "Periel Dual Sword (Periel Sword*Periel Sword \u00b7 Top S84 \u00b7 +109 Crit Rate & +10% Max HP at +4)",
+        "Eternal Core Dual Sword & Skull Edge Dual Daggers (Apex S84 Freya/Antharas Duals)"
+      ],
+      "stamp_and_purity_cost": "Dualsword Craft Stamp + 1,355 Stones of Purity + 678 Crystal: S-Grade + 10,935,000 Adena",
+      "plus_four_enchant_passive": "+4 Periel / Eternal Core Dual Sword Grants +109 Crit Rate, +10% Max HP & +10% PvP Skill Power"
+    }
   ]
 }

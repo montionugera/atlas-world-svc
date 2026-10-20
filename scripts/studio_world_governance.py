@@ -708,6 +708,8 @@ def validate_world_governance(
                 "commandChannelRaidSanctumsCount": len(t_doc.get("command_channel_raid_sanctums") or []),
                 "nevitBlessingSanctuariesCount": len(t_doc.get("nevit_blessing_sanctuaries") or []),
                 "eightHourCouncilSignoffLedgerCount": len(t_doc.get("eight_hour_council_signoff_ledger") or []),
+                "championMobHerdGroundsCount": len(t_doc.get("champion_mob_herd_grounds") or []),
+                "dualswordCraftUnsealForgesCount": len(t_doc.get("dualsword_craft_unseal_forges") or []),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -1570,6 +1572,43 @@ def validate_world_governance(
                 if cs_did and cs_did not in mf_dungeon_ids:
                     errors.append(
                         f"GOV-10 violation: eight_hour_council_signoff_ledger '{cs_id}' references unknown dungeon_id '{cs_did}'"
+                    )
+
+            # Validate 16-Zone Champion Mob Aura (Blue 10x / Red 50x) & Group Herd Leader Grounds (D69)
+            champion_grounds = t_doc.get("champion_mob_herd_grounds") or []
+            if champion_grounds and len(champion_grounds) != 16:
+                errors.append(
+                    f"GOV-10 violation: champion_mob_herd_grounds must have 16 champion/herd grounds, got {len(champion_grounds)}"
+                )
+            for cg_item in champion_grounds:
+                if not isinstance(cg_item, dict):
+                    continue
+                cg_id = str(cg_item.get("ground_id", ""))
+                cg_zid = str(cg_item.get("zone_id", ""))
+                cg_did = str(cg_item.get("dungeon_id", ""))
+                if cg_zid not in all_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: champion_mob_herd_grounds '{cg_id}' references unknown zone_id '{cg_zid}'"
+                    )
+                if cg_did and cg_did not in mf_dungeon_ids:
+                    errors.append(
+                        f"GOV-10 violation: champion_mob_herd_grounds '{cg_id}' references unknown dungeon_id '{cg_did}'"
+                    )
+
+            # Validate 15-Town Dualsword Craft Stamp & Maestro Ishuma S80/S84 Unseal Forges (D70)
+            dualsword_forges = t_doc.get("dualsword_craft_unseal_forges") or []
+            if dualsword_forges and len(dualsword_forges) != 15:
+                errors.append(
+                    f"GOV-10 violation: dualsword_craft_unseal_forges must have 15 town dualsword forges, got {len(dualsword_forges)}"
+                )
+            for df_item in dualsword_forges:
+                if not isinstance(df_item, dict):
+                    continue
+                df_id = str(df_item.get("forge_id", ""))
+                df_tzid = str(df_item.get("town_zone_id", ""))
+                if df_tzid not in town_zone_ids:
+                    errors.append(
+                        f"GOV-10 violation: dualsword_craft_unseal_forges '{df_id}' references unknown town_zone_id '{df_tzid}'"
                     )
 
             # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)

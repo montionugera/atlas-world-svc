@@ -12690,6 +12690,538 @@ def _build_eight_hour_council_signoff_ledger(atlas: dict[str, Any]) -> list[dict
     return rows
 
 
+def _build_champion_mob_herd_grounds(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 16 High-Yield Champion Mob Aura (Blue 10x / Red 50x) & Group Herd Leader Grounds (6 Blue_Aura_10x_Champion_Field + 5 Crimson_Aura_50x_Champion_Sanctum + 5 Social_Herd_Leader_Pack_Ground) (D69)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_zones = (
+        (zdir.get("starting_towns") or [])
+        + (zdir.get("other_castle_and_hub_towns") or [])
+        + (zdir.get("fields_and_hunting_areas") or [])
+        + (zdir.get("regular_dungeons") or [])
+        + (zdir.get("seven_signs_seal_catacombs") or [])
+        + (zdir.get("harbors_clanhalls_and_forts") or [])
+    )
+    zone_by_id = {str(z.get("zone_id")): z for z in all_zones if isinstance(z, dict)}
+
+    specs = [
+        # 6 Blue_Aura_10x_Champion_Field Grounds
+        (
+            "champ-01-blue-cinder-apron-enforcer",
+            "Cinder-Apron Outlands — Blue Aura 10× Champion Enforcer Grounds",
+            "Blue_Aura_10x_Champion_Field",
+            "zone-field-cinder-apron",
+            "",
+            "",
+            "[Blue Champion 10×] Cinder-Apron Enforcer & Bugbear Raider",
+            "Lv.24–34 Overland Field",
+            "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+            [
+                "8x–18x High-Grade Iron Ore, Coal & Charcoal Sweeper Yield",
+                "Festival Adena & D-Grade Enchant Weapon/Armor Scroll Burst",
+                "Brigandine / Elven Mithril Key Piece Multi-Drop",
+            ],
+        ),
+        (
+            "champ-02-blue-brass-spur-wyrm-stalker",
+            "Brass-Spur Gear Ridge — Blue Aura 10× Champion Death Pass Wyrm",
+            "Blue_Aura_10x_Champion_Field",
+            "zone-field-brass-spur-ridge",
+            "",
+            "",
+            "[Blue Champion 10×] Brass-Spur Wyrm & Road Scavenger",
+            "Lv.35–44 Overland Field",
+            "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+            [
+                "10x–22x Oriharukon Ore, Crafted Leather & Metallic Fiber Spoil",
+                "Scroll: Enchant Weapon (C-Grade) & Mid-Grade Life Stone (Lv.46)",
+                "Full Plate & Karmian Key Material Burst",
+            ],
+        ),
+        (
+            "champ-03-blue-siphon-sluice-alligator-champion",
+            "Verdigris Siphon Sluice — Blue Aura 10× Champion Crokian Warrior",
+            "Blue_Aura_10x_Champion_Field",
+            "zone-field-siphon-sluice",
+            "",
+            "",
+            "[Blue Champion 10×] Crokian Lad & Nos Lad Champion",
+            "Lv.42–52 Overland Field",
+            "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+            [
+                "10x–20x Mithril Ore, Varnish of Purity & Compound Braid Spoil",
+                "Blessed Scroll of Escape & C-Grade Weapon Key Part Stack",
+                "Greater Haste / Swift Attack Potion & Festival Adena Bundle",
+            ],
+        ),
+        (
+            "champ-04-blue-leyden-causeway-doom-champion",
+            "Leyden Capacitor Causeway — Blue Aura 10× Champion Doom Knight",
+            "Blue_Aura_10x_Champion_Field",
+            "zone-field-leyden-causeway",
+            "",
+            "",
+            "[Blue Champion 10×] Arc-Tesla Construct & Doom Knight",
+            "Lv.58–68 Overland Field",
+            "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+            [
+                "12x–25x Enria, Asofe & Thons Sweeper Spoil Jackpot",
+                "Scroll: Enchant Weapon / Armor (B-Grade & A-Grade)",
+                "High-Grade Life Stone (Lv.64–67) & Tallum / Dark Crystal Parts",
+            ],
+        ),
+        (
+            "champ-05-blue-caldera-rim-hot-springs-yeti",
+            "Mainspring Caldera Rim — Blue Aura 10× Champion Hot Springs Yeti",
+            "Blue_Aura_10x_Champion_Field",
+            "zone-field-caldera-rim",
+            "",
+            "",
+            "[Blue Champion 10×] Hot Springs Bandersnatch & Yeti",
+            "Lv.72–78 Overland Field",
+            "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+            [
+                "15x–30x Durable Metal Plate, Mold Hardener & Mold Lubricant",
+                "60% S-Grade Arcana Mace / Draconic Bow / Imperial Crusader Recipes",
+                "High-Grade Life Stone (Lv.76) & Fire Elemental Stone",
+            ],
+        ),
+        (
+            "champ-06-blue-aurora-tether-astral-drake",
+            "Aurora Tether Span — Blue Aura 10× Champion Star-Forged Drake",
+            "Blue_Aura_10x_Champion_Field",
+            "zone-field-aurora-tether",
+            "",
+            "",
+            "[Blue Champion 10×] Star-Forged Drake & Halo Arbiter",
+            "Lv.78–85 Overland Field",
+            "10x HP / 10x EXP & SP / 8x Adena & Spoil Quantity (Blue Aura)",
+            [
+                "15x–35x Leonard, Adamantine & Orichalcum S80 Spoil Yield",
+                "Icarus & Vesper Weapon Key Pieces + Top-Grade Life Stone (Lv.80–82)",
+                "Holy / Wind Elemental Stone (150-Cap) Multi-Drop",
+            ],
+        ),
+        # 5 Crimson_Aura_50x_Champion_Sanctum Grounds
+        (
+            "champ-07-red-kiln-cellar-b3-crimson-ant-overseer",
+            "Kiln Cellar B3 — Crimson Aura 50× Champion Royal Cave Servant",
+            "Crimson_Aura_50x_Champion_Sanctum",
+            "zone-dungeon-kiln-cellar",
+            "zone-dungeon-kiln-cellar",
+            "B3",
+            "[Red Champion 50×] Royal Cave Servant & Noble Ant Overseer",
+            "Lv.36–42 Underground Dungeon B3",
+            "50x HP / 50x EXP & SP / Guaranteed Blessed Scroll or Festival Adena Drop (Red Aura)",
+            [
+                "25x–50x Mithril Alloy, Synthetic Cokes & Oriharukon Sweeper Burst",
+                "Blessed Scroll: Enchant Weapon / Armor (C-Grade)",
+                "Full C-Grade Weapon / Armor Piece Drop & Festival Adena Stack",
+            ],
+        ),
+        (
+            "champ-08-red-pendulum-shaft-3f-crimson-krator",
+            "Pendulum Shaft 3F — Crimson Aura 50× Champion Cruma Krator",
+            "Crimson_Aura_50x_Champion_Sanctum",
+            "zone-dungeon-pendulum-shaft",
+            "zone-dungeon-pendulum-shaft",
+            "3F",
+            "[Red Champion 50×] Cruma Tower Krator & Catherok",
+            "Lv.46–54 Vertical Tower 3F",
+            "50x HP / 50x EXP & SP / Guaranteed Blessed Scroll or Festival Adena Drop (Red Aura)",
+            [
+                "30x–60x Enria, Mold Glue & Artisan's Frame Spoil Jackpot",
+                "Blessed Scroll: Enchant Weapon / Armor (B-Grade)",
+                "Avadon / Zubei / Blue Wolf Tunic & Breastplate Full Drop Chance",
+            ],
+        ),
+        (
+            "champ-09-red-witch-pendulum-b3-crimson-nephilim",
+            "Catacomb of the Astral Witch B3 — Crimson Aura 50× Nephilim Royal Guard",
+            "Crimson_Aura_50x_Champion_Sanctum",
+            "zone-catacomb-witch-pendulum",
+            "zone-catacomb-witch-pendulum",
+            "B3",
+            "[Red Champion 50×] Nephilim Royal Guard & Lilim Great Mystic",
+            "Lv.66–75 Seal Catacomb B3",
+            "50x HP / 50x EXP & SP / Guaranteed Blessed Scroll or 80,000+ Seal Stone Jackpot (Red Aura)",
+            [
+                "50,000–120,000 Red & Green Seal Stones (350,000+ Ancient Adena Value)",
+                "Blessed Scroll: Enchant Weapon (A-Grade) & High-Grade Life Stone (Lv.70)",
+                "30x–60x Asofe, Thons & Tallum Blade Key Materials",
+            ],
+        ),
+        (
+            "champ-10-red-chronometer-foundry-3f-crimson-ashuras",
+            "Chronometer Foundry 3F — Crimson Aura 50× Forge of the Gods Ashuras",
+            "Crimson_Aura_50x_Champion_Sanctum",
+            "zone-dungeon-chronometer-foundry",
+            "zone-dungeon-chronometer-foundry",
+            "3F",
+            "[Red Champion 50×] Scarlet Stakato Noble & Ashuras of Destruction",
+            "Lv.76–82 Vertical Foundry 3F",
+            "50x HP / 50x EXP & SP / Guaranteed Blessed S-Scroll or Top-Grade Life Stone (Red Aura)",
+            [
+                "35x–75x Mold Hardener, Enria & S-Grade Weapon Key Pieces",
+                "Blessed Scroll: Enchant Weapon / Armor (S-Grade)",
+                "Fire Elemental Stone (x5–x12 Burst) & Top-Grade Life Stone (Lv.76–80)",
+            ],
+        ),
+        (
+            "champ-11-red-star-heart-nave-3f-crimson-archangel",
+            "Star-Heart Nave 3F — Crimson Aura 50× Platinum Guardian Prefect",
+            "Crimson_Aura_50x_Champion_Sanctum",
+            "zone-dungeon-star-heart-nave",
+            "zone-dungeon-star-heart-nave",
+            "3F",
+            "[Red Champion 50×] Platinum Guardian Prefect & Seal Archangel",
+            "Lv.78–85 Vertical Spire 3F",
+            "50x HP / 50x EXP & SP / Guaranteed Blessed S-Scroll & Dynasty/Vesper Spoil Jackpot (Red Aura)",
+            [
+                "40x–80x Leonard, Adamantine & Orichalcum S80/S84 Spoil Jackpot",
+                "Blessed Scroll: Enchant Weapon (S-Grade) & Giant's Codex: Mastery",
+                "Dynasty / Vesper Sealed Weapon & Armor Full Box Drop",
+            ],
+        ),
+        # 5 Social_Herd_Leader_Pack_Ground Grounds
+        (
+            "champ-12-herd-whispering-mire-mahum-squad",
+            "Whispering Teapot Mire — Ol Mahum Herd Leader & 4-Minion Patrol Pack",
+            "Social_Herd_Leader_Pack_Ground",
+            "zone-field-whispering-mire",
+            "",
+            "",
+            "[Herd Leader] Ol Mahum Transcender Captain (+4 Linked Escort Guards)",
+            "Lv.25–35 Pack Hunting Field",
+            "Leader + 4 Escorts Linked Aggro / Polearm & Mage AoE Bonus EXP (+220% Pack Clear)",
+            [
+                "Mass Sweeper Festival Spoil: Animal Bone, Coarse Bone Powder & Varnish",
+                "D-Grade Top Weapon Blades & Scroll: Enchant Armor (D-Grade)",
+                "Herb of Life / Mana / Mystic Empower Ground Burst",
+            ],
+        ),
+        (
+            "champ-13-herd-spiral-wormway-timak-orc-troop",
+            "Spiral Wormway Ramp — Timak Orc Overlord Herd Leader & Retinue",
+            "Social_Herd_Leader_Pack_Ground",
+            "zone-field-spiral-wormway-ramp",
+            "",
+            "",
+            "[Herd Leader] Timak Orc Troop Leader (+4 Shaman & Archer Minions)",
+            "Lv.44–54 Pack Hunting Field",
+            "Leader + 4 Minions Coordinated Formation / Killing Leader Breaks Minion Morale (-35% P.Def)",
+            [
+                "Mass Sweeper Spoil: Steel, Coal, Mithril Ore & C-Grade Enchant Scrolls",
+                "60% B-Grade Zubei / Avadon Armor Recipes & Key Parts",
+                "Mid-Grade Life Stone (Lv.49–52) & Greater Healing Potion Stacks",
+            ],
+        ),
+        (
+            "champ-14-herd-kelp-spiral-stakato-brood-pack",
+            "Kelp Spiral Undertide Reef — Cannibalistic Stakato Chief Herd Pack",
+            "Social_Herd_Leader_Pack_Ground",
+            "zone-field-kelp-spiral-reef",
+            "",
+            "",
+            "[Herd Leader] Cannibalistic Stakato Chief (+5 Follower Nurse & Spike Drones)",
+            "Lv.66–76 Pack Hunting Field",
+            "Leader Teleports Pack on Aggro / Nurse Heals Leader -> 9P AoE Burst Yield",
+            [
+                "Stakato Fang Quest Crates + 20x–40x Asofe / Enria Mass Sweeper Yield",
+                "A-Grade / S-Grade Weapon Key Parts & High-Grade Life Stone (Lv.70–76)",
+                "Water Elemental Stone (+6..+150 Attribute) & Forgotten Scroll Fragment",
+            ],
+        ),
+        (
+            "champ-15-herd-orrery-bridge-ketra-varka-warband",
+            "The Orrery Bridge — Ketra/Varka Battalion Commander Herd Warband",
+            "Social_Herd_Leader_Pack_Ground",
+            "zone-field-orrery-bridge",
+            "",
+            "",
+            "[Herd Leader] Ketra's Head Shaman / Varka's Head Magus (+5 Elite Footmen)",
+            "Lv.76–82 Pack Hunting Field",
+            "6-Mob Linked Warband / Polearm Dreadnought & Fortune Seeker Mass Sweeper Paradise",
+            [
+                "Ketra/Varka Mane & Molar Badges + S-Grade Imperial / Draconic Key Parts",
+                "Scroll: Enchant Weapon / Armor (S-Grade) & Top-Grade Life Stone (Lv.76)",
+                "Fire / Wind Elemental Stone & Giant's Codex Chapter Drops",
+            ],
+        ),
+        (
+            "champ-16-herd-forbidden-path-b3-crypts-chieftain-pack",
+            "Catacomb of the Forbidden Path B3 — Turka Bugbear Chieftain Grave Pack",
+            "Social_Herd_Leader_Pack_Ground",
+            "zone-catacomb-forbidden-path-orrery",
+            "zone-catacomb-forbidden-path-orrery",
+            "B3",
+            "[Herd Leader] Graveyard Chieftain & Restless Warrior Pack (+5 Minion Spirits)",
+            "Lv.78–85 Underground Sanctum B3",
+            "Chieftain + 5 Undead Retainers + Burial Ground Guardian Pyramid Spawn Mechanic",
+            [
+                "Dynasty S80 Weapon / Armor Sealed Pieces & Leonard / Orichalcum Mass Spoil",
+                "Blessed Scroll: Enchant Armor (S-Grade) & Top-Grade Life Stone (Lv.82)",
+                "Earth / Dark Elemental Stone & Ancient Tome of the Demon",
+            ],
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        gid,
+        gname,
+        ccat,
+        zid,
+        did,
+        fid,
+        cmob,
+        lbracket,
+        hpmult,
+        jackpot,
+    ) in enumerate(specs, start=1):
+        z_obj = zone_by_id.get(zid) or {}
+        bx, by = _parse_loc(str(z_obj.get("loc_coord") or "-84120:243500"))
+        loc = _fmt_loc(bx - 165 + idx * 13, by + 150 - idx * 11)
+        rows.append(
+            {
+                "ground_id": gid,
+                "ground_name": gname,
+                "champion_category": ccat,
+                "zone_id": zid,
+                "dungeon_id": did,
+                "floor_id": fid,
+                "loc": loc,
+                "signature_champion_mob": cmob,
+                "level_bracket": lbracket,
+                "hp_and_xp_multiplier": hpmult,
+                "spoil_and_drop_jackpot": jackpot,
+            }
+        )
+    return rows
+
+
+def _build_dualsword_craft_unseal_forges(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build 15 Town Dualsword Craft Stamp & Maestro Ishuma S80/S84 Unseal Forges (5 Starter_C_B_Dualsword_Anvil + 5 A_S_Grade_Craft_Stamp_Forge + 5 Maestro_Ishuma_S80_S84_Unseal_Dock) (D70)."""
+    zdir = atlas.get("t_breadth_zone_directory") or {}
+    all_towns = (zdir.get("starting_towns") or []) + (zdir.get("other_castle_and_hub_towns") or [])
+    town_by_id = {
+        str(t.get("zone_id")): t
+        for t in all_towns
+        if isinstance(t, dict) and t.get("zone_id")
+    }
+    specs = [
+        # 5 Starter_C_B_Dualsword_Anvil Towns
+        (
+            "dualsword-01-lantern-hollow",
+            "zone-town-lantern-hollow",
+            "Starter_C_B_Dualsword_Anvil",
+            "Blacksmith Kluto & Dualsword Apprentice (Lantern Hollow Gludin Forge)",
+            [
+                "Saber*Saber / Bastard Sword*Crimson Sword (D-Grade Starter Duals)",
+                "Katana*Katana / Raid Sword*Raid Sword (C-Grade Gladiator & Bladedancer Core)",
+            ],
+            "50–250 Stones of Purity + Crystal: D/C-Grade (No Dualsword Craft Stamp Required for D/C-Grade)",
+            "+4 Dualsword Enchant Unlocks Passive Focus (+55..+68 Critical Rate) or Haste (+6%..+8% Atk.Spd)",
+        ),
+        (
+            "dualsword-02-porcelain-loom",
+            "zone-town-porcelain-loom",
+            "Starter_C_B_Dualsword_Anvil",
+            "Blacksmith Aios & Elven Blade Binder (Porcelain Loom Forge)",
+            [
+                "Elven Long Sword*Elven Long Sword (D-Grade High-Parry Dualsword)",
+                "Stormbringer*Stormbringer / Shamshir*Katana (C-Grade Sws/BD Tempo Duals)",
+            ],
+            "75–315 Stones of Purity + Crystal: D/C-Grade (Zero Failure Rate at Town Blacksmith)",
+            "+4 Stormbringer*Stormbringer Grants +61 Critical Rate (Focus Passive) for Song/Dance Frontliners",
+        ),
+        (
+            "dualsword-03-draft-kiln-post",
+            "zone-town-draft-kiln-post",
+            "Starter_C_B_Dualsword_Anvil",
+            "Blacksmith Sumari & Flame-Anvil Forger (Draft-Kiln Orc Forge)",
+            [
+                "Spinebone Sword*Artisan's Sword (D-Grade Vanguard Duals)",
+                "Spirit's Sword*Raid Sword / Caliburs*Caliburs (C-Grade Top Duals)",
+            ],
+            "95–430 Stones of Purity + Crystal: C-Grade (Preserves Neither Individual Enchant on Combination)",
+            "+4 Caliburs*Caliburs Triggers +15% Max HP / +10% Max CP & +4% PvP Damage Bonus",
+        ),
+        (
+            "dualsword-04-carillon-belfry",
+            "zone-town-carillon-belfry",
+            "Starter_C_B_Dualsword_Anvil",
+            "Blacksmith Karrod & Dark-Lunar Twin-Blade Smith (Carillon Belfry)",
+            [
+                "Tsurugi*Tsurugi / Homunkulus's Sword*Sword of Limit (Top C-Grade Duals)",
+                "Samurai Longsword*Samurai Longsword ( Iconic B-Grade Bladedancer/Gladiator Duals)",
+            ],
+            "Dualsword Craft Stamp (B-Grade) + 550 Stones of Purity + 240 Crystal: B-Grade",
+            "+4 Samurai Longsword*Samurai Longsword Grants +4% Atk.Spd & +5% P.Atk (Built-In Haste Passive)",
+        ),
+        (
+            "dualsword-05-kilnwatch-bastion",
+            "zone-town-kilnwatch-bastion",
+            "Starter_C_B_Dualsword_Anvil",
+            "Blacksmith Poitan & Dion Mercenary Blade Binder (Kilnwatch Bastion)",
+            [
+                "Katana*Spirit's Sword / Raid Sword*Tsurugi (C-Grade Mercenary Duals)",
+                "Great Sword*Great Sword / Keshanberk*Keshanberk (Top B-Grade Duals)",
+            ],
+            "Dualsword Craft Stamp + 400–650 Stones of Purity + Crystal: C/B-Grade",
+            "+4 Keshanberk*Keshanberk Unlocks +8% Atk.Spd (Haste) & +5% PvP Sonic Triple Slash Damage",
+        ),
+        # 5 A_S_Grade_Craft_Stamp_Forge Towns
+        (
+            "dualsword-06-escapement-anvil",
+            "zone-town-escapement-anvil",
+            "A_S_Grade_Craft_Stamp_Forge",
+            "Blacksmith of Mammon & Head Blacksmith Vergara (Escapement Anvil Oren)",
+            [
+                "Keshanberk*Damascus (Low A-Grade Dualsword · +25% Max HP at +4)",
+                "Damascus*Damascus (Mid A-Grade Dualsword · +84 Accuracy & +6% Atk.Spd at +4)",
+            ],
+            "Dualsword Craft Stamp (Castle Manor) + 520 Stones of Purity + 195 Crystal: A-Grade + Ancient Adena",
+            "+4 Keshanberk*Damascus Grants +25% Max HP (Health Passive); +4 Damascus*Damascus Grants +6% Atk.Spd",
+        ),
+        (
+            "dualsword-07-pinion-terminus",
+            "zone-town-pinion-terminus",
+            "A_S_Grade_Craft_Stamp_Forge",
+            "Blacksmith Duning & Blacksmith of Mammon Envoy (Pinion Terminus Hunters)",
+            [
+                "Tallum Blade*Damascus (High A-Grade Dualsword · +8% Atk.Spd at +4)",
+                "Tallum Blade*Dark Legion's Edge (Top A-Grade Dualsword · +15% Max HP / +20% Max MP / +30% Max CP)",
+            ],
+            "Dualsword Craft Stamp + 715 Stones of Purity + 286 Crystal: A-Grade (Mammon Seven-Seals Anvil)",
+            "+4 Tallum Blade*Dark Legion's Edge Grants +15% Max HP, +20% Max MP, +30% Max CP & +5% PvP Skill Power",
+        ),
+        (
+            "dualsword-08-saffron-press",
+            "zone-town-saffron-press",
+            "A_S_Grade_Craft_Stamp_Forge",
+            "Blacksmith Pushkin & Mammon Dualsword Forger (Saffron Press Freeholds)",
+            [
+                "Sword of Miracles*Sword of Miracles (A-Grade Mystic/Muse Hybrid Dualsword)",
+                "Tallum Blade*Dark Legion's Edge (S-Grade Dualsword · Duelist & Spectral Dancer Benchmark)",
+            ],
+            "Dualsword Craft Stamp (Manor Lord Crop Exchange) + 2,160,000 Ancient Adena + 143 Crystal: S-Grade",
+            "+4 Tallum*Dark Legion's Edge Unlocks Built-In Health/MP/CP Boost + 150–300 Elemental Attribute Cap",
+        ),
+        (
+            "dualsword-09-inductor-switchyard",
+            "zone-town-inductor-switchyard",
+            "A_S_Grade_Craft_Stamp_Forge",
+            "Head Blacksmith Kusto & Blacksmith of Mammon (Inductor Switchyard Giran)",
+            [
+                "Tallum Blade*Dark Legion's Edge (S-Grade Standard Dualsword)",
+                "Forgotten Blade*Forgotten Blade (S-Grade High-Tier Dualsword · +109 Crit Rate at +4)",
+            ],
+            "Dualsword Craft Stamp + 550 Stones of Purity + 215 Crystal: S-Grade + 3,500,000 Adena",
+            "+4 Enhanced S-Grade Dualsword Triggers Passive Focus (+109 Crit) & +10% PvP Sonic Rage Damage",
+        ),
+        (
+            "dualsword-10-torque-balance-citadel",
+            "zone-town-torque-balance-citadel",
+            "A_S_Grade_Craft_Stamp_Forge",
+            "Head Blacksmith Ferris & Imperial Mammon Forger (Torque-Balance Aden)",
+            [
+                "Tallum Blade*Dark Legion's Edge {PvP} (Fame-Infused S-Grade Dualsword)",
+                "Dynasty Sword*Dark Legion's Edge (S80 Hybrid Dualsword · +15% Max HP & +7% Atk.Spd)",
+            ],
+            "Dualsword Craft Stamp (Aden Castle Manor) + 680 Stones of Purity + 295 Crystal: S-Grade",
+            "+4 Dynasty*Dark Legion's Edge Grants +15% Max HP, +7% Atk.Spd & Rapidus PvP Cancel Proc",
+        ),
+        # 5 Maestro_Ishuma_S80_S84_Unseal_Dock Towns
+        (
+            "dualsword-11-glaze-barge-quay",
+            "zone-town-glaze-barge-quay",
+            "Maestro_Ishuma_S80_S84_Unseal_Dock",
+            "Maestro Ishuma & Airship Wharf Master Smith (Glaze-Barge Quay)",
+            [
+                "Dynasty Dual Sword (Dynasty Sword*Dynasty Sword · S80 · +109 Crit Rate & +10% Max HP at +4)",
+                "Icarus Dual Sword (Icarus Sawsword*Icarus Sawsword · S80 · +109 Crit Rate & +10% Max HP at +4)",
+            ],
+            "Dualsword Craft Stamp + 890 Stones of Purity + 425 Crystal: S-Grade (Maestro Ishuma Wharf Anvil)",
+            "+4 Icarus Dual Sword Unlocks +109 Critical Rate, +10% Max HP & 300 Elemental Attribute Cap",
+        ),
+        (
+            "dualsword-12-cinnamon-mill",
+            "zone-town-cinnamon-mill",
+            "Maestro_Ishuma_S80_S84_Unseal_Dock",
+            "Maestro Ishuma's Envoy & Kamael Blade Artificer (Cinnamon-Mill Harbor)",
+            [
+                "Icarus Dual Sword (S80 High-Crit Dualsword + Masterwork Earth/Chaos Option)",
+                "Dynasty Dual Daggers (Dynasty Knife + Soul Separator ·Lv.81 Adventurer/Wind Rider/Ghost Hunter)",
+            ],
+            "Dualsword Craft Stamp + 950 Stones of Purity + 510 Crystal: S-Grade + Mammon's Varnish Enhancer",
+            "+4 Dual Daggers / Icarus Dual Sword Grants +109 Crit Rate & +5% Mortal Blow / Lethal Strike Land Rate",
+        ),
+        (
+            "dualsword-13-root-train-roundhouse",
+            "zone-town-root-train-roundhouse",
+            "Maestro_Ishuma_S80_S84_Unseal_Dock",
+            "Head Blacksmith Newyear & Maestro Ishuma Relay (Root-Train Schuttgart)",
+            [
+                "Vesper Dual Sword (Vesper Cutter*Sirra's Blade · S84 · +109 Crit Rate & +10% Max HP at +4)",
+                "Icarus Dual Daggers (Icarus Disperser + Angel Slayer · S80 Assassin Dual Daggers)",
+            ],
+            "Dualsword Craft Stamp + 1,148 Stones of Purity + 574 Crystal: S-Grade + 7,172,000 Adena",
+            "+4 Vesper Dual Sword Grants +109 Critical Rate, +10% Max HP & +5% PvP Damage Bonus",
+        ),
+        (
+            "dualsword-14-starfall-haven",
+            "zone-town-starfall-haven",
+            "Maestro_Ishuma_S80_S84_Unseal_Dock",
+            "Maestro Ishuma & Keucereus Alliance Forge Master (Starfall Haven Rune)",
+            [
+                "Vesper Dual Sword (Vesper Cutter*Sirra's Blade · S84 Standard & Noble Upgrade)",
+                "Vesper Dual Daggers (Vesper Shaper + Naga Storm · S84 · +109 Crit & +4% Atk.Spd at +4)",
+            ],
+            "Dualsword Craft Stamp + Vesper Noble Enhancement Stone + 1,148 Stones of Purity + 574 Crystal: S-Grade",
+            "+4 Vesper Dual Sword / Dual Daggers Unlocks +109 Crit Rate, +10% Max HP & Sovereign Cloak Slot",
+        ),
+        (
+            "dualsword-15-crown-beacon",
+            "zone-town-crown-beacon",
+            "Maestro_Ishuma_S80_S84_Unseal_Dock",
+            "Maestro Ishuma & Grand Goddard Sovereign Forger (Crown-Beacon Citadel)",
+            [
+                "Periel Dual Sword (Periel Sword*Periel Sword · Top S84 · +109 Crit Rate & +10% Max HP at +4)",
+                "Eternal Core Dual Sword & Skull Edge Dual Daggers (Apex S84 Freya/Antharas Duals)",
+            ],
+            "Dualsword Craft Stamp + 1,355 Stones of Purity + 678 Crystal: S-Grade + 10,935,000 Adena",
+            "+4 Periel / Eternal Core Dual Sword Grants +109 Crit Rate, +10% Max HP & +10% PvP Skill Power",
+        ),
+    ]
+    rows: list[dict[str, Any]] = []
+    for idx, (
+        fid,
+        tzid,
+        dcat,
+        bnpc,
+        dpairings,
+        scost,
+        ppassive,
+    ) in enumerate(specs, start=1):
+        t_obj = town_by_id.get(tzid) or {}
+        tname = str(t_obj.get("name", tzid))
+        bx, by = _parse_loc(str(t_obj.get("loc_coord") or "-84120:243500"))
+        aloc = _fmt_loc(bx - 160 + idx * 10, by + 145 - idx * 9)
+        rows.append(
+            {
+                "forge_id": fid,
+                "town_zone_id": tzid,
+                "town_name": tname,
+                "dualsword_tier_category": dcat,
+                "blacksmith_or_maestro_npc": bnpc,
+                "anvil_loc": aloc,
+                "signature_dualsword_pairings": dpairings,
+                "stamp_and_purity_cost": scost,
+                "plus_four_enchant_passive": ppassive,
+            }
+        )
+    return rows
+
+
 
 
 
@@ -13865,6 +14397,16 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
     if len(atlas.get("eight_hour_council_signoff_ledger") or []) < 24:
         atlas["eight_hour_council_signoff_ledger"] = _build_eight_hour_council_signoff_ledger(atlas)
         actions.append("populated_24_eight_hour_council_signoff_ledger")
+
+    # 53. Ensure all 16 Champion Mob Aura & Group Herd Leader Grounds exist in `champion_mob_herd_grounds` (D69)
+    if len(atlas.get("champion_mob_herd_grounds") or []) < 16:
+        atlas["champion_mob_herd_grounds"] = _build_champion_mob_herd_grounds(atlas)
+        actions.append("populated_16_champion_mob_herd_grounds")
+
+    # 54. Ensure all 15 Town Dualsword Craft Stamp & Maestro Ishuma S80/S84 Unseal Forges exist in `dualsword_craft_unseal_forges` (D70)
+    if len(atlas.get("dualsword_craft_unseal_forges") or []) < 15:
+        atlas["dualsword_craft_unseal_forges"] = _build_dualsword_craft_unseal_forges(atlas)
+        actions.append("populated_15_dualsword_craft_unseal_forges")
 
     return {"actions": actions}
 
@@ -17633,15 +18175,153 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         else round(d68_ratio * 80.0, 1)
     )
 
+    # D69: Interactive 16-Zone Champion Mob Aura (Blue 10x / Red 50x) & Group Herd Leader Grounds (`champion_mob_herd_grounds` - 16 Grounds: 6 Blue_Aura_10x_Champion_Field + 5 Crimson_Aura_50x_Champion_Sanctum + 5 Social_Herd_Leader_Pack_Ground)
+    expected_champion_categories = {
+        "Blue_Aura_10x_Champion_Field",
+        "Crimson_Aura_50x_Champion_Sanctum",
+        "Social_Herd_Leader_Pack_Ground",
+    }
+    champion_rows = atlas.get("champion_mob_herd_grounds") or []
+    valid_champion_grounds = 0
+    blue_aura_10x_count = 0
+    crimson_aura_50x_count = 0
+    social_herd_leader_count = 0
+    seen_champion_ids: set[str] = set()
+    seen_champion_categories: set[str] = set()
+    for crow in champion_rows:
+        if not isinstance(crow, dict):
+            continue
+        cgid = str(crow.get("ground_id") or "")
+        ccat = str(crow.get("champion_category") or "")
+        zid = str(crow.get("zone_id") or "")
+        did = str(crow.get("dungeon_id") or "")
+        fid = str(crow.get("floor_id") or "")
+        jackpot = crow.get("spoil_and_drop_jackpot") or []
+        if (
+            cgid
+            and cgid not in seen_champion_ids
+            and crow.get("ground_name")
+            and ccat in expected_champion_categories
+            and zid in zone_ids_set
+            and (did == "" or did in mf_dungeon_id_set)
+            and fid in ("", "B1", "B2", "B3", "1F", "2F", "3F")
+            and ":" in str(crow.get("loc", ""))
+            and crow.get("signature_champion_mob")
+            and crow.get("level_bracket")
+            and crow.get("hp_and_xp_multiplier")
+            and isinstance(jackpot, list)
+            and len(jackpot) >= 2
+        ):
+            valid_champion_grounds += 1
+            seen_champion_ids.add(cgid)
+            seen_champion_categories.add(ccat)
+            if ccat == "Blue_Aura_10x_Champion_Field":
+                blue_aura_10x_count += 1
+            elif ccat == "Crimson_Aura_50x_Champion_Sanctum":
+                crimson_aura_50x_count += 1
+            elif ccat == "Social_Herd_Leader_Pack_Ground":
+                social_herd_leader_count += 1
+
+    has_d69_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_CHAMPION_MOB_MODE",
+            "setAtlasChampionMobMode",
+            "renderAtlasChampionMobBarHtml",
+            "studioChampionMobOverlay",
+        )
+    )
+    d69_ratio = valid_champion_grounds / 16.0
+    d69_full_coverage = (
+        blue_aura_10x_count == 6
+        and crimson_aura_50x_count == 5
+        and social_herd_leader_count == 5
+        and seen_champion_categories == expected_champion_categories
+    )
+    d69_score = (
+        round(min(100.0, d69_ratio * 100.0), 1)
+        if (has_d69_ui and d69_full_coverage)
+        else round(d69_ratio * 80.0, 1)
+    )
+
+    # D70: Interactive 15-Town Dualsword Craft Stamp & Maestro Ishuma S80/S84 Unseal Forges (`dualsword_craft_unseal_forges` - 15 Forges: 5 Starter_C_B_Dualsword_Anvil + 5 A_S_Grade_Craft_Stamp_Forge + 5 Maestro_Ishuma_S80_S84_Unseal_Dock)
+    expected_dualsword_categories = {
+        "Starter_C_B_Dualsword_Anvil",
+        "A_S_Grade_Craft_Stamp_Forge",
+        "Maestro_Ishuma_S80_S84_Unseal_Dock",
+    }
+    dualsword_rows = atlas.get("dualsword_craft_unseal_forges") or []
+    valid_dualsword_forges = 0
+    starter_cb_anvil_count = 0
+    as_craft_stamp_count = 0
+    maestro_ishuma_dock_count = 0
+    seen_dualsword_ids: set[str] = set()
+    seen_dualsword_town_ids: set[str] = set()
+    seen_dualsword_categories: set[str] = set()
+    for drow in dualsword_rows:
+        if not isinstance(drow, dict):
+            continue
+        dfid = str(drow.get("forge_id") or "")
+        tzid = str(drow.get("town_zone_id") or "")
+        dcat = str(drow.get("dualsword_tier_category") or "")
+        pairings = drow.get("signature_dualsword_pairings") or []
+        if (
+            dfid
+            and dfid not in seen_dualsword_ids
+            and tzid in town_zone_id_set
+            and tzid not in seen_dualsword_town_ids
+            and drow.get("town_name")
+            and dcat in expected_dualsword_categories
+            and drow.get("blacksmith_or_maestro_npc")
+            and ":" in str(drow.get("anvil_loc", ""))
+            and isinstance(pairings, list)
+            and len(pairings) >= 2
+            and drow.get("stamp_and_purity_cost")
+            and drow.get("plus_four_enchant_passive")
+        ):
+            valid_dualsword_forges += 1
+            seen_dualsword_ids.add(dfid)
+            seen_dualsword_town_ids.add(tzid)
+            seen_dualsword_categories.add(dcat)
+            if dcat == "Starter_C_B_Dualsword_Anvil":
+                starter_cb_anvil_count += 1
+            elif dcat == "A_S_Grade_Craft_Stamp_Forge":
+                as_craft_stamp_count += 1
+            elif dcat == "Maestro_Ishuma_S80_S84_Unseal_Dock":
+                maestro_ishuma_dock_count += 1
+
+    has_d70_ui = all(
+        tok in web_txt
+        for tok in (
+            "ATLAS_DUALSWORD_FORGE_MODE",
+            "setAtlasDualswordForgeMode",
+            "renderAtlasDualswordForgeBarHtml",
+            "studioDualswordForgeOverlay",
+        )
+    )
+    d70_ratio = valid_dualsword_forges / 15.0
+    d70_full_coverage = (
+        starter_cb_anvil_count == 5
+        and as_craft_stamp_count == 5
+        and maestro_ishuma_dock_count == 5
+        and len(seen_dualsword_town_ids) == 15
+        and seen_dualsword_categories == expected_dualsword_categories
+    )
+    d70_score = (
+        round(min(100.0, d70_ratio * 100.0), 1)
+        if (has_d70_ui and d70_full_coverage)
+        else round(d70_ratio * 80.0, 1)
+    )
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score) / 50.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score) / 52.0, 1),
-        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0) else 75.0,
-        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score) / 52.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score) / 62.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score) / 51.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score) / 58.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score + d20_score + d22_score + d24_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 52.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score + d17_score + d20_score + d22_score + d23_score + d25_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 54.0, 1),
+        "Narrative": 100.0 if (len(whc.get("historical_epochs") or []) >= 4 and d21_score == 100.0 and d23_score == 100.0 and d25_score == 100.0 and d27_score == 100.0 and d29_score == 100.0 and d31_score == 100.0 and d33_score == 100.0 and d34_score == 100.0 and d35_score == 100.0 and d36_score == 100.0 and d37_score == 100.0 and d38_score == 100.0 and d39_score == 100.0 and d40_score == 100.0 and d41_score == 100.0 and d42_score == 100.0 and d43_score == 100.0 and d44_score == 100.0 and d45_score == 100.0 and d46_score == 100.0 and d47_score == 100.0 and d48_score == 100.0 and d49_score == 100.0 and d50_score == 100.0 and d51_score == 100.0 and d52_score == 100.0 and d53_score == 100.0 and d54_score == 100.0 and d55_score == 100.0 and d56_score == 100.0 and d57_score == 100.0 and d58_score == 100.0 and d59_score == 100.0 and d60_score == 100.0 and d61_score == 100.0 and d62_score == 100.0 and d63_score == 100.0 and d64_score == 100.0 and d65_score == 100.0 and d66_score == 100.0 and d67_score == 100.0 and d68_score == 100.0 and d69_score == 100.0 and d70_score == 100.0) else 75.0,
+        "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score + d18_score + d19_score + d21_score + d23_score + d24_score + d25_score + d26_score + d27_score + d29_score + d31_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 54.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score + d17_score + d18_score + d19_score + d20_score + d21_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 64.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score + d19_score + d21_score + d23_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 53.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score + d17_score + d18_score + d19_score + d20_score + d22_score + d23_score + d24_score + d25_score + d26_score + d27_score + d28_score + d29_score + d30_score + d31_score + d32_score + d33_score + d34_score + d35_score + d36_score + d37_score + d38_score + d39_score + d40_score + d41_score + d42_score + d43_score + d44_score + d45_score + d46_score + d47_score + d48_score + d49_score + d50_score + d51_score + d52_score + d53_score + d54_score + d55_score + d56_score + d57_score + d58_score + d59_score + d60_score + d61_score + d62_score + d63_score + d64_score + d65_score + d66_score + d67_score + d68_score + d69_score + d70_score) / 60.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -17714,8 +18394,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d66_score
             + d67_score
             + d68_score
+            + d69_score
+            + d70_score
         )
-        / 68.0,
+        / 70.0,
         1,
     )
 
@@ -18292,6 +18974,26 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "certified_wave_ranges": sorted(seen_wave_ranges),
                 "ui_wired": has_d68_ui,
             },
+            "D69_champion_mob_aura_and_herd_leader_grounds": {
+                "score": d69_score,
+                "verified": valid_champion_grounds,
+                "target": 16,
+                "blue_aura_10x_fields": blue_aura_10x_count,
+                "crimson_aura_50x_sanctums": crimson_aura_50x_count,
+                "social_herd_leader_grounds": social_herd_leader_count,
+                "champion_categories": sorted(seen_champion_categories),
+                "ui_wired": has_d69_ui,
+            },
+            "D70_dualsword_craft_stamp_and_ishuma_unseal_forges": {
+                "score": d70_score,
+                "verified": valid_dualsword_forges,
+                "target": 15,
+                "starter_c_b_dualsword_anvils": starter_cb_anvil_count,
+                "a_s_grade_craft_stamp_forges": as_craft_stamp_count,
+                "maestro_ishuma_s80_s84_unseal_docks": maestro_ishuma_dock_count,
+                "dualsword_tier_categories": sorted(seen_dualsword_categories),
+                "ui_wired": has_d70_ui,
+            },
         },
     }
 
@@ -18404,6 +19106,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D66 (14 Command Raid Halls) : {dims['D66_zaken_freya_and_frintezza_command_channel_raids']['score']}/100 ({dims['D66_zaken_freya_and_frintezza_command_channel_raids']['verified']}/{dims['D66_zaken_freya_and_frintezza_command_channel_raids']['target']} command raid sanctums)")
         print(f"  D67 (15 Nevit Sanctuaries)  : {dims['D67_nevit_blessing_hourglass_and_hunting_helpers']['score']}/100 ({dims['D67_nevit_blessing_hourglass_and_hunting_helpers']['verified']}/{dims['D67_nevit_blessing_hourglass_and_hunting_helpers']['target']} nevit sanctuaries)")
         print(f"  D68 (24 Council Sign-Offs)  : {dims['D68_eight_hour_studio_council_signoff_ledger']['score']}/100 ({dims['D68_eight_hour_studio_council_signoff_ledger']['verified']}/{dims['D68_eight_hour_studio_council_signoff_ledger']['target']} council sign-off records)")
+        print(f"  D69 (16 Champion/Herd Zones): {dims['D69_champion_mob_aura_and_herd_leader_grounds']['score']}/100 ({dims['D69_champion_mob_aura_and_herd_leader_grounds']['verified']}/{dims['D69_champion_mob_aura_and_herd_leader_grounds']['target']} champion/herd grounds)")
+        print(f"  D70 (15 Dualsword Forges)   : {dims['D70_dualsword_craft_stamp_and_ishuma_unseal_forges']['score']}/100 ({dims['D70_dualsword_craft_stamp_and_ishuma_unseal_forges']['verified']}/{dims['D70_dualsword_craft_stamp_and_ishuma_unseal_forges']['target']} dualsword forges)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

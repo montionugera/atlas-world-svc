@@ -98,15 +98,17 @@ def compute_studio_self_evaluation() -> dict:
     qs["semanticZoomAtlas64DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas66DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlas68DimensionScore"] = overall_atlas_score
+    qs["semanticZoomAtlas70DimensionScore"] = overall_atlas_score
     qs["semanticZoomAtlasDimensionsCount"] = dim_count
     merged = dict(self_eval)
     merged["qualityScorecard"] = qs
     merged["atlasIterationTelemetry"] = {
-        "wave": int(iter_state.get("wave", 32)),
+        "wave": int(iter_state.get("wave", 33)),
         "overallScore": overall_atlas_score,
         "dimensionsCount": dim_count,
         "dimensions": dims,
         "summaryLabel": (
+            f"70-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"68-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"66-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"64-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
@@ -132,7 +134,7 @@ def compute_studio_self_evaluation() -> dict:
             f"24-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"22-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
             f"20-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · "
-            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 Verified"
+            f"18-Dimension Semantic-Zoom Atlas Score ({overall_atlas_score:.1f}/100) · D1–D50 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified"
         ),
     }
     return merged
@@ -4394,7 +4396,7 @@ function renderTopDownStudio() {
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
         <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
         <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 Verified</span>
+        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified</span>
         <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
         <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
       </div>
@@ -4481,6 +4483,8 @@ let ATLAS_DELUSION_CHAMBER_MODE = 'All';
 let ATLAS_COMMAND_RAID_MODE = 'All';
 let ATLAS_NEVIT_BLESSING_MODE = 'All';
 let ATLAS_COUNCIL_SIGNOFF_MODE = 'All';
+let ATLAS_CHAMPION_MOB_MODE = 'All';
+let ATLAS_DUALSWORD_FORGE_MODE = 'All';
 
 const ATLAS_STATE_STORE = {
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
@@ -4539,6 +4543,8 @@ const ATLAS_STATE_STORE = {
   commandRaidMode: 'All',                  // D66: Active 14-Sanctum Zaken, Freya & Frintezza Command-Channel Raid Selector ('Off' | 'All' | 'Zaken_Candlelight_Cavern' | 'Ice_Queen_Freya_Palace' | 'Frintezza_Organ_Concert_Hall')
   nevitBlessingMode: 'All',                // D67: Active 15-Town Nevit's Blessing Hourglass & Hunting Helper Selector ('Off' | 'All' | 'Nevit_Hourglass_Altar' | 'Arcane_Fairy_Helper_Sanctuary' | 'Martial_Turtle_Helper_Sanctuary')
   councilSignoffMode: 'All',               // D68: Active 24-Record 8-Hour Studio Council D1-D68 Sign-Off Selector ('Off' | 'All' | 'Product_Owner' | 'Game_Designer_Lead' | 'Player_Growth_Path_Designer' | 'Game_Story_Designer' | 'Monster_And_Mob_Designer' | 'Lead_Systems_Map_Architect')
+  championMobMode: 'All',                  // D69: Active 16-Zone Champion Mob Aura & Herd Leader Selector ('Off' | 'All' | 'Blue_Aura_10x_Champion_Field' | 'Crimson_Aura_50x_Champion_Sanctum' | 'Social_Herd_Leader_Pack_Ground')
+  dualswordForgeMode: 'All',               // D70: Active 15-Town Dualsword Craft Stamp & Maestro Ishuma Unseal Selector ('Off' | 'All' | 'Starter_C_B_Dualsword_Anvil' | 'A_S_Grade_Craft_Stamp_Forge' | 'Maestro_Ishuma_S80_S84_Unseal_Dock')
   townBlueprintMode: 'parchment', // 'parchment' (Screenshots 3 & 4) | 'schematic' ("Oren by Cheese" Screenshot 5)
   activeDungeonId: '',   // e.g. 'zone-dungeon-kiln-cellar' | 'zone-dungeon-pendulum-shaft' | 'zone-dungeon-chronometer-foundry'
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
@@ -4546,6 +4552,20 @@ const ATLAS_STATE_STORE = {
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
   toastMessage: ''
 };
+
+function setAtlasChampionMobMode(modeId) {
+  ATLAS_CHAMPION_MOB_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.championMobMode = ATLAS_CHAMPION_MOB_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasDualswordForgeMode(modeId) {
+  ATLAS_DUALSWORD_FORGE_MODE = String(modeId || 'All');
+  ATLAS_STATE_STORE.dualswordForgeMode = ATLAS_DUALSWORD_FORGE_MODE;
+  writeUrlState(false);
+  render();
+}
 
 function setAtlasClanHallMode(modeId) {
   ATLAS_CLAN_HALL_MODE = String(modeId || 'All');
@@ -11064,7 +11084,7 @@ function renderAtlasCouncilSignoffBarHtml(tatlas) {
         </span>
       </div>
 
-      ${featuredRecords.length ? `
+      ${ featuredRecords.length ? `
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
           ${featuredRecords.map(r => {
             const rs = roleStyleMap[r.council_role] || { col: '#34d399', icon: '🏆' };
@@ -11099,6 +11119,188 @@ function renderAtlasCouncilSignoffBarHtml(tatlas) {
                   <button type="button" onclick="${jumpJs}"
                           style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${rs.col};background:#065f46;color:#ecfdf5;font-size:8px;font-weight:800;cursor:pointer">
                     ${rs.icon} ${didStr ? `Open Certified Sanctum (${escapeHtml(fidStr)})` : 'Jump to Certified Zone'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasChampionMobBarHtml(tatlas) {
+  const grounds = (tatlas && tatlas.champion_mob_herd_grounds) || [];
+  if (!grounds.length) return '';
+
+  const curMode = ATLAS_CHAMPION_MOB_MODE || ATLAS_STATE_STORE.championMobMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '⚡ All 16 Champion & Herd Grounds' },
+    { id: 'Blue_Aura_10x_Champion_Field', label: '🔵 Blue Aura 10× Champion (6)' },
+    { id: 'Crimson_Aura_50x_Champion_Sanctum', label: '🔴 Crimson Aura 50× Champion (5)' },
+    { id: 'Social_Herd_Leader_Pack_Ground', label: '🐺 Social Herd Leader Packs (5)' }
+  ];
+
+  const filteredGrounds = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? grounds : grounds.filter(g => g.champion_category === curMode));
+
+  const featuredGrounds = curMode === 'All'
+    ? [
+        ...grounds.filter(g => g.champion_category === 'Blue_Aura_10x_Champion_Field').slice(0, 2),
+        ...grounds.filter(g => g.champion_category === 'Crimson_Aura_50x_Champion_Sanctum').slice(0, 1),
+        ...grounds.filter(g => g.champion_category === 'Social_Herd_Leader_Pack_Ground').slice(0, 1)
+      ]
+    : filteredGrounds.slice(0, 4);
+
+  const catStyleMap = {
+    'Blue_Aura_10x_Champion_Field': { col: '#38bdf8', badge: 'BLUE 10×', icon: '🔵' },
+    'Crimson_Aura_50x_Champion_Sanctum': { col: '#ef4444', badge: 'RED 50×', icon: '🔴' },
+    'Social_Herd_Leader_Pack_Ground': { col: '#fbbf24', badge: 'HERD PACK', icon: '🐺' }
+  };
+
+  return `
+    <div id="atlasChampionMobBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1e1326;border:1px solid rgba(239,68,68,0.68)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#fca5a5">⚡ CHAMPION MOB AURA (BLUE 10× / RED 50×) &amp; GROUP HERD LEADER SELECTOR (D69 · 16 GROUNDS):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasChampionMobMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(239,68,68,0.45)'};background:${isAct ? '#991b1b' : '#090d14'};color:${isAct ? '#ffffff' : '#fecaca'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          6 BLUE 10× FIELDS · 5 RED 50× SANCTUMS · 5 SOCIAL HERD PACK GROUNDS (BEAST FARM / STAKATO / MAHUM)
+        </span>
+      </div>
+
+      ${featuredGrounds.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredGrounds.map(g => {
+            const cs = catStyleMap[g.champion_category] || { col: '#ef4444', badge: 'CHAMPION', icon: '⚡' };
+            const zidStr = String(g.zone_id || '');
+            const didStr = String(g.dungeon_id || '');
+            const fidStr = String(g.floor_id || 'B2');
+            const jumpJs = didStr
+              ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+              : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(g.loc)}')`;
+            const jackpotTxt = (g.spoil_and_drop_jackpot || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(g.ground_name.slice(0, 34))}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}] ${escapeHtml(g.level_bracket)}</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#93c5fd;margin-top:1px">
+                    👾 ${escapeHtml(g.signature_champion_mob.slice(0, 52))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    💎 ${escapeHtml(jackpotTxt.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="${jumpJs}"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${cs.col};background:#450a0a;color:#fef2f2;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cs.icon} ${didStr ? `Open Champion Sanctum (${escapeHtml(fidStr)})` : 'Open Field Blueprint (4.8×)'}
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderAtlasDualswordForgeBarHtml(tatlas) {
+  const forges = (tatlas && tatlas.dualsword_craft_unseal_forges) || [];
+  if (!forges.length) return '';
+
+  const curMode = ATLAS_DUALSWORD_FORGE_MODE || ATLAS_STATE_STORE.dualswordForgeMode || 'All';
+  const modePills = [
+    { id: 'Off', label: '⏸️ Off' },
+    { id: 'All', label: '⚔️ All 15 Town Dualsword Forges' },
+    { id: 'Starter_C_B_Dualsword_Anvil', label: '🗡️ Starter C/B Dualsword Anvils (5)' },
+    { id: 'A_S_Grade_Craft_Stamp_Forge', label: '📜 A/S Craft Stamp Forges (5)' },
+    { id: 'Maestro_Ishuma_S80_S84_Unseal_Dock', label: '🛸 Maestro Ishuma S80/S84 Docks (5)' }
+  ];
+
+  const filteredForges = curMode === 'Off'
+    ? []
+    : (curMode === 'All' ? forges : forges.filter(f => f.dualsword_tier_category === curMode));
+
+  const featuredForges = curMode === 'All'
+    ? [
+        ...forges.filter(f => f.dualsword_tier_category === 'Starter_C_B_Dualsword_Anvil').slice(0, 1),
+        ...forges.filter(f => f.dualsword_tier_category === 'A_S_Grade_Craft_Stamp_Forge').slice(0, 2),
+        ...forges.filter(f => f.dualsword_tier_category === 'Maestro_Ishuma_S80_S84_Unseal_Dock').slice(0, 1)
+      ]
+    : filteredForges.slice(0, 4);
+
+  const allTowns = getAllAtlasTownEntries(tatlas);
+  const byTownId = {};
+  allTowns.forEach(t => { byTownId[t.zone_id] = t; });
+
+  const catStyleMap = {
+    'Starter_C_B_Dualsword_Anvil': { col: '#38bdf8', badge: 'C/B-GRADE', icon: '🗡️' },
+    'A_S_Grade_Craft_Stamp_Forge': { col: '#f59e0b', badge: 'A/S STAMP', icon: '📜' },
+    'Maestro_Ishuma_S80_S84_Unseal_Dock': { col: '#c084fc', badge: 'S80/S84 ISHUMA', icon: '🛸' }
+  };
+
+  return `
+    <div id="atlasDualswordForgeBar" style="display:flex;flex-direction:column;gap:6px;padding:7px 10px;border-radius:8px;background:#1c162b;border:1px solid rgba(192,132,252,0.68)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+          <span class="mono" style="font-size:10px;font-weight:900;color:#e9d5ff">⚔️ 15-TOWN DUALSWORD CRAFT STAMP &amp; MAESTRO ISHUMA S80/S84 UNSEAL SELECTOR (D70):</span>
+          ${modePills.map(mp => {
+            const isAct = curMode === mp.id;
+            return `
+              <button type="button" onclick="setAtlasDualswordForgeMode('${escapeHtml(mp.id)}')"
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.6px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(192,132,252,0.45)'};background:${isAct ? '#6b21a8' : '#090d14'};color:${isAct ? '#ffffff' : '#f3e8ff'}">
+                ${escapeHtml(mp.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <span class="mono" style="font-size:9px;color:#fde047;font-weight:800">
+          5 C/B ANVILS (SOP) · 5 A/S CRAFT STAMP FORGES · 5 MAESTRO ISHUMA S80/S84 DOCKS (+4 PASSIVE)
+        </span>
+      </div>
+
+      ${featuredForges.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:6px">
+          ${featuredForges.map(f => {
+            const cs = catStyleMap[f.dualsword_tier_category] || { col: '#c084fc', badge: 'DUALSWORD', icon: '⚔️' };
+            const tObj = byTownId[f.town_zone_id] || {};
+            const tNodeId = tObj.studio_node_id || f.town_zone_id.replace('zone-', '');
+            const pairTxt = (f.signature_dualsword_pairings || []).slice(0, 2).join(' · ');
+            return `
+              <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(f.town_name.split('(')[0].trim())}</span>
+                    <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}]</span>
+                  </div>
+                  <div class="mono" style="font-size:8.1px;color:#d8b4fe;margin-top:1px">
+                    ⚔️ ${escapeHtml(pairTxt.slice(0, 52))}
+                  </div>
+                  <div style="font-size:8px;color:#fde68a;margin-top:1px">
+                    ✨ ${escapeHtml(f.plus_four_enchant_passive.slice(0, 58))}
+                  </div>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:2px">
+                  <button type="button" onclick="focusTownStreetBlueprint('${escapeHtml(tNodeId)}', '${escapeHtml(f.anvil_loc)}')"
+                          style="flex:1;padding:2px 5px;border-radius:4px;border:1px solid ${cs.col};background:#3b0764;color:#faf5ff;font-size:8px;font-weight:800;cursor:pointer">
+                    ${cs.icon} Jump to Dualsword Anvil (5.2×)
                   </button>
                 </div>
               </div>
@@ -11282,6 +11484,8 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasCommandRaidBarHtml(tatlas)}
       ${renderAtlasNevitBlessingBarHtml(tatlas)}
       ${renderAtlasCouncilSignoffBarHtml(tatlas)}
+      ${renderAtlasChampionMobBarHtml(tatlas)}
+      ${renderAtlasDualswordForgeBarHtml(tatlas)}
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -14712,6 +14916,67 @@ function renderDedicatedWorldAtlas() {
     </g>
   `;
 
+  // D69: Interactive 16-Zone Champion Mob Aura (Blue 10x / Red 50x) & Group Herd Leader Overlay (`studioChampionMobOverlay`)
+  const championMobRows = (tatlas && tatlas.champion_mob_herd_grounds) || [];
+  const curChampionMobMode = ATLAS_CHAMPION_MOB_MODE || ATLAS_STATE_STORE.championMobMode || 'All';
+  const activeChampionGrounds = curChampionMobMode === 'Off'
+    ? []
+    : (curChampionMobMode === 'All'
+        ? championMobRows
+        : championMobRows.filter(g => g.champion_category === curChampionMobMode));
+  const championMobOverlaySvg = `
+    <g id="studioChampionMobOverlay">
+      ${activeChampionGrounds.map(g => {
+        const cc = clampWorldLocCoord(g.loc || '-84120:243500');
+        const zidStr = String(g.zone_id || '');
+        const didStr = String(g.dungeon_id || '');
+        const fidStr = String(g.floor_id || 'B2');
+        const isBlue = g.champion_category === 'Blue_Aura_10x_Champion_Field';
+        const isCrimson = g.champion_category === 'Crimson_Aura_50x_Champion_Sanctum';
+        const colHex = isBlue ? '#38bdf8' : (isCrimson ? '#ef4444' : '#fbbf24');
+        const iconTxt = isBlue ? '🔵' : (isCrimson ? '🔴' : '🐺');
+        const jumpJs = didStr
+          ? `openDungeonSubMap('${escapeHtml(didStr)}', '${escapeHtml(fidStr)}')`
+          : `focusFieldTacticalBlueprint('${escapeHtml(zidStr)}', '${escapeHtml(g.loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${cc.svgX}" cy="${cc.svgY}" r="10.8" fill="rgba(127,29,29,0.46)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${cc.svgX}" y="${cc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
+  // D70: Interactive 15-Town Dualsword Craft Stamp & Maestro Ishuma S80/S84 Unseal Forge Overlay (`studioDualswordForgeOverlay`)
+  const dualswordForgeRows = (tatlas && tatlas.dualsword_craft_unseal_forges) || [];
+  const curDualswordForgeMode = ATLAS_DUALSWORD_FORGE_MODE || ATLAS_STATE_STORE.dualswordForgeMode || 'All';
+  const activeDualswordForges = curDualswordForgeMode === 'Off'
+    ? []
+    : (curDualswordForgeMode === 'All'
+        ? dualswordForgeRows
+        : dualswordForgeRows.filter(f => f.dualsword_tier_category === curDualswordForgeMode));
+  const dualswordForgeOverlaySvg = `
+    <g id="studioDualswordForgeOverlay">
+      ${activeDualswordForges.map(f => {
+        const dc = clampWorldLocCoord(f.anvil_loc || '-84120:243500');
+        const zObj = allZonesById[f.town_zone_id] || {};
+        const tidStr = String(zObj.studio_node_id || String(f.town_zone_id || '').replace('zone-', ''));
+        const isStarter = f.dualsword_tier_category === 'Starter_C_B_Dualsword_Anvil';
+        const isStamp = f.dualsword_tier_category === 'A_S_Grade_Craft_Stamp_Forge';
+        const colHex = isStarter ? '#38bdf8' : (isStamp ? '#f59e0b' : '#c084fc');
+        const iconTxt = isStarter ? '🗡️' : (isStamp ? '📜' : '🛸');
+        const jumpJs = `focusTownStreetBlueprint('${escapeHtml(tidStr)}', '${escapeHtml(f.anvil_loc)}')`;
+        return `
+          <g data-poi-clickable="1" style="cursor:pointer" onclick="${jumpJs}">
+            <circle cx="${dc.svgX}" cy="${dc.svgY}" r="10.6" fill="rgba(59,7,100,0.48)" stroke="${colHex}" stroke-width="2.0"/>
+            <text x="${dc.svgX}" y="${dc.svgY + 3.4}" text-anchor="middle" font-size="8.4">${iconTxt}</text>
+          </g>
+        `;
+      }).join('')}
+    </g>
+  `;
+
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
@@ -14760,6 +15025,8 @@ function renderDedicatedWorldAtlas() {
     ${commandChannelRaidOverlaySvg}
     ${nevitBlessingOverlaySvg}
     ${councilSignoffOverlaySvg}
+    ${championMobOverlaySvg}
+    ${dualswordForgeOverlaySvg}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}

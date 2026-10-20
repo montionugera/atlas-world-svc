@@ -2664,7 +2664,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         atlas = bundle["tShapedWorldAtlas"]
         audit = loop.audit_world_atlas(whc, atlas)
         self.assertEqual(audit["overall_score"], 100.0)
-        self.assertEqual(len(audit["dimensions"]), 68)
+        self.assertGreaterEqual(len(audit["dimensions"]), 68)
 
         d67 = audit["dimensions"]["D67_nevit_blessing_hourglass_and_hunting_helpers"]
         self.assertEqual(d67["score"], 100.0)
@@ -2731,10 +2731,99 @@ class TestStudioWebPerspectives(unittest.TestCase):
 
         self_eval = web.compute_studio_self_evaluation()
         self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas68DimensionScore"], 100.0)
-        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 68)
+        self.assertGreaterEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 68)
         self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
-        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 68)
+        self.assertGreaterEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 68)
         self.assertIn("68-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
+
+    def test_wave33_champion_mob_herd_grounds_and_dualsword_craft_unseal_forges(self) -> None:
+        from scripts import catalog_explorer_web as web
+        from scripts import run_atlas_iteration_loop as loop
+
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_CHAMPION_MOB_MODE",
+            "setAtlasChampionMobMode",
+            "renderAtlasChampionMobBarHtml",
+            "studioChampionMobOverlay",
+            "Blue_Aura_10x_Champion_Field",
+            "Crimson_Aura_50x_Champion_Sanctum",
+            "Social_Herd_Leader_Pack_Ground",
+            "ATLAS_DUALSWORD_FORGE_MODE",
+            "setAtlasDualswordForgeMode",
+            "renderAtlasDualswordForgeBarHtml",
+            "studioDualswordForgeOverlay",
+            "Starter_C_B_Dualsword_Anvil",
+            "A_S_Grade_Craft_Stamp_Forge",
+            "Maestro_Ishuma_S80_S84_Unseal_Dock",
+            "70-Dimension Semantic-Zoom Atlas Score",
+            "D1–D70 Verified",
+        ):
+            self.assertIn(token, html, f"Missing Wave 33 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        self.assertEqual(len(audit["dimensions"]), 70)
+
+        d69 = audit["dimensions"]["D69_champion_mob_aura_and_herd_leader_grounds"]
+        self.assertEqual(d69["score"], 100.0)
+        self.assertEqual(d69["verified"], 16)
+        self.assertEqual(d69["target"], 16)
+        self.assertEqual(d69["blue_aura_10x_fields"], 6)
+        self.assertEqual(d69["crimson_aura_50x_sanctums"], 5)
+        self.assertEqual(d69["social_herd_leader_grounds"], 5)
+        self.assertEqual(
+            set(d69["champion_categories"]),
+            {
+                "Blue_Aura_10x_Champion_Field",
+                "Crimson_Aura_50x_Champion_Sanctum",
+                "Social_Herd_Leader_Pack_Ground",
+            },
+        )
+        self.assertTrue(d69["ui_wired"])
+
+        d70 = audit["dimensions"]["D70_dualsword_craft_stamp_and_ishuma_unseal_forges"]
+        self.assertEqual(d70["score"], 100.0)
+        self.assertEqual(d70["verified"], 15)
+        self.assertEqual(d70["target"], 15)
+        self.assertEqual(d70["starter_c_b_dualsword_anvils"], 5)
+        self.assertEqual(d70["a_s_grade_craft_stamp_forges"], 5)
+        self.assertEqual(d70["maestro_ishuma_s80_s84_unseal_docks"], 5)
+        self.assertEqual(
+            set(d70["dualsword_tier_categories"]),
+            {
+                "Starter_C_B_Dualsword_Anvil",
+                "A_S_Grade_Craft_Stamp_Forge",
+                "Maestro_Ishuma_S80_S84_Unseal_Dock",
+            },
+        )
+        self.assertTrue(d70["ui_wired"])
+
+        grounds = atlas["champion_mob_herd_grounds"]
+        self.assertEqual(len(grounds), 16)
+        self.assertEqual(sum(1 for g in grounds if g["champion_category"] == "Blue_Aura_10x_Champion_Field"), 6)
+        self.assertEqual(sum(1 for g in grounds if g["champion_category"] == "Crimson_Aura_50x_Champion_Sanctum"), 5)
+        self.assertEqual(sum(1 for g in grounds if g["champion_category"] == "Social_Herd_Leader_Pack_Ground"), 5)
+        for g in grounds:
+            self.assertGreaterEqual(len(g["spoil_and_drop_jackpot"]), 2)
+
+        forges = atlas["dualsword_craft_unseal_forges"]
+        self.assertEqual(len(forges), 15)
+        self.assertEqual(sum(1 for f in forges if f["dualsword_tier_category"] == "Starter_C_B_Dualsword_Anvil"), 5)
+        self.assertEqual(sum(1 for f in forges if f["dualsword_tier_category"] == "A_S_Grade_Craft_Stamp_Forge"), 5)
+        self.assertEqual(sum(1 for f in forges if f["dualsword_tier_category"] == "Maestro_Ishuma_S80_S84_Unseal_Dock"), 5)
+        for f in forges:
+            self.assertGreaterEqual(len(f["signature_dualsword_pairings"]), 2)
+
+        self_eval = web.compute_studio_self_evaluation()
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlas70DimensionScore"], 100.0)
+        self.assertEqual(self_eval["qualityScorecard"]["semanticZoomAtlasDimensionsCount"], 70)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["overallScore"], 100.0)
+        self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 70)
+        self.assertIn("70-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
 
 if __name__ == "__main__":
