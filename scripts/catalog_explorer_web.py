@@ -4790,65 +4790,20 @@ function renderWhcBigPictureSvg(whc, continents) {
   const waterCol = isL2 ? '#37565b' : '#1d4ed8';
 
   const svgInnerHtml = `
-    <!-- Ocean Bathymetry Contours -->
-    <path d="M 40,240 Q 220,170 430,260 T 940,340 L 980,480 L 40,480 Z" fill="${isL2 ? '#293f43' : '#1d3c5e'}" opacity="0.6"/>
-    <ellipse cx="485" cy="128" rx="285" ry="95" fill="${isL2 ? '#223538' : '#172c48'}" stroke="${isL2 ? '#6e6244' : '#284e7a'}" stroke-width="1.5" stroke-dasharray="10 6"/>
+    <!-- Authentic L2J.RU Interlaced Satellite Grid & Parchment Relief Map Plates -->
+    <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
+    <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.45"/>
 
-    <!-- CONTINENT 01: HEARTHBLOOM BASIN (SW ORGANIC PARCHMENT LANDMASS + MOUNTAINS + RIVERS + CASTLES) -->
-    <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiC01, svgX: 235, svgY: 342 })}', event)">
-      <path d="M 65,335 Q 85,235 195,220 Q 325,205 395,275 Q 435,345 375,425 Q 285,465 165,450 Q 55,425 65,335 Z" fill="${isL2 ? '#453e29' : '#214d43'}" stroke="${isL2 ? '#262013' : '#2d6a5b'}" stroke-width="6" opacity="0.8"/>
-      <path d="M 78,335 Q 98,245 198,232 Q 318,218 382,282 Q 418,342 365,415 Q 280,452 170,438 Q 68,415 78,335 Z" fill="${landFill1}" stroke="${landStroke1}" stroke-width="2.5"/>
-      ${drawL2MountainRangeSvg('105,315 155,260 225,252 305,262 355,310', 1.1)}
-      ${drawL2MountainRangeSvg('125,395 215,425 315,402', 0.9)}
-      <!-- Inland Kiln Sea & Glaze Rivers -->
-      <ellipse cx="235" cy="342" rx="44" ry="20" fill="${waterCol}" stroke="#88b3ba" stroke-width="1.2"/>
-      <path d="M 235,322 Q 210,275 165,242 M 279,342 Q 335,345 388,330 M 192,352 Q 140,375 88,390" fill="none" stroke="${waterCol}" stroke-width="4" stroke-linecap="round"/>
-      <!-- Winding L2 Parchment Dirt Roads -->
-      <path d="M 145,295 Q 190,320 235,342 T 325,295 M 235,342 Q 275,375 305,395" fill="none" stroke="#261f12" stroke-width="5" stroke-linecap="round"/>
-      <path d="M 145,295 Q 190,320 235,342 T 325,295 M 235,342 Q 275,375 305,395" fill="none" stroke="#cbb989" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Continent Title -->
-      <text x="235" y="255" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:4px;fill:#fde68a;font-size:13px;font-weight:900;letter-spacing:0.12em">HEARTHBLOOM BASIN (LV. 1–15)</text>
-    </g>
-    ${drawL2LandmarkSvg({ kind: 'town', x: 235, y: 342, label: st0.town_name, sublabel: '★ Starter Town', flagColor: '#eab308', isSelected: true, poiObj: poiStarter })}
-    ${drawL2LandmarkSvg({ kind: 'castle', x: 325, y: 295, label: 'Kilnfire Castle', sublabel: 'Lv. 5–9', flagColor: '#dc2626', isSelected: false, poiObj: poiC01 })}
-    ${drawL2LandmarkSvg({ kind: 'windmill', x: 145, y: 295, label: 'Amber-Root Village', sublabel: 'Lv. 2–6', flagColor: '#22c55e', isSelected: false, poiObj: poiC01 })}
-    ${drawL2LandmarkSvg({ kind: 'catacomb', x: 305, y: 395, label: 'Cardamom Kiln Catacomb', sublabel: 'Mystery', flagColor: '#a855f7', isSelected: false, poiObj: poiC01 })}
-
-    <!-- CONTINENT 02: THE CLOCKWORK STEPPE (EASTERN PLATEAU + CASTLES + FORTRESSES + BOSS LAIR) -->
-    <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiC02, svgX: 752, svgY: 318 })}', event)">
-      <path d="M 555,255 Q 635,185 785,192 Q 935,200 975,285 Q 985,385 885,435 Q 735,455 615,405 Q 535,355 555,255 Z" fill="${isL2 ? '#453e29' : '#214d43'}" stroke="${isL2 ? '#262013' : '#2d6a5b'}" stroke-width="6" opacity="0.8"/>
-      <path d="M 568,258 Q 642,195 785,202 Q 922,210 962,288 Q 970,378 878,422 Q 735,442 622,395 Q 548,348 568,258 Z" fill="${landFill1}" stroke="${landStroke1}" stroke-width="2.5"/>
-      ${drawL2MountainRangeSvg('605,245 705,220 815,228 915,255', 1.15)}
-      ${drawL2MountainRangeSvg('635,375 765,360 885,385', 1.0)}
-      <!-- Uncoiled Mainspring Canyon River -->
-      <path d="M 572,325 Q 695,305 795,320 T 958,295" fill="none" stroke="${waterCol}" stroke-width="5" stroke-linecap="round"/>
-      <!-- Winding L2 Parchment Dirt Roads -->
-      <path d="M 615,318 Q 685,295 752,318 T 895,302 M 752,318 Q 775,260 825,245" fill="none" stroke="#261f12" stroke-width="5.5" stroke-linecap="round"/>
-      <path d="M 615,318 Q 685,295 752,318 T 895,302 M 752,318 Q 775,260 825,245" fill="none" stroke="#cbb989" stroke-width="2.8" stroke-linecap="round"/>
-      <text x="765" y="218" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:4px;fill:#fde68a;font-size:13px;font-weight:900;letter-spacing:0.12em">THE CLOCKWORK STEPPE (LV. 15–30)</text>
-    </g>
-    ${drawL2LandmarkSvg({ kind: 'castle', x: 615, y: 318, label: 'Pinion Terminus Castle', sublabel: 'Lv. 15–20', flagColor: '#dc2626', isSelected: false, poiObj: poiC02 })}
-    ${drawL2LandmarkSvg({ kind: 'tower', x: 752, y: 318, label: 'Mainspring Tower', sublabel: 'Lv. 20–26', flagColor: '#2563eb', isSelected: false, poiObj: poiC02 })}
-    ${drawL2LandmarkSvg({ kind: 'fortress', x: 825, y: 245, label: 'Pendulum Escapement Fortress', sublabel: 'Lv. 22–28', flagColor: '#dc2626', isSelected: false, poiObj: poiC02 })}
-    ${drawL2LandmarkSvg({ kind: 'town', x: 895, y: 315, label: 'Mercury-Bellows Hub', sublabel: 'Lv. 27–30 Canon', flagColor: '#22c55e', isSelected: false, poiObj: poiC02 })}
-
-    <!-- CONTINENT 03: THE SHATTERED HALO (NORTHERN FLOATING ATOLL + GRAVITY EYE + LAIRS) -->
-    <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiC03, svgX: 485, svgY: 112 })}', event)">
-      <path d="M 255,115 Q 335,55 485,48 Q 645,52 725,115 Q 685,155 615,135 Q 555,95 485,92 Q 415,95 355,135 Q 295,155 255,115 Z" fill="${landFill1}" stroke="#c084fc" stroke-width="2.2"/>
-      <path d="M 325,168 Q 415,198 555,192 Q 635,182 665,152 Q 595,168 485,170 Q 385,168 325,168 Z" fill="${landFill1}" stroke="#a855f7" stroke-width="1.8"/>
-      <ellipse cx="485" cy="132" rx="72" ry="26" fill="#13111c" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 3"/>
-      <path d="M 345,108 Q 415,82 485,82 T 628,108" fill="none" stroke="#261f12" stroke-width="4.5"/>
-      <path d="M 345,108 Q 415,82 485,82 T 628,108" fill="none" stroke="#cbb989" stroke-width="2.2"/>
-      <text x="485" y="38" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:4px;fill:#e9d5ff;font-size:13px;font-weight:900;letter-spacing:0.14em">THE SHATTERED HALO (LV. 30–50)</text>
-    </g>
-    ${drawL2LandmarkSvg({ kind: 'castle', x: 345, y: 108, label: 'Starfall Haven Keep', sublabel: 'Lv. 30–36', flagColor: '#38bdf8', isSelected: false, poiObj: poiC03 })}
-    ${drawL2LandmarkSvg({ kind: 'lair', x: 485, y: 132, label: 'Vesper Gravity Lair', sublabel: 'Lv. 45–50 Boss', flagColor: '#dc2626', isSelected: false, poiObj: poiC03 })}
-    ${drawL2LandmarkSvg({ kind: 'fortress', x: 628, y: 108, label: 'Solstice Pendulum Fortress', sublabel: 'Lv. 46–50 Draft', flagColor: '#eab308', isSelected: false, poiObj: poiC03 })}
-
-    <!-- INTER-CONTINENTAL VIADUCTS & CORRIDORS -->
-    <path d="M 255,342 C 375,335 475,328 595,318" fill="none" stroke="#1c160e" stroke-width="6"/>
-    <path d="M 255,342 C 375,335 475,328 595,318" fill="none" stroke="#fbbf24" stroke-width="3" stroke-dasharray="10 4"/>
-    <text x="435" y="322" text-anchor="middle" style="paint-order:stroke fill;stroke:#120d07;stroke-width:3.5px;fill:#fde047;font-size:10px;font-weight:800">🚂 KETTLE-WHISTLE ROOT-TRAIN VIADUCT</text>
+    <!-- Interactive Continent & T-Deep Landmarks Positioned on True Cartographic Coordinates -->
+    ${drawL2LandmarkSvg({ kind: 'town', x: 465, y: 442, label: st0.town_name + ' [18_24]', sublabel: '★ T-Deep Starter Town', flagColor: '#eab308', isSelected: true, poiObj: poiStarter })}
+    ${drawL2LandmarkSvg({ kind: 'castle', x: 605, y: 368, label: 'Kilnwatch Bastion [20_23]', sublabel: 'Lv. 10–20 All-Race Hub', flagColor: '#dc2626', isSelected: false, poiObj: poiC01 })}
+    ${drawL2LandmarkSvg({ kind: 'windmill', x: 355, y: 335, label: 'Cinnamon-Mill Isle [16_21]', sublabel: 'Lv. 1–12 Furral', flagColor: '#22c55e', isSelected: false, poiObj: poiC01 })}
+    ${drawL2LandmarkSvg({ kind: 'catacomb', x: 452, y: 468, label: 'Kiln Cellar Ruins [9-22]', sublabel: 'T-Deep Dungeon', flagColor: '#a855f7', isSelected: false, poiObj: poiC01 })}
+    ${drawL2LandmarkSvg({ kind: 'castle', x: 735, y: 292, label: 'Pinion Terminus [21_20]', sublabel: 'Lv. 18–25 Steppe Entry', flagColor: '#dc2626', isSelected: false, poiObj: poiC02 })}
+    ${drawL2LandmarkSvg({ kind: 'tower', x: 765, y: 235, label: 'Escapement Anvil [22_19]', sublabel: 'Lv. 25–30 2nd-Class Trial', flagColor: '#2563eb', isSelected: false, poiObj: poiC02 })}
+    ${drawL2LandmarkSvg({ kind: 'fortress', x: 795, y: 175, label: 'Inductor Switchyard [22_17]', sublabel: 'Lv. 30–40 Promotion', flagColor: '#dc2626', isSelected: false, poiObj: poiC02 })}
+    ${drawL2LandmarkSvg({ kind: 'castle', x: 585, y: 132, label: 'Starfall Haven [19_14]', sublabel: 'Lv. 38–50 Sky-Harbor', flagColor: '#38bdf8', isSelected: false, poiObj: poiC03 })}
+    ${drawL2LandmarkSvg({ kind: 'lair', x: 785, y: 95, label: 'Crown-Beacon Citadel [22_13]', sublabel: 'Lv. 50–75 Capital', flagColor: '#eab308', isSelected: false, poiObj: poiC03 })}
   `;
 
   return renderCartoShellHtml({
@@ -4939,19 +4894,8 @@ function renderContinentBigPictureSvg(continents, districts, activeContinent) {
   };
 
   const terrainHtml = `
-    <!-- Outer Coastal Shallows & Continent Parchment Island -->
-    <path d="M 38,65 Q 110,22 515,22 Q 935,22 998,75 Q 1015,265 992,458 Q 845,485 515,478 Q 145,485 48,452 Q 18,265 38,65 Z"
-          fill="${isL2 ? 'url(#l2ParchmentGrad)' : '#255847'}" stroke="#241c10" stroke-width="4"/>
-
-    <!-- Continual Rivers, Lakes & Harbors (Shared Azure #38bdf8 / #314e52 across Continent & District!) -->
-    <path d="M 445,25 Q 435,145 445,222 T 455,372 L 485,478" fill="none" stroke="${isL2 ? '#314e52' : '#1d4ed8'}" stroke-width="12" stroke-linecap="round"/>
-    <path d="M 45,295 Q 245,265 445,222 T 705,225 L 995,215" fill="none" stroke="${isL2 ? '#38bdf8' : '#38bdf8'}" stroke-width="4" stroke-linecap="round" opacity="0.65"/>
-    <ellipse cx="445" cy="222" rx="42" ry="18" fill="${isL2 ? '#314e52' : '#1d4ed8'}" stroke="#38bdf8" stroke-width="1.2"/>
-
-    <!-- Sculpted Mountain Ridges -->
-    ${drawL2MountainRangeSvg('95,152 215,140 335,152 465,138', 1.1)}
-    ${drawL2MountainRangeSvg('575,152 695,138 815,152', 1.1)}
-    ${drawL2MountainRangeSvg('225,295 355,302 525,292', 1.0)}
+    <!-- Authentic L2J.RU Parchment Relief & Interlaced Satellite Base Plate -->
+    <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.92"/>
   `;
 
   // Winding Continent Highways connecting District centers
@@ -5996,6 +5940,35 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
                       <div style="padding:8px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-subtle)">
                         <div class="mono" style="font-size:10px;color:#f87171;font-weight:800">DUNGEONS & CATACOMBS (${(zdir.regular_dungeons || []).length + (zdir.seven_signs_seal_catacombs || []).length})</div>
                         ${(zdir.regular_dungeons || []).slice(0, 5).concat((zdir.seven_signs_seal_catacombs || []).slice(0, 3)).map(z => `<div style="font-size:10.5px;margin-top:3px">${escapeHtml(z.level_header)} <span class="mono" style="color:#c084fc">[${escapeHtml(z.grid_sector)}]</span></div>`).join("")}
+                      </div>
+                    </div>
+                    <div style="font-weight:800;font-size:12px;color:#fde047;margin:10px 0 6px">🗺️ Authentic L2J.RU / L2Hub / PMFun Top-Down Cartographic Plates (Interlaced Grid + Parchment Relief + Enlarged Dual Zone & Dungeon Maps)</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+                      <div style="padding:8px;border-radius:8px;background:#1a140c;border:1.5px solid #d0a559">
+                        <div class="mono" style="font-size:10.5px;color:#f3dfa5;font-weight:800;margin-bottom:4px">1. Master Interlaced World Grid [10.10–26.25] (all_interlaced.jpg Standard)</div>
+                        <img src="/studio-maps/all_interlaced_world_grid.png" alt="Interlaced World Grid" style="width:100%;height:auto;border-radius:6px;border:1px solid #5d4127;display:block"/>
+                      </div>
+                      <div style="padding:8px;border-radius:8px;background:#1a140c;border:1.5px solid #d0a559">
+                        <div class="mono" style="font-size:10.5px;color:#f3dfa5;font-weight:800;margin-bottom:4px">2. Continent Antique Parchment Relief Map (c3_aden.jpg Standard · 48 Landmarks)</div>
+                        <img src="/studio-maps/c3_continent_parchment_relief.png" alt="Parchment Relief Map" style="width:100%;height:auto;border-radius:6px;border:1px solid #5d4127;display:block"/>
+                      </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+                      <div style="padding:8px;border-radius:8px;background:#241a0e;border:1.5px solid #d0a559">
+                        <div class="mono" style="font-size:10px;color:#fde047;font-weight:800;margin-bottom:4px">3A. Field Common Map (zone_map_enlarged · 185 Red Pins)</div>
+                        <img src="/studio-maps/d01_field_common_map.png" alt="Field Common Map" style="width:100%;height:auto;border-radius:4px;border:1px solid #5d4127;margin-bottom:6px;display:block"/>
+                        <div class="mono" style="font-size:10px;color:#38bdf8;font-weight:800;margin-bottom:4px">3B. Field Orthographic Radar Map (zone_map_enlarged_radar)</div>
+                        <img src="/studio-maps/d01_field_radar_map.png" alt="Field Radar Map" style="width:100%;height:auto;border-radius:4px;border:1px solid #5d4127;display:block"/>
+                      </div>
+                      <div style="padding:8px;border-radius:8px;background:#241a0e;border:1.5px solid #d0a559">
+                        <div class="mono" style="font-size:10px;color:#f87171;font-weight:800;margin-bottom:4px">4A. Kiln Cellar Ruins Common Strip (Elven Ruins id=53)</div>
+                        <img src="/studio-maps/d01_dungeon_common_map.png" alt="Dungeon Common Map" style="width:100%;height:auto;border-radius:4px;border:1px solid #5d4127;margin-bottom:6px;display:block"/>
+                        <div class="mono" style="font-size:10px;color:#f87171;font-weight:800;margin-bottom:4px">4B. Underground 8-Room Stone Labyrinth Radar Blueprint</div>
+                        <img src="/studio-maps/d01_dungeon_radar_map.png" alt="Dungeon Radar Map" style="width:100%;height:auto;border-radius:4px;border:1px solid #5d4127;display:block"/>
+                      </div>
+                      <div style="padding:8px;border-radius:8px;background:#241a0e;border:1.5px solid #d0a559">
+                        <div class="mono" style="font-size:10px;color:#4ade80;font-weight:800;margin-bottom:4px">5. Lantern Hollow Village Blueprint (PMFun Detailed Town Map)</div>
+                        <img src="/studio-maps/d01_town_detailed_blueprint.png" alt="Town Detailed Blueprint" style="width:100%;height:auto;border-radius:4px;border:1px solid #5d4127;display:block"/>
                       </div>
                     </div>
                     <div style="font-weight:800;font-size:12px;color:#10b981;margin-bottom:6px">T-Depth Vertical Validation Slice (100% L2J.RU Dual-Map + 8-Column Spawn Table + Mob Drop/Spoil Sheets)</div>
@@ -9977,6 +9950,22 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(raw)))
             self.end_headers()
             self.wfile.write(raw)
+            return
+
+        if parsed.path.startswith("/studio-maps/"):
+            rel_name = parsed.path.replace("/studio-maps/", "", 1).strip("/")
+            target = (ROOT / "content" / "studio" / "maps" / rel_name).resolve()
+            maps_dir = (ROOT / "content" / "studio" / "maps").resolve()
+            if str(target).startswith(str(maps_dir)) and target.is_file():
+                raw = target.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Cache-Control", "no-cache")
+                self.send_header("Content-Length", str(len(raw)))
+                self.end_headers()
+                self.wfile.write(raw)
+                return
+            self._send_json({"ok": False, "error": "Studio map plate not found"}, status=404)
             return
 
         if parsed.path.startswith("/thumbs/"):
