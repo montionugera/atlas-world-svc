@@ -58,6 +58,28 @@ A high-performance real-time multiplayer game built with a modern high-density a
 - **Zero-Leeway Verification:** Rejects unauthenticated connections, expired sessions, and forged tokens before establishing WebSocket session.
 - **WebSocket Gateway:** Native `tokio-tungstenite` server accepting binary FlatBuffers frames and broadcasting `WorldSnapshot` frames while multiplexing `/v2/*` Meta HTTP endpoints on the same port (and optional `META_BIND_ADDR`).
 
+### Dedicated Semantic-Zoom World, Town & Multi-Floor Dungeon Atlas (`scripts/catalog_explorer_web.py` — `:8788`)
+- **Dedicated Semantic-Zoom Atlas (`DedicatedWorldAtlasComponent` / `renderDedicatedWorldAtlas`):** Interactive 2D cartographic explorer inspired by Lineage II (`l2hub.info/c3/map` Gludin / Dark Elven Village / Oren by Cheese, The Ant Nest `B1–B3`, Cruma Tower `1F–3F`, Tower of Insolence) and Google/Apple Maps:
+  - **3-Tier Semantic Zoom LOD:**
+    - **Tier 1 (`1.0×–2.2×` Macro Geography):** Uncluttered continuous world map with priority AABB label culling, inter-zone travel highways, and all **6 Playable Race Spawn Locations** (`Human`, `Lunar`, `Ogre/Orc`, `Dwarf`, `Dark-Lunar`, `Furral`).
+    - **Tier 2 (`2.2×–4.5×` Regional Roads & Portals):** Reveals regional hunting territory rings, level-band highway shields, and clickable **Multi-Floor Dungeon Entrance Portals**.
+    - **Tier 3 (`4.5×–12.0×` Town Street, Building & Service-Mark Blueprint):** Automatically transitions to walled Town Street Blueprints across all **15 Towns** (6 Starting Towns + 9 Castle/Hub Towns) with `#1..#12` numbered buildings, **7 canonical service marks** (`equip_shop`, `consumable_shop`, `blacksmith` / `refinement_anvils`, `temple`, `warehouse`, `guild`, `gatekeeper`), and an Oren-by-Cheese color-coded `1..12` NPC Roster.
+  - **Multi-Floor Underground & Tower Sub-Maps (`openDungeonSubMap` / `switchDungeonFloor`):** Interactive floor stacks across all **16 Multi-Floor Dungeons & Catacombs** (`B1 ⇄ B2 ⇄ B3` underground labyrinths and `1F ⇄ 2F ⇄ 3F` vertical spires) with clickable inter-floor warp portals and overland exit gates.
+  - **Unified Category & Level-Band Filter Bar:** Instant filtering across `All`, `Race Spawns (6)`, `NPCs (Shop + Refinement)`, `Monster`, `Mini-Boss`, `Raid`, and `MVP`, plus `Lv.Band` pills (`All`, `1-20`, `21-40`, `41-60`, `61-80`, `81-99`) and WCAG 2.2 keyboard navigation (`+/−`, Arrow keys, `1–3`/`PgUp`/`PgDn`, `Esc`).
+- **6-Role Studio Council (`.claude/agents/`) & Deterministic Multi-Iteration Loop:**
+  - **Council Personas:** `studio-product-owner.md`, `studio-cartographer.md`, `studio-lore-architect.md`, `studio-dungeon-architect.md`, `studio-combat-economist.md`, and `studio-ux-director.md`.
+  - **Governance & Iteration CLI:**
+    ```bash
+    # Run 10-gate World Governance & JSON Schema Draft 2020-12 check (GOV-01..GOV-10)
+    python3 scripts/studio_world_governance.py --check
+
+    # Audit 6-dimension / 7-MDA-pillar scores (D1..D6 = 100/100) or auto-expand next wave
+    python3 scripts/run_atlas_iteration_loop.py --auto-expand-next-wave
+
+    # Launch the World Studio & Catalog Explorer on :8788
+    python3 scripts/catalog_explorer_web.py --port 8788
+    ```
+
 ---
 
 ## 🚀 Quick Start
@@ -120,6 +142,7 @@ xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.clie
 | **Metrics (Prometheus)** | `http://localhost:2567/metrics`| Live server tick & entity diagnostic metrics |
 | **Dashboards (Grafana)** | `http://localhost:3000` | Analytics dashboards (admin/admin) |
 | **React Interface** | `http://localhost:3001` | Browser-based generic client |
+| **World Studio & Semantic-Zoom Atlas** | `http://localhost:8788` | Interactive 4-Layer World Studio, 15 Town Street Blueprints & 16 Multi-Floor Dungeon Sub-Maps |
 
 ---
 

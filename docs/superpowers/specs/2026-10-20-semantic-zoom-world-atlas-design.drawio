@@ -1,0 +1,219 @@
+<mxfile host="app.diagrams.net" modified="2026-10-20T00:45:00.000Z" agent="Antigravity Draw.io Studio" version="24.7.17" type="device">
+  <diagram id="semantic-zoom-world-atlas-arch" name="Semantic-Zoom World &amp; Dungeon Atlas Architecture">
+    <mxGraphModel dx="1420" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1360" pageHeight="860" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- LANE 1: Fast Real-Time UI & Semantic-Zoom Input Layer -->
+        <mxCell id="lane_ui_interaction" value="Fast Real-Time UI Input, Semantic-Zoom Router &amp; Filter Layer (&lt;16ms Frame Budget)" style="swimlane;horizontal=1;startSize=36;rounded=1;arcSize=6;fillColor=#1E293B;strokeColor=#475569;fontColor=#F8FAFC;fontStyle=1;fontSize=13;swimlaneFillColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1260" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_input" value="Pan / Zoom Wheel &amp; Click Events&#xa;(Continuous SVG/Canvas Matrix +&#xa;Quick-Jump Town/Dungeon Triggers)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1E3A8A;strokeColor=#60A5FA;fontColor=#F8FAFC;fontSize=11;fontStyle=1;" vertex="1" parent="lane_ui_interaction">
+          <mxGeometry x="30" y="55" width="250" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_lod_ctrl" value="Semantic-Zoom LOD Controller&#xa;(Auto Threshold Router: 1.0x | 2.2x | 4.5x&#xa;+ Label Collision Priority Resolver)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#065F46;strokeColor=#34D399;fontColor=#F8FAFC;fontSize=11;fontStyle=1;" vertex="1" parent="lane_ui_interaction">
+          <mxGeometry x="370" y="55" width="270" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_filter_engine" value="Monster / MVP / Raid Filter Engine&#xa;(Monster | Mini-Boss | Raid | MVP |&#xa;Town Marks | Level Bands Lv.1–99)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#581C87;strokeColor=#C084FC;fontColor=#F8FAFC;fontSize=11;fontStyle=1;" vertex="1" parent="lane_ui_interaction">
+          <mxGeometry x="730" y="55" width="250" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_url_state" value="URL Hash &amp; Recovery Guard&#xa;(Deep-Link Sync + Inline&#xa;0-Match [Reset Filters] Banner)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#334155;strokeColor=#94A3B8;fontColor=#F8FAFC;fontSize=11;fontStyle=1;" vertex="1" parent="lane_ui_interaction">
+          <mxGeometry x="1040" y="55" width="190" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- LANE 2: DedicatedWorldAtlasComponent Canvas & Sub-Map Stack -->
+        <mxCell id="lane_canvas_lod" value="DedicatedWorldAtlasComponent — 3-Tier Semantic-Zoom Canvas &amp; Multi-Floor Dungeon Warp Stack" style="swimlane;horizontal=1;startSize=36;rounded=1;arcSize=6;fillColor=#1E293B;strokeColor=#475569;fontColor=#F8FAFC;fontStyle=1;fontSize=13;swimlaneFillColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="40" y="270" width="1260" height="240" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_lod1" value="Tier 1: Macro Geography LOD (1.0x–2.2x)&#xa;• Continents, Coastlines &amp; Travel Highways&#xa;• Castles, Towns (Lantern Hollow / Gludin)&#xa;• Hunting Areas &amp; Dungeon Entrances&#xa;• Zero Cluttered [D01..D11] Grid Frames" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=10;fillColor=#1E3A8A;strokeColor=#60A5FA;fontColor=#F8FAFC;fontSize=11;" vertex="1" parent="lane_canvas_lod">
+          <mxGeometry x="30" y="60" width="270" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_lod2" value="Tier 2: Regional Roads &amp; Level Bands (2.2x–4.5x)&#xa;• Secondary District Trade Routes&#xa;• Hunting Zone Level Bands (Lv.1–20..81–99)&#xa;• Regional Field Boss &amp; Patrol Pins&#xa;• Progressive Label Reveal" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=10;fillColor=#0F766E;strokeColor=#2DD4BF;fontColor=#F8FAFC;fontSize=11;" vertex="1" parent="lane_canvas_lod">
+          <mxGeometry x="340" y="60" width="270" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_lod3" value="Tier 3: Town Street &amp; Building Blueprint (4.5x–12x)&#xa;• Perimeter Walls, Gates, Plaza &amp; Streets&#xa;• Building Footprints &amp; Service Marks:&#xa;  ⚔️ Equip | 🧪 Consumable | ⚒️ Blacksmith&#xa;  🏛️ Temple | 📦 Warehouse | 🛡️ Guild | 🌀 Gate&#xa;• Numbered Color-Coded NPC Roster Legend" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=10;fillColor=#7C2D12;strokeColor=#FB923C;fontColor=#F8FAFC;fontSize=11;" vertex="1" parent="lane_canvas_lod">
+          <mxGeometry x="650" y="60" width="280" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_dungeon_stack" value="Multi-Floor Dungeon &amp; Tower Sub-Map Stack&#xa;• Underground: Surface ⇄ B1 ⇄ B2 ⇄ B3&#xa;• Vertical Tower: 1F ⇄ 2F ⇄ 3F&#xa;• Room Geometry, Corridors &amp; Boss Chambers&#xa;• Clickable Inter-Floor Warp Portals &amp; Exit" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=10;fillColor=#7F1D1D;strokeColor=#F87171;fontColor=#F8FAFC;fontSize=11;" vertex="1" parent="lane_canvas_lod">
+          <mxGeometry x="970" y="60" width="260" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- LANE 3: Cartographic Data & Persistence Layer -->
+        <mxCell id="lane_data_persistence" value="Cartographic Data &amp; Persistence Layer (Decoupled Static Contracts &amp; Plate Generators)" style="swimlane;horizontal=1;startSize=36;rounded=1;arcSize=6;fillColor=#1E293B;strokeColor=#475569;fontColor=#F8FAFC;fontStyle=1;fontSize=13;swimlaneFillColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="40" y="590" width="1260" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_map_plates" value="Raster &amp; Vector Cartographic Plates&#xa;(scripts/generate_l2j_atlas_maps.py:&#xa;Topographic Parchment Relief, Town Blueprint&#xa;Plates &amp; Multi-Floor Dungeon SVG/PNG Plates)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#334155;strokeColor=#94A3B8;fontColor=#F8FAFC;fontSize=11;fontStyle=1;" vertex="1" parent="lane_data_persistence">
+          <mxGeometry x="40" y="55" width="360" height="105" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_history_json" value="world_history_and_concept.json&#xa;(content/studio/: 4-Perspective World Lore,&#xa;Continents, District Governance &amp; Canon /&#xa;Lineage II Archetype Subtitle Bindings)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#334155;strokeColor=#94A3B8;fontColor=#F8FAFC;fontSize=11;fontStyle=1;" vertex="1" parent="lane_data_persistence">
+          <mxGeometry x="450" y="55" width="360" height="105" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node_atlas_json" value="t_shaped_world_atlas.json&#xa;(content/studio/: Multi-LOD Town Buildings,&#xa;Service Marks, Numbered NPC Rosters,&#xa;Dungeon Floors[], Rooms[] &amp; Warp Points[])" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#334155;strokeColor=#94A3B8;fontColor=#F8FAFC;fontSize=11;fontStyle=1;" vertex="1" parent="lane_data_persistence">
+          <mxGeometry x="860" y="55" width="360" height="105" as="geometry" />
+        </mxCell>
+
+        <!-- EDGES: UI Interaction Layer -->
+        <mxCell id="edge_input_to_lod" value="wheel / drag / click" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#60A5FA;strokeWidth=2;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_input" target="node_lod_ctrl">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="130" />
+              <mxPoint x="390" y="130" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_filter_to_url" value="sync hash / reset" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#C084FC;strokeWidth=2;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_filter_engine" target="node_url_state">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1035" y="130" />
+              <mxPoint x="1065" y="130" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- EDGES: Semantic-Zoom LOD Controller to Canvas Tiers -->
+        <mxCell id="edge_lod_to_tier1" value="zoom 1.0x–2.2x" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.2;exitY=1;entryX=0.5;entryY=0;strokeColor=#34D399;strokeWidth=2;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_lod_ctrl" target="node_lod1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="464" y="225" />
+              <mxPoint x="205" y="225" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_lod_to_tier2" value="zoom 2.2x–4.5x" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#34D399;strokeWidth=2;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_lod_ctrl" target="node_lod2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="545" y="245" />
+              <mxPoint x="515" y="245" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_lod_to_tier3" value="zoom 4.5x–12x" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.8;exitY=1;entryX=0.35;entryY=0;strokeColor=#34D399;strokeWidth=2;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_lod_ctrl" target="node_lod3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="626" y="225" />
+              <mxPoint x="788" y="225" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- EDGES: Filter Engine to Canvas & Dungeon Stack -->
+        <mxCell id="edge_filter_to_tier3" value="filter marks / spawns" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.3;exitY=1;entryX=0.696;entryY=0;strokeColor=#C084FC;strokeWidth=2;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_filter_engine" target="node_lod3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="845" y="235" />
+              <mxPoint x="885" y="235" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_filter_to_dungeon" value="filter Monster / MVP / Raid" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.8;exitY=1;entryX=0.5;entryY=0;strokeColor=#C084FC;strokeWidth=2;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_filter_engine" target="node_dungeon_stack">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="970" y="225" />
+              <mxPoint x="1140" y="225" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- EDGES: Horizontal Transitions in Canvas Lane -->
+        <mxCell id="edge_tier1_to_tier2" value="LOD step" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#38BDF8;strokeWidth=2;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_lod1" target="node_lod2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="405" />
+              <mxPoint x="370" y="405" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_tier2_to_tier3" value="Town zoom" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#FB923C;strokeWidth=2;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_lod2" target="node_lod3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="660" y="405" />
+              <mxPoint x="680" y="405" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_tier3_to_dungeon" value="Warp portal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#F87171;strokeWidth=2;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_lod3" target="node_dungeon_stack">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="980" y="405" />
+              <mxPoint x="1000" y="405" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- EDGES: Data & Persistence Layer to Canvas Tiers (Disjoint Vertical Columns) -->
+        <mxCell id="edge_plates_to_lod1" value="overland relief plate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.35;exitY=0;entryX=0.5;entryY=1;strokeColor=#94A3B8;strokeWidth=2;dashed=1;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_map_plates" target="node_lod1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="206" y="555" />
+              <mxPoint x="205" y="555" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_plates_to_lod2" value="regional &amp; blueprint plates" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.9;exitY=0;entryX=0.09;entryY=1;strokeColor=#94A3B8;strokeWidth=2;dashed=1;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_map_plates" target="node_lod2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="404" y="555" />
+              <mxPoint x="404" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_history_to_lod2" value="canon &amp; L2 region lore" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=0;entryX=0.74;entryY=1;strokeColor=#94A3B8;strokeWidth=2;dashed=1;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_history_json" target="node_lod2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="555" />
+              <mxPoint x="580" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_history_to_lod3" value="district &amp; town rationale" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.8;exitY=0;entryX=0.31;entryY=1;strokeColor=#94A3B8;strokeWidth=2;dashed=1;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_history_json" target="node_lod3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="778" y="555" />
+              <mxPoint x="777" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_atlas_to_lod3" value="streets, marks &amp; NPCs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.15;exitY=0;entryX=0.94;entryY=1;strokeColor=#94A3B8;strokeWidth=2;dashed=1;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_atlas_json" target="node_lod3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="954" y="555" />
+              <mxPoint x="953" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge_atlas_to_dungeon" value="floors[], spawns[] &amp; warps[]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.667;exitY=0;entryX=0.5;entryY=1;strokeColor=#94A3B8;strokeWidth=2;dashed=1;fontColor=#F8FAFC;labelBackgroundColor=#0F172A;fontSize=10;" edge="1" parent="1" source="node_atlas_json" target="node_dungeon_stack">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1140" y="555" />
+              <mxPoint x="1140" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

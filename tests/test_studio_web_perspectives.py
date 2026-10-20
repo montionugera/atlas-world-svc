@@ -207,6 +207,60 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-thermal-compensator-basin")
         self.assertEqual(res_canon["childNode"]["status"], "mystery")
 
+    def test_semantic_world_atlas_town_blueprints_and_multifloor_dungeons(self) -> None:
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        bundle = web.load_studio_perspectives_bundle()
+        atlas = bundle["tShapedWorldAtlas"]
+        # Verify Town Blueprint service marks & 1..12 NPC roster on deep_town
+        tb = atlas["t_deep_validation_slice"]["deep_town"]["town_blueprint"]
+        mark_types = {m["mark_type"] for m in tb["service_marks"]}
+        for req_mark in ("equip_shop", "consumable_shop", "blacksmith", "temple", "warehouse", "guild", "gatekeeper"):
+            self.assertIn(req_mark, mark_types)
+        self.assertEqual(len(tb["npc_roster"]), 12)
+        # Verify Multi-Floor Underground Dungeon (B1..B3) & Vertical Towers (1F..3F) bound to canon studio_node_ids
+        mf = {d["dungeon_id"]: d for d in atlas["multi_floor_dungeons"]}
+        self.assertIn("zone-dungeon-kiln-cellar", mf)
+        self.assertIn("zone-dungeon-pendulum-shaft", mf)
+        self.assertEqual([f["floor_id"] for f in mf["zone-dungeon-kiln-cellar"]["floors"]], ["B1", "B2", "B3"])
+        self.assertEqual([f["floor_id"] for f in mf["zone-dungeon-pendulum-shaft"]["floors"]], ["1F", "2F", "3F"])
+
+    def test_dedicated_semantic_zoom_atlas_component_and_filters(self) -> None:
+        html = web.INDEX_HTML
+        for token in (
+            "renderDedicatedWorldAtlas",
+            "getAllAtlasTownEntries",
+            "Select Town Blueprint",
+            "Select Multi-Floor Dungeon Sub-Map",
+            "Switch Active Town Street Blueprint",
+            "openDungeonSubMap",
+            "switchDungeonFloor",
+            "exitDungeonSubMap",
+            "setAtlasFilter",
+            "setAtlasLevelBand",
+            "resetAtlasFilters",
+            "onStudioMapKeyDown",
+            "equip_shop",
+            "consumable_shop",
+            "blacksmith",
+            "warehouse",
+            "gatekeeper",
+            "Gludin",
+            "The Ant Nest",
+            "Cruma Tower",
+        ):
+            self.assertIn(token, html, f"Missing token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        atlas = bundle["tShapedWorldAtlas"]
+        zdir = atlas["t_breadth_zone_directory"]
+        all_towns = zdir["starting_towns"] + zdir["other_castle_and_hub_towns"]
+        self.assertEqual(len(all_towns), 15)
+        for t_entry in all_towns:
+            self.assertIn("town_blueprint", t_entry)
+            self.assertEqual(len(t_entry["town_blueprint"]["npc_roster"]), 12)
+        self.assertEqual(len(atlas["multi_floor_dungeons"]), 16)
+
 
 if __name__ == "__main__":
     unittest.main()

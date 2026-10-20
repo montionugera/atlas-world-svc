@@ -561,14 +561,13 @@ def generate_c3_continent_parchment_relief() -> Path:
             halo_px=2,
         )
 
-    # Highlight box around T-Deep District D01 [18_24]
-    draw.rectangle((122, 752, 338, 882), outline=(185, 28, 28, 220), width=2)
+    # Highlight Subtle Compass & Archetype Legend (Zero cluttered district debug frames)
     _draw_halo_text(
         draw,
         (230, 742),
-        "★ T-DEPTH VERTICAL SLICE: D01 TEACUP MEADOWS [18_24]",
+        "★ D01 TEACUP MEADOWS: Lantern Hollow (Gludin) & Kiln Cellar (The Ant Nest B1-B3)",
         font=font_lbl,
-        fill=(185, 28, 28),
+        fill=(165, 22, 12),
         halo=(248, 242, 226),
         anchor="mm",
         halo_px=2,
@@ -967,17 +966,21 @@ def generate_d01_town_detailed_blueprint() -> Path:
     draw.rectangle((76, 232, 564, 268), fill=(182, 174, 156), outline=(112, 102, 86))
     draw.ellipse((238, 172, 402, 328), fill=(196, 188, 168), outline=(112, 102, 86), width=2)
 
-    # Architectural Building Roof Footprints (`#944A34` terracotta & `#526878` slate roofs)
+    # Architectural Building Roof Footprints (`#944A34` terracotta & `#526878` slate roofs) — Numbered 1..12 (Oren by Cheese Standard)
     buildings = [
         # (x0, y0, x1, y1, roof_col, num, title)
-        (255, 78, 385, 142, (82, 104, 124), "4", "Cedric's Warrior & Mystic Hall"),
-        (135, 125, 232, 205, (148, 74, 52), "2", "Neutral Adventure Guild Hall"),
-        (408, 125, 505, 205, (158, 82, 48), "3", "Blacksmith Clan Hearth-Anvil Forge"),
-        (135, 292, 228, 368, (124, 96, 68), "6", "Dwarf Warehouse & Freight Vault"),
-        (412, 292, 505, 368, (138, 78, 58), "7", "Apprentice Weapon & Armor Shop"),
-        (215, 372, 288, 422, (112, 88, 118), "8", "Grocery & Soulshot Apothecary"),
-        (304, 234, 336, 266, (234, 179, 8), "1", "First Meridian Keystone Plaza"),
-        (345, 286, 392, 326, (14, 165, 233), "5", "Gatekeeper Clarissa (#30006)"),
+        (298, 228, 342, 272, (234, 179, 8), "1", "Meridian Plaza (Guide)"),
+        (135, 118, 232, 194, (148, 74, 52), "2", "Guild Hall [GD]"),
+        (408, 118, 505, 194, (158, 82, 48), "3", "Blacksmith Forge [BS]"),
+        (252, 74, 388, 134, (82, 104, 124), "4", "Architect Temple [TP]"),
+        (348, 282, 398, 324, (14, 165, 233), "5", "Gatekeeper Roxxy [GK]"),
+        (135, 288, 228, 362, (124, 96, 68), "6", "Dwarf Warehouse [WH]"),
+        (412, 288, 505, 362, (138, 78, 58), "7", "Weapon & Armor [EQ]"),
+        (206, 372, 294, 422, (112, 88, 118), "8", "Grocery & Soulshot [CS]"),
+        (346, 372, 434, 422, (127, 29, 29), "9", "Fighter Training Hall"),
+        (296, 434, 344, 462, (30, 58, 138), "10", "South Gate Watch"),
+        (536, 232, 566, 268, (30, 58, 138), "11", "East Gate Watch"),
+        (296, 38, 344, 66, (30, 58, 138), "12", "North Gate Watch"),
     ]
 
     font_b = _load_font(10, bold=True)

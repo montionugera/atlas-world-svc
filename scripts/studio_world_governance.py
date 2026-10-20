@@ -106,6 +106,83 @@ def _has_open_portal(nodes_by_id: dict[str, dict[str, Any]], src_id: str, dst_id
     return False
 
 
+def _resolve_schema_ref(ref: str, root_schema: dict[str, Any]) -> dict[str, Any]:
+    if not ref.startswith("#/"):
+        raise ValueError(f"Unsupported $ref '{ref}'")
+    curr: Any = root_schema
+    for part in ref[2:].split("/"):
+        curr = curr[part]
+    return curr
+
+
+def _validate_json_schema_stdlib(
+    instance: Any,
+    schema: dict[str, Any],
+    root_schema: dict[str, Any],
+    path: str = "$",
+) -> list[str]:
+    """Recursive stdlib validator for JSON Schema draft 2020-12 subset ($ref, type, required, additionalProperties, enum, const, minItems/maxItems, minimum/maximum)."""
+    errs: list[str] = []
+    if "$ref" in schema:
+        target = _resolve_schema_ref(str(schema["$ref"]), root_schema)
+        return _validate_json_schema_stdlib(instance, target, root_schema, path)
+
+    expected_type = schema.get("type")
+    if expected_type == "object":
+        if not isinstance(instance, dict):
+            return [f"GOV-10 schema violation at {path}: expected object, got {type(instance).__name__}"]
+        req_keys = schema.get("required") or []
+        for rk in req_keys:
+            if rk not in instance:
+                errs.append(f"GOV-10 schema violation at {path}: missing required key '{rk}'")
+        props = schema.get("properties") or {}
+        if schema.get("additionalProperties") is False:
+            for k in instance.keys():
+                if k not in props:
+                    errs.append(f"GOV-10 schema violation at {path}: unexpected additional property '{k}'")
+        for k, v in instance.items():
+            if k in props:
+                errs.extend(_validate_json_schema_stdlib(v, props[k], root_schema, f"{path}.{k}"))
+    elif expected_type == "array":
+        if not isinstance(instance, list):
+            return [f"GOV-10 schema violation at {path}: expected array, got {type(instance).__name__}"]
+        min_items = schema.get("minItems")
+        max_items = schema.get("maxItems")
+        if min_items is not None and len(instance) < int(min_items):
+            errs.append(f"GOV-10 schema violation at {path}: array length {len(instance)} < minItems {min_items}")
+        if max_items is not None and len(instance) > int(max_items):
+            errs.append(f"GOV-10 schema violation at {path}: array length {len(instance)} > maxItems {max_items}")
+        item_schema = schema.get("items")
+        if isinstance(item_schema, dict):
+            for idx, item in enumerate(instance):
+                errs.extend(_validate_json_schema_stdlib(item, item_schema, root_schema, f"{path}[{idx}]"))
+    elif expected_type == "string":
+        if not isinstance(instance, str):
+            return [f"GOV-10 schema violation at {path}: expected string, got {type(instance).__name__}"]
+        if "const" in schema and instance != schema["const"]:
+            errs.append(f"GOV-10 schema violation at {path}: expected const '{schema['const']}', got '{instance}'")
+        if "enum" in schema and instance not in schema["enum"]:
+            errs.append(f"GOV-10 schema violation at {path}: value '{instance}' not in enum {schema['enum']}")
+        if "minLength" in schema and len(instance) < int(schema["minLength"]):
+            errs.append(f"GOV-10 schema violation at {path}: string length {len(instance)} < minLength {schema['minLength']}")
+    elif expected_type == "integer":
+        if isinstance(instance, bool) or not isinstance(instance, int):
+            return [f"GOV-10 schema violation at {path}: expected integer, got {type(instance).__name__}"]
+        if "minimum" in schema and instance < int(schema["minimum"]):
+            errs.append(f"GOV-10 schema violation at {path}: {instance} < minimum {schema['minimum']}")
+        if "maximum" in schema and instance > int(schema["maximum"]):
+            errs.append(f"GOV-10 schema violation at {path}: {instance} > maximum {schema['maximum']}")
+    elif expected_type == "number":
+        if isinstance(instance, bool) or not isinstance(instance, (int, float)):
+            return [f"GOV-10 schema violation at {path}: expected number, got {type(instance).__name__}"]
+        if "minimum" in schema and float(instance) < float(schema["minimum"]):
+            errs.append(f"GOV-10 schema violation at {path}: {instance} < minimum {schema['minimum']}")
+        if "maximum" in schema and float(instance) > float(schema["maximum"]):
+            errs.append(f"GOV-10 schema violation at {path}: {instance} > maximum {schema['maximum']}")
+
+    return errs
+
+
 def validate_world_governance(
     studio_dir: Path = DEFAULT_STUDIO_DIR,
 ) -> tuple[list[str], dict[str, Any]]:
@@ -469,10 +546,9 @@ def validate_world_governance(
         try:
             t_doc = json.loads(t_atlas_path.read_text(encoding="utf-8"))
             t_schema = json.loads(t_schema_path.read_text(encoding="utf-8"))
-            for req_key in t_schema.get("required", []):
-                if req_key not in t_doc:
-                    errors.append(f"GOV-10 violation: t_shaped_world_atlas.json missing required key '{req_key}'")
+            errors.extend(_validate_json_schema_stdlib(t_doc, t_schema, t_schema, "$"))
             zdir = t_doc.get("t_breadth_zone_directory") or {}
+            mf_dungeons = t_doc.get("multi_floor_dungeons") or []
             t_atlas_summary = {
                 "continentsCount": len(t_doc.get("t_breadth_continents") or []),
                 "startingTownsCount": len(zdir.get("starting_towns") or []),
@@ -482,6 +558,7 @@ def validate_world_governance(
                 "sealCatacombsCount": len(zdir.get("seven_signs_seal_catacombs") or []),
                 "harborsClanhallsFortsCount": len(zdir.get("harbors_clanhalls_and_forts") or []),
                 "deepMobsCount": len((t_doc.get("t_deep_validation_slice") or {}).get("deep_mob_database") or []),
+                "multiFloorDungeonsCount": len(mf_dungeons),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):
@@ -501,6 +578,52 @@ def validate_world_governance(
                     errors.append(
                         f"GOV-10 violation: T-Depth '{d_key}' references unknown studio_node_id '{snid}'"
                     )
+
+            # Validate 6 Playable Race Spawn Locations if present
+            r_spawns = t_doc.get("race_spawn_locations") or []
+            if r_spawns and len(r_spawns) != 6:
+                errors.append(f"GOV-10 violation: race_spawn_locations must have 6 playable races, got {len(r_spawns)}")
+            for rs in r_spawns:
+                if isinstance(rs, dict) and str(rs.get("starter_town_node_id", "")) not in nodes_by_id:
+                    errors.append(
+                        f"GOV-10 violation: race_spawn_locations '{rs.get('race_key')}' references unknown starter_town_node_id '{rs.get('starter_town_node_id')}'"
+                    )
+
+            # Validate Town Blueprint (7 canonical service marks + 1..12 NPC roster + character scale street widths)
+            tb = (deep_slice.get("deep_town") or {}).get("town_blueprint") or {}
+            s_marks = {m.get("mark_type") for m in (tb.get("service_marks") or []) if isinstance(m, dict)}
+            for req_mark in ("equip_shop", "consumable_shop", "blacksmith", "temple", "warehouse", "guild", "gatekeeper"):
+                if req_mark not in s_marks:
+                    errors.append(f"GOV-10 violation: town_blueprint missing required service_mark '{req_mark}'")
+            roster_nums = [r.get("building_number") for r in (tb.get("npc_roster") or []) if isinstance(r, dict)]
+            if sorted(roster_nums) != list(range(1, 13)):
+                errors.append(f"GOV-10 violation: town_blueprint.npc_roster must have building_number 1..12, got {roster_nums}")
+
+            # Validate Multi-Floor Dungeons & Towers
+            for d_item in mf_dungeons:
+                if not isinstance(d_item, dict):
+                    continue
+                did = str(d_item.get("dungeon_id", ""))
+                snid = str(d_item.get("studio_node_id", ""))
+                if snid not in nodes_by_id:
+                    errors.append(f"GOV-10 violation: multi_floor_dungeons '{did}' references unknown studio_node_id '{snid}'")
+                floors = d_item.get("floors") or []
+                floor_ids = {f.get("floor_id") for f in floors if isinstance(f, dict)}
+                for fl in floors:
+                    if not isinstance(fl, dict):
+                        continue
+                    for rm in fl.get("rooms") or []:
+                        if isinstance(rm, dict) and float(rm.get("corridor_width_meters", 0.0)) < 6.0:
+                            errors.append(
+                                f"GOV-10 violation: dungeon '{did}' room '{rm.get('room_id')}' corridor_width_meters < 6.0m Character Scale Law"
+                            )
+                    for wp in fl.get("warp_points") or []:
+                        if isinstance(wp, dict):
+                            tf = str(wp.get("target_floor_id", ""))
+                            if tf != "OVERLAND" and tf not in floor_ids:
+                                errors.append(
+                                    f"GOV-10 violation: dungeon '{did}' warp '{wp.get('warp_id')}' targets unknown floor '{tf}'"
+                                )
         except Exception as exc:
             errors.append(f"GOV-10 violation: t_shaped_world_atlas validation error: {exc}")
 
