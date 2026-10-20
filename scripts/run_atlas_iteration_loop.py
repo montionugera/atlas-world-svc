@@ -60,6 +60,35 @@ REQUIRED_FIELD_MARKS = (
     "Refinement Ore Vein",
 )
 
+REQUIRED_RASTER_PLATES = (
+    "all_interlaced_world_grid.png",
+    "c3_continent_parchment_relief.png",
+    "d01_field_common_map.png",
+    "d01_field_radar_map.png",
+    "d01_dungeon_common_map.png",
+    "d01_dungeon_radar_map.png",
+    "d01_town_detailed_blueprint.png",
+    "town_radial_moat_parchment.png",
+    "town_polygonal_keep_parchment.png",
+    "town_oren_schematic_plate.png",
+    "dungeon_underground_b1_b3_radar.png",
+    "dungeon_vertical_tower_1f_3f_radar.png",
+)
+
+ARCHETYPE_RASTER_PLATES = (
+    "all_interlaced_world_grid.png",
+    "c3_continent_parchment_relief.png",
+    "d01_field_common_map.png",
+    "d01_field_radar_map.png",
+    "d01_dungeon_radar_map.png",
+    "d01_town_detailed_blueprint.png",
+    "town_radial_moat_parchment.png",
+    "town_polygonal_keep_parchment.png",
+    "town_oren_schematic_plate.png",
+    "dungeon_underground_b1_b3_radar.png",
+    "dungeon_vertical_tower_1f_3f_radar.png",
+)
+
 MDA_PILLARS = (
     "Aesthetic",
     "Continuity",
@@ -1979,15 +2008,48 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         1,
     )
 
+    # D15: High-Resolution Per-Archetype Cartographic Raster Plates (11/11 raster plates present & non-empty in content/studio/maps/)
+    maps_dir = STUDIO_DIR / "maps"
+    present_plates: list[str] = []
+    for plate_name in ARCHETYPE_RASTER_PLATES:
+        p_file = maps_dir / plate_name
+        if p_file.is_file() and p_file.stat().st_size > 0:
+            present_plates.append(plate_name)
+    d15_score = round((len(present_plates) / float(len(ARCHETYPE_RASTER_PLATES))) * 100.0, 1)
+
+    # D16: Unified 63-Zone Connected Map Directory (6 Starting Towns, 9 Castle/Hub Towns, 24 Fields, 16 Multi-Floor Dungeons/Catacombs, 8 Harbors/ClanHalls/Forts)
+    d16_groups = {
+        "Starting Towns (6)": len([z for z in starting_towns if isinstance(z, dict) and ":" in str(z.get("loc_coord", "")) and z.get("level_band") and isinstance(z.get("town_blueprint"), dict)]),
+        "Castle & Hub Towns (9)": len([z for z in hub_towns if isinstance(z, dict) and ":" in str(z.get("loc_coord", "")) and z.get("level_band") and isinstance(z.get("town_blueprint"), dict)]),
+        "Fields & Hunting Areas (24)": len([z for z in fields_list if isinstance(z, dict) and ":" in str(z.get("loc_coord", "")) and z.get("level_band") and isinstance(z.get("field_tactical_blueprint"), dict)]),
+        "Multi-Floor Dungeons & Catacombs (16)": len([z for z in all_dungeons if isinstance(z, dict) and ":" in str(z.get("loc_coord", "")) and z.get("level_band")]),
+        "Harbors, Clan Halls & Fortresses (8)": len([z for z in forts_list if isinstance(z, dict) and ":" in str(z.get("loc_coord", "")) and z.get("level_band") and isinstance(z.get("fortress_blueprint"), dict)]),
+    }
+    d16_verified_zones = sum(d16_groups.values())
+    web_script = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
+    web_txt = web_script.read_text(encoding="utf-8") if web_script.is_file() else ""
+    has_d16_ui = all(
+        tok in web_txt
+        for tok in (
+            "renderMapDirectory",
+            "Starting Towns (6)",
+            "Castle & Hub Towns (9)",
+            "Fields & Hunting Areas (24)",
+            "Multi-Floor Dungeons & Catacombs (16)",
+            "Harbors, Clan Halls & Fortresses (8)",
+        )
+    )
+    d16_score = round(min(100.0, (d16_verified_zones / 63.0) * 100.0), 1) if has_d16_ui else round((d16_verified_zones / 63.0) * 80.0, 1)
+
     # D6: 7 MDA Experience Pillars Score
     pillar_scores = {
-        "Aesthetic": round((d5_score + d11_score + d12_score) / 3.0, 1),
-        "Continuity": round((d1_score + d5_score + d9_score + d13_score) / 4.0, 1),
+        "Aesthetic": round((d5_score + d11_score + d12_score + d15_score) / 4.0, 1),
+        "Continuity": round((d1_score + d5_score + d9_score + d13_score + d16_score) / 5.0, 1),
         "Narrative": 100.0 if len(whc.get("historical_epochs") or []) >= 4 else 75.0,
         "Challenge": round((d4_score + d7_score + d8_score + d10_score + d12_score + d14_score) / 6.0, 1),
-        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score) / 8.0, 1),
-        "Fantasy": round((d1_score + d9_score + d11_score) / 3.0, 1),
-        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score) / 6.0, 1),
+        "Discovery": round((d2_score + d3_score + d7_score + d8_score + d9_score + d11_score + d12_score + d13_score + d15_score + d16_score) / 10.0, 1),
+        "Fantasy": round((d1_score + d9_score + d11_score + d15_score) / 4.0, 1),
+        "Submission": round((d2_score + d4_score + d7_score + d10_score + d13_score + d14_score + d16_score) / 7.0, 1),
     }
     d6_score = round(sum(pillar_scores.values()) / float(len(MDA_PILLARS)), 1)
     overall = round(
@@ -2006,8 +2068,10 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
             + d12_score
             + d13_score
             + d14_score
+            + d15_score
+            + d16_score
         )
-        / 14.0,
+        / 16.0,
         1,
     )
 
@@ -2065,6 +2129,19 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "target_fields": target_fields,
                 "verified": valid_dng_spawns + valid_field_spawns,
                 "target": target_dungeons + target_fields,
+            },
+            "D15_archetype_raster_plates": {
+                "score": d15_score,
+                "verified": len(present_plates),
+                "target": len(ARCHETYPE_RASTER_PLATES),
+                "plates": present_plates,
+            },
+            "D16_unified_connected_map_directory": {
+                "score": d16_score,
+                "verified": d16_verified_zones,
+                "target": 63,
+                "groups": d16_groups,
+                "ui_wired": has_d16_ui,
             },
         },
     }
@@ -2124,6 +2201,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D12 (Dungeon Cutaway Elev)  : {dims['D12_dungeon_vertical_cutaways']['score']}/100 ({dims['D12_dungeon_vertical_cutaways']['verified']}/{dims['D12_dungeon_vertical_cutaways']['target']})")
         print(f"  D13 (Omni-Search & Jump)    : {dims['D13_omni_search_and_quick_jump']['score']}/100 ({dims['D13_omni_search_and_quick_jump']['indexed_zones']}/63 zones · {dims['D13_omni_search_and_quick_jump']['indexed_town_npcs']}/180 NPCs · {dims['D13_omni_search_and_quick_jump']['indexed_service_marks']}/105 marks · {dims['D13_omni_search_and_quick_jump']['indexed_dungeon_floors']}/48 floors)")
         print(f"  D14 (Spawn & Spoil Matrix)  : {dims['D14_spawn_and_refinement_spoil_matrix']['score']}/100 ({dims['D14_spawn_and_refinement_spoil_matrix']['verified_dungeons']}/{dims['D14_spawn_and_refinement_spoil_matrix']['target_dungeons']} dungeons · {dims['D14_spawn_and_refinement_spoil_matrix']['verified_fields']}/{dims['D14_spawn_and_refinement_spoil_matrix']['target_fields']} fields)")
+        print(f"  D15 (Archetype Raster Maps) : {dims['D15_archetype_raster_plates']['score']}/100 ({dims['D15_archetype_raster_plates']['verified']}/{dims['D15_archetype_raster_plates']['target']} raster plates)")
+        print(f"  D16 (63-Zone Map Directory) : {dims['D16_unified_connected_map_directory']['score']}/100 ({dims['D16_unified_connected_map_directory']['verified']}/{dims['D16_unified_connected_map_directory']['target']} zones)")
         if executed_actions:
             print(f"  Actions                     : {', '.join(executed_actions)}")
         print(f"  Compact State Written       : {STATE_PATH}")

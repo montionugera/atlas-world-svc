@@ -640,6 +640,26 @@ def validate_world_governance(
                         if isinstance(st, dict)
                     )
                 ),
+                "archetypeRasterPlatesCount": sum(
+                    1
+                    for p_name in (
+                        "all_interlaced_world_grid.png",
+                        "c3_continent_parchment_relief.png",
+                        "d01_field_common_map.png",
+                        "d01_field_radar_map.png",
+                        "d01_dungeon_radar_map.png",
+                        "d01_town_detailed_blueprint.png",
+                        "town_radial_moat_parchment.png",
+                        "town_polygonal_keep_parchment.png",
+                        "town_oren_schematic_plate.png",
+                        "dungeon_underground_b1_b3_radar.png",
+                        "dungeon_vertical_tower_1f_3f_radar.png",
+                    )
+                    if (studio_dir / "maps" / p_name).is_file() and (studio_dir / "maps" / p_name).stat().st_size > 0
+                ),
+                "unifiedMapDirectoryZonesCount": sum(
+                    len(entries) for entries in zdir.values() if isinstance(entries, list)
+                ),
             }
             for cat_key, entries in zdir.items():
                 if not isinstance(entries, list):

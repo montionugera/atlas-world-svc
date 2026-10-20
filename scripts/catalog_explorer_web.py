@@ -3940,7 +3940,7 @@ function render() {
   else if (CURRENT_TAB === 'gear') { main.innerHTML = renderGear(); updateRefineCalc(); }
   else if (CURRENT_TAB === 'quests') main.innerHTML = renderQuests();
   else if (CURRENT_TAB === 'siege') { main.innerHTML = renderSiege(); updateSiegeCalc(); }
-  else if (CURRENT_TAB === 'maps') main.innerHTML = renderMaps();
+  else if (CURRENT_TAB === 'maps') main.innerHTML = renderMapDirectory();
   else if (CURRENT_TAB === 'sql') { main.innerHTML = renderSqlStudio(); executeSql(); }
   else if (CURRENT_TAB === 'sim') main.innerHTML = renderSim();
   else if (CURRENT_TAB === 'docs') main.innerHTML = renderDocs();
@@ -6096,10 +6096,14 @@ function renderDungeonSubMapAtlas(dng, tatlas) {
   ` : '';
 
   const cutawaySvg = renderDungeonVerticalCutawaySvg(dng, activeFloor);
+  const dungeonRasterPlate = isTower
+    ? '/studio-maps/dungeon_vertical_tower_1f_3f_radar.png'
+    : '/studio-maps/dungeon_underground_b1_b3_radar.png';
 
   const svgInnerHtml = `
     <rect x="0" y="0" width="1040" height="500" fill="${isTower ? '#0d1528' : '#120b1d'}"/>
-    <image href="/studio-maps/d01_dungeon_radar_map.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.28"/>
+    <image href="${dungeonRasterPlate}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.34"/>
+    <image href="/studio-maps/d01_dungeon_radar_map.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.16"/>
     <g transform="translate(-85, 0) scale(0.84, 1)">
       ${corridorLinesSvg}
       ${roomsSvg}
@@ -6165,17 +6169,17 @@ function renderTownArchetypeBackdropSvg(layoutArchetype, wallPts) {
     return `
       <g id="townArchetypeRadialMoatSanctuary" pointer-events="none">
         <rect x="0" y="0" width="1040" height="500" fill="#10212b"/>
-        <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.24"/>
+        <image href="/studio-maps/town_radial_moat_parchment.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.38"/>
         <!-- Outer & Inner Concentric Water Moats -->
-        <ellipse cx="520" cy="250" rx="430" ry="215" fill="#0c4a6e" stroke="#38bdf8" stroke-width="4"/>
-        <ellipse cx="520" cy="250" rx="355" ry="172" fill="#1e293b" stroke="#7dd3fc" stroke-width="3" stroke-dasharray="10 6"/>
-        <ellipse cx="520" cy="250" rx="285" ry="138" fill="#083344" stroke="#22d3ee" stroke-width="2.5"/>
+        <ellipse cx="520" cy="250" rx="430" ry="215" fill="#0c4a6e" stroke="#38bdf8" stroke-width="4" fill-opacity="0.72"/>
+        <ellipse cx="520" cy="250" rx="355" ry="172" fill="#1e293b" stroke="#7dd3fc" stroke-width="3" stroke-dasharray="10 6" fill-opacity="0.72"/>
+        <ellipse cx="520" cy="250" rx="285" ry="138" fill="#083344" stroke="#22d3ee" stroke-width="2.5" fill-opacity="0.72"/>
         <!-- 4 Cardinal Stone Causeway Bridges across the Moat -->
         <rect x="492" y="20" width="56" height="460" fill="#334155" stroke="#eab308" stroke-width="2"/>
         <rect x="75" y="226" width="890" height="48" fill="#334155" stroke="#eab308" stroke-width="2"/>
         <!-- Central Sacred Octagon Sanctuary -->
         <polygon points="440,145 600,145 665,205 665,295 600,355 440,355 375,295 375,205"
-                 fill="rgba(15,23,42,0.92)" stroke="#fde047" stroke-width="4" stroke-linejoin="round"/>
+                 fill="rgba(15,23,42,0.88)" stroke="#fde047" stroke-width="4" stroke-linejoin="round"/>
         <circle cx="520" cy="250" r="64" fill="rgba(6,182,212,0.18)" stroke="#67e8f9" stroke-width="2" stroke-dasharray="5 4"/>
       </g>
     `;
@@ -6185,7 +6189,7 @@ function renderTownArchetypeBackdropSvg(layoutArchetype, wallPts) {
     return `
       <g id="townArchetypeHarborFortressPlaza" pointer-events="none">
         <rect x="0" y="0" width="1040" height="500" fill="#1a2e26"/>
-        <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.26"/>
+        <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.32"/>
         <!-- Southern & Western Coastal Harbor Bay Water -->
         <path d="M 0,340 Q 280,320 540,360 T 1040,335 L 1040,500 L 0,500 Z" fill="#0369a1" stroke="#38bdf8" stroke-width="3"/>
         <path d="M 0,375 Q 320,355 620,390 T 1040,370" fill="none" stroke="#bae6fd" stroke-width="1.5" stroke-dasharray="10 6"/>
@@ -6204,7 +6208,8 @@ function renderTownArchetypeBackdropSvg(layoutArchetype, wallPts) {
     return `
       <g id="townArchetypeSchematicGrid" pointer-events="none">
         <rect x="0" y="0" width="1040" height="500" fill="#18202c"/>
-        <polygon points="110,48 930,48 930,452 110,452" fill="rgba(15,23,42,0.88)" stroke="#94a3b8" stroke-width="4"/>
+        <image href="/studio-maps/town_oren_schematic_plate.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.36"/>
+        <polygon points="110,48 930,48 930,452 110,452" fill="rgba(15,23,42,0.78)" stroke="#94a3b8" stroke-width="4"/>
         <rect x="132" y="66" width="776" height="368" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="8 4"/>
         <!-- Architectural Staircases on N/S/E/W Corridors -->
         <g stroke="#cbd5e1" stroke-width="1.5">
@@ -6218,14 +6223,15 @@ function renderTownArchetypeBackdropSvg(layoutArchetype, wallPts) {
   return `
     <g id="townArchetypePolygonalWalledKeep" pointer-events="none">
       <rect x="0" y="0" width="1040" height="500" fill="#233729"/>
-      <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.32"/>
+      <image href="/studio-maps/town_polygonal_keep_parchment.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.38"/>
+      <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.18"/>
       <!-- Exterior River Channel & Southern Stone Bridge (Screenshot 4 Gludin / Talking Island style) -->
       <path d="M 0,435 Q 290,415 520,445 T 1040,425" fill="none" stroke="#0284c7" stroke-width="28"/>
       <path d="M 0,435 Q 290,415 520,445 T 1040,425" fill="none" stroke="#7dd3fc" stroke-width="2" stroke-dasharray="8 6"/>
       <rect x="488" y="416" width="64" height="48" rx="4" fill="#475569" stroke="#fde047" stroke-width="2"/>
       <!-- North Temple Sanctuary Terrace -->
       <rect x="370" y="42" width="300" height="72" rx="6" fill="rgba(30,41,59,0.9)" stroke="#eab308" stroke-width="2.5"/>
-      <polygon points="${wallPts}" fill="rgba(30,41,59,0.74)" stroke="#eab308" stroke-width="5" stroke-linejoin="round"/>
+      <polygon points="${wallPts}" fill="rgba(30,41,59,0.68)" stroke="#eab308" stroke-width="5" stroke-linejoin="round"/>
     </g>
   `;
 }
@@ -6322,7 +6328,8 @@ function renderOrenSchematicBlueprintSvg(bp, townNode, visibleMarks, spawnPinSvg
 
   return `
     <rect x="0" y="0" width="1040" height="500" fill="#111722"/>
-    <polygon points="48,28 730,28 730,472 48,472" fill="#1b2230" stroke="#94a3b8" stroke-width="4"/>
+    <image href="/studio-maps/town_oren_schematic_plate.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.42"/>
+    <polygon points="48,28 730,28 730,472 48,472" fill="rgba(27,34,48,0.78)" stroke="#94a3b8" stroke-width="4"/>
     ${schematicStreetsSvg}
     ${schematicRoomsSvg}
     ${sidebarSvg}
@@ -12265,7 +12272,184 @@ function renderMinimapSvg(m) {
   return renderDistinctMapTileSvg(tile, 148);
 }
 
-function renderMaps() {
+function jumpFromMapDirectoryToAtlas(actionType, targetId, locCoord = '', floorId = '') {
+  CURRENT_TAB = 'studio';
+  if (actionType === 'town') {
+    focusTownStreetBlueprint(targetId, locCoord);
+  } else if (actionType === 'field') {
+    focusFieldTacticalBlueprint(targetId, locCoord);
+  } else if (actionType === 'fortress') {
+    focusFortressBlueprint(targetId, locCoord);
+  } else if (actionType === 'dungeon') {
+    openDungeonSubMap(targetId, floorId || 'B1');
+  }
+  renderSidebar();
+  render();
+  const st = document.getElementById('scrollStage');
+  if (st) st.scrollTop = 0;
+}
+
+function renderUnified63ZoneAtlasDirectoryHtml() {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const zdir = tatlas.t_breadth_zone_directory || {};
+  const mfById = {};
+  (tatlas.multi_floor_dungeons || []).forEach(d => {
+    mfById[d.dungeon_id] = d;
+  });
+
+  const groups = [
+    {
+      id: 'starting_towns',
+      title: 'Starting Towns (6)',
+      badgeColor: '#10b981',
+      icon: '🧬',
+      actionType: 'town',
+      zones: zdir.starting_towns || []
+    },
+    {
+      id: 'castle_and_hub_towns',
+      title: 'Castle & Hub Towns (9)',
+      badgeColor: '#eab308',
+      icon: '🏰',
+      actionType: 'town',
+      zones: zdir.other_castle_and_hub_towns || []
+    },
+    {
+      id: 'fields_and_hunting_areas',
+      title: 'Fields & Hunting Areas (24)',
+      badgeColor: '#4ade80',
+      icon: '🏕️',
+      actionType: 'field',
+      zones: zdir.fields_and_hunting_areas || []
+    },
+    {
+      id: 'multi_floor_dungeons_and_catacombs',
+      title: 'Multi-Floor Dungeons & Catacombs (16)',
+      badgeColor: '#a855f7',
+      icon: '🕳️',
+      actionType: 'dungeon',
+      zones: [...(zdir.regular_dungeons || []), ...(zdir.seven_signs_seal_catacombs || [])]
+    },
+    {
+      id: 'harbors_clanhalls_and_forts',
+      title: 'Harbors, Clan Halls & Fortresses (8)',
+      badgeColor: '#fb923c',
+      icon: '🛡️',
+      actionType: 'fortress',
+      zones: zdir.harbors_clanhalls_and_forts || []
+    }
+  ];
+
+  const totalZones = groups.reduce((acc, g) => acc + g.zones.length, 0);
+
+  return `
+    <div id="unified63ZoneMapDirectory" style="margin-bottom:20px;padding:16px;border-radius:12px;background:#0c1320;border:1.5px solid rgba(250,204,21,0.38);box-shadow:0 10px 28px rgba(0,0,0,0.45)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+        <div>
+          <div style="font-size:11px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase;color:#fde047">
+            🗺️ D16 UNIFIED 63-ZONE T-SHAPED WORLD &amp; MULTI-FLOOR DUNGEON DIRECTORY (${totalZones} ZONES)
+          </div>
+          <div style="font-size:12px;color:#cbd5e1;margin-top:2px">
+            Every Starting Town (6), Castle/Hub Town (9), Field Hunting Area (24), Multi-Floor Dungeon/Catacomb (16), and Harbor/ClanHall/Fortress (8) with <code class="mono">loc=X:Y</code>, Level Band, Resident NPCs (Shop + Refinement) / Mobs / MVPs, and 1-Click Jump to the Dedicated World Atlas!
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${groups.map(g => `
+            <span class="mono" style="padding:3px 9px;border-radius:999px;font-size:10px;font-weight:800;background:rgba(15,23,42,0.92);color:${g.badgeColor};border:1px solid ${g.badgeColor}">
+              ${g.icon} ${escapeHtml(g.title)}
+            </span>
+          `).join('')}
+        </div>
+      </div>
+
+      ${groups.map(group => {
+        const filteredZones = group.zones.filter(z => {
+          if (!SEARCH_QUERY) return true;
+          const hay = `${z.name} ${z.zone_id} ${z.studio_node_id} ${z.l2_reference_analog || ''} ${z.territory_name || ''} ${z.loc_coord || ''}`.toLowerCase();
+          return hay.includes(SEARCH_QUERY);
+        });
+        if (!filteredZones.length) return '';
+        return `
+          <div style="margin-top:14px">
+            <div style="font-size:13px;font-weight:900;color:${group.badgeColor};margin-bottom:8px;display:flex;align-items:center;gap:8px">
+              <span>${group.icon} ${escapeHtml(group.title)}</span>
+              <span class="mono" style="font-size:10px;color:#94a3b8">(${filteredZones.length} showing)</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(315px,1fr));gap:8px">
+              ${filteredZones.map(z => {
+                const lvBand = Array.isArray(z.level_band) && z.level_band.length >= 2 ? `Lv.${z.level_band[0]}–${z.level_band[1]}` : 'Lv.1–99';
+                const locStr = z.loc_coord || '0:0';
+                let residentsSummary = '';
+                let btnLabel = '';
+                let clickCall = '';
+
+                if (group.actionType === 'town') {
+                  const tb = z.town_blueprint || {};
+                  const arch = tb.layout_archetype || 'polygonal_walled_keep';
+                  const shopMarks = (tb.service_marks || []).slice(0, 3).map(m => `${m.icon || '🛍️'} ${m.label}`).join(' · ');
+                  residentsSummary = `🛍️ NPCs (Shop + Refinement +1..+15): ${shopMarks || '12 Town NPCs & 7 Service Marks'} [${arch}]`;
+                  btnLabel = '🏘️ Open Town Blueprint (5.2×)';
+                  clickCall = `jumpFromMapDirectoryToAtlas('town', '${escapeHtml(z.studio_node_id || z.zone_id)}', '${escapeHtml(locStr)}')`;
+                } else if (group.actionType === 'field') {
+                  const ftb = z.field_tactical_blueprint || {};
+                  const mobs = (ftb.spawn_territories || []).map(st => `${st.entity_type}: ${st.mob_name}`).slice(0, 3).join(' · ');
+                  residentsSummary = `👾 Field Mobs & MVPs: ${mobs || 'Monster / Mini-Boss / Raid / MVP Rings'}`;
+                  btnLabel = '🏕️ Open Field Blueprint (4.8×)';
+                  clickCall = `jumpFromMapDirectoryToAtlas('field', '${escapeHtml(z.zone_id)}', '${escapeHtml(locStr)}')`;
+                } else if (group.actionType === 'fortress') {
+                  const fbp = z.fortress_blueprint || {};
+                  const mobs = (fbp.spawn_territories || []).map(st => `${st.entity_type}: ${st.mob_name}`).slice(0, 3).join(' · ');
+                  residentsSummary = `🛡️ Garrison & MVPs: ${mobs || 'Harbor / Clan Hall / Fortress Guardians'}`;
+                  btnLabel = '🛡️ Open Fortress Blueprint (4.8×)';
+                  clickCall = `jumpFromMapDirectoryToAtlas('fortress', '${escapeHtml(z.zone_id)}', '${escapeHtml(locStr)}')`;
+                } else {
+                  const mf = mfById[z.zone_id] || {};
+                  const floors = mf.floors || [];
+                  const firstFloor = (floors[0] && floors[0].floor_id) || 'B1';
+                  const floorSpan = floors.map(f => f.floor_id).join('⇄') || 'B1⇄B2⇄B3';
+                  const topBoss = (floors[floors.length - 1] && floors[floors.length - 1].boss_tier_highlight) || 'Floor 3 MVP Sanctum';
+                  residentsSummary = `👑 Floors [${floorSpan}]: ${topBoss}`;
+                  btnLabel = `🕳️ Open Multi-Floor Dungeon (${firstFloor})`;
+                  clickCall = `jumpFromMapDirectoryToAtlas('dungeon', '${escapeHtml(z.zone_id)}', '${escapeHtml(locStr)}', '${escapeHtml(firstFloor)}')`;
+                }
+
+                return `
+                  <div style="padding:10px 12px;border-radius:8px;background:#141e30;border-left:3.5px solid ${group.badgeColor};border-top:1px solid rgba(255,255,255,0.08);border-right:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;justify-content:space-between;gap:6px">
+                    <div>
+                      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                        <span class="mono" style="font-size:10px;color:#38bdf8;font-weight:800">[${escapeHtml(z.grid_sector || '18_24')}] loc=${escapeHtml(locStr)}</span>
+                        <span class="mono" style="font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(15,23,42,0.9);color:#fde047;border:1px solid rgba(250,204,21,0.45)">${escapeHtml(lvBand)}</span>
+                      </div>
+                      <div style="font-size:12px;font-weight:900;color:#f8fafc;margin-top:3px">
+                        ${escapeHtml(z.name)}
+                      </div>
+                      <div style="font-size:10px;color:#94a3b8;margin-top:1px">
+                        L2 Analog: <strong style="color:#cbd5e1">${escapeHtml(z.l2_reference_analog || z.territory_name || '')}</strong>
+                      </div>
+                      <div style="font-size:10px;color:#fde68a;margin-top:4px;line-height:1.35">
+                        ${escapeHtml(residentsSummary)}
+                      </div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:4px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06)">
+                      <span class="mono" style="font-size:9px;color:#94a3b8">${escapeHtml(z.zone_id)}</span>
+                      <button type="button" onclick="${clickCall}"
+                              style="padding:4px 10px;border-radius:6px;border:1px solid #fde047;background:#1e3a8a;color:#fde047;font-size:10px;font-weight:900;cursor:pointer;flex-shrink:0">
+                        ${escapeHtml(btnLabel)} ➔
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderMapDirectory() {
   const studioTiles = getStudioCanonTiles();
   const allTiles = getAllWorldTiles();
   const filterKinds = [
@@ -12291,6 +12475,7 @@ function renderMaps() {
   });
 
   return `
+    ${renderUnified63ZoneAtlasDirectoryHtml()}
     <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
       <div>
         <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#38bdf8;">
@@ -12385,6 +12570,11 @@ function renderMaps() {
       }).join('')}
     </div>
   `;
+}
+
+
+function renderMaps() {
+  return renderMapDirectory();
 }
 
 

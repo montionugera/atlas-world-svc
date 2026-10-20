@@ -490,6 +490,60 @@ class TestStudioWebPerspectives(unittest.TestCase):
                     self.assertIn(":", sp["loc_coord"])
                 self.assertTrue({"Monster", "Mini-Boss", "Raid", "MVP"}.issubset(tiers_found))
 
+    def test_wave6_archetype_raster_plates_and_unified_map_directory(self) -> None:
+        import run_atlas_iteration_loop as loop
+
+        errors, report = gov.validate_world_governance()
+        self.assertEqual(errors, [], f"Governance validation failed: {errors}")
+        summary = report["summary"]["tShapedAtlasSummary"]
+        self.assertEqual(summary["archetypeRasterPlatesCount"], 11)
+        self.assertEqual(summary["unifiedMapDirectoryZonesCount"], 63)
+
+        maps_dir = ROOT / "content" / "studio" / "maps"
+        for plate in (
+            "town_radial_moat_parchment.png",
+            "town_polygonal_keep_parchment.png",
+            "town_oren_schematic_plate.png",
+            "dungeon_underground_b1_b3_radar.png",
+            "dungeon_vertical_tower_1f_3f_radar.png",
+        ):
+            p_file = maps_dir / plate
+            self.assertTrue(p_file.is_file(), f"Missing raster plate {plate}")
+            self.assertGreater(p_file.stat().st_size, 1000, f"Empty/tiny raster plate {plate}")
+
+        html = web.INDEX_HTML
+        for token in (
+            "/studio-maps/town_radial_moat_parchment.png",
+            "/studio-maps/town_polygonal_keep_parchment.png",
+            "/studio-maps/town_oren_schematic_plate.png",
+            "/studio-maps/dungeon_underground_b1_b3_radar.png",
+            "/studio-maps/dungeon_vertical_tower_1f_3f_radar.png",
+            "renderMapDirectory",
+            "renderUnified63ZoneAtlasDirectoryHtml",
+            "jumpFromMapDirectoryToAtlas",
+            "Starting Towns (6)",
+            "Castle & Hub Towns (9)",
+            "Fields & Hunting Areas (24)",
+            "Multi-Floor Dungeons & Catacombs (16)",
+            "Harbors, Clan Halls & Fortresses (8)",
+        ):
+            self.assertIn(token, html, f"Missing Wave 6 token {token} in INDEX_HTML")
+
+        bundle = web.load_studio_perspectives_bundle()
+        whc = bundle["worldHistoryAndConcept"]
+        atlas = bundle["tShapedWorldAtlas"]
+        audit = loop.audit_world_atlas(whc, atlas)
+        self.assertEqual(audit["overall_score"], 100.0)
+        d15 = audit["dimensions"]["D15_archetype_raster_plates"]
+        self.assertEqual(d15["score"], 100.0)
+        self.assertEqual(d15["verified"], 11)
+        self.assertEqual(d15["target"], 11)
+        d16 = audit["dimensions"]["D16_unified_connected_map_directory"]
+        self.assertEqual(d16["score"], 100.0)
+        self.assertEqual(d16["verified"], 63)
+        self.assertEqual(d16["target"], 63)
+        self.assertTrue(d16["ui_wired"])
+
 
 if __name__ == "__main__":
     unittest.main()

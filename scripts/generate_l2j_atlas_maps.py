@@ -2,13 +2,18 @@
 """
 Deterministic L2J.RU / L2Hub / PMFun Cartographic Map Plate Generator.
 
-Generates 6 high-resolution top-down raster map plates in `content/studio/maps/`:
+Generates 12 high-resolution top-down raster map plates in `content/studio/maps/` (11 canonical plates + dual strips):
 1. `all_interlaced_world_grid.png` (960x768) — Master 17x16 `[10.10]..[26.25]` interlaced satellite terrain & polygon zone map (`all_interlaced.jpg` standard)
 2. `c3_continent_parchment_relief.png` (1120x920) — Illustrated antique parchment relief map with 50+ named towns, castles, harbors, dungeons, catacombs & roads (`c3_aden.jpg` standard)
 3. `d01_field_common_map.png` (520x420) — Enlarged parchment zone map for `Clover South-Gate Meadow: lvl.1 [1-12]` with red zone boundary & 185 red spawn pins (`zone_map_enlarged.php` standard)
 4. `d01_field_radar_map.png` (520x420) — Enlarged top-down orthographic 3D terrain radar map for `Clover South-Gate Meadow: lvl.1 [1-12]` (`zone_map_enlarged_radar.php` standard)
 5. `d01_dungeon_common_map.png` (913x200) & `d01_dungeon_radar_map.png` (913x340) — Enlarged dual parchment + underground multi-room stone labyrinth radar map for `Kiln Cellar Ruins: lvl.9 [9-22]` (`Elven Ruins id=53` standard)
 6. `d01_town_detailed_blueprint.png` (640x500) — Detailed architectural town street & building roof blueprint for `Lantern Hollow Village: lvl.1 [1-10]` (`PMFun town map` standard)
+7. `town_radial_moat_parchment.png` (1040x500) — Screenshot 3 style: antique parchment with concentric water moat, 4 bridges, central octagonal plaza & building roofs
+8. `town_polygonal_keep_parchment.png` (1040x500) — Screenshot 4 style: antique parchment with pentagonal/hexagonal stone curtain wall, river crossing bridge & north temple
+9. `town_oren_schematic_plate.png` (1040x500) — Screenshot 5 style: crisp white/navy Oren by Cheese architectural floorplan with numbered rooms `1..12` & compass rose
+10. `dungeon_underground_b1_b3_radar.png` (1040x500) — Subterranean Ant Nest / Catacomb stone chambers & glowing warp shafts
+11. `dungeon_vertical_tower_1f_3f_radar.png` (1040x500) — Concentric circular Cruma / Insolence Tower floor ring & central elevator core
 """
 
 from __future__ import annotations
@@ -1011,6 +1016,270 @@ def generate_d01_town_detailed_blueprint() -> Path:
     return out_path
 
 
+def generate_town_radial_moat_parchment() -> Path:
+    """
+    7. Generates `town_radial_moat_parchment.png` (1040x500) matching Screenshot 3 style:
+    antique parchment with concentric water moat, 4 bridges, central octagonal plaza & building roofs.
+    """
+    w, h = 1040, 500
+    img = Image.new("RGB", (w, h))
+    px = img.load()
+    cx, cy = w // 2, h // 2
+
+    for y in range(h):
+        ny = y / float(h - 1)
+        for x in range(w):
+            nx = x / float(w - 1)
+            n = _fbm(nx * 14.0, ny * 14.0, octaves=4, seed=303)
+            dx = (x - cx) / 420.0
+            dy = (y - cy) / 205.0
+            r = math.sqrt(dx * dx + dy * dy)
+            if 0.62 <= r <= 0.88:
+                # Concentric sacred water moat (#316879 -> #45899E)
+                px[x, y] = _lerp_color((42, 92, 114), (74, 138, 162), n)
+            elif r < 0.62:
+                # Inner marble/parchment sanctuary plaza (#C9B896 -> #DFD0B2)
+                px[x, y] = _lerp_color((194, 178, 144), (218, 204, 172), n)
+            else:
+                # Antique forest-edged parchment (#8C8568 -> #ABA282)
+                px[x, y] = _lerp_color((134, 128, 98), (168, 158, 124), n)
+
+    draw = ImageDraw.Draw(img)
+    # Outer & inner moat stone embankments
+    draw.ellipse((cx - 375, cy - 182, cx + 375, cy + 182), outline=(64, 52, 38), width=4)
+    draw.ellipse((cx - 262, cy - 128, cx + 262, cy + 128), outline=(218, 198, 154), width=3)
+
+    # 4 Cardinal stone causeway bridges across the moat
+    draw.rectangle((cx - 28, cy - 220, cx + 28, cy + 220), fill=(176, 164, 138), outline=(78, 64, 48), width=2)
+    draw.rectangle((cx - 430, cy - 24, cx + 430, cy + 24), fill=(176, 164, 138), outline=(78, 64, 48), width=2)
+
+    # Central Octagonal Sanctuary Plaza
+    oct_pts = [
+        (cx - 85, cy - 95),
+        (cx + 85, cy - 95),
+        (cx + 145, cy - 42),
+        (cx + 145, cy + 42),
+        (cx + 85, cy + 95),
+        (cx - 85, cy + 95),
+        (cx - 145, cy + 42),
+        (cx - 145, cy - 42),
+    ]
+    draw.polygon(oct_pts, fill=(212, 198, 168), outline=(92, 74, 48), width=4)
+    draw.ellipse((cx - 52, cy - 52, cx + 52, cy + 52), fill=(72, 148, 168), outline=(234, 179, 8), width=3)
+
+    # Radial building roofs around the octagon
+    roofs = [
+        (cx - 210, cy - 108, cx - 125, cy - 52, (92, 118, 142)),
+        (cx + 125, cy - 108, cx + 210, cy - 52, (92, 118, 142)),
+        (cx - 210, cy + 52, cx - 125, cy + 108, (124, 92, 138)),
+        (cx + 125, cy + 52, cx + 210, cy + 108, (124, 92, 138)),
+        (cx - 70, cy - 165, cx + 70, cy - 118, (76, 112, 136)),
+        (cx - 70, cy + 118, cx + 70, cy + 165, (138, 86, 64)),
+    ]
+    for x0, y0, x1, y1, rcol in roofs:
+        draw.rectangle((x0, y0, x1, y1), fill=rcol, outline=(242, 232, 208), width=2)
+
+    out_path = OUT_DIR / "town_radial_moat_parchment.png"
+    img.save(out_path, optimize=True)
+    return out_path
+
+
+def generate_town_polygonal_keep_parchment() -> Path:
+    """
+    8. Generates `town_polygonal_keep_parchment.png` (1040x500) matching Screenshot 4 style:
+    antique parchment with pentagonal/hexagonal stone curtain wall, river crossing bridge & north temple.
+    """
+    w, h = 1040, 500
+    img = Image.new("RGB", (w, h))
+    px = img.load()
+
+    for y in range(h):
+        ny = y / float(h - 1)
+        for x in range(w):
+            nx = x / float(w - 1)
+            n = _fbm(nx * 15.0, ny * 15.0, octaves=4, seed=404)
+            river_y = 0.85 + 0.03 * math.sin(nx * math.pi * 2.5)
+            if abs(ny - river_y) < 0.042:
+                px[x, y] = _lerp_color((46, 104, 138), (82, 148, 178), n)
+            else:
+                px[x, y] = _lerp_color((162, 148, 118), (196, 182, 148), n)
+
+    draw = ImageDraw.Draw(img)
+    # Hexagonal Stone Curtain Wall
+    wall_pts = [(220, 64), (820, 64), (915, 210), (835, 385), (205, 385), (125, 210)]
+    draw.polygon(wall_pts, fill=(184, 172, 144), outline=(68, 56, 42), width=8)
+    draw.polygon(wall_pts, outline=(226, 214, 188), width=2)
+
+    # Axial cobblestone avenues & river crossing bridge
+    draw.rectangle((492, 54, 548, 468), fill=(168, 158, 136), outline=(92, 82, 66), width=2)
+    draw.rectangle((140, 212, 900, 252), fill=(168, 158, 136), outline=(92, 82, 66), width=2)
+    draw.rectangle((482, 398, 558, 456), fill=(142, 132, 114), outline=(234, 179, 8), width=3)
+
+    # North Temple Sanctuary & Terracotta Town Roofs
+    draw.rectangle((390, 72, 650, 136), fill=(88, 112, 134), outline=(245, 238, 220), width=2)
+    roof_blocks = [
+        (235, 115, 355, 188, (154, 78, 54)),
+        (685, 115, 805, 188, (154, 78, 54)),
+        (235, 272, 365, 352, (132, 94, 64)),
+        (675, 272, 805, 352, (146, 74, 56)),
+        (395, 286, 478, 356, (112, 88, 118)),
+        (562, 286, 645, 356, (128, 62, 52)),
+    ]
+    for x0, y0, x1, y1, rcol in roof_blocks:
+        draw.rectangle((x0, y0, x1, y1), fill=rcol, outline=(242, 232, 210), width=2)
+
+    out_path = OUT_DIR / "town_polygonal_keep_parchment.png"
+    img.save(out_path, optimize=True)
+    return out_path
+
+
+def generate_town_oren_schematic_plate() -> Path:
+    """
+    9. Generates `town_oren_schematic_plate.png` (1040x500) matching Screenshot 5 style:
+    crisp white/navy Oren by Cheese architectural floorplan with numbered rooms 1..12 & compass rose.
+    """
+    w, h = 1040, 500
+    img = Image.new("RGB", (w, h), (18, 25, 38))
+    px = img.load()
+    for y in range(h):
+        for x in range(w):
+            if x % 40 == 0 or y % 40 == 0:
+                px[x, y] = (28, 38, 56)
+
+    draw = ImageDraw.Draw(img)
+    # Outer architectural blueprint frame (left 750px floorplan + right legend bay)
+    draw.rectangle((44, 24, 734, 476), fill=(26, 36, 52), outline=(226, 232, 240), width=3)
+    draw.rectangle((56, 36, 722, 464), outline=(100, 116, 139), width=1)
+
+    # Orthogonal corridors
+    draw.rectangle((366, 36, 412, 464), fill=(42, 54, 76), outline=(148, 163, 184), width=1)
+    draw.rectangle((56, 228, 722, 272), fill=(42, 54, 76), outline=(148, 163, 184), width=1)
+
+    # 12 Numbered CAD Rooms ("Oren by Cheese" standard)
+    rooms = [
+        (354, 216, 424, 284, "1"),
+        (92, 68, 224, 162, "2"),
+        (548, 68, 682, 162, "3"),
+        (276, 52, 502, 126, "4"),
+        (438, 288, 522, 352, "5"),
+        (92, 294, 224, 392, "6"),
+        (548, 294, 682, 392, "7"),
+        (246, 372, 352, 442, "8"),
+        (426, 372, 532, 442, "9"),
+        (358, 436, 420, 472, "10"),
+        (694, 228, 730, 272, "11"),
+        (358, 28, 420, 64, "12"),
+    ]
+    font_num = _load_font(12, bold=True)
+    for x0, y0, x1, y1, num in rooms:
+        draw.rectangle((x0, y0, x1, y1), fill=(32, 44, 64), outline=(241, 245, 249), width=2)
+        draw.rectangle((x0 + 4, y0 + 4, x1 - 4, y1 - 4), outline=(100, 116, 139), width=1)
+        draw.text(((x0 + x1) // 2, (y0 + y1) // 2), num, font=font_num, fill=(253, 224, 71), anchor="mm")
+
+    # Compass Rose in top-left corner of schematic
+    cx_r, cy_r = 96, 432
+    draw.ellipse((cx_r - 24, cy_r - 24, cx_r + 24, cy_r + 24), fill=(15, 23, 42), outline=(253, 224, 71), width=2)
+    draw.polygon([(cx_r, cy_r - 20), (cx_r - 6, cy_r), (cx_r + 6, cy_r)], fill=(253, 224, 71))
+    draw.polygon([(cx_r, cy_r + 20), (cx_r - 6, cy_r), (cx_r + 6, cy_r)], fill=(148, 163, 184))
+    draw.text((cx_r, cy_r - 28), "N", font=_load_font(10, bold=True), fill=(253, 224, 71), anchor="mm")
+
+    out_path = OUT_DIR / "town_oren_schematic_plate.png"
+    img.save(out_path, optimize=True)
+    return out_path
+
+
+def generate_dungeon_underground_b1_b3_radar() -> Path:
+    """
+    10. Generates `dungeon_underground_b1_b3_radar.png` (1040x500):
+    Subterranean Ant Nest / Catacomb stone chambers & glowing warp shafts.
+    """
+    w, h = 1040, 500
+    img = Image.new("RGB", (w, h))
+    px = img.load()
+    for y in range(h):
+        ny = y / float(h - 1)
+        for x in range(w):
+            nx = x / float(w - 1)
+            n = _fbm(nx * 20.0, ny * 12.0, octaves=4, seed=601)
+            px[x, y] = _lerp_color((28, 18, 42), (52, 34, 74), n)
+
+    draw = ImageDraw.Draw(img)
+    # Subterranean stone labyrinth corridors & B1->B2->B3 chambers
+    corridors = [
+        (90, 236, 690, 264),
+        (210, 95, 238, 405),
+        (410, 95, 438, 405),
+        (610, 95, 638, 405),
+        (210, 102, 638, 126),
+        (210, 374, 638, 398),
+    ]
+    for x0, y0, x1, y1 in corridors:
+        draw.rectangle((x0, y0, x1, y1), fill=(58, 42, 82), outline=(147, 51, 234), width=2)
+
+    chambers = [
+        (72, 195, 185, 305, (74, 48, 104)),
+        (175, 62, 285, 152, (68, 44, 96)),
+        (175, 348, 285, 438, (68, 44, 96)),
+        (365, 185, 485, 315, (86, 52, 118)),
+        (565, 62, 685, 156, (78, 46, 108)),
+        (565, 344, 685, 438, (78, 46, 108)),
+        (555, 188, 715, 312, (112, 42, 68)),
+    ]
+    for x0, y0, x1, y1, fcol in chambers:
+        draw.rectangle((x0, y0, x1, y1), fill=fcol, outline=(192, 132, 252), width=2)
+        draw.rectangle((x0 + 5, y0 + 5, x1 - 5, y1 - 5), outline=(42, 24, 64), width=1)
+
+    # Glowing subterranean warp shafts
+    for wx, wy in ((128, 250), (425, 250), (635, 250)):
+        draw.ellipse((wx - 18, wy - 18, wx + 18, wy + 18), fill=(14, 116, 144), outline=(56, 189, 248), width=2)
+
+    out_path = OUT_DIR / "dungeon_underground_b1_b3_radar.png"
+    img.save(out_path, optimize=True)
+    return out_path
+
+
+def generate_dungeon_vertical_tower_1f_3f_radar() -> Path:
+    """
+    11. Generates `dungeon_vertical_tower_1f_3f_radar.png` (1040x500):
+    Concentric circular Cruma / Insolence Tower floor ring & central elevator core.
+    """
+    w, h = 1040, 500
+    img = Image.new("RGB", (w, h))
+    px = img.load()
+    cx, cy = 395, 250
+
+    for y in range(h):
+        ny = y / float(h - 1)
+        for x in range(w):
+            nx = x / float(w - 1)
+            n = _fbm(nx * 18.0, ny * 18.0, octaves=4, seed=707)
+            r = math.hypot(x - cx, y - cy)
+            if r < 215:
+                px[x, y] = _lerp_color((22, 38, 72), (38, 64, 112), n)
+            else:
+                px[x, y] = _lerp_color((12, 20, 38), (22, 34, 62), n)
+
+    draw = ImageDraw.Draw(img)
+    # Concentric Tower Floor Rings (1F outer ring, 2F astrolabe ring, 3F central elevator core)
+    for rad, col in ((210, (56, 189, 248)), (152, (129, 140, 248)), (96, (253, 224, 71)), (42, (245, 158, 11))):
+        draw.ellipse((cx - rad, cy - rad, cx + rad, cy + rad), outline=col, width=3)
+
+    # Radial spoke bridges connecting outer ring chambers to central elevator core
+    for deg in range(0, 360, 45):
+        rad_a = math.radians(deg)
+        x1 = int(cx + math.cos(rad_a) * 42)
+        y1 = int(cy + math.sin(rad_a) * 42)
+        x2 = int(cx + math.cos(rad_a) * 210)
+        y2 = int(cy + math.sin(rad_a) * 210)
+        draw.line([(x1, y1), (x2, y2)], fill=(96, 165, 250), width=4)
+
+    draw.ellipse((cx - 28, cy - 28, cx + 28, cy + 28), fill=(30, 58, 138), outline=(253, 224, 71), width=3)
+
+    out_path = OUT_DIR / "dungeon_vertical_tower_1f_3f_radar.png"
+    img.save(out_path, optimize=True)
+    return out_path
+
+
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     p1 = generate_all_interlaced_world_grid()
@@ -1018,7 +1287,12 @@ def main() -> None:
     p3, p4 = generate_d01_field_dual_maps()
     p5, p6 = generate_d01_dungeon_dual_maps()
     p7 = generate_d01_town_detailed_blueprint()
-    for p in (p1, p2, p3, p4, p5, p6, p7):
+    p8 = generate_town_radial_moat_parchment()
+    p9 = generate_town_polygonal_keep_parchment()
+    p10 = generate_town_oren_schematic_plate()
+    p11 = generate_dungeon_underground_b1_b3_radar()
+    p12 = generate_dungeon_vertical_tower_1f_3f_radar()
+    for p in (p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12):
         print(f"Generated {p.name} ({p.stat().st_size:,} bytes)")
 
 
