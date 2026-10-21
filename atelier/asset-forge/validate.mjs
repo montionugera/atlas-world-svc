@@ -252,13 +252,15 @@ function checkSkinWeights(doc) {
       const weights1 = prim.getAttribute("JOINTS_1") ? prim.getAttribute("WEIGHTS_1") : null;
       if (prim.getAttribute("JOINTS_1")) {
         warnings.push(`skin-weights: ${mesh.getName()} has JOINTS_1 (>4 influences not checked)`);
+        if (!weights1) warnings.push(`skin-weights: ${mesh.getName()} has JOINTS_1 but no WEIGHTS_1`);
       }
       const weights = prim.getAttribute("WEIGHTS_0");
       if (!weights) {
         violations.push(`${mesh.getName()}: skinned primitive has no WEIGHTS_0`);
         continue;
       }
-      const tolerance = weightSumTolerance(weights);
+      // Rounding error adds up across both weight sets.
+      const tolerance = weightSumTolerance(weights) + (weights1 ? weightSumTolerance(weights1) : 0);
       const buf1 = [0, 0, 0, 0];
       let zero = 0;
       let off = 0;
@@ -270,7 +272,7 @@ function checkSkinWeights(doc) {
           sum += buf1[0] + buf1[1] + buf1[2] + buf1[3];
         }
         if (sum === 0) zero++;
-        else if (Math.abs(sum - 1) > tolerance) off++;
+        else if (!Number.isFinite(sum) || Math.abs(sum - 1) > tolerance) off++;
       }
       if (zero) violations.push(`${mesh.getName()}: ${zero} vertices have all-zero weights`);
       if (off) violations.push(`${mesh.getName()}: ${off} vertices have weights not summing to 1`);

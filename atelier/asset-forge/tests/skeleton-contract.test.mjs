@@ -60,12 +60,19 @@ async function writeRig(opts = {}) {
   else if (weights === "sum-half") W = acc("VEC4", new Float32Array([0.5, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]));
   else if (weights === "zero") W = acc("VEC4", new Float32Array([1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]));
   else if (weights === "split-sets") W = acc("VEC4", new Float32Array([0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0]));
+  else if (weights === "nan") W = acc("VEC4", new Float32Array([NaN, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]));
+  else if (weights === "u8-split") W = acc("VEC4", new Uint8Array([32, 32, 31, 31, 32, 32, 31, 31, 32, 32, 31, 31]), true);
   else W = acc("VEC4", new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]));
   prim.setAttribute("JOINTS_0", acc("VEC4", J)).setAttribute("WEIGHTS_0", W);
   if (weights === "split-sets") {
     prim.setAttribute("JOINTS_1", acc("VEC4", new Uint8Array(12)))
       .setAttribute("WEIGHTS_1", acc("VEC4", new Float32Array([0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0])));
   }
+  if (weights === "u8-split") {
+    prim.setAttribute("JOINTS_1", acc("VEC4", new Uint8Array(12)))
+      .setAttribute("WEIGHTS_1", acc("VEC4", new Uint8Array([32, 32, 31, 31, 32, 32, 31, 31, 32, 32, 31, 31]), true));
+  }
+  if (weights === "joints1-no-weights1") prim.setAttribute("JOINTS_1", acc("VEC4", new Uint8Array(12)));
   if (weights === "joints1") {
     prim.setAttribute("JOINTS_1", acc("VEC4", new Uint8Array(12)))
       .setAttribute("WEIGHTS_1", acc("VEC4", new Float32Array(12)));
@@ -186,6 +193,19 @@ test("skin-weights: tolerance follows the accessor (u8 254/255 passes, 250/255 f
   assert.ok(!ids(ok).includes("skin-weights"), ok.failures.join(" | "));
   const bad = await run(await writeRig({ extras: WITH_EXTRA, weights: "u8-250" }));
   assert.ok(ids(bad).includes("skin-weights"), bad.failures.join(" | "));
+});
+
+test("skin-weights: a NaN weight fails", async () => {
+  const r = await run(await writeRig({ extras: WITH_EXTRA, weights: "nan" }));
+  assert.ok(ids(r).includes("skin-weights"), r.failures.join(" | "));
+});
+test("skin-weights: two u8 sets get both sets' rounding tolerance (252/255 over 8 influences passes)", async () => {
+  const r = await run(await writeRig({ extras: WITH_EXTRA, weights: "u8-split" }));
+  assert.ok(!ids(r).includes("skin-weights"), r.failures.join(" | "));
+});
+test("skin-weights: JOINTS_1 without WEIGHTS_1 warns by name", async () => {
+  const r = await run(await writeRig({ extras: WITH_EXTRA, weights: "joints1-no-weights1" }));
+  assert.match(r.warnings.join(), /WEIGHTS_1/);
 });
 
 // --- engagement -------------------------------------------------------

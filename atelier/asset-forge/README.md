@@ -190,9 +190,13 @@ without a `parents` map skips the parent checks with a `skeleton-core` warning:
 | `skeleton-grammar` | Each extra matches `sec_<part>_<l\|r\|c>[f\|b]<chain 0-9>_<1-3>` (part: hair, hem, cloth, cape, sleeve, bag, beard, tail, ear, acc) or `prop_<weapon\|shield\|hat\|back\|fx>_<l\|r\|c>` |
 | `skeleton-topology` | `sec_…_1` hangs off `secParents` (`sleeve` also `sleeveParents`); `sec_…_k` hangs off `_(k-1)` of the same chain; `prop_*` hangs off `propParents` |
 | `skeleton-cap` | At most 30 extras |
-| `skin-weights` | Skinned primitives: ≤ 4 influences (`JOINTS_1` warns), no all-zero vertex, weights (`WEIGHTS_0` + `WEIGHTS_1`) sum to 1 ± 1e-3 (normalized u8 ± 2/255, u16 ± 2/65535) |
+| `skin-weights` | Skinned primitives: ≤ 4 influences (`JOINTS_1` warns), no all-zero vertex, weights (`WEIGHTS_0` + `WEIGHTS_1`) sum to 1 ± 1e-3 (normalized u8 ± 2/255, u16 ± 2/65535 per weight set; a non-finite weight fails; `JOINTS_1` without `WEIGHTS_1` warns) |
 
 Anything else keeps the single `skeleton` FAIL naming the closest reference.
+Adding `kaykit-core` also turns six bare 23-joint rigs in the game-client
+manifest (`mob:aggressive`, `mob:balanced`, `mob:defensive`,
+`mob:double_attacker`, `mob:hybrid`, `npc`) from a `skeleton` warning into an
+exact match.
 `normalize-anim` ignores `sec_*` / `prop_*` tracks when it decides whether a rig
 is crushed. `intake.mjs --kind <kind>` (default `character`) picks the
 `forge.config.json` kind.
