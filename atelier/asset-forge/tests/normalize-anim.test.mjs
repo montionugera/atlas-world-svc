@@ -82,3 +82,10 @@ test("detectCrushingTranslations mirrors the systemic gate", () => {
   assert.ok(detectCrushingTranslations(makeRig({ boneCount: 10, drift: 0.4 })).length > 0);
   assert.equal(detectCrushingTranslations(makeRig({ boneCount: 3, drift: 0.4 })).length, 0);
 });
+
+test("sec_/prop_ extension bones are not counted toward the systemic crush gate", () => {
+  for (const corePrefix of ["prop_hat_c", "sec_hair_c"]) {
+    const doc = makeRig({ boneCount: 10, drift: 0.4, corePrefix });
+    assert.deepEqual(detectCrushingTranslations(doc), [], corePrefix);
+  }
+});
