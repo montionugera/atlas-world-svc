@@ -20,6 +20,7 @@ COPY content/bestiary /usr/src/content/bestiary
 COPY content/generated /usr/src/content/generated
 COPY content/towns /usr/src/content/towns
 COPY content/maps /usr/src/content/maps
+COPY content/story /usr/src/content/story
 COPY server-rs/src ./src
 COPY server-rs/benches ./benches
 COPY server-rs/tests ./tests
