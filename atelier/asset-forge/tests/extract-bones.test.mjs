@@ -48,3 +48,13 @@ test("committed kaykit-core reference: 23 joints = kaykit-adventurer minus 18 he
   assert.deepEqual(cfg.rigReference.slice(-1), ["rig-reference/kaykit-core.bones.json"]);
   assert.equal(cfg.rigReference.length, 3);
 });
+
+test("extract-bones rejects unknown flags and extra positionals with usage and non-zero exit", () => {
+  for (const args of [["a.glb", "o.json", "--allow-extra"], ["a.glb", "o.json", "extra"]]) {
+    assert.throws(
+      () => execFileSync("node", [path.join(FORGE, "extract-bones.mjs"), ...args], { stdio: "pipe" }),
+      (err) => err.status === 1 && /usage:/.test(String(err.stderr)),
+      args.join(" "),
+    );
+  }
+});

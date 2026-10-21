@@ -179,8 +179,10 @@ helpers, 23 joints). Each `*.bones.json` holds `joints` and their `parents`
 `node extract-bones.mjs <glb> [--allow-extras]`.
 
 A glb whose joints match any reference exactly passes, as before.
-`kaykit-core` sets `allowExtras: true`: a glb that holds its core joints, or
-carries any `sec_*` / `prop_*` joint, is checked against it instead:
+`kaykit-core` sets `allowExtras: true`: a glb is checked against it instead
+when it is the closest reference (smallest joint-set difference) and the glb
+holds its core joints or carries any `sec_*` / `prop_*` joint. A reference
+without a `parents` map skips the parent checks with a `skeleton-core` warning:
 
 | Rule | Check |
 |---|---|
@@ -188,7 +190,7 @@ carries any `sec_*` / `prop_*` joint, is checked against it instead:
 | `skeleton-grammar` | Each extra matches `sec_<part>_<l\|r\|c>[f\|b]<chain 0-9>_<1-3>` (part: hair, hem, cloth, cape, sleeve, bag, beard, tail, ear, acc) or `prop_<weapon\|shield\|hat\|back\|fx>_<l\|r\|c>` |
 | `skeleton-topology` | `sec_…_1` hangs off `secParents` (`sleeve` also `sleeveParents`); `sec_…_k` hangs off `_(k-1)` of the same chain; `prop_*` hangs off `propParents` |
 | `skeleton-cap` | At most 30 extras |
-| `skin-weights` | Skinned primitives: ≤ 4 influences (`JOINTS_1` warns), no all-zero vertex, weights sum to 1 ± 1e-3 |
+| `skin-weights` | Skinned primitives: ≤ 4 influences (`JOINTS_1` warns), no all-zero vertex, weights (`WEIGHTS_0` + `WEIGHTS_1`) sum to 1 ± 1e-3 (normalized u8 ± 2/255, u16 ± 2/65535) |
 
 Anything else keeps the single `skeleton` FAIL naming the closest reference.
 `normalize-anim` ignores `sec_*` / `prop_*` tracks when it decides whether a rig

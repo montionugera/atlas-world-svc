@@ -90,7 +90,7 @@ export async function intake(glbPath, opts = {}) {
   const scene = `res://assets/characters/${name}.glb`;
 
   const kinds = loadConfig().kinds;
-  if (!kinds[kind]) {
+  if (!Object.hasOwn(kinds, kind)) {
     return {
       ok: false,
       actions,

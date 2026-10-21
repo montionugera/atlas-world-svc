@@ -10,6 +10,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { NodeIO } from "@gltf-transform/core";
 import { intake, parseArgs } from "../intake.mjs";
 
 const fx = (n) => new URL(`../fixtures/${n}`, import.meta.url).pathname;
@@ -308,6 +309,50 @@ test("--kind chibiPlayer applies the chibiPlayer height range and records the ki
     assert.ok(!JSON.parse(readFileSync(manifestPath, "utf8")).entries[KEY].kind?.includes("chibi"));
   } finally {
     rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("unknown --kind 'constructor' fails cleanly (own-property lookup)", async () => {
+  const { root } = makeSandbox();
+  try {
+    const r = await intake(fx("good.glb"), {
+      key: KEY,
+      license: LICENSE,
+      root,
+      kind: "constructor",
+      driftGate: async () => ({ ok: true }),
+    });
+    assert.equal(r.ok, false);
+    assert.ok(r.failures.some((f) => /unknown kind "constructor"/.test(f)), r.failures.join(" | "));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("successful --kind chibiPlayer intake records the kind in the manifest", async () => {
+  const { root, manifestPath } = makeSandbox();
+  const src = mkdtempSync(path.join(tmpdir(), "asset-forge-chibi-"));
+  try {
+    // good.glb is 1.8u; scale it into the chibiPlayer 0.9-1.2u range.
+    const io = new NodeIO();
+    const doc = await io.read(fx("good.glb"));
+    for (const node of doc.getRoot().listScenes()[0].listChildren()) {
+      node.setScale(node.getScale().map((v) => v * 0.58));
+    }
+    const glb = path.join(src, "good.glb");
+    await io.write(glb, doc);
+    const r = await intake(glb, {
+      key: KEY,
+      license: LICENSE,
+      root,
+      kind: "chibiPlayer",
+      driftGate: async () => ({ ok: true }),
+    });
+    assert.equal(r.ok, true, (r.failures ?? []).join(" | "));
+    assert.equal(JSON.parse(readFileSync(manifestPath, "utf8")).entries[KEY].kind, "chibiPlayer");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(src, { recursive: true, force: true });
   }
 });
 

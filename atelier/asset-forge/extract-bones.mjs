@@ -29,8 +29,9 @@ const DEFAULT_PROP_PARENTS = [
 async function main() {
   const args = process.argv.slice(2);
   const allowExtras = args.includes("--allow-extras");
-  const [glbPath, outPath] = args.filter((a) => a !== "--allow-extras");
-  if (!glbPath || !outPath) {
+  const rest = args.filter((a) => a !== "--allow-extras");
+  const [glbPath, outPath] = rest;
+  if (!glbPath || !outPath || rest.length !== 2 || rest.some((a) => a.startsWith("--"))) {
     console.error("usage: node extract-bones.mjs <donor.glb> <out.json> [--allow-extras]");
     process.exit(1);
   }

@@ -3,7 +3,7 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { Document, NodeIO } from "@gltf-transform/core";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,6 +13,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const CORE = JSON.parse(
   readFileSync(path.join(HERE, "../rig-reference/kaykit-core.bones.json"), "utf8"),
 );
+const readRef = (name) =>
+  JSON.parse(readFileSync(path.join(HERE, `../rig-reference/${name}.bones.json`), "utf8"));
 const TMP = mkdtempSync(path.join(os.tmpdir(), "skeleton-contract-"));
 after(() => rmSync(TMP, { recursive: true, force: true }));
 
@@ -24,12 +26,12 @@ let counter = 0;
  *       ("ok" | "sum-half" | "zero" | "u16" | "u8" | "joints1" | "unskinned")
  */
 async function writeRig(opts = {}) {
-  const { extras = [], drop = [], reparent = {}, wrap = true, weights = "ok" } = opts;
+  const { extras = [], drop = [], reparent = {}, wrap = true, weights = "ok", base = CORE } = opts;
   const doc = new Document();
   const buffer = doc.createBuffer();
   const nodes = {};
-  const parentOf = { ...CORE.parents, ...reparent };
-  for (const name of CORE.joints) if (!drop.includes(name)) nodes[name] = doc.createNode(name);
+  const parentOf = { ...base.parents, ...reparent };
+  for (const name of base.joints) if (!drop.includes(name)) nodes[name] = doc.createNode(name);
   for (const e of extras) nodes[e.name] = doc.createNode(e.name);
   for (const e of extras) parentOf[e.name] = e.parent;
   const scene = doc.createScene("s");
@@ -53,10 +55,17 @@ async function writeRig(opts = {}) {
   let W;
   if (weights === "u16") W = acc("VEC4", new Uint16Array([65535, 0, 0, 0, 32768, 32767, 0, 0, 0, 0, 65535, 0]), true);
   else if (weights === "u8") W = acc("VEC4", new Uint8Array([255, 0, 0, 0, 128, 127, 0, 0, 0, 0, 255, 0]), true);
+  else if (weights === "u8-254") W = acc("VEC4", new Uint8Array([254, 0, 0, 0, 254, 0, 0, 0, 254, 0, 0, 0]), true);
+  else if (weights === "u8-250") W = acc("VEC4", new Uint8Array([250, 0, 0, 0, 250, 0, 0, 0, 250, 0, 0, 0]), true);
   else if (weights === "sum-half") W = acc("VEC4", new Float32Array([0.5, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]));
   else if (weights === "zero") W = acc("VEC4", new Float32Array([1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]));
+  else if (weights === "split-sets") W = acc("VEC4", new Float32Array([0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0]));
   else W = acc("VEC4", new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]));
   prim.setAttribute("JOINTS_0", acc("VEC4", J)).setAttribute("WEIGHTS_0", W);
+  if (weights === "split-sets") {
+    prim.setAttribute("JOINTS_1", acc("VEC4", new Uint8Array(12)))
+      .setAttribute("WEIGHTS_1", acc("VEC4", new Float32Array([0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0])));
+  }
   if (weights === "joints1") {
     prim.setAttribute("JOINTS_1", acc("VEC4", new Uint8Array(12)))
       .setAttribute("WEIGHTS_1", acc("VEC4", new Float32Array(12)));
@@ -165,4 +174,49 @@ test("skin-weights: unskinned meshes are skipped", async () => {
 test("skin-weights: not run for a bare core rig (no extras engaged)", async () => {
   const r = await run(await writeRig({ weights: "sum-half" }));
   assert.ok(!ids(r).includes("skin-weights"));
+});
+
+test("skin-weights: WEIGHTS_1 counts toward the per-vertex sum (0.5 + 0.5 passes, warns only)", async () => {
+  const r = await run(await writeRig({ extras: WITH_EXTRA, weights: "split-sets" }));
+  assert.ok(!ids(r).includes("skin-weights"), r.failures.join(" | "));
+  assert.match(r.warnings.join(), /JOINTS_1/);
+});
+test("skin-weights: tolerance follows the accessor (u8 254/255 passes, 250/255 fails)", async () => {
+  const ok = await run(await writeRig({ extras: WITH_EXTRA, weights: "u8-254" }));
+  assert.ok(!ids(ok).includes("skin-weights"), ok.failures.join(" | "));
+  const bad = await run(await writeRig({ extras: WITH_EXTRA, weights: "u8-250" }));
+  assert.ok(ids(bad).includes("skin-weights"), bad.failures.join(" | "));
+});
+
+// --- engagement -------------------------------------------------------
+test("kaykit-adventurer minus one IK joint keeps the single legacy skeleton FAIL", async () => {
+  const adv = readRef("kaykit-adventurer");
+  const ik = adv.joints.find((n) => /^IK-/.test(n));
+  const r = await run(await writeRig({ base: adv, drop: [ik] }));
+  const skel = r.failures.filter((f) => f.startsWith("skeleton"));
+  assert.equal(skel.length, 1, r.failures.join(" | "));
+  assert.match(skel[0], /^skeleton: .*closest: kaykit-adventurer/);
+});
+test("kenney-mini plus a stray sec_ bone keeps the legacy skeleton FAIL naming kenney-mini", async () => {
+  const r = await run(await writeRig({ base: readRef("kenney-mini"), extras: [{ name: "sec_hair_c0_1", parent: "head" }] }));
+  const skel = r.failures.filter((f) => f.startsWith("skeleton"));
+  assert.equal(skel.length, 1, r.failures.join(" | "));
+  assert.match(skel[0], /^skeleton: .*closest: kenney-mini/);
+});
+
+test("allowExtras reference without a parents map warns that parent checks were skipped", async () => {
+  const dir = mkdtempSync(path.join(TMP, "cfg-"));
+  mkdirSync(path.join(dir, "rig-reference"));
+  const { parents, ...noParents } = CORE;
+  writeFileSync(path.join(dir, "rig-reference/core.bones.json"), JSON.stringify(noParents));
+  const cfg = JSON.parse(readFileSync(path.join(HERE, "../forge.config.json"), "utf8"));
+  cfg.rigReference = ["rig-reference/core.bones.json"];
+  writeFileSync(path.join(dir, "forge.config.json"), JSON.stringify(cfg));
+  const r = await run(await writeRig({ extras: WITH_EXTRA }), { configDir: dir });
+  assert.deepEqual(skelOrWeights(r), [], r.failures.join(" | "));
+  assert.match(r.warnings.join("\n"), /skeleton-core: .*parent checks skipped/);
+});
+
+test("unknown kind 'constructor' is rejected as unknown, not a prototype hit", async () => {
+  await assert.rejects(() => validateGlb(path.join(HERE, "../fixtures/good.glb"), { kind: "constructor" }), /unknown kind "constructor"/);
 });
