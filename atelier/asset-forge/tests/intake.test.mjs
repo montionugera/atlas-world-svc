@@ -290,3 +290,42 @@ test("re-run same key is idempotent", async () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("--kind chibiPlayer applies the chibiPlayer height range and records the kind", async () => {
+  const { root, manifestPath } = makeSandbox();
+  try {
+    const r = await intake(fx("good.glb"), {
+      key: KEY,
+      license: LICENSE,
+      root,
+      kind: "chibiPlayer",
+      driftGate: async () => ({ ok: true }),
+    });
+    // good.glb is 1.8u: fine for "character" (default), too tall for chibiPlayer.
+    assert.equal(r.ok, false);
+    assert.ok(r.failures.some((f) => /height.*0\.9-1\.2/.test(f)), r.failures.join(" | "));
+    assert.ok(!existsSync(path.join(root, "game-client/assets/characters/good.glb")));
+    assert.ok(!JSON.parse(readFileSync(manifestPath, "utf8")).entries[KEY].kind?.includes("chibi"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("unknown --kind errors out with zero side effects", async () => {
+  const { root, manifestPath } = makeSandbox();
+  try {
+    const before = readFileSync(manifestPath, "utf8");
+    const r = await intake(fx("good.glb"), {
+      key: KEY,
+      license: LICENSE,
+      root,
+      kind: "nope",
+      driftGate: async () => ({ ok: true }),
+    });
+    assert.equal(r.ok, false);
+    assert.ok(r.failures.some((f) => /unknown kind "nope"/.test(f)));
+    assert.equal(readFileSync(manifestPath, "utf8"), before);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
