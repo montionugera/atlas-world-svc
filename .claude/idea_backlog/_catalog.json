@@ -1455,5 +1455,11 @@
     "title": "Promote district-thermal-compensator-basin to Canon on Continent 02 with 4 leaf nodes, advance district-solstice-pendulum-atoll to Draft on Continent 03, and seed district-cardamom-kiln-caldera on Continent 01",
     "created_at": "2026-10-19T07:49:12.633766+00:00",
     "promoted_to": "F-152"
+  },
+  {
+    "id": "I-232",
+    "title": "Skeleton extension contract: kaykit-core 23-joint reference + sec_/prop_ bone grammar",
+    "created_at": "2026-10-21T06:21:03.487638+00:00",
+    "promoted_to": null
   }
 ]
