@@ -1978,5 +1978,14 @@
     "claimed_at": "2026-10-19T07:50:14.741158+00:00",
     "shipped_at": "2026-10-19T08:06:25.589319+00:00",
     "shipped_sha": "cd52bfc6ead09c31fd82748ba0a77d3281b0404c"
+  },
+  {
+    "id": "F-153",
+    "title": "Skeleton extension contract: kaykit-core 23-joint reference + sec_/prop_ bone grammar",
+    "from_idea": "I-232",
+    "created_at": "2026-10-21T06:43:40.868479+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
