@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { loadGlb, sceneHeight, listClipNames, jointNames, countTriangles, readStamp } from "../lib/gltf.mjs";
+import { Document } from "@gltf-transform/core";
+import { loadGlb, sceneHeight, listClipNames, jointNames, jointParents, countTriangles, readStamp } from "../lib/gltf.mjs";
 const DONOR = new URL("../../../art-source/seed/kenney-mini-characters/character-male-b.glb", import.meta.url).pathname;
 
 test("donor measurements", async (t) => {
@@ -18,4 +19,18 @@ test("donor measurements", async (t) => {
   assert.ok(jointNames(doc).length > 5);
   assert.ok(countTriangles(doc) > 100);
   assert.equal(readStamp(doc), null);
+});
+
+test("jointParents: root under a non-joint Rig node is null; chain hips -> spine", () => {
+  const doc = new Document();
+  const rig = doc.createNode("Rig");
+  const root = doc.createNode("root");
+  const hips = doc.createNode("hips");
+  const spine = doc.createNode("spine");
+  rig.addChild(root);
+  root.addChild(hips);
+  hips.addChild(spine);
+  doc.createScene("s").addChild(rig);
+  doc.createSkin("skin").addJoint(root).addJoint(hips).addJoint(spine);
+  assert.deepEqual(jointParents(doc), { root: null, hips: "root", spine: "hips" });
 });

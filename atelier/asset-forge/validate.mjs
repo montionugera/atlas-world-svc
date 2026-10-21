@@ -25,6 +25,7 @@ import {
   countTriangles,
   listClipNames,
   jointNames,
+  jointParents,
   maxTextureSize,
   readStamp,
 } from "./lib/gltf.mjs";
@@ -90,9 +91,9 @@ export function loadConfig(configDir) {
   };
 }
 
-function loadRigReferenceJoints(rigReferencePath) {
+function loadRigReference(rigReferencePath) {
   const data = JSON.parse(readFileSync(rigReferencePath, "utf8"));
-  return [...data.joints].sort();
+  return { ...data, joints: [...data.joints].sort() };
 }
 
 /** Both inputs are sorted arrays -- true iff they contain the same names in order. */
@@ -124,10 +125,158 @@ function checkSkeleton(rigReferencePaths, joints, warnings) {
       warnings.push(`skeleton: reference ${refPath} missing`);
       continue;
     }
-    references.push({ path: refPath, joints: loadRigReferenceJoints(refPath) });
+    references.push({ path: refPath, ...loadRigReference(refPath) });
   }
   const matched = references.some((ref) => jointArraysEqual(joints, ref.joints));
   return { references, matched };
+}
+
+// --- F-153 skeleton extension contract (allowExtras references) ----------
+// Bone-name grammar for characters on a core skeleton plus extras.
+const SEC_BONE_RE =
+  /^sec_(hair|hem|cloth|cape|sleeve|bag|beard|tail|ear|acc)_(l|r|c)(f|b)?([0-9])_([1-3])$/;
+const PROP_BONE_RE = /^prop_(weapon|shield|hat|back|fx)_(l|r|c)$/;
+const EXTRA_BONE_CAP = 30;
+// Weight-sum tolerance by WEIGHTS accessor: float 1e-3; normalized
+// UNSIGNED_BYTE/SHORT allow rounding of up to 4 components (2/max).
+const FLOAT_WEIGHT_TOLERANCE = 1e-3;
+const U8_WEIGHT_TOLERANCE = 2 / 255;
+const U16_WEIGHT_TOLERANCE = 2 / 65535;
+
+function weightSumTolerance(accessor) {
+  if (!accessor.getNormalized()) return FLOAT_WEIGHT_TOLERANCE;
+  const array = accessor.getArray();
+  if (array instanceof Uint8Array) return U8_WEIGHT_TOLERANCE;
+  if (array instanceof Uint16Array) return U16_WEIGHT_TOLERANCE;
+  return FLOAT_WEIGHT_TOLERANCE;
+}
+
+/** The reference with the smallest symmetric joint difference (first wins ties). */
+function closestReference(references, joints) {
+  return references.reduce((best, ref) =>
+    jointSetDistance(joints, ref.joints) < jointSetDistance(joints, best.joints) ? ref : best,
+  );
+}
+
+/**
+ * An allowExtras reference is engaged only when it is the closest reference
+ * AND the joints contain its whole core or declare sec_/prop_ intent.
+ */
+function engagedExtrasReference(references, joints) {
+  if (references.length === 0) return null;
+  const closest = closestReference(references, joints);
+  if (!closest.allowExtras) return null;
+  const hasIntent = joints.some((n) => /^(sec_|prop_)/.test(n));
+  return hasIntent || closest.joints.every((n) => joints.includes(n)) ? closest : null;
+}
+
+/**
+ * S1-S4 against an allowExtras reference. Returns [ruleId, detail] violations.
+ * @returns {[string, string][]}
+ */
+function checkSkeletonExtras(ref, joints, parents) {
+  const violations = [];
+  const core = new Set(ref.joints);
+  const jointSet = new Set(joints);
+  const extras = joints.filter((n) => !core.has(n));
+
+  // S1: core present, every core parent link unchanged.
+  const missing = ref.joints.filter((n) => !jointSet.has(n));
+  if (missing.length) violations.push(["skeleton-core", `missing core joints: ${missing.join(", ")}`]);
+  for (const name of ref.joints) {
+    const expected = ref.parents?.[name];
+    if (!jointSet.has(name) || expected === undefined) continue;
+    if (expected !== null && !jointSet.has(expected)) continue; // already reported as missing
+    if ((parents[name] ?? null) !== expected) {
+      violations.push([
+        "skeleton-core",
+        `${name} parent is ${parents[name] ?? "none"}, expected ${expected ?? "none"}`,
+      ]);
+    }
+  }
+
+  // S2 grammar + S3 topology, per extra joint.
+  const secParents = new Set([...(ref.secParents ?? [])]);
+  const sleeveParents = new Set([...secParents, ...(ref.sleeveParents ?? [])]);
+  const propParents = new Set(ref.propParents ?? []);
+  for (const name of extras) {
+    const parent = parents[name] ?? null;
+    const sec = SEC_BONE_RE.exec(name);
+    if (sec) {
+      const k = Number(sec[5]);
+      if (k === 1) {
+        const allowed = sec[1] === "sleeve" ? sleeveParents : secParents;
+        if (!allowed.has(parent)) {
+          violations.push(["skeleton-topology", `${name} parent ${parent ?? "none"} not in [${[...allowed].join(", ")}]`]);
+        }
+      } else {
+        const expected = name.replace(/_[1-3]$/, `_${k - 1}`);
+        if (parent !== expected) {
+          violations.push(["skeleton-topology", `${name} parent is ${parent ?? "none"}, expected ${expected}`]);
+        }
+      }
+    } else if (PROP_BONE_RE.test(name)) {
+      if (!propParents.has(parent)) {
+        violations.push(["skeleton-topology", `${name} parent ${parent ?? "none"} not in [${[...propParents].join(", ")}]`]);
+      }
+    } else {
+      violations.push(["skeleton-grammar", `${name} matches neither sec_<kind>_<side><chain>_<1-3> nor prop_<kind>_<side>`]);
+    }
+  }
+
+  // S4 cap.
+  if (extras.length > EXTRA_BONE_CAP) {
+    violations.push(["skeleton-cap", `${extras.length} extra bones > ${EXTRA_BONE_CAP} cap`]);
+  }
+  return violations;
+}
+
+/**
+ * Weight sanity on skinned primitives only: no unweighted vertex,
+ * |sum(w)-1| <= tolerance over WEIGHTS_0 (+ WEIGHTS_1 when JOINTS_1 exists,
+ * which also warns that >4 influences are not checked). Normalized
+ * UNSIGNED_BYTE/SHORT accessors are decoded by getElement.
+ * @returns {{violations: string[], warnings: string[]}}
+ */
+function checkSkinWeights(doc) {
+  const violations = [];
+  const warnings = [];
+  const seen = new Set();
+  const buf = [0, 0, 0, 0];
+  for (const node of doc.getRoot().listNodes()) {
+    const mesh = node.getMesh();
+    if (!node.getSkin() || !mesh) continue;
+    for (const prim of mesh.listPrimitives()) {
+      if (seen.has(prim)) continue;
+      seen.add(prim);
+      const weights1 = prim.getAttribute("JOINTS_1") ? prim.getAttribute("WEIGHTS_1") : null;
+      if (prim.getAttribute("JOINTS_1")) {
+        warnings.push(`skin-weights: ${mesh.getName()} has JOINTS_1 (>4 influences not checked)`);
+      }
+      const weights = prim.getAttribute("WEIGHTS_0");
+      if (!weights) {
+        violations.push(`${mesh.getName()}: skinned primitive has no WEIGHTS_0`);
+        continue;
+      }
+      const tolerance = weightSumTolerance(weights);
+      const buf1 = [0, 0, 0, 0];
+      let zero = 0;
+      let off = 0;
+      for (let i = 0; i < weights.getCount(); i++) {
+        weights.getElement(i, buf);
+        let sum = buf[0] + buf[1] + buf[2] + buf[3];
+        if (weights1) {
+          weights1.getElement(i, buf1);
+          sum += buf1[0] + buf1[1] + buf1[2] + buf1[3];
+        }
+        if (sum === 0) zero++;
+        else if (Math.abs(sum - 1) > tolerance) off++;
+      }
+      if (zero) violations.push(`${mesh.getName()}: ${zero} vertices have all-zero weights`);
+      if (off) violations.push(`${mesh.getName()}: ${off} vertices have weights not summing to 1`);
+    }
+  }
+  return { violations, warnings };
 }
 
 function licenseLedgerHasEntry(ledgerPath, assetKey) {
@@ -166,7 +315,7 @@ export async function validateGlb(glbPath, opts = {}) {
   const { kind, tier = "bespoke", anims = null, configDir, licenseLedger } =
     opts;
   const config = loadConfig(configDir);
-  const kindConfig = config.kinds[kind];
+  const kindConfig = Object.hasOwn(config.kinds, kind) ? config.kinds[kind] : null;
   if (!kindConfig) {
     throw new Error(`validateGlb: unknown kind "${kind}"`);
   }
@@ -261,18 +410,25 @@ export async function validateGlb(glbPath, opts = {}) {
   const joints = jointNames(doc);
   const { references: rigReferences, matched: skeletonMatched } =
     checkSkeleton(config.rigReferencePaths, joints, warnings);
-  if (rigReferences.length > 0 && !skeletonMatched) {
+  const extrasRef = skeletonMatched ? null : engagedExtrasReference(rigReferences, joints);
+  if (extrasRef) {
+    if (!extrasRef.parents) {
+      warnings.push(
+        `skeleton-core: reference ${path.basename(extrasRef.path)} has no parents map, parent checks skipped`,
+      );
+    }
+    for (const [rule, detail] of checkSkeletonExtras(extrasRef, joints, jointParents(doc))) {
+      report(rule, detail);
+    }
+    if (joints.some((n) => !extrasRef.joints.includes(n))) {
+      const weightCheck = checkSkinWeights(doc);
+      for (const detail of weightCheck.violations) report("skin-weights", detail);
+      warnings.push(...weightCheck.warnings);
+    }
+  } else if (rigReferences.length > 0 && !skeletonMatched) {
     // Name the closest reference (smallest symmetric difference) in the
     // FAIL message, to point at the most likely intended rig.
-    let closest = rigReferences[0];
-    let closestDistance = jointSetDistance(joints, closest.joints);
-    for (const ref of rigReferences.slice(1)) {
-      const distance = jointSetDistance(joints, ref.joints);
-      if (distance < closestDistance) {
-        closest = ref;
-        closestDistance = distance;
-      }
-    }
+    const closest = closestReference(rigReferences, joints);
     report(
       "skeleton",
       `joints [${joints.join(", ")}] != reference [${closest.joints.join(", ")}] ` +
@@ -360,7 +516,7 @@ export async function validateManifest(manifestPath, opts = {}) {
   const warnings = [];
 
   for (const [key, entry] of Object.entries(manifest.entries ?? {})) {
-    if (!(entry.kind in config.kinds)) {
+    if (!Object.hasOwn(config.kinds, entry.kind)) {
       warnings.push(
         `manifest: entry '${key}' has unknown kind '${entry.kind}', skipping`,
       );

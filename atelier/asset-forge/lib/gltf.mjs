@@ -107,6 +107,27 @@ export function jointNames(doc) {
 }
 
 /**
+ * Parent link of every skin joint: the nearest ancestor node that is itself a
+ * skin joint, else null. Non-joint ancestors (Rig, Rig_Medium, ...) are
+ * walked through, so a top-level `root` under a wrapper node maps to null.
+ * @param {import('@gltf-transform/core').Document} doc
+ * @returns {Record<string, string|null>}
+ */
+export function jointParents(doc) {
+  const joints = new Set();
+  for (const skin of doc.getRoot().listSkins()) {
+    for (const joint of skin.listJoints()) joints.add(joint);
+  }
+  const parents = {};
+  for (const joint of joints) {
+    let ancestor = joint.getParentNode();
+    while (ancestor && !joints.has(ancestor)) ancestor = ancestor.getParentNode();
+    parents[joint.getName()] = ancestor ? ancestor.getName() : null;
+  }
+  return parents;
+}
+
+/**
  * Largest single dimension across all textures in the document (0 if none).
  * @param {import('@gltf-transform/core').Document} doc
  * @returns {number}

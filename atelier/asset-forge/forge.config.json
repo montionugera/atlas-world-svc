@@ -39,6 +39,7 @@
   },
   "rigReference": [
     "rig-reference/kenney-mini.bones.json",
-    "rig-reference/kaykit-adventurer.bones.json"
+    "rig-reference/kaykit-adventurer.bones.json",
+    "rig-reference/kaykit-core.bones.json"
   ]
 }
