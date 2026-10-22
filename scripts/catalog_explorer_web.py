@@ -6291,6 +6291,22 @@ function resetAtlasFilters() {
   render();
 }
 
+let ATLAS_DIMENSION_DRAWER_OPEN = false;
+
+function toggleAtlasDimensionDrawer() {
+  ATLAS_DIMENSION_DRAWER_OPEN = !ATLAS_DIMENSION_DRAWER_OPEN;
+  render();
+}
+
+function scrollCanvasIntoViewSmooth() {
+  requestAnimationFrame(() => {
+    const svgEl = document.getElementById('dedicatedWorldAtlasSvg');
+    if (svgEl && typeof svgEl.scrollIntoView === 'function') {
+      svgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
+
 function focusTownStreetBlueprint(townId, locCoord) {
   ATLAS_FOCUSED_TOWN_ID = townId || 'town-lantern-hollow';
   ATLAS_FOCUSED_FIELD_ID = '';
@@ -6307,6 +6323,7 @@ function focusTownStreetBlueprint(townId, locCoord) {
   STUDIO_MAP_PAN_X = 0;
   STUDIO_MAP_PAN_Y = 0;
   zoomStudioMap(0, false, 5.2);
+  scrollCanvasIntoViewSmooth();
 }
 
 function focusFieldTacticalBlueprint(fieldOrFortId, locCoord = '') {
@@ -6327,6 +6344,7 @@ function focusFieldTacticalBlueprint(fieldOrFortId, locCoord = '') {
   STUDIO_MAP_PAN_X = 0;
   STUDIO_MAP_PAN_Y = 0;
   zoomStudioMap(0, false, 4.8);
+  scrollCanvasIntoViewSmooth();
 }
 
 function focusFortressBlueprint(fortId, locCoord = '') {
@@ -6367,6 +6385,7 @@ function openDungeonSubMap(dungeonId, floorId = '') {
   STUDIO_MAP_PAN_Y = 0;
   writeUrlState(true);
   render();
+  scrollCanvasIntoViewSmooth();
 }
 
 function switchDungeonFloor(floorId, targetLoc = '') {
@@ -15290,9 +15309,14 @@ function renderAtlasFilterBarHtml(matchCount) {
               </button>
             `;
           }).join('')}
+          <button type="button" onclick="toggleAtlasDimensionDrawer()"
+                  style="min-height:24px;padding:2px 10px;border-radius:999px;font-size:9.8px;font-weight:900;cursor:pointer;border:1px solid #fde047;background:${ATLAS_DIMENSION_DRAWER_OPEN ? '#b45309' : '#1e293b'};color:#fde047;margin-left:4px">
+            🛠️ ${ATLAS_DIMENSION_DRAWER_OPEN ? 'Hide 108D Studio Overlays ▲' : 'Open 108D Studio Overlays (D19–D108) ▼'}
+          </button>
         </div>
       </div>
 
+      <div id="atlas108dCollapsibleDrawer" style="display:${ATLAS_DIMENSION_DRAWER_OPEN ? 'flex' : 'none'};flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;padding:8px 10px;border-radius:8px;background:rgba(9,13,20,0.92);border:1px solid rgba(250,204,21,0.35)">
       ${renderAtlasBlacksmithRefinementBarHtml(tatlas)}
       ${renderAtlasBossHierarchyChainBarHtml(tatlas)}
       ${renderAtlasQuestTrialOverlayBarHtml(tatlas)}
@@ -15381,6 +15405,7 @@ function renderAtlasFilterBarHtml(matchCount) {
       ${renderAtlasPitrChaosBarHtml(tatlas)}
       ${renderAtlasTavernHubsBarHtml(tatlas)}
       ${renderAtlasChurnInterventionBarHtml(tatlas)}
+      </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
@@ -24891,6 +24916,17 @@ function renderMinimapSvg(m) {
   return renderDistinctMapTileSvg(tile, 148);
 }
 
+let UNIFIED_63_DIR_GROUP_FILTER = 'all';
+
+function setUnified63DirGroupFilter(groupId) {
+  UNIFIED_63_DIR_GROUP_FILTER = (UNIFIED_63_DIR_GROUP_FILTER === groupId && groupId !== 'all') ? 'all' : (groupId || 'all');
+  render();
+  const dirEl = document.getElementById('unified63ZoneMapDirectory');
+  if (dirEl && typeof dirEl.scrollIntoView === 'function') {
+    dirEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 function jumpFromMapDirectoryToAtlas(actionType, targetId, locCoord = '', floorId = '') {
   CURRENT_TAB = 'studio';
   if (actionType === 'town') {
@@ -24904,8 +24940,7 @@ function jumpFromMapDirectoryToAtlas(actionType, targetId, locCoord = '', floorI
   }
   renderSidebar();
   render();
-  const st = document.getElementById('scrollStage');
-  if (st) st.scrollTop = 0;
+  scrollCanvasIntoViewSmooth();
 }
 
 function renderUnified63ZoneAtlasDirectoryHtml() {
@@ -24961,6 +24996,9 @@ function renderUnified63ZoneAtlasDirectoryHtml() {
   ];
 
   const totalZones = groups.reduce((acc, g) => acc + g.zones.length, 0);
+  const visibleGroups = UNIFIED_63_DIR_GROUP_FILTER === 'all'
+    ? groups
+    : groups.filter(g => g.id === UNIFIED_63_DIR_GROUP_FILTER);
 
   return `
     <div id="unified63ZoneMapDirectory" style="margin-bottom:20px;padding:16px;border-radius:12px;background:#0c1320;border:1.5px solid rgba(250,204,21,0.38);box-shadow:0 10px 28px rgba(0,0,0,0.45)">
@@ -24974,15 +25012,23 @@ function renderUnified63ZoneAtlasDirectoryHtml() {
           </div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${groups.map(g => `
-            <span class="mono" style="padding:3px 9px;border-radius:999px;font-size:10px;font-weight:800;background:rgba(15,23,42,0.92);color:${g.badgeColor};border:1px solid ${g.badgeColor}">
-              ${g.icon} ${escapeHtml(g.title)}
-            </span>
-          `).join('')}
+          <button type="button" onclick="setUnified63DirGroupFilter('all')"
+                  class="mono" style="padding:3px 9px;border-radius:999px;font-size:10px;font-weight:800;cursor:pointer;background:${UNIFIED_63_DIR_GROUP_FILTER === 'all' ? '#fde047' : 'rgba(15,23,42,0.92)'};color:${UNIFIED_63_DIR_GROUP_FILTER === 'all' ? '#090d14' : '#fde047'};border:1px solid #fde047">
+            🌐 All (${totalZones})
+          </button>
+          ${groups.map(g => {
+            const isAct = UNIFIED_63_DIR_GROUP_FILTER === g.id;
+            return `
+              <button type="button" onclick="setUnified63DirGroupFilter('${g.id}')"
+                      class="mono" style="padding:3px 9px;border-radius:999px;font-size:10px;font-weight:800;cursor:pointer;background:${isAct ? g.badgeColor : 'rgba(15,23,42,0.92)'};color:${isAct ? '#090d14' : g.badgeColor};border:1px solid ${g.badgeColor}">
+                ${g.icon} ${escapeHtml(g.title)}
+              </button>
+            `;
+          }).join('')}
         </div>
       </div>
 
-      ${groups.map(group => {
+      ${visibleGroups.map(group => {
         const filteredZones = group.zones.filter(z => {
           if (!SEARCH_QUERY) return true;
           const hay = `${z.name} ${z.zone_id} ${z.studio_node_id} ${z.l2_reference_analog || ''} ${z.territory_name || ''} ${z.loc_coord || ''}`.toLowerCase();
