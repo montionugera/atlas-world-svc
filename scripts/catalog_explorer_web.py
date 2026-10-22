@@ -226,7 +226,6 @@ def load_studio_perspectives_bundle() -> dict:
 
 REPOS_ROOT = ROOT.parent.parent.parent if ROOT.parent.name == "worktrees" else ROOT.parent
 THEME_CSS_CANDIDATES = [
-    REPOS_ROOT / "joy-design" / ".claude" / "worktrees" / "F-086-spatial-workspace-css-contracts-spatial" / "packages" / "tokens" / "dist" / "theme.css",
     REPOS_ROOT / "joy-design" / ".claude" / "worktrees" / "_release" / "packages" / "tokens" / "dist" / "theme.css",
     REPOS_ROOT / "joy-design" / "packages" / "tokens" / "dist" / "theme.css",
     ROOT / "tools" / "mac-observatory" / "joy-theme.css",
@@ -3787,6 +3786,16 @@ INDEX_HTML = r"""<!DOCTYPE html>
         height: clamp(360px, calc(100dvh - 180px), 75dvh);
       }
     }
+    .atlas-screen-pin {
+      transform: scale(var(--atlas-inv-zoom, 1));
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    [id="studioCartoViewport"] path,
+    [id="studioCartoViewport"] line,
+    [id="studioCartoViewport"] polyline {
+      vector-effect: non-scaling-stroke;
+    }
   </style>
 </head>
 <body>
@@ -4019,7 +4028,10 @@ function renderCardPortraitCell(card, rowspan) {
 }
 
 function syncUrlState() {
-  const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const searchParams = new URLSearchParams((window.location && window.location.search) || '');
+  const hashParams = new URLSearchParams(((window.location && window.location.hash) || '').replace(/^#/, ''));
+  const params = new URLSearchParams(searchParams);
+  hashParams.forEach((v, k) => params.set(k, v));
   const t = params.get('tab');
   const q = params.get('q');
   const focus = params.get('focus');
@@ -4039,6 +4051,8 @@ function syncUrlState() {
   const lensParam = params.get('lens');
   const theaterParam = params.get('theater');
   const leftDrawerParam = params.get('leftDrawer');
+  const engineParam = params.get('engine');
+  const ctx3dParam = params.get('ctx3d');
   if (perspective) {
     CURRENT_TAB = 'studio';
     STUDIO_PERSPECTIVE = perspective;
@@ -4104,6 +4118,14 @@ function syncUrlState() {
   if (floorParam && typeof ATLAS_STATE_STORE !== 'undefined') {
     ATLAS_STATE_STORE.activeFloorId = floorParam;
   }
+  if (engineParam && typeof ATLAS_ENGINE_MODE !== 'undefined') {
+    const validEngines = ['2d_svg', '2d_ol', '3d_map3d'];
+    ATLAS_ENGINE_MODE = validEngines.includes(engineParam) ? engineParam : '2d_svg';
+  }
+  if (ctx3dParam !== null && typeof ATLAS_3D_STATE !== 'undefined') {
+    const validCtx = ['', 'overland', 'town', 'dungeon'];
+    if (validCtx.includes(ctx3dParam)) ATLAS_3D_STATE.contextOverride = ctx3dParam;
+  }
   HIGHLIGHT_ENTITY_ID = focus || '';
 }
 
@@ -4144,11 +4166,18 @@ function writeUrlState(pushHistory = true) {
       if (ATLAS_THEATER_MODE) params.set('theater', '1');
       params.set('leftDrawer', ATLAS_LEFT_DRAWER_OPEN ? '1' : '0');
     }
+    if (typeof ATLAS_ENGINE_MODE !== 'undefined') {
+      params.set('engine', ATLAS_ENGINE_MODE || '2d_svg');
+    }
+    if (typeof ATLAS_3D_STATE !== 'undefined' && ATLAS_3D_STATE.contextOverride) {
+      params.set('ctx3d', ATLAS_3D_STATE.contextOverride);
+    }
   }
   const newHash = '#' + params.toString();
-  if (window.location.hash !== newHash) {
-    if (pushHistory) history.pushState(null, '', newHash);
-    else history.replaceState(null, '', newHash);
+  const targetUrl = (window.location && window.location.search) ? ('?' + params.toString() + newHash) : newHash;
+  if (window.location.hash !== newHash || (window.location.search && window.location.search !== '?' + params.toString())) {
+    if (pushHistory) history.pushState(null, '', targetUrl);
+    else history.replaceState(null, '', targetUrl);
   }
 }
 
@@ -4375,7 +4404,14 @@ function render() {
   };
   document.getElementById('topbarTitle').textContent = titleMap[CURRENT_TAB] || 'Observatory';
 
-  if (CURRENT_TAB === 'studio') main.innerHTML = renderTopDownStudio();
+  if (CURRENT_TAB === 'studio') {
+    STUDIO_POI_REGISTRY = {};
+    STUDIO_POI_SEQ = 0;
+    main.innerHTML = renderTopDownStudio();
+    if (typeof syncAtlasActiveSpatialEngine === 'function') {
+      syncAtlasActiveSpatialEngine();
+    }
+  }
   else if (CURRENT_TAB === 'world') main.innerHTML = renderWorldAtlas();
   else if (CURRENT_TAB === 'story') main.innerHTML = renderStoryGraph();
   else if (CURRENT_TAB === 'bestiary') main.innerHTML = renderBestiary();
@@ -6530,9 +6566,10 @@ function svgToL2Loc(svgX, svgY) {
   };
 }
 
-function zoomStudioMap(delta, reset = false, targetZoom = null) {
+function zoomStudioMap(delta, reset = false, targetZoom = null, pivotSvgX = null, pivotSvgY = null) {
   const prevZoom = STUDIO_MAP_ZOOM;
   const prevTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
+  const prevEffScale = prevTier === 3 ? Math.max(1.0, +(prevZoom / 5.2).toFixed(2)) : prevZoom;
   if (reset) {
     STUDIO_MAP_ZOOM = 1.0;
     STUDIO_MAP_PAN_X = 0;
@@ -6547,12 +6584,31 @@ function zoomStudioMap(delta, reset = false, targetZoom = null) {
   } else {
     STUDIO_MAP_ZOOM = Math.max(0.85, Math.min(12.0, +(STUDIO_MAP_ZOOM + delta).toFixed(2)));
   }
+  const nextTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
+  const nextEffScale = nextTier === 3 ? Math.max(1.0, +(STUDIO_MAP_ZOOM / 5.2).toFixed(2)) : STUDIO_MAP_ZOOM;
+  if (!reset && pivotSvgX !== null && pivotSvgY !== null && Number.isFinite(pivotSvgX) && Number.isFinite(pivotSvgY)) {
+    const cx = 520;
+    const cy = 250;
+    const worldX = cx + (pivotSvgX - cx - STUDIO_MAP_PAN_X) / Math.max(0.1, prevEffScale);
+    const worldY = cy + (pivotSvgY - cy - STUDIO_MAP_PAN_Y) / Math.max(0.1, prevEffScale);
+    if ((prevTier < 3 && nextTier < 3) || (prevTier === 3 && nextTier === 3)) {
+      const ratio = nextEffScale / Math.max(0.1, prevEffScale);
+      const nextPanX = (pivotSvgX - cx) - ratio * (pivotSvgX - cx - STUDIO_MAP_PAN_X);
+      const nextPanY = (pivotSvgY - cy) - ratio * (pivotSvgY - cy - STUDIO_MAP_PAN_Y);
+      const maxPanX = Math.max(160, (nextEffScale - 1) * 520 + 180);
+      const maxPanY = Math.max(90, (nextEffScale - 1) * 250 + 110);
+      STUDIO_MAP_PAN_X = Math.max(-maxPanX, Math.min(maxPanX, Math.round(nextPanX)));
+      STUDIO_MAP_PAN_Y = Math.max(-maxPanY, Math.min(maxPanY, Math.round(nextPanY)));
+    }
+    if (prevTier < 3) {
+      STUDIO_MAP_LOC = svgToL2Loc(Math.max(0, Math.min(1040, worldX)), Math.max(0, Math.min(500, worldY)));
+    }
+  }
   const crossed35 = (prevZoom < 3.5 && STUDIO_MAP_ZOOM >= 3.5) || (prevZoom >= 3.5 && STUDIO_MAP_ZOOM < 3.5);
   const crossed45 = (prevZoom < 4.5 && STUDIO_MAP_ZOOM >= 4.5) || (prevZoom >= 4.5 && STUDIO_MAP_ZOOM < 4.5);
   if (!reset && targetZoom === null && (crossed35 || crossed45)) {
     resolveNearestZoneFromPanAndLoc(STUDIO_MAP_ZOOM, STUDIO_MAP_LOC, STUDIO_MAP_PAN_X, STUDIO_MAP_PAN_Y);
   }
-  const nextTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
   writeUrlState(false);
   if (prevTier !== nextTier || crossed35 || crossed45 || reset || targetZoom !== null) {
     render();
@@ -6563,13 +6619,20 @@ function zoomStudioMap(delta, reset = false, targetZoom = null) {
 
 function applyStudioMapTransform() {
   const g = document.getElementById('studioCartoViewport');
+  const svgEl = document.getElementById('dedicatedWorldAtlasSvg');
   const lbl = document.getElementById('studioCartoZoomReadout');
   const tierBadge = document.getElementById('studioSemanticLodBadge');
   const tier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
+  const effScale = tier === 3 ? Math.max(1.0, +(STUDIO_MAP_ZOOM / 5.2).toFixed(2)) : STUDIO_MAP_ZOOM;
+  const invZoom = (1 / Math.max(1, effScale)).toFixed(4);
+  if (svgEl && svgEl.style && typeof svgEl.style.setProperty === 'function') {
+    svgEl.style.setProperty('--atlas-inv-zoom', invZoom);
+  } else if (svgEl && svgEl.style) {
+    svgEl.style['--atlas-inv-zoom'] = invZoom;
+  }
   if (g) {
     const cx = 520;
     const cy = 250;
-    const effScale = tier === 3 ? Math.max(1.0, +(STUDIO_MAP_ZOOM / 5.2).toFixed(2)) : STUDIO_MAP_ZOOM;
     g.setAttribute(
       'transform',
       `translate(${cx + STUDIO_MAP_PAN_X}, ${cy + STUDIO_MAP_PAN_Y}) scale(${effScale}) translate(${-cx}, ${-cy})`
@@ -6589,7 +6652,17 @@ function onStudioMapWheel(evt) {
   evt.preventDefault();
   const step = STUDIO_MAP_ZOOM >= 4.0 ? 0.65 : 0.35;
   const delta = evt.deltaY < 0 ? step : -step;
-  zoomStudioMap(delta, false);
+  let pivotX = null;
+  let pivotY = null;
+  const svg = evt.currentTarget || document.getElementById('dedicatedWorldAtlasSvg');
+  if (svg && typeof svg.getBoundingClientRect === 'function' && evt.clientX !== undefined) {
+    const rect = svg.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      pivotX = ((evt.clientX - rect.left) / rect.width) * 1040;
+      pivotY = ((evt.clientY - rect.top) / rect.height) * 500;
+    }
+  }
+  zoomStudioMap(delta, false, null, pivotX, pivotY);
 }
 
 function setAtlasFilter(cat) {
@@ -6649,6 +6722,1689 @@ let ATLAS_COMPARE_STUDIO_BAR = '';
 let ATLAS_PERSPECTIVE_BAR_OPEN = false;
 let ATLAS_QUICK_WARP_OPEN = false;
 let ATLAS_LAST_MATCH_COUNT = 0;
+let ATLAS_ENGINE_MODE = '2d_svg';
+let ATLAS_RASTER_RELIEF_OVERLAY = false;
+let ATLAS_OL_RULER_ACTIVE = false;
+let ATLAS_OL_RULER_POINTS = [];
+let ATLAS_3D_STATE = {
+  yaw: -0.62,
+  pitch: 0.78,
+  zoom: 1.0,
+  panX: 0,
+  panY: 0,
+  elevScale: 1.0,
+  wireframe: false,
+  contextOverride: '',
+  selectedMeshName: '',
+  hoveredMeshName: '',
+  downClientX: 0,
+  downClientY: 0
+};
+
+function getAtlasPersonaLensTelemetrySummary(meta = {}) {
+  const lens = (typeof ATLAS_PERSONA_LENS !== 'undefined' && ATLAS_PERSONA_LENS) ? ATLAS_PERSONA_LENS : 'gamer';
+  const bar = (typeof ATLAS_ACTIVE_STUDIO_BAR !== 'undefined' && ATLAS_ACTIVE_STUDIO_BAR) ? ATLAS_ACTIVE_STUDIO_BAR : 'boss_hierarchy';
+  const act = meta.actionType || 'field';
+  const lvArr = Array.isArray(meta.levelRange) ? meta.levelRange : [1, 20];
+  const lvMax = Number(lvArr[1] || lvArr[0] || 20);
+  const loc = meta.locCoord || '-84120:243500';
+  const id = meta.id || 'zone-town-lantern-hollow';
+  if (lens === 'designer') {
+    return {
+      lens,
+      bar,
+      lensColor: '#fbbf24',
+      lensBadge: `🎨 Density:${act === 'dungeon' ? '18/rm' : '9/ha'} · XP/h:${Math.round((lvMax * 14.5))}k`,
+      pillText: `DESIGNER LENS · Overlay: ${bar} · Balance & Spawn Density Telemetry`
+    };
+  }
+  if (lens === 'architect') {
+    return {
+      lens,
+      bar,
+      lensColor: '#38bdf8',
+      lensBadge: `🏛️ CRS:${loc} · ${id.slice(0, 16)}`,
+      pillText: `ARCHITECT LENS · Overlay: ${bar} · Pixel-CRS & Topology Contract`
+    };
+  }
+  if (lens === 'developer') {
+    return {
+      lens,
+      bar,
+      lensColor: '#c084fc',
+      lensBadge: `⚙️ .glb Node · VRAM ~${act === 'town' ? '14.2' : '8.6'}MB · NavMesh:OK`,
+      pillText: `DEVELOPER LENS · Overlay: ${bar} · Godot 4 .glb & NavMesh Telemetry`
+    };
+  }
+  if (lens === 'liveops') {
+    return {
+      lens,
+      bar,
+      lensColor: '#f43f5e',
+      lensBadge: `📡 CCU:${110 + lvMax * 6} · BotRisk:<0.4%`,
+      pillText: `LIVEOPS LENS · Overlay: ${bar} · Concurrency, Siege & Sentinel Telemetry`
+    };
+  }
+  return {
+    lens: 'gamer',
+    bar,
+    lensColor: '#34d399',
+    lensBadge: `🎮 Lv.${lvArr[0]}–${lvArr[1]} · ${act === 'town' ? 'Hub/Spawn' : (act === 'dungeon' ? 'Sub-Map' : 'Field')}`,
+    pillText: `GAMER LENS · Overlay: ${bar} · Progression, Shops & Dungeon Warps`
+  };
+}
+
+function setAtlasEngineMode(mode) {
+  const valid = ['2d_svg', '2d_ol', '3d_map3d'];
+  ATLAS_ENGINE_MODE = valid.includes(mode) ? mode : '2d_svg';
+  writeUrlState(false);
+  render();
+  syncAtlasActiveSpatialEngine();
+}
+
+function toggleAtlasRasterReliefOverlay() {
+  ATLAS_RASTER_RELIEF_OVERLAY = !ATLAS_RASTER_RELIEF_OVERLAY;
+  render();
+}
+
+function toggleAtlasOlRuler() {
+  ATLAS_OL_RULER_ACTIVE = !ATLAS_OL_RULER_ACTIVE;
+  if (!ATLAS_OL_RULER_ACTIVE) {
+    ATLAS_OL_RULER_POINTS = [];
+  }
+  syncAtlasActiveSpatialEngine();
+}
+
+function setAtlas3dOption(key, val) {
+  if (key === 'elevScale') ATLAS_3D_STATE.elevScale = Math.max(0.4, Math.min(3.0, Number(val) || 1.0));
+  else if (key === 'pitch') ATLAS_3D_STATE.pitch = Math.max(0.25, Math.min(1.42, Number(val) || 0.78));
+  else if (key === 'yaw') ATLAS_3D_STATE.yaw = Number(val) || 0;
+  else if (key === 'wireframe') ATLAS_3D_STATE.wireframe = Boolean(val);
+  else if (key === 'contextOverride') ATLAS_3D_STATE.contextOverride = String(val || '');
+  else if (key === 'reset') {
+    ATLAS_3D_STATE.yaw = -0.62;
+    ATLAS_3D_STATE.pitch = 0.78;
+    ATLAS_3D_STATE.zoom = 1.0;
+    ATLAS_3D_STATE.panX = 0;
+    ATLAS_3D_STATE.panY = 0;
+    ATLAS_3D_STATE.elevScale = 1.0;
+  }
+  writeUrlState(false);
+  if (key === 'contextOverride') {
+    if (ATLAS_3D_STATE.contextOverride === 'dungeon') clearAtlasLingeringTownShopPoi();
+    if (ATLAS_ENGINE_MODE === '3d_map3d') refreshStudioPlaceDrawerInPlace();
+  }
+  initOrUpdateAtlasMap3dEngine();
+}
+
+function setupHiDpiIsotropicCanvas(canvas) {
+  if (!canvas || typeof canvas.getContext !== 'function') return null;
+  const rect = typeof canvas.getBoundingClientRect === 'function'
+    ? canvas.getBoundingClientRect()
+    : { width: 1040, height: 500 };
+  const cssW = Math.max(320, Math.round(rect.width || canvas.clientWidth || 1040));
+  const cssH = Math.max(240, Math.round(rect.height || canvas.clientHeight || 500));
+  const dpr = (typeof window !== 'undefined' && Number(window.devicePixelRatio) > 0)
+    ? Math.min(3, Number(window.devicePixelRatio))
+    : 1;
+  const targetW = Math.round(cssW * dpr);
+  const targetH = Math.round(cssH * dpr);
+  if (canvas.width !== targetW) canvas.width = targetW;
+  if (canvas.height !== targetH) canvas.height = targetH;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  if (typeof ctx.setTransform === 'function') {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  const scale = Math.min(cssW / 1040, cssH / 500);
+  const offsetX = (cssW - 1040 * scale) / 2;
+  const offsetY = (cssH - 500 * scale) / 2;
+  return { ctx, cssW, cssH, dpr, scale, offsetX, offsetY };
+}
+
+let ATLAS_ENGINE_RESIZE_OBSERVER = null;
+function attachAtlasEngineResizeObserver(mount) {
+  if (!mount || typeof ResizeObserver === 'undefined') return;
+  try {
+    if (ATLAS_ENGINE_RESIZE_OBSERVER) {
+      ATLAS_ENGINE_RESIZE_OBSERVER.disconnect();
+    }
+    let lastW = mount.clientWidth;
+    let lastH = mount.clientHeight;
+    ATLAS_ENGINE_RESIZE_OBSERVER = new ResizeObserver(() => {
+      const nw = mount.clientWidth;
+      const nh = mount.clientHeight;
+      if (Math.abs(nw - lastW) > 2 || Math.abs(nh - lastH) > 2) {
+        lastW = nw;
+        lastH = nh;
+        if (ATLAS_ENGINE_MODE === '3d_map3d') redrawAtlas3dInPlace();
+        else syncAtlasActiveSpatialEngine();
+      }
+    });
+    ATLAS_ENGINE_RESIZE_OBSERVER.observe(mount);
+  } catch (_e) {}
+}
+
+function renderCleanVectorContinentReliefSvg(isL2) {
+  const seaCol = isL2 ? '#1f3337' : '#0f233c';
+  const shelfCol = isL2 ? 'rgba(67,104,108,0.42)' : 'rgba(30,64,115,0.42)';
+  const c01Land = isL2 ? '#595136' : '#1e3a2f';
+  const c01High = isL2 ? '#736846' : '#285241';
+  const c01Stroke = isL2 ? '#d4af37' : '#34d399';
+  const c02Land = isL2 ? '#635334' : '#3b2e1e';
+  const c02High = isL2 ? '#7c6943' : '#523e27';
+  const c02Stroke = isL2 ? '#f59e0b' : '#fbbf24';
+  const c03Land = isL2 ? '#4d454f' : '#281e3d';
+  const c03High = isL2 ? '#675c6a' : '#3b2b59';
+  const c03Stroke = isL2 ? '#c084fc' : '#a855f7';
+  return `
+    <g id="atlasCleanVectorContinentRelief" pointer-events="none">
+      <rect x="0" y="0" width="1040" height="500" fill="${seaCol}"/>
+      <!-- Continental Shelf Bathymetry Contours -->
+      <path d="M 140,475 Q 115,355 215,295 Q 355,260 515,285 Q 675,295 755,385 Q 765,472 585,485 Q 355,492 140,475 Z" fill="${shelfCol}" stroke="rgba(125,211,252,0.22)" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <path d="M 605,325 Q 595,215 695,165 Q 845,145 945,205 Q 975,285 885,338 Q 745,355 605,325 Z" fill="${shelfCol}" stroke="rgba(125,211,252,0.22)" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <path d="M 465,165 Q 485,68 635,48 Q 815,38 875,92 Q 865,152 725,162 Q 565,172 465,165 Z" fill="${shelfCol}" stroke="rgba(192,132,252,0.25)" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <!-- C01 Hearthbloom Basin (Starter Continent) -->
+      <path d="M 165,462 Q 145,365 225,310 Q 355,278 505,302 Q 655,312 732,392 Q 735,462 575,474 Q 365,480 165,462 Z" fill="${c01Land}" stroke="${c01Stroke}" stroke-width="2.2"/>
+      <path d="M 218,438 Q 208,368 282,332 Q 412,308 552,328 Q 662,348 688,412 Q 642,452 485,456 Q 318,458 218,438 Z" fill="${c01High}" opacity="0.72" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+      <path d="M 275,352 L 335,328 L 415,342 L 495,324 L 575,348" fill="none" stroke="rgba(250,204,21,0.34)" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 5"/>
+      <!-- C02 Clockwork Steppe (Midgame Industrial Mesa) -->
+      <path d="M 622,312 Q 612,222 702,178 Q 838,158 928,212 Q 952,278 868,324 Q 742,338 622,312 Z" fill="${c02Land}" stroke="${c02Stroke}" stroke-width="2.2"/>
+      <path d="M 658,292 Q 652,232 722,198 Q 828,185 894,225 Q 906,272 838,302 Q 742,312 658,292 Z" fill="${c02High}" opacity="0.75" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+      <!-- C03 Shattered Sky-Halo (Endgame Celestial Caldera) -->
+      <path d="M 488,152 Q 505,78 642,58 Q 802,48 855,95 Q 842,144 715,152 Q 575,158 488,152 Z" fill="${c03Land}" stroke="${c03Stroke}" stroke-width="2.2"/>
+      <path d="M 532,136 Q 548,88 655,72 Q 778,66 818,98 Q 805,132 702,138 Q 595,142 532,136 Z" fill="${c03High}" opacity="0.78" stroke="rgba(255,255,255,0.16)" stroke-width="1"/>
+    </g>
+  `;
+}
+
+// level_range (array) → level_band ("[1, 10]") → level_header ("lvl.1 [1-10]"); [1, 20] only when none parse.
+function parseAtlasZoneLevelRange(z) {
+  if (Array.isArray(z && z.level_range) && z.level_range.length >= 2) return z.level_range.map(Number);
+  for (const raw of [z && z.level_band, z && z.level_header]) {
+    const m = String(raw || '').match(/(\d+)\D+(\d+)\D*$/);
+    if (m) return [parseInt(m[1], 10), parseInt(m[2], 10)];
+  }
+  return [1, 20];
+}
+
+function buildAtlasspatialFeaturesList() {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const zones = getAllAtlas63Zones(tatlas);
+  const effFilter = (typeof resolveAtlasEffectiveFilter === 'function' && typeof ATLAS_STATE_STORE !== 'undefined')
+    ? resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter || 'All', 'overland').effective
+    : 'All';
+  const anchorLookup = {
+    'zone-town-lantern-hollow': { x: 432, y: 422 },
+    'zone-town-porcelain-loom': { x: 545, y: 404 },
+    'zone-town-porcelain-loom-sanctuary': { x: 545, y: 404 },
+    'zone-town-draft-kiln-post': { x: 305, y: 418 },
+    'zone-town-root-train-roundhouse': { x: 712, y: 418 },
+    'zone-town-carillon-belfry': { x: 382, y: 338 },
+    'zone-town-carillon-hearth-belfry': { x: 382, y: 338 },
+    'zone-town-cinnamon-mill': { x: 215, y: 332 },
+    'zone-town-cinnamon-mill-haven': { x: 215, y: 332 },
+    'zone-town-kilnwatch-bastion': { x: 618, y: 318 },
+    'zone-dungeon-kiln-cellar': { x: 515, y: 468 },
+    'zone-town-pinion-terminus': { x: 745, y: 288 },
+    'zone-dungeon-pendulum-shaft': { x: 665, y: 252 },
+    'zone-dungeon-chronometer-foundry': { x: 845, y: 215 },
+    'zone-town-starfall-haven': { x: 565, y: 122 }
+  };
+  // Spawn entity types per zone, from field spawn_territories and dungeon floor spawns.
+  const entityTypesByZone = {};
+  const addEntityType = (zoneId, t) => {
+    if (!zoneId || !t) return;
+    (entityTypesByZone[zoneId] = entityTypesByZone[zoneId] || new Set()).add(t === 'RaidBoss' ? 'Raid' : t);
+  };
+  zones.forEach(z => ((z.field_tactical_blueprint || {}).spawn_territories || []).forEach(st => addEntityType(z.zone_id, st.entity_type)));
+  (tatlas.multi_floor_dungeons || []).forEach(d => (d.floors || []).forEach(fl => (fl.spawns || []).forEach(s => addEntityType(d.dungeon_id, s.entity_type))));
+  const filteredZones = zones.filter(z => {
+    const lvRange = parseAtlasZoneLevelRange(z);
+    if (typeof matchesAtlasLevelBand === 'function' && !matchesAtlasLevelBand(lvRange)) return false;
+    if (effFilter === 'All') return true;
+    if (effFilter === 'TownMarks') return z.actionType === 'town' || z.actionType === 'fortress';
+    if (effFilter === 'RaceSpawns') return z.actionType === 'town' && lvRange[0] <= 1;
+    if (['Monster', 'Mini-Boss', 'Raid', 'MVP'].includes(effFilter)) {
+      // Tier rules (UX-12). Every field and dungeon spawns all four entity types, so tiers key on zone role and level:
+      //   Monster   = every hunting zone (field + dungeon) that spawns Monster                         -> 40
+      //   Mini-Boss = hunting zones that spawn Mini-Boss and whose max level >= 15 (mid/high tier)     -> 32
+      //   Raid      = dungeons + fortress/harbor/clan-hall marks + fields with max level >= 45         -> 27
+      //   MVP       = dungeons + endgame apex fields (continent C02/C03, max level >= 45)               -> 19
+      const hunting = z.actionType === 'field' || z.actionType === 'dungeon';
+      const hasSpawn = t => Boolean(entityTypesByZone[z.zone_id] && entityTypesByZone[z.zone_id].has(t));
+      const lvMax = lvRange[1];
+      const apexField = z.actionType === 'field' && lvMax >= 45;
+      if (effFilter === 'Monster') return hunting && hasSpawn('Monster');
+      if (effFilter === 'Mini-Boss') return hunting && hasSpawn('Mini-Boss') && lvMax >= 15;
+      if (effFilter === 'Raid') return z.actionType === 'dungeon' || z.actionType === 'fortress' || apexField;
+      return z.actionType === 'dungeon' || (apexField && /^continent-0[23]/.test(String(z.continent_id || '')));
+    }
+    return true;
+  });
+  const activeList = filteredZones.length > 0 ? filteredZones : zones;
+  // Place ALL zones once (so positions do not shift with the active filter), then separate stacked points.
+  const placeItems = zones.map(z => {
+    const anchored = anchorLookup[z.zone_id] || anchorLookup[z.studio_node_id];
+    // Anchors are already 1040×500 pixel-CRS; everything else projects its metre loc_coord via svgX/svgY.
+    const loc = anchored ? null : clampWorldLocCoord(z.loc_coord || '-84120:243500');
+    const code = getAtlasContinentCode(z.continent_id);
+    const p = anchored ? { x: anchored.x, y: anchored.y } : clampPointIntoAtlasContinent(loc.svgX, loc.svgY, code);
+    return { id: z.zone_id, code, anchored: Boolean(anchored), x: p.x, y: p.y };
+  });
+  repelAtlasZonePoints(placeItems);
+  const placedById = {};
+  placeItems.forEach(it => { placedById[it.id] = { x: it.x, y: it.y }; });
+  return activeList.map(z => {
+    const contCode = getAtlasContinentCode(z.continent_id);
+    const placed = placedById[z.zone_id];
+    const sx = placed.x;
+    const sy = placed.y;
+    const lvRange = parseAtlasZoneLevelRange(z);
+    const lensMeta = getAtlasPersonaLensTelemetrySummary({
+      id: z.zone_id,
+      name: z.name,
+      actionType: z.actionType || 'field',
+      levelRange: lvRange,
+      locCoord: z.loc_coord || '0:0'
+    });
+    const shortName = (z.name || z.zone_id).split(' (')[0];
+    const poi = {
+      title: z.name || z.zone_id,
+      category: `${z.zoneCategory || 'World Zone'} · ${lensMeta.lensBadge}`,
+      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+      hoursOrStatus: `${z.level_header || `Lv.${lvRange[0]}–${lvRange[1]}`} · loc=${z.loc_coord || '0:0'}`,
+      summary: `OpenLayers 2D Pixel-CRS feature (${lensMeta.pillText}). Click primary action to drill into Street Blueprint or Multi-Floor Sub-Map.`,
+      address: `${z.territory_name || shortName} · CRADLE-METERS (${sx}, ${sy})`,
+      coordinates: `loc=${z.loc_coord || '0:0'} · Lens: ${lensMeta.lens.toUpperCase()}`,
+      scaleSpecs: '12.5m–14.0m Arterial Roads · 4.4m Walkways · 0.58m Counters',
+      locCoord: z.loc_coord || '0:0',
+      townBlueprintId: z.actionType === 'town' ? (z.studio_node_id || z.zone_id) : '',
+      dungeonWarpId: z.actionType === 'dungeon' ? z.zone_id : '',
+      dungeonFloorId: z.actionType === 'dungeon' ? 'B1' : '',
+      inspectId: z.studio_node_id || z.zone_id,
+      svgX: sx,
+      svgY: sy
+    };
+    return {
+      id: z.zone_id,
+      studioNodeId: z.studio_node_id || z.zone_id,
+      name: shortName,
+      fullName: z.name || z.zone_id,
+      category: z.zoneCategory || 'Zone',
+      actionType: z.actionType || 'field',
+      levelRange: lvRange,
+      levelHeader: z.level_header || `Lv.${lvRange[0]}–${lvRange[1]}`,
+      locCoord: z.loc_coord || '0:0',
+      continentCode: contCode,
+      lensBadge: lensMeta.lensBadge,
+      lensColor: lensMeta.lensColor,
+      poi,
+      x: sx,
+      y: sy
+    };
+  });
+}
+
+function ensureOpenLayersRuntimeLoaded() {
+  if (typeof document === 'undefined' || !document.createElement || !document.head || typeof document.head.appendChild !== 'function') return;
+  if (!document.getElementById('atlasOlCssLink')) {
+    const link = document.createElement('link');
+    link.id = 'atlasOlCssLink';
+    link.rel = 'stylesheet';
+    link.href = '/vendor/ol.css';
+    document.head.appendChild(link);
+  }
+  if (!document.getElementById('atlasOlScriptTag') && typeof window !== 'undefined' && !window.ol) {
+    const s = document.createElement('script');
+    s.id = 'atlasOlScriptTag';
+    s.src = '/vendor/ol.js';
+    s.async = true;
+    s.onload = () => {
+      try {
+        if (window.ol && window.ol.proj && window.ol.proj.Projection) {
+          window.__ATLAS_OL_PROJECTION = new window.ol.proj.Projection({
+            code: 'CRADLE-METERS',
+            units: 'm',
+            extent: [0, 0, 1040, 500]
+          });
+        }
+        if (ATLAS_ENGINE_MODE === '2d_ol') {
+          initOrUpdateAtlasOpenLayersEngine();
+        }
+      } catch (_e) {}
+    };
+    document.head.appendChild(s);
+  }
+}
+
+// Continent polygons in OL pixel-CRS (y up, 1040x500; feature points plot at [x, 500 - y]). These are the original
+// non-overlapping landmass outlines (they match renderCleanVectorContinentReliefSvg); zone points that fall outside
+// their own continent are pulled in by clampPointIntoAtlasContinent, not by growing the polygons.
+function getAtlasContinentPolygons() {
+  return [
+    { code: 'C01', name: 'C01 Hearthbloom Basin', pts: [[165,38],[150,145],[235,195],[380,218],[535,198],[685,175],[735,95],[710,32],[460,22],[165,38]], fill: 'rgba(16,185,129,0.22)', stroke: '#34d399' },
+    { code: 'C02', name: 'C02 Clockwork Steppe', pts: [[620,188],[615,280],[705,325],[845,340],[932,285],[945,218],[860,172],[620,188]], fill: 'rgba(245,158,11,0.22)', stroke: '#fbbf24' },
+    { code: 'C03', name: 'C03 Shattered Sky-Halo', pts: [[485,348],[510,425],[645,445],[805,450],[858,404],[835,354],[690,345],[485,348]], fill: 'rgba(168,85,247,0.22)', stroke: '#c084fc' }
+  ];
+}
+
+// Pull an SVG-space point (x, y down) into its own continent polygon and out of every other one. Returns the input
+// unchanged when it is already valid; otherwise projects onto the nearest own-polygon edge and nudges inward
+// (toward the vertex centroid) until the point is inside its own continent and outside all others.
+function clampPointIntoAtlasContinent(x, y, code) {
+  const polys = getAtlasContinentPolygons();
+  const own = polys.find(c => c.code === code);
+  if (!own) return { x, y, moved: 0 };
+  const valid = (px, py) => isPointInAtlasPolygon(px, py, own.pts)
+    && !polys.some(c => c.code !== code && isPointInAtlasPolygon(px, py, c.pts));
+  const py = 500 - y;
+  if (valid(x, py)) return { x, y, moved: 0 };
+  let best = null;
+  for (let i = 0; i < own.pts.length - 1; i++) {
+    const [ax, ay] = own.pts[i];
+    const [bx, by] = own.pts[i + 1];
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len2 = dx * dx + dy * dy;
+    const t = len2 > 0 ? Math.max(0, Math.min(1, ((x - ax) * dx + (py - ay) * dy) / len2)) : 0;
+    const qx = ax + t * dx;
+    const qy = ay + t * dy;
+    const d = Math.hypot(x - qx, py - qy);
+    if (!best || d < best.d) best = { qx, qy, d };
+  }
+  const ring = own.pts.slice(0, -1);
+  const cx = ring.reduce((n, p) => n + p[0], 0) / ring.length;
+  const cy = ring.reduce((n, p) => n + p[1], 0) / ring.length;
+  const vlen = Math.hypot(cx - best.qx, cy - best.qy) || 1;
+  const ux = (cx - best.qx) / vlen;
+  const uy = (cy - best.qy) / vlen;
+  let out = { x: Math.round(cx), y: Math.round(cy) };
+  for (let step = 8; step <= 80; step += 4) {
+    const nx = Math.round(best.qx + ux * step);
+    const ny = Math.round(best.qy + uy * step);
+    if (valid(nx, ny)) { out = { x: nx, y: ny }; break; }
+  }
+  return { x: out.x, y: 500 - out.y, moved: Math.hypot(out.x - x, 500 - out.y - y) };
+}
+
+// Deterministic repel pass: push distinct zone points apart to >= ATLAS_MIN_ZONE_GAP_PX along the pair vector, keeping
+// each point strictly inside its OWN continent polygon and outside the others. items: [{id, code, anchored, x, y}] in
+// SVG coords (y down); mutated in place and returned. Anchored points never move toward a free partner's push.
+function repelAtlasZonePoints(items) {
+  const GAP = 13;
+  const polys = getAtlasContinentPolygons();
+  const valid = (it, px, py) => {
+    const own = polys.find(c => c.code === it.code);
+    if (!own) return true;
+    return isPointInAtlasPolygon(px, 500 - py, own.pts) && !polys.some(c => c.code !== it.code && isPointInAtlasPolygon(px, 500 - py, c.pts));
+  };
+  const order = items.slice().sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const tryMove = (it, ang, dist) => {
+    for (const off of [0, 0.5, -0.5, 1.0, -1.0, 1.6, -1.6, 2.2, -2.2, 3.14159]) {
+      const nx = Math.round(it.x + Math.cos(ang + off) * dist);
+      const ny = Math.round(it.y + Math.sin(ang + off) * dist);
+      if (valid(it, nx, ny)) { it.x = nx; it.y = ny; return true; }
+    }
+    return false;
+  };
+  for (let pass = 0; pass < 80; pass++) {
+    let moved = false;
+    for (let i = 0; i < order.length; i++) {
+      for (let j = i + 1; j < order.length; j++) {
+        const a = order[i], b = order[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const d = Math.hypot(dx, dy);
+        if (d >= GAP) continue;
+        if (a.anchored && b.anchored && d > 0.5) continue;
+        const ang = d < 1e-6 ? ((i * 2.399963 + j * 0.7548) % (2 * Math.PI)) : Math.atan2(dy, dx);
+        const need = GAP - d + 0.5;
+        if (a.anchored && !b.anchored) moved = tryMove(b, ang, need) || moved;
+        else if (b.anchored && !a.anchored) moved = tryMove(a, ang + Math.PI, need) || moved;
+        else if (a.anchored && b.anchored) moved = tryMove(b, ang, need) || moved;
+        else {
+          const m1 = tryMove(a, ang + Math.PI, need / 2);
+          const m2 = tryMove(b, ang, need / 2);
+          moved = m1 || m2 || moved;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+  return items;
+}
+
+function getAtlasContinentCode(continentId) {
+  const m = String(continentId || '').match(/^continent-0([123])/);
+  return m ? 'C0' + m[1] : '';
+}
+
+function mountRealOpenLayersInstance(targetEl, features) {
+  if (!targetEl || typeof window === 'undefined' || !window.ol || !window.ol.Map || !window.ol.View) return false;
+  try {
+    const ol = window.ol;
+    const proj = window.__ATLAS_OL_PROJECTION || new ol.proj.Projection({
+      code: 'CRADLE-METERS',
+      units: 'm',
+      extent: [0, 0, 1040, 500]
+    });
+    window.__ATLAS_OL_PROJECTION = proj;
+    targetEl.innerHTML = '';
+    const olFeatures = [];
+    if (ol.Feature && ol.geom && ol.geom.Polygon && ol.style && ol.style.Style) {
+      const contDefs = getAtlasContinentPolygons();
+      contDefs.forEach(cd => {
+        const pf = new ol.Feature({ geometry: new ol.geom.Polygon([cd.pts]), name: cd.name });
+        pf.setStyle(new ol.style.Style({
+          fill: new ol.style.Fill({ color: cd.fill }),
+          stroke: new ol.style.Stroke({ color: cd.stroke, width: 2 })
+        }));
+        olFeatures.push(pf);
+      });
+    }
+    if (ol.Feature && ol.geom && ol.geom.Point && ol.style && ol.style.Style) {
+      features.forEach(f => {
+        const pf = new ol.Feature({
+          geometry: new ol.geom.Point([f.x, 500 - f.y]),
+          zoneMeta: f
+        });
+        const col = f.actionType === 'town' ? '#eab308' : (f.actionType === 'dungeon' ? '#a855f7' : '#38bdf8');
+        pf.setStyle(new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: f.actionType === 'town' ? 6.5 : 5,
+            fill: new ol.style.Fill({ color: col }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
+          }),
+          text: new ol.style.Text({
+            text: f.name,
+            offsetY: 14,
+            font: 'bold 10px monospace',
+            fill: new ol.style.Fill({ color: '#f8fafc' }),
+            backgroundFill: new ol.style.Fill({ color: 'rgba(9,13,22,0.88)' }),
+            backgroundStroke: new ol.style.Stroke({ color: col, width: 1 }),
+            padding: [2, 4, 2, 4]
+          })
+        }));
+        olFeatures.push(pf);
+      });
+    }
+    const highwayFeatures = [];
+    if (ol.Feature && ol.geom && ol.geom.LineString && ol.style && ol.style.Style) {
+      for (let i = 1; i < Math.min(12, features.length); i++) {
+        const a = features[i - 1];
+        const b = features[i];
+        const lf = new ol.Feature({
+          geometry: new ol.geom.LineString([[a.x, 500 - a.y], [b.x, 500 - b.y]])
+        });
+        lf.setStyle(new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: 'rgba(250, 204, 21, 0.72)', width: 2.4, lineDash: [8, 5] })
+        }));
+        highwayFeatures.push(lf);
+      }
+    }
+    const rulerFeatures = [];
+    if (ATLAS_OL_RULER_POINTS.length > 0 && ol.Feature && ol.geom && ol.geom.Point && ol.style && ol.style.Style) {
+      if (ATLAS_OL_RULER_POINTS.length === 2 && ol.geom.LineString) {
+        const ra = ATLAS_OL_RULER_POINTS[0];
+        const rb = ATLAS_OL_RULER_POINTS[1];
+        const rfLine = new ol.Feature({
+          geometry: new ol.geom.LineString([[ra.x, 500 - ra.y], [rb.x, 500 - rb.y]])
+        });
+        rfLine.setStyle(new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: '#fde047', width: 3, lineDash: [6, 4] })
+        }));
+        rulerFeatures.push(rfLine);
+      }
+      ATLAS_OL_RULER_POINTS.forEach(pt => {
+        const rfPt = new ol.Feature({ geometry: new ol.geom.Point([pt.x, 500 - pt.y]) });
+        rfPt.setStyle(new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 6.5,
+            fill: new ol.style.Fill({ color: '#ef4444' }),
+            stroke: new ol.style.Stroke({ color: '#fde047', width: 2.2 })
+          })
+        }));
+        rulerFeatures.push(rfPt);
+      });
+    }
+    const vectorSource = new ol.source.Vector({ features: [...olFeatures, ...highwayFeatures, ...rulerFeatures] });
+    const vectorLayer = new ol.layer.Vector({
+      source: vectorSource,
+      declutter: true
+    });
+    const map = new ol.Map({
+      target: targetEl,
+      layers: [vectorLayer],
+      view: new ol.View({
+        projection: proj,
+        center: [520, 250],
+        zoom: 1,
+        minZoom: 0.5,
+        maxZoom: 6
+      })
+    });
+    if (typeof map.on === 'function') {
+      map.on('singleclick', (evt) => {
+        const coord = evt.coordinate || [520, 250];
+        const cx = Math.max(0, Math.min(1040, Math.round(coord[0])));
+        const cy = Math.max(0, Math.min(500, Math.round(500 - coord[1])));
+        if (ATLAS_OL_RULER_ACTIVE) {
+          if (ATLAS_OL_RULER_POINTS.length >= 2) ATLAS_OL_RULER_POINTS = [];
+          ATLAS_OL_RULER_POINTS.push({ x: cx, y: cy });
+          initOrUpdateAtlasOpenLayersEngine();
+          return;
+        }
+        const clicked = features.find(f => Math.hypot(f.x - cx, f.y - cy) <= 18);
+        if (clicked) {
+          if (clicked.poi) {
+            STUDIO_MAP_SELECTED_POI = clicked.poi;
+            ATLAS_LEFT_DRAWER_OPEN = true;
+            ATLAS_STATE_STORE.leftDrawerOpen = true;
+          }
+          if (clicked.actionType === 'dungeon') {
+            openDungeonSubMap(clicked.id, 'B1');
+          } else if (clicked.actionType === 'town') {
+            focusTownStreetBlueprint(clicked.id, clicked.locCoord);
+          } else {
+            STUDIO_MAP_LOC = clampWorldLocCoord(clicked.locCoord);
+            render();
+          }
+        }
+      });
+    }
+    window.__ATLAS_OL_MAP_INSTANCE = map;
+    return true;
+  } catch (_e) {
+    return false;
+  }
+}
+
+function initOrUpdateAtlasOpenLayersEngine() {
+  const mount = document.getElementById('atlasAdvancedEngineMount');
+  if (!mount || ATLAS_ENGINE_MODE !== '2d_ol') return;
+  ensureOpenLayersRuntimeLoaded();
+  attachAtlasEngineResizeObserver(mount);
+  const features = buildAtlasspatialFeaturesList();
+  // 400,000m world span / 1040 logical units = 384.615m per logical unit (1:1 isotropic)
+  const METERS_PER_WORLD_UNIT = 400000 / 1040;
+  const rulerText = ATLAS_OL_RULER_POINTS.length === 2
+    ? (() => {
+        const a = ATLAS_OL_RULER_POINTS[0];
+        const b = ATLAS_OL_RULER_POINTS[1];
+        const distUnits = Math.hypot(b.x - a.x, b.y - a.y);
+        const meters = Math.round(distUnits * METERS_PER_WORLD_UNIT);
+        const walkSec = Math.round(meters / 6.5);
+        const mountSec = Math.round(meters / 14.0);
+        return `📏 ${meters.toLocaleString()} m (${walkSec}s walk · ${mountSec}s strider mount)`;
+      })()
+    : (ATLAS_OL_RULER_ACTIVE ? 'Click 2 points on the GIS canvas to measure exact world distance (CRADLE-METERS)' : 'Decluttered Pixel-CRS Vector Layer (CRADLE-METERS · 1040×500 · 1:1 Isotropic)');
+
+  const hasLiveOl = Boolean(typeof window !== 'undefined' && window.ol && window.ol.Map && window.ol.View && window.ol.layer && window.ol.source);
+  const activeLensMeta = getAtlasPersonaLensTelemetrySummary({ actionType: 'town', levelRange: [1, 20] });
+  mount.innerHTML = `
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#07111f">
+      <div style="position:relative;flex:1;width:100%;height:100%;overflow:hidden">
+        <div id="atlasOlExternalViewport" style="position:absolute;inset:0;z-index:${hasLiveOl ? 5 : 1};opacity:${hasLiveOl ? 1 : 0};pointer-events:${hasLiveOl ? 'auto' : 'none'};background:#07111f;cursor:${ATLAS_OL_RULER_ACTIVE ? 'crosshair' : 'grab'}"></div>
+        <canvas id="atlasOlGisCanvas" tabindex="0" onkeydown="onStudioMapKeyDown(event)"
+                style="width:100%;height:100%;display:${hasLiveOl ? 'none' : 'block'};position:relative;z-index:3;cursor:${ATLAS_OL_RULER_ACTIVE ? 'crosshair' : 'grab'};outline:none"></canvas>
+        <div id="atlasOlToolbarPanel" style="position:absolute;bottom:52px;left:12px;z-index:30;pointer-events:auto;display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 10px;border-radius:8px;background:rgba(9,14,24,0.95);border:1px solid rgba(56,189,248,0.55);font-size:11px;color:#e2e8f0;box-shadow:0 6px 18px rgba(0,0,0,0.65)">
+          <span class="mono" style="color:#38bdf8;font-weight:800">🌐 OpenLayers 2D Pixel-CRS (CRADLE-METERS · ${features.length} Zones)</span>
+          <span id="atlasOlPersonaTelemetryPill" class="mono" style="padding:2px 7px;border-radius:4px;background:rgba(15,23,42,0.95);border:1px solid ${activeLensMeta.lensColor};color:${activeLensMeta.lensColor};font-size:10px;font-weight:800">${escapeHtml(activeLensMeta.pillText)}</span>
+          <span id="atlasOlRulerReadout" class="mono" style="color:#fde047">${escapeHtml(rulerText)}</span>
+          <button id="atlasOlMeasureBtn" type="button" onclick="toggleAtlasOlRuler()"
+                  style="padding:3px 9px;border-radius:5px;border:1px solid ${ATLAS_OL_RULER_ACTIVE ? '#fde047' : 'rgba(148,163,184,0.45)'};background:${ATLAS_OL_RULER_ACTIVE ? '#854d0e' : '#1e293b'};color:#ffffff;font-size:10px;font-weight:800;cursor:pointer">
+            📏 ${ATLAS_OL_RULER_ACTIVE ? 'Clear Ruler' : 'Measure Distance'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const olExt = document.getElementById('atlasOlExternalViewport');
+  const olMounted = mountRealOpenLayersInstance(olExt, features);
+  const canvas = document.getElementById('atlasOlGisCanvas');
+  if (olMounted && olExt && olExt.style) {
+    olExt.style.opacity = '1';
+    olExt.style.zIndex = '5';
+    olExt.style.pointerEvents = 'auto';
+    if (canvas && canvas.style) canvas.style.display = 'none';
+  }
+  const setup = setupHiDpiIsotropicCanvas(canvas);
+  if (!setup) return;
+  const { ctx, cssW, cssH, dpr, scale, offsetX, offsetY } = setup;
+
+  // Fill full viewport background at native Retina DPR
+  ctx.clearRect(0, 0, cssW, cssH);
+  ctx.fillStyle = '#07111f';
+  ctx.fillRect(0, 0, cssW, cssH);
+
+  // Switch into 1:1 isotropic letterboxed 1040x500 world space
+  if (typeof ctx.setTransform === 'function') {
+    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * offsetX, dpr * offsetY);
+  }
+
+  const grad = ctx.createRadialGradient(520, 250, 40, 520, 250, 560);
+  grad.addColorStop(0, '#132a46');
+  grad.addColorStop(1, '#091526');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1040, 500);
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(0, 0, 1040, 500);
+
+  // Coordinate Grid (CRADLE-METERS 80px isotropic intervals)
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+  ctx.lineWidth = 1;
+  for (let gx = 80; gx < 1040; gx += 80) {
+    ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, 500); ctx.stroke();
+  }
+  for (let gy = 80; gy < 500; gy += 80) {
+    ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(1040, gy); ctx.stroke();
+  }
+
+  // Draw 3 Continent Vector Polygons
+  const drawPoly = (pts, fill, stroke) => {
+    ctx.beginPath();
+    pts.forEach(([px, py], i) => { if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); });
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  };
+  drawPoly([[165,462],[150,355],[235,305],[380,282],[535,302],[685,325],[735,405],[710,468],[460,478]], 'rgba(16, 185, 129, 0.22)', '#34d399');
+  drawPoly([[620,312],[615,220],[705,175],[845,160],[932,215],[945,282],[860,328]], 'rgba(245, 158, 11, 0.22)', '#fbbf24');
+  drawPoly([[485,152],[510,75],[645,55],[805,50],[858,96],[835,146],[690,155]], 'rgba(168, 85, 247, 0.22)', '#c084fc');
+
+  // Highway Vector Splines
+  ctx.strokeStyle = 'rgba(250, 204, 21, 0.65)';
+  ctx.lineWidth = 2.2;
+  for (let i = 1; i < Math.min(12, features.length); i++) {
+    ctx.beginPath();
+    ctx.moveTo(features[i - 1].x, features[i - 1].y);
+    ctx.lineTo(features[i].x, features[i].y);
+    ctx.stroke();
+  }
+
+  // Decluttered Vector Features & Labels
+  const placedBoxes = [];
+  features.forEach(f => {
+    const col = f.actionType === 'town' ? '#eab308' : (f.actionType === 'dungeon' ? '#a855f7' : '#38bdf8');
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, f.actionType === 'town' ? 7 : 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+
+    const lblW = f.name.length * 6.4 + 12;
+    const box = { x1: f.x - lblW / 2, y1: f.y + 8, x2: f.x + lblW / 2, y2: f.y + 24 };
+    const hit = placedBoxes.some(b => !(box.x2 < b.x1 || box.x1 > b.x2 || box.y2 < b.y1 || box.y1 > b.y2));
+    if (!hit) {
+      placedBoxes.push(box);
+      ctx.fillStyle = 'rgba(9, 13, 22, 0.88)';
+      ctx.fillRect(box.x1, box.y1, lblW, 15);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(box.x1, box.y1, lblW, 15);
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(f.name, f.x, f.y + 19);
+    }
+  });
+
+  // Draw Ruler Overlay if active
+  if (ATLAS_OL_RULER_POINTS.length > 0) {
+    ctx.strokeStyle = '#fde047';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([6, 4]);
+    if (ATLAS_OL_RULER_POINTS.length === 2) {
+      ctx.beginPath();
+      ctx.moveTo(ATLAS_OL_RULER_POINTS[0].x, ATLAS_OL_RULER_POINTS[0].y);
+      ctx.lineTo(ATLAS_OL_RULER_POINTS[1].x, ATLAS_OL_RULER_POINTS[1].y);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ATLAS_OL_RULER_POINTS.forEach(pt => {
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#ef4444';
+      ctx.fill();
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+  }
+
+  canvas.onclick = (evt) => {
+    const rect = canvas.getBoundingClientRect();
+    const curScale = Math.min(rect.width / 1040, rect.height / 500) || 1;
+    const curOffX = (rect.width - 1040 * curScale) / 2;
+    const curOffY = (rect.height - 500 * curScale) / 2;
+    const cx = Math.max(0, Math.min(1040, (evt.clientX - rect.left - curOffX) / curScale));
+    const cy = Math.max(0, Math.min(500, (evt.clientY - rect.top - curOffY) / curScale));
+    if (ATLAS_OL_RULER_ACTIVE) {
+      if (ATLAS_OL_RULER_POINTS.length >= 2) ATLAS_OL_RULER_POINTS = [];
+      ATLAS_OL_RULER_POINTS.push({ x: Math.round(cx), y: Math.round(cy) });
+      initOrUpdateAtlasOpenLayersEngine();
+      return;
+    }
+    const clicked = features.find(f => Math.hypot(f.x - cx, f.y - cy) <= 14);
+    if (clicked) {
+      if (clicked.poi) {
+        STUDIO_MAP_SELECTED_POI = clicked.poi;
+        ATLAS_LEFT_DRAWER_OPEN = true;
+        ATLAS_STATE_STORE.leftDrawerOpen = true;
+      }
+      if (clicked.actionType === 'dungeon') {
+        openDungeonSubMap(clicked.id, 'B1');
+      } else if (clicked.actionType === 'town') {
+        focusTownStreetBlueprint(clicked.id, clicked.locCoord);
+      } else {
+        STUDIO_MAP_LOC = clampWorldLocCoord(clicked.locCoord);
+        render();
+      }
+    }
+  };
+}
+
+function buildAtlas3dBlockoutScene() {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const spatialCtx = ATLAS_3D_STATE.contextOverride || getAtlasSpatialContext();
+  const elevMul = ATLAS_3D_STATE.elevScale || 1.0;
+  const lensMeta = getAtlasPersonaLensTelemetrySummary({ actionType: spatialCtx, levelRange: [1, 35] });
+  const meshes = [];
+
+  if (spatialCtx === 'dungeon') {
+    const mfDungeons = tatlas.multi_floor_dungeons || [];
+    const dng = mfDungeons.find(d => d.dungeon_id === ATLAS_STATE_STORE.activeDungeonId || d.studio_node_id === ATLAS_STATE_STORE.activeDungeonId)
+      || mfDungeons[0]
+      || { dungeon_id: 'zone-dungeon-kiln-cellar', name: 'Kiln Cellar (The Ant Nest)', dungeon_kind: 'underground_labyrinth', floors: [] };
+    const isTower = dng.dungeon_kind === 'vertical_tower';
+    const floors = dng.floors || [];
+    floors.forEach((fl, fIdx) => {
+      const baseY = (isTower ? fIdx * 42 : -fIdx * 42) * elevMul;
+      // Floor slab plate
+      meshes.push({
+        name: `Floor_${fl.floor_id}_Slab`,
+        x: 0, y: baseY - 2, z: 0,
+        w: 220, h: 3, d: 130,
+        color: isTower ? '#1e3a8a' : '#3b0764',
+        alpha: 0.38,
+        label: `${fl.floor_id} (${fl.level_range || ''})`,
+        poi: {
+          title: `${dng.name} — Floor ${fl.floor_id}`,
+          category: `Multi-Floor ${isTower ? 'Spire' : 'Labyrinth'} Slab · ${fl.level_range || ''} · ${lensMeta.lensBadge}`,
+          thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+          hoursOrStatus: `FLOOR ${fl.floor_id} · ${(fl.rooms || []).length} Chambers`,
+          summary: fl.name || 'Subterranean/vertical dungeon floor plate.',
+          address: `${dng.name} · Floor ${fl.floor_id}`,
+          coordinates: `loc=${dng.entrance_loc || '-113490:235526'} · Y=${Math.round(baseY)}m`,
+          scaleSpecs: 'Corridors ≥7.5m–12.0m wide · Unobstructed camera sightlines',
+          dungeonWarpId: dng.dungeon_id,
+          dungeonFloorId: fl.floor_id,
+          inspectId: dng.studio_node_id || dng.dungeon_id
+        }
+      });
+      (fl.rooms || []).forEach((rm, rIdx) => {
+        const rx = ((rm.x_pct || 20) - 50) * 2.0;
+        const rz = ((rm.y_pct || 20) - 50) * 1.1;
+        const rw = Math.max(16, (rm.w_pct || 18) * 1.6);
+        const rd = Math.max(14, (rm.h_pct || 18) * 1.0);
+        const isBossRoom = rIdx === (fl.rooms.length - 1);
+        const rh = (isBossRoom ? 18 : 12) * elevMul;
+        const meshName = `${fl.floor_id}_${rm.room_id || ('Room_' + (rIdx + 1))}`;
+        meshes.push({
+          name: meshName,
+          x: rx, y: baseY + rh / 2, z: rz,
+          w: rw, h: rh, d: rd,
+          color: isBossRoom ? '#f59e0b' : (isTower ? '#38bdf8' : '#a855f7'),
+          alpha: 0.88,
+          label: `[${fl.floor_id}] ${rm.name.slice(0, 18)}`,
+          poi: {
+            title: `[${fl.floor_id}] ${rm.name}`,
+            category: `${isBossRoom ? '👑 Boss Sanctum Chamber' : '⚔️ Dungeon Combat Chamber'} · ${fl.level_range || ''} · ${lensMeta.lensBadge}`,
+            thumb: '/thumbs/creatures/god-sola-hearth-weaver.webp',
+            hoursOrStatus: `3D CHAMBER MESH (${meshName}) · ${Math.round(rw)}m × ${Math.round(rd)}m × ${Math.round(rh)}m`,
+            summary: rm.tactical_notes || rm.function || `Multi-floor chamber on ${fl.floor_id} inside ${dng.name}.`,
+            address: `${dng.name} · Floor ${fl.floor_id} · Room #${rIdx + 1}`,
+            coordinates: `loc=${dng.entrance_loc || '-113490:235526'} · 3D (${Math.round(rx)}, ${Math.round(baseY)}, ${Math.round(rz)})`,
+            scaleSpecs: `Ceiling Height: ${Math.round(rh)}m · Doorway Clearance: 4.5m`,
+            dungeonWarpId: dng.dungeon_id,
+            dungeonFloorId: fl.floor_id,
+            inspectId: dng.studio_node_id || dng.dungeon_id
+          }
+        });
+      });
+      if (fIdx < floors.length - 1) {
+        const nextY = (isTower ? (fIdx + 1) * 42 : -(fIdx + 1) * 42) * elevMul;
+        const midY = (baseY + nextY) / 2;
+        const nextFloorId = floors[fIdx + 1].floor_id;
+        meshes.push({
+          name: `WarpShaft_${fl.floor_id}`,
+          x: 0, y: midY, z: 0,
+          w: 8, h: Math.abs(nextY - baseY), d: 8,
+          color: '#22d3ee',
+          alpha: 0.75,
+          label: `Warp Shaft ${fl.floor_id}⇄${nextFloorId}`,
+          poi: {
+            title: `Inter-Floor Warp Shaft (${fl.floor_id} ⇄ ${nextFloorId})`,
+            category: `Vertical Traversal Conduit · ${dng.name}`,
+            thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+            hoursOrStatus: `ACTIVE WARP PORTAL · ${fl.floor_id} ⇄ ${nextFloorId}`,
+            summary: `Connects Floor ${fl.floor_id} directly to Floor ${nextFloorId}.`,
+            address: `${dng.name} Central Axis`,
+            coordinates: `Vertical Span: ${Math.round(Math.abs(nextY - baseY))}m`,
+            dungeonWarpId: dng.dungeon_id,
+            dungeonFloorId: nextFloorId,
+            inspectId: dng.studio_node_id || dng.dungeon_id
+          }
+        });
+      }
+    });
+    return { context: 'dungeon', title: `${dng.name} — 3D Multi-Floor Cutaway`, meshes };
+  }
+
+  if (spatialCtx === 'town' || spatialCtx === 'field') {
+    const allTowns = getAllAtlasTownEntries(tatlas);
+    const townNode = allTowns.find(t => t.id === ATLAS_STATE_STORE.activeTownId || t.zone_id === ATLAS_STATE_STORE.activeTownId || t.studio_node_id === ATLAS_STATE_STORE.activeTownId) || allTowns[0] || { id: 'town-lantern-hollow', name: 'Lantern Hollow' };
+    const bp = getTownBlueprintData(townNode, tatlas);
+    const npcByBldg = {};
+    (bp.npc_roster || []).forEach(n => { npcByBldg[n.building_number] = n; });
+    // Town ground plinth
+    meshes.push({
+      name: 'Town_Plaza_Ground',
+      x: 0, y: -2, z: 0,
+      w: 240, h: 4, d: 140,
+      color: '#1e293b',
+      alpha: 0.75,
+      label: ''
+    });
+    // Extrude Town Street Ribbons (bp.streets) as 3D cobblestone road slabs connecting buildings
+    (bp.streets || []).forEach((st, sIdx) => {
+      const pts = st.path_pct || [];
+      if (pts.length >= 2) {
+        const p0 = pts[0];
+        const pN = pts[pts.length - 1];
+        const x0 = ((p0[0] || 50) - 50) * 1.9;
+        const z0 = ((p0[1] || 50) - 50) * 1.15;
+        const x1 = ((pN[0] || 50) - 50) * 1.9;
+        const z1 = ((pN[1] || 50) - 50) * 1.15;
+        const roadW = Math.max(10, Math.abs(x1 - x0) + (st.width_meters || 12) * 0.9);
+        const roadD = Math.max(10, Math.abs(z1 - z0) + (st.width_meters || 12) * 0.9);
+        const roadH = Math.max(0.8, 1.0 * elevMul);
+        const roadName = `Road_${sIdx + 1}_${(st.name || 'Cobblestone_Way').replace(/[^a-zA-Z0-9]+/g, '_')}`;
+        meshes.push({
+          name: roadName,
+          x: (x0 + x1) / 2,
+          y: roadH / 2,
+          z: (z0 + z1) / 2,
+          w: Math.min(200, roadW),
+          h: roadH,
+          d: Math.min(120, roadD),
+          color: '#475569',
+          alpha: 0.88,
+          label: '',
+          poi: {
+            title: `${st.name || `Arterial Street #${sIdx + 1}`}`,
+            category: `Cobblestone Thoroughfare · ${st.width_meters || 12.5}m Wide · ${lensMeta.lensBadge}`,
+            thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+            hoursOrStatus: `NAVIGABLE STREET RIBBON (${roadName})`,
+            summary: `Primary pedestrian & strider thoroughfare across ${bp.archetype_subtitle || townNode.name}.`,
+            address: `${bp.archetype_subtitle || townNode.name}`,
+            scaleSpecs: `${st.width_meters || 12.5}m Carriageway · 0.14m Curb Step Riser`,
+            inspectId: townNode.studio_node_id || townNode.id || 'town-lantern-hollow'
+          }
+        });
+      }
+    });
+    // Outer defensive curtain walls (N/S/E/W bastions)
+    const wallH = 14 * elevMul;
+    meshes.push({ name: 'Wall_North', x: 0, y: wallH / 2, z: -64, w: 210, h: wallH, d: 5, color: '#64748b', alpha: 0.85, label: 'North Gate Wall (14m)' });
+    meshes.push({ name: 'Wall_South', x: 0, y: wallH / 2, z: 64, w: 210, h: wallH, d: 5, color: '#64748b', alpha: 0.85, label: '' });
+    meshes.push({ name: 'Wall_West', x: -102, y: wallH / 2, z: 0, w: 5, h: wallH, d: 128, color: '#64748b', alpha: 0.85, label: '' });
+    meshes.push({ name: 'Wall_East', x: 102, y: wallH / 2, z: 0, w: 5, h: wallH, d: 128, color: '#64748b', alpha: 0.85, label: '' });
+    // Central Race Spawn Obelisk
+    const shrineH = 22 * elevMul;
+    meshes.push({
+      name: 'Central_Race_Spawn_Shrine',
+      x: 0, y: shrineH / 2, z: 0,
+      w: 12, h: shrineH, d: 12,
+      color: '#10b981',
+      alpha: 0.95,
+      label: '🧬 Race Spawn Shrine',
+      poi: {
+        title: `🧬 ${bp.spawn_point ? bp.spawn_point.label : 'Central Race Spawn Obelisk'}`,
+        category: `Starter Race Spawn & Gatekeeper Plaza · ${lensMeta.lensBadge}`,
+        thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+        hoursOrStatus: `ACTIVE SPAWN SHRINE · loc=${(bp.spawn_point && bp.spawn_point.loc_coord) || '-84120:243500'}`,
+        summary: 'Central town resurrection & starter arrival monument with 360° sightlines to all 12 service buildings.',
+        address: `Central Plaza · ${bp.archetype_subtitle || townNode.name}`,
+        coordinates: `loc=${(bp.spawn_point && bp.spawn_point.loc_coord) || '-84120:243500'}`,
+        scaleSpecs: '22m Obelisk Spire · 13.0m Central Plaza Ring',
+        inspectId: townNode.studio_node_id || townNode.id || 'town-lantern-hollow'
+      }
+    });
+    // Extrude #1..#12 numbered town buildings with full Shop & Refinement Catalog POI!
+    (bp.buildings || []).forEach(b => {
+      const bx = ((b.x_pct || 30) - 50) * 1.9;
+      const bz = ((b.y_pct || 30) - 50) * 1.15;
+      const bw = Math.max(12, (b.w_pct || 10) * 1.5);
+      const bd = Math.max(10, (b.h_pct || 10) * 1.0);
+      const baseHeights = { 1: 24, 2: 18, 3: 16, 4: 15, 5: 19, 6: 16, 7: 14, 8: 13, 9: 14, 10: 15, 11: 12, 12: 20 };
+      const bh = (baseHeights[b.building_number] || 15) * elevMul;
+      const npc = npcByBldg[b.building_number] || {};
+      const bldgCatalogTab = b.building_number === 7 ? 'equip_shop' : (b.building_number === 8 ? 'consumable_shop' : (b.building_number === 3 ? 'blacksmith' : 'all'));
+      const meshName = `Building_${b.building_number}_${(b.name || '').replace(/[^a-zA-Z0-9]+/g, '_')}`;
+      meshes.push({
+        name: meshName,
+        x: bx, y: bh / 2, z: bz,
+        w: bw, h: bh, d: bd,
+        color: b.roof_color || '#d97706',
+        alpha: 0.92,
+        label: `#${b.building_number} ${(b.name || '').replace(/^[0-9]+\.\s*/, '').slice(0, 14)}`,
+        poi: {
+          title: `${b.name} (3D Building #${b.building_number})`,
+          category: `Building #${b.building_number} · NPC: ${npc.name || 'Master Artisan'} (${npc.role_title || b.function || ''}) · ${lensMeta.lensBadge}`,
+          thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+          hoursOrStatus: `3D EXTRUDED BUILDING #${b.building_number} · ${Math.round(bw)}m × ${Math.round(bd)}m × ${Math.round(bh)}m`,
+          summary: b.function || 'Town service building, merchant counter, and refinement workshop.',
+          address: `Building #${b.building_number} · ${bp.archetype_subtitle || townNode.name}`,
+          coordinates: `loc=${npc.loc_coord || '-84120:243500'} · 3D (${Math.round(bx)}, ${Math.round(bh / 2)}, ${Math.round(bz)})`,
+          scaleSpecs: `Doorway: 2.15m × 1.60m · Counter: 0.58m · Roof Apex: ${Math.round(bh)}m`,
+          inspectId: townNode.studio_node_id || townNode.id || 'town-lantern-hollow',
+          shopAndRefinementCatalog: bp.shop_and_refinement_catalog || null,
+          activeCatalogTab: bldgCatalogTab,
+          connections: [{ label: `🏛️ ${b.function || 'Town Service'}`, badge: `#${b.building_number}` }]
+        }
+      });
+    });
+    return { context: 'town', title: `${bp.archetype_subtitle || townNode.name} — 3D Building, Street & Wall Extrusion (#1..#12)`, meshes };
+  }
+
+  // Default: Overland 3-Continent 3D Topographic Blockout
+  meshes.push({
+    name: 'C01_Hearthbloom_Basin_Plateau',
+    x: -35, y: 4 * elevMul, z: 38,
+    w: 135, h: 8 * elevMul, d: 52,
+    color: '#15803d',
+    alpha: 0.85,
+    label: 'C01 Hearthbloom Basin (Lv.1–20)',
+    poi: {
+      title: 'C01 Hearthbloom Basin (Starter Continent Plateau)',
+      category: `Continental Massif · Lv.1–20 · 6 Race Spawns · ${lensMeta.lensBadge}`,
+      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+      hoursOrStatus: 'CONTINENT C01 · 12 DISTRICTS · 6 STARTER TOWNS',
+      summary: 'Warm pastoral starter basin housing all 6 Playable Race home villages and converging at Kilnwatch Bastion.',
+      address: 'Hearthbloom Basin · Southern Cradle',
+      coordinates: 'loc=-84120:243500 · Base Elevation: +8m',
+      scaleSpecs: '180km × 140km Continental Shelf'
+    }
+  });
+  meshes.push({
+    name: 'C02_Clockwork_Steppe_Mesa',
+    x: 68, y: 9 * elevMul, z: 2,
+    w: 88, h: 18 * elevMul, d: 46,
+    color: '#b45309',
+    alpha: 0.88,
+    label: 'C02 Clockwork Steppe (Lv.18–35)',
+    poi: {
+      title: 'C02 The Clockwork Steppe (Midgame Mesa)',
+      category: `Continental Mesa · Lv.18–35 · Spire Dungeons · ${lensMeta.lensBadge}`,
+      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+      hoursOrStatus: 'CONTINENT C02 · PINION TERMINUS & CRUMA/TOI SPIRES',
+      summary: 'Elevated brass-and-basalt plateau featuring Pendulum Shaft (Cruma) and Chronometer Foundry (Tower of Insolence).',
+      address: 'The Clockwork Steppe · Eastern Highland',
+      coordinates: 'loc=82900:53200 · Base Elevation: +18m',
+      scaleSpecs: '150km × 120km Terraced Mesa'
+    }
+  });
+  meshes.push({
+    name: 'C03_Shattered_Sky_Halo_Caldera',
+    x: 32, y: 16 * elevMul, z: -44,
+    w: 96, h: 32 * elevMul, d: 34,
+    color: '#6d28d9',
+    alpha: 0.9,
+    label: 'C03 Shattered Sky-Halo (Lv.35–99)',
+    poi: {
+      title: 'C03 The Shattered Sky-Halo (Endgame Caldera)',
+      category: `Celestial Ring Continent · Lv.35–99 · Sovereign Sanctums · ${lensMeta.lensBadge}`,
+      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+      hoursOrStatus: 'CONTINENT C03 · STARFALL HAVEN & CROWN-BEACON',
+      summary: 'High-altitude floating astral caldera where guilds contest Castle Sieges and the 6 Sealed God Apostles.',
+      address: 'The Shattered Halo · Northern Zenith',
+      coordinates: 'loc=-14200:-124000 · Base Elevation: +32m',
+      scaleSpecs: '160km × 95km Floating Ring'
+    }
+  });
+  const worldTowers = [
+    { name: 'Lantern_Hollow', x: -52, z: 46, h: 18, c: '#eab308', lbl: '🏰 Lantern Hollow', kind: 'town', townId: 'town-lantern-hollow', loc: '-84120:243500', lv: [1, 10] },
+    { name: 'Porcelain_Loom', x: -12, z: 34, h: 18, c: '#38bdf8', lbl: '🏰 Porcelain Loom', kind: 'town', townId: 'town-porcelain-loom-sanctuary', loc: '45800:41200', lv: [1, 10] },
+    { name: 'Draft_Kiln_Post', x: -85, z: 40, h: 17, c: '#f97316', lbl: '🛡️ Draft-Kiln Post', kind: 'town', townId: 'town-draft-kiln-post', loc: '-44800:-113200', lv: [1, 10] },
+    { name: 'Kilnwatch_Bastion', x: 8, z: 22, h: 28, c: '#ef4444', lbl: '🏰 Kilnwatch Bastion', kind: 'town', townId: 'town-kilnwatch-bastion', loc: '18600:145200', lv: [10, 20] },
+    { name: 'Pendulum_Shaft_Cruma', x: 42, z: 4, h: 42, c: '#22d3ee', lbl: '🗼 Cruma Spire (3F)', kind: 'dungeon', dngId: 'zone-dungeon-pendulum-shaft', loc: '85400:144200', lv: [20, 30] },
+    { name: 'Pinion_Terminus', x: 68, z: 8, h: 26, c: '#f59e0b', lbl: '⚙️ Pinion Terminus', kind: 'town', townId: 'town-pinion-terminus', loc: '82900:53200', lv: [18, 25] },
+    { name: 'Chronometer_Foundry_ToI', x: 96, z: -8, h: 48, c: '#fde047', lbl: '🗼 Tower of Insolence', kind: 'dungeon', dngId: 'zone-dungeon-chronometer-foundry', loc: '84800:56400', lv: [25, 35] },
+    { name: 'Starfall_Haven_Capital', x: 18, z: -42, h: 46, c: '#c084fc', lbl: '✨ Starfall Haven', kind: 'town', townId: 'town-starfall-haven', loc: '-14200:-124000', lv: [38, 55] },
+    { name: 'Crown_Beacon_Astrolabe', x: 64, z: -48, h: 56, c: '#f43f5e', lbl: '👑 Crown-Beacon (Lv.99)', kind: 'dungeon', dngId: 'zone-dungeon-kiln-cellar', loc: '142000:-198000', lv: [60, 99] }
+  ];
+  worldTowers.forEach(t => {
+    const th = t.h * elevMul;
+    const tLens = getAtlasPersonaLensTelemetrySummary({ id: t.townId || t.dngId || t.name, name: t.lbl, actionType: t.kind, levelRange: t.lv, locCoord: t.loc });
+    meshes.push({
+      name: t.name,
+      x: t.x, y: th / 2 + 4, z: t.z,
+      w: 11, h: th, d: 11,
+      color: t.c,
+      alpha: 0.95,
+      label: t.lbl,
+      drillContext3d: t.kind,
+      townId: t.townId || '',
+      dungeonId: t.dngId || '',
+      poi: {
+        title: `${t.lbl} (3D Landmark Spire)`,
+        category: `${t.kind === 'dungeon' ? 'Multi-Floor Spire' : 'Walled Town Keep'} · Lv.${t.lv[0]}–${t.lv[1]} · ${tLens.lensBadge}`,
+        thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+        hoursOrStatus: `3D LANDMARK (${t.name}) · Double-click to drill into ${t.kind.toUpperCase()} 3D`,
+        summary: `Click to inspect in Place Drawer, or double-click in 3D Blockout to drill directly into the ${t.kind === 'dungeon' ? 'Multi-Floor Dungeon Cutaway' : 'Town #1..#12 Building Blockout'}.`,
+        address: `${t.lbl} · Cradle of Embers`,
+        coordinates: `loc=${t.loc} · Spire Height: ${Math.round(th)}m`,
+        scaleSpecs: '11m × 11m Footprint · 1:1 Godot 4 Blockout Node',
+        townBlueprintId: t.townId || '',
+        dungeonWarpId: t.dngId || '',
+        dungeonFloorId: t.dngId ? '1F' : '',
+        inspectId: t.townId || t.dngId || t.name
+      }
+    });
+  });
+  return { context: 'overland', title: 'Cradle of Embers — 3D Continental Elevation & Spire Blockout', meshes };
+}
+
+function isAtlas3dGroundMesh(m) {
+  return /^(Town_Plaza_Ground|Road_|Wall_|Floor_.*_Slab|C0\d_)/.test(String((m && m.name) || ''));
+}
+
+function isPointInAtlasPolygon(x, y, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i];
+    const [xj, yj] = poly[j];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+// Redraw the live 3D canvas without replacing it (keeps keyboard focus); falls back to a rebuild.
+function redrawAtlas3dInPlace() {
+  if (typeof window.__ATLAS_3D_DRAW_SCENE === 'function' && document.getElementById('atlasMap3dCanvas')) {
+    window.__ATLAS_3D_DRAW_SCENE();
+  } else {
+    initOrUpdateAtlasMap3dEngine();
+  }
+}
+
+// Swap only the left Place Inspector drawer, leaving #atlasMap3dCanvas in the DOM.
+function refreshStudioPlaceDrawerInPlace() {
+  const body = document.getElementById('joySpatialViewportShell');
+  if (!body) return false;
+  const shell = document.querySelector('.joy-spatial-shell');
+  if (shell) shell.setAttribute('data-left-open', ATLAS_LEFT_DRAWER_OPEN ? 'true' : 'false');
+  const html = buildStudioPlaceDrawerHtml(STUDIO_MAP_SELECTED_POI);
+  const existing = document.querySelector('#studioGooglePlaceDrawer');
+  if (existing) existing.outerHTML = html;
+  else if (html && typeof body.insertAdjacentHTML === 'function') body.insertAdjacentHTML('afterbegin', html);
+  return true;
+}
+
+function selectAtlas3dMeshByName(meshName, drillOnMatch = false) {
+  const scene = buildAtlas3dBlockoutScene();
+  const m = (scene.meshes || []).find(item => item.name === meshName);
+  if (!m) return null;
+  ATLAS_3D_STATE.selectedMeshName = m.name;
+  if (m.poi) {
+    STUDIO_MAP_SELECTED_POI = m.poi;
+    ATLAS_LEFT_DRAWER_OPEN = true;
+    ATLAS_STATE_STORE.leftDrawerOpen = true;
+    if (m.poi.inspectId) {
+      STUDIO_ACTIVE_INSPECT_ID = m.poi.inspectId;
+    }
+  }
+  const willDrill = Boolean(drillOnMatch && m.drillContext3d);
+  if (willDrill) {
+    if (m.townId) ATLAS_STATE_STORE.activeTownId = m.townId;
+    if (m.dungeonId) ATLAS_STATE_STORE.activeDungeonId = m.dungeonId;
+    ATLAS_3D_STATE.contextOverride = m.drillContext3d;
+  }
+  writeUrlState(false);
+  const canvas = document.getElementById('atlasMap3dCanvas');
+  if (ATLAS_ENGINE_MODE === '3d_map3d' && canvas && document.getElementById('joySpatialViewportShell')) {
+    // The drawer opens at 0ms; the shifted layout is handled by the document-level second-click guard
+    // (installAtlas3dSecondClickGuard), which drills from the first click's recorded point.
+    refreshStudioPlaceDrawerInPlace();
+    if (willDrill) initOrUpdateAtlasMap3dEngine();
+    else redrawAtlas3dInPlace();
+    const live = document.getElementById('atlasMap3dCanvas');
+    if (live && typeof live.focus === 'function') live.focus({ preventScroll: true });
+  } else {
+    render();
+  }
+  return {
+    selected: m.name,
+    context: ATLAS_3D_STATE.contextOverride || scene.context,
+    poiTitle: m.poi ? m.poi.title : m.label,
+    hasShopCatalog: Boolean(m.poi && m.poi.shopAndRefinementCatalog)
+  };
+}
+
+// One document-level capture mousedown (installed once): a mousedown within 400ms and ~8px of the first click's
+// recorded point is the second click of a double-click, even if the 0ms drawer insert moved the canvas under the
+// cursor. It drills once (clearing the recorded click) and swallows the event and its trailing click.
+let ATLAS_3D_SECOND_CLICK_GUARD_INSTALLED = false;
+function installAtlas3dSecondClickGuard() {
+  if (ATLAS_3D_SECOND_CLICK_GUARD_INSTALLED || typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
+  ATLAS_3D_SECOND_CLICK_GUARD_INSTALLED = true;
+  document.addEventListener('mousedown', (e) => {
+    const st = ATLAS_3D_STATE;
+    if (ATLAS_ENGINE_MODE !== '3d_map3d' || !st.lastClickMeshName) return;
+    if (Date.now() - (st.lastClickTime || 0) > 400) return;
+    if (Math.hypot(e.clientX - (st.lastClickClientX || 0), e.clientY - (st.lastClickClientY || 0)) > 8) return;
+    const meshName = st.lastClickMeshName;
+    st.lastClickMeshName = '';
+    st.lastClickTime = 0;
+    st.suppressClickUntil = Date.now() + 600;
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    selectAtlas3dMeshByName(meshName, true);
+  }, true);
+  document.addEventListener('click', (e) => {
+    if (Date.now() < (ATLAS_3D_STATE.suppressClickUntil || 0)) {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    }
+  }, true);
+}
+
+function initOrUpdateAtlasMap3dEngine() {
+  installAtlas3dSecondClickGuard();
+  const mount = document.getElementById('atlasAdvancedEngineMount');
+  if (!mount || ATLAS_ENGINE_MODE !== '3d_map3d') return;
+  const hadCanvasFocus = Boolean(document.activeElement && document.activeElement.id === 'atlasMap3dCanvas');
+  attachAtlasEngineResizeObserver(mount);
+  const scene = buildAtlas3dBlockoutScene();
+  const activeLensMeta = getAtlasPersonaLensTelemetrySummary({ actionType: scene.context, levelRange: [1, 35] });
+  mount.innerHTML = `
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#070b14">
+      <canvas id="atlasMap3dCanvas" tabindex="0" onkeydown="onStudioMapKeyDown(event)"
+              style="width:100%;height:100%;display:block;cursor:grab;outline:none"></canvas>
+      <div id="atlasMap3dToolbarPanel" style="position:absolute;bottom:52px;left:12px;z-index:30;pointer-events:auto;display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:6px 10px;border-radius:8px;background:rgba(9,14,24,0.95);border:1px solid rgba(168,85,247,0.6);font-size:10.5px;color:#e2e8f0;box-shadow:0 6px 18px rgba(0,0,0,0.65)">
+        <span class="mono" style="color:#c084fc;font-weight:900">🧊 map3d Blockout (${escapeHtml(scene.context.toUpperCase())} · ${scene.meshes.length} Extruded Meshes)</span>
+        <span id="atlasMap3dPersonaTelemetryPill" class="mono" style="padding:2px 7px;border-radius:4px;background:rgba(15,23,42,0.95);border:1px solid ${activeLensMeta.lensColor};color:${activeLensMeta.lensColor};font-size:9.5px;font-weight:800">${escapeHtml(activeLensMeta.pillText)}</span>
+        <button id="atlas3dBtnTown" type="button" onclick="setAtlas3dOption('contextOverride', 'town')" style="padding:2px 7px;border-radius:4px;border:1px solid rgba(250,204,21,0.45);background:${scene.context === 'town' ? '#854d0e' : '#1e293b'};color:#fde047;font-size:9.5px;font-weight:800;cursor:pointer">🏘️ Town #1..#12 3D</button>
+        <button id="atlas3dBtnDungeon" type="button" onclick="setAtlas3dOption('contextOverride', 'dungeon')" style="padding:2px 7px;border-radius:4px;border:1px solid rgba(192,132,252,0.45);background:${scene.context === 'dungeon' ? '#581c87' : '#1e293b'};color:#e9d5ff;font-size:9.5px;font-weight:800;cursor:pointer">🕳️ Dungeon B1–B3 3D</button>
+        <button id="atlas3dBtnOverland" type="button" onclick="setAtlas3dOption('contextOverride', 'overland')" style="padding:2px 7px;border-radius:4px;border:1px solid rgba(56,189,248,0.45);background:${scene.context === 'overland' ? '#0369a1' : '#1e293b'};color:#7dd3fc;font-size:9.5px;font-weight:800;cursor:pointer">🌍 Overland 3D</button>
+        <label class="mono" style="font-size:9.5px;color:#cbd5e1;display:inline-flex;align-items:center;gap:4px">
+          Elev:
+          <input id="atlas3dElevSlider" type="range" min="0.5" max="2.5" step="0.1" value="${ATLAS_3D_STATE.elevScale}"
+                 oninput="setAtlas3dOption('elevScale', this.value)" style="width:64px;accent-color:#c084fc;cursor:pointer"/>
+        </label>
+        <button id="atlas3dBtnWireframe" type="button" onclick="setAtlas3dOption('wireframe', !ATLAS_3D_STATE.wireframe)" style="padding:2px 7px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:${ATLAS_3D_STATE.wireframe ? '#4f46e5' : '#1e293b'};color:#ffffff;font-size:9.5px;font-weight:800;cursor:pointer">🕸️ Wireframe</button>
+        <button id="atlas3dBtnReset" type="button" onclick="setAtlas3dOption('reset', true)" style="padding:2px 7px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:#1e293b;color:#cbd5e1;font-size:9.5px;font-weight:800;cursor:pointer">↺ Reset Orbit</button>
+        <button id="atlas3dBtnExportGlb" type="button" onclick="exportAtlasBlockoutGlb()" style="padding:2px 8px;border-radius:4px;border:1px solid #34d399;background:#065f46;color:#ecfdf5;font-size:9.5px;font-weight:900;cursor:pointer">📦 Export .glb (Godot 4)</button>
+      </div>
+    </div>
+  `;
+
+  const canvas = document.getElementById('atlasMap3dCanvas');
+  if (!canvas || typeof canvas.getContext !== 'function') return;
+
+  let renderedMeshBounds = [];
+  const drawScene = () => {
+    const setup = setupHiDpiIsotropicCanvas(canvas);
+    if (!setup) return;
+    const { ctx, cssW, cssH, dpr, scale: isoScale, offsetX, offsetY } = setup;
+
+    ctx.clearRect(0, 0, cssW, cssH);
+    const bg = ctx.createLinearGradient(0, 0, 0, cssH);
+    bg.addColorStop(0, '#090d18');
+    bg.addColorStop(1, '#111c2d');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, cssW, cssH);
+
+    if (typeof ctx.setTransform === 'function') {
+      ctx.setTransform(dpr * isoScale, 0, 0, dpr * isoScale, dpr * offsetX, dpr * offsetY);
+    }
+
+    const cosY = Math.cos(ATLAS_3D_STATE.yaw);
+    const sinY = Math.sin(ATLAS_3D_STATE.yaw);
+    const cosP = Math.cos(ATLAS_3D_STATE.pitch);
+    const sinP = Math.sin(ATLAS_3D_STATE.pitch);
+    const scale = 3.1 * ATLAS_3D_STATE.zoom;
+    const cx = 520 + ATLAS_3D_STATE.panX;
+    const cy = 265 + ATLAS_3D_STATE.panY;
+
+    const project = (x, y, z) => {
+      const rx = x * cosY - z * sinY;
+      const rz = x * sinY + z * cosY;
+      const ry = y * cosP - rz * sinP;
+      const depth = y * sinP + rz * cosP;
+      return {
+        sx: cx + rx * scale,
+        sy: cy - ry * scale,
+        depth
+      };
+    };
+
+    // Ground Reference Grid
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.12)';
+    ctx.lineWidth = 1;
+    for (let g = -120; g <= 120; g += 24) {
+      const a = project(g, 0, -80);
+      const b = project(g, 0, 80);
+      ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(b.sx, b.sy); ctx.stroke();
+      const c = project(-120, 0, g * 0.66);
+      const d = project(120, 0, g * 0.66);
+      ctx.beginPath(); ctx.moveTo(c.sx, c.sy); ctx.lineTo(d.sx, d.sy); ctx.stroke();
+    }
+
+    // Sort meshes back-to-front by centroid depth
+    const sorted = scene.meshes.slice().map(m => {
+      const p = project(m.x, m.y, m.z);
+      return { m, depth: p.depth, center: p };
+    }).sort((a, b) => a.depth - b.depth);
+
+    const pendingLabels = [];
+    const nextBounds = [];
+    sorted.forEach(({ m, depth }) => {
+      const hw = m.w / 2;
+      const hh = m.h / 2;
+      const hd = m.d / 2;
+      const v = [
+        project(m.x - hw, m.y - hh, m.z - hd),
+        project(m.x + hw, m.y - hh, m.z - hd),
+        project(m.x + hw, m.y - hh, m.z + hd),
+        project(m.x - hw, m.y - hh, m.z + hd),
+        project(m.x - hw, m.y + hh, m.z - hd),
+        project(m.x + hw, m.y + hh, m.z - hd),
+        project(m.x + hw, m.y + hh, m.z + hd),
+        project(m.x - hw, m.y + hh, m.z + hd)
+      ];
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      v.forEach(pt => {
+        if (pt.sx < minX) minX = pt.sx;
+        if (pt.sy < minY) minY = pt.sy;
+        if (pt.sx > maxX) maxX = pt.sx;
+        if (pt.sy > maxY) maxY = pt.sy;
+      });
+      const faces = [
+        { idx: [0, 1, 5, 4], shade: 0.72 },
+        { idx: [1, 2, 6, 5], shade: 0.84 },
+        { idx: [2, 3, 7, 6], shade: 0.92 },
+        { idx: [3, 0, 4, 7], shade: 0.68 },
+        { idx: [4, 5, 6, 7], shade: 1.08 }
+      ];
+      if (m.poi) {
+        const polys = faces.map(f => f.idx.map(i => [v[i].sx, v[i].sy]));
+        nextBounds.push({ m, depth, minX, minY, maxX, maxY, polys, isGround: isAtlas3dGroundMesh(m) });
+      }
+      const isSelected = ATLAS_3D_STATE.selectedMeshName === m.name;
+      const isHovered = ATLAS_3D_STATE.hoveredMeshName === m.name;
+      faces.sort((fa, fb) => {
+        const da = fa.idx.reduce((s, i) => s + v[i].depth, 0) / 4;
+        const db = fb.idx.reduce((s, i) => s + v[i].depth, 0) / 4;
+        return da - db;
+      });
+      faces.forEach(f => {
+        ctx.beginPath();
+        f.idx.forEach((vi, i) => {
+          if (i === 0) ctx.moveTo(v[vi].sx, v[vi].sy);
+          else ctx.lineTo(v[vi].sx, v[vi].sy);
+        });
+        ctx.closePath();
+        if (!ATLAS_3D_STATE.wireframe) {
+          ctx.fillStyle = m.color || '#38bdf8';
+          ctx.globalAlpha = (m.alpha || 0.9) * Math.min(1, f.shade * (isSelected ? 1.18 : 1.0));
+          ctx.fill();
+        }
+        ctx.globalAlpha = 0.98;
+        ctx.strokeStyle = isSelected ? '#fde047' : (isHovered ? '#38bdf8' : (ATLAS_3D_STATE.wireframe ? '#38bdf8' : 'rgba(15, 23, 42, 0.85)'));
+        ctx.lineWidth = isSelected ? 2.4 : (isHovered ? 1.8 : (ATLAS_3D_STATE.wireframe ? 1.4 : 1.0));
+        ctx.stroke();
+      });
+      ctx.globalAlpha = 1.0;
+      if (m.label || isSelected) {
+        const topPt = project(m.x, m.y + hh + 3, m.z);
+        pendingLabels.push({ m, topPt, depth: isSelected ? depth + 1000 : depth, isSelected });
+      }
+    });
+    // Buildings / spires / rooms rank ahead of ground slabs, roads and walls; nearest first within a rank.
+    renderedMeshBounds = nextBounds.sort((a, b) => (a.isGround - b.isGround) || (b.depth - a.depth));
+
+    // Draw 3D labels front-to-back with AABB decluttering so multi-floor dungeon labels never overlap
+    const placed3dBoxes = [];
+    pendingLabels.sort((a, b) => b.depth - a.depth).forEach(({ m, topPt, isSelected }) => {
+      const displayTxt = isSelected ? `★ ${m.label || m.name}` : m.label;
+      if (!displayTxt) return;
+      const tw = displayTxt.length * 5.8 + 10;
+      const box = { x1: topPt.sx - tw / 2 - 2, y1: topPt.sy - 13, x2: topPt.sx + tw / 2 + 2, y2: topPt.sy + 3 };
+      const collides = !isSelected && placed3dBoxes.some(pb => !(box.x2 < pb.x1 || box.x1 > pb.x2 || box.y2 < pb.y1 || box.y1 > pb.y2));
+      if (collides) return;
+      placed3dBoxes.push(box);
+      ctx.fillStyle = isSelected ? 'rgba(133, 77, 14, 0.96)' : 'rgba(9, 13, 22, 0.9)';
+      ctx.fillRect(topPt.sx - tw / 2, topPt.sy - 12, tw, 14);
+      ctx.strokeStyle = isSelected ? '#fde047' : (m.color || '#fde047');
+      ctx.lineWidth = isSelected ? 1.8 : 1;
+      ctx.strokeRect(topPt.sx - tw / 2, topPt.sy - 12, tw, 14);
+      ctx.fillStyle = isSelected ? '#fef08a' : '#f8fafc';
+      ctx.font = 'bold 9.5px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(displayTxt, topPt.sx, topPt.sy - 2);
+    });
+  };
+
+  drawScene();
+  window.__ATLAS_3D_DRAW_SCENE = drawScene;
+  if (hadCanvasFocus && typeof canvas.focus === 'function') canvas.focus({ preventScroll: true });
+
+  const pickMeshAtClientEvent = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const curScale = Math.min(rect.width / 1040, rect.height / 500) || 1;
+    const curOffX = (rect.width - 1040 * curScale) / 2;
+    const curOffY = (rect.height - 500 * curScale) / 2;
+    const lx = (e.clientX - rect.left - curOffX) / curScale;
+    const ly = (e.clientY - rect.top - curOffY) / curScale;
+    return renderedMeshBounds.find(b => lx >= b.minX && lx <= b.maxX && ly >= b.minY && ly <= b.maxY
+      && b.polys.some(poly => isPointInAtlasPolygon(lx, ly, poly))) || null;
+  };
+
+  canvas.onmousedown = (e) => {
+    ATLAS_3D_STATE.dragging = true;
+    ATLAS_3D_STATE.lastX = e.clientX;
+    ATLAS_3D_STATE.lastY = e.clientY;
+    ATLAS_3D_STATE.downClientX = e.clientX;
+    ATLAS_3D_STATE.downClientY = e.clientY;
+    ATLAS_3D_STATE.dragButton = e.button;
+  };
+  canvas.onmousemove = (e) => {
+    if (!ATLAS_3D_STATE.dragging) {
+      const hit = pickMeshAtClientEvent(e);
+      const nextHover = hit ? hit.m.name : '';
+      if (ATLAS_3D_STATE.hoveredMeshName !== nextHover) {
+        ATLAS_3D_STATE.hoveredMeshName = nextHover;
+        if (canvas.style) canvas.style.cursor = nextHover ? 'pointer' : 'grab';
+        drawScene();
+      }
+      return;
+    }
+    const dx = e.clientX - ATLAS_3D_STATE.lastX;
+    const dy = e.clientY - ATLAS_3D_STATE.lastY;
+    ATLAS_3D_STATE.lastX = e.clientX;
+    ATLAS_3D_STATE.lastY = e.clientY;
+    if (e.shiftKey || ATLAS_3D_STATE.dragButton === 2) {
+      ATLAS_3D_STATE.panX += dx;
+      ATLAS_3D_STATE.panY += dy;
+    } else {
+      ATLAS_3D_STATE.yaw += dx * 0.008;
+      ATLAS_3D_STATE.pitch = Math.max(0.2, Math.min(1.45, ATLAS_3D_STATE.pitch + dy * 0.006));
+    }
+    drawScene();
+  };
+  canvas.onmouseup = (e) => {
+    const wasDragging = ATLAS_3D_STATE.dragging;
+    ATLAS_3D_STATE.dragging = false;
+    if (wasDragging && e && Math.hypot(e.clientX - ATLAS_3D_STATE.downClientX, e.clientY - ATLAS_3D_STATE.downClientY) < 5) {
+      const hit = pickMeshAtClientEvent(e);
+      if (hit && hit.m) {
+        // A second click on the same mesh within 400ms drills in. Tracked in ATLAS_3D_STATE (not native
+        // dblclick) so it still works if the first click rebuilt the canvas.
+        const now = Date.now();
+        const isSecondClick = ATLAS_3D_STATE.lastClickMeshName === hit.m.name && now - (ATLAS_3D_STATE.lastClickTime || 0) <= 400;
+        ATLAS_3D_STATE.lastClickMeshName = isSecondClick ? '' : hit.m.name;
+        ATLAS_3D_STATE.lastClickTime = isSecondClick ? 0 : now;
+        ATLAS_3D_STATE.lastClickClientX = e.clientX;
+        ATLAS_3D_STATE.lastClickClientY = e.clientY;
+        selectAtlas3dMeshByName(hit.m.name, isSecondClick);
+      }
+    }
+  };
+  canvas.onmouseleave = () => { ATLAS_3D_STATE.dragging = false; };
+  canvas.onwheel = (e) => {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.12 : 0.89;
+    ATLAS_3D_STATE.zoom = Math.max(0.45, Math.min(3.5, +(ATLAS_3D_STATE.zoom * factor).toFixed(3)));
+    drawScene();
+  };
+}
+
+function syncAtlasActiveSpatialEngine() {
+  if (ATLAS_ENGINE_MODE === '2d_ol') {
+    initOrUpdateAtlasOpenLayersEngine();
+  } else if (ATLAS_ENGINE_MODE === '3d_map3d') {
+    initOrUpdateAtlasMap3dEngine();
+  }
+}
+
+function hexToRgbNormalized(hex) {
+  const clean = String(hex || '#eab308').replace('#', '');
+  const num = parseInt(clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean, 16) || 0xeab308;
+  return [((num >> 16) & 255) / 255, ((num >> 8) & 255) / 255, (num & 255) / 255];
+}
+
+function buildAtlasGlbArrayBuffer(sceneInput) {
+  const scene = sceneInput || buildAtlas3dBlockoutScene();
+  const meshes = scene.meshes || [];
+  const positions = [];
+  const normals = [];
+  const colors = [];
+  const indices = [];
+
+  const cubeFaces = [
+    { n: [0, 0, 1], v: [[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]] },
+    { n: [0, 0, -1], v: [[1,-1,-1],[-1,-1,-1],[-1,1,-1],[1,1,-1]] },
+    { n: [0, 1, 0], v: [[-1,1,1],[1,1,1],[1,1,-1],[-1,1,-1]] },
+    { n: [0, -1, 0], v: [[-1,-1,-1],[1,-1,-1],[1,-1,1],[-1,-1,1]] },
+    { n: [1, 0, 0], v: [[1,-1,1],[1,-1,-1],[1,1,-1],[1,1,1]] },
+    { n: [-1, 0, 0], v: [[-1,-1,-1],[-1,-1,1],[-1,1,1],[-1,1,-1]] }
+  ];
+
+  const gltfNodes = [];
+  const gltfMeshes = [];
+  const gltfAccessors = [];
+  const childNodeIndices = [];
+  const totalVerts = meshes.length * 24;
+  const useUint32 = totalVerts > 65535;
+  const idxComponentType = useUint32 ? 5125 : 5123;
+  const idxBytesPerElem = useUint32 ? 4 : 2;
+
+  meshes.forEach((m, mIdx) => {
+    const hw = (m.w || 10) / 2;
+    const hh = (m.h || 10) / 2;
+    const hd = (m.d || 10) / 2;
+    const [r, g, b] = hexToRgbNormalized(m.color);
+    let minX = Infinity, minY = Infinity, minZ = Infinity;
+    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+    let localVertex = 0;
+
+    cubeFaces.forEach(face => {
+      const faceBase = localVertex;
+      face.v.forEach(([vx, vy, vz]) => {
+        const px = +(m.x + vx * hw).toFixed(3);
+        const py = +(m.y + vy * hh).toFixed(3);
+        const pz = +(m.z + vz * hd).toFixed(3);
+        positions.push(px, py, pz);
+        normals.push(face.n[0], face.n[1], face.n[2]);
+        colors.push(+r.toFixed(4), +g.toFixed(4), +b.toFixed(4));
+        if (px < minX) minX = px;
+        if (py < minY) minY = py;
+        if (pz < minZ) minZ = pz;
+        if (px > maxX) maxX = px;
+        if (py > maxY) maxY = py;
+        if (pz > maxZ) maxZ = pz;
+        localVertex++;
+      });
+      indices.push(faceBase, faceBase + 1, faceBase + 2, faceBase, faceBase + 2, faceBase + 3);
+    });
+
+    const posAccIdx = gltfAccessors.length;
+    const vecByteOffset = mIdx * 24 * 12;
+    const idxByteOffset = mIdx * 36 * idxBytesPerElem;
+    gltfAccessors.push(
+      { bufferView: 0, byteOffset: vecByteOffset, componentType: 5126, count: 24, type: 'VEC3', min: [minX, minY, minZ], max: [maxX, maxY, maxZ] },
+      { bufferView: 1, byteOffset: vecByteOffset, componentType: 5126, count: 24, type: 'VEC3' },
+      { bufferView: 2, byteOffset: vecByteOffset, componentType: 5126, count: 24, type: 'VEC3' },
+      { bufferView: 3, byteOffset: idxByteOffset, componentType: idxComponentType, count: 36, type: 'SCALAR' }
+    );
+
+    const meshName = String(m.name || m.label || (`Mesh_${mIdx}`));
+    gltfMeshes.push({
+      name: meshName,
+      primitives: [{
+        attributes: { POSITION: posAccIdx, NORMAL: posAccIdx + 1, COLOR_0: posAccIdx + 2 },
+        indices: posAccIdx + 3,
+        mode: 4
+      }]
+    });
+    childNodeIndices.push(mIdx + 1);
+    gltfNodes.push({
+      name: meshName,
+      mesh: mIdx,
+      extras: {
+        label: String(m.label || m.name || ''),
+        dimensionsMeters: [m.w || 10, m.h || 10, m.d || 10]
+      }
+    });
+  });
+
+  const rootNode = {
+    name: `Atlas_${scene.context}_Root`,
+    children: childNodeIndices,
+    extras: {
+      unit: '1u = 1m (Godot 4 blockout scale; overland miniature 1u = 1.86km)',
+      worldSpanMeters: 400000,
+      context: scene.context
+    }
+  };
+  const allNodes = [rootNode, ...gltfNodes];
+
+  const posTyped = new Float32Array(positions);
+  const normTyped = new Float32Array(normals);
+  const colTyped = new Float32Array(colors);
+  const idxTyped = useUint32 ? new Uint32Array(indices) : new Uint16Array(indices);
+
+  const posBytes = posTyped.byteLength;
+  const normBytes = normTyped.byteLength;
+  const colBytes = colTyped.byteLength;
+  const idxBytes = idxTyped.byteLength;
+  const rawBinLen = posBytes + normBytes + colBytes + idxBytes;
+  const paddedBinLen = (rawBinLen + 3) & ~3;
+
+  const gltfJson = {
+    asset: {
+      version: '2.0',
+      generator: 'Atlas World Studio map3d Blockout Exporter (Godot 4)',
+      extras: {
+        // Overland is a 215u miniature of the 400 km world (≈1860 m/u); town and dungeon are true 1u = 1m.
+        unit: scene.context === 'overland' ? '1u = 1860m (overland miniature; scale by metersPerUnit for Godot 4)' : '1u = 1m (Godot 4 compatible)',
+        metersPerUnit: scene.context === 'overland' ? 1860 : 1,
+        worldSpanMeters: 400000,
+        context: scene.context
+      }
+    },
+    scene: 0,
+    scenes: [{ name: `Atlas_${scene.context}_Blockout`, nodes: [0] }],
+    nodes: allNodes,
+    meshes: gltfMeshes,
+    buffers: [{ byteLength: paddedBinLen }],
+    bufferViews: [
+      { buffer: 0, byteOffset: 0, byteLength: posBytes, target: 34962 },
+      { buffer: 0, byteOffset: posBytes, byteLength: normBytes, target: 34962 },
+      { buffer: 0, byteOffset: posBytes + normBytes, byteLength: colBytes, target: 34962 },
+      { buffer: 0, byteOffset: posBytes + normBytes + colBytes, byteLength: idxBytes, target: 34963 }
+    ],
+    accessors: gltfAccessors
+  };
+
+  const jsonStr = JSON.stringify(gltfJson);
+  let jsonBytesEncoded;
+  if (typeof TextEncoder !== 'undefined') {
+    jsonBytesEncoded = Array.from(new TextEncoder().encode(jsonStr));
+  } else {
+    jsonBytesEncoded = [];
+    for (let i = 0; i < jsonStr.length; i++) {
+      jsonBytesEncoded.push(jsonStr.charCodeAt(i) & 0x7f);
+    }
+  }
+  while (jsonBytesEncoded.length % 4 !== 0) {
+    jsonBytesEncoded.push(0x20);
+  }
+  const jsonChunkLen = jsonBytesEncoded.length;
+  const totalByteLength = 12 + 8 + jsonChunkLen + 8 + paddedBinLen;
+
+  const arrayBuffer = new ArrayBuffer(totalByteLength);
+  const dv = new DataView(arrayBuffer);
+  // 12-byte GLB Header: magic "glTF" (0x46546C67), version 2, totalByteLength
+  dv.setUint32(0, 0x46546C67, true);
+  dv.setUint32(4, 2, true);
+  dv.setUint32(8, totalByteLength, true);
+  // Chunk 0: JSON (0x4E4F534A)
+  dv.setUint32(12, jsonChunkLen, true);
+  dv.setUint32(16, 0x4E4F534A, true);
+  const u8 = new Uint8Array(arrayBuffer);
+  for (let i = 0; i < jsonChunkLen; i++) {
+    u8[20 + i] = jsonBytesEncoded[i];
+  }
+  // Chunk 1: BIN (0x004E4942)
+  const binChunkOffset = 20 + jsonChunkLen;
+  dv.setUint32(binChunkOffset, paddedBinLen, true);
+  dv.setUint32(binChunkOffset + 4, 0x004E4942, true);
+  const binStart = binChunkOffset + 8;
+  u8.set(new Uint8Array(posTyped.buffer), binStart);
+  u8.set(new Uint8Array(normTyped.buffer), binStart + posBytes);
+  u8.set(new Uint8Array(colTyped.buffer), binStart + posBytes + normBytes);
+  u8.set(new Uint8Array(idxTyped.buffer), binStart + posBytes + normBytes + colBytes);
+
+  return arrayBuffer;
+}
+
+function exportAtlasBlockoutGlb() {
+  const scene = buildAtlas3dBlockoutScene();
+  const glbBuffer = buildAtlasGlbArrayBuffer(scene);
+  const dv = new DataView(glbBuffer);
+  const meta = {
+    magic: dv.getUint32(0, true),
+    version: dv.getUint32(4, true),
+    byteLength: glbBuffer.byteLength,
+    meshCount: scene.meshes.length,
+    nodeCount: scene.meshes.length + 1,
+    context: scene.context,
+    fileName: `atlas-${scene.context}-blockout.glb`
+  };
+  if (typeof window !== 'undefined') {
+    window.__LAST_EXPORTED_GLB_BYTES = new Uint8Array(glbBuffer);
+    window.__LAST_EXPORTED_GLB_META = meta;
+  }
+  if (typeof Blob !== 'undefined' && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function' && typeof document !== 'undefined' && document.createElement) {
+    try {
+      const blob = new Blob([glbBuffer], { type: 'model/gltf-binary' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      if (a) {
+        a.href = url;
+        a.download = meta.fileName;
+        if (document.body && typeof document.body.appendChild === 'function') {
+          document.body.appendChild(a);
+          if (typeof a.click === 'function') a.click();
+          document.body.removeChild(a);
+        }
+      }
+    } catch (_e) {}
+  }
+  return meta;
+}
 
 const ATLAS_PERSONA_STUDIO_CATALOG = {
   gamer: [
@@ -6774,6 +8530,8 @@ function toggleAtlasDimensionDrawer() {
   render();
 }
 
+const ATLAS_LENS_DEFAULT_BAR = { gamer: 'boss_hierarchy', designer: 'boss_hierarchy', architect: 'tools_squad', developer: 'tech_art', liveops: 'siege_domain' };
+
 function setAtlasPersonaLens(lens) {
   const valid = ['gamer', 'designer', 'architect', 'developer', 'liveops'];
   ATLAS_PERSONA_LENS = valid.includes(lens) ? lens : 'gamer';
@@ -6792,35 +8550,21 @@ function setAtlasPersonaLens(lens) {
     ATLAS_STATE_STORE.raceGrowthOpen = false;
     ATLAS_LEFT_DRAWER_OPEN = true;
     ATLAS_STATE_STORE.leftDrawerOpen = true;
-    const designerBars = ATLAS_PERSONA_STUDIO_CATALOG.designer;
-    if (!designerBars.includes(ATLAS_ACTIVE_STUDIO_BAR)) {
-      ATLAS_ACTIVE_STUDIO_BAR = 'boss_hierarchy';
-    }
   } else if (ATLAS_PERSONA_LENS === 'architect') {
     ATLAS_DIMENSION_DRAWER_OPEN = true;
     ATLAS_LEFT_DRAWER_OPEN = true;
     ATLAS_STATE_STORE.leftDrawerOpen = true;
-    const architectBars = ATLAS_PERSONA_STUDIO_CATALOG.architect;
-    if (!architectBars.includes(ATLAS_ACTIVE_STUDIO_BAR)) {
-      ATLAS_ACTIVE_STUDIO_BAR = 'tools_squad';
-    }
   } else if (ATLAS_PERSONA_LENS === 'developer') {
     ATLAS_DIMENSION_DRAWER_OPEN = true;
     ATLAS_LEFT_DRAWER_OPEN = true;
     ATLAS_STATE_STORE.leftDrawerOpen = true;
-    const devBars = ATLAS_PERSONA_STUDIO_CATALOG.developer;
-    if (!devBars.includes(ATLAS_ACTIVE_STUDIO_BAR)) {
-      ATLAS_ACTIVE_STUDIO_BAR = 'tech_art';
-    }
   } else if (ATLAS_PERSONA_LENS === 'liveops') {
     ATLAS_DIMENSION_DRAWER_OPEN = true;
     ATLAS_LEFT_DRAWER_OPEN = true;
     ATLAS_STATE_STORE.leftDrawerOpen = true;
-    const liveopsBars = ATLAS_PERSONA_STUDIO_CATALOG.liveops;
-    if (!liveopsBars.includes(ATLAS_ACTIVE_STUDIO_BAR)) {
-      ATLAS_ACTIVE_STUDIO_BAR = 'siege_domain';
-    }
   }
+  // Every lens switch resets the overlay to that lens's default (no stale overlay from the previous lens).
+  ATLAS_ACTIVE_STUDIO_BAR = ATLAS_LENS_DEFAULT_BAR[ATLAS_PERSONA_LENS] || 'boss_hierarchy';
   ATLAS_STATE_STORE.activeStudioBar = ATLAS_ACTIVE_STUDIO_BAR;
   writeUrlState(false);
   render();
@@ -6911,6 +8655,7 @@ function focusFieldTacticalBlueprint(fieldOrFortId, locCoord = '') {
     ATLAS_FOCUSED_FIELD_ID = targetId;
   }
   ATLAS_ACTIVE_DUNGEON_ID = '';
+  clearAtlasLingeringTownShopPoi();
   ATLAS_STATE_STORE.activeFieldOrFortId = targetId;
   ATLAS_STATE_STORE.activeDungeonId = '';
   ATLAS_STATE_STORE.activeFloorId = '';
@@ -6942,6 +8687,7 @@ function openDungeonSubMap(dungeonId, floorId = '') {
     dng = dungeons[0];
   }
   if (!dng) return;
+  clearAtlasLingeringTownShopPoi();
   ATLAS_ACTIVE_DUNGEON_ID = dng.dungeon_id;
   ATLAS_STATE_STORE.activeDungeonId = dng.dungeon_id;
   // Pure render-path filter resolution (resolveAtlasEffectiveFilter) preserves ATLAS_STATE_STORE.filter
@@ -6983,6 +8729,7 @@ function switchDungeonFloor(floorId, targetLoc = '') {
   const dungeons = tatlas.multi_floor_dungeons || [];
   const dng = dungeons.find(d => d.dungeon_id === ATLAS_STATE_STORE.activeDungeonId || d.studio_node_id === ATLAS_STATE_STORE.activeDungeonId) || dungeons[0];
   if (!dng) return;
+  clearAtlasLingeringTownShopPoi();
   const floors = dng.floors || [];
   const matched = floors.find(f => f.floor_id.toUpperCase() === String(floorId).toUpperCase());
   if (matched) {
@@ -7018,6 +8765,48 @@ function exitDungeonSubMap(targetLoc = '') {
 function onStudioMapKeyDown(evt) {
   if (!evt) return;
   const key = evt.key;
+  if (ATLAS_ENGINE_MODE === '3d_map3d') {
+    if (key === '+' || key === '=') {
+      evt.preventDefault();
+      ATLAS_3D_STATE.zoom = Math.max(0.45, Math.min(3.5, +(ATLAS_3D_STATE.zoom * 1.14).toFixed(3)));
+      redrawAtlas3dInPlace();
+      return;
+    } else if (key === '-' || key === '_') {
+      evt.preventDefault();
+      ATLAS_3D_STATE.zoom = Math.max(0.45, Math.min(3.5, +(ATLAS_3D_STATE.zoom * 0.88).toFixed(3)));
+      redrawAtlas3dInPlace();
+      return;
+    } else if (key === 'ArrowLeft') {
+      evt.preventDefault();
+      ATLAS_3D_STATE.yaw -= 0.12;
+      redrawAtlas3dInPlace();
+      return;
+    } else if (key === 'ArrowRight') {
+      evt.preventDefault();
+      ATLAS_3D_STATE.yaw += 0.12;
+      redrawAtlas3dInPlace();
+      return;
+    } else if (key === 'ArrowUp') {
+      evt.preventDefault();
+      ATLAS_3D_STATE.pitch = Math.max(0.25, Math.min(1.42, +(ATLAS_3D_STATE.pitch + 0.08).toFixed(3)));
+      redrawAtlas3dInPlace();
+      return;
+    } else if (key === 'ArrowDown') {
+      evt.preventDefault();
+      ATLAS_3D_STATE.pitch = Math.max(0.25, Math.min(1.42, +(ATLAS_3D_STATE.pitch - 0.08).toFixed(3)));
+      redrawAtlas3dInPlace();
+      return;
+    } else if (key === 'w' || key === 'W') {
+      evt.preventDefault();
+      setAtlas3dOption('wireframe', !ATLAS_3D_STATE.wireframe);
+      return;
+    } else if (['1', '2', '3'].includes(key)) {
+      evt.preventDefault();
+      const ctxOrder = ['overland', 'town', 'dungeon'];
+      setAtlas3dOption('contextOverride', ctxOrder[parseInt(key, 10) - 1] || 'overland');
+      return;
+    }
+  }
   if (key === '+' || key === '=') {
     evt.preventDefault();
     zoomStudioMap(0.55, false);
@@ -7147,7 +8936,7 @@ if (typeof window !== 'undefined' && window.addEventListener) {
 function selectStudioMapPoi(poiJsonStr, evt) {
   if (evt && evt.stopPropagation) evt.stopPropagation();
   try {
-    const poi = typeof poiJsonStr === 'string' ? JSON.parse(poiJsonStr) : poiJsonStr;
+    const poi = resolveEncodedPoi(poiJsonStr);
     STUDIO_MAP_SELECTED_POI = poi;
     ATLAS_LEFT_DRAWER_OPEN = true;
     ATLAS_STATE_STORE.leftDrawerOpen = true;
@@ -7187,8 +8976,20 @@ function closeStudioMapPoi(evt) {
   render();
 }
 
+let STUDIO_POI_REGISTRY = {};
+let STUDIO_POI_SEQ = 0;
+
 function encodePoiAttr(poiObj) {
-  return escapeHtml(JSON.stringify(poiObj));
+  const key = 'poi_' + (++STUDIO_POI_SEQ);
+  STUDIO_POI_REGISTRY[key] = poiObj;
+  return key;
+}
+
+function resolveEncodedPoi(poiKeyOrJson) {
+  if (!poiKeyOrJson) return null;
+  if (typeof poiKeyOrJson === 'object') return poiKeyOrJson;
+  if (STUDIO_POI_REGISTRY[poiKeyOrJson]) return STUDIO_POI_REGISTRY[poiKeyOrJson];
+  return JSON.parse(poiKeyOrJson);
 }
 
 // Reusable Lineage II (l2hub.info/map) Hand-Illustrated Landmark Silhouette Renderer
@@ -7199,8 +9000,8 @@ function drawL2LandmarkSvg({ kind, x, y, label, sublabel, flagColor, isSelected,
   const safeSub = escapeHtml(sublabel || '');
   const encPoi = poiObj ? encodePoiAttr({ ...poiObj, svgX: x, svgY: y }) : '';
   const clickAttr = poiObj
-    ? `data-poi-clickable="1" tabindex="0" role="button" aria-label="${safeLabel}" style="cursor:pointer" onclick="selectStudioMapPoi('${encPoi}', event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectStudioMapPoi('${encPoi}', event);}"`
-    : '';
+    ? `data-poi-clickable="1" tabindex="0" role="button" aria-label="${safeLabel}" class="atlas-screen-pin" style="cursor:pointer;transform-origin:${x}px ${y}px" onclick="selectStudioMapPoi('${encPoi}', event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectStudioMapPoi('${encPoi}', event);}"`
+    : `class="atlas-screen-pin" style="transform-origin:${x}px ${y}px"`;
   const selRing = isSelected
     ? `<circle cx="${x}" cy="${y}" r="26" fill="rgba(250,204,21,0.22)" stroke="#fde047" stroke-width="2" stroke-dasharray="5 3"/>`
     : '';
@@ -7330,29 +9131,23 @@ function drawL2MountainRangeSvg(pointsStr, scale = 1.0) {
   `;
 }
 
-function renderCartoShellHtml({
-  stepLabel,
-  title,
-  subtitle,
-  activeScaleIndex,
-  defaultPoi,
-  svgInnerHtml,
-  legendItems,
-  drillControls,
-  filterBarHtml,
-  bottomPanelHtml
-}) {
-  const isL2 = STUDIO_CARTO_THEME === 'l2hub';
-  const poi = STUDIO_MAP_SELECTED_POI || defaultPoi;
-  const lodTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
-  const zoomScales = [
-    { idx: 1, code: 'LOD 1 · MACRO', label: '🌍 Lv.1 Macro Geography (1.0×)', persp: 'world-history-and-concept', z: 1.0 },
-    { idx: 2, code: 'LOD 2 · REGIONAL', label: '🗺️ Lv.2 Regional Roads & Portals (2.8×)', persp: 'continent', z: 2.8 },
-    { idx: 3, code: 'LOD 3 · DISTRICT', label: '🏙️ Lv.3 District Matrix (3.8×)', persp: 'district', z: 3.8 },
-    { idx: 4, code: 'LOD 4 · STREET', label: '🏘️ Lv.4 Town Street & Shops Blueprint (6.0×)', persp: 'town-or-hunting-area', z: 6.0 }
-  ];
+// Domain rule: Equip, Consumable & Blacksmith shops exist only in Towns — never in Dungeons or Hunting Fields.
+function isAtlasTownShopContext(poi) {
+  if (!poi || poi.dungeonWarpId || poi.dungeonFloorId || poi.fieldTacticalBlueprintId) return false;
+  const ctx = ATLAS_ENGINE_MODE === '3d_map3d'
+    ? (ATLAS_3D_STATE.contextOverride || getAtlasSpatialContext())
+    : getAtlasSpatialContext();
+  return ctx !== 'dungeon' && ctx !== 'field';
+}
 
-  const placeDrawerHtml = poi ? `
+function clearAtlasLingeringTownShopPoi() {
+  if (STUDIO_MAP_SELECTED_POI && STUDIO_MAP_SELECTED_POI.shopAndRefinementCatalog) {
+    STUDIO_MAP_SELECTED_POI = null;
+  }
+}
+
+function buildStudioPlaceDrawerHtml(poi) {
+  return poi ? `
     <div id="studioGooglePlaceDrawer" class="joy-spatial-shell__left">
       ${ATLAS_LEFT_DRAWER_OPEN ? `
       <div style="padding:16px">
@@ -7438,8 +9233,11 @@ function renderCartoShellHtml({
           </div>
         ` : ''}
 
-        <!-- Card 4 (D10): NPC Shop Catalog (Weapons, Armor, Potions) & +1..+15 Refinement Anvil Inspector -->
-        ${poi.shopAndRefinementCatalog ? `
+        <!-- Card 4 (D10): NPC Shop Catalog (Weapons, Armor, Potions) & +1..+15 Refinement Anvil Inspector — Towns only -->
+        ${(poi.shopAndRefinementCatalog && !isAtlasTownShopContext(poi)) ? `
+          <div id="studioShopTownOnlyNote" style="padding:9px 12px;border-radius:10px;background:#111823;border:1px dashed rgba(250,204,21,0.35);margin-bottom:8px;font-size:11px;color:#cbd5e1;line-height:1.45">🏛️ Equipment, Consumable &amp; Blacksmith Refinement Shops are located in Safe Towns — return to town to purchase gear or refine +1..+15.</div>
+        ` : ''}
+        ${(poi.shopAndRefinementCatalog && isAtlasTownShopContext(poi)) ? `
           <div id="studioShopAndRefinementInspector" style="padding:11px 12px;border-radius:10px;background:#111823;border:1.5px solid rgba(250,204,21,0.45);margin-bottom:8px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <span style="font-size:11px;color:#fde047;font-weight:900;text-transform:uppercase">🛍️ NPC Shop Stock &amp; +1 to +15 Refinement Inspector</span>
@@ -7512,6 +9310,33 @@ function renderCartoShellHtml({
       ` : ''}
     </div>
   ` : '';
+}
+
+function renderCartoShellHtml({
+  stepLabel,
+  title,
+  subtitle,
+  activeScaleIndex,
+  defaultPoi,
+  svgInnerHtml,
+  legendItems,
+  drillControls,
+  filterBarHtml,
+  bottomPanelHtml
+}) {
+  const isL2 = STUDIO_CARTO_THEME === 'l2hub';
+  const poi = STUDIO_MAP_SELECTED_POI || defaultPoi;
+  const lodTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
+  const initEffScale = lodTier === 3 ? Math.max(1.0, +(STUDIO_MAP_ZOOM / 5.2).toFixed(2)) : STUDIO_MAP_ZOOM;
+  const initInvZoom = (1 / Math.max(1, initEffScale)).toFixed(4);
+  const zoomScales = [
+    { idx: 1, code: 'LOD 1 · MACRO', label: '🌍 Lv.1 Macro Geography (1.0×)', persp: 'world-history-and-concept', z: 1.0 },
+    { idx: 2, code: 'LOD 2 · REGIONAL', label: '🗺️ Lv.2 Regional Roads & Portals (2.8×)', persp: 'continent', z: 2.8 },
+    { idx: 3, code: 'LOD 3 · DISTRICT', label: '🏙️ Lv.3 District Matrix (3.8×)', persp: 'district', z: 3.8 },
+    { idx: 4, code: 'LOD 4 · STREET', label: '🏘️ Lv.4 Town Street & Shops Blueprint (6.0×)', persp: 'town-or-hunting-area', z: 6.0 }
+  ];
+
+  const placeDrawerHtml = buildStudioPlaceDrawerHtml(poi);
 
   return `
     <div class="joy-spatial-shell" data-carto-theme="${isL2 ? 'l2hub' : 'google'}" data-left-open="${ATLAS_LEFT_DRAWER_OPEN ? 'true' : 'false'}" data-bottom-open="${!ATLAS_THEATER_MODE ? 'true' : 'false'}" data-theater="${ATLAS_THEATER_MODE ? 'true' : 'false'}">
@@ -7543,6 +9368,23 @@ function renderCartoShellHtml({
                   🗺️ Google/Apple GIS
                 </button>
               </div>
+              <div style="display:inline-flex;background:#0d1624;padding:1px;border-radius:5px;border:1px solid rgba(56,189,248,0.35)">
+                <button type="button" onclick="setAtlasEngineMode('2d_svg')" style="padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:800;cursor:pointer;border:none;background:${ATLAS_ENGINE_MODE === '2d_svg' ? '#0284c7' : 'transparent'};color:${ATLAS_ENGINE_MODE === '2d_svg' ? '#ffffff' : '#94a3b8'}">
+                  🗺️ 2D Crisp Vector
+                </button>
+                <button type="button" onclick="setAtlasEngineMode('2d_ol')" style="padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:800;cursor:pointer;border:none;background:${ATLAS_ENGINE_MODE === '2d_ol' ? '#0284c7' : 'transparent'};color:${ATLAS_ENGINE_MODE === '2d_ol' ? '#ffffff' : '#94a3b8'}">
+                  🌐 2D OpenLayers GIS
+                </button>
+                <button type="button" onclick="setAtlasEngineMode('3d_map3d')" style="padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:800;cursor:pointer;border:none;background:${ATLAS_ENGINE_MODE === '3d_map3d' ? '#7e22ce' : 'transparent'};color:${ATLAS_ENGINE_MODE === '3d_map3d' ? '#ffffff' : '#94a3b8'}">
+                  🧊 3D Blockout (map3d)
+                </button>
+              </div>
+              <button type="button" onclick="toggleAtlasRasterReliefOverlay()" style="padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:800;cursor:pointer;border:1px solid ${ATLAS_RASTER_RELIEF_OVERLAY ? '#fde047' : 'rgba(255,255,255,0.16)'};background:${ATLAS_RASTER_RELIEF_OVERLAY ? '#78350f' : '#0d1624'};color:${ATLAS_RASTER_RELIEF_OVERLAY ? '#fde047' : '#94a3b8'}">
+                🖼️ Legacy Raster Plate
+              </button>
+              <button type="button" onclick="exportAtlasBlockoutGlb()" style="padding:1px 7px;border-radius:4px;font-size:9.5px;font-weight:900;cursor:pointer;border:1px solid #34d399;background:#065f46;color:#ecfdf5">
+                📦 Export .glb (Godot 4)
+              </button>
               <span style="display:none">
                 ${zoomScales.map(zs => `
                   <button type="button" onclick="ATLAS_STATE_STORE.activeDungeonId=''; ATLAS_STATE_STORE.activeFloorId=''; STUDIO_MAP_PAN_X=0; STUDIO_MAP_PAN_Y=0; STUDIO_MAP_ZOOM=${zs.z}; setStudioPerspective('${zs.persp}');">${zs.label}</button>
@@ -7579,7 +9421,7 @@ function renderCartoShellHtml({
                onmousemove="onStudioMapPointerMove(event)"
                onmouseup="onStudioMapPointerUp(event)"
                onmouseleave="onStudioMapPointerUp(event)"
-               style="display:block;width:100%;height:100%;cursor:grab;user-select:none;outline:none">
+               style="display:${ATLAS_ENGINE_MODE === '2d_svg' ? 'block' : 'none'};width:100%;height:100%;cursor:grab;user-select:none;outline:none;--atlas-inv-zoom:${initInvZoom}">
             <defs>
               <radialGradient id="cartoSeaGrad" cx="50%" cy="50%" r="72%">
                 <stop offset="0%" stop-color="${isL2 ? '#3d5a5e' : '#21436a'}"/>
@@ -7601,7 +9443,7 @@ function renderCartoShellHtml({
             <rect width="1040" height="500" fill="url(#cartoSeaGrad)"/>
             <rect width="1040" height="500" fill="url(#cartoGridPat)"/>
             <!-- Vignette Parchment Frame like L2Hub Aden Map -->
-            <g id="studioCartoViewport">
+            <g id="studioCartoViewport" transform="translate(${520 + STUDIO_MAP_PAN_X}, ${250 + STUDIO_MAP_PAN_Y}) scale(${initEffScale}) translate(-520, -250)">
               ${svgInnerHtml}
               <!-- Interactive L2Hub Red/White Crosshair Target (+ at loc=X:Y) -->
               <g id="studioL2Crosshair" transform="translate(${STUDIO_MAP_LOC.svgX}, ${STUDIO_MAP_LOC.svgY})" pointer-events="none">
@@ -7614,6 +9456,7 @@ function renderCartoShellHtml({
             </g>
             <rect width="1040" height="500" fill="none" stroke="#1c160e" stroke-width="10" pointer-events="none"/>
           </svg>
+          ${ATLAS_ENGINE_MODE !== '2d_svg' ? `<div id="atlasAdvancedEngineMount" data-engine-mode="${escapeHtml(ATLAS_ENGINE_MODE)}" style="position:relative;width:100%;height:100%;min-height:460px;background:#090f1a;overflow:hidden"></div>` : ''}
 
           <!-- Bottom Cartographic Scale Bar & Legend -->
           <div style="position:absolute;bottom:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(15,13,10,0.92);border:1px solid rgba(212,175,55,0.28);font-size:11px;color:#e7e5e4;pointer-events:none">
@@ -16420,7 +18263,7 @@ function renderAtlasOverviewMiniMapPipSvg(activeZoneOrId, tatlas, viewKind = 'to
 
       <!-- Mini World Map Canvas showing 3 Continents -->
       <rect x="${mapX}" y="${mapY}" width="${mapW}" height="${mapH}" rx="6" fill="#0c1928" stroke="rgba(56,189,248,0.45)" stroke-width="1"/>
-      <image href="/studio-maps/c3_continent_parchment_relief.png" x="${mapX}" y="${mapY}" width="${mapW}" height="${mapH}" preserveAspectRatio="none" opacity="0.45"/>
+      <image href="/studio-maps/c3_continent_parchment_relief.png" x="${mapX}" y="${mapY}" width="${mapW}" height="${mapH}" preserveAspectRatio="xMidYMid meet" opacity="0.45"/>
 
       <!-- 3 Continent Silhouette Zones (C01 Hearthbloom, C02 Steppe, C03 Shattered Halo) -->
       <ellipse cx="${mapX + Math.round(mapW * 0.44)}" cy="${mapY + Math.round(mapH * 0.76)}" rx="52" ry="16" fill="rgba(16,185,129,0.18)" stroke="#34d399" stroke-width="1" stroke-dasharray="3 2"/>
@@ -16709,8 +18552,8 @@ function renderDungeonSubMapAtlas(dng, tatlas) {
 
   const svgInnerHtml = `
     <rect x="0" y="0" width="1040" height="500" fill="${isTower ? '#0d1528' : '#120b1d'}"/>
-    <image href="${dungeonRasterPlate}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.34"/>
-    <image href="/studio-maps/d01_dungeon_radar_map.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.16"/>
+    <image href="${dungeonRasterPlate}" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.34"/>
+    <image href="/studio-maps/d01_dungeon_radar_map.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.16"/>
     <g transform="translate(-85, 0) scale(0.84, 1)">
       ${corridorLinesSvg}
       ${roomsSvg}
@@ -16777,7 +18620,7 @@ function renderTownArchetypeBackdropSvg(layoutArchetype, wallPts) {
     return `
       <g id="townArchetypeRadialMoatSanctuary" pointer-events="none">
         <rect x="0" y="0" width="1040" height="500" fill="#10212b"/>
-        <image href="/studio-maps/town_radial_moat_parchment.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.38"/>
+        <image href="/studio-maps/town_radial_moat_parchment.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.38"/>
         <!-- Outer & Inner Concentric Water Moats -->
         <ellipse cx="520" cy="250" rx="430" ry="215" fill="#0c4a6e" stroke="#38bdf8" stroke-width="4" fill-opacity="0.72"/>
         <ellipse cx="520" cy="250" rx="355" ry="172" fill="#1e293b" stroke="#7dd3fc" stroke-width="3" stroke-dasharray="10 6" fill-opacity="0.72"/>
@@ -16797,7 +18640,7 @@ function renderTownArchetypeBackdropSvg(layoutArchetype, wallPts) {
     return `
       <g id="townArchetypeHarborFortressPlaza" pointer-events="none">
         <rect x="0" y="0" width="1040" height="500" fill="#1a2e26"/>
-        <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.32"/>
+        <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.32"/>
         <!-- Southern & Western Coastal Harbor Bay Water -->
         <path d="M 0,340 Q 280,320 540,360 T 1040,335 L 1040,500 L 0,500 Z" fill="#0369a1" stroke="#38bdf8" stroke-width="3"/>
         <path d="M 0,375 Q 320,355 620,390 T 1040,370" fill="none" stroke="#bae6fd" stroke-width="1.5" stroke-dasharray="10 6"/>
@@ -16816,7 +18659,7 @@ function renderTownArchetypeBackdropSvg(layoutArchetype, wallPts) {
     return `
       <g id="townArchetypeSchematicGrid" pointer-events="none">
         <rect x="0" y="0" width="1040" height="500" fill="#18202c"/>
-        <image href="/studio-maps/town_oren_schematic_plate.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.36"/>
+        <image href="/studio-maps/town_oren_schematic_plate.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.36"/>
         <polygon points="110,48 930,48 930,452 110,452" fill="rgba(15,23,42,0.78)" stroke="#94a3b8" stroke-width="4"/>
         <rect x="132" y="66" width="776" height="368" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="8 4"/>
         <!-- Architectural Staircases on N/S/E/W Corridors -->
@@ -16831,8 +18674,8 @@ function renderTownArchetypeBackdropSvg(layoutArchetype, wallPts) {
   return `
     <g id="townArchetypePolygonalWalledKeep" pointer-events="none">
       <rect x="0" y="0" width="1040" height="500" fill="#233729"/>
-      <image href="/studio-maps/town_polygonal_keep_parchment.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.38"/>
-      <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.18"/>
+      <image href="/studio-maps/town_polygonal_keep_parchment.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.38"/>
+      <image href="/studio-maps/d01_town_detailed_blueprint.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.18"/>
       <!-- Exterior River Channel & Southern Stone Bridge (Screenshot 4 Gludin / Talking Island style) -->
       <path d="M 0,435 Q 290,415 520,445 T 1040,425" fill="none" stroke="#0284c7" stroke-width="28"/>
       <path d="M 0,435 Q 290,415 520,445 T 1040,425" fill="none" stroke="#7dd3fc" stroke-width="2" stroke-dasharray="8 6"/>
@@ -16936,7 +18779,7 @@ function renderOrenSchematicBlueprintSvg(bp, townNode, visibleMarks, spawnPinSvg
 
   return `
     <rect x="0" y="0" width="1040" height="500" fill="#111722"/>
-    <image href="/studio-maps/town_oren_schematic_plate.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.42"/>
+    <image href="/studio-maps/town_oren_schematic_plate.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.42"/>
     <polygon points="48,28 730,28 730,472 48,472" fill="rgba(27,34,48,0.78)" stroke="#94a3b8" stroke-width="4"/>
     ${schematicStreetsSvg}
     ${schematicRoomsSvg}
@@ -17395,7 +19238,7 @@ function renderFieldOrFortressTacticalBlueprintAtlas(targetIdOrEntry, tatlas) {
 
   const svgInnerHtml = `
     <rect x="0" y="0" width="1040" height="500" fill="${isFort ? '#1e2433' : '#14291e'}"/>
-    <image href="/studio-maps/d01_hunting_zone_radar.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.32"/>
+    <image href="/studio-maps/d01_hunting_zone_radar.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.32"/>
     <polygon points="${perimPts}" fill="${isFort ? 'rgba(30,41,59,0.68)' : 'rgba(20,83,45,0.52)'}" stroke="${isFort ? '#fb923c' : '#4ade80'}" stroke-width="4" stroke-linejoin="round" stroke-dasharray="${isFort ? 'none' : '10 5'}"/>
     ${trailsSvg}
     ${territoriesSvg}
@@ -17497,8 +19340,8 @@ function renderDedicatedWorldAtlas() {
       id: 'town-lantern-hollow',
       kind: 'town',
       priority: 1,
-      x: 445,
-      y: 432,
+      x: 432,
+      y: 422,
       lv: [1, 10],
       loc: '-84120:243500',
       label: 'Lantern Hollow (Gludin / Talking Island)',
@@ -17514,8 +19357,8 @@ function renderDedicatedWorldAtlas() {
       id: 'town-porcelain-loom-sanctuary',
       kind: 'town',
       priority: 2,
-      x: 535,
-      y: 398,
+      x: 545,
+      y: 404,
       lv: [1, 10],
       loc: '45800:41200',
       label: 'Porcelain Loom (Elven Village)',
@@ -17531,8 +19374,8 @@ function renderDedicatedWorldAtlas() {
       id: 'town-draft-kiln-post',
       kind: 'fortress',
       priority: 2,
-      x: 345,
-      y: 412,
+      x: 305,
+      y: 418,
       lv: [1, 10],
       loc: '-44800:-113200',
       label: 'Draft-Kiln Post (Orc Village)',
@@ -17548,7 +19391,7 @@ function renderDedicatedWorldAtlas() {
       id: 'town-root-train-roundhouse',
       kind: 'town',
       priority: 2,
-      x: 685,
+      x: 712,
       y: 418,
       lv: [1, 10],
       loc: '115100:-178200',
@@ -17565,8 +19408,8 @@ function renderDedicatedWorldAtlas() {
       id: 'town-carillon-hearth-belfry',
       kind: 'town',
       priority: 2,
-      x: 392,
-      y: 348,
+      x: 382,
+      y: 338,
       lv: [1, 10],
       loc: '12400:16800',
       label: 'Carillon Belfry (Dark Elven Village)',
@@ -17582,8 +19425,8 @@ function renderDedicatedWorldAtlas() {
       id: 'town-cinnamon-mill-haven',
       kind: 'windmill',
       priority: 2,
-      x: 245,
-      y: 342,
+      x: 215,
+      y: 332,
       lv: [1, 10],
       loc: '-118200:46800',
       label: 'Cinnamon-Mill Haven (Kamael Village)',
@@ -17599,8 +19442,8 @@ function renderDedicatedWorldAtlas() {
       id: 'town-kilnwatch-bastion',
       kind: 'castle',
       priority: 1,
-      x: 595,
-      y: 345,
+      x: 618,
+      y: 308,
       lv: [10, 20],
       loc: '18600:145200',
       label: 'Kilnwatch Bastion (Town of Dion / Gludio)',
@@ -17614,8 +19457,8 @@ function renderDedicatedWorldAtlas() {
       id: 'zone-dungeon-kiln-cellar',
       kind: 'catacomb',
       priority: 1,
-      x: 495,
-      y: 465,
+      x: 515,
+      y: 468,
       lv: [9, 22],
       loc: '-113490:235526',
       label: 'Kiln Cellar Ruins (The Ant Nest)',
@@ -17706,16 +19549,16 @@ function renderDedicatedWorldAtlas() {
 
   // Overland Monster / Mini-Boss / Raid / MVP Spawn Pins
   const overlandMobPins = [
-    { id: 'mob-clover-pup', name: 'Clover-Dew Pup', type: 'Monster', lv: 4, x: 412, y: 455, loc: '-89200:246100', zone: 'Clover South-Gate Meadow' },
-    { id: 'mob-kiln-captain', name: '[Mini-Boss] Kiln-Shell Captain', type: 'Mini-Boss', lv: 13, x: 525, y: 448, loc: '48880:247220', zone: 'Kiln Cellar Entrance' },
-    { id: 'mob-queen-ant', name: '[MVP] Queen Ant Ash-Brood Sovereign', type: 'MVP', lv: 22, x: 512, y: 478, loc: '53100:242600', zone: 'The Ant Nest B3', dungeonWarpId: 'zone-dungeon-kiln-cellar', dungeonFloorId: 'B3' },
-    { id: 'mob-catherok-raid', name: '[Raid] Catherok Pendulum Colossus', type: 'Raid', lv: 26, x: 642, y: 278, loc: '17710:110100', zone: 'Cruma Tower 2F', dungeonWarpId: 'zone-dungeon-pendulum-shaft', dungeonFloorId: '2F' },
-    { id: 'mob-cruma-core', name: '[MVP] Core — Prime Governor', type: 'MVP', lv: 30, x: 695, y: 232, loc: '17724:108150', zone: 'Cruma Tower 3F', dungeonWarpId: 'zone-dungeon-pendulum-shaft', dungeonFloorId: '3F' },
-    { id: 'mob-hallate-raid', name: '[Raid] Hallate Clockwork Vanguard', type: 'Raid', lv: 32, x: 815, y: 245, loc: '115000:159500', zone: 'Tower of Insolence 2F', dungeonWarpId: 'zone-dungeon-chronometer-foundry', dungeonFloorId: '2F' },
-    { id: 'mob-baium-mvp', name: '[MVP] Sovereign Chronometer Aethelgard', type: 'MVP', lv: 35, x: 878, y: 192, loc: '115180:15900', zone: 'Tower of Insolence 3F', dungeonWarpId: 'zone-dungeon-chronometer-foundry', dungeonFloorId: '3F' },
-    { id: 'mob-halo-watcher', name: 'Astral Prism Sentinel', type: 'Monster', lv: 48, x: 625, y: 142, loc: '12400:-118000', zone: 'Zenith Refractory' },
-    { id: 'mob-vesper-raid', name: '[Raid] Star-Tether Leviathan', type: 'Raid', lv: 68, x: 715, y: 112, loc: '94000:-164000', zone: 'Crown-Lens Approach' },
-    { id: 'mob-architect-mvp', name: '[MVP] Apostle of the Shattered Halo', type: 'MVP', lv: 92, x: 815, y: 78, loc: '148000:-204000', zone: 'Celestial Astrolabe Core' }
+    { id: 'mob-clover-pup', name: 'Clover-Dew Pup', type: 'Monster', lv: 4, x: 378, y: 468, loc: '-89200:246100', zone: 'Clover South-Gate Meadow' },
+    { id: 'mob-kiln-captain', name: '[Mini-Boss] Kiln-Shell Captain', type: 'Mini-Boss', lv: 13, x: 452, y: 472, loc: '48880:247220', zone: 'Kiln Cellar Entrance' },
+    { id: 'mob-queen-ant', name: '[MVP] Queen Ant Ash-Brood Sovereign', type: 'MVP', lv: 22, x: 602, y: 472, loc: '53100:242600', zone: 'The Ant Nest B3', dungeonWarpId: 'zone-dungeon-kiln-cellar', dungeonFloorId: 'B3' },
+    { id: 'mob-catherok-raid', name: '[Raid] Catherok Pendulum Colossus', type: 'Raid', lv: 26, x: 602, y: 242, loc: '17710:110100', zone: 'Cruma Tower 2F', dungeonWarpId: 'zone-dungeon-pendulum-shaft', dungeonFloorId: '2F' },
+    { id: 'mob-cruma-core', name: '[MVP] Core — Prime Governor', type: 'MVP', lv: 30, x: 705, y: 218, loc: '17724:108150', zone: 'Cruma Tower 3F', dungeonWarpId: 'zone-dungeon-pendulum-shaft', dungeonFloorId: '3F' },
+    { id: 'mob-hallate-raid', name: '[Raid] Hallate Clockwork Vanguard', type: 'Raid', lv: 32, x: 805, y: 256, loc: '115000:159500', zone: 'Tower of Insolence 2F', dungeonWarpId: 'zone-dungeon-chronometer-foundry', dungeonFloorId: '2F' },
+    { id: 'mob-baium-mvp', name: '[MVP] Sovereign Chronometer Aethelgard', type: 'MVP', lv: 35, x: 888, y: 186, loc: '115180:15900', zone: 'Tower of Insolence 3F', dungeonWarpId: 'zone-dungeon-chronometer-foundry', dungeonFloorId: '3F' },
+    { id: 'mob-halo-watcher', name: 'Astral Prism Sentinel', type: 'Monster', lv: 48, x: 638, y: 156, loc: '12400:-118000', zone: 'Zenith Refractory' },
+    { id: 'mob-vesper-raid', name: '[Raid] Star-Tether Leviathan', type: 'Raid', lv: 68, x: 678, y: 78, loc: '94000:-164000', zone: 'Crown-Lens Approach' },
+    { id: 'mob-architect-mvp', name: '[MVP] Apostle of the Shattered Halo', type: 'MVP', lv: 92, x: 896, y: 78, loc: '148000:-204000', zone: 'Celestial Astrolabe Core' }
   ];
 
   const visibleLandmarks = overlandLandmarks.filter(lm => {
@@ -17988,15 +19831,21 @@ function renderDedicatedWorldAtlas() {
     </g>
   ` : '';
 
-  // Priority AABB Label Culling at Macro Zoom (<2.2x) so labels never collide
+  // Priority AABB Label Culling at Macro & Regional Zoom (lodTier <= 2) so labels, badges & mob pins never collide
   const placedBoxes = [];
+  function tryPlaceAtlasBox(box) {
+    const collides = placedBoxes.some(pb => !(box.x2 < pb.x1 || box.x1 > pb.x2 || box.y2 < pb.y1 || box.y1 > pb.y2));
+    if (!collides) placedBoxes.push(box);
+    return !collides;
+  }
   const landmarksSvg = visibleLandmarks
     .slice()
     .sort((a, b) => a.priority - b.priority)
     .map(lm => {
-      const box = { x1: lm.x - 68, y1: lm.y + 12, x2: lm.x + 68, y2: lm.y + 38 };
-      const collides = lodTier === 1 && placedBoxes.some(pb => !(box.x2 < pb.x1 || box.x1 > pb.x2 || box.y2 < pb.y1 || box.y1 > pb.y2));
-      if (!collides) placedBoxes.push(box);
+      const displayLabel = lodTier === 1 ? lm.label.split(' (')[0] : lm.label;
+      const halfW = Math.max(58, Math.round(displayLabel.length * 3.6 + 14));
+      const box = { x1: lm.x - halfW, y1: lm.y - 20, x2: lm.x + halfW, y2: lm.y + 42 };
+      const collides = lodTier <= 2 && !tryPlaceAtlasBox(box);
 
       const poiObj = {
         title: lm.label,
@@ -18024,19 +19873,21 @@ function renderDedicatedWorldAtlas() {
         ]
       };
 
-      const raceSpawnBadgeSvg = lm.isRaceSpawn ? `
-        <g transform="translate(${lm.x}, ${lm.y - 26})" pointer-events="none">
-          <rect x="-58" y="-9" width="116" height="16" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.3"/>
-          <text x="0" y="2" text-anchor="middle" fill="#ecfdf5" font-size="8" font-weight="900" font-family="monospace">
+      const canPlaceRaceBadge = lm.isRaceSpawn && tryPlaceAtlasBox({ x1: lm.x - 60, y1: lm.y - 38, x2: lm.x + 60, y2: lm.y - 18 });
+      const raceSpawnBadgeSvg = canPlaceRaceBadge ? `
+        <g class="atlas-screen-pin" style="transform-origin:${lm.x}px ${lm.y - 26}px" pointer-events="none">
+          <rect x="${lm.x - 58}" y="${lm.y - 35}" width="116" height="16" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.3"/>
+          <text x="${lm.x}" y="${lm.y - 24}" text-anchor="middle" fill="#ecfdf5" font-size="8" font-weight="900" font-family="monospace">
             🧬 ${escapeHtml(lm.raceName.split(' ')[0].toUpperCase())} SPAWN
           </text>
         </g>
       ` : '';
 
-      const dngWarpPortalBadgeSvg = (lm.dungeonWarpId && lodTier >= 2) ? `
-        <g data-poi-clickable="1" style="cursor:pointer" onclick="openDungeonSubMap('${escapeHtml(lm.dungeonWarpId)}', '${escapeHtml(lm.dungeonFloorId)}')" transform="translate(${lm.x}, ${lm.y - 28})">
-          <rect x="-78" y="-10" width="156" height="18" rx="9" fill="#581c87" stroke="#fde047" stroke-width="1.5"/>
-          <text x="0" y="2" text-anchor="middle" fill="#fde047" font-size="8.5" font-weight="900" font-family="monospace">
+      const canPlaceWarpBadge = (lm.dungeonWarpId && lodTier >= 2) && tryPlaceAtlasBox({ x1: lm.x - 80, y1: lm.y - 40, x2: lm.x + 80, y2: lm.y - 18 });
+      const dngWarpPortalBadgeSvg = canPlaceWarpBadge ? `
+        <g data-poi-clickable="1" class="atlas-screen-pin" style="cursor:pointer;transform-origin:${lm.x}px ${lm.y - 28}px" onclick="openDungeonSubMap('${escapeHtml(lm.dungeonWarpId)}', '${escapeHtml(lm.dungeonFloorId)}')">
+          <rect x="${lm.x - 78}" y="${lm.y - 38}" width="156" height="18" rx="9" fill="#581c87" stroke="#fde047" stroke-width="1.5"/>
+          <text x="${lm.x}" y="${lm.y - 26}" text-anchor="middle" fill="#fde047" font-size="8.5" font-weight="900" font-family="monospace">
             🕳️ WARP TO SUB-MAP (${escapeHtml(lm.dungeonFloorId)})
           </text>
         </g>
@@ -18047,8 +19898,8 @@ function renderDedicatedWorldAtlas() {
           kind: lm.kind,
           x: lm.x,
           y: lm.y,
-          label: collides ? lm.label.split(' (')[0] : lm.label,
-          sublabel: (!collides || lodTier >= 2) ? lm.sublabel : '',
+          label: collides ? lm.label.split(' (')[0] : displayLabel,
+          sublabel: (!collides && lodTier >= 2) ? lm.sublabel : '',
           flagColor: lm.flagColor,
           isSelected: STUDIO_ACTIVE_INSPECT_ID === lm.id,
           poiObj
@@ -18081,11 +19932,12 @@ function renderDedicatedWorldAtlas() {
       connections: [{ label: `📍 Habitat: ${mp.zone}`, badge: `Lv.${mp.lv}` }]
     };
     const encMobPoi = encodePoiAttr({ ...poiMob, svgX: mp.x, svgY: mp.y });
+    const showMobLabel = (lodTier >= 2 || fFilter !== 'All') && tryPlaceAtlasBox({ x1: mp.x - 64, y1: mp.y - 26, x2: mp.x + 64, y2: mp.y - 8 });
     return `
-      <g data-poi-clickable="1" tabindex="0" role="button" aria-label="${escapeHtml(poiMob.title)}" style="cursor:pointer" onclick="selectStudioMapPoi('${encMobPoi}', event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectStudioMapPoi('${encMobPoi}', event);}" filter="url(#cartoDropShadow)">
+      <g data-poi-clickable="1" tabindex="0" role="button" aria-label="${escapeHtml(poiMob.title)}" class="atlas-screen-pin" style="cursor:pointer;transform-origin:${mp.x}px ${mp.y}px" onclick="selectStudioMapPoi('${encMobPoi}', event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectStudioMapPoi('${encMobPoi}', event);}" filter="url(#cartoDropShadow)">
         <circle cx="${mp.x}" cy="${mp.y}" r="${isMvp ? 12 : 10}" fill="${col}" stroke="#ffffff" stroke-width="1.8"/>
         <text x="${mp.x}" y="${mp.y + 3.5}" text-anchor="middle" font-size="${isMvp ? 10.5 : 9}">${icon}</text>
-        ${(lodTier >= 2 || fFilter !== 'All') ? `
+        ${showMobLabel ? `
           <rect x="${mp.x - 62}" y="${mp.y - 24}" width="124" height="14" rx="4" fill="rgba(9,13,20,0.9)" stroke="${col}" stroke-width="1"/>
           <text x="${mp.x}" y="${mp.y - 14}" text-anchor="middle" fill="#f8fafc" font-size="8" font-weight="800" font-family="monospace">
             ${escapeHtml(mp.name.slice(0, 18))} Lv.${mp.lv}
@@ -20739,7 +22591,8 @@ function renderDedicatedWorldAtlas() {
   `;
 
   const svgInnerHtml = `
-    <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
+    ${renderCleanVectorContinentReliefSvg(isL2)}
+    ${ATLAS_RASTER_RELIEF_OVERLAY ? `<image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.48"/>` : ''}
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
     ${gateStudioOverlaySvg('farming_heatmap', farmingEfficiencyOverlaySvg)}
     ${gateStudioOverlaySvg('siege_domain', castleSiegeDomainOverlaySvg)}
@@ -20953,8 +22806,9 @@ function renderContinentBigPictureSvg(continents, districts, activeContinent) {
   };
 
   const terrainHtml = `
-    <!-- Authentic L2J.RU Parchment Relief & Interlaced Satellite Base Plate -->
-    <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none" opacity="0.92"/>
+    <!-- Crisp Procedural Vector Relief + Authentic L2J.RU Parchment Relief Base Plate -->
+    ${renderCleanVectorContinentReliefSvg(isL2)}
+    ${ATLAS_RASTER_RELIEF_OVERLAY ? `<image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.48"/>` : ''}
   `;
 
   // Winding Continent Highways connecting District centers
@@ -26227,6 +28081,25 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(raw)))
             self.end_headers()
             self.wfile.write(raw)
+            return
+
+        vendor_assets = {
+            "/vendor/ol.js": ("ol.js", "application/javascript; charset=utf-8"),
+            "/vendor/ol.css": ("ol.css", "text/css; charset=utf-8"),
+        }
+        if parsed.path in vendor_assets:
+            file_name, content_type = vendor_assets[parsed.path]
+            target = ROOT / "tools" / "mac-observatory" / "vendor" / file_name
+            if target.is_file():
+                raw = target.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.send_header("Content-Length", str(len(raw)))
+                self.end_headers()
+                self.wfile.write(raw)
+                return
+            self._send_json({"ok": False, "error": "Vendored OpenLayers asset not found"}, status=404)
             return
 
         if parsed.path.startswith("/studio-maps/"):

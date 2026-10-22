@@ -228,11 +228,21 @@ function makeEl(id) {
     innerHTML: '',
     textContent: '',
     value: '',
-    style: {},
+    style: { setProperty(k, v) { this[k] = v; } },
     dataset: {},
     classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
     setAttribute(k, v) { this[k] = v; },
     getAttribute(k) { return this[k] || null; },
+    getBoundingClientRect() { return { left: 0, top: 0, width: 1040, height: 500 }; },
+    getContext() {
+      return {
+        setTransform() {}, save() {}, restore() {}, translate() {}, scale() {}, clip() {},
+        clearRect() {}, fillRect() {}, strokeRect() {}, beginPath() {}, moveTo() {}, lineTo() {},
+        closePath() {}, fill() {}, stroke() {}, arc() {}, fillText() {}, setLineDash() {},
+        createRadialGradient() { return { addColorStop() {} }; },
+        createLinearGradient() { return { addColorStop() {} }; }
+      };
+    },
     querySelector() { return null; },
     querySelectorAll() { return []; },
     addEventListener() {},
@@ -244,6 +254,7 @@ function makeEl(id) {
 
 const sandbox = {
   window: {
+    devicePixelRatio: 2,
     location: { search: '?tab=studio', hash: '', pathname: '/', origin: 'http://127.0.0.1:8788' },
     history: { replaceState() {}, pushState() {}, back() {}, forward() {} },
     addEventListener() {},
@@ -251,7 +262,9 @@ const sandbox = {
   },
   document: {
     documentElement: makeEl('html'),
-    body: makeEl('body'),
+    body: { ...makeEl('body'), appendChild() {}, removeChild() {} },
+    head: { appendChild() {} },
+    createElement(tag) { return makeEl(tag); },
     getElementById(id) {
       if (!elements[id]) elements[id] = makeEl(id);
       return elements[id];
@@ -266,6 +279,14 @@ const sandbox = {
   requestAnimationFrame: () => {},
   setTimeout: () => 1,
   clearTimeout: () => {},
+  TextEncoder,
+  Buffer,
+  ArrayBuffer,
+  DataView,
+  Uint8Array,
+  Uint16Array,
+  Uint32Array,
+  Float32Array,
   URLSearchParams,
   console,
   performance,
@@ -364,12 +385,210 @@ vm.runInContext(`
 `, sandbox);
 const theaterHtml = elements['mainContent'] ? elements['mainContent'].innerHTML : '';
 
+// V-6: Spatial Engines (2d_ol, 3d_map3d), 3D Mesh Picking, and Binary glTF 2.0 (.glb) Integrity
+const v6Report = vm.runInContext(`(() => {
+  toggleAtlasTheaterMode();
+  setAtlasPersonaLens('developer');
+  setAtlasEngineMode('2d_ol');
+  const olFeatures = buildAtlasspatialFeaturesList();
+  setAtlasEngineMode('3d_map3d');
+  const contexts = ['overland', 'town', 'dungeon'];
+  const glbChecks = {};
+  for (const ctxName of contexts) {
+    setAtlas3dOption('contextOverride', ctxName);
+    const built = buildAtlasGlbArrayBuffer();
+    const dv = new DataView(built);
+    const magic = dv.getUint32(0, true);
+    const version = dv.getUint32(4, true);
+    const totalLen = dv.getUint32(8, true);
+    const jsonLen = dv.getUint32(12, true);
+    const jsonBytes = new Uint8Array(built, 20, jsonLen);
+    const gltf = JSON.parse(Buffer.from(jsonBytes).toString('utf8').trim());
+    glbChecks[ctxName] = {
+      magic,
+      version,
+      totalLen,
+      meshCount: (gltf.meshes || []).length,
+      nodeCount: (gltf.nodes || []).length,
+      unit: gltf.asset && gltf.asset.extras && gltf.asset.extras.unit
+    };
+  }
+  setAtlas3dOption('contextOverride', 'town');
+  const townScene = buildAtlas3dBlockoutScene();
+  const bldg3 = townScene.meshes.find(m => m.name.startsWith('Building_3_'));
+  const road1 = townScene.meshes.find(m => m.name.startsWith('Road_1_'));
+  const pickRes = bldg3 ? selectAtlas3dMeshByName(bldg3.name, false) : null;
+  setAtlasEngineMode('2d_svg');
+  return {
+    olFeatureCount: olFeatures.length,
+    olHasLensBadge: Boolean(olFeatures[0] && olFeatures[0].lensBadge && olFeatures[0].lensBadge.includes('.glb')),
+    glbChecks,
+    hasStreetRibbonMesh: Boolean(road1),
+    pickRes
+  };
+})()`, sandbox);
+
+// V-7: Town-only shops, 63-zone pixel-CRS coverage, spawn-driven filters, honest GLB scale, pick helpers
+const v7Report = vm.runInContext(`(() => {
+  const inWorld = f => f.x >= 0 && f.x <= 1040 && f.y >= 0 && f.y <= 500;
+  setAtlasFilter('All');
+  ATLAS_STATE_STORE.levelBand = 'All';
+  const all = buildAtlasspatialFeaturesList();
+  const filterCounts = {};
+  for (const f of ['Monster', 'Mini-Boss', 'Raid', 'MVP']) {
+    setAtlasFilter(f);
+    filterCounts[f] = buildAtlasspatialFeaturesList().length;
+  }
+  setAtlasFilter('All');
+  ATLAS_STATE_STORE.levelBand = '1-10';
+  const band1to10 = buildAtlasspatialFeaturesList().length;
+  ATLAS_STATE_STORE.levelBand = 'All';
+
+  setAtlasEngineMode('3d_map3d');
+  setAtlas3dOption('contextOverride', 'town');
+  const bldg = buildAtlas3dBlockoutScene().meshes.find(m => m.name.startsWith('Building_3_'));
+  selectAtlas3dMeshByName(bldg.name, false);
+  const townPoi = STUDIO_MAP_SELECTED_POI;
+  ATLAS_LEFT_DRAWER_OPEN = true;
+  const townDrawer = buildStudioPlaceDrawerHtml(townPoi);
+  setAtlas3dOption('contextOverride', 'dungeon');
+  const dungeonDrawer = buildStudioPlaceDrawerHtml(townPoi);
+  setAtlas3dOption('contextOverride', 'town');
+  setAtlasEngineMode('2d_svg');
+  STUDIO_MAP_SELECTED_POI = townPoi;
+  openDungeonSubMap('zone-dungeon-kiln-cellar', 'B1');
+  const poiClearedOnDungeon = STUDIO_MAP_SELECTED_POI === null;
+  exitDungeonSubMap();
+  STUDIO_MAP_SELECTED_POI = townPoi;
+  focusFieldTacticalBlueprint('zone-field-clover-south-gate');
+  const poiClearedOnField = STUDIO_MAP_SELECTED_POI === null;
+
+  const mpu = {};
+  for (const c of ['overland', 'town', 'dungeon']) {
+    ATLAS_3D_STATE.contextOverride = c;
+    const buf = buildAtlasGlbArrayBuffer();
+    const jl = new DataView(buf).getUint32(12, true);
+    const g = JSON.parse(Buffer.from(new Uint8Array(buf, 20, jl)).toString('utf8').trim());
+    mpu[c] = g.asset.extras.metersPerUnit;
+  }
+  ATLAS_3D_STATE.contextOverride = '';
+  const sq = [[0, 0], [10, 0], [10, 10], [0, 10]];
+  return {
+    zoneCount: all.length,
+    offWorld: all.filter(f => !inWorld(f)).map(f => f.name),
+    actionTypes: all.reduce((acc, f) => { acc[f.actionType] = (acc[f.actionType] || 0) + 1; return acc; }, {}),
+    filterCounts,
+    band1to10,
+    townHasInspector: townDrawer.includes('studioShopAndRefinementInspector'),
+    dungeonHasInspector: dungeonDrawer.includes('studioShopAndRefinementInspector'),
+    dungeonHasTownOnlyNote: dungeonDrawer.includes('studioShopTownOnlyNote'),
+    poiClearedOnDungeon,
+    poiClearedOnField,
+    metersPerUnit: mpu,
+    polyHit: isPointInAtlasPolygon(5, 5, sq) && !isPointInAtlasPolygon(15, 5, sq),
+    groundRank: ['Road_1_X', 'Town_Plaza_Ground', 'Wall_North', 'Floor_B1_Slab', 'C01_Basin'].every(n => isAtlas3dGroundMesh({ name: n }))
+      && !['Building_7_7_Apprentice', 'Porcelain_Loom'].some(n => isAtlas3dGroundMesh({ name: n }))
+  };
+})()`, sandbox);
+
+// V-8: distinct tier filters, zero-emoji pills, lens default overlay, co-registered continent polygons, handler parse
+const v8Report = vm.runInContext(`(() => {
+  setAtlasEngineMode('2d_ol');
+  setAtlasFilter('All');
+  ATLAS_STATE_STORE.levelBand = 'All';
+  const all = buildAtlasspatialFeaturesList();
+  const tierCounts = {};
+  for (const f of ['Monster', 'Mini-Boss', 'Raid', 'MVP']) {
+    setAtlasFilter(f);
+    tierCounts[f] = buildAtlasspatialFeaturesList().length;
+  }
+  setAtlasFilter('All');
+  const emojiRe = /\\p{Extended_Pictographic}/u;
+  const pillEmoji = [];
+  for (const lens of ['gamer', 'designer', 'architect', 'developer', 'liveops']) {
+    setAtlasPersonaLens(lens);
+    const pill = getAtlasPersonaLensTelemetrySummary({}).pillText;
+    if (emojiRe.test(pill)) pillEmoji.push(lens);
+  }
+  setAtlasPersonaLens('architect');
+  const architectBar = ATLAS_ACTIVE_STUDIO_BAR;
+  setAtlasPersonaLens('gamer');
+  const gamerBar = ATLAS_ACTIVE_STUDIO_BAR;
+  const polys = {};
+  getAtlasContinentPolygons().forEach(c => { polys[c.code] = c.pts; });
+  const outside = all.filter(f => !polys[f.continentCode] || !isPointInAtlasPolygon(f.x, 500 - f.y, polys[f.continentCode])).map(f => f.id);
+  const codes = Object.keys(polys);
+  const foreignHits = all.filter(f => codes.some(c => c !== f.continentCode && isPointInAtlasPolygon(f.x, 500 - f.y, polys[c]))).map(f => f.id);
+  const ownInside = all.filter(f => polys[f.continentCode] && isPointInAtlasPolygon(f.x, 500 - f.y, polys[f.continentCode])).length;
+  const orient = (a, b, c) => (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+  const segCross = (a, b, c, d) => orient(a, b, c) * orient(a, b, d) < 0 && orient(c, d, a) * orient(c, d, b) < 0;
+  const overlapPairs = [];
+  for (let i = 0; i < codes.length; i++) {
+    for (let j = i + 1; j < codes.length; j++) {
+      const A = polys[codes[i]], B = polys[codes[j]];
+      let hit = A.some(p => isPointInAtlasPolygon(p[0], p[1], B)) || B.some(p => isPointInAtlasPolygon(p[0], p[1], A));
+      for (let m = 0; m < A.length - 1 && !hit; m++) for (let n = 0; n < B.length - 1 && !hit; n++) hit = segCross(A[m], A[m + 1], B[n], B[n + 1]);
+      if (hit) overlapPairs.push(codes[i] + '/' + codes[j]);
+    }
+  }
+  let stackedZero = 0, minPair = Infinity;
+  for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
+    const d = Math.hypot(all[i].x - all[j].x, all[i].y - all[j].y);
+    if (d < 0.5) stackedZero++;
+    if (d < minPair) minPair = d;
+  }
+  // Diagnostics: how far clampPointIntoAtlasContinent moved each non-anchored zone from its raw projection.
+  const zonesRaw = getAllAtlas63Zones(((DATA.studioPerspectives || {}).tShapedWorldAtlas) || {});
+  let clampedZones = 0, maxMovePx = 0;
+  const clampMoves = [];
+  zonesRaw.forEach(z => {
+    const l = clampWorldLocCoord(z.loc_coord || '-84120:243500');
+    const r = clampPointIntoAtlasContinent(l.svgX, l.svgY, getAtlasContinentCode(z.continent_id));
+    if (r.moved > 0) { clampedZones++; maxMovePx = Math.max(maxMovePx, r.moved); clampMoves.push(z.zone_id + ':' + Math.round(r.moved)); }
+  });
+  setAtlasEngineMode('2d_svg');
+  zoomStudioMap(0, true);
+  return {
+    tierCounts,
+    pillEmojiLenses: pillEmoji,
+    architectBar,
+    gamerBar,
+    gamerDefaultBar: ATLAS_LENS_DEFAULT_BAR.gamer,
+    pointsChecked: all.length,
+    pointsOutsideOwnContinent: outside,
+    foreign_continent_hits: foreignHits.length,
+    foreign_continent_hit_ids: foreignHits,
+    own_continent_inside: ownInside,
+    overlapping_polygon_pairs: overlapPairs.length,
+    stacked_zero_px_pairs: stackedZero,
+    min_pair_dist_px: Math.round(minPair * 100) / 100,
+    overlapping_polygon_pair_ids: overlapPairs,
+    clamped_zone_count: clampedZones,
+    clamp_moves: clampMoves,
+    kilnwatch_continent: (zonesRaw.find(z => z.zone_id === 'zone-town-kilnwatch-bastion') || {}).continent_id,
+    max_clamp_move_px: Math.round(maxMovePx * 10) / 10
+  };
+})()`, sandbox);
+const unescapeHtml = t => t.replace(/&quot;/g, '"').replace(/&#0?39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+const svgHtml = elements['mainContent'] ? elements['mainContent'].innerHTML : '';
+const handlerBodies = [];
+for (const m of svgHtml.matchAll(/on(?:click|keydown)="([^"]*selectStudioMapPoi[^"]*)"/g)) handlerBodies.push(unescapeHtml(m[1]));
+let handlerParseFailures = 0;
+for (const body of handlerBodies) {
+  try { new Function('event', body); } catch (_e) { handlerParseFailures++; }
+}
+v8Report.handlerCount = handlerBodies.length;
+v8Report.handlerParseFailures = handlerParseFailures;
+
 console.log(JSON.stringify({
+  v8Report,
   lensOutputs,
   stateMutationFailures,
   testedFiltersCount: filters.length,
   compareHtml,
-  theaterHtml
+  theaterHtml,
+  v6Report,
+  v7Report
 }));
 """
 
@@ -436,10 +655,65 @@ console.log(JSON.stringify({
         and theater_dom["svgAttrs"].get("height") == "100%"
         and theater_dom["dockInBottom"] is True
     )
+    v6 = vm_out.get("v6Report") or {}
+    glb_checks = v6.get("glbChecks") or {}
+    v6_passed = (
+        v6.get("olFeatureCount", 0) >= 10
+        and v6.get("olHasLensBadge") is True
+        and v6.get("hasStreetRibbonMesh") is True
+        and bool(v6.get("pickRes") and v6["pickRes"].get("hasShopCatalog") is True)
+        and all(
+            c.get("magic") == 0x46546C67
+            and c.get("version") == 2
+            and c.get("nodeCount") == c.get("meshCount", 0) + 1
+            and c.get("nodeCount", 0) >= 12
+            and "Godot 4" in str(c.get("unit") or "")
+            for c in glb_checks.values()
+        )
+    )
+    v7 = vm_out.get("v7Report") or {}
+    filter_counts = v7.get("filterCounts") or {}
+    v7_passed = (
+        v7.get("zoneCount") == 63
+        and v7.get("offWorld") == []
+        and all(0 < filter_counts.get(f, 0) < 63 for f in ("Monster", "Mini-Boss", "Raid", "MVP"))
+        and 0 < v7.get("band1to10", 0) < 63
+        and v7.get("townHasInspector") is True
+        and v7.get("dungeonHasInspector") is False
+        and v7.get("dungeonHasTownOnlyNote") is True
+        and v7.get("poiClearedOnDungeon") is True
+        and v7.get("poiClearedOnField") is True
+        and v7.get("metersPerUnit") == {"overland": 1860, "town": 1, "dungeon": 1}
+        and v7.get("polyHit") is True
+        and v7.get("groundRank") is True
+    )
+
+    v8 = vm_out.get("v8Report") or {}
+    tiers = v8.get("tierCounts") or {}
+    ol_vendor = ROOT / "tools" / "mac-observatory" / "vendor" / "ol.js"
+    ol_vendor_bytes = ol_vendor.stat().st_size if ol_vendor.is_file() else 0
+    v8_passed = (
+        tiers.get("Monster", 0) > tiers.get("Mini-Boss", 0) > tiers.get("Raid", 0) > tiers.get("MVP", 0) > 0
+        and v8.get("pillEmojiLenses") == []
+        and v8.get("gamerBar") == v8.get("gamerDefaultBar")
+        and v8.get("architectBar") != v8.get("gamerBar")
+        and v8.get("pointsChecked") == 63
+        and v8.get("pointsOutsideOwnContinent") == []
+        and v8.get("foreign_continent_hits") == 0
+        and v8.get("own_continent_inside") == 63
+        and v8.get("overlapping_polygon_pairs") == 0
+        and v8.get("stacked_zero_px_pairs") == 0
+        and v8.get("min_pair_dist_px", 0) >= 10
+        and v8.get("handlerCount", 0) > 0
+        and v8.get("handlerParseFailures") == 0
+        and "cdn.jsdelivr" not in html
+        and "pendingDrawerTimer" not in html
+        and ol_vendor_bytes > 100 * 1024
+    )
 
     return {
         "overall_passed": bool(
-            v1_passed and v2_passed and v3_passed and v4_passed and v5_passed
+            v1_passed and v2_passed and v3_passed and v4_passed and v5_passed and v6_passed and v7_passed and v8_passed
         ),
         "gates": {
             "V-1_dom_and_render_budget": {
@@ -470,6 +744,26 @@ console.log(JSON.stringify({
                 "svg_width": theater_dom["svgAttrs"].get("width"),
                 "svg_height": theater_dom["svgAttrs"].get("height"),
                 "dock_in_bottom": theater_dom["dockInBottom"],
+            },
+            "V-6_spatial_engines_and_glb_integrity": {
+                "passed": v6_passed,
+                "ol_feature_count": v6.get("olFeatureCount"),
+                "ol_has_lens_badge": v6.get("olHasLensBadge"),
+                "has_street_ribbon_mesh": v6.get("hasStreetRibbonMesh"),
+                "pick_res": v6.get("pickRes"),
+                "glb_checks": glb_checks,
+            },
+            # vm-tier only: real picking/focus/second-click drill are verified in Chrome (wave-11 audit).
+            "V-7_town_only_shops_zone_coverage_and_glb_scale": {
+                "passed": v7_passed,
+                **v7,
+            },
+            "V-8_wave12_distinct_filters_zero_delay_and_pin_handlers": {
+                "passed": v8_passed,
+                **v8,
+                "no_cdn_jsdelivr": "cdn.jsdelivr" not in html,
+                "no_pending_drawer_timer": "pendingDrawerTimer" not in html,
+                "vendor_ol_js_bytes": ol_vendor_bytes,
             },
         },
     }

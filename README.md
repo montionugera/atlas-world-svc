@@ -69,6 +69,7 @@ A high-performance real-time multiplayer game built with a modern high-density a
   - **Single-Card Studio Overlay Switcher + Side-by-Side Compare Mode:** Mounts only the active Studio Overlay in `#atlasActiveStudioBarMount` (plus an optional second overlay via `setAtlasCompareStudioBar`), parking inactive bars in `#atlasInactiveStudioBarsVault`.
   - **Pure Render-Path Context Filter Auto-Heal (`resolveAtlasEffectiveFilter`):** Preserves the user's selected filter (`ATLAS_STATE_STORE.filter`, e.g., `RaceSpawns`) when drilling into Town Street Blueprints, Field Tactical Blueprints, or Multi-Floor Dungeon Sub-Maps, displaying an accessible `#atlasContextAutoHealBadge.joy-context-filter-bar__notice[role="status"]` and automatically restoring the filter on returning to the Overland World Map.
   - **`F-086` `joy-design` Spatial Workspace Classes & Keyboard Ergonomics:** Styled with `.joy-spatial-shell` (`data-left-open`, `data-bottom-open`, `data-theater`), `.joy-lens-bar`, `.joy-context-filter-bar`, and `.joy-omni-command-bar`. Supports keyboard-focusable map pins (`tabindex="0" role="button"`), `1`–`5` Persona Lens switching, `F` Theater Mode toggle (`760px`), and `⌘K` / `Ctrl+K` Omni-Search focus.
+  - **Wave UX-12 (probe gate `V-8`):** Distinct tier filters under band `All` (`Monster 40 > Mini-Boss 32 > Raid 27 > MVP 19`: hunting zones / hunting zones with max level >= 15 / dungeons + fortress marks + fields with max level >= 45 / dungeons + C02-C03 apex fields); single click on a 3D mesh opens the Place Inspector drawer at 0ms while a document-level second-click guard (400ms, ~8px) still drills on double-click and never drills twice; every lens switch resets the overlay to that lens's default (`ATLAS_LENS_DEFAULT_BAR`: gamer `boss_hierarchy`, designer `boss_hierarchy`, architect `tools_squad`, developer `tech_art`, liveops `siege_domain`); the three OpenLayers continent polygons (`getAtlasContinentPolygons`) contain all 63 zone points; lens telemetry pills carry no emoji; OpenLayers 9.2.4 is vendored under `tools/mac-observatory/vendor/` and served same-origin at `/vendor/ol.js` and `/vendor/ol.css` (no CDN).
 - **Dedicated Semantic-Zoom Atlas (`DedicatedWorldAtlasComponent` / `renderDedicatedWorldAtlas`):** Interactive 2D cartographic explorer inspired by Lineage II (`l2hub.info/c3/map` Gludin / Dark Elven Village / Oren by Cheese, The Ant Nest `B1–B3`, Cruma Tower `1F–3F`, Tower of Insolence) and Google/Apple Maps:
   - **3-Tier Semantic Zoom LOD:**
     - **Tier 1 (`1.0×–2.2×` Macro Geography):** Uncluttered continuous world map with priority AABB label culling, inter-zone travel highways, and all **6 Playable Race Spawn Locations** (`Human`, `Lunar`, `Ogre/Orc`, `Dwarf`, `Dark-Lunar`, `Furral`).
@@ -318,5 +319,19 @@ The real-time game state replication protocol uses schema-compiled Google FlatBu
 | `PORT` | `2567` | Game WebSocket & primary HTTP gateway port |
 | `AGONES_ENABLED` | `false` (local) / `true` (prod) | Whether to connect to Agones Kubernetes sidecar |
 | `AGONES_SDK_PORT` | `9357` | Port for the Agones SDK sidecar gRPC/HTTP interface |
+
+---
+
+## 🧭 Atlas World & Map Studio — Unified Spatial Engine (`:8788/?tab=studio`)
+
+Launch the Catalog & Spatial Studio Web Observatory:
+```bash
+python3 scripts/catalog_explorer_web.py --port 8788
+```
+
+- **🗺️ 2D Crisp Vector (`2d_svg`):** Procedural vector continent bathymetry & topographic relief (`renderCleanVectorContinentReliefSvg`), zero ghost raster labels when the raster overlay toggle is off (`ATLAS_RASTER_RELIEF_OVERLAY`), cursor-centered wheel zoom (`onStudioMapWheel`), exact `1 / effScale` constant-screen-space markers (`--atlas-inv-zoom` + `.atlas-screen-pin`), AABB collision-culled landmark/spawn/mob labels, and `vector-effect: non-scaling-stroke` highways.
+- **🌐 2D OpenLayers GIS (`2d_ol`):** Custom game-meter coordinate projection (`CRADLE-METERS`, `extent: [0, 0, 1040, 500]`), real `ol.Map` + `ol.layer.Vector({ declutter: true })` integration with HiDPI (`devicePixelRatio`) isotropic `1:1` canvas fallback, 5-Persona Lens telemetry pills & filter synchronization, and interactive 2-point Euclidean distance & walk/strider travel-time ruler (`toggleAtlasOlRuler()`).
+- **🧊 3D Blockout (`3d_map3d`) + Multi-Node `.glb` Godot 4 Exporter:** Inspired by `cartesiancs/map3d`, extrudes Town `#1..#12` building blueprints, cobblestone street ribbons (`Road_1..N`), 14m defensive curtain walls, Multi-Floor Dungeons (`B1 ⇄ B2 ⇄ B3` / `1F ⇄ 2F ⇄ 3F`), and 3-Continent plateaus at native Retina DPR (`devicePixelRatio`). Supports interactive 3D mesh picking & hover highlight (`selectAtlas3dMeshByName` opening the Left Place Inspector with live Shop Stock & +1..+15 Refinement Anvil tables), keyboard orbit/zoom/context shortcuts, deep-link URL state (`?engine=3d_map3d&ctx3d=town`), and 1-click multi-node named glTF 2.0 (`.glb`, magic `0x46546C67`) export (`exportAtlasBlockoutGlb()`) for direct import into Godot 4.
+- **🔬 Automated UX & Spatial Engine Probe (`scripts/probes/atlas_ux_probe.py`):** Verifies `V-1` through `V-6` (DOM/render budgets, filter auto-heal state machine, 87-overlay parity, `.joy-*` contract purity, theater mode, 3D mesh picking, and binary `.glb` structural integrity).
 
 **Built for performance, scaled for players.** 🎯

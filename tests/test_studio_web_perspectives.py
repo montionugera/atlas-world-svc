@@ -5031,6 +5031,238 @@ class TestStudioWebPerspectives(unittest.TestCase):
         for gate_name, gate_payload in report["gates"].items():
             self.assertTrue(gate_payload["passed"], f"UX Probe gate {gate_name} failed: {gate_payload}")
 
+    def test_wave_ux8_unified_spatial_engine_ol2d_map3d_and_glb_exporter(self) -> None:
+        import json
+        import os
+        import re
+        import subprocess
+        import tempfile
+        from pathlib import Path
+
+        html = web.INDEX_HTML
+        # 1. Zero preserveAspectRatio="none" on /studio-maps/ images
+        self.assertNotIn('preserveAspectRatio="none"', html)
+        self.assertIn('preserveAspectRatio="xMidYMid meet"', html)
+
+        # 2. Screen-space marker scaling (--atlas-inv-zoom + .atlas-screen-pin + non-scaling-stroke)
+        for token in (
+            "--atlas-inv-zoom",
+            ".atlas-screen-pin",
+            "vector-effect: non-scaling-stroke",
+            "renderCleanVectorContinentReliefSvg",
+            "ATLAS_RASTER_RELIEF_OVERLAY",
+            "toggleAtlasRasterReliefOverlay",
+            "ATLAS_ENGINE_MODE",
+            "setAtlasEngineMode",
+            "initOrUpdateAtlasOpenLayersEngine",
+            "initOrUpdateAtlasMap3dEngine",
+            "buildAtlas3dBlockoutScene",
+            "exportAtlasBlockoutGlb",
+            "buildAtlasGlbArrayBuffer",
+            "CRADLE-METERS",
+        ):
+            self.assertIn(token, html, f"Missing Unified Spatial Engine token {token}")
+
+        # 3. Execute setAtlasEngineMode('2d_svg' | '2d_ol' | '3d_map3d') and exportAtlasBlockoutGlb() in Node VM
+        script_blocks = re.findall(r"<script[^>]*>(.*?)</script>", html, re.DOTALL)
+        main_js = script_blocks[-1]
+        bundle = web.load_studio_perspectives_bundle()
+        node_test = r"""
+const fs = require('fs');
+const vm = require('vm');
+const code = fs.readFileSync(process.env.ATLAS_JS_PATH, 'utf8');
+const sp = JSON.parse(fs.readFileSync(process.env.ATLAS_BUNDLE_PATH, 'utf8'));
+const elements = {};
+function makeEl(id) {
+  return {
+    id,
+    innerHTML: '',
+    textContent: '',
+    value: '',
+    style: { setProperty(k, v) { this[k] = v; } },
+    dataset: {},
+    classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
+    setAttribute(k, v) { this[k] = v; },
+    getAttribute(k) { return this[k] || null; },
+    getBoundingClientRect() { return { left: 0, top: 0, width: 1040, height: 500 }; },
+    getContext() {
+      return {
+        setTransform() {}, save() {}, restore() {}, translate() {}, scale() {}, clip() {},
+        clearRect() {}, fillRect() {}, strokeRect() {}, beginPath() {}, moveTo() {}, lineTo() {},
+        closePath() {}, fill() {}, stroke() {}, arc() {}, fillText() {}, setLineDash() {},
+        createRadialGradient() { return { addColorStop() {} }; },
+        createLinearGradient() { return { addColorStop() {} }; }
+      };
+    }
+  };
+}
+const sandbox = {
+  window: { devicePixelRatio: 2, location: { search: '?tab=studio', hash: '', pathname: '/', origin: 'http://127.0.0.1:8788' }, history: { replaceState() {}, pushState() {} }, addEventListener() {} },
+  document: {
+    documentElement: makeEl('html'),
+    body: { ...makeEl('body'), appendChild() {}, removeChild() {} },
+    head: { appendChild() {} },
+    createElement(tag) { return makeEl(tag); },
+    getElementById(id) { if (!elements[id]) elements[id] = makeEl(id); return elements[id]; },
+    querySelector() { return null; },
+    querySelectorAll() { return []; },
+    addEventListener() {}
+  },
+  localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
+  navigator: { clipboard: { writeText: async () => {} } },
+  fetch: () => new Promise(() => {}),
+  requestAnimationFrame: () => {},
+  setTimeout: () => 1,
+  clearTimeout: () => {},
+  TextEncoder, URLSearchParams, console, Math, Date, JSON, Number, String, Boolean, Array, Object, RegExp, Map, Set, Promise,
+  ArrayBuffer, DataView, Uint8Array, Uint16Array, Uint32Array, Float32Array, encodeURIComponent, decodeURIComponent, parseInt, parseFloat, isNaN, isFinite
+};
+sandbox.window.document = sandbox.document;
+sandbox.history = sandbox.window.history;
+sandbox.location = sandbox.window.location;
+sandbox.globalThis = sandbox;
+vm.createContext(sandbox);
+vm.runInContext(code, sandbox);
+vm.runInContext(`
+  DATA = { studioPerspectives: ${JSON.stringify(sp)}, worldMap: { maps: [], monsters: [] }, summary: {}, tables: [], zones: [], encounters: [], loot: [] };
+  CURRENT_TAB = 'studio';
+  render();
+  setAtlasPersonaLens('developer');
+  setAtlasEngineMode('2d_ol');
+  const olMode = ATLAS_ENGINE_MODE;
+  const olFeatures = buildAtlasspatialFeaturesList();
+  setAtlasEngineMode('3d_map3d');
+  const m3dMode = ATLAS_ENGINE_MODE;
+  const overlandGlb = exportAtlasBlockoutGlb();
+  setAtlas3dOption('contextOverride', 'town');
+  const townScene = buildAtlas3dBlockoutScene();
+  const hasRoadMesh = townScene.meshes.some(m => m.name.startsWith('Road_'));
+  const bldg3 = townScene.meshes.find(m => m.name.startsWith('Building_3_'));
+  const pickBldg3 = bldg3 ? selectAtlas3dMeshByName(bldg3.name, false) : null;
+  const townGlb = exportAtlasBlockoutGlb();
+  setAtlas3dOption('contextOverride', 'dungeon');
+  const dungeonGlb = exportAtlasBlockoutGlb();
+  setAtlasEngineMode('2d_svg');
+  zoomStudioMap(0.5, false, null, 320, 180);
+  const invZoom = document.getElementById('dedicatedWorldAtlasSvg').style['--atlas-inv-zoom'];
+  globalThis.__TEST_OUT = { olMode, olFeatureCount: olFeatures.length, olHasDevBadge: Boolean(olFeatures[0] && olFeatures[0].lensBadge.includes('.glb')), m3dMode, hasRoadMesh, pickBldg3, overlandGlb, townGlb, dungeonGlb, invZoom };
+`, sandbox);
+console.log(JSON.stringify(sandbox.__TEST_OUT));
+"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            js_path = Path(tmpdir) / "app.js"
+            bundle_path = Path(tmpdir) / "bundle.json"
+            js_path.write_text(main_js, encoding="utf-8")
+            bundle_path.write_text(json.dumps(bundle), encoding="utf-8")
+            env = dict(os.environ)
+            env["ATLAS_JS_PATH"] = str(js_path)
+            env["ATLAS_BUNDLE_PATH"] = str(bundle_path)
+            proc = subprocess.run(["node", "-e", node_test], capture_output=True, text=True, env=env, check=True)
+            out = json.loads(proc.stdout.strip().splitlines()[-1])
+
+        self.assertEqual(out["olMode"], "2d_ol")
+        self.assertGreaterEqual(out["olFeatureCount"], 10)
+        self.assertTrue(out["olHasDevBadge"])
+        self.assertEqual(out["m3dMode"], "3d_map3d")
+        self.assertTrue(out["hasRoadMesh"])
+        self.assertIsNotNone(out["pickBldg3"])
+        self.assertTrue(out["pickBldg3"]["hasShopCatalog"])
+        for key, expected_ctx in (("overlandGlb", "overland"), ("townGlb", "town"), ("dungeonGlb", "dungeon")):
+            meta = out[key]
+            self.assertEqual(meta["magic"], 0x46546C67, f"Invalid glTF magic header for {key}: {meta}")
+            self.assertEqual(meta["version"], 2)
+            self.assertEqual(meta["context"], expected_ctx)
+            self.assertGreater(meta["meshCount"], 5)
+            self.assertEqual(meta["nodeCount"], meta["meshCount"] + 1)
+            self.assertGreater(meta["byteLength"], 500)
+        self.assertIsNotNone(out["invZoom"])
+        self.assertLess(float(out["invZoom"]), 1.0)
+
+    def test_wave_ux11_town_only_shops_zone_coverage_and_glb_scale(self) -> None:
+        from probes.atlas_ux_probe import run_ux_probe
+
+        html = web.INDEX_HTML
+        # Shops render only when isAtlasTownShopContext(poi); dungeon/field entry points clear a lingering town POI.
+        self.assertIn("(poi.shopAndRefinementCatalog && isAtlasTownShopContext(poi))", html)
+        self.assertGreaterEqual(html.count("clearAtlasLingeringTownShopPoi();"), 3)
+        # 3D canvas survives clicks/keys: in-place redraw, second-click drill, no native dblclick dependency.
+        self.assertIn("window.__ATLAS_3D_DRAW_SCENE = drawScene;", html)
+        self.assertIn("ATLAS_3D_STATE.lastClickMeshName", html)
+        self.assertNotIn("canvas.ondblclick", html)
+        self.assertNotIn("(filteredZones.length > 0 ? filteredZones : zones).slice(0, 28)", html)
+
+        v7 = run_ux_probe()["gates"]["V-7_town_only_shops_zone_coverage_and_glb_scale"]
+        self.assertEqual(v7["zoneCount"], 63)
+        self.assertEqual(v7["offWorld"], [])
+        self.assertEqual(v7["actionTypes"], {"town": 15, "field": 24, "dungeon": 16, "fortress": 8})
+        for f in ("Monster", "Mini-Boss", "Raid", "MVP"):
+            self.assertLess(v7["filterCounts"][f], 63, f"{f} filter does not narrow")
+        self.assertLess(v7["band1to10"], 63)
+        self.assertTrue(v7["townHasInspector"])
+        self.assertFalse(v7["dungeonHasInspector"])
+        self.assertTrue(v7["dungeonHasTownOnlyNote"])
+        self.assertTrue(v7["poiClearedOnDungeon"])
+        self.assertTrue(v7["poiClearedOnField"])
+        self.assertEqual(v7["metersPerUnit"], {"overland": 1860, "town": 1, "dungeon": 1})
+        self.assertTrue(v7["polyHit"])
+        self.assertTrue(v7["groundRank"])
+
+    def test_wave_ux12_distinct_tiers_zero_delay_drawer_coregistered_polygons_and_local_ol(self) -> None:
+        import threading
+        import urllib.error
+        import urllib.request
+        from http.server import ThreadingHTTPServer
+
+        from probes.atlas_ux_probe import run_ux_probe
+
+        html = web.INDEX_HTML
+        self.assertNotIn("pendingDrawerTimer", html)
+        self.assertNotIn("cdn.jsdelivr", html)
+        self.assertIn("installAtlas3dSecondClickGuard", html)
+        self.assertIn("lastClickClientX", html)
+        self.assertIn("'/vendor/ol.js'", html)
+        self.assertIn('"/vendor/ol.css"', __import__("inspect").getsource(web.ObservatoryHandler.do_GET))
+
+        v8 = run_ux_probe()["gates"]["V-8_wave12_distinct_filters_zero_delay_and_pin_handlers"]
+        self.assertTrue(v8["passed"])
+        t = v8["tierCounts"]
+        self.assertGreater(t["Monster"], t["Mini-Boss"])
+        self.assertGreater(t["Mini-Boss"], t["Raid"])
+        self.assertGreater(t["Raid"], t["MVP"])
+        self.assertGreater(t["MVP"], 0)
+        self.assertEqual(v8["pillEmojiLenses"], [])
+        self.assertEqual(v8["gamerBar"], v8["gamerDefaultBar"])
+        self.assertNotEqual(v8["architectBar"], v8["gamerBar"])
+        self.assertEqual(v8["pointsChecked"], 63)
+        self.assertEqual(v8["pointsOutsideOwnContinent"], [])
+        self.assertEqual(v8["foreign_continent_hits"], 0)
+        self.assertEqual(v8["own_continent_inside"], 63)
+        self.assertEqual(v8["overlapping_polygon_pairs"], 0)
+        self.assertEqual(v8["stacked_zero_px_pairs"], 0)
+        self.assertGreaterEqual(v8["min_pair_dist_px"], 10)
+        self.assertGreater(v8["handlerCount"], 0)
+        self.assertEqual(v8["handlerParseFailures"], 0)
+        self.assertGreater(v8["vendor_ol_js_bytes"], 100 * 1024)
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), web.ObservatoryHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            base = f"http://127.0.0.1:{server.server_address[1]}"
+            with urllib.request.urlopen(base + "/vendor/ol.js") as resp:
+                self.assertEqual(resp.status, 200)
+                self.assertIn("javascript", resp.headers["Content-Type"])
+                self.assertGreater(len(resp.read()), 100 * 1024)
+            with urllib.request.urlopen(base + "/vendor/ol.css") as resp:
+                self.assertEqual(resp.status, 200)
+                self.assertIn("text/css", resp.headers["Content-Type"])
+            with self.assertRaises(urllib.error.HTTPError) as ctx:
+                urllib.request.urlopen(base + "/vendor/missing.js")
+            self.assertEqual(ctx.exception.code, 404)
+        finally:
+            server.shutdown()
+            server.server_close()
+
 
 if __name__ == "__main__":
     unittest.main()
