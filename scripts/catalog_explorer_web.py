@@ -6157,6 +6157,19 @@ function getSemanticZoomLodTier(zoomVal = STUDIO_MAP_ZOOM) {
   return 1;                     // Tier 1: Macro Geography, Travel Highways & 6 Race Spawns (1.0x - 2.2x)
 }
 
+function getAtlasBossHierarchyChains(tatlas) {
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const doc = tatlas || sp.tShapedWorldAtlas || {};
+  return Array.isArray(doc.boss_hierarchy_chains) ? doc.boss_hierarchy_chains : [];
+}
+
+function locToAtlasSvg(xOrLoc, yOpt) {
+  if (typeof xOrLoc === 'number' && typeof yOpt === 'number') {
+    return clampWorldLocCoord({ x: xOrLoc, y: yOpt });
+  }
+  return clampWorldLocCoord(xOrLoc);
+}
+
 function setStudioCartoTheme(theme) {
   STUDIO_CARTO_THEME = theme === 'google' ? 'google' : 'l2hub';
   render();
@@ -12415,22 +12428,25 @@ function renderAtlasLiveopsGmBarHtml(tatlas) {
             const cs = catStyleMap[a.liveops_category] || { col: '#fb923c', badge: 'LIVEOPS GM', icon: '🛟' };
             const tidStr = String(a.town_zone_id || '');
             const tObj = byTownId[tidStr];
+            const locVal = a.anchor_loc || a.loc || '-84120:243500';
             const jumpJs = tObj
-              ? `focusTownStreetBlueprint('${escapeHtml(tObj.studio_node_id || tidStr.replace('zone-', ''))}', '${escapeHtml(a.loc)}')`
-              : `focusTownStreetBlueprint('${escapeHtml(tidStr.replace('zone-', ''))}', '${escapeHtml(a.loc)}')`;
-            const guardTxt = (a.safety_and_audit_guards || []).slice(0, 2).join(' · ');
+              ? `focusTownStreetBlueprint('${escapeHtml(tObj.studio_node_id || tidStr.replace('zone-', ''))}', '${escapeHtml(locVal)}')`
+              : `focusTownStreetBlueprint('${escapeHtml(tidStr.replace('zone-', ''))}', '${escapeHtml(locVal)}')`;
+            const anchorTitle = a.anchor_name || a.town_name || a.anchor_id || 'LiveOps GM Anchor';
+            const cmdList = Array.isArray(a.gm_portal_command_suite) ? a.gm_portal_command_suite.join(' · ') : (a.gm_portal_action_and_rollback_sla || a.sla_and_build_farm_hook || '');
+            const guardTxt = (a.safety_and_audit_guards || a.hot_config_and_audit_features || []).slice(0, 2).join(' · ');
             return `
               <div style="padding:5px 8px;border-radius:6px;background:#090d14;border-left:3.5px solid ${cs.col};display:flex;flex-direction:column;justify-content:space-between;gap:3px">
                 <div>
                   <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
-                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(a.anchor_name.slice(0, 34))}</span>
+                    <span style="font-size:9.3px;font-weight:900;color:#f8fafc">${cs.icon} ${escapeHtml(String(anchorTitle).slice(0, 34))}</span>
                     <span class="mono" style="font-size:8px;font-weight:900;color:${cs.col}">[${cs.badge}]</span>
                   </div>
                   <div class="mono" style="font-size:8.1px;color:#fdba74;margin-top:1px">
-                    🛡️ ${escapeHtml(a.gm_portal_action_and_rollback_sla.slice(0, 54))}
+                    🛡️ ${escapeHtml(String(cmdList).slice(0, 54))}
                   </div>
                   <div style="font-size:8px;color:#fde68a;margin-top:1px">
-                    🔒 ${escapeHtml(guardTxt.slice(0, 58))}
+                    🔒 ${escapeHtml(String(guardTxt).slice(0, 58))}
                   </div>
                 </div>
                 <div style="display:flex;gap:4px;margin-top:2px">
@@ -19080,6 +19096,7 @@ function renderDedicatedWorldAtlas() {
   `;
 
   // Combat Skill Timeline & Boss Telegraph Profiles Overlay (D77)
+  const atlas = tatlas || {};
   const skillTimelineProfiles = Array.isArray(atlas.combat_skill_timeline_profiles) ? atlas.combat_skill_timeline_profiles : [];
   const skillTimelineOverlaySvg = !ATLAS_SKILL_TIMELINE_MODE ? '' : `
     <g id="studioSkillTimelineOverlay">
@@ -21123,6 +21140,7 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
               })()}
 
               ${(() => {
+                const sp = (DATA && DATA.studioPerspectives) || {};
                 const tatlas = sp.tShapedWorldAtlas || {};
                 const zdir = tatlas.t_breadth_zone_directory || {};
                 const deep = tatlas.t_deep_validation_slice || {};
