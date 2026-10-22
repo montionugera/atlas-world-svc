@@ -8460,3 +8460,563 @@ a.joy-logo-cloud__item:focus-visible {
 }
 
 
+/* ── F-086 Spatial Workspace Contracts ── */
+/* Canvas-first workspace primitives for string-template consumers: state lives in data-* and ARIA
+   attributes, so no framework is needed. Docks show/hide (never animate layout); only colour animates. */
+
+/* 1. SpatialViewportShell */
+.joy-spatial-shell {
+  --joy-spatial-chrome-h: 104px;
+  --joy-spatial-left-w: 340px;
+  --joy-spatial-bottom-h: 280px;
+  --joy-spatial-min-canvas: 480px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--joy-surface-canvas);
+  color: var(--joy-text-primary);
+  font-family: var(--joy-font-family-sans);
+}
+.joy-spatial-shell__chrome {
+  position: relative;
+  z-index: var(--joy-z-dropdown);
+  display: flex;
+  flex-direction: column;
+  background: var(--joy-surface-card);
+  border-bottom: 1px solid var(--joy-border-subtle);
+}
+.joy-spatial-shell__chrome:focus-within,
+.joy-spatial-shell__chrome:has(.joy-omni-command-bar[data-open="true"]) {
+  z-index: var(--joy-z-popover);
+}
+.joy-spatial-shell__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+.joy-spatial-shell[data-left-open="true"] .joy-spatial-shell__body {
+  grid-template-columns: var(--joy-spatial-left-w) minmax(0, 1fr);
+}
+.joy-spatial-shell__left {
+  display: none;
+  min-width: 0;
+  overflow-y: auto;
+  background: var(--joy-surface-card);
+  border-right: 1px solid var(--joy-border-subtle);
+}
+.joy-spatial-shell[data-left-open="true"] .joy-spatial-shell__left {
+  display: block;
+}
+.joy-spatial-shell__canvas {
+  position: relative;
+  min-width: 0;
+  height: max(var(--joy-spatial-min-canvas), calc(100dvh - var(--joy-spatial-chrome-h)));
+  overflow: hidden;
+  background: var(--joy-surface-sunken);
+  overscroll-behavior: contain;
+}
+.joy-spatial-shell[data-left-open="true"] .joy-spatial-shell__left {
+  max-height: max(var(--joy-spatial-min-canvas), calc(100dvh - var(--joy-spatial-chrome-h)));
+}
+.joy-spatial-shell[data-bottom-open="true"] .joy-spatial-shell__canvas {
+  height: max(var(--joy-spatial-min-canvas), calc(100dvh - var(--joy-spatial-chrome-h) - var(--joy-spatial-bottom-h)));
+}
+.joy-spatial-shell__canvas > svg,
+.joy-spatial-shell__canvas > canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.joy-spatial-shell__hud {
+  position: absolute;
+  inset-block-start: var(--joy-space-3);
+  inset-inline: var(--joy-space-3);
+  z-index: var(--joy-z-sticky);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--joy-space-2);
+  pointer-events: none;
+}
+.joy-spatial-shell__hud--bottom {
+  inset-block-start: auto;
+  inset-block-end: var(--joy-space-3);
+}
+.joy-spatial-shell__hud-panel {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--joy-space-2);
+  padding: var(--joy-space-1) var(--joy-space-2);
+  background: var(--joy-surface-raised);
+  border: 1px solid var(--joy-border-subtle);
+  border-radius: var(--joy-radius-card);
+  box-shadow: var(--joy-elevation-2);
+}
+.joy-spatial-shell__bottom {
+  display: none;
+  max-height: var(--joy-spatial-bottom-h);
+  overflow: auto;
+  background: var(--joy-surface-card);
+  border-top: 1px solid var(--joy-border-subtle);
+}
+.joy-spatial-shell[data-bottom-open="true"] .joy-spatial-shell__bottom {
+  display: block;
+}
+.joy-spatial-shell[data-theater="true"] {
+  position: fixed;
+  inset: 0;
+  z-index: var(--joy-z-drawer);
+}
+.joy-spatial-shell[data-theater="true"] .joy-spatial-shell__chrome,
+.joy-spatial-shell[data-theater="true"] .joy-spatial-shell__left,
+.joy-spatial-shell[data-theater="true"] .joy-spatial-shell__bottom {
+  display: none;
+}
+.joy-spatial-shell[data-theater="true"] .joy-spatial-shell__body {
+  grid-template-columns: minmax(0, 1fr);
+}
+.joy-spatial-shell[data-theater="true"] .joy-spatial-shell__canvas {
+  height: 100dvh;
+}
+.joy-spatial-shell__toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--joy-space-1);
+  min-height: var(--joy-control-height-sm);
+  padding: 0 var(--joy-space-3);
+  background: var(--joy-surface-card);
+  border: 1px solid var(--joy-border-subtle);
+  border-radius: var(--joy-radius-control);
+  color: var(--joy-text-secondary);
+  font-family: var(--joy-font-family-sans);
+  font-size: var(--joy-font-size-sm);
+  font-weight: var(--joy-font-weight-medium);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--joy-duration-fast) var(--joy-ease-out), border-color var(--joy-duration-fast) var(--joy-ease-out), color var(--joy-duration-fast) var(--joy-ease-out);
+}
+.joy-spatial-shell__toggle:hover:not(:disabled):not([aria-pressed="true"]) {
+  border-color: var(--joy-border-default);
+  color: var(--joy-text-primary);
+}
+.joy-spatial-shell__toggle[aria-pressed="true"] {
+  background: var(--joy-accent-subtle);
+  border-color: var(--joy-accent-default);
+  color: var(--joy-accent-text);
+}
+.joy-spatial-shell__toggle:focus:not(:focus-visible) {
+  outline: none;
+}
+.joy-spatial-shell__toggle:focus-visible {
+  outline: var(--joy-focus-ring);
+  outline-offset: 2px;
+}
+.joy-spatial-shell__toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+@media (max-width: 767px) {
+  .joy-spatial-shell[data-left-open="true"] .joy-spatial-shell__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .joy-spatial-shell[data-left-open="true"] .joy-spatial-shell__left {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: var(--joy-z-drawer);
+    max-height: 60dvh;
+    border-right: 0;
+    border-top: 1px solid var(--joy-border-subtle);
+    border-radius: var(--joy-radius-overlay) var(--joy-radius-overlay) 0 0;
+    background: var(--joy-surface-overlay);
+    box-shadow: var(--joy-elevation-3);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .joy-spatial-shell__hud {
+    inset-block-start: var(--joy-space-2);
+    inset-inline: var(--joy-space-2);
+  }
+}
+
+/* 2. PersonaLensBar (a tablist; selection via aria-selected, icons from joy-icons, never emoji) */
+.joy-lens-bar {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--joy-space-1);
+  min-width: 0;
+  padding: var(--joy-space-1) var(--joy-space-2);
+  background: var(--joy-surface-card);
+  border-bottom: 1px solid var(--joy-border-subtle);
+}
+.joy-lens-bar__tabs {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--joy-space-1);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.joy-lens-bar__tabs::-webkit-scrollbar {
+  display: none;
+}
+.joy-lens-bar__tab {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--joy-space-2);
+  min-height: var(--joy-control-height-md);
+  padding: 0 var(--joy-space-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--joy-radius-control);
+  color: var(--joy-text-secondary);
+  font-family: var(--joy-font-family-sans);
+  font-size: var(--joy-font-size-sm);
+  font-weight: var(--joy-font-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--joy-duration-fast) var(--joy-ease-out), color var(--joy-duration-fast) var(--joy-ease-out), box-shadow var(--joy-duration-fast) var(--joy-ease-out);
+}
+.joy-lens-bar__tab:hover:not(:disabled):not([aria-selected="true"]) {
+  background: var(--joy-surface-sunken);
+  color: var(--joy-text-primary);
+}
+.joy-lens-bar__tab[aria-selected="true"] {
+  background: var(--joy-accent-subtle);
+  color: var(--joy-text-primary);
+  font-weight: var(--joy-font-weight-semibold);
+  box-shadow: inset 0 -2px 0 var(--joy-accent-default);
+}
+.joy-lens-bar__tab:focus:not(:focus-visible) {
+  outline: none;
+}
+.joy-lens-bar__tab:focus-visible {
+  outline: var(--joy-focus-ring);
+  outline-offset: -2px;
+}
+.joy-lens-bar__tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.joy-lens-bar__icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: currentColor;
+}
+.joy-lens-bar__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--joy-space-1);
+  background: var(--joy-surface-sunken);
+  border: 1px solid var(--joy-border-subtle);
+  border-radius: var(--joy-radius-pill);
+  color: var(--joy-text-secondary);
+  font-size: var(--joy-font-size-xs);
+  font-weight: var(--joy-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+.joy-lens-bar__tab[aria-selected="true"] .joy-lens-bar__badge {
+  background: var(--joy-surface-card);
+  color: var(--joy-text-primary);
+}
+.joy-lens-bar__kbd {
+  padding: 0 var(--joy-space-1);
+  background: var(--joy-surface-sunken);
+  border: 1px solid var(--joy-border-subtle);
+  border-radius: var(--joy-radius-sm);
+  color: var(--joy-text-muted);
+  font-family: var(--joy-font-family-mono);
+  font-size: var(--joy-font-size-xs);
+}
+.joy-lens-bar__trailing {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  min-width: 0;
+  gap: var(--joy-space-2);
+  margin-inline-start: auto;
+}
+
+/* 3. ContextFilterBar (chips via aria-pressed; context-incompatible chips are :disabled, never hidden) */
+.joy-context-filter-bar {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--joy-space-2);
+  min-width: 0;
+}
+.joy-context-filter-bar__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--joy-space-1);
+}
+.joy-context-filter-bar__chip {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--joy-space-1);
+  min-height: var(--joy-control-height-sm);
+  padding: 0 var(--joy-space-3);
+  background: var(--joy-surface-card);
+  border: 1px solid var(--joy-border-default);
+  border-radius: var(--joy-radius-pill);
+  color: var(--joy-text-secondary);
+  font-family: var(--joy-font-family-sans);
+  font-size: var(--joy-font-size-sm);
+  font-weight: var(--joy-font-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--joy-duration-fast) var(--joy-ease-out), border-color var(--joy-duration-fast) var(--joy-ease-out), color var(--joy-duration-fast) var(--joy-ease-out);
+}
+.joy-context-filter-bar__chip:hover:not(:disabled):not([aria-pressed="true"]) {
+  border-color: var(--joy-border-strong);
+  color: var(--joy-text-primary);
+}
+.joy-context-filter-bar__chip[aria-pressed="true"] {
+  background: var(--joy-accent-default);
+  border-color: var(--joy-accent-default);
+  color: var(--joy-text-on-accent);
+  font-weight: var(--joy-font-weight-semibold);
+}
+.joy-context-filter-bar__chip:focus:not(:focus-visible) {
+  outline: none;
+}
+.joy-context-filter-bar__chip:focus-visible {
+  outline: var(--joy-focus-ring);
+  outline-offset: 2px;
+}
+.joy-context-filter-bar__chip:disabled {
+  background: var(--joy-surface-disabled);
+  border-color: var(--joy-border-disabled);
+  color: var(--joy-text-disabled);
+  cursor: not-allowed;
+}
+.joy-context-filter-bar__count {
+  color: var(--joy-text-muted);
+  font-size: var(--joy-font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+.joy-context-filter-bar__chip[aria-pressed="true"] .joy-context-filter-bar__count {
+  color: inherit;
+}
+.joy-context-filter-bar__notice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--joy-space-2);
+  padding: var(--joy-space-1) var(--joy-space-3);
+  background: var(--joy-status-info-bg);
+  border: 1px solid var(--joy-status-info-border);
+  border-radius: var(--joy-radius-control);
+  color: var(--joy-status-info-fg);
+  font-size: var(--joy-font-size-sm);
+  animation: joy-fade-in var(--joy-duration-normal) var(--joy-ease-out);
+}
+.joy-context-filter-bar__notice-action {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: var(--joy-control-height-sm);
+  padding: 0 var(--joy-space-2);
+  background: transparent;
+  border: 0;
+  border-radius: var(--joy-radius-control);
+  color: var(--joy-status-info-fg);
+  font: inherit;
+  font-weight: var(--joy-font-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.joy-context-filter-bar__notice-action:focus:not(:focus-visible) {
+  outline: none;
+}
+.joy-context-filter-bar__notice-action:focus-visible {
+  outline: var(--joy-focus-ring);
+  outline-offset: 2px;
+}
+
+/* 4. OmniCommandBar (one input row at rest; the tray opens on focus-within or data-open) */
+.joy-omni-command-bar {
+  box-sizing: border-box;
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  max-width: 480px;
+}
+.joy-lens-bar__trailing .joy-omni-command-bar {
+  flex: 0 0 320px;
+}
+.joy-omni-command-bar__field {
+  display: flex;
+  align-items: center;
+  gap: var(--joy-space-2);
+  min-height: var(--joy-control-height-md);
+  padding: 0 var(--joy-space-3);
+  background: var(--joy-surface-card);
+  border: 1px solid var(--joy-border-default);
+  border-radius: var(--joy-radius-control);
+  color: var(--joy-text-muted);
+  transition: border-color var(--joy-duration-fast) var(--joy-ease-out), box-shadow var(--joy-duration-fast) var(--joy-ease-out);
+}
+.joy-omni-command-bar:focus-within .joy-omni-command-bar__field {
+  border-color: var(--joy-border-focus);
+  box-shadow: 0 0 0 1px var(--joy-border-focus);
+}
+.joy-omni-command-bar__input {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--joy-text-primary);
+  font-family: var(--joy-font-family-sans);
+  font-size: var(--joy-font-size-md);
+}
+.joy-omni-command-bar__input::placeholder {
+  color: var(--joy-text-muted);
+}
+.joy-omni-command-bar__kbd {
+  flex-shrink: 0;
+  padding: 0 var(--joy-space-1);
+  background: var(--joy-surface-sunken);
+  border: 1px solid var(--joy-border-subtle);
+  border-radius: var(--joy-radius-sm);
+  color: var(--joy-text-muted);
+  font-family: var(--joy-font-family-mono);
+  font-size: var(--joy-font-size-xs);
+}
+.joy-omni-command-bar__tray {
+  display: none;
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + var(--joy-space-1));
+  z-index: var(--joy-z-dropdown);
+  max-height: min(60dvh, 420px);
+  overflow-y: auto;
+  padding: var(--joy-space-2);
+  background: var(--joy-surface-overlay);
+  border: 1px solid var(--joy-border-subtle);
+  border-radius: var(--joy-radius-card);
+  box-shadow: var(--joy-elevation-3);
+  animation: joy-popover-enter var(--joy-duration-fast) var(--joy-ease-out);
+}
+.joy-omni-command-bar:focus-within .joy-omni-command-bar__tray,
+.joy-omni-command-bar[data-open="true"] .joy-omni-command-bar__tray {
+  display: block;
+}
+.joy-omni-command-bar[data-open="false"] .joy-omni-command-bar__tray {
+  display: none;
+}
+.joy-omni-command-bar__group + .joy-omni-command-bar__group {
+  margin-top: var(--joy-space-2);
+  padding-top: var(--joy-space-2);
+  border-top: 1px solid var(--joy-border-subtle);
+}
+.joy-omni-command-bar__group-label {
+  padding: var(--joy-space-1) var(--joy-space-2);
+  color: var(--joy-text-muted);
+  font-size: var(--joy-font-size-xs);
+  font-weight: var(--joy-font-weight-semibold);
+}
+.joy-omni-command-bar__item {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  gap: var(--joy-space-2);
+  width: 100%;
+  min-height: var(--joy-control-height-sm);
+  padding: 0 var(--joy-space-2);
+  background: transparent;
+  border: 0;
+  border-radius: var(--joy-radius-control);
+  color: var(--joy-text-primary);
+  font-family: var(--joy-font-family-sans);
+  font-size: var(--joy-font-size-sm);
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--joy-duration-fast) var(--joy-ease-out);
+}
+.joy-omni-command-bar__item:hover,
+.joy-omni-command-bar__item[aria-selected="true"] {
+  background: var(--joy-surface-sunken);
+}
+.joy-omni-command-bar__item:focus:not(:focus-visible) {
+  outline: none;
+}
+.joy-omni-command-bar__item:focus-visible {
+  outline: var(--joy-focus-ring);
+  outline-offset: -2px;
+}
+@media (max-width: 767px) {
+  .joy-lens-bar {
+    flex-wrap: wrap;
+  }
+  .joy-lens-bar__trailing {
+    flex: 1 1 100%;
+    margin-inline-start: 0;
+  }
+  .joy-lens-bar__trailing .joy-omni-command-bar {
+    flex: 1 1 auto;
+  }
+  .joy-omni-command-bar {
+    max-width: none;
+  }
+  .joy-omni-command-bar__tray {
+    position: fixed;
+    inset-inline: 0;
+    top: auto;
+    inset-block-end: 0;
+    max-height: 70dvh;
+    border-radius: var(--joy-radius-overlay) var(--joy-radius-overlay) 0 0;
+    padding-bottom: calc(var(--joy-space-2) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (pointer: coarse) {
+  .joy-spatial-shell__toggle,
+  .joy-lens-bar__tab,
+  .joy-context-filter-bar__chip,
+  .joy-context-filter-bar__notice-action,
+  .joy-omni-command-bar__item,
+  .joy-omni-command-bar__field {
+    min-height: 44px;
+  }
+  .joy-lens-bar__kbd,
+  .joy-omni-command-bar__kbd {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .joy-spatial-shell__toggle,
+  .joy-lens-bar__tab,
+  .joy-context-filter-bar__chip,
+  .joy-omni-command-bar__field,
+  .joy-omni-command-bar__item {
+    transition: none;
+  }
+  .joy-context-filter-bar__notice,
+  .joy-omni-command-bar__tray {
+    animation: none;
+  }
+}
+/* ── end F-086 Spatial Workspace Contracts ── */
+

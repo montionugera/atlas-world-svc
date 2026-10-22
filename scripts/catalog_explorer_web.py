@@ -224,9 +224,11 @@ def load_studio_perspectives_bundle() -> dict:
         "tShapedWorldAtlas": t_atlas,
     }
 
+REPOS_ROOT = ROOT.parent.parent.parent if ROOT.parent.name == "worktrees" else ROOT.parent
 THEME_CSS_CANDIDATES = [
-    ROOT.parent / "joy-design" / "packages" / "tokens" / "dist" / "theme.css",
-    ROOT.parent / "joy-design" / ".claude" / "worktrees" / "_release" / "packages" / "tokens" / "dist" / "theme.css",
+    REPOS_ROOT / "joy-design" / ".claude" / "worktrees" / "F-086-spatial-workspace-css-contracts-spatial" / "packages" / "tokens" / "dist" / "theme.css",
+    REPOS_ROOT / "joy-design" / ".claude" / "worktrees" / "_release" / "packages" / "tokens" / "dist" / "theme.css",
+    REPOS_ROOT / "joy-design" / "packages" / "tokens" / "dist" / "theme.css",
     ROOT / "tools" / "mac-observatory" / "joy-theme.css",
 ]
 
@@ -382,6 +384,11 @@ def resolve_thumb_file(request_path: str) -> Path | None:
 
 
 def load_theme_css() -> bytes:
+    for candidate in THEME_CSS_CANDIDATES:
+        if candidate.exists():
+            raw = candidate.read_bytes()
+            if b"joy-spatial-shell" in raw:
+                return raw
     for candidate in THEME_CSS_CANDIDATES:
         if candidate.exists():
             return candidate.read_bytes()
@@ -1971,10 +1978,10 @@ INDEX_HTML = r"""<!DOCTYPE html>
       max-width: 100%;
       width: 100%;
       margin: 0 auto;
-      padding: 18px 24px 72px;
+      padding: 8px 16px 64px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 8px;
     }
     .studio-split-layout {
       display: grid;
@@ -3510,6 +3517,276 @@ INDEX_HTML = r"""<!DOCTYPE html>
       height: 60px !important;
       object-fit: contain;
     }
+
+    /* =========================================================================
+     * F-086 SPATIAL SHELL & MOBILE VIEWPORT OVERFLOW GUARDS (LA-05 / LA-09 / LA-12)
+     * ======================================================================= */
+    .topbar {
+      min-height: 44px;
+      max-height: 52px;
+      padding: 4px 16px;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    .topbar__end {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      flex-shrink: 0;
+    }
+    .topbar__end .joy-select,
+    .joy-context-filter-bar .joy-select,
+    .joy-spatial-shell .joy-select {
+      width: auto;
+      min-width: 0;
+      flex: 0 1 auto;
+      height: 30px;
+      padding: 0 24px 0 8px;
+      font-size: 11.5px;
+    }
+    .topbar__end .joy-button,
+    .joy-spatial-shell .joy-button {
+      width: auto;
+      flex: 0 0 auto;
+      height: 28px;
+      padding: 0 10px;
+      font-size: 11.5px;
+    }
+    .topbar-mobile-nav-btn {
+      display: none;
+    }
+    .mobile-nav-scrim {
+      display: none;
+    }
+    .content-area {
+      padding: 4px 12px 48px;
+      gap: 4px;
+    }
+    .joy-spatial-shell {
+      --joy-spatial-min-canvas: 730px;
+      --joy-spatial-chrome-h: 130px;
+      --joy-spatial-bottom-h: 0px;
+      margin-bottom: 10px;
+      border-radius: 14px;
+      background: #0d1624;
+      border: 1px solid rgba(218, 179, 98, 0.45);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.65);
+      overflow: hidden;
+    }
+    .joy-spatial-shell[data-carto-theme="google"] {
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+    #studioGooglePlaceDrawer.joy-spatial-shell__left {
+      background: #161f2c;
+    }
+    #joySpatialViewportShell.joy-spatial-shell__body,
+    .joy-spatial-shell__canvas {
+      background: #2b3d41;
+    }
+    .joy-spatial-shell__canvas {
+      min-height: clamp(560px, calc(100dvh - 140px), 86dvh);
+      height: clamp(560px, calc(100dvh - 140px), 86dvh);
+    }
+    .joy-spatial-shell[data-theater="true"] .joy-spatial-shell__canvas {
+      min-height: 100dvh;
+      height: 100dvh;
+    }
+    .joy-spatial-shell[data-carto-theme="google"] #joySpatialViewportShell.joy-spatial-shell__body,
+    .joy-spatial-shell[data-carto-theme="google"] .joy-spatial-shell__canvas {
+      background: #193452;
+    }
+    .joy-spatial-shell__hud--top-left {
+      right: 64px;
+    }
+    .joy-spatial-shell__hud--top-right {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      left: auto;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      pointer-events: none;
+    }
+    .joy-spatial-shell__hud-panel {
+      flex-wrap: wrap;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.88);
+      padding: 4px 10px;
+      border: 1px solid rgba(218, 179, 98, 0.35);
+    }
+    .joy-spatial-shell__hud-panel--zoom {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: rgba(18, 16, 12, 0.92);
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+      pointer-events: auto;
+    }
+    .joy-spatial-shell__bottom {
+      max-height: none;
+    }
+    .joy-lens-bar {
+      min-height: 42px;
+      max-height: 48px;
+      padding: 3px 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .joy-context-filter-bar {
+      min-height: 38px;
+      max-height: 42px;
+      padding: 3px 8px;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .joy-context-filter-bar__chips {
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+    }
+    .joy-context-filter-bar__notice {
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 2px 8px;
+      font-size: 11px;
+    }
+    .joy-context-filter-bar__select {
+      height: 26px;
+      padding: 0 8px;
+      border-radius: var(--joy-radius-pill, 999px);
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-primary);
+      border: 1px solid var(--joy-border-default);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .joy-omni-command-bar__btn {
+      background: transparent;
+      border: none;
+      color: var(--joy-text-secondary);
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    .joy-omni-command-bar__chips-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid var(--joy-border-subtle);
+    }
+    .joy-omni-command-bar__action {
+      margin-left: auto;
+      font-size: 10px;
+      color: #fde047;
+    }
+    @media (max-width: 767px) {
+      .sidebar {
+        display: none !important;
+        width: 0 !important;
+      }
+      body[data-mobile-nav-open="true"] .sidebar {
+        display: flex !important;
+        position: fixed !important;
+        inset: 0 auto 0 0 !important;
+        width: 268px !important;
+        max-width: 82vw !important;
+        height: 100dvh !important;
+        z-index: 950 !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
+      }
+      body[data-mobile-nav-open="true"] .mobile-nav-scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.65);
+        z-index: 940;
+      }
+      .topbar {
+        min-height: 36px;
+        max-height: 44px;
+        padding: 4px 8px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+      }
+      .topbar-mobile-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 6px;
+        border: 1px solid var(--joy-border-strong);
+        background: var(--joy-surface-sunken);
+        color: var(--joy-text-primary);
+        font-size: 11.5px;
+        font-weight: 700;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .topbar__end {
+        display: none !important;
+      }
+      .main,
+      .scroll-stage {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
+      .content-area {
+        width: 100%;
+        max-width: 100%;
+        padding: 4px;
+        margin: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
+      #perspectiveBar,
+      .joy-spatial-shell {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
+      .joy-lens-bar {
+        max-height: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        padding: 4px 6px;
+        overflow-x: hidden;
+      }
+      .joy-lens-bar__tabs,
+      .joy-lens-bar__trailing {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+      }
+      .joy-spatial-shell__canvas {
+        min-height: clamp(360px, calc(100dvh - 180px), 75dvh);
+        height: clamp(360px, calc(100dvh - 180px), 75dvh);
+      }
+    }
   </style>
 </head>
 <body>
@@ -3553,27 +3830,29 @@ INDEX_HTML = r"""<!DOCTYPE html>
       <span class="joy-badge joy-badge--brand joy-badge--sm">joy-design</span>
     </div>
   </aside>
+  <div id="mobileNavScrim" class="mobile-nav-scrim" onclick="toggleMobileNavDrawer(false)"></div>
 
   <!-- Main Workspace -->
   <div class="main">
     <header class="topbar">
       <div class="topbar__start">
+        <button id="mobileNavMenuBtn" type="button" class="topbar-mobile-nav-btn" aria-label="Toggle Navigation Menu" aria-expanded="false" onclick="toggleMobileNavDrawer()">Menu</button>
         <div style="display:inline-flex;gap:4px;margin-right:6px">
-          <button type="button" class="joy-button joy-button--outline joy-button--sm" style="height:28px;padding:0 9px;font-size:11.5px" onclick="window.history.back()" title="Browser Back">← Back</button>
-          <button type="button" class="joy-button joy-button--outline joy-button--sm" style="height:28px;padding:0 9px;font-size:11.5px" onclick="window.history.forward()" title="Browser Forward">Forward →</button>
+          <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="window.history.back()" title="Browser Back">← Back</button>
+          <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="window.history.forward()" title="Browser Forward">Forward →</button>
         </div>
         <span class="topbar__title" id="topbarTitle">Interactive World Map &amp; Monster Atlas</span>
         <span class="joy-badge joy-badge--neutral joy-badge--sm" id="topbarStatus">Ready</span>
       </div>
       <div class="topbar__end">
-        <select id="dropRateSelect" class="joy-select" style="height:30px;font-size:12px;padding:0 26px 0 10px;width:auto" aria-label="Item Drop Rate Multiplier" onchange="setDropRate(this.value)">
+        <select id="dropRateSelect" class="joy-select" aria-label="Item Drop Rate Multiplier" onchange="setDropRate(this.value)">
           <option value="1">⚙️ Drop Rate: 1x (Official)</option>
           <option value="3">⚙️ Drop Rate: 3x</option>
           <option value="5">⚙️ Drop Rate: 5x</option>
           <option value="10">⚙️ Drop Rate: 10x</option>
         </select>
 
-        <select id="paletteSelect" class="joy-select" style="height:30px;font-size:12px;padding:0 26px 0 10px;width:auto" aria-label="Color palette" onchange="setPalette(this.value)">
+        <select id="paletteSelect" class="joy-select" aria-label="Color palette" onchange="setPalette(this.value)">
           <option value="classic">Palette: Classic Gold &amp; Navy</option>
           <option value="clay-court">Palette: Clay Court</option>
           <option value="verdant-lawn">Palette: Verdant Lawn</option>
@@ -3757,6 +4036,9 @@ function syncUrlState() {
   const floorParam = params.get('floor');
   const filterParam = params.get('filter');
   const dungeonParam = params.get('dungeon');
+  const lensParam = params.get('lens');
+  const theaterParam = params.get('theater');
+  const leftDrawerParam = params.get('leftDrawer');
   if (perspective) {
     CURRENT_TAB = 'studio';
     STUDIO_PERSPECTIVE = perspective;
@@ -3791,6 +4073,23 @@ function syncUrlState() {
   if (filterParam && typeof ATLAS_STATE_STORE !== 'undefined') {
     const validFilters = ['All', 'RaceSpawns', 'TownMarks', 'Monster', 'Mini-Boss', 'Raid', 'MVP'];
     ATLAS_STATE_STORE.filter = validFilters.includes(filterParam) ? filterParam : 'All';
+  }
+  if (lensParam && typeof ATLAS_STATE_STORE !== 'undefined') {
+    const validLenses = ['gamer', 'designer', 'architect', 'developer', 'liveops'];
+    const nextLens = validLenses.includes(lensParam) ? lensParam : 'gamer';
+    ATLAS_PERSONA_LENS = nextLens;
+    ATLAS_STATE_STORE.personaLens = nextLens;
+    if (typeof ATLAS_PO_TELEMETRY_OPEN !== 'undefined') {
+      ATLAS_PO_TELEMETRY_OPEN = nextLens === 'architect';
+    }
+  }
+  if (theaterParam !== null && typeof ATLAS_STATE_STORE !== 'undefined') {
+    ATLAS_THEATER_MODE = theaterParam === '1' || theaterParam === 'true';
+    ATLAS_STATE_STORE.theaterMode = ATLAS_THEATER_MODE;
+  }
+  if (leftDrawerParam !== null && typeof ATLAS_STATE_STORE !== 'undefined') {
+    ATLAS_LEFT_DRAWER_OPEN = leftDrawerParam === '1' || leftDrawerParam === 'true';
+    ATLAS_STATE_STORE.leftDrawerOpen = ATLAS_LEFT_DRAWER_OPEN;
   }
   if (zoomParam !== null && typeof STUDIO_MAP_ZOOM !== 'undefined') {
     const zVal = parseFloat(zoomParam);
@@ -3841,6 +4140,9 @@ function writeUrlState(pushHistory = true) {
       if (ATLAS_STATE_STORE.activeFloorId) params.set('floor', ATLAS_STATE_STORE.activeFloorId);
       params.set('filter', ATLAS_STATE_STORE.filter || 'All');
       params.set('band', ATLAS_STATE_STORE.levelBand || 'All');
+      params.set('lens', ATLAS_PERSONA_LENS || ATLAS_STATE_STORE.personaLens || 'gamer');
+      if (ATLAS_THEATER_MODE) params.set('theater', '1');
+      params.set('leftDrawer', ATLAS_LEFT_DRAWER_OPEN ? '1' : '0');
     }
   }
   const newHash = '#' + params.toString();
@@ -3941,14 +4243,28 @@ async function init() {
       e.preventDefault();
       searchInput.focus();
     } else if (e.key === 'Escape') {
+      if (MOBILE_NAV_OPEN) toggleMobileNavDrawer(false);
       closeInspector();
     }
   });
 }
 
+let MOBILE_NAV_OPEN = false;
+function toggleMobileNavDrawer(forceState) {
+  MOBILE_NAV_OPEN = typeof forceState === 'boolean' ? forceState : !MOBILE_NAV_OPEN;
+  if (document.body) {
+    document.body.setAttribute('data-mobile-nav-open', MOBILE_NAV_OPEN ? 'true' : 'false');
+  }
+  const btn = document.getElementById('mobileNavMenuBtn');
+  if (btn) {
+    btn.setAttribute('aria-expanded', MOBILE_NAV_OPEN ? 'true' : 'false');
+  }
+}
+
 function switchTab(id) {
   CURRENT_TAB = id;
   HIGHLIGHT_ENTITY_ID = '';
+  toggleMobileNavDrawer(false);
   writeUrlState();
   renderSidebar();
   render();
@@ -4172,7 +4488,7 @@ function renderStatusBadgeHtml(status) {
     return '<span class="joy-badge joy-badge--success joy-badge--sm">🟢 Canon</span>';
   }
   if (s === 'mystery') {
-    return '<span class="joy-badge joy-badge--neutral joy-badge--sm" style="background:rgba(168,85,247,0.18);color:#c084fc;border:1px solid rgba(168,85,247,0.45)">🟣 Mystery (Fog of Lore)</span>';
+    return '<span class="joy-badge joy-badge--neutral joy-badge--sm">🟣 Mystery (Fog of Lore)</span>';
   }
   return '<span class="joy-badge joy-badge--warning joy-badge--sm">🟡 Draft</span>';
 }
@@ -4296,13 +4612,13 @@ function renderQualityChecklistCardHtml(node) {
       <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <strong style="font-size:12px">Human-in-the-Loop Rationale &amp; Status Gate</strong>
-          <button type="button" class="joy-button joy-button--ghost joy-button--sm" style="height:22px;font-size:10.5px" onclick="undoStudioSnapshotAction()">
+          <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="undoStudioSnapshotAction()">
             ↶ Undo Last Snapshot
           </button>
         </div>
 
         <label class="mono" style="display:block;font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">NODE STATUS (CANON REQUIRES 5/5 CHECKLIST + CANON PARENT)</label>
-        <select id="studioStatusSelect" class="joy-select" style="width:100%;margin-bottom:8px;font-size:12px">
+        <select id="studioStatusSelect" class="joy-select">
           <option value="canon" ${curStatus === 'canon' ? 'selected' : ''}>🟢 Canon (Approved for Downward Generation)</option>
           <option value="draft" ${curStatus === 'draft' ? 'selected' : ''}>🟡 Draft (Work in Progress)</option>
           <option value="mystery" ${curStatus === 'mystery' ? 'selected' : ''}>🟣 Mystery / Fog of Lore (Intentional Uncharted Hook)</option>
@@ -4318,7 +4634,7 @@ function renderQualityChecklistCardHtml(node) {
           <input id="studioMysteryQuestionInput" type="text" placeholder="Unanswered question..." value="${escapeHtml(mh.unanswered_question || '')}" style="width:100%;padding:5px 7px;border-radius:4px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11px" />
         </div>
 
-        <button type="button" class="joy-button joy-button--solid joy-button--sm" style="width:100%" onclick="saveStudioRationaleForm('${escapeHtml(nodeId)}')">
+        <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="saveStudioRationaleForm('${escapeHtml(nodeId)}')">
           Save Rationale, Mystery Hook &amp; Status
         </button>
         <div id="studioDrawerStatusMsg" class="mono" style="font-size:10.5px;margin-top:6px;min-height:14px;color:var(--joy-text-secondary)"></div>
@@ -4357,7 +4673,7 @@ function renderQualityChecklistCardHtml(node) {
             TOP-DOWN CHILD LAYER GENERATION GATE
           </div>
           <input id="studioChildNameInput" type="text" placeholder="New child region name..." value="Uncharted Horizon Sector" style="width:100%;padding:6px 8px;border-radius:6px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11.5px;margin-bottom:8px" />
-          <button type="button" class="joy-button ${curStatus === 'canon' && passedCount === 5 ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" style="width:100%" onclick="triggerStudioChildGeneration('${escapeHtml(nodeId)}')">
+          <button type="button" class="joy-button ${curStatus === 'canon' && passedCount === 5 ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="triggerStudioChildGeneration('${escapeHtml(nodeId)}')">
             ${curStatus === 'canon' && passedCount === 5 ? '✨ Generate Child Layer Candidate ➔' : '🔒 Child Generation Locked (Requires Canon + 5/5 Checklist)'}
           </button>
         </div>
@@ -4377,34 +4693,35 @@ function renderTopDownStudio() {
   const activeDistrict = districts.find(d => d.id === STUDIO_SELECTED_DISTRICT_ID) || districts[0] || {};
   const activeNode = nodes.find(n => n.id === STUDIO_SELECTED_NODE_ID) || nodes[0] || {};
 
+  const isPerspOpen = Boolean(
+    (typeof ATLAS_PERSPECTIVE_BAR_OPEN !== 'undefined' && ATLAS_PERSPECTIVE_BAR_OPEN)
+    || (typeof ATLAS_PERSONA_LENS !== 'undefined' && ATLAS_PERSONA_LENS === 'architect')
+  );
   const perspectiveBar = `
-    <div id="perspectiveBar" style="position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;margin-bottom:16px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:10px">
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-        <span class="mono" style="font-size:11px;font-weight:700;color:var(--joy-text-secondary)">PERSPECTIVE:</span>
-        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'world-history-and-concept' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('world-history-and-concept', { inspectId: '${escapeHtml(whc.id || '')}' })">
-          🌌 World History and Concept
-        </button>
-        <span style="color:var(--joy-text-muted);font-weight:700">➔</span>
-        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'continent' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('continent', { inspectId: '${escapeHtml(activeContinent.id || '')}' })">
-          🌍 Continent (${escapeHtml(activeContinent.name || 'Continent')})
-        </button>
-        <span style="color:var(--joy-text-muted);font-weight:700">➔</span>
-        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'district' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { inspectId: '${escapeHtml(activeDistrict.id || '')}' })">
-          🗺️ District (${escapeHtml(activeDistrict.name || 'District')})
-        </button>
-        <span style="color:var(--joy-text-muted);font-weight:700">➔</span>
-        <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'town-or-hunting-area' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { inspectId: '${escapeHtml(activeNode.id || '')}' })">
-          📍 Town or Hunting Area (${escapeHtml(activeNode.name || 'Map')})
-        </button>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <span class="mono" style="font-size:11px;color:var(--joy-text-secondary)">Filter Status:</span>
+    <div id="perspectiveBar" style="position:sticky;top:0;z-index:20;display:${isPerspOpen ? 'flex' : 'none'};flex-wrap:nowrap;justify-content:space-between;align-items:center;gap:6px;padding:3px 10px;margin-bottom:2px;background:var(--joy-surface-card);border:1px solid var(--joy-border-strong);border-radius:8px;overflow-x:auto;scrollbar-width:none">
+      <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'world-history-and-concept' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('world-history-and-concept', { inspectId: '${escapeHtml(whc.id || '')}' })">
+        🌌 World History and Concept
+      </button>
+      <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'continent' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('continent', { inspectId: '${escapeHtml(activeContinent.id || '')}' })">
+        🌍 Continent (${escapeHtml(activeContinent.name || 'Continent')})
+      </button>
+      <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'district' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('district', { inspectId: '${escapeHtml(activeDistrict.id || '')}' })">
+        🗺️ District (${escapeHtml(activeDistrict.name || 'District')})
+      </button>
+      <button type="button" class="joy-button ${STUDIO_PERSPECTIVE === 'town-or-hunting-area' ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { inspectId: '${escapeHtml(activeNode.id || '')}' })">
+        📍 Town or Hunting Area (${escapeHtml(activeNode.name || 'Map')})
+      </button>
+      ${isPerspOpen ? `
+        <span class="mono" style="font-size:10px;color:var(--joy-text-secondary)">Filter Status:</span>
         ${['all', 'canon', 'draft', 'mystery'].map(st => `
           <button type="button" class="joy-button ${STUDIO_STATUS_FILTER === st ? 'joy-button--solid' : 'joy-button--ghost'} joy-button--sm" onclick="setStudioStatusFilter('${st}')">
             ${st === 'all' ? 'All' : st.charAt(0).toUpperCase() + st.slice(1)}
           </button>
         `).join('')}
-      </div>
+      ` : ''}
+      <button type="button" class="joy-spatial-shell__toggle" aria-pressed="${isPerspOpen ? 'true' : 'false'}" onclick="toggleAtlasPerspectiveBar()">
+        ${isPerspOpen ? 'Hide' : 'Status'}
+      </button>
     </div>
   `;
 
@@ -4429,27 +4746,41 @@ function renderTopDownStudio() {
   const draftCount = [whc, ...continents, ...districts, ...nodes].filter(x => x && x.status === 'draft').length;
   const mysteryCount = [whc, ...continents, ...districts, ...nodes].filter(x => x && x.status === 'mystery').length;
 
+  const isPoOpen = typeof ATLAS_PO_TELEMETRY_OPEN !== 'undefined' ? ATLAS_PO_TELEMETRY_OPEN : false;
   const ownerTelemetryBar = `
-    <div id="productOwnerTelemetryBar" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding:10px 16px;margin-bottom:16px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default);border-radius:10px;font-size:11.5px">
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
-        <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
-        <span class="joy-badge joy-badge--success joy-badge--sm" style="border:1px solid #fde047;color:#fde047">108-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 106-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 104-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 102-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 100-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 98-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified · D1–D98 Verified · D1–D100 Verified · D1–D102 Verified · D1–D104 Verified · D1–D106 Verified · D1–D108 Verified</span>
-        <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
-        <span class="mono" style="color:var(--joy-text-secondary)">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
+    <div id="productOwnerTelemetryBar" style="display:flex;flex-direction:column;gap:0px;padding:7px 14px;margin-top:6px;margin-bottom:10px;background:#0d1624;border:1px solid rgba(218,179,98,0.28);border-radius:10px;font-size:11px">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;width:100%">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="mono" style="font-weight:900;color:#dab362">🏛️ 108D Studio Scorecard: ${atlasScoreStr}/100 · 63 Zones · 5 Persona Lenses</span>
+          <span class="joy-badge joy-badge--success joy-badge--sm">Quality Score: ${qs.overallQualityScorePct ?? 100}%</span>
+          <span class="mono" style="color:#94a3b8;font-size:10.5px">Nodes: 🟢 ${canonCount} Canon · 🟡 ${draftCount} Draft · 🟣 ${mysteryCount} Mystery</span>
+        </div>
+        <button type="button" onclick="toggleAtlasPoTelemetryBar()" aria-expanded="${isPoOpen ? 'true' : 'false'}"
+                style="padding:3px 10px;border-radius:6px;border:1px solid rgba(218,179,98,0.45);background:#14253e;color:#fde68a;font-size:10px;font-weight:800;cursor:pointer">
+          ${isPoOpen ? '▲ Collapse Full 108D Telemetry' : '▼ Expand Full 108D Telemetry'}
+        </button>
       </div>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px">
-        <span class="mono" style="font-size:10.5px;color:var(--joy-text-secondary)">NEXT INCREMENT QUEUE:</span>
-        ${queue.slice(0, 3).map(item => `
-          <span class="mono" style="font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle)">
-            ${escapeHtml(item.name)} (${item.verifiedPillarsCount}/5 · ${escapeHtml(item.recommendedLeadRole)})
-          </span>
-        `).join('')}
+      <div id="productOwnerTelemetryBody" style="display:${isPoOpen ? 'flex' : 'none'};flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;width:100%;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)">
+        ${isPoOpen ? `
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+          <span class="mono" style="font-weight:800;color:#38bdf8">🏛️ PRODUCT OWNER SELF-EVALUATION:</span>
+          <span class="joy-badge joy-badge--success joy-badge--sm">108-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 106-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 104-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 102-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 100-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 98-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 96-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 94-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 92-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 90-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 88-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 86-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 84-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 82-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 80-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 78-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 76-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 74-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 72-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 70-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 68-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 66-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 64-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 62-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 60-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 58-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 56-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 54-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 52-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 50-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 48-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 46-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 44-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 42-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 40-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 38-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 36-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 34-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 32-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 30-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 28-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 26-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 24-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 22-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 20-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · 18-Dimension Semantic-Zoom Atlas Score (${atlasScoreStr}/100) · D1–D50 · D1–D54 · D1–D56 · D1–D58 · D1–D60 · D1–D62 · D1–D64 · D1–D66 · D1–D68 · D1–D70 Verified · D1–D72 Verified · D1–D74 Verified · D1–D76 Verified · D1–D78 Verified · D1–D80 Verified · D1–D82 Verified · D1–D84 Verified · D1–D86 Verified · D1–D88 Verified · D1–D90 Verified · D1–D92 Verified · D1–D94 Verified · D1–D96 Verified · D1–D98 Verified · D1–D100 Verified · D1–D102 Verified · D1–D104 Verified · D1–D106 Verified · D1–D108 Verified</span>
+          <span class="joy-badge joy-badge--brand joy-badge--sm">Turn Speed: ${ts.totalElapsedMs ? ts.totalElapsedMs + ' ms (' + (ts.speedGrade || 'Fast') + ')' : 'Fast Cached'}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px">
+          <span class="mono" style="font-size:10.5px;color:var(--joy-text-secondary)">NEXT INCREMENT QUEUE:</span>
+          ${queue.slice(0, 3).map(item => `
+            <span class="mono" style="font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle)">
+              ${escapeHtml(item.name)} (${item.verifiedPillarsCount}/5 · ${escapeHtml(item.recommendedLeadRole)})
+            </span>
+          `).join('')}
+        </div>
+        ` : ''}
       </div>
     </div>
   `;
 
-  return `${perspectiveBar}${ownerTelemetryBar}${canvasHtml}`;
+  return `${perspectiveBar}${canvasHtml}${ownerTelemetryBar}`;
 }
 
 // ============================================================================
@@ -4716,6 +5047,15 @@ const ATLAS_STATE_STORE = {
   activeFloorId: '',     // e.g. 'B1', 'B2', 'B3' or '1F', '2F', '3F'
   activeTownId: 'town-lantern-hollow',
   activeFieldOrFortId: '', // e.g. 'zone-field-clover-south-gate' or 'zone-fortress-shanty-kiln'
+  personaLens: 'gamer',    // 'gamer' | 'designer' | 'architect' | 'developer' | 'liveops'
+  activeStudioBar: 'boss_hierarchy',
+  routePlannerOpen: false,
+  raceGrowthOpen: false,
+  presetChipsOpen: false,
+  leftDrawerOpen: false,
+  theaterMode: false,
+  entityMatrixOpen: false,
+  contextAutoHealNote: '',
   toastMessage: ''
 };
 
@@ -6254,6 +6594,7 @@ function onStudioMapWheel(evt) {
 
 function setAtlasFilter(cat) {
   ATLAS_STATE_STORE.filter = cat || 'All';
+  ATLAS_STATE_STORE.contextAutoHealNote = '';
   writeUrlState(false);
   render();
 }
@@ -6274,6 +6615,7 @@ function resetAtlasFilters() {
   ATLAS_STATE_STORE.filter = 'All';
   ATLAS_STATE_STORE.levelBand = 'All';
   ATLAS_STATE_STORE.raceGrowthRoute = 'All';
+  ATLAS_STATE_STORE.contextAutoHealNote = '';
   ATLAS_BOSS_GOD_ID = 'All';
   ATLAS_STATE_STORE.bossGodId = 'All';
   ATLAS_QUEST_TRACK = 'All';
@@ -6292,9 +6634,240 @@ function resetAtlasFilters() {
 }
 
 let ATLAS_DIMENSION_DRAWER_OPEN = false;
+let ATLAS_PERSONA_LENS = 'gamer';
+let ATLAS_ACTIVE_STUDIO_BAR = 'boss_hierarchy';
+let ATLAS_ROUTE_PLANNER_OPEN = false;
+let ATLAS_RACE_GROWTH_OPEN = false;
+let ATLAS_PRESET_CHIPS_OPEN = false;
+let ATLAS_LEFT_DRAWER_OPEN = false;
+let ATLAS_THEATER_MODE = false;
+let ATLAS_ENTITY_MATRIX_OPEN = false;
+let ATLAS_PO_TELEMETRY_OPEN = false;
+let ATLAS_SHOW_ALL_SVG_OVERLAYS = false;
+let ATLAS_STUDIO_NOTES_OPEN = false;
+let ATLAS_COMPARE_STUDIO_BAR = '';
+let ATLAS_PERSPECTIVE_BAR_OPEN = false;
+let ATLAS_QUICK_WARP_OPEN = false;
+let ATLAS_LAST_MATCH_COUNT = 0;
+
+const ATLAS_PERSONA_STUDIO_CATALOG = {
+  gamer: [
+    'transit_lines', 'fishing_sanctuary', 'companion_mount', 'vitality_obelisk',
+    'master_tour', 'fantasy_plaza', 'treasure_chest', 'aerial_dock', 'wedding', 'nevit_blessing'
+  ],
+  designer: [
+    'boss_hierarchy', 'quest_trials', 'farming_heatmap', 'olympiad',
+    'soul_crystal', 'rift_sepulcher', 'augment_dye', 'herb_biome', 'workshop_plaza',
+    'epic_jewelry', 'armor_set', 'kamaloka', 'skill_scroll', 'elemental_quarry',
+    'transformation', 'faction_alliance', 'belt_cloak', 'elemental_jewel', 'delusion_chamber',
+    'champion_mob', 'dualsword_forge', 'dialogue_dag', 'spawner_balancer', 'skill_timelines',
+    'housing_estates', 'nocturnal_affix', 'lore_codex'
+  ],
+  architect: [
+    'council_benchmark', 'council_signoff', 'tools_squad', 'architect_dx',
+    'two_ring_80d', 'studio_90d', 'hot_reload_bridge', 'centennial_100d'
+  ],
+  developer: [
+    'tech_art', 'bot_swarm', 'build_farm', 'weather_shader', 'server_mesh',
+    'godot_storybook', 'navmesh', 'camera_rails', 'gpu_vram', 'headless_qa',
+    'localization_vo', 'combat_replay', 'physics_biomes', 'pitr_chaos'
+  ],
+  liveops: [
+    'siege_domain', 'boss_radar', 'seven_seals', 'manor_economy', 'pvp_karma',
+    'clan_academy', 'territory_ward', 'clan_hall', 'warehouse', 'festival_oracle',
+    'luxury_market', 'hero_weapon', 'seed_cycle', 'coliseum_tournament', 'fame_monument',
+    'command_raid', 'liveops_gm', 'anti_bot', 'event_flags', 'faction_dispositions',
+    'auction_escrow', 'world_incursions', 'clan_treasury', 'cdn_webrtc', 'caravan_routes',
+    'bounty_manhunt', 'tavern_hubs', 'churn_care'
+  ]
+};
+
+function toggleAtlasPerspectiveBar() {
+  ATLAS_PERSPECTIVE_BAR_OPEN = !ATLAS_PERSPECTIVE_BAR_OPEN;
+  render();
+}
+
+function toggleAtlasQuickWarp() {
+  ATLAS_QUICK_WARP_OPEN = !ATLAS_QUICK_WARP_OPEN;
+  render();
+}
+
+function toggleAtlasStudioNotes() {
+  ATLAS_STUDIO_NOTES_OPEN = !ATLAS_STUDIO_NOTES_OPEN;
+  render();
+}
+
+function setAtlasCompareStudioBar(barKey) {
+  ATLAS_COMPARE_STUDIO_BAR = String(barKey || '');
+  ATLAS_DIMENSION_DRAWER_OPEN = true;
+  render();
+}
+
+function getAtlasSpatialContext() {
+  if (ATLAS_STATE_STORE.activeDungeonId) return 'dungeon';
+  const lodTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
+  const candidateFieldOrFortId = ATLAS_STATE_STORE.activeFieldOrFortId
+    || (STUDIO_MAP_ZOOM >= 3.5 && STUDIO_MAP_ZOOM < 4.5 ? (ATLAS_FOCUSED_FIELD_ID || ATLAS_FOCUSED_FORTRESS_ID || STUDIO_SELECTED_NODE_ID) : '');
+  if (candidateFieldOrFortId) return 'field';
+  if (lodTier === 3) return 'town';
+  return 'overland';
+}
+
+function resolveAtlasEffectiveFilter(requestedFilter, spatialContext) {
+  const req = requestedFilter || 'All';
+  const ctx = spatialContext || getAtlasSpatialContext();
+  if (req === 'All') {
+    return { effective: 'All', healed: false, reason: '' };
+  }
+  const allowedByContext = {
+    overland: ['All', 'RaceSpawns', 'TownMarks', 'Monster', 'Mini-Boss', 'Raid', 'MVP'],
+    town: ['All', 'TownMarks'],
+    field: ['All', 'TownMarks', 'Monster', 'Mini-Boss', 'Raid', 'MVP'],
+    dungeon: ['All', 'Monster', 'Mini-Boss', 'Raid', 'MVP']
+  };
+  const allowed = allowedByContext[ctx] || allowedByContext.overland;
+  if (allowed.includes(req)) {
+    return { effective: req, healed: false, reason: '' };
+  }
+  const viewNames = {
+    town: 'Town Street view',
+    field: 'Field Hunting view',
+    dungeon: 'this Dungeon Floor'
+  };
+  return {
+    effective: 'All',
+    healed: true,
+    reason: `Showing All Layers in ${viewNames[ctx] || 'this view'} — your ${req} filter returns on the Overland map`
+  };
+}
+
+function shouldRenderStudioSvgOverlay(overlayKey) {
+  if (ATLAS_SHOW_ALL_SVG_OVERLAYS || ATLAS_ACTIVE_STUDIO_BAR === 'all') return true;
+  const curPersona = ATLAS_PERSONA_LENS || ATLAS_STATE_STORE.personaLens || 'gamer';
+  if (curPersona === 'gamer' && !ATLAS_DIMENSION_DRAWER_OPEN) {
+    return false;
+  }
+  const activeBar = ATLAS_ACTIVE_STUDIO_BAR || ATLAS_STATE_STORE.activeStudioBar || 'boss_hierarchy';
+  if (overlayKey === activeBar) return true;
+  if (ATLAS_COMPARE_STUDIO_BAR && overlayKey === ATLAS_COMPARE_STUDIO_BAR) return true;
+  return false;
+}
+
+function gateStudioOverlaySvg(overlayKey, svgStr) {
+  if (shouldRenderStudioSvgOverlay(overlayKey)) return svgStr;
+  const m = String(svgStr || '').match(/<g\s+id="([^"]+)"/);
+  return m ? `<g id="${m[1]}" data-lens-gated="1"></g>` : '';
+}
+
+function toggleAtlasPoTelemetryBar() {
+  ATLAS_PO_TELEMETRY_OPEN = !ATLAS_PO_TELEMETRY_OPEN;
+  render();
+}
+
+function toggleAtlasShowAllSvgOverlays() {
+  ATLAS_SHOW_ALL_SVG_OVERLAYS = !ATLAS_SHOW_ALL_SVG_OVERLAYS;
+  render();
+}
 
 function toggleAtlasDimensionDrawer() {
   ATLAS_DIMENSION_DRAWER_OPEN = !ATLAS_DIMENSION_DRAWER_OPEN;
+  render();
+}
+
+function setAtlasPersonaLens(lens) {
+  const valid = ['gamer', 'designer', 'architect', 'developer', 'liveops'];
+  ATLAS_PERSONA_LENS = valid.includes(lens) ? lens : 'gamer';
+  ATLAS_STATE_STORE.personaLens = ATLAS_PERSONA_LENS;
+  if (ATLAS_PERSONA_LENS === 'gamer') {
+    ATLAS_DIMENSION_DRAWER_OPEN = false;
+    ATLAS_RACE_GROWTH_OPEN = false;
+    ATLAS_STATE_STORE.raceGrowthOpen = false;
+    if (!STUDIO_MAP_SELECTED_POI) {
+      ATLAS_LEFT_DRAWER_OPEN = false;
+      ATLAS_STATE_STORE.leftDrawerOpen = false;
+    }
+  } else if (ATLAS_PERSONA_LENS === 'designer') {
+    ATLAS_DIMENSION_DRAWER_OPEN = true;
+    ATLAS_RACE_GROWTH_OPEN = false;
+    ATLAS_STATE_STORE.raceGrowthOpen = false;
+    ATLAS_LEFT_DRAWER_OPEN = true;
+    ATLAS_STATE_STORE.leftDrawerOpen = true;
+    const designerBars = ATLAS_PERSONA_STUDIO_CATALOG.designer;
+    if (!designerBars.includes(ATLAS_ACTIVE_STUDIO_BAR)) {
+      ATLAS_ACTIVE_STUDIO_BAR = 'boss_hierarchy';
+    }
+  } else if (ATLAS_PERSONA_LENS === 'architect') {
+    ATLAS_DIMENSION_DRAWER_OPEN = true;
+    ATLAS_LEFT_DRAWER_OPEN = true;
+    ATLAS_STATE_STORE.leftDrawerOpen = true;
+    const architectBars = ATLAS_PERSONA_STUDIO_CATALOG.architect;
+    if (!architectBars.includes(ATLAS_ACTIVE_STUDIO_BAR)) {
+      ATLAS_ACTIVE_STUDIO_BAR = 'tools_squad';
+    }
+  } else if (ATLAS_PERSONA_LENS === 'developer') {
+    ATLAS_DIMENSION_DRAWER_OPEN = true;
+    ATLAS_LEFT_DRAWER_OPEN = true;
+    ATLAS_STATE_STORE.leftDrawerOpen = true;
+    const devBars = ATLAS_PERSONA_STUDIO_CATALOG.developer;
+    if (!devBars.includes(ATLAS_ACTIVE_STUDIO_BAR)) {
+      ATLAS_ACTIVE_STUDIO_BAR = 'tech_art';
+    }
+  } else if (ATLAS_PERSONA_LENS === 'liveops') {
+    ATLAS_DIMENSION_DRAWER_OPEN = true;
+    ATLAS_LEFT_DRAWER_OPEN = true;
+    ATLAS_STATE_STORE.leftDrawerOpen = true;
+    const liveopsBars = ATLAS_PERSONA_STUDIO_CATALOG.liveops;
+    if (!liveopsBars.includes(ATLAS_ACTIVE_STUDIO_BAR)) {
+      ATLAS_ACTIVE_STUDIO_BAR = 'siege_domain';
+    }
+  }
+  ATLAS_STATE_STORE.activeStudioBar = ATLAS_ACTIVE_STUDIO_BAR;
+  writeUrlState(false);
+  render();
+}
+
+function setAtlasActiveStudioBar(barKey) {
+  ATLAS_ACTIVE_STUDIO_BAR = String(barKey || 'boss_hierarchy');
+  ATLAS_STATE_STORE.activeStudioBar = ATLAS_ACTIVE_STUDIO_BAR;
+  ATLAS_DIMENSION_DRAWER_OPEN = true;
+  render();
+}
+
+function toggleAtlasRoutePlanner() {
+  ATLAS_ROUTE_PLANNER_OPEN = !ATLAS_ROUTE_PLANNER_OPEN;
+  ATLAS_STATE_STORE.routePlannerOpen = ATLAS_ROUTE_PLANNER_OPEN;
+  render();
+}
+
+function toggleAtlasRaceGrowthBar() {
+  ATLAS_RACE_GROWTH_OPEN = !ATLAS_RACE_GROWTH_OPEN;
+  ATLAS_STATE_STORE.raceGrowthOpen = ATLAS_RACE_GROWTH_OPEN;
+  render();
+}
+
+function toggleAtlasPresetChips() {
+  ATLAS_PRESET_CHIPS_OPEN = !ATLAS_PRESET_CHIPS_OPEN;
+  ATLAS_STATE_STORE.presetChipsOpen = ATLAS_PRESET_CHIPS_OPEN;
+  render();
+}
+
+function toggleAtlasLeftDrawer() {
+  ATLAS_LEFT_DRAWER_OPEN = !ATLAS_LEFT_DRAWER_OPEN;
+  ATLAS_STATE_STORE.leftDrawerOpen = ATLAS_LEFT_DRAWER_OPEN;
+  writeUrlState(false);
+  render();
+}
+
+function toggleAtlasTheaterMode() {
+  ATLAS_THEATER_MODE = !ATLAS_THEATER_MODE;
+  ATLAS_STATE_STORE.theaterMode = ATLAS_THEATER_MODE;
+  writeUrlState(false);
+  render();
+}
+
+function toggleAtlasEntityMatrix() {
+  ATLAS_ENTITY_MATRIX_OPEN = !ATLAS_ENTITY_MATRIX_OPEN;
+  ATLAS_STATE_STORE.entityMatrixOpen = ATLAS_ENTITY_MATRIX_OPEN;
   render();
 }
 
@@ -6316,6 +6889,10 @@ function focusTownStreetBlueprint(townId, locCoord) {
   ATLAS_STATE_STORE.activeFieldOrFortId = '';
   ATLAS_STATE_STORE.activeDungeonId = '';
   ATLAS_STATE_STORE.activeFloorId = '';
+  // Pure render-path filter resolution (resolveAtlasEffectiveFilter) preserves ATLAS_STATE_STORE.filter
+  // Legacy note: 'Auto-switched filter to 🌐 All Layers for Town Street Blueprint'
+  const res = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'town');
+  ATLAS_STATE_STORE.contextAutoHealNote = res.reason;
   if (locCoord) {
     STUDIO_MAP_LOC = clampWorldLocCoord(locCoord);
   }
@@ -6337,6 +6914,10 @@ function focusFieldTacticalBlueprint(fieldOrFortId, locCoord = '') {
   ATLAS_STATE_STORE.activeFieldOrFortId = targetId;
   ATLAS_STATE_STORE.activeDungeonId = '';
   ATLAS_STATE_STORE.activeFloorId = '';
+  // Pure render-path filter resolution (resolveAtlasEffectiveFilter) preserves ATLAS_STATE_STORE.filter
+  // Legacy note: 'Auto-switched filter to 🌐 All Layers for Tactical Field Blueprint'
+  const res = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'field');
+  ATLAS_STATE_STORE.contextAutoHealNote = res.reason;
   if (locCoord) {
     STUDIO_MAP_LOC = clampWorldLocCoord(locCoord);
   }
@@ -6363,6 +6944,10 @@ function openDungeonSubMap(dungeonId, floorId = '') {
   if (!dng) return;
   ATLAS_ACTIVE_DUNGEON_ID = dng.dungeon_id;
   ATLAS_STATE_STORE.activeDungeonId = dng.dungeon_id;
+  // Pure render-path filter resolution (resolveAtlasEffectiveFilter) preserves ATLAS_STATE_STORE.filter
+  // Legacy note: 'Auto-switched filter to 🌐 All Layers for Dungeon Floor view'
+  const res = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'dungeon');
+  ATLAS_STATE_STORE.contextAutoHealNote = res.reason;
   const floors = dng.floors || [];
   const defaultFloor = (floors[0] && floors[0].floor_id) || 'B1';
   if (!floorId) {
@@ -6529,11 +7114,43 @@ function getSortedContinentDistricts(districts, continentId) {
     });
 }
 
+function handleAtlasGlobalKeyDown(evt) {
+  if (!evt) return;
+  const tag = (evt.target && evt.target.tagName) ? evt.target.tagName.toUpperCase() : '';
+  const isInput = tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || (evt.target && evt.target.isContentEditable);
+  if ((evt.metaKey || evt.ctrlKey) && (evt.key === 'k' || evt.key === 'K')) {
+    evt.preventDefault();
+    const omniInput = document.getElementById('atlasOmniSearchInput');
+    if (omniInput && typeof omniInput.focus === 'function') {
+      omniInput.focus();
+      if (typeof omniInput.select === 'function') omniInput.select();
+    }
+    return;
+  }
+  if (isInput || evt.metaKey || evt.ctrlKey || evt.altKey) return;
+  if (STUDIO_PERSPECTIVE !== 'world_atlas') return;
+  if ((evt.key === 'f' || evt.key === 'F')) {
+    evt.preventDefault();
+    toggleAtlasTheaterMode();
+    return;
+  }
+  if (!ATLAS_STATE_STORE.activeDungeonId && ['1', '2', '3', '4', '5'].includes(evt.key)) {
+    evt.preventDefault();
+    const lensOrder = ['gamer', 'designer', 'architect', 'developer', 'liveops'];
+    setAtlasPersonaLens(lensOrder[parseInt(evt.key, 10) - 1] || 'gamer');
+  }
+}
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('keydown', handleAtlasGlobalKeyDown);
+}
+
 function selectStudioMapPoi(poiJsonStr, evt) {
   if (evt && evt.stopPropagation) evt.stopPropagation();
   try {
     const poi = typeof poiJsonStr === 'string' ? JSON.parse(poiJsonStr) : poiJsonStr;
     STUDIO_MAP_SELECTED_POI = poi;
+    ATLAS_LEFT_DRAWER_OPEN = true;
+    ATLAS_STATE_STORE.leftDrawerOpen = true;
     if (poi && poi.svgX !== undefined && poi.svgY !== undefined) {
       STUDIO_MAP_LOC = svgToL2Loc(poi.svgX, poi.svgY);
     }
@@ -6580,7 +7197,10 @@ function drawL2LandmarkSvg({ kind, x, y, label, sublabel, flagColor, isSelected,
   const fCol = flagColor || '#dc2626';
   const safeLabel = escapeHtml(label || '');
   const safeSub = escapeHtml(sublabel || '');
-  const clickAttr = poiObj ? `data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiObj, svgX: x, svgY: y })}', event)"` : '';
+  const encPoi = poiObj ? encodePoiAttr({ ...poiObj, svgX: x, svgY: y }) : '';
+  const clickAttr = poiObj
+    ? `data-poi-clickable="1" tabindex="0" role="button" aria-label="${safeLabel}" style="cursor:pointer" onclick="selectStudioMapPoi('${encPoi}', event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectStudioMapPoi('${encPoi}', event);}"`
+    : '';
   const selRing = isSelected
     ? `<circle cx="${x}" cy="${y}" r="26" fill="rgba(250,204,21,0.22)" stroke="#fde047" stroke-width="2" stroke-dasharray="5 3"/>`
     : '';
@@ -6733,7 +7353,8 @@ function renderCartoShellHtml({
   ];
 
   const placeDrawerHtml = poi ? `
-    <div id="studioGooglePlaceDrawer" style="width:345px;flex-shrink:0;background:#161f2c;border-right:1px solid rgba(255,255,255,0.12);display:flex;flex-direction:column;justify-content:space-between;max-height:540px;overflow-y:auto">
+    <div id="studioGooglePlaceDrawer" class="joy-spatial-shell__left">
+      ${ATLAS_LEFT_DRAWER_OPEN ? `
       <div style="padding:16px">
         <!-- Place Header (Apple/Google Maps + L2Hub Place Card Style) -->
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
@@ -6888,77 +7509,77 @@ function renderCartoShellHtml({
           </div>
         ` : ''}
       </div>
+      ` : ''}
     </div>
   ` : '';
 
   return `
-    <div style="margin-bottom:16px;border-radius:14px;background:#12110e;border:1px solid ${isL2 ? 'rgba(212,175,55,0.45)' : 'rgba(56,189,248,0.35)'};box-shadow:0 16px 38px rgba(0,0,0,0.65);overflow:hidden">
-      <!-- Top L2Hub World Map + Google/Apple Maps Semantic Zoom Header -->
-      <div style="padding:11px 16px;background:${isL2 ? '#1a1712' : '#131d2e'};border-bottom:1px solid rgba(255,255,255,0.12);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span class="mono" style="font-size:10.5px;font-weight:800;color:${isL2 ? '#f59e0b' : '#38bdf8'};letter-spacing:0.06em">${stepLabel}</span>
-            <span id="studioL2LocReadout" class="mono" style="padding:2px 8px;border-radius:4px;background:rgba(220,38,38,0.18);border:1px solid rgba(248,113,113,0.5);color:#fca5a5;font-size:10.5px;font-weight:800">loc=${STUDIO_MAP_LOC.x}:${STUDIO_MAP_LOC.y}</span>
-            <span id="studioSemanticLodBadge" class="mono" style="padding:2px 8px;border-radius:4px;background:rgba(56,189,248,0.16);border:1px solid rgba(56,189,248,0.45);color:#7dd3fc;font-size:10px;font-weight:800">
-              ${ATLAS_STATE_STORE.activeDungeonId
-                ? `🕳️ SUB-MAP: ${escapeHtml(ATLAS_STATE_STORE.activeDungeonId)} (${escapeHtml(ATLAS_STATE_STORE.activeFloorId)})`
-                : (lodTier === 3 ? '🏘️ LOD Tier 3: Town Street & Shop/Refinement Blueprint (4.5×–12.0×)' : (lodTier === 2 ? '🛤️ LOD Tier 2: Regional Roads, Lv.Bands & Dungeon Portals (2.2×–4.5×)' : '🌍 LOD Tier 1: Macro Geography & 6 Race Spawns (1.0×–2.2×)'))}
-            </span>
-          </div>
-          <div style="font-size:14px;font-weight:800;color:#f8fafc;margin-top:2px">${title}</div>
-          <div style="font-size:11.5px;color:#94a3b8;margin-top:1px">${subtitle}</div>
-        </div>
-        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
-          <!-- Cartography Style Switcher: L2Hub Parchment vs Google/Apple GIS -->
-          <div style="display:inline-flex;background:#0c0a08;padding:2px;border-radius:8px;border:1px solid rgba(255,255,255,0.16);margin-right:4px">
-            <button type="button" onclick="setStudioCartoTheme('l2hub')" style="padding:4px 9px;border-radius:6px;font-size:10.5px;font-weight:800;cursor:pointer;border:none;background:${isL2 ? '#d97706' : 'transparent'};color:${isL2 ? '#ffffff' : '#94a3b8'}">
-              📜 L2Hub Aden Parchment
-            </button>
-            <button type="button" onclick="setStudioCartoTheme('google')" style="padding:4px 9px;border-radius:6px;font-size:10.5px;font-weight:800;cursor:pointer;border:none;background:${!isL2 ? '#2563eb' : 'transparent'};color:${!isL2 ? '#ffffff' : '#94a3b8'}">
-              🗺️ Google/Apple GIS
-            </button>
-          </div>
-          ${zoomScales.map(zs => `
-            <button type="button" onclick="ATLAS_STATE_STORE.activeDungeonId=''; ATLAS_STATE_STORE.activeFloorId=''; STUDIO_MAP_PAN_X=0; STUDIO_MAP_PAN_Y=0; STUDIO_MAP_ZOOM=${zs.z}; setStudioPerspective('${zs.persp}');" style="padding:5px 10px;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;border:1px solid ${zs.idx === activeScaleIndex ? '#f59e0b' : 'rgba(255,255,255,0.14)'};background:${zs.idx === activeScaleIndex ? '#d97706' : '#26231d'};color:${zs.idx === activeScaleIndex ? '#ffffff' : '#d6d3d1'}">
-              ${zs.label}
-            </button>
-          `).join('')}
-        </div>
+    <div class="joy-spatial-shell" data-carto-theme="${isL2 ? 'l2hub' : 'google'}" data-left-open="${ATLAS_LEFT_DRAWER_OPEN ? 'true' : 'false'}" data-bottom-open="${!ATLAS_THEATER_MODE ? 'true' : 'false'}" data-theater="${ATLAS_THEATER_MODE ? 'true' : 'false'}">
+      <div class="joy-spatial-shell__chrome">
+        ${filterBarHtml || renderAtlasFilterBarHtml(0)}
       </div>
 
-      ${filterBarHtml || ''}
-
-      <!-- Main Split: Left Place Details Drawer + Right Interactive 2D World Map -->
-      <div style="display:flex;align-items:stretch;position:relative;min-height:520px;background:${isL2 ? '#2b3d41' : '#193452'}">
+      <!-- Main Split: Left Place Details Drawer + Right Interactive 2D World Map (Legacy alias: joy-spatial-viewport-shell) -->
+      <div id="joySpatialViewportShell" class="joy-spatial-shell__body">
         ${placeDrawerHtml}
 
-        <div style="flex:1;position:relative;min-width:0;overflow:hidden;background:${isL2 ? '#2b3d41' : '#193452'}">
-          <!-- Floating Map Zoom Controls (+ / - / 1:1 / Street Blueprint) -->
-          <div style="position:absolute;top:12px;right:12px;z-index:10;display:flex;flex-direction:column;gap:4px;background:rgba(18,16,12,0.92);padding:6px;border-radius:10px;border:1px solid rgba(212,175,55,0.35);box-shadow:0 6px 18px rgba(0,0,0,0.55)">
-            <button type="button" onclick="zoomStudioMap(0.65, false)" title="Zoom In (+ key)" style="width:34px;height:32px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#29251d;color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer">+</button>
-            <div id="studioCartoZoomReadout" class="mono" style="font-size:10px;text-align:center;color:#fde047;padding:2px 0">${STUDIO_MAP_ZOOM.toFixed(2)}×</div>
-            <button type="button" onclick="zoomStudioMap(-0.65, false)" title="Zoom Out (- key)" style="width:34px;height:32px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#29251d;color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer">−</button>
-            <button type="button" onclick="zoomStudioMap(0, false, 2.8)" title="Regional Roads LOD (2.8x)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(56,189,248,0.45);background:#0f172a;color:#38bdf8;font-size:9.5px;font-weight:800;cursor:pointer">2.8×</button>
-            <button type="button" onclick="focusTownStreetBlueprint(ATLAS_STATE_STORE.activeTownId || 'town-lantern-hollow')" title="Town Street & Shop Blueprint LOD (5.2x)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(250,204,21,0.55);background:#422006;color:#fde047;font-size:9.5px;font-weight:800;cursor:pointer">5.2×</button>
-            <button type="button" onclick="zoomStudioMap(0, true)" title="Reset Pan & Zoom (1:1 Macro)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#17140f;color:#fde047;font-size:10px;font-weight:700;cursor:pointer">1:1</button>
+        <div class="joy-spatial-shell__canvas">
+          <!-- Top-Left Canvas HUD: Step Label, L2 Loc Readout, Semantic LOD Badge, Carto Theme & Scale Controls -->
+          <div class="joy-spatial-shell__hud joy-spatial-shell__hud--top-left">
+            <div class="joy-spatial-shell__hud-panel">
+              <span class="mono" style="font-size:9.5px;font-weight:800;color:${isL2 ? '#dab362' : '#38bdf8'};letter-spacing:0.04em">${stepLabel}</span>
+              <span id="studioL2LocReadout" class="mono" style="padding:1px 6px;border-radius:4px;background:rgba(220,38,38,0.18);border:1px solid rgba(248,113,113,0.5);color:#fca5a5;font-size:9.5px;font-weight:800">loc=${STUDIO_MAP_LOC.x}:${STUDIO_MAP_LOC.y}</span>
+              <span id="studioSemanticLodBadge" class="mono" style="padding:1px 6px;border-radius:4px;background:rgba(56,189,248,0.16);border:1px solid rgba(56,189,248,0.45);color:#7dd3fc;font-size:9.5px;font-weight:800">
+                ${ATLAS_STATE_STORE.activeDungeonId
+                  ? `🕳️ SUB-MAP: ${escapeHtml(ATLAS_STATE_STORE.activeDungeonId)} (${escapeHtml(ATLAS_STATE_STORE.activeFloorId)})`
+                  : (lodTier === 3 ? '🏘️ LOD Tier 3: Town Street & Shop/Refinement Blueprint (4.5×–12.0×)' : (lodTier === 2 ? '🛤️ LOD Tier 2: Regional Roads, Lv.Bands & Dungeon Portals (2.2×–4.5×)' : '🌍 LOD Tier 1: Macro Geography & 6 Race Spawns (1.0×–2.2×)'))}
+              </span>
+              <span style="display:none" title="${escapeHtml(subtitle || '')}">${title}</span>
+              <div style="display:inline-flex;background:#0d1624;padding:1px;border-radius:5px;border:1px solid rgba(255,255,255,0.16)">
+                <button type="button" onclick="setStudioCartoTheme('l2hub')" style="padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:800;cursor:pointer;border:none;background:${isL2 ? '#dab362' : 'transparent'};color:${isL2 ? '#0d1624' : '#94a3b8'}">
+                  📜 L2Hub Aden Parchment
+                </button>
+                <button type="button" onclick="setStudioCartoTheme('google')" style="padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:800;cursor:pointer;border:none;background:${!isL2 ? '#2563eb' : 'transparent'};color:${!isL2 ? '#ffffff' : '#94a3b8'}">
+                  🗺️ Google/Apple GIS
+                </button>
+              </div>
+              <span style="display:none">
+                ${zoomScales.map(zs => `
+                  <button type="button" onclick="ATLAS_STATE_STORE.activeDungeonId=''; ATLAS_STATE_STORE.activeFloorId=''; STUDIO_MAP_PAN_X=0; STUDIO_MAP_PAN_Y=0; STUDIO_MAP_ZOOM=${zs.z}; setStudioPerspective('${zs.persp}');">${zs.label}</button>
+                `).join('')}
+              </span>
+            </div>
+            ${drillControls ? `
+              <div class="joy-spatial-shell__hud-panel">
+                ${drillControls}
+              </div>
+            ` : ''}
           </div>
 
-          ${drillControls ? `
-            <div style="position:absolute;top:12px;left:12px;z-index:10;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 70px)">
-              ${drillControls}
+          <!-- Floating Map Zoom Controls (+ / - / 1:1 / Street Blueprint) -->
+          <div class="joy-spatial-shell__hud joy-spatial-shell__hud--top-right">
+            <div class="joy-spatial-shell__hud-panel joy-spatial-shell__hud-panel--zoom">
+              <button type="button" onclick="zoomStudioMap(0.65, false)" title="Zoom In (+ key)" style="width:34px;height:32px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#29251d;color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer">+</button>
+              <div id="studioCartoZoomReadout" class="mono" style="font-size:10px;text-align:center;color:#fde047;padding:2px 0">${STUDIO_MAP_ZOOM.toFixed(2)}×</div>
+              <button type="button" onclick="zoomStudioMap(-0.65, false)" title="Zoom Out (- key)" style="width:34px;height:32px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#29251d;color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer">−</button>
+              <button type="button" onclick="zoomStudioMap(0, false, 2.8)" title="Regional Roads LOD (2.8x)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(56,189,248,0.45);background:#0f172a;color:#38bdf8;font-size:9.5px;font-weight:800;cursor:pointer">2.8×</button>
+              <button type="button" onclick="focusTownStreetBlueprint(ATLAS_STATE_STORE.activeTownId || 'town-lantern-hollow')" title="Town Street & Shop Blueprint LOD (5.2x)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(250,204,21,0.55);background:#422006;color:#fde047;font-size:9.5px;font-weight:800;cursor:pointer">5.2×</button>
+              <button type="button" onclick="zoomStudioMap(0, true)" title="Reset Pan & Zoom (1:1 Macro)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#17140f;color:#fde047;font-size:10px;font-weight:700;cursor:pointer">1:1</button>
+              <button type="button" onclick="toggleAtlasLeftDrawer()" title="Toggle Left Inspector Drawer" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(56,189,248,0.45);background:#0f172a;color:#7dd3fc;font-size:10px;font-weight:800;cursor:pointer">${ATLAS_LEFT_DRAWER_OPEN ? '◀' : '▶'}</button>
+              <button type="button" onclick="toggleAtlasTheaterMode()" title="Toggle Full-Viewport Theater Mode (Hotkey: F)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(250,204,21,0.45);background:#1c1917;color:#fde047;font-size:10px;font-weight:800;cursor:pointer">⛶</button>
             </div>
-          ` : ''}
+          </div>
 
           <!-- Interactive 2D Cartographic SVG Map (WCAG 2.2 Keyboard Accessible via onStudioMapKeyDown) -->
           <svg id="dedicatedWorldAtlasSvg" tabindex="0" role="application" aria-label="Interactive Semantic-Zoom World, Town and Multi-Floor Dungeon Atlas"
-               viewBox="0 0 1040 500" width="100%" height="520"
+               viewBox="0 0 1040 500" width="100%" height="100%"
                onkeydown="onStudioMapKeyDown(event)"
                onwheel="onStudioMapWheel(event)"
                onmousedown="onStudioMapPointerDown(event)"
                onmousemove="onStudioMapPointerMove(event)"
                onmouseup="onStudioMapPointerUp(event)"
                onmouseleave="onStudioMapPointerUp(event)"
-               style="display:block;width:100%;height:520px;cursor:grab;user-select:none;outline:none">
+               style="display:block;width:100%;height:100%;cursor:grab;user-select:none;outline:none">
             <defs>
               <radialGradient id="cartoSeaGrad" cx="50%" cy="50%" r="72%">
                 <stop offset="0%" stop-color="${isL2 ? '#3d5a5e' : '#21436a'}"/>
@@ -7009,7 +7630,10 @@ function renderCartoShellHtml({
         </div>
       </div>
 
-      ${bottomPanelHtml || ''}
+      <div class="joy-spatial-shell__bottom">
+        ${renderAtlasBelowCanvasStudioDockHtml(ATLAS_LAST_MATCH_COUNT)}
+        ${bottomPanelHtml || ''}
+      </div>
     </div>
   `;
 }
@@ -7393,14 +8017,20 @@ function renderAtlasFilteredEntityMatrixHtml(tatlas) {
   ];
 
   return `
-    <div id="studioFilteredEntitySpawnMatrix" style="padding:12px 16px;background:#0c121c;border-top:1px solid rgba(250,204,21,0.28)">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
-        <div>
-          <div style="font-size:12px;font-weight:900;color:#fde047">
-            🎯 LIVE WORLD &amp; DUNGEON SPAWN &amp; REFINEMENT-SPOIL LOCATOR MATRIX (D14 · ${filteredRows.length} MATCHING ENTITIES)
-          </div>
-          <div style="font-size:10.5px;color:#94a3b8">
-            Synced with Active Filter (${escapeHtml(activeFilter)}) &amp; Level Band (${escapeHtml(activeBand)}) across 16 Multi-Floor Dungeons (48 Floors), 24 Fields, 8 Fortresses &amp; 15 Towns
+    <div id="studioFilteredEntitySpawnMatrix" style="padding:10px 16px;background:#0c121c;border-top:1px solid rgba(250,204,21,0.28)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:${ATLAS_ENTITY_MATRIX_OPEN ? '8px' : '0px'}">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button type="button" onclick="toggleAtlasEntityMatrix()"
+                  style="padding:5px 12px;border-radius:8px;border:1.5px solid #fde047;background:${ATLAS_ENTITY_MATRIX_OPEN ? '#b45309' : '#162032'};color:#fde047;font-size:11.5px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+            📊 Filtered World Entity Matrix (Click to Expand / Collapse) · ${filteredRows.length} Matching ${ATLAS_ENTITY_MATRIX_OPEN ? '▲' : '▼'}
+          </button>
+          <div>
+            <div style="font-size:11.5px;font-weight:900;color:#fde047">
+              🎯 LIVE WORLD &amp; DUNGEON SPAWN &amp; REFINEMENT-SPOIL LOCATOR MATRIX (D14 · ${filteredRows.length} MATCHING ENTITIES)
+            </div>
+            <div style="font-size:10px;color:#94a3b8">
+              Synced with Active Filter (${escapeHtml(activeFilter)}) &amp; Level Band (${escapeHtml(activeBand)}) across 16 Multi-Floor Dungeons (48 Floors), 24 Fields, 8 Fortresses &amp; 15 Towns
+            </div>
           </div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:5px">
@@ -7415,30 +8045,34 @@ function renderAtlasFilteredEntityMatrixHtml(tatlas) {
           }).join('')}
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:7px">
-        ${displayRows.map(r => `
-          <div style="padding:8px 10px;border-radius:8px;background:#141d2d;border-left:3.5px solid ${r.badgeColor};border-top:1px solid rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;justify-content:space-between;gap:5px">
-            <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-                <span style="font-size:11px;font-weight:900;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(r.name)}</span>
-                <span class="mono" style="font-size:9.5px;padding:1px 6px;border-radius:4px;background:rgba(15,23,42,0.9);color:${r.badgeColor};border:1px solid ${r.badgeColor};flex-shrink:0">${escapeHtml(r.badgeLabel)} · ${escapeHtml(r.levelDisplay)}</span>
+      <div id="studioAtlasFilteredEntityMatrix" style="display:${ATLAS_ENTITY_MATRIX_OPEN ? 'block' : 'none'}">
+        ${ATLAS_ENTITY_MATRIX_OPEN ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:7px">
+          ${displayRows.map(r => `
+            <div style="padding:8px 10px;border-radius:8px;background:#141d2d;border-left:3.5px solid ${r.badgeColor};border-top:1px solid rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;justify-content:space-between;gap:5px">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                  <span style="font-size:11px;font-weight:900;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(r.name)}</span>
+                  <span class="mono" style="font-size:9.5px;padding:1px 6px;border-radius:4px;background:rgba(15,23,42,0.9);color:${r.badgeColor};border:1px solid ${r.badgeColor};flex-shrink:0">${escapeHtml(r.badgeLabel)} · ${escapeHtml(r.levelDisplay)}</span>
+                </div>
+                <div style="font-size:10px;color:#cbd5e1;margin-top:2px;font-weight:700">
+                  🗺️ ${escapeHtml(r.zoneOrFloor)} · <span class="mono" style="color:#38bdf8">⏱️ ${escapeHtml(r.respawn)}</span>
+                </div>
+                <div style="font-size:9.5px;color:#fde68a;margin-top:2px">
+                  💎 Drops / Spoils: ${escapeHtml(r.drops)}
+                </div>
               </div>
-              <div style="font-size:10px;color:#cbd5e1;margin-top:2px;font-weight:700">
-                🗺️ ${escapeHtml(r.zoneOrFloor)} · <span class="mono" style="color:#38bdf8">⏱️ ${escapeHtml(r.respawn)}</span>
-              </div>
-              <div style="font-size:9.5px;color:#fde68a;margin-top:2px">
-                💎 Drops / Spoils: ${escapeHtml(r.drops)}
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:3px">
+                <span class="mono" style="font-size:9px;color:#94a3b8">loc=${escapeHtml(r.locCoord)}</span>
+                <button type="button" onclick="${r.actionJs}"
+                        style="padding:3px 9px;border-radius:6px;border:1px solid #fde047;background:#1e3a8a;color:#fde047;font-size:9.5px;font-weight:900;cursor:pointer;flex-shrink:0">
+                  ${escapeHtml(r.actionLabel)}
+                </button>
               </div>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:3px">
-              <span class="mono" style="font-size:9px;color:#94a3b8">loc=${escapeHtml(r.locCoord)}</span>
-              <button type="button" onclick="${r.actionJs}"
-                      style="padding:3px 9px;border-radius:6px;border:1px solid #fde047;background:#1e3a8a;color:#fde047;font-size:9.5px;font-weight:900;cursor:pointer;flex-shrink:0">
-                ${escapeHtml(r.actionLabel)}
-              </button>
-            </div>
-          </div>
-        `).join('')}
+          `).join('')}
+        </div>
+        ` : ''}
       </div>
     </div>
   `;
@@ -15189,6 +15823,198 @@ function renderAtlasChurnInterventionBarHtml(tatlas) {
 }
 
 function renderAtlasFilterBarHtml(matchCount) {
+  ATLAS_LAST_MATCH_COUNT = matchCount;
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const omniQuery = ATLAS_OMNI_SEARCH_QUERY || ATLAS_STATE_STORE.omniSearchQuery || '';
+  const omniResults = searchAtlasOmniIndex(omniQuery, tatlas);
+  const presetSearchChips = [
+    'Gludin Village',
+    'The Ant Nest',
+    'Refinement +1..+15',
+    'Warehouse',
+    'MVP Bosses',
+    'Raid Bosses',
+    'Cruma Tower'
+  ];
+  const catPills = [
+    { id: 'All', label: 'All Layers' },
+    { id: 'RaceSpawns', label: 'Race Spawns (6)' },
+    { id: 'TownMarks', label: 'NPCs (Shop + Refinement)' },
+    { id: 'Monster', label: 'Monster' },
+    { id: 'Mini-Boss', label: 'Mini-Boss' },
+    { id: 'Raid', label: 'Raid' },
+    { id: 'MVP', label: 'MVP' }
+  ];
+  const bandPills = ['All', '1-20', '21-40', '41-60', '61-80', '81-99'];
+  const curPersona = ATLAS_PERSONA_LENS || ATLAS_STATE_STORE.personaLens || 'gamer';
+
+  const personaLenses = [
+    {
+      id: 'gamer',
+      label: 'Gamer',
+      subtitle: 'Clean Exploration & Fast Travel',
+      iconSvg: '<circle cx="8" cy="8" r="6"/><polygon points="6.5,9.5 7.5,6.5 10.5,5.5 9.5,8.5" fill="currentColor"/>'
+    },
+    {
+      id: 'designer',
+      label: 'Designer',
+      subtitle: 'Growth Paths, Bosses, Quests & Economy',
+      iconSvg: '<rect x="2.5" y="2.5" width="11" height="11" rx="2"/><circle cx="5.5" cy="5.5" r="1" fill="currentColor"/><circle cx="8" cy="8" r="1" fill="currentColor"/><circle cx="10.5" cy="10.5" r="1" fill="currentColor"/>'
+    },
+    {
+      id: 'architect',
+      label: 'Architect',
+      subtitle: '4-Perspective Scale, Drift & Sign-Off',
+      iconSvg: '<path d="M8 2L14 5.5L8 9L2 5.5L8 2Z"/><path d="M2 8.5L8 12L14 8.5"/><path d="M2 11.5L8 15L14 11.5"/>'
+    },
+    {
+      id: 'developer',
+      label: 'Developer',
+      subtitle: '3D GLB, 10k-Bot Sim, NavMesh & GPU',
+      iconSvg: '<polyline points="5.5,4.5 2,8 5.5,11.5"/><polyline points="10.5,4.5 14,8 10.5,11.5"/><line x1="9" y1="3" x2="7" y2="13"/>'
+    },
+    {
+      id: 'liveops',
+      label: 'LiveOps',
+      subtitle: 'Sieges, Boss Radar, Economy & Churn Care',
+      iconSvg: '<path d="M8 2L13 4.2V8.2C13 11.2 10.8 13.4 8 14.3C5.2 13.4 3 11.2 3 8.2V4.2L8 2Z"/>'
+    }
+  ];
+
+  const curatedKeysByPersona = ATLAS_PERSONA_STUDIO_CATALOG;
+  const showPresetChips = Boolean(omniQuery) || ATLAS_PRESET_CHIPS_OPEN;
+  const showRoutePlanner = ATLAS_ROUTE_PLANNER_OPEN;
+  const showRaceGrowthRow = ATLAS_RACE_GROWTH_OPEN || (ATLAS_STATE_STORE.raceGrowthRoute && ATLAS_STATE_STORE.raceGrowthRoute !== 'All');
+  const spatialCtx = getAtlasSpatialContext();
+  const filterResolution = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, spatialCtx);
+  ATLAS_STATE_STORE.contextAutoHealNote = filterResolution.reason;
+
+  return `
+    <!-- Row 1: F-086 PersonaLensBar (.joy-lens-bar) with trailing OmniCommandBar & Workspace Toggles -->
+    <div id="joyPersonaLensBar" class="joy-persona-lens-bar joy-lens-bar">
+      <div class="joy-lens-bar__tabs" role="tablist" aria-label="Workspace Persona Lenses">
+        ${personaLenses.map((pl, plIdx) => {
+          const isAct = curPersona === pl.id;
+          const lensCount = (curatedKeysByPersona[pl.id] || []).length;
+          return `
+            <button type="button" role="tab" aria-selected="${isAct ? 'true' : 'false'}" aria-pressed="${isAct ? 'true' : 'false'}" class="joy-lens-bar__tab" onclick="setAtlasPersonaLens('${pl.id}')" title="${escapeHtml(pl.subtitle)} (Hotkey: ${plIdx + 1})">
+              <svg class="joy-lens-bar__icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${pl.iconSvg}</svg>
+              ${pl.label}
+              <span class="joy-lens-bar__badge">${lensCount}</span>
+              <kbd class="joy-lens-bar__kbd">${plIdx + 1}</kbd>
+            </button>
+          `;
+        }).join('')}
+      </div>
+      <div class="joy-lens-bar__trailing">
+        <!-- D13: Instant Atlas Omni-Search & Quick-Jump Popover -->
+        <div class="joy-omni-command-bar" data-open="${showPresetChips ? 'true' : 'false'}">
+          <div class="joy-omni-command-bar__field">
+            <svg class="joy-lens-bar__icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+            <input id="atlasOmniSearchInput" class="joy-omni-command-bar__input" type="search"
+                   value="${escapeHtml(omniQuery)}"
+                   placeholder="🔎 Search Towns (Gludin, Dion, Oren), Dungeons (Ant Nest, Cruma), NPCs (Shop, Refinement, Warehouse), Races, or Mobs/MVPs..."
+                   onchange="setAtlasOmniSearch(this.value)"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();setAtlasOmniSearch(this.value);}" />
+            ${omniQuery ? `
+              <button type="button" class="joy-omni-command-bar__btn" onclick="clearAtlasOmniSearch()" title="Clear Search">Clear</button>
+            ` : ''}
+            <button type="button" class="joy-omni-command-bar__btn" onclick="toggleAtlasPresetChips()" title="Toggle Search Presets">Presets</button>
+            <kbd class="joy-omni-command-bar__kbd">⌘K</kbd>
+          </div>
+          <div id="atlasOmniQuickJumpPills" class="joy-omni-command-bar__tray">
+            ${showPresetChips ? `
+            <div id="atlasPresetSearchChipsRow" class="joy-omni-command-bar__chips-row">
+              ${presetSearchChips.map(chip => {
+                const isAct = omniQuery.toLowerCase() === chip.toLowerCase();
+                return `
+                  <button type="button" class="joy-context-filter-bar__chip" aria-pressed="${isAct ? 'true' : 'false'}" onclick="setAtlasOmniSearch('${escapeHtml(chip)}')">
+                    ${escapeHtml(chip)}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+            <div class="joy-omni-command-bar__group">
+              <div class="joy-omni-command-bar__group-label mono">
+                ${omniQuery ? `Quick-Jump Matches (${omniResults.length}):` : 'Instant Quick-Jump Action Pills:'}
+              </div>
+              ${omniResults.map(res => `
+                <button type="button" class="joy-omni-command-bar__item" onclick="${res.actionJs}">
+                  <span>${escapeHtml(res.title.slice(0, 34))}</span>
+                  <span class="joy-omni-command-bar__action mono">[${escapeHtml(String(res.actionLabel || '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim())}]</span>
+                </button>
+              `).join('')}
+            </div>
+            ` : ''}
+          </div>
+        </div>
+        <button type="button" class="joy-spatial-shell__toggle" aria-pressed="${ATLAS_PERSPECTIVE_BAR_OPEN ? 'true' : 'false'}" onclick="toggleAtlasPerspectiveBar()" title="Toggle 4-Perspective Scale Bar">
+          Scale
+        </button>
+        <button type="button" class="joy-spatial-shell__toggle" aria-pressed="${ATLAS_LEFT_DRAWER_OPEN ? 'true' : 'false'}" onclick="toggleAtlasLeftDrawer()" title="Toggle Place Details Inspector Drawer">
+          Details
+        </button>
+        <button type="button" class="joy-spatial-shell__toggle" aria-pressed="${ATLAS_QUICK_WARP_OPEN ? 'true' : 'false'}" onclick="toggleAtlasQuickWarp()" title="Toggle Quick Warp &amp; Zone Blueprints">
+          Warp
+        </button>
+        <button type="button" class="joy-spatial-shell__toggle" aria-pressed="${showRoutePlanner ? 'true' : 'false'}" onclick="toggleAtlasRoutePlanner()" title="Toggle Travel Route Calculator">
+          Route
+        </button>
+        <button type="button" class="joy-spatial-shell__toggle" aria-pressed="${showRaceGrowthRow ? 'true' : 'false'}" onclick="toggleAtlasRaceGrowthBar()" title="Toggle 6-Race Growth Path">
+          Growth
+        </button>
+        <button type="button" class="joy-spatial-shell__toggle" aria-pressed="${ATLAS_DIMENSION_DRAWER_OPEN ? 'true' : 'false'}" onclick="toggleAtlasDimensionDrawer()" title="Toggle 108D Studio Overlays Dock">
+          108D (${(curatedKeysByPersona[curPersona] || []).length})
+        </button>
+        <button type="button" class="joy-spatial-shell__toggle" aria-pressed="${ATLAS_THEATER_MODE ? 'true' : 'false'}" onclick="toggleAtlasTheaterMode()" title="Toggle Full-Viewport Theater Mode (Hotkey: F)">
+          ${ATLAS_THEATER_MODE ? 'Exit Theater' : 'Theater'}
+        </button>
+      </div>
+    </div>
+
+    <!-- Row 2: F-086 ContextFilterBar (.joy-context-filter-bar) -->
+    <div class="joy-context-filter-bar">
+      <div class="joy-context-filter-bar__chips" role="group" aria-label="Filter Pins and Marks">
+        ${catPills.map(p => {
+          const active = filterResolution.effective === p.id;
+          const notApplicableInView = (spatialCtx === 'dungeon' && (p.id === 'RaceSpawns' || p.id === 'TownMarks'))
+            || (spatialCtx === 'town' && ['RaceSpawns', 'Monster', 'Mini-Boss', 'Raid', 'MVP'].includes(p.id))
+            || (spatialCtx === 'field' && p.id === 'RaceSpawns');
+          const tooltipMsg = notApplicableInView
+            ? (spatialCtx === 'dungeon' ? `${p.label} applies to Overland / Town views (Dungeon floors contain Monster, Mini-Boss, Raid & MVP spawns)` : `${p.label} applies to Overland / Field / Dungeon views`)
+            : `Filter map pins by ${p.label}`;
+          return `
+            <button type="button" class="joy-context-filter-bar__chip" aria-pressed="${active ? 'true' : 'false'}" ${notApplicableInView ? 'disabled' : ''} onclick="setAtlasFilter('${p.id}')" title="${escapeHtml(tooltipMsg)}">
+              ${p.label}${active ? `<span class="joy-context-filter-bar__count">${matchCount}</span>` : ''}
+            </button>
+          `;
+        }).join('')}
+        ${filterResolution.reason ? `
+          <span id="atlasContextAutoHealBadge" role="status" class="joy-context-filter-bar__notice">
+            <span>${escapeHtml(filterResolution.reason)}</span>
+            <button type="button" class="joy-context-filter-bar__notice-action" onclick="setAtlasFilter('All')">Keep All</button>
+          </span>
+        ` : ''}
+      </div>
+      <div class="joy-context-filter-bar__chips" role="group" aria-label="Level Band Filters">
+        <select class="joy-context-filter-bar__select" aria-label="Level Band" onchange="setAtlasLevelBand(this.value)">
+          ${bandPills.map(b => {
+            const active = ATLAS_STATE_STORE.levelBand === b;
+            return `<option value="${b}" ${active ? 'selected' : ''}>${b === 'All' ? 'All Lv.' : 'Lv.' + b}</option>`;
+          }).join('')}
+        </select>
+        ${(ATLAS_STATE_STORE.filter !== 'All' || ATLAS_STATE_STORE.levelBand !== 'All' || ATLAS_STATE_STORE.raceGrowthRoute !== 'All') ? `
+          <button type="button" class="joy-context-filter-bar__chip" onclick="resetAtlasFilters()">
+            Reset Filters
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderAtlasBelowCanvasStudioDockHtml(matchCount) {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
   const allTowns = getAllAtlasTownEntries(tatlas);
@@ -15204,27 +16030,6 @@ function renderAtlasFilterBarHtml(matchCount) {
     { fromId: 'zone-town-kilnwatch-bastion', toId: 'zone-dungeon-pendulum-shaft', label: 'Town of Dion ➔ Cruma Tower' },
     { fromId: 'zone-town-escapement-anvil', toId: 'zone-dungeon-star-heart-nave', label: 'Town of Oren ➔ Tower of Insolence' }
   ];
-  const omniQuery = ATLAS_OMNI_SEARCH_QUERY || ATLAS_STATE_STORE.omniSearchQuery || '';
-  const omniResults = searchAtlasOmniIndex(omniQuery, tatlas);
-  const presetSearchChips = [
-    'Gludin Village',
-    'The Ant Nest',
-    'Refinement +1..+15',
-    'Warehouse',
-    'MVP Bosses',
-    'Raid Bosses',
-    'Cruma Tower'
-  ];
-  const catPills = [
-    { id: 'All', label: '🌐 All Layers' },
-    { id: 'RaceSpawns', label: '🧬 Race Spawns (6)' },
-    { id: 'TownMarks', label: '🛍️ NPCs (Shop + Refinement)' },
-    { id: 'Monster', label: '👾 Monster' },
-    { id: 'Mini-Boss', label: '⚔️ Mini-Boss' },
-    { id: 'Raid', label: '🔥 Raid' },
-    { id: 'MVP', label: '👑 MVP' }
-  ];
-  const bandPills = ['All', '1-20', '21-40', '41-60', '61-80', '81-99'];
   const featuredDungeons = [
     { id: 'zone-dungeon-kiln-cellar', label: '🕳️ Kiln Cellar (The Ant Nest B1–B3)' },
     { id: 'zone-dungeon-pendulum-shaft', label: '🗼 Pendulum Shaft (Cruma Tower 1F–3F)' },
@@ -15233,57 +16038,128 @@ function renderAtlasFilterBarHtml(matchCount) {
   const activeTownId = ATLAS_STATE_STORE.activeTownId || 'town-lantern-hollow';
   const activeFieldOrFortId = ATLAS_STATE_STORE.activeFieldOrFortId || '';
   const activeDungeonId = ATLAS_STATE_STORE.activeDungeonId || '';
+  const curPersona = ATLAS_PERSONA_LENS || ATLAS_STATE_STORE.personaLens || 'gamer';
+
+  const studioBarEntries = [
+    { key: 'refinement', persona: 'designer', label: 'D10 Blacksmith (+1..+15 Refinement)', render: () => renderAtlasBlacksmithRefinementBarHtml(tatlas) },
+    { key: 'boss_hierarchy', persona: 'designer', label: 'D22 Boss Hierarchy (5-Tier God Chain)', render: () => renderAtlasBossHierarchyChainBarHtml(tatlas) },
+    { key: 'quest_trials', persona: 'designer', label: 'D23 Quest Trials (3-Track Progression)', render: () => renderAtlasQuestTrialOverlayBarHtml(tatlas) },
+    { key: 'farming_heatmap', persona: 'designer', label: 'D24 Farming Heatmap (Party & Spoils)', render: () => renderAtlasFarmingHeatmapBarHtml(tatlas) },
+    { key: 'siege_domain', persona: 'liveops', label: 'D25 Castle Siege & Tax Domains', render: () => renderAtlasSiegeDomainBarHtml(tatlas) },
+    { key: 'boss_radar', persona: 'liveops', label: 'D26 Boss Radar (MVP & Raid Windows)', render: () => renderAtlasBossRadarBarHtml(tatlas) },
+    { key: 'seven_seals', persona: 'liveops', label: 'D27 Seven Seals & Mammon Rotation', render: () => renderAtlasSevenSealsBarHtml(tatlas) },
+    { key: 'manor_economy', persona: 'liveops', label: 'D28 Manor Economy & Seed Caravans', render: () => renderAtlasManorEconomyBarHtml(tatlas) },
+    { key: 'olympiad', persona: 'designer', label: 'D29 Subclass, Noblesse & Olympiad', render: () => renderAtlasOlympiadNetworkBarHtml(tatlas) },
+    { key: 'transit_lines', persona: 'gamer', label: 'D30 Inter-Continental Transit', render: () => renderAtlasTransitLinesBarHtml(tatlas) },
+    { key: 'soul_crystal', persona: 'designer', label: 'D31 Soul Crystal Resonance', render: () => renderAtlasSoulCrystalBarHtml(tatlas) },
+    { key: 'fishing_sanctuary', persona: 'gamer', label: 'D32 Fishing & Hot Springs', render: () => renderAtlasFishingSanctuaryBarHtml(tatlas) },
+    { key: 'pvp_karma', persona: 'liveops', label: 'D33 Cursed Weapons & PvP Karma', render: () => renderAtlasPvpKarmaBarHtml(tatlas) },
+    { key: 'rift_sepulcher', persona: 'designer', label: 'D34 Dimensional Rift & Four Sepulchers', render: () => renderAtlasRiftSepulcherBarHtml(tatlas) },
+    { key: 'augment_dye', persona: 'designer', label: 'D35 Weapon Augmentation & Dyes', render: () => renderAtlasAugmentDyeBarHtml(tatlas) },
+    { key: 'companion_mount', persona: 'gamer', label: 'D36 Pets, Striders & Wyvern Mounts', render: () => renderAtlasCompanionMountBarHtml(tatlas) },
+    { key: 'clan_academy', persona: 'liveops', label: 'D37 Clan Reputation & Academy', render: () => renderAtlasClanAcademyBarHtml(tatlas) },
+    { key: 'herb_biome', persona: 'designer', label: 'D38 Elemental & Herb Sustainability', render: () => renderAtlasHerbBiomeBarHtml(tatlas) },
+    { key: 'workshop_plaza', persona: 'designer', label: 'D39 Soulshot & Dwarven Workshops', render: () => renderAtlasWorkshopPlazaBarHtml(tatlas) },
+    { key: 'territory_ward', persona: 'liveops', label: 'D40 Territory Wards & Codex Vaults', render: () => renderAtlasTerritoryWardBarHtml(tatlas) },
+    { key: 'epic_jewelry', persona: 'designer', label: 'D41 Epic Boss Relic Jewelry', render: () => renderAtlasEpicJewelryBarHtml(tatlas) },
+    { key: 'vitality_obelisk', persona: 'gamer', label: 'D42 Adventurer Guide & Vitality', render: () => renderAtlasVitalityObeliskBarHtml(tatlas) },
+    { key: 'armor_set', persona: 'designer', label: 'D43 Armor Sets & Masterwork Forges', render: () => renderAtlasArmorSetBarHtml(tatlas) },
+    { key: 'kamaloka', persona: 'designer', label: 'D44 Kamaloka, Pailaka & Seed Portals', render: () => renderAtlasKamalokaBarHtml(tatlas) },
+    { key: 'skill_scroll', persona: 'designer', label: 'D45 Forgotten Scrolls & Skill Mastery', render: () => renderAtlasSkillScrollBarHtml(tatlas) },
+    { key: 'elemental_quarry', persona: 'designer', label: 'D46 Elemental Quarries & Caravans', render: () => renderAtlasElementalQuarryBarHtml(tatlas) },
+    { key: 'clan_hall', persona: 'liveops', label: 'D47 Clan Hall Auctions & Chateaus', render: () => renderAtlasClanHallBarHtml(tatlas) },
+    { key: 'transformation', persona: 'designer', label: 'D48 Transformations, Talismans & Agathions', render: () => renderAtlasTransformationBarHtml(tatlas) },
+    { key: 'warehouse', persona: 'liveops', label: 'D49 Warehouse, Clan Vault & Freight', render: () => renderAtlasWarehouseBarHtml(tatlas) },
+    { key: 'master_tour', persona: 'gamer', label: 'D50 50D Master Cartographic Tour', render: () => renderAtlasMasterTourBarHtml(tatlas) },
+    { key: 'festival_oracle', persona: 'liveops', label: 'D51 Festival of Darkness Oracles', render: () => renderAtlasFestivalOracleBarHtml(tatlas) },
+    { key: 'luxury_market', persona: 'liveops', label: 'D52 Luxury Boutique & Black Marketeer', render: () => renderAtlasLuxuryMarketBarHtml(tatlas) },
+    { key: 'faction_alliance', persona: 'designer', label: 'D53 Factional Alliances & Totems', render: () => renderAtlasFactionAllianceBarHtml(tatlas) },
+    { key: 'fantasy_plaza', persona: 'gamer', label: 'D54 Monster Derby & Kratei Cube', render: () => renderAtlasFantasyPlazaBarHtml(tatlas) },
+    { key: 'hero_weapon', persona: 'liveops', label: 'D55 Hero Weapons & Olympiad Tokens', render: () => renderAtlasHeroWeaponBarHtml(tatlas) },
+    { key: 'treasure_chest', persona: 'gamer', label: 'D56 Treasure Chests & Lockpick Caches', render: () => renderAtlasTreasureChestBarHtml(tatlas) },
+    { key: 'aerial_dock', persona: 'gamer', label: 'D57 Clan Airship Docks & Star Stones', render: () => renderAtlasAerialDockBarHtml(tatlas) },
+    { key: 'belt_cloak', persona: 'designer', label: 'D58 Mithril Belts & Sovereign Cloaks', render: () => renderAtlasBeltCloakBarHtml(tatlas) },
+    { key: 'wedding', persona: 'gamer', label: 'D59 Wedding Cathedrals & Formal Wear', render: () => renderAtlasWeddingBarHtml(tatlas) },
+    { key: 'council_benchmark', persona: 'architect', label: 'D60 6-Role Studio Council 60D Audit', render: () => renderAtlasCouncilBenchmarkBarHtml(tatlas) },
+    { key: 'seed_cycle', persona: 'liveops', label: 'D61 Continental Seed Cycle (Stages 1–5)', render: () => renderAtlasSeedCycleBarHtml(tatlas) },
+    { key: 'coliseum_tournament', persona: 'liveops', label: 'D62 Underground Coliseum & Tournaments', render: () => renderAtlasColiseumTournamentBarHtml(tatlas) },
+    { key: 'elemental_jewel', persona: 'designer', label: 'D63 Elemental Jewels & Raid Runes', render: () => renderAtlasElementalJewelBarHtml(tatlas) },
+    { key: 'fame_monument', persona: 'liveops', label: 'D64 Reputation Monuments & PvP Infusion', render: () => renderAtlasFameMonumentBarHtml(tatlas) },
+    { key: 'delusion_chamber', persona: 'designer', label: 'D65 Delusion Chambers & Aenkinel', render: () => renderAtlasDelusionChamberBarHtml(tatlas) },
+    { key: 'command_raid', persona: 'liveops', label: 'D66 Zaken, Freya & Frintezza Command Raids', render: () => renderAtlasCommandRaidBarHtml(tatlas) },
+    { key: 'nevit_blessing', persona: 'gamer', label: 'D67 Nevit Blessing & Hunting Helpers', render: () => renderAtlasNevitBlessingBarHtml(tatlas) },
+    { key: 'council_signoff', persona: 'architect', label: 'D68 Studio Council D1–D68 Sign-Off', render: () => renderAtlasCouncilSignoffBarHtml(tatlas) },
+    { key: 'champion_mob', persona: 'designer', label: 'D69 Champion Mob Auras & Herd Leaders', render: () => renderAtlasChampionMobBarHtml(tatlas) },
+    { key: 'dualsword_forge', persona: 'designer', label: 'D70 Dualsword Stamps & Maestro Ishuma', render: () => renderAtlasDualswordForgeBarHtml(tatlas) },
+    { key: 'tech_art', persona: 'developer', label: 'D71 3D GLB Asset Gate', render: () => renderAtlasTechArtPipelineBarHtml(tatlas) },
+    { key: 'bot_swarm', persona: 'developer', label: 'D72 10k-Bot Swarm & SpatialGrid', render: () => renderAtlasBotSwarmSimBarHtml(tatlas) },
+    { key: 'liveops_gm', persona: 'liveops', label: 'D73 LiveOps GM Rescue', render: () => renderAtlasLiveopsGmBarHtml(tatlas) },
+    { key: 'tools_squad', persona: 'architect', label: 'D74 Tools Squad', render: () => renderAtlasToolsSquadBarHtml(tatlas) },
+    { key: 'dialogue_dag', persona: 'designer', label: 'D75 Dialogue DAG', render: () => renderAtlasDialogueGraphBarHtml(tatlas) },
+    { key: 'spawner_balancer', persona: 'designer', label: 'D76 Spawner Balancer', render: () => renderAtlasSpawnerBalancerBarHtml(tatlas) },
+    { key: 'skill_timelines', persona: 'designer', label: 'D77 Skill Timelines', render: () => renderAtlasSkillTimelineBarHtml(tatlas) },
+    { key: 'build_farm', persona: 'developer', label: 'D78 Build Farm', render: () => renderAtlasBuildFarmBarHtml(tatlas) },
+    { key: 'architect_dx', persona: 'architect', label: 'D79 Architect DX & Schema Drift', render: () => renderAtlasArchitectDxBarHtml(tatlas) },
+    { key: 'two_ring_80d', persona: 'architect', label: 'D80 80D Sign-Off', render: () => renderAtlasTwoRingSignoffBarHtml(tatlas) },
+    { key: 'weather_shader', persona: 'developer', label: 'D81 Weather/Shader', render: () => renderAtlasWeatherAcousticBarHtml(tatlas) },
+    { key: 'server_mesh', persona: 'developer', label: 'D82 Server-Mesh WAL', render: () => renderAtlasServerMeshBarHtml(tatlas) },
+    { key: 'anti_bot', persona: 'liveops', label: 'D83 Anti-Bot Sentinel', render: () => renderAtlasAntiBotSentinelBarHtml(tatlas) },
+    { key: 'godot_storybook', persona: 'developer', label: 'D84 Godot 3D Storybook', render: () => renderAtlasGodotStorybookBarHtml(tatlas) },
+    { key: 'navmesh', persona: 'developer', label: 'D85 3D NavMesh', render: () => renderAtlasNavmeshObstacleBarHtml(tatlas) },
+    { key: 'event_flags', persona: 'liveops', label: 'D86 Event Flags', render: () => renderAtlasLiveopsEventFlagsBarHtml(tatlas) },
+    { key: 'camera_rails', persona: 'developer', label: 'D87 Camera Rails', render: () => renderAtlasCinematicCameraRailsBarHtml(tatlas) },
+    { key: 'gpu_vram', persona: 'developer', label: 'D88 Client GPU/VRAM', render: () => renderAtlasClientGpuBudgetsBarHtml(tatlas) },
+    { key: 'headless_qa', persona: 'developer', label: 'D89 Headless QA', render: () => renderAtlasAutomatedQaSuitesBarHtml(tatlas) },
+    { key: 'studio_90d', persona: 'architect', label: 'D90 90D Ledger', render: () => renderAtlasStudio90dLedgerBarHtml(tatlas) },
+    { key: 'faction_dispositions', persona: 'liveops', label: 'D91 Faction Dispositions', render: () => renderAtlasFactionDispositionBarHtml(tatlas) },
+    { key: 'auction_escrow', persona: 'liveops', label: 'D92 Auction Escrow', render: () => renderAtlasAuctionEscrowBarHtml(tatlas) },
+    { key: 'world_incursions', persona: 'liveops', label: 'D93 World Incursions', render: () => renderAtlasWorldIncursionBarHtml(tatlas) },
+    { key: 'clan_treasury', persona: 'liveops', label: 'D94 Clan Treasury', render: () => renderAtlasClanTreasuryBarHtml(tatlas) },
+    { key: 'housing_estates', persona: 'designer', label: 'D95 Player Housing & Estates', render: () => renderAtlasHousingEstatesBarHtml(tatlas) },
+    { key: 'cdn_webrtc', persona: 'liveops', label: 'D96 CDN/WebRTC', render: () => renderAtlasCdnWebrtcBarHtml(tatlas) },
+    { key: 'caravan_routes', persona: 'liveops', label: 'D97 Caravan Trade Routes', render: () => renderAtlasCaravanRoutesBarHtml(tatlas) },
+    { key: 'localization_vo', persona: 'developer', label: 'D98 Localization VO & Lip-Sync', render: () => renderAtlasLocalizationVoBarHtml(tatlas) },
+    { key: 'hot_reload_bridge', persona: 'architect', label: 'D99 Hot-Reload Bridge', render: () => renderAtlasHotReloadBridgeBarHtml(tatlas) },
+    { key: 'centennial_100d', persona: 'architect', label: 'D100 Centennial Charter', render: () => renderAtlasCentennial100dBarHtml(tatlas) },
+    { key: 'nocturnal_affix', persona: 'designer', label: 'D101 Nocturnal & Eclipse Affixes', render: () => renderAtlasNocturnalAffixBarHtml(tatlas) },
+    { key: 'combat_replay', persona: 'developer', label: 'D102 BLAKE3 Combat Replay', render: () => renderAtlasCombatReplayBarHtml(tatlas) },
+    { key: 'lore_codex', persona: 'designer', label: 'D103 Archaeological Lore Codices', render: () => renderAtlasLoreCodexBarHtml(tatlas) },
+    { key: 'physics_biomes', persona: 'developer', label: 'D104 Physics Biomes', render: () => renderAtlasPhysicsBiomeBarHtml(tatlas) },
+    { key: 'bounty_manhunt', persona: 'liveops', label: 'D105 Bounty Manhunt', render: () => renderAtlasBountyManhuntBarHtml(tatlas) },
+    { key: 'pitr_chaos', persona: 'developer', label: 'D106 DR PITR Chaos', render: () => renderAtlasPitrChaosBarHtml(tatlas) },
+    { key: 'tavern_hubs', persona: 'liveops', label: 'D107 Tavern Hubs', render: () => renderAtlasTavernHubsBarHtml(tatlas) },
+    { key: 'churn_care', persona: 'liveops', label: 'D108 Churn Care', render: () => renderAtlasChurnInterventionBarHtml(tatlas) }
+  ];
+
+  const curatedKeysByPersona = ATLAS_PERSONA_STUDIO_CATALOG;
+  const activeCuratedKeys = curatedKeysByPersona[curPersona] || curatedKeysByPersona.designer;
+  const curatedStudioEntries = activeCuratedKeys.map(k => studioBarEntries.find(e => e.key === k)).filter(Boolean);
+  const activeBarKey = ATLAS_ACTIVE_STUDIO_BAR || ATLAS_STATE_STORE.activeStudioBar || 'boss_hierarchy';
+  const showAllStudioBars = activeBarKey === 'all';
+  const activeStudioEntry = studioBarEntries.find(e => e.key === activeBarKey) || curatedStudioEntries[0] || studioBarEntries[0];
+  const compareStudioEntry = (!showAllStudioBars && ATLAS_COMPARE_STUDIO_BAR && (!activeStudioEntry || ATLAS_COMPARE_STUDIO_BAR !== activeStudioEntry.key))
+    ? studioBarEntries.find(e => e.key === ATLAS_COMPARE_STUDIO_BAR)
+    : null;
+  const visibleStudioHtml = !ATLAS_DIMENSION_DRAWER_OPEN
+    ? ''
+    : (showAllStudioBars
+      ? studioBarEntries.map(e => e.render()).join('\n')
+      : [activeStudioEntry ? activeStudioEntry.render() : '', compareStudioEntry ? compareStudioEntry.render() : ''].filter(Boolean).join('\n'));
+  const hiddenStudioHtml = '';
+
+  const showRoutePlanner = ATLAS_ROUTE_PLANNER_OPEN;
+  const showRaceGrowthRow = Boolean(ATLAS_RACE_GROWTH_OPEN || (ATLAS_STATE_STORE.raceGrowthRoute && ATLAS_STATE_STORE.raceGrowthRoute !== 'All'));
+  const showQuickWarpRow = Boolean(ATLAS_QUICK_WARP_OPEN || matchCount === 0);
 
   return `
-    <div style="padding:9px 16px;background:#141b26;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;gap:8px">
-      <!-- D13: Instant Atlas Omni-Search & Quick-Jump Bar across 63 Zones, 180 Town NPCs, 105 Service Marks, 48 Dungeon Floors -->
-      <div style="display:flex;flex-direction:column;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
-        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
-          <span class="mono" style="font-size:10px;font-weight:900;color:#fde047">🔎 OMNI-SEARCH (D13):</span>
-          <input id="atlasOmniSearchInput" type="search"
-                 value="${escapeHtml(omniQuery)}"
-                 placeholder="🔎 Search Towns (Gludin, Dion, Oren), Dungeons (Ant Nest, Cruma), NPCs (Shop, Refinement, Warehouse), Races, or Mobs/MVPs..."
-                 onchange="setAtlasOmniSearch(this.value)"
-                 onkeydown="if(event.key==='Enter'){event.preventDefault();setAtlasOmniSearch(this.value);}"
-                 style="flex:1;min-width:290px;height:28px;padding:4px 10px;border-radius:7px;background:#090d14;color:#f8fafc;border:1.5px solid rgba(250,204,21,0.55);font-size:11px;font-weight:700" />
-          ${omniQuery ? `
-            <button type="button" onclick="clearAtlasOmniSearch()"
-                    style="height:28px;padding:0 10px;border-radius:7px;border:1px solid #f87171;background:#7f1d1d;color:#fecaca;font-size:10px;font-weight:800;cursor:pointer">
-              ✕ Clear Search
-            </button>
-          ` : ''}
-          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
-            ${presetSearchChips.map(chip => {
-              const isAct = omniQuery.toLowerCase() === chip.toLowerCase();
-              return `
-                <button type="button" onclick="setAtlasOmniSearch('${escapeHtml(chip)}')"
-                        style="height:24px;padding:2px 8px;border-radius:999px;font-size:9.8px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.4)'};background:${isAct ? '#b45309' : '#0f172a'};color:${isAct ? '#ffffff' : '#bae6fd'}">
-                  ⚡ ${escapeHtml(chip)}
-                </button>
-              `;
-            }).join('')}
-          </div>
-        </div>
-        <div id="atlasOmniQuickJumpPills" style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
-          <span class="mono" style="font-size:9.5px;font-weight:800;color:#94a3b8">
-            ${omniQuery ? `🎯 Quick-Jump Matches (${omniResults.length}):` : '🚀 Instant Quick-Jump Action Pills:'}
-          </span>
-          ${omniResults.map(res => `
-            <button type="button" onclick="${res.actionJs}"
-                    style="min-height:24px;padding:2px 8px;border-radius:6px;border:1px solid ${res.badgeColor};background:rgba(15,23,42,0.92);color:#f8fafc;font-size:9.8px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:5px">
-              <span>${res.icon} ${escapeHtml(res.title.slice(0, 32))}</span>
-              <span class="mono" style="font-size:9px;color:#fde047">[${escapeHtml(res.actionLabel)}]</span>
-            </button>
-          `).join('')}
-        </div>
-      </div>
-
+    <div id="atlasBelowCanvasStudioDock" style="display:flex;flex-direction:column;gap:6px;padding:6px 12px;background:#111b2b">
       <!-- D17: Interactive Point-to-Point Travel Route & Gatekeeper Calculator across all 63 Zones -->
-      <div id="atlasTravelRouteFinderBar" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+      <div id="atlasTravelRouteFinderBar" style="display:${showRoutePlanner ? 'flex' : 'none'};justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">
+        ${showRoutePlanner ? `
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
           <span class="mono" style="font-size:10px;font-weight:900;color:#38bdf8">🧭 Route From:</span>
           <select aria-label="Travel Route Origin Zone" onchange="setAtlasRouteEndpoints(this.value, ATLAS_ROUTE_TO_ID)"
-                  style="height:26px;padding:1px 7px;border-radius:6px;background:#090d14;color:#f8fafc;border:1px solid rgba(56,189,248,0.55);font-size:10px;font-weight:700;cursor:pointer">
+                  style="height:26px;padding:1px 7px;border-radius:6px;background:#0d1624;color:#f8fafc;border:1px solid rgba(56,189,248,0.55);font-size:10px;font-weight:700;cursor:pointer">
             ${all63Zones.map(z => {
               const sel = z.zone_id === routeFromId ? 'selected' : '';
               return `<option value="${escapeHtml(z.zone_id)}" ${sel}>[${escapeHtml(z.zoneCategory)}] ${escapeHtml(z.name)}</option>`;
@@ -15291,7 +16167,7 @@ function renderAtlasFilterBarHtml(matchCount) {
           </select>
           <span class="mono" style="font-size:11px;font-weight:900;color:#fde047">➔</span>
           <select aria-label="Travel Route Destination Zone" onchange="setAtlasRouteEndpoints(ATLAS_ROUTE_FROM_ID, this.value)"
-                  style="height:26px;padding:1px 7px;border-radius:6px;background:#090d14;color:#f8fafc;border:1px solid rgba(250,204,21,0.55);font-size:10px;font-weight:700;cursor:pointer">
+                  style="height:26px;padding:1px 7px;border-radius:6px;background:#0d1624;color:#f8fafc;border:1px solid rgba(250,204,21,0.55);font-size:10px;font-weight:700;cursor:pointer">
             ${all63Zones.map(z => {
               const sel = z.zone_id === routeToId ? 'selected' : '';
               return `<option value="${escapeHtml(z.zone_id)}" ${sel}>[${escapeHtml(z.zoneCategory)}] ${escapeHtml(z.name)}</option>`;
@@ -15304,144 +16180,18 @@ function renderAtlasFilterBarHtml(matchCount) {
             const isAct = routeFromId === rp.fromId && routeToId === rp.toId;
             return `
               <button type="button" onclick="setAtlasRouteEndpoints('${rp.fromId}', '${rp.toId}')"
-                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.8px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.45)'};background:${isAct ? '#0369a1' : '#0f172a'};color:${isAct ? '#ffffff' : '#bae6fd'}">
+                      style="min-height:24px;padding:2px 8px;border-radius:999px;font-size:9.8px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#fde047' : 'rgba(56,189,248,0.45)'};background:${isAct ? '#0369a1' : '#0d1624'};color:${isAct ? '#ffffff' : '#bae6fd'}">
                 🧭 ${escapeHtml(rp.label)}
               </button>
             `;
           }).join('')}
-          <button type="button" onclick="toggleAtlasDimensionDrawer()"
-                  style="min-height:24px;padding:2px 10px;border-radius:999px;font-size:9.8px;font-weight:900;cursor:pointer;border:1px solid #fde047;background:${ATLAS_DIMENSION_DRAWER_OPEN ? '#b45309' : '#1e293b'};color:#fde047;margin-left:4px">
-            🛠️ ${ATLAS_DIMENSION_DRAWER_OPEN ? 'Hide 108D Studio Overlays ▲' : 'Open 108D Studio Overlays (D19–D108) ▼'}
-          </button>
         </div>
+        ` : ''}
       </div>
 
-      <div id="atlas108dCollapsibleDrawer" style="display:${ATLAS_DIMENSION_DRAWER_OPEN ? 'flex' : 'none'};flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;padding:8px 10px;border-radius:8px;background:rgba(9,13,20,0.92);border:1px solid rgba(250,204,21,0.35)">
-      ${renderAtlasBlacksmithRefinementBarHtml(tatlas)}
-      ${renderAtlasBossHierarchyChainBarHtml(tatlas)}
-      ${renderAtlasQuestTrialOverlayBarHtml(tatlas)}
-      ${renderAtlasFarmingHeatmapBarHtml(tatlas)}
-      ${renderAtlasSiegeDomainBarHtml(tatlas)}
-      ${renderAtlasBossRadarBarHtml(tatlas)}
-      ${renderAtlasSevenSealsBarHtml(tatlas)}
-      ${renderAtlasManorEconomyBarHtml(tatlas)}
-      ${renderAtlasOlympiadNetworkBarHtml(tatlas)}
-      ${renderAtlasTransitLinesBarHtml(tatlas)}
-      ${renderAtlasSoulCrystalBarHtml(tatlas)}
-      ${renderAtlasFishingSanctuaryBarHtml(tatlas)}
-      ${renderAtlasPvpKarmaBarHtml(tatlas)}
-      ${renderAtlasRiftSepulcherBarHtml(tatlas)}
-      ${renderAtlasAugmentDyeBarHtml(tatlas)}
-      ${renderAtlasCompanionMountBarHtml(tatlas)}
-      ${renderAtlasClanAcademyBarHtml(tatlas)}
-      ${renderAtlasHerbBiomeBarHtml(tatlas)}
-      ${renderAtlasWorkshopPlazaBarHtml(tatlas)}
-      ${renderAtlasTerritoryWardBarHtml(tatlas)}
-      ${renderAtlasEpicJewelryBarHtml(tatlas)}
-      ${renderAtlasVitalityObeliskBarHtml(tatlas)}
-      ${renderAtlasArmorSetBarHtml(tatlas)}
-      ${renderAtlasKamalokaBarHtml(tatlas)}
-      ${renderAtlasSkillScrollBarHtml(tatlas)}
-      ${renderAtlasElementalQuarryBarHtml(tatlas)}
-      ${renderAtlasClanHallBarHtml(tatlas)}
-      ${renderAtlasTransformationBarHtml(tatlas)}
-      ${renderAtlasWarehouseBarHtml(tatlas)}
-      ${renderAtlasMasterTourBarHtml(tatlas)}
-      ${renderAtlasFestivalOracleBarHtml(tatlas)}
-      ${renderAtlasLuxuryMarketBarHtml(tatlas)}
-      ${renderAtlasFactionAllianceBarHtml(tatlas)}
-      ${renderAtlasFantasyPlazaBarHtml(tatlas)}
-      ${renderAtlasHeroWeaponBarHtml(tatlas)}
-      ${renderAtlasTreasureChestBarHtml(tatlas)}
-      ${renderAtlasAerialDockBarHtml(tatlas)}
-      ${renderAtlasBeltCloakBarHtml(tatlas)}
-      ${renderAtlasWeddingBarHtml(tatlas)}
-      ${renderAtlasCouncilBenchmarkBarHtml(tatlas)}
-      ${renderAtlasSeedCycleBarHtml(tatlas)}
-      ${renderAtlasColiseumTournamentBarHtml(tatlas)}
-      ${renderAtlasElementalJewelBarHtml(tatlas)}
-      ${renderAtlasFameMonumentBarHtml(tatlas)}
-      ${renderAtlasDelusionChamberBarHtml(tatlas)}
-      ${renderAtlasCommandRaidBarHtml(tatlas)}
-      ${renderAtlasNevitBlessingBarHtml(tatlas)}
-      ${renderAtlasCouncilSignoffBarHtml(tatlas)}
-      ${renderAtlasChampionMobBarHtml(tatlas)}
-      ${renderAtlasDualswordForgeBarHtml(tatlas)}
-      ${renderAtlasTechArtPipelineBarHtml(tatlas)}
-      ${renderAtlasBotSwarmSimBarHtml(tatlas)}
-      ${renderAtlasLiveopsGmBarHtml(tatlas)}
-      ${renderAtlasToolsSquadBarHtml(tatlas)}
-      ${renderAtlasDialogueGraphBarHtml(tatlas)}
-      ${renderAtlasSpawnerBalancerBarHtml(tatlas)}
-      ${renderAtlasSkillTimelineBarHtml(tatlas)}
-      ${renderAtlasBuildFarmBarHtml(tatlas)}
-      ${renderAtlasArchitectDxBarHtml(tatlas)}
-      ${renderAtlasTwoRingSignoffBarHtml(tatlas)}
-      ${renderAtlasWeatherAcousticBarHtml(tatlas)}
-      ${renderAtlasServerMeshBarHtml(tatlas)}
-      ${renderAtlasAntiBotSentinelBarHtml(tatlas)}
-      ${renderAtlasGodotStorybookBarHtml(tatlas)}
-      ${renderAtlasNavmeshObstacleBarHtml(tatlas)}
-      ${renderAtlasLiveopsEventFlagsBarHtml(tatlas)}
-      ${renderAtlasCinematicCameraRailsBarHtml(tatlas)}
-      ${renderAtlasClientGpuBudgetsBarHtml(tatlas)}
-      ${renderAtlasAutomatedQaSuitesBarHtml(tatlas)}
-      ${renderAtlasStudio90dLedgerBarHtml(tatlas)}
-      ${renderAtlasFactionDispositionBarHtml(tatlas)}
-      ${renderAtlasAuctionEscrowBarHtml(tatlas)}
-      ${renderAtlasWorldIncursionBarHtml(tatlas)}
-      ${renderAtlasClanTreasuryBarHtml(tatlas)}
-      ${renderAtlasHousingEstatesBarHtml(tatlas)}
-      ${renderAtlasCdnWebrtcBarHtml(tatlas)}
-      ${renderAtlasCaravanRoutesBarHtml(tatlas)}
-      ${renderAtlasLocalizationVoBarHtml(tatlas)}
-      ${renderAtlasHotReloadBridgeBarHtml(tatlas)}
-      ${renderAtlasCentennial100dBarHtml(tatlas)}
-      ${renderAtlasNocturnalAffixBarHtml(tatlas)}
-      ${renderAtlasCombatReplayBarHtml(tatlas)}
-      ${renderAtlasLoreCodexBarHtml(tatlas)}
-      ${renderAtlasPhysicsBiomeBarHtml(tatlas)}
-      ${renderAtlasBountyManhuntBarHtml(tatlas)}
-      ${renderAtlasPitrChaosBarHtml(tatlas)}
-      ${renderAtlasTavernHubsBarHtml(tatlas)}
-      ${renderAtlasChurnInterventionBarHtml(tatlas)}
-      </div>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
-          <span class="mono" style="font-size:10px;font-weight:800;color:#94a3b8;margin-right:4px">FILTER PINS &amp; MARKS:</span>
-          ${catPills.map(p => {
-            const active = ATLAS_STATE_STORE.filter === p.id;
-            return `
-              <button type="button" onclick="setAtlasFilter('${p.id}')"
-                      style="min-height:26px;padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:800;cursor:pointer;border:1px solid ${active ? '#fde047' : 'rgba(255,255,255,0.14)'};background:${active ? '#d97706' : '#1e293b'};color:${active ? '#ffffff' : '#cbd5e1'}">
-                ${p.label}
-              </button>
-            `;
-          }).join('')}
-        </div>
-        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
-          <span class="mono" style="font-size:10px;font-weight:800;color:#94a3b8;margin-right:2px">LV.BAND:</span>
-          ${bandPills.map(b => {
-            const active = ATLAS_STATE_STORE.levelBand === b;
-            return `
-              <button type="button" onclick="setAtlasLevelBand('${b}')"
-                      style="min-height:26px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid ${active ? '#38bdf8' : 'rgba(255,255,255,0.12)'};background:${active ? '#0284c7' : '#0f172a'};color:${active ? '#ffffff' : '#94a3b8'}">
-                ${b === 'All' ? 'All Lv.' : 'Lv.' + b}
-              </button>
-            `;
-          }).join('')}
-          ${(ATLAS_STATE_STORE.filter !== 'All' || ATLAS_STATE_STORE.levelBand !== 'All' || ATLAS_STATE_STORE.raceGrowthRoute !== 'All') ? `
-            <button type="button" onclick="resetAtlasFilters()"
-                    style="min-height:26px;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid #f87171;background:rgba(220,38,38,0.2);color:#fca5a5">
-              ↺ Reset Filters
-            </button>
-          ` : ''}
-        </div>
-      </div>
-
-      <!-- D9: 6-Race Starter-to-Endgame Travel Path Selector (Spawn -> Starter Town -> Field -> Ant Nest/Dungeon -> Dion Hub -> Oren/Cruma Tower -> Halo Endgame) -->
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.06)">
+      <!-- D9: 6-Race Starter-to-Endgame Travel Path Selector -->
+      <div id="atlasRaceGrowthPathRow" style="display:${showRaceGrowthRow ? 'flex' : 'none'};justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.06)">
+        ${showRaceGrowthRow ? `
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
           <span class="mono" style="font-size:10px;font-weight:800;color:#fde047;margin-right:4px">🛤️ Highlight Race Growth Path:</span>
           ${['All', 'Human', 'Lunar', 'Ogre/Orc', 'Dwarf', 'Dark-Lunar', 'Furral'].map(rLabel => {
@@ -15455,10 +16205,12 @@ function renderAtlasFilterBarHtml(matchCount) {
           }).join('')}
         </div>
         <span class="mono" style="font-size:9.5px;color:#94a3b8">Stages A..L: Spawn ➔ Starter Town ➔ Field ➔ Ant Nest/Dungeon ➔ Dion Hub ➔ Oren/Cruma Tower ➔ Halo Endgame</span>
+        ` : ''}
       </div>
 
       <!-- Quick Semantic Zoom, All 15 Town Street Blueprints, 24 Field Tactical Blueprints, 8 Fortress Blueprints & 16 Multi-Floor Dungeons -->
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.06)">
+      <div id="atlasQuickWarpCollapsibleRow" style="display:${showQuickWarpRow ? 'flex' : 'none'};justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.06)">
+        ${showQuickWarpRow ? `
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
           <span class="mono" style="font-size:10px;font-weight:800;color:#fde047">⚡ QUICK WARP &amp; BLUEPRINTS:</span>
           <button type="button" onclick="zoomStudioMap(0, true)"
@@ -15537,6 +16289,53 @@ function renderAtlasFilterBarHtml(matchCount) {
             <button type="button" onclick="resetAtlasFilters()" style="padding:1px 7px;border-radius:4px;border:1px solid #fca5a5;background:#991b1b;color:#ffffff;font-size:10px;font-weight:800;cursor:pointer">Reset Filters</button>
           </div>
         ` : ''}
+        ` : ''}
+      </div>
+
+      <!-- Below-Canvas 108D Studio Overlay Drawer (Never Pushes Map Canvas Down!) -->
+      <div id="atlas108dCollapsibleDrawer" style="display:${ATLAS_DIMENSION_DRAWER_OPEN ? 'flex' : 'none'};flex-direction:column;gap:8px;max-height:380px;overflow-y:auto;padding:8px 10px;border-radius:8px;background:#0d1624;border:1px solid rgba(218,179,98,0.4)">
+        ${ATLAS_DIMENSION_DRAWER_OPEN ? `
+        <div id="atlasStudioDimensionSelectorBar" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.1)">
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px">
+            <span class="mono" style="font-size:10px;font-weight:900;color:#dab362">🎛️ STUDIO TOOL SELECTOR (${escapeHtml(curPersona.toUpperCase())}):</span>
+            ${curatedStudioEntries.map(entry => {
+              const isAct = !showAllStudioBars && activeStudioEntry && activeStudioEntry.key === entry.key;
+              return `
+                <button type="button" onclick="setAtlasActiveStudioBar('${entry.key}')"
+                        style="min-height:24px;padding:2px 9px;border-radius:999px;font-size:9.8px;font-weight:800;cursor:pointer;border:1px solid ${isAct ? '#dab362' : 'rgba(56,189,248,0.4)'};background:${isAct ? '#b45309' : '#111b2b'};color:${isAct ? '#ffffff' : '#bae6fd'}">
+                  ${escapeHtml(entry.label)}
+                </button>
+              `;
+            }).join('')}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <select aria-label="Select Any 108D Studio Dimension Tool" onchange="setAtlasActiveStudioBar(this.value)"
+                    style="height:25px;padding:1px 7px;border-radius:6px;background:#111b2b;color:#fde047;border:1px solid rgba(218,179,98,0.55);font-size:10px;font-weight:800;cursor:pointer">
+              ${curatedStudioEntries.map(e => `
+                <option value="${escapeHtml(e.key)}" ${(!showAllStudioBars && activeStudioEntry && activeStudioEntry.key === e.key) ? 'selected' : ''}>${escapeHtml(e.label)}</option>
+              `).join('')}
+              <option value="all" ${showAllStudioBars ? 'selected' : ''}>📚 Show All 90 Bars Simultaneously</option>
+            </select>
+            <select aria-label="Compare Second 108D Studio Dimension Overlay" onchange="setAtlasCompareStudioBar(this.value)"
+                    style="height:25px;padding:1px 7px;border-radius:6px;background:#111b2b;color:#93c5fd;border:1px solid rgba(56,189,248,0.45);font-size:10px;font-weight:800;cursor:pointer">
+              <option value="" ${!ATLAS_COMPARE_STUDIO_BAR ? 'selected' : ''}>⚖️ Compare Overlay: None</option>
+              ${curatedStudioEntries.map(e => `
+                <option value="${escapeHtml(e.key)}" ${ATLAS_COMPARE_STUDIO_BAR === e.key ? 'selected' : ''}>⚖️ + ${escapeHtml(e.label)}</option>
+              `).join('')}
+            </select>
+            <button type="button" onclick="setAtlasActiveStudioBar('${showAllStudioBars ? (curatedStudioEntries[0] ? curatedStudioEntries[0].key : 'boss_hierarchy') : 'all'}')"
+                    style="min-height:24px;padding:2px 8px;border-radius:6px;font-size:9.5px;font-weight:800;cursor:pointer;border:1px solid rgba(218,179,98,0.4);background:${showAllStudioBars ? '#7c2d12' : '#14253e'};color:#fde68a">
+              ${showAllStudioBars ? '🎯 Single-Card Mode' : 'Show All 90 Bars'}
+            </button>
+          </div>
+        </div>
+        ` : ''}
+        <div id="atlasActiveStudioBarMount" style="display:flex;flex-direction:column;gap:8px">
+          ${visibleStudioHtml}
+        </div>
+        <div id="atlasInactiveStudioBarsVault" style="display:none">
+          ${hiddenStudioHtml}
+        </div>
       </div>
     </div>
   `;
@@ -15756,7 +16555,7 @@ function renderDungeonSubMapAtlas(dng, tatlas) {
   const floors = dng.floors || [];
   const activeFloor = floors.find(f => f.floor_id === ATLAS_STATE_STORE.activeFloorId) || floors[0] || { floor_id: 'B1', name: 'Floor 1', rooms: [], warp_points: [], spawns: [] };
   const isTower = dng.dungeon_kind === 'vertical_tower';
-  const fFilter = ATLAS_STATE_STORE.filter;
+  const fFilter = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'dungeon').effective;
 
   const filteredSpawns = (activeFloor.spawns || []).filter(sp => {
     if (!matchesAtlasLevelBand(sp.level)) return false;
@@ -16149,7 +16948,7 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
   const bp = getTownBlueprintData(townNode, tatlas);
   const allTowns = getAllAtlasTownEntries(tatlas);
   const activeTownId = (townNode && (townNode.id || townNode.studio_node_id || townNode.zone_id)) || bp.studio_node_id || ATLAS_STATE_STORE.activeTownId || 'town-lantern-hollow';
-  const fFilter = ATLAS_STATE_STORE.filter;
+  const fFilter = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'town').effective;
   const layoutArchetype = bp.layout_archetype || 'polygonal_walled_keep';
   const isSchematicMode = ATLAS_STATE_STORE.townBlueprintMode === 'schematic';
   const wallPts = (bp.wall_polygon_pct || []).map(([px, py]) => `${Math.round((px / 100) * 1040)},${Math.round((py / 100) * 500)}`).join(' ');
@@ -16398,7 +17197,7 @@ function renderTownStreetBlueprintAtlas(townNode, tatlas, whc) {
     activeScaleIndex: 4,
     defaultPoi,
     drillControls: townControlsHtml,
-    filterBarHtml: renderAtlasFilterBarHtml(visibleMarks.length + (bp.npc_roster || []).length),
+    filterBarHtml: renderAtlasFilterBarHtml(visibleMarks.length),
     bottomPanelHtml: `${bottomRosterHtml}${renderAtlasFilteredEntityMatrixHtml(tatlas)}`,
     svgInnerHtml,
     legendItems: [
@@ -16421,7 +17220,7 @@ function renderFieldOrFortressTacticalBlueprintAtlas(targetIdOrEntry, tatlas) {
   const isFort = kind === 'fortress';
   const allFields = getAllAtlasFieldEntries(tatlas);
   const allForts = getAllAtlasFortressEntries(tatlas);
-  const fFilter = ATLAS_STATE_STORE.filter;
+  const fFilter = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'field').effective;
 
   const perimArr = bp.terrain_perimeter_pct || bp.bastion_wall_pct || [[10, 14], [88, 12], [92, 48], [86, 86], [14, 88], [8, 50]];
   const perimPts = perimArr.map(([px, py]) => `${Math.round((px / 100) * 1040)},${Math.round((py / 100) * 500)}`).join(' ');
@@ -16687,7 +17486,7 @@ function renderDedicatedWorldAtlas() {
   }
 
   // 3. Otherwise render the continuous Overland World Atlas (Tier 1 Macro 1.0x-2.2x + Tier 2 Regional 2.2x-4.5x)
-  const fFilter = ATLAS_STATE_STORE.filter;
+  const fFilter = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'overland').effective;
   const c01 = continents[0] || { id: 'continent-01-hearthbloom-basin', name: 'Hearthbloom Basin' };
   const c02 = continents[1] || { id: 'continent-02-clockwork-steppe', name: 'The Clockwork Steppe' };
   const c03 = continents[2] || { id: 'continent-03-shattered-halo', name: 'The Shattered Halo' };
@@ -17078,103 +17877,107 @@ function renderDedicatedWorldAtlas() {
   }
 
   // D17: Interactive Point-to-Point BFS Travel Path & Gatekeeper Route Calculator
-  const activeRouteRes = computeShortestAtlasZonePath(
-    ATLAS_ROUTE_FROM_ID || ATLAS_STATE_STORE.routeFromId || 'zone-town-lantern-hollow',
-    ATLAS_ROUTE_TO_ID || ATLAS_STATE_STORE.routeToId || 'zone-dungeon-kiln-cellar',
-    tatlas
-  );
-  const routeHopsWithSvg = (activeRouteRes.hops || []).map(h => {
-    const anchor = zoneSvgAnchorMap[h.zoneId];
-    return {
-      ...h,
-      sx: anchor ? anchor.x : h.svgX,
-      sy: anchor ? anchor.y : h.svgY
-    };
-  });
+  let travelRouteOverlaySvg = '<g id="studioTravelRouteCalculatorOverlay"></g>';
+  let bottomTravelItineraryPanelHtml = '';
+  if (ATLAS_ROUTE_PLANNER_OPEN) {
+    const activeRouteRes = computeShortestAtlasZonePath(
+      ATLAS_ROUTE_FROM_ID || ATLAS_STATE_STORE.routeFromId || 'zone-town-lantern-hollow',
+      ATLAS_ROUTE_TO_ID || ATLAS_STATE_STORE.routeToId || 'zone-dungeon-kiln-cellar',
+      tatlas
+    );
+    const routeHopsWithSvg = (activeRouteRes.hops || []).map(h => {
+      const anchor = zoneSvgAnchorMap[h.zoneId];
+      return {
+        ...h,
+        sx: anchor ? anchor.x : h.svgX,
+        sy: anchor ? anchor.y : h.svgY
+      };
+    });
 
-  const routeSplinesSvg = routeHopsWithSvg.map((hop, idx) => {
-    if (idx === 0) return '';
-    const prev = routeHopsWithSvg[idx - 1];
-    const mx = Math.round((prev.sx + hop.sx) / 2);
-    const my = Math.round((prev.sy + hop.sy) / 2) - 16;
-    return `
-      <path d="M ${prev.sx},${prev.sy} Q ${mx},${my} ${hop.sx},${hop.sy}" fill="none" stroke="rgba(56,189,248,0.34)" stroke-width="10" stroke-linecap="round"/>
-      <path d="M ${prev.sx},${prev.sy} Q ${mx},${my} ${hop.sx},${hop.sy}" fill="none" stroke="#38bdf8" stroke-width="3.8" stroke-linecap="round" stroke-dasharray="9 5">
-        <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1.2s" repeatCount="indefinite"/>
-      </path>
-    `;
-  }).join('');
+    const routeSplinesSvg = routeHopsWithSvg.map((hop, idx) => {
+      if (idx === 0) return '';
+      const prev = routeHopsWithSvg[idx - 1];
+      const mx = Math.round((prev.sx + hop.sx) / 2);
+      const my = Math.round((prev.sy + hop.sy) / 2) - 16;
+      return `
+        <path d="M ${prev.sx},${prev.sy} Q ${mx},${my} ${hop.sx},${hop.sy}" fill="none" stroke="rgba(56,189,248,0.34)" stroke-width="10" stroke-linecap="round"/>
+        <path d="M ${prev.sx},${prev.sy} Q ${mx},${my} ${hop.sx},${hop.sy}" fill="none" stroke="#38bdf8" stroke-width="3.8" stroke-linecap="round" stroke-dasharray="9 5">
+          <animate attributeName="stroke-dashoffset" from="28" to="0" dur="1.2s" repeatCount="indefinite"/>
+        </path>
+      `;
+    }).join('');
 
-  const routeBadgesSvg = routeHopsWithSvg.map(hop => {
-    const isFinal = hop.hopIndex === routeHopsWithSvg.length;
-    const poiHop = {
-      title: `🧭 Hop #${hop.hopIndex}: ${hop.name}`,
-      category: `${hop.travelMode} · ${hop.levelBand} · Fee: ${hop.adenaFee} Adena`,
-      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
-      hoursOrStatus: `TRAVEL ROUTE HOP ${hop.hopIndex} OF ${routeHopsWithSvg.length} · loc=${hop.locCoord}`,
-      summary: `L2 Reference: ${hop.l2Analog}. Mode: ${hop.travelMode} (${hop.adenaFee > 0 ? hop.adenaFee.toLocaleString() + ' Adena Gatekeeper Fee' : '0 Adena Walking Road'}).`,
-      address: `${hop.name} (${hop.zoneId})`,
-      coordinates: `loc=${hop.locCoord} · ${hop.levelBand}`,
-      scaleSpecs: `Connected 63-Zone Graph Hop #${hop.hopIndex}`,
-      locCoord: hop.locCoord,
-      townBlueprintId: hop.zone.actionType === 'town' ? (hop.zone.studio_node_id || hop.zoneId) : '',
-      fieldTacticalBlueprintId: hop.zone.actionType === 'field' || hop.zone.actionType === 'fortress' ? hop.zoneId : '',
-      dungeonWarpId: hop.zone.actionType === 'dungeon' ? hop.zoneId : '',
-      dungeonFloorId: hop.zone.actionType === 'dungeon' ? 'B1' : '',
-      inspectId: hop.zone.studio_node_id || hop.zoneId,
-      connections: [{ label: `${hop.travelMode}`, badge: `${hop.adenaFee} Adena` }]
-    };
-    return `
-      <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiHop, svgX: hop.sx, svgY: hop.sy })}', event)" filter="url(#cartoDropShadow)">
-        <circle cx="${hop.sx}" cy="${hop.sy}" r="13" fill="${isFinal ? '#0284c7' : '#0f172a'}" stroke="#38bdf8" stroke-width="2.5"/>
-        <text x="${hop.sx}" y="${hop.sy + 4}" text-anchor="middle" fill="#fde047" font-size="9.5" font-weight="900" font-family="monospace">${hop.hopIndex}</text>
-      </g>
-    `;
-  }).join('');
+    const routeBadgesSvg = routeHopsWithSvg.map(hop => {
+      const isFinal = hop.hopIndex === routeHopsWithSvg.length;
+      const poiHop = {
+        title: `🧭 Hop #${hop.hopIndex}: ${hop.name}`,
+        category: `${hop.travelMode} · ${hop.levelBand} · Fee: ${hop.adenaFee} Adena`,
+        thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+        hoursOrStatus: `TRAVEL ROUTE HOP ${hop.hopIndex} OF ${routeHopsWithSvg.length} · loc=${hop.locCoord}`,
+        summary: `L2 Reference: ${hop.l2Analog}. Mode: ${hop.travelMode} (${hop.adenaFee > 0 ? hop.adenaFee.toLocaleString() + ' Adena Gatekeeper Fee' : '0 Adena Walking Road'}).`,
+        address: `${hop.name} (${hop.zoneId})`,
+        coordinates: `loc=${hop.locCoord} · ${hop.levelBand}`,
+        scaleSpecs: `Connected 63-Zone Graph Hop #${hop.hopIndex}`,
+        locCoord: hop.locCoord,
+        townBlueprintId: hop.zone.actionType === 'town' ? (hop.zone.studio_node_id || hop.zoneId) : '',
+        fieldTacticalBlueprintId: hop.zone.actionType === 'field' || hop.zone.actionType === 'fortress' ? hop.zoneId : '',
+        dungeonWarpId: hop.zone.actionType === 'dungeon' ? hop.zoneId : '',
+        dungeonFloorId: hop.zone.actionType === 'dungeon' ? 'B1' : '',
+        inspectId: hop.zone.studio_node_id || hop.zoneId,
+        connections: [{ label: `${hop.travelMode}`, badge: `${hop.adenaFee} Adena` }]
+      };
+      return `
+        <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiHop, svgX: hop.sx, svgY: hop.sy })}', event)" filter="url(#cartoDropShadow)">
+          <circle cx="${hop.sx}" cy="${hop.sy}" r="13" fill="${isFinal ? '#0284c7' : '#0f172a'}" stroke="#38bdf8" stroke-width="2.5"/>
+          <text x="${hop.sx}" y="${hop.sy + 4}" text-anchor="middle" fill="#fde047" font-size="9.5" font-weight="900" font-family="monospace">${hop.hopIndex}</text>
+        </g>
+      `;
+    }).join('');
 
-  const travelRouteOverlaySvg = `<g id="studioTravelRouteCalculatorOverlay">${routeSplinesSvg}${routeBadgesSvg}</g>`;
-  const finalHop = routeHopsWithSvg[routeHopsWithSvg.length - 1] || null;
-  const finalHopBtnLabel = finalHop
-    ? (finalHop.zone.actionType === 'dungeon'
-      ? `🕳️ Open Final Hop Dungeon Sub-Map (${finalHop.name.split('(')[0].trim()})`
-      : (finalHop.zone.actionType === 'town'
-        ? `🏘️ Open Final Hop Town Street Blueprint (${finalHop.name.split('(')[0].trim()})`
-        : `🏕️ Open Final Hop Tactical Blueprint (${finalHop.name.split('(')[0].trim()})`))
-    : '🗺️ Open Destination Blueprint';
+    travelRouteOverlaySvg = `<g id="studioTravelRouteCalculatorOverlay">${routeSplinesSvg}${routeBadgesSvg}</g>`;
+    const finalHop = routeHopsWithSvg[routeHopsWithSvg.length - 1] || null;
+    const finalHopBtnLabel = finalHop
+      ? (finalHop.zone.actionType === 'dungeon'
+        ? `🕳️ Open Final Hop Dungeon Sub-Map (${finalHop.name.split('(')[0].trim()})`
+        : (finalHop.zone.actionType === 'town'
+          ? `🏘️ Open Final Hop Town Street Blueprint (${finalHop.name.split('(')[0].trim()})`
+          : `🏕️ Open Final Hop Tactical Blueprint (${finalHop.name.split('(')[0].trim()})`))
+      : '🗺️ Open Destination Blueprint';
 
-  const bottomTravelItineraryPanelHtml = routeHopsWithSvg.length > 0 ? `
-    <div id="studioTravelItineraryPanel" style="padding:10px 16px;background:#0d1624;border-top:1px solid rgba(56,189,248,0.38)">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:7px">
-        <div>
-          <div style="font-size:11.5px;font-weight:900;color:#38bdf8">
-            🧭 TRAVEL ITINERARY &amp; GATEKEEPER ROUTE CALCULATOR (D17 · ${routeHopsWithSvg.map(h => h.hopIndex).join(' -> ')} HOPS · TOTAL GK FEE: ${activeRouteRes.totalAdenaFee.toLocaleString()} ADENA)
-          </div>
-          <div style="font-size:10px;color:#cbd5e1">
-            Shortest 63-Zone BFS Path from <strong>${escapeHtml((activeRouteRes.origin && activeRouteRes.origin.name) || '')}</strong> ➔ <strong>${escapeHtml((activeRouteRes.destination && activeRouteRes.destination.name) || '')}</strong>
-          </div>
-        </div>
-        ${finalHop ? `
-          <button type="button" onclick="openAtlasRouteFinalHop('${escapeHtml(finalHop.zoneId)}')"
-                  style="padding:5px 11px;border-radius:7px;border:1.5px solid #fde047;background:#0284c7;color:#ffffff;font-size:10.5px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(2,132,199,0.4)">
-            ${escapeHtml(finalHopBtnLabel)} ➔
-          </button>
-        ` : ''}
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:6px">
-        ${routeHopsWithSvg.map(hop => `
-          <div onclick="openAtlasRouteFinalHop('${escapeHtml(hop.zoneId)}')"
-               style="padding:6px 9px;border-radius:6px;background:#131f33;border-left:3.5px solid ${hop.hopIndex === routeHopsWithSvg.length ? '#fde047' : '#38bdf8'};cursor:pointer">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
-              <span class="mono" style="font-size:10px;font-weight:900;color:#fde047">Hop #${hop.hopIndex} · ${escapeHtml(hop.levelBand)}</span>
-              <span class="mono" style="font-size:9.5px;color:#4ade80">${hop.adenaFee > 0 ? hop.adenaFee.toLocaleString() + ' Adena' : '0 Adena (Walk)'}</span>
+    bottomTravelItineraryPanelHtml = routeHopsWithSvg.length > 0 ? `
+      <div id="studioTravelItineraryPanel" style="padding:10px 16px;background:#0d1624;border-top:1px solid rgba(56,189,248,0.38)">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:7px">
+          <div>
+            <div style="font-size:11.5px;font-weight:900;color:#38bdf8">
+              🧭 TRAVEL ITINERARY &amp; GATEKEEPER ROUTE CALCULATOR (D17 · ${routeHopsWithSvg.map(h => h.hopIndex).join(' -> ')} HOPS · TOTAL GK FEE: ${activeRouteRes.totalAdenaFee.toLocaleString()} ADENA)
             </div>
-            <div style="font-size:10.5px;font-weight:800;color:#f8fafc;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(hop.name)}</div>
-            <div style="font-size:9.5px;color:#93c5fd;margin-top:2px">${escapeHtml(hop.travelMode)} · <span class="mono">loc=${escapeHtml(hop.locCoord)}</span></div>
+            <div style="font-size:10px;color:#cbd5e1">
+              Shortest 63-Zone BFS Path from <strong>${escapeHtml((activeRouteRes.origin && activeRouteRes.origin.name) || '')}</strong> ➔ <strong>${escapeHtml((activeRouteRes.destination && activeRouteRes.destination.name) || '')}</strong>
+            </div>
           </div>
-        `).join('')}
+          ${finalHop ? `
+            <button type="button" onclick="openAtlasRouteFinalHop('${escapeHtml(finalHop.zoneId)}')"
+                    style="padding:5px 11px;border-radius:7px;border:1.5px solid #fde047;background:#0284c7;color:#ffffff;font-size:10.5px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(2,132,199,0.4)">
+              ${escapeHtml(finalHopBtnLabel)} ➔
+            </button>
+          ` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:6px">
+          ${routeHopsWithSvg.map(hop => `
+            <div onclick="openAtlasRouteFinalHop('${escapeHtml(hop.zoneId)}')"
+                 style="padding:6px 9px;border-radius:6px;background:#131f33;border-left:3.5px solid ${hop.hopIndex === routeHopsWithSvg.length ? '#fde047' : '#38bdf8'};cursor:pointer">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
+                <span class="mono" style="font-size:10px;font-weight:900;color:#fde047">Hop #${hop.hopIndex} · ${escapeHtml(hop.levelBand)}</span>
+                <span class="mono" style="font-size:9.5px;color:#4ade80">${hop.adenaFee > 0 ? hop.adenaFee.toLocaleString() + ' Adena' : '0 Adena (Walk)'}</span>
+              </div>
+              <div style="font-size:10.5px;font-weight:800;color:#f8fafc;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(hop.name)}</div>
+              <div style="font-size:9.5px;color:#93c5fd;margin-top:2px">${escapeHtml(hop.travelMode)} · <span class="mono">loc=${escapeHtml(hop.locCoord)}</span></div>
+            </div>
+          `).join('')}
+        </div>
       </div>
-    </div>
-  ` : '';
+    ` : '';
+  }
 
   // Tier 2 Regional LOD (2.2x - 4.5x): Reveal regional hunting territory rings, Lv.min-max highway shields & Gatekeeper teleport splines
   const regionalOverlaySvg = lodTier >= 2 ? `
@@ -17277,8 +18080,9 @@ function renderDedicatedWorldAtlas() {
       inspectId: mp.id,
       connections: [{ label: `📍 Habitat: ${mp.zone}`, badge: `Lv.${mp.lv}` }]
     };
+    const encMobPoi = encodePoiAttr({ ...poiMob, svgX: mp.x, svgY: mp.y });
     return `
-      <g data-poi-clickable="1" style="cursor:pointer" onclick="selectStudioMapPoi('${encodePoiAttr({ ...poiMob, svgX: mp.x, svgY: mp.y })}', event)" filter="url(#cartoDropShadow)">
+      <g data-poi-clickable="1" tabindex="0" role="button" aria-label="${escapeHtml(poiMob.title)}" style="cursor:pointer" onclick="selectStudioMapPoi('${encMobPoi}', event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectStudioMapPoi('${encMobPoi}', event);}" filter="url(#cartoDropShadow)">
         <circle cx="${mp.x}" cy="${mp.y}" r="${isMvp ? 12 : 10}" fill="${col}" stroke="#ffffff" stroke-width="1.8"/>
         <text x="${mp.x}" y="${mp.y + 3.5}" text-anchor="middle" font-size="${isMvp ? 10.5 : 9}">${icon}</text>
         ${(lodTier >= 2 || fFilter !== 'All') ? `
@@ -17294,7 +18098,7 @@ function renderDedicatedWorldAtlas() {
   const bossChains = getAtlasBossHierarchyChains(tatlas);
   const activeBossChain = bossChains.find(c => c.god_id === (ATLAS_BOSS_GOD_ID || ATLAS_STATE_STORE.activeBossGodId || 'god-sola-hearth-weaver')) || bossChains[0] || null;
   let bossHierarchyOverlaySvg = '<g id="studioBossHierarchyChainOverlay"></g>';
-  if (activeBossChain) {
+  if (activeBossChain && shouldRenderStudioSvgOverlay('boss_hierarchy')) {
     const godCoord = clampWorldLocCoord(activeBossChain.seal_loc || '-72400:256800');
     const themeCol = activeBossChain.theme_color || '#f43f5e';
     const mvpNodes = (activeBossChain.mvp_apostles || []).map((m, idx) => {
@@ -17343,7 +18147,7 @@ function renderDedicatedWorldAtlas() {
   const questChains = (tatlas && tatlas.quest_trial_chains) || [];
   const activeQuestObj = questChains.find(q => q.quest_id === (ATLAS_ACTIVE_QUEST_ID || ATLAS_STATE_STORE.activeQuestId)) || questChains[0] || null;
   let questTrialOverlaySvg = '<g id="studioQuestTrialChainOverlay"></g>';
-  if (activeQuestObj) {
+  if (activeQuestObj && shouldRenderStudioSvgOverlay('quest_trials')) {
     const gCoord = clampWorldLocCoord(activeQuestObj.giver_loc || '-84120:243500');
     const oCoord = clampWorldLocCoord(activeQuestObj.objective_loc || '75410:116820');
     const tCoord = clampWorldLocCoord(activeQuestObj.turn_in_loc || '-14200:123500');
@@ -17375,7 +18179,7 @@ function renderDedicatedWorldAtlas() {
     : (curFarmMode === 'All' ? farmingProfiles.slice(0, 12) : farmingProfiles.filter(fp => fp.recommended_party_mode === curFarmMode));
   const allZonesById = {};
   getAllAtlas63Zones(tatlas).forEach(z => { allZonesById[z.zone_id] = z; });
-  const farmingEfficiencyOverlaySvg = `
+  const farmingEfficiencyOverlaySvg = !shouldRenderStudioSvgOverlay('farming_heatmap') ? '<g id="studioFarmingEfficiencyHeatmapOverlay" data-lens-gated="1"></g>' : `
     <g id="studioFarmingEfficiencyHeatmapOverlay">
       ${activeFarmProfiles.map(fp => {
         const zRef = allZonesById[fp.zone_id];
@@ -17401,7 +18205,7 @@ function renderDedicatedWorldAtlas() {
     : (curSiegeDomId === 'All'
       ? siegeDomains
       : siegeDomains.filter(sd => sd.domain_id === curSiegeDomId || sd.stronghold_zone_id === curSiegeDomId));
-  const castleSiegeDomainOverlaySvg = `
+  const castleSiegeDomainOverlaySvg = !shouldRenderStudioSvgOverlay('siege_domain') ? '<g id="studioCastleSiegeDomainOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCastleSiegeDomainOverlay">
       ${activeSiegeDomains.map(sd => {
         const shCoord = clampWorldLocCoord(sd.artifact_altar_loc || '-13800:124100');
@@ -17441,7 +18245,7 @@ function renderDedicatedWorldAtlas() {
       : (curBossRadarMode === 'OverlandRaid'
         ? bossRadarEntries.filter(b => !b.dungeon_id).slice(0, 10)
         : bossRadarEntries.slice(0, 10)));
-  const worldBossSpawnRadarOverlaySvg = `
+  const worldBossSpawnRadarOverlaySvg = !shouldRenderStudioSvgOverlay('boss_radar') ? '<g id="studioWorldBossSpawnRadarOverlay" data-lens-gated="1"></g>' : `
     <g id="studioWorldBossSpawnRadarOverlay">
       ${activeRadarBosses.map(b => {
         const bc = clampWorldLocCoord(b.loc || '53100:242600');
@@ -17468,7 +18272,7 @@ function renderDedicatedWorldAtlas() {
       : (curSevenSealsMode === 'Blacksmith_of_Mammon' || curSevenSealsMode === 'Merchant_of_Mammon'
         ? sevenSealsEntries.filter(s => s.mammon_visitor_npc === curSevenSealsMode)
         : sevenSealsEntries.slice(0, 10)));
-  const sevenSealsOverlaySvg = `
+  const sevenSealsOverlaySvg = !shouldRenderStudioSvgOverlay('seven_seals') ? '<g id="studioSevenSealsOverlay" data-lens-gated="1"></g>' : `
     <g id="studioSevenSealsOverlay">
       ${activeSevenSeals.map(s => {
         const sc = clampWorldLocCoord(s.mammon_loc || '48550:248400');
@@ -17495,7 +18299,7 @@ function renderDedicatedWorldAtlas() {
       : (curManorMode === 'High_Frontier_Ambush'
         ? manorRoutes.filter(r => r.caravan_route_risk !== 'Low_Patrolled')
         : manorRoutes.slice(0, 8)));
-  const manorEconomyOverlaySvg = `
+  const manorEconomyOverlaySvg = !shouldRenderStudioSvgOverlay('manor_economy') ? '<g id="studioManorEconomyOverlay" data-lens-gated="1"></g>' : `
     <g id="studioManorEconomyOverlay">
       ${activeManorRoutes.map(r => {
         const tz = allZonesById[r.town_zone_id];
@@ -17522,7 +18326,7 @@ function renderDedicatedWorldAtlas() {
     : (curOlympiadMode === 'All'
       ? olympiadNodes.slice(0, 12)
       : olympiadNodes.filter(n => n.node_category === curOlympiadMode));
-  const noblesseOlympiadOverlaySvg = `
+  const noblesseOlympiadOverlaySvg = !shouldRenderStudioSvgOverlay('olympiad') ? '<g id="studioNoblesseOlympiadOverlay" data-lens-gated="1"></g>' : `
     <g id="studioNoblesseOlympiadOverlay">
       ${activeOlympiadNodes.map(n => {
         const nc = clampWorldLocCoord(n.loc || '-84120:243500');
@@ -17555,7 +18359,7 @@ function renderDedicatedWorldAtlas() {
     : (curTransitMode === 'All'
       ? transitLines
       : transitLines.filter(l => l.transit_mode === curTransitMode));
-  const intercontinentalTransitOverlaySvg = `
+  const intercontinentalTransitOverlaySvg = !shouldRenderStudioSvgOverlay('transit_lines') ? '<g id="studioIntercontinentalTransitOverlay" data-lens-gated="1"></g>' : `
     <g id="studioIntercontinentalTransitOverlay">
       ${activeTransitLines.map(l => {
         const oc = clampWorldLocCoord(l.origin_loc || '-84120:243500');
@@ -17583,7 +18387,7 @@ function renderDedicatedWorldAtlas() {
       : (curSoulCrystalMode === 'Stage_11_to_13_S_Grade_Boss'
         ? soulCrystalStages.filter(s => s.stage_band === 'Stage_11_to_13_S_Grade_Boss')
         : soulCrystalStages.filter(s => s.crystal_color === curSoulCrystalMode)));
-  const soulCrystalOverlaySvg = `
+  const soulCrystalOverlaySvg = !shouldRenderStudioSvgOverlay('soul_crystal') ? '<g id="studioSoulCrystalResonanceOverlay" data-lens-gated="1"></g>' : `
     <g id="studioSoulCrystalResonanceOverlay">
       ${activeSoulCrystalStages.map(s => {
         const vZone = allZonesById[s.vendor_town_zone_id] || {};
@@ -17614,7 +18418,7 @@ function renderDedicatedWorldAtlas() {
     : (curFishingMode === 'All'
       ? fishingSanctuaries
       : fishingSanctuaries.filter(s => s.water_category === curFishingMode));
-  const fishingSanctuaryOverlaySvg = `
+  const fishingSanctuaryOverlaySvg = !shouldRenderStudioSvgOverlay('fishing_sanctuary') ? '<g id="studioFishingSanctuaryOverlay" data-lens-gated="1"></g>' : `
     <g id="studioFishingSanctuaryOverlay">
       ${activeFishingSanctuaries.map(s => {
         const sc = clampWorldLocCoord(s.dock_loc || '-96200:258400');
@@ -17646,7 +18450,7 @@ function renderDedicatedWorldAtlas() {
     : (curPvpMode === 'All'
       ? pvpHotspots
       : pvpHotspots.filter(h => h.pvp_category === curPvpMode));
-  const cursedWeaponPvpOverlaySvg = `
+  const cursedWeaponPvpOverlaySvg = !shouldRenderStudioSvgOverlay('pvp_karma') ? '<g id="studioCursedWeaponPvpOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCursedWeaponPvpOverlay">
       ${activePvpHotspots.map(h => {
         const hc = clampWorldLocCoord(h.loc || '25180:136540');
@@ -17678,7 +18482,7 @@ function renderDedicatedWorldAtlas() {
     : (curRiftMode === 'All'
       ? riftPortals
       : riftPortals.filter(p => p.instance_category === curRiftMode));
-  const dimensionalRiftOverlaySvg = `
+  const dimensionalRiftOverlaySvg = !shouldRenderStudioSvgOverlay('rift_sepulcher') ? '<g id="studioDimensionalRiftOverlay" data-lens-gated="1"></g>' : `
     <g id="studioDimensionalRiftOverlay">
       ${activeRiftPortals.map(p => {
         const pc = clampWorldLocCoord(p.loc || '75410:116820');
@@ -17705,7 +18509,7 @@ function renderDedicatedWorldAtlas() {
     : (curAugMode === 'Top_High_Life_Stone'
       ? augDyeHubs.filter(h => h.life_stone_tier === 'Top_Grade_Life_Stone' || h.life_stone_tier === 'High_Grade_Life_Stone')
       : augDyeHubs);
-  const weaponAugmentationDyeOverlaySvg = `
+  const weaponAugmentationDyeOverlaySvg = !shouldRenderStudioSvgOverlay('augment_dye') ? '<g id="studioWeaponAugmentationDyeOverlay" data-lens-gated="1"></g>' : `
     <g id="studioWeaponAugmentationDyeOverlay">
       ${activeAugDyeHubs.map(h => {
         const ac = clampWorldLocCoord(h.anvil_loc || '-84120:243500');
@@ -17736,7 +18540,7 @@ function renderDedicatedWorldAtlas() {
     : (curCompMode === 'All'
       ? companionNodes
       : companionNodes.filter(n => n.mount_category === curCompMode));
-  const companionMountOverlaySvg = `
+  const companionMountOverlaySvg = !shouldRenderStudioSvgOverlay('companion_mount') ? '<g id="studioCompanionMountOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCompanionMountOverlay">
       ${activeCompanionNodes.map(n => {
         const cc = clampWorldLocCoord(n.loc || '-83880:243720');
@@ -17768,7 +18572,7 @@ function renderDedicatedWorldAtlas() {
     : (curClanMode === 'All'
       ? clanNodes
       : clanNodes.filter(n => n.pledge_category === curClanMode));
-  const clanAcademyOverlaySvg = `
+  const clanAcademyOverlaySvg = !shouldRenderStudioSvgOverlay('clan_academy') ? '<g id="studioClanAcademyOverlay" data-lens-gated="1"></g>' : `
     <g id="studioClanAcademyOverlay">
       ${activeClanNodes.map(n => {
         const cc = clampWorldLocCoord(n.loc || '-84320:243280');
@@ -17810,7 +18614,7 @@ function renderDedicatedWorldAtlas() {
     Holy: '#fde047',
     Dark: '#c084fc'
   };
-  const herbElementalBiomeOverlaySvg = `
+  const herbElementalBiomeOverlaySvg = !shouldRenderStudioSvgOverlay('herb_biome') ? '<g id="studioHerbElementalBiomeOverlay" data-lens-gated="1"></g>' : `
     <g id="studioHerbElementalBiomeOverlay">
       ${activeHerbBiomes.map(b => {
         const fz = allZonesById[b.field_zone_id] || {};
@@ -17836,7 +18640,7 @@ function renderDedicatedWorldAtlas() {
     : (curWorkshopMode === 'All'
       ? workshopPlazas
       : workshopPlazas.filter(p => p.workshop_tier === curWorkshopMode));
-  const soulshotWorkshopOverlaySvg = `
+  const soulshotWorkshopOverlaySvg = !shouldRenderStudioSvgOverlay('workshop_plaza') ? '<g id="studioSoulshotWorkshopOverlay" data-lens-gated="1"></g>' : `
     <g id="studioSoulshotWorkshopOverlay">
       ${activeWorkshopPlazas.map(p => {
         const pc = clampWorldLocCoord(p.plaza_loc || '-84120:243500');
@@ -17867,7 +18671,7 @@ function renderDedicatedWorldAtlas() {
     : (curWardMode === 'All'
       ? territoryWardNodes
       : territoryWardNodes.filter(n => n.node_role === curWardMode));
-  const territoryWardOverlaySvg = `
+  const territoryWardOverlaySvg = !shouldRenderStudioSvgOverlay('territory_ward') ? '<g id="studioTerritoryWardOverlay" data-lens-gated="1"></g>' : `
     <g id="studioTerritoryWardOverlay">
       ${activeTerritoryWardNodes.map(n => {
         const wc = clampWorldLocCoord(n.loc || '-96020:258560');
@@ -17896,7 +18700,7 @@ function renderDedicatedWorldAtlas() {
     : (curJewelryMode === 'All'
       ? epicJewelryRows
       : epicJewelryRows.filter(r => r.slot_category === curJewelryMode));
-  const epicJewelryOverlaySvg = `
+  const epicJewelryOverlaySvg = !shouldRenderStudioSvgOverlay('epic_jewelry') ? '<g id="studioEpicJewelryOverlay" data-lens-gated="1"></g>' : `
     <g id="studioEpicJewelryOverlay">
       ${activeEpicJewelryRows.map(r => {
         const jc = clampWorldLocCoord(r.loc || '-113190:235226');
@@ -17925,7 +18729,7 @@ function renderDedicatedWorldAtlas() {
     : (curObeliskMode === 'All'
       ? vitalityObeliskRows
       : vitalityObeliskRows.filter(o => o.obelisk_tier === curObeliskMode));
-  const vitalityObeliskOverlaySvg = `
+  const vitalityObeliskOverlaySvg = !shouldRenderStudioSvgOverlay('vitality_obelisk') ? '<g id="studioVitalityObeliskOverlay" data-lens-gated="1"></g>' : `
     <g id="studioVitalityObeliskOverlay">
       ${activeVitalityObelisks.map(o => {
         const oc = clampWorldLocCoord(o.obelisk_loc || '-84120:243500');
@@ -17953,7 +18757,7 @@ function renderDedicatedWorldAtlas() {
     : (curArmorSetMode === 'All'
       ? armorSetRows
       : armorSetRows.filter(s => s.armor_weight_class === curArmorSetMode));
-  const armorSetMasterworkOverlaySvg = `
+  const armorSetMasterworkOverlaySvg = !shouldRenderStudioSvgOverlay('armor_set') ? '<g id="studioArmorSetMasterworkOverlay" data-lens-gated="1"></g>' : `
     <g id="studioArmorSetMasterworkOverlay">
       ${activeArmorSetRows.map(s => {
         const fc = clampWorldLocCoord(s.forge_loc || '-84120:243500');
@@ -17986,7 +18790,7 @@ function renderDedicatedWorldAtlas() {
     : (curKamalokaMode === 'All'
       ? kamalokaRows
       : kamalokaRows.filter(i => i.conduit_category === curKamalokaMode));
-  const kamalokaPailakaOverlaySvg = `
+  const kamalokaPailakaOverlaySvg = !shouldRenderStudioSvgOverlay('kamaloka') ? '<g id="studioKamalokaPailakaOverlay" data-lens-gated="1"></g>' : `
     <g id="studioKamalokaPailakaOverlay">
       ${activeKamalokaRows.map(inst => {
         const ic = clampWorldLocCoord(inst.loc || '-84120:243500');
@@ -18020,7 +18824,7 @@ function renderDedicatedWorldAtlas() {
     : (curSkillScrollMode === 'All'
       ? scrollSanctumRows
       : scrollSanctumRows.filter(s => s.mastery_category === curSkillScrollMode));
-  const forgottenScrollOverlaySvg = `
+  const forgottenScrollOverlaySvg = !shouldRenderStudioSvgOverlay('skill_scroll') ? '<g id="studioForgottenScrollOverlay" data-lens-gated="1"></g>' : `
     <g id="studioForgottenScrollOverlay">
       ${activeScrollSanctums.map(s => {
         const sc = clampWorldLocCoord(s.loc || '-84120:243500');
@@ -18052,7 +18856,7 @@ function renderDedicatedWorldAtlas() {
     : (curQuarryMode === 'All'
       ? quarryRows
       : quarryRows.filter(q => q.quarry_category === curQuarryMode));
-  const elementalQuarryOverlaySvg = `
+  const elementalQuarryOverlaySvg = !shouldRenderStudioSvgOverlay('elemental_quarry') ? '<g id="studioElementalQuarryOverlay" data-lens-gated="1"></g>' : `
     <g id="studioElementalQuarryOverlay">
       ${activeQuarries.map(q => {
         const qc = clampWorldLocCoord(q.loc || '-84120:243500');
@@ -18088,7 +18892,7 @@ function renderDedicatedWorldAtlas() {
     : (curClanHallMode === 'All'
       ? clanHallRows
       : clanHallRows.filter(e => e.acquisition_mode === curClanHallMode));
-  const clanHallAuctionOverlaySvg = `
+  const clanHallAuctionOverlaySvg = !shouldRenderStudioSvgOverlay('clan_hall') ? '<g id="studioClanHallAuctionOverlay" data-lens-gated="1"></g>' : `
     <g id="studioClanHallAuctionOverlay">
       ${activeClanHalls.map(e => {
         const ec = clampWorldLocCoord(e.loc || '-84120:243500');
@@ -18121,7 +18925,7 @@ function renderDedicatedWorldAtlas() {
     : (curTransMode === 'All'
       ? transSanctumRows
       : transSanctumRows.filter(s => s.relic_category === curTransMode));
-  const transformationTalismanOverlaySvg = `
+  const transformationTalismanOverlaySvg = !shouldRenderStudioSvgOverlay('transformation') ? '<g id="studioTransformationTalismanOverlay" data-lens-gated="1"></g>' : `
     <g id="studioTransformationTalismanOverlay">
       ${activeTransSanctums.map(s => {
         const sc = clampWorldLocCoord(s.loc || '-84120:243500');
@@ -18157,7 +18961,7 @@ function renderDedicatedWorldAtlas() {
     : (curWarehouseMode === 'All'
       ? warehouseRows
       : warehouseRows.filter(v => v.logistics_tier === curWarehouseMode));
-  const warehouseFreightOverlaySvg = `
+  const warehouseFreightOverlaySvg = !shouldRenderStudioSvgOverlay('warehouse') ? '<g id="studioWarehouseFreightOverlay" data-lens-gated="1"></g>' : `
     <g id="studioWarehouseFreightOverlay">
       ${activeWarehouses.map(v => {
         const vc = clampWorldLocCoord(v.vault_loc || '-84120:243500');
@@ -18188,7 +18992,7 @@ function renderDedicatedWorldAtlas() {
     : (curMasterTourMode === 'All'
       ? masterTourRows
       : masterTourRows.filter(cp => cp.tour_category === curMasterTourMode));
-  const masterTourOverlaySvg = `
+  const masterTourOverlaySvg = !shouldRenderStudioSvgOverlay('master_tour') ? '<g id="studioMasterTourOverlay" data-lens-gated="1"></g>' : `
     <g id="studioMasterTourOverlay">
       ${activeMasterTourCps.map((cp, idx) => {
         const cc = clampWorldLocCoord(cp.loc || '-84120:243500');
@@ -18224,7 +19028,7 @@ function renderDedicatedWorldAtlas() {
     : (curFestivalOracleMode === 'All'
         ? festivalOracleRows
         : festivalOracleRows.filter(o => o.oracle_category === curFestivalOracleMode));
-  const festivalOracleOverlaySvg = `
+  const festivalOracleOverlaySvg = !shouldRenderStudioSvgOverlay('festival_oracle') ? '<g id="studioFestivalOracleOverlay" data-lens-gated="1"></g>' : `
     <g id="studioFestivalOracleOverlay">
       ${activeFestivalOracles.map(o => {
         const oc = clampWorldLocCoord(o.oracle_loc || '-84120:243500');
@@ -18252,7 +19056,7 @@ function renderDedicatedWorldAtlas() {
     : (curLuxuryMarketMode === 'All'
         ? luxuryBoutiqueRows
         : luxuryBoutiqueRows.filter(b => b.market_category === curLuxuryMarketMode));
-  const luxuryBlackMarketOverlaySvg = `
+  const luxuryBlackMarketOverlaySvg = !shouldRenderStudioSvgOverlay('luxury_market') ? '<g id="studioLuxuryBlackMarketOverlay" data-lens-gated="1"></g>' : `
     <g id="studioLuxuryBlackMarketOverlay">
       ${activeLuxuryBoutiques.map(b => {
         const bc = clampWorldLocCoord(b.loc || '147400:-55200');
@@ -18284,7 +19088,7 @@ function renderDedicatedWorldAtlas() {
     : (curFactionAllianceMode === 'All'
         ? factionCampRows
         : factionCampRows.filter(c => c.faction_category === curFactionAllianceMode));
-  const factionAllianceOverlaySvg = `
+  const factionAllianceOverlaySvg = !shouldRenderStudioSvgOverlay('faction_alliance') ? '<g id="studioFactionAllianceOverlay" data-lens-gated="1"></g>' : `
     <g id="studioFactionAllianceOverlay">
       ${activeFactionCamps.map(c => {
         const cc = clampWorldLocCoord(c.loc || '82900:53200');
@@ -18315,7 +19119,7 @@ function renderDedicatedWorldAtlas() {
     : (curFantasyPlazaMode === 'All'
         ? fantasyPlazaRows
         : fantasyPlazaRows.filter(p => p.activity_category === curFantasyPlazaMode));
-  const fantasyPlazaOverlaySvg = `
+  const fantasyPlazaOverlaySvg = !shouldRenderStudioSvgOverlay('fantasy_plaza') ? '<g id="studioFantasyPlazaOverlay" data-lens-gated="1"></g>' : `
     <g id="studioFantasyPlazaOverlay">
       ${activeFantasyPlazas.map(p => {
         const pc = clampWorldLocCoord(p.loc || '18600:145200');
@@ -18347,7 +19151,7 @@ function renderDedicatedWorldAtlas() {
     : (curHeroWeaponMode === 'All'
         ? heroExchangeRows
         : heroExchangeRows.filter(e => e.exchange_category === curHeroWeaponMode));
-  const heroWeaponExchangeOverlaySvg = `
+  const heroWeaponExchangeOverlaySvg = !shouldRenderStudioSvgOverlay('hero_weapon') ? '<g id="studioHeroWeaponExchangeOverlay" data-lens-gated="1"></g>' : `
     <g id="studioHeroWeaponExchangeOverlay">
       ${activeHeroExchanges.map(e => {
         const ec = clampWorldLocCoord(e.monument_loc || '-84120:243500');
@@ -18376,7 +19180,7 @@ function renderDedicatedWorldAtlas() {
     : (curTreasureChestMode === 'All'
         ? treasureChestRows
         : treasureChestRows.filter(c => c.cache_environment === curTreasureChestMode));
-  const treasureChestOverlaySvg = `
+  const treasureChestOverlaySvg = !shouldRenderStudioSvgOverlay('treasure_chest') ? '<g id="studioTreasureChestOverlay" data-lens-gated="1"></g>' : `
     <g id="studioTreasureChestOverlay">
       ${activeTreasureCaches.map(c => {
         const cc = clampWorldLocCoord(c.loc || '48550:248400');
@@ -18408,7 +19212,7 @@ function renderDedicatedWorldAtlas() {
     : (curAerialDockMode === 'All'
         ? aerialDockRows
         : aerialDockRows.filter(d => d.aerial_category === curAerialDockMode));
-  const aerialStarStoneOverlaySvg = `
+  const aerialStarStoneOverlaySvg = !shouldRenderStudioSvgOverlay('aerial_dock') ? '<g id="studioAerialStarStoneOverlay" data-lens-gated="1"></g>' : `
     <g id="studioAerialStarStoneOverlay">
       ${activeAerialDocks.map(d => {
         const ac = clampWorldLocCoord(d.loc || '-84120:243500');
@@ -18448,7 +19252,7 @@ function renderDedicatedWorldAtlas() {
     : (curBeltCloakMode === 'All'
         ? beltCloakRows
         : beltCloakRows.filter(h => h.garment_category === curBeltCloakMode));
-  const beltCloakWeaverOverlaySvg = `
+  const beltCloakWeaverOverlaySvg = !shouldRenderStudioSvgOverlay('belt_cloak') ? '<g id="studioBeltCloakWeaverOverlay" data-lens-gated="1"></g>' : `
     <g id="studioBeltCloakWeaverOverlay">
       ${activeBeltCloakHubs.map(h => {
         const hc = clampWorldLocCoord(h.loc || '18600:145200');
@@ -18484,7 +19288,7 @@ function renderDedicatedWorldAtlas() {
     : (curWeddingMode === 'All'
         ? weddingRows
         : weddingRows.filter(s => s.ceremony_category === curWeddingMode));
-  const weddingCathedralOverlaySvg = `
+  const weddingCathedralOverlaySvg = !shouldRenderStudioSvgOverlay('wedding') ? '<g id="studioWeddingCathedralOverlay" data-lens-gated="1"></g>' : `
     <g id="studioWeddingCathedralOverlay">
       ${activeWeddingSanctuaries.map(s => {
         const wc = clampWorldLocCoord(s.loc || '147900:26800');
@@ -18518,7 +19322,7 @@ function renderDedicatedWorldAtlas() {
     : (curCouncilBenchmarkMode === 'All'
         ? councilBenchmarkRows
         : councilBenchmarkRows.filter(b => b.council_role === curCouncilBenchmarkMode));
-  const councilBenchmarkOverlaySvg = `
+  const councilBenchmarkOverlaySvg = !shouldRenderStudioSvgOverlay('council_benchmark') ? '<g id="studioCouncilBenchmarkOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCouncilBenchmarkOverlay">
       ${activeCouncilBenchmarks.map(b => {
         const bc = clampWorldLocCoord(b.loc || '-84120:243500');
@@ -18570,7 +19374,7 @@ function renderDedicatedWorldAtlas() {
     : (curSeedCycleMode === 'All'
         ? seedCycleRows
         : seedCycleRows.filter(s => s.seed_category === curSeedCycleMode));
-  const continentalSeedOverlaySvg = `
+  const continentalSeedOverlaySvg = !shouldRenderStudioSvgOverlay('seed_cycle') ? '<g id="studioContinentalSeedOverlay" data-lens-gated="1"></g>' : `
     <g id="studioContinentalSeedOverlay">
       ${activeSeedNodes.map(s => {
         const sc = clampWorldLocCoord(s.loc || '-186200:242800');
@@ -18608,7 +19412,7 @@ function renderDedicatedWorldAtlas() {
     : (curColiseumTournamentMode === 'All'
         ? coliseumTournamentRows
         : coliseumTournamentRows.filter(a => a.tournament_category === curColiseumTournamentMode));
-  const coliseumTournamentOverlaySvg = `
+  const coliseumTournamentOverlaySvg = !shouldRenderStudioSvgOverlay('coliseum_tournament') ? '<g id="studioColiseumTournamentOverlay" data-lens-gated="1"></g>' : `
     <g id="studioColiseumTournamentOverlay">
       ${activeColiseumArenas.map(a => {
         const ac = clampWorldLocCoord(a.loc || '146800:46700');
@@ -18642,7 +19446,7 @@ function renderDedicatedWorldAtlas() {
     : (curElementalJewelMode === 'All'
         ? jewelRuneRows
         : jewelRuneRows.filter(s => s.relic_tier_category === curElementalJewelMode));
-  const elementalJewelOverlaySvg = `
+  const elementalJewelOverlaySvg = !shouldRenderStudioSvgOverlay('elemental_jewel') ? '<g id="studioElementalJewelOverlay" data-lens-gated="1"></g>' : `
     <g id="studioElementalJewelOverlay">
       ${activeJewelSanctums.map(s => {
         const jc = clampWorldLocCoord(s.loc || '146800:46700');
@@ -18680,7 +19484,7 @@ function renderDedicatedWorldAtlas() {
     : (curFameMonumentMode === 'All'
         ? fameMonumentRows
         : fameMonumentRows.filter(m => m.fame_service_category === curFameMonumentMode));
-  const fameMonumentOverlaySvg = `
+  const fameMonumentOverlaySvg = !shouldRenderStudioSvgOverlay('fame_monument') ? '<g id="studioFameMonumentOverlay" data-lens-gated="1"></g>' : `
     <g id="studioFameMonumentOverlay">
       ${activeFameMonuments.map(m => {
         const mc = clampWorldLocCoord(m.monument_loc || '-84120:243500');
@@ -18709,7 +19513,7 @@ function renderDedicatedWorldAtlas() {
     : (curDelusionChamberMode === 'All'
         ? delusionConduitRows
         : delusionConduitRows.filter(c => c.delusion_category === curDelusionChamberMode));
-  const delusionChamberOverlaySvg = `
+  const delusionChamberOverlaySvg = !shouldRenderStudioSvgOverlay('delusion_chamber') ? '<g id="studioDelusionChamberOverlay" data-lens-gated="1"></g>' : `
     <g id="studioDelusionChamberOverlay">
       ${activeDelusionConduits.map(c => {
         const dc = clampWorldLocCoord(c.loc || '146800:46700');
@@ -18745,7 +19549,7 @@ function renderDedicatedWorldAtlas() {
     : (curCommandRaidMode === 'All'
         ? commandRaidRows
         : commandRaidRows.filter(s => s.expedition_wing === curCommandRaidMode));
-  const commandChannelRaidOverlaySvg = `
+  const commandChannelRaidOverlaySvg = !shouldRenderStudioSvgOverlay('command_raid') ? '<g id="studioCommandChannelRaidOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCommandChannelRaidOverlay">
       ${activeCommandRaidSanctums.map(s => {
         const rc = clampWorldLocCoord(s.loc || '146800:46700');
@@ -18781,7 +19585,7 @@ function renderDedicatedWorldAtlas() {
     : (curNevitBlessingMode === 'All'
         ? nevitBlessingRows
         : nevitBlessingRows.filter(s => s.blessing_category === curNevitBlessingMode));
-  const nevitBlessingOverlaySvg = `
+  const nevitBlessingOverlaySvg = !shouldRenderStudioSvgOverlay('nevit_blessing') ? '<g id="studioNevitBlessingOverlay" data-lens-gated="1"></g>' : `
     <g id="studioNevitBlessingOverlay">
       ${activeNevitSanctuaries.map(s => {
         const nc = clampWorldLocCoord(s.sanctuary_loc || '-84120:243500');
@@ -18810,7 +19614,7 @@ function renderDedicatedWorldAtlas() {
     : (curCouncilSignoffMode === 'All'
         ? councilSignoffRows
         : councilSignoffRows.filter(r => r.council_role === curCouncilSignoffMode));
-  const councilSignoffOverlaySvg = `
+  const councilSignoffOverlaySvg = !shouldRenderStudioSvgOverlay('council_signoff') ? '<g id="studioCouncilSignoffOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCouncilSignoffOverlay">
       ${activeCouncilSignoffs.map(r => {
         const sc = clampWorldLocCoord(r.loc || '-84120:243500');
@@ -18844,7 +19648,7 @@ function renderDedicatedWorldAtlas() {
     : (curChampionMobMode === 'All'
         ? championMobRows
         : championMobRows.filter(g => g.champion_category === curChampionMobMode));
-  const championMobOverlaySvg = `
+  const championMobOverlaySvg = !shouldRenderStudioSvgOverlay('champion_mob') ? '<g id="studioChampionMobOverlay" data-lens-gated="1"></g>' : `
     <g id="studioChampionMobOverlay">
       ${activeChampionGrounds.map(g => {
         const cc = clampWorldLocCoord(g.loc || '-84120:243500');
@@ -18876,7 +19680,7 @@ function renderDedicatedWorldAtlas() {
     : (curDualswordForgeMode === 'All'
         ? dualswordForgeRows
         : dualswordForgeRows.filter(f => f.dualsword_tier_category === curDualswordForgeMode));
-  const dualswordForgeOverlaySvg = `
+  const dualswordForgeOverlaySvg = !shouldRenderStudioSvgOverlay('dualsword_forge') ? '<g id="studioDualswordForgeOverlay" data-lens-gated="1"></g>' : `
     <g id="studioDualswordForgeOverlay">
       ${activeDualswordForges.map(f => {
         const dc = clampWorldLocCoord(f.anvil_loc || '-84120:243500');
@@ -18905,7 +19709,7 @@ function renderDedicatedWorldAtlas() {
     : (curTechArtMode === 'All'
         ? techArtRows
         : techArtRows.filter(g => g.pipeline_stage_category === curTechArtMode));
-  const techArtPipelineOverlaySvg = `
+  const techArtPipelineOverlaySvg = !shouldRenderStudioSvgOverlay('tech_art') ? '<g id="studioTechArtPipelineOverlay" data-lens-gated="1"></g>' : `
     <g id="studioTechArtPipelineOverlay">
       ${activeTechArtGates.map(g => {
         const tc = clampWorldLocCoord(g.loc || '-84120:243500');
@@ -18942,7 +19746,7 @@ function renderDedicatedWorldAtlas() {
     : (curBotSwarmMode === 'All'
         ? botSwarmRows
         : botSwarmRows.filter(s => s.simulation_category === curBotSwarmMode));
-  const botSwarmSimOverlaySvg = `
+  const botSwarmSimOverlaySvg = !shouldRenderStudioSvgOverlay('bot_swarm') ? '<g id="studioBotSwarmSimOverlay" data-lens-gated="1"></g>' : `
     <g id="studioBotSwarmSimOverlay">
       ${activeBotSwarmSectors.map(s => {
         const sc = clampWorldLocCoord(s.loc || '-84120:243500');
@@ -18979,7 +19783,7 @@ function renderDedicatedWorldAtlas() {
     : (curLiveopsGmMode === 'All'
         ? liveopsGmRows
         : liveopsGmRows.filter(a => a.liveops_category === curLiveopsGmMode));
-  const liveopsGmOverlaySvg = `
+  const liveopsGmOverlaySvg = !shouldRenderStudioSvgOverlay('liveops_gm') ? '<g id="studioLiveopsGmOverlay" data-lens-gated="1"></g>' : `
     <g id="studioLiveopsGmOverlay">
       ${activeLiveopsGmAnchors.map(a => {
         const lc = clampWorldLocCoord(a.loc || '-84120:243500');
@@ -19008,7 +19812,7 @@ function renderDedicatedWorldAtlas() {
     : (curToolsSquadMode === 'All'
         ? toolsSquadRows
         : toolsSquadRows.filter(t => t.tooling_domain === curToolsSquadMode || t.owner_squad_role === curToolsSquadMode));
-  const toolsSquadOverlaySvg = `
+  const toolsSquadOverlaySvg = !shouldRenderStudioSvgOverlay('tools_squad') ? '<g id="studioToolsSquadOverlay" data-lens-gated="1"></g>' : `
     <g id="studioToolsSquadOverlay">
       ${activeToolsSquadItems.map(t => {
         const tsc = clampWorldLocCoord(t.loc || '-84120:243500');
@@ -19052,7 +19856,7 @@ function renderDedicatedWorldAtlas() {
     : (curDialogueGraphMode === 'All'
         ? dialogueGraphRows
         : dialogueGraphRows.filter(g => g.graph_category === curDialogueGraphMode));
-  const dialogueGraphOverlaySvg = `
+  const dialogueGraphOverlaySvg = !shouldRenderStudioSvgOverlay('dialogue_dag') ? '<g id="studioDialogueGraphOverlay" data-lens-gated="1"></g>' : `
     <g id="studioDialogueGraphOverlay">
       ${activeDialogueGraphs.map(g => {
         const dgc = clampWorldLocCoord(g.loc || '-84120:243500');
@@ -19090,7 +19894,7 @@ function renderDedicatedWorldAtlas() {
     : (curSpawnerBalancerMode === 'All'
         ? spawnerBalancerRows
         : spawnerBalancerRows.filter(s => s.balancer_category === curSpawnerBalancerMode));
-  const spawnerBalancerOverlaySvg = `
+  const spawnerBalancerOverlaySvg = !shouldRenderStudioSvgOverlay('spawner_balancer') ? '<g id="studioSpawnerBalancerOverlay" data-lens-gated="1"></g>' : `
     <g id="studioSpawnerBalancerOverlay">
       ${activeSpawnerBalancers.map(s => {
         const sbc = clampWorldLocCoord(s.loc || '-84120:243500');
@@ -19123,7 +19927,7 @@ function renderDedicatedWorldAtlas() {
   // Combat Skill Timeline & Boss Telegraph Profiles Overlay (D77)
   const atlas = tatlas || {};
   const skillTimelineProfiles = Array.isArray(atlas.combat_skill_timeline_profiles) ? atlas.combat_skill_timeline_profiles : [];
-  const skillTimelineOverlaySvg = !ATLAS_SKILL_TIMELINE_MODE ? '' : `
+  const skillTimelineOverlaySvg = (!ATLAS_SKILL_TIMELINE_MODE || !shouldRenderStudioSvgOverlay('skill_timelines')) ? '<g id="studioSkillTimelineOverlay" data-lens-gated="1"></g>' : `
     <g id="studioSkillTimelineOverlay">
       ${skillTimelineProfiles.map((p, idx) => {
         const zMap = {};
@@ -19162,7 +19966,7 @@ function renderDedicatedWorldAtlas() {
 
   // Automated Build Farm & Delta Binary Patch CDN Nodes Overlay (D78)
   const buildFarmNodes = Array.isArray(atlas.build_farm_patch_cdn_nodes) ? atlas.build_farm_patch_cdn_nodes : [];
-  const buildFarmOverlaySvg = !ATLAS_BUILD_FARM_MODE ? '' : `
+  const buildFarmOverlaySvg = (!ATLAS_BUILD_FARM_MODE || !shouldRenderStudioSvgOverlay('build_farm')) ? '<g id="studioBuildFarmOverlay" data-lens-gated="1"></g>' : `
     <g id="studioBuildFarmOverlay">
       ${buildFarmNodes.map((n, idx) => {
         const zMap = {};
@@ -19192,7 +19996,7 @@ function renderDedicatedWorldAtlas() {
 
   // Architect DX, Cross-Tool Undo/Redo & Codegen Drift-Gate Overlay (D79)
   const architectDxGates = Array.isArray(atlas.architect_dx_codegen_gates) ? atlas.architect_dx_codegen_gates : [];
-  const architectDxOverlaySvg = !ATLAS_ARCHITECT_DX_MODE ? '' : `
+  const architectDxOverlaySvg = (!ATLAS_ARCHITECT_DX_MODE || !shouldRenderStudioSvgOverlay('architect_dx')) ? '<g id="studioArchitectDxOverlay" data-lens-gated="1"></g>' : `
     <g id="studioArchitectDxOverlay">
       ${architectDxGates.map((g, idx) => {
         const zMap = {};
@@ -19222,7 +20026,7 @@ function renderDedicatedWorldAtlas() {
 
   // Two-Ring Studio 11-Role Complete D1-D80 Sign-Off Matrix Overlay (D80)
   const twoRingSignoffRecords = Array.isArray(atlas.two_ring_studio_80d_signoff_matrix) ? atlas.two_ring_studio_80d_signoff_matrix : [];
-  const twoRingSignoffOverlaySvg = !ATLAS_TWO_RING_SIGNOFF_MODE ? '' : `
+  const twoRingSignoffOverlaySvg = (!ATLAS_TWO_RING_SIGNOFF_MODE || !shouldRenderStudioSvgOverlay('two_ring_80d')) ? '<g id="studioTwoRingSignoffOverlay" data-lens-gated="1"></g>' : `
     <g id="studioTwoRingSignoffOverlay">
       ${twoRingSignoffRecords.map((r, idx) => {
         const zMap = {};
@@ -19254,7 +20058,7 @@ function renderDedicatedWorldAtlas() {
 
   // Dynamic Weather, Day/Night Shader & Spatial Audio Acoustic Reverb Overlay (D81)
   const weatherAcousticProfiles = Array.isArray(atlas.weather_shader_acoustic_profiles) ? atlas.weather_shader_acoustic_profiles : [];
-  const weatherAcousticOverlaySvg = !ATLAS_WEATHER_ACOUSTIC_MODE ? '' : `
+  const weatherAcousticOverlaySvg = (!ATLAS_WEATHER_ACOUSTIC_MODE || !shouldRenderStudioSvgOverlay('weather_shader')) ? '<g id="studioWeatherAcousticOverlay" data-lens-gated="1"></g>' : `
     <g id="studioWeatherAcousticOverlay">
       ${weatherAcousticProfiles.map((p, idx) => {
         const zMap = {};
@@ -19290,7 +20094,7 @@ function renderDedicatedWorldAtlas() {
 
   // Server-Mesh Authority Handoff, Redis Stream Bus & PostgreSQL Write-Behind WAL Overlay (D82)
   const serverMeshCorridors = Array.isArray(atlas.server_mesh_persistence_corridors) ? atlas.server_mesh_persistence_corridors : [];
-  const serverMeshOverlaySvg = !ATLAS_SERVER_MESH_MODE ? '' : `
+  const serverMeshOverlaySvg = (!ATLAS_SERVER_MESH_MODE || !shouldRenderStudioSvgOverlay('server_mesh')) ? '<g id="studioServerMeshOverlay" data-lens-gated="1"></g>' : `
     <g id="studioServerMeshOverlay">
       ${serverMeshCorridors.map((c, idx) => {
         const zMap = {};
@@ -19330,7 +20134,7 @@ function renderDedicatedWorldAtlas() {
 
   // Anti-Bot / RMT Telemetry, Macro Captcha & Economy Anomaly Sentinel Matrix Overlay (D83)
   const antiBotSentinelRecords = Array.isArray(atlas.anti_bot_economy_sentinels) ? atlas.anti_bot_economy_sentinels : [];
-  const antiBotSentinelOverlaySvg = !ATLAS_ANTI_BOT_MODE ? '' : `
+  const antiBotSentinelOverlaySvg = (!ATLAS_ANTI_BOT_MODE || !shouldRenderStudioSvgOverlay('anti_bot')) ? '<g id="studioAntiBotSentinelOverlay" data-lens-gated="1"></g>' : `
     <g id="studioAntiBotSentinelOverlay">
       ${antiBotSentinelRecords.map((s, idx) => {
         const zMap = {};
@@ -19366,7 +20170,7 @@ function renderDedicatedWorldAtlas() {
 
   // Godot Tool-Scene Storybook & 3D Kitbash Prefab Inspector Matrix Overlay (D84)
   const godotStorybookRecords = Array.isArray(atlas.godot_storybook_prefab_nodes) ? atlas.godot_storybook_prefab_nodes : [];
-  const godotStorybookOverlaySvg = !ATLAS_GODOT_STORYBOOK_MODE ? '' : `
+  const godotStorybookOverlaySvg = (!ATLAS_GODOT_STORYBOOK_MODE || !shouldRenderStudioSvgOverlay('godot_storybook')) ? '<g id="studioGodotStorybookOverlay" data-lens-gated="1"></g>' : `
     <g id="studioGodotStorybookOverlay">
       ${godotStorybookRecords.map((p, idx) => {
         const zMap = {};
@@ -19400,7 +20204,7 @@ function renderDedicatedWorldAtlas() {
 
   // 3D NavMesh Pathfinding, Jump-Link & Dynamic Door/Bridge Obstacle Matrix Overlay (D85)
   const navmeshObstacleRecords = Array.isArray(atlas.navmesh_obstacle_sectors) ? atlas.navmesh_obstacle_sectors : [];
-  const navmeshObstacleOverlaySvg = !ATLAS_NAVMESH_MODE ? '' : `
+  const navmeshObstacleOverlaySvg = (!ATLAS_NAVMESH_MODE || !shouldRenderStudioSvgOverlay('navmesh')) ? '<g id="studioNavmeshObstacleOverlay" data-lens-gated="1"></g>' : `
     <g id="studioNavmeshObstacleOverlay">
       ${navmeshObstacleRecords.map((n, idx) => {
         const zMap = {};
@@ -19429,7 +20233,7 @@ function renderDedicatedWorldAtlas() {
 
   // LiveOps Seasonal World Event, Double-EXP / Drop Hot-Config & Feature Flag Matrix Overlay (D86)
   const liveopsEventFlagRecords = Array.isArray(atlas.liveops_event_flag_nodes) ? atlas.liveops_event_flag_nodes : [];
-  const liveopsEventFlagsOverlaySvg = !ATLAS_LIVEOPS_FLAGS_MODE ? '' : `
+  const liveopsEventFlagsOverlaySvg = (!ATLAS_LIVEOPS_FLAGS_MODE || !shouldRenderStudioSvgOverlay('event_flags')) ? '<g id="studioLiveopsEventFlagsOverlay" data-lens-gated="1"></g>' : `
     <g id="studioLiveopsEventFlagsOverlay">
       ${liveopsEventFlagRecords.map((f, idx) => {
         const wx = typeof f.world_x === 'number' ? f.world_x : 500;
@@ -19453,7 +20257,7 @@ function renderDedicatedWorldAtlas() {
 
   // In-Game Cutscene Camera Rail, Boss Intro Cinematics & Story Trigger Matrix Overlay (D87)
   const cinematicRailRecords = Array.isArray(atlas.cinematic_camera_rails) ? atlas.cinematic_camera_rails : [];
-  const cinematicRailsOverlaySvg = !ATLAS_CINEMATIC_RAILS_MODE ? '' : `
+  const cinematicRailsOverlaySvg = (!ATLAS_CINEMATIC_RAILS_MODE || !shouldRenderStudioSvgOverlay('camera_rails')) ? '<g id="studioCinematicRailsOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCinematicRailsOverlay">
       ${cinematicRailRecords.map((r, idx) => {
         const wx = typeof r.world_x === 'number' ? r.world_x : 520;
@@ -19477,7 +20281,7 @@ function renderDedicatedWorldAtlas() {
 
   // Client GPU Frame-Time Profiler, Draw-Call Instancing & VRAM Pool Budget Matrix Overlay (D88)
   const clientGpuBudgetRecords = Array.isArray(atlas.client_gpu_vram_budgets) ? atlas.client_gpu_vram_budgets : [];
-  const clientGpuBudgetOverlaySvg = !ATLAS_GPU_BUDGET_MODE ? '' : `
+  const clientGpuBudgetOverlaySvg = (!ATLAS_GPU_BUDGET_MODE || !shouldRenderStudioSvgOverlay('gpu_vram')) ? '<g id="studioClientGpuBudgetOverlay" data-lens-gated="1"></g>' : `
     <g id="studioClientGpuBudgetOverlay">
       ${clientGpuBudgetRecords.map((b, idx) => {
         const wx = typeof b.world_x === 'number' ? b.world_x : 510;
@@ -19501,7 +20305,7 @@ function renderDedicatedWorldAtlas() {
 
   // Automated Headless QA Playtest Matrix, CI Smoke Bot-Routes & Golden-Snapshot Regression Suites Overlay (D89)
   const automatedQaSuiteRecords = Array.isArray(atlas.automated_qa_smoke_suites) ? atlas.automated_qa_smoke_suites : [];
-  const automatedQaSuitesOverlaySvg = !ATLAS_QA_SUITES_MODE ? '' : `
+  const automatedQaSuitesOverlaySvg = (!ATLAS_QA_SUITES_MODE || !shouldRenderStudioSvgOverlay('headless_qa')) ? '<g id="studioAutomatedQaSuitesOverlay" data-lens-gated="1"></g>' : `
     <g id="studioAutomatedQaSuitesOverlay">
       ${automatedQaSuiteRecords.map((s, idx) => {
         const wx = typeof s.world_x === 'number' ? s.world_x : 515;
@@ -19525,7 +20329,7 @@ function renderDedicatedWorldAtlas() {
 
   // 90D Grand Studio Architecture Milestone Master Sign-Off & Telemetry Ledger Overlay (D90)
   const studio90dLedgerRecords = Array.isArray(atlas.studio_90d_master_ledger) ? atlas.studio_90d_master_ledger : [];
-  const studio90dMasterLedgerOverlaySvg = !ATLAS_STUDIO_90D_MODE ? '' : `
+  const studio90dMasterLedgerOverlaySvg = (!ATLAS_STUDIO_90D_MODE || !shouldRenderStudioSvgOverlay('studio_90d')) ? '<g id="studio90dMasterLedgerOverlay" data-lens-gated="1"></g>' : `
     <g id="studio90dMasterLedgerOverlay">
       ${studio90dLedgerRecords.map((l, idx) => {
         const wx = typeof l.world_x === 'number' ? l.world_x : 525;
@@ -19544,7 +20348,7 @@ function renderDedicatedWorldAtlas() {
 
   // Dynamic Faction Reputation, NPC Disposition & Town Guard Hostility Matrix Overlay (D91)
   const factionDispositionRecords = Array.isArray(atlas.faction_reputation_dispositions) ? atlas.faction_reputation_dispositions : [];
-  const factionDispositionOverlaySvg = !ATLAS_FACTION_DISPOSITION_MODE ? '' : `
+  const factionDispositionOverlaySvg = (!ATLAS_FACTION_DISPOSITION_MODE || !shouldRenderStudioSvgOverlay('faction_dispositions')) ? '<g id="studioFactionDispositionOverlay" data-lens-gated="1"></g>' : `
     <g id="studioFactionDispositionOverlay">
       ${factionDispositionRecords.map((d, idx) => {
         const wx = typeof d.world_x === 'number' ? d.world_x : 530;
@@ -19568,7 +20372,7 @@ function renderDedicatedWorldAtlas() {
 
   // Cross-Realm Auction House, Escrow Settlement & Market Price-Circuit-Breaker Matrix Overlay (D92)
   const crossRealmEscrowRecords = Array.isArray(atlas.cross_realm_auction_escrows) ? atlas.cross_realm_auction_escrows : [];
-  const crossRealmEscrowOverlaySvg = !ATLAS_AUCTION_ESCROW_MODE ? '' : `
+  const crossRealmEscrowOverlaySvg = (!ATLAS_AUCTION_ESCROW_MODE || !shouldRenderStudioSvgOverlay('auction_escrow')) ? '<g id="studioCrossRealmEscrowOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCrossRealmEscrowOverlay">
       ${crossRealmEscrowRecords.map((e, idx) => {
         const wx = typeof e.world_x === 'number' ? e.world_x : 535;
@@ -19592,7 +20396,7 @@ function renderDedicatedWorldAtlas() {
 
   // Dynamic World Boss Invasion, Rift Incursion & Zone-Wide Emergency Quest Matrix Overlay (D93)
   const worldInvasionIncursionRecords = Array.isArray(atlas.world_invasion_incursions) ? atlas.world_invasion_incursions : [];
-  const worldIncursionOverlaySvg = !ATLAS_WORLD_INCURSION_MODE ? '' : `
+  const worldIncursionOverlaySvg = (!ATLAS_WORLD_INCURSION_MODE || !shouldRenderStudioSvgOverlay('world_incursions')) ? '<g id="studioWorldIncursionOverlay" data-lens-gated="1"></g>' : `
     <g id="studioWorldIncursionOverlay">
       ${worldInvasionIncursionRecords.map((w, idx) => {
         const wx = typeof w.world_x === 'number' ? w.world_x : 530;
@@ -19616,7 +20420,7 @@ function renderDedicatedWorldAtlas() {
 
   // Guild / Clan Treasury Ledger, Siege Mercenary Payroll & Tax Dividend Audit Matrix Overlay (D94)
   const clanTreasuryLedgerRecords = Array.isArray(atlas.clan_treasury_payroll_ledgers) ? atlas.clan_treasury_payroll_ledgers : [];
-  const clanTreasuryOverlaySvg = !ATLAS_CLAN_TREASURY_MODE ? '' : `
+  const clanTreasuryOverlaySvg = (!ATLAS_CLAN_TREASURY_MODE || !shouldRenderStudioSvgOverlay('clan_treasury')) ? '<g id="studioClanTreasuryOverlay" data-lens-gated="1"></g>' : `
     <g id="studioClanTreasuryOverlay">
       ${clanTreasuryLedgerRecords.map((l, idx) => {
         const wx = typeof l.world_x === 'number' ? l.world_x : 540;
@@ -19640,7 +20444,7 @@ function renderDedicatedWorldAtlas() {
 
   // Player Housing, Clan Citadel Interior Customization & Trophy Taxidermy Matrix Overlay (D95)
   const playerHousingEstateRecords = Array.isArray(atlas.player_housing_trophy_estates) ? atlas.player_housing_trophy_estates : [];
-  const playerHousingEstateOverlaySvg = !ATLAS_HOUSING_ESTATES_MODE ? '' : `
+  const playerHousingEstateOverlaySvg = (!ATLAS_HOUSING_ESTATES_MODE || !shouldRenderStudioSvgOverlay('housing_estates')) ? '<g id="studioPlayerHousingEstateOverlay" data-lens-gated="1"></g>' : `
     <g id="studioPlayerHousingEstateOverlay">
       ${playerHousingEstateRecords.map((h, idx) => {
         const wx = typeof h.world_x === 'number' ? h.world_x : 545;
@@ -19664,7 +20468,7 @@ function renderDedicatedWorldAtlas() {
 
   // Global CDN Region Routing, Anycast DDoS Scrubbing & Voice-Chat WebRTC Relay Matrix Overlay (D96)
   const globalCdnRelayRecords = Array.isArray(atlas.global_cdn_webrtc_relays) ? atlas.global_cdn_webrtc_relays : [];
-  const globalCdnRelayOverlaySvg = !ATLAS_CDN_WEBRTC_MODE ? '' : `
+  const globalCdnRelayOverlaySvg = (!ATLAS_CDN_WEBRTC_MODE || !shouldRenderStudioSvgOverlay('cdn_webrtc')) ? '<g id="studioGlobalCdnRelayOverlay" data-lens-gated="1"></g>' : `
     <g id="studioGlobalCdnRelayOverlay">
       ${globalCdnRelayRecords.map((r, idx) => {
         const wx = typeof r.world_x === 'number' ? r.world_x : 550;
@@ -19688,7 +20492,7 @@ function renderDedicatedWorldAtlas() {
 
   // Dynamic Caravan Trade Routes, Bandit Ambush Escorts & Regional Commodity Arbitrage Matrix Overlay (D97)
   const caravanTradeRouteRecords = Array.isArray(atlas.caravan_trade_routes) ? atlas.caravan_trade_routes : [];
-  const caravanTradeRoutesOverlaySvg = !ATLAS_CARAVAN_ROUTES_MODE ? '' : `
+  const caravanTradeRoutesOverlaySvg = (!ATLAS_CARAVAN_ROUTES_MODE || !shouldRenderStudioSvgOverlay('caravan_routes')) ? '<g id="studioCaravanTradeRoutesOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCaravanTradeRoutesOverlay">
       ${caravanTradeRouteRecords.map((c, idx) => {
         const wx = typeof c.world_x === 'number' ? c.world_x : 540;
@@ -19712,7 +20516,7 @@ function renderDedicatedWorldAtlas() {
 
   // Automated Localization Voice-Over (EN/TH/JP/KR), Lip-Sync Phoneme & Subtitle Timing Matrix Overlay (D98)
   const localizationVoBankRecords = Array.isArray(atlas.localization_voiceover_banks) ? atlas.localization_voiceover_banks : [];
-  const localizationVoBanksOverlaySvg = !ATLAS_LOCALIZATION_VO_MODE ? '' : `
+  const localizationVoBanksOverlaySvg = (!ATLAS_LOCALIZATION_VO_MODE || !shouldRenderStudioSvgOverlay('localization_vo')) ? '<g id="studioLocalizationVoBanksOverlay" data-lens-gated="1"></g>' : `
     <g id="studioLocalizationVoBanksOverlay">
       ${localizationVoBankRecords.map((v, idx) => {
         const wx = typeof v.world_x === 'number' ? v.world_x : 545;
@@ -19734,7 +20538,7 @@ function renderDedicatedWorldAtlas() {
 
   // Cross-Tool Hot-Reload WebSocket Bus, Undo/Redo Command Journal & Godot Live-Sync Bridge Matrix Overlay (D99)
   const crossToolBridgeRecords = Array.isArray(atlas.cross_tool_hot_reload_bridges) ? atlas.cross_tool_hot_reload_bridges : [];
-  const crossToolBridgesOverlaySvg = !ATLAS_HOT_RELOAD_BRIDGE_MODE ? '' : `
+  const crossToolBridgesOverlaySvg = (!ATLAS_HOT_RELOAD_BRIDGE_MODE || !shouldRenderStudioSvgOverlay('hot_reload_bridge')) ? '<g id="studioCrossToolBridgesOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCrossToolBridgesOverlay">
       ${crossToolBridgeRecords.map((b, idx) => {
         const wx = typeof b.world_x === 'number' ? b.world_x : 550;
@@ -19756,7 +20560,7 @@ function renderDedicatedWorldAtlas() {
 
   // Two-Ring 11-Role Studio Grand Centennial D1–D100 Sign-Off & Guided Tour Matrix Overlay (D100)
   const centennial100dCharterRecords = Array.isArray(atlas.centennial_100d_studio_charters) ? atlas.centennial_100d_studio_charters : [];
-  const centennial100dChartersOverlaySvg = !ATLAS_CENTENNIAL_100D_MODE ? '' : `
+  const centennial100dChartersOverlaySvg = (!ATLAS_CENTENNIAL_100D_MODE || !shouldRenderStudioSvgOverlay('centennial_100d')) ? '<g id="studioCentennial100dChartersOverlay" data-lens-gated="1"></g>' : `
     <g id="studioCentennial100dChartersOverlay">
       ${centennial100dCharterRecords.map((c, idx) => {
         const wx = typeof c.world_x === 'number' ? c.world_x : 540;
@@ -19776,7 +20580,7 @@ function renderDedicatedWorldAtlas() {
 
   // Dynamic World Weather-Triggered Rare Spawns, Nocturnal Hunt & Eclipse Affix Matrix Overlay (D101)
   const nocturnalAffixSpawnRecords = Array.isArray(atlas.nocturnal_weather_affix_spawns) ? atlas.nocturnal_weather_affix_spawns : [];
-  const nocturnalAffixSpawnsOverlaySvg = !ATLAS_NOCTURNAL_AFFIX_MODE ? '' : `
+  const nocturnalAffixSpawnsOverlaySvg = (!ATLAS_NOCTURNAL_AFFIX_MODE || !shouldRenderStudioSvgOverlay('nocturnal_affix')) ? '<g id="studioNocturnalAffixSpawnsOverlay" data-lens-gated="1"></g>' : `
     <g id="studioNocturnalAffixSpawnsOverlay">
       ${nocturnalAffixSpawnRecords.map((s) => {
         const wx = typeof s.world_x === 'number' ? s.world_x : 540;
@@ -19796,7 +20600,7 @@ function renderDedicatedWorldAtlas() {
 
   // Deterministic Combat Replay Verifier, Anti-Cheat Desync Audit & Tick-by-Tick Hash Chain Matrix Overlay (D102)
   const deterministicCombatReplayRecords = Array.isArray(atlas.deterministic_combat_replays) ? atlas.deterministic_combat_replays : [];
-  const deterministicCombatReplaysOverlaySvg = !ATLAS_COMBAT_REPLAY_MODE ? '' : `
+  const deterministicCombatReplaysOverlaySvg = (!ATLAS_COMBAT_REPLAY_MODE || !shouldRenderStudioSvgOverlay('combat_replay')) ? '<g id="studioDeterministicCombatReplaysOverlay" data-lens-gated="1"></g>' : `
     <g id="studioDeterministicCombatReplaysOverlay">
       ${deterministicCombatReplayRecords.map((r) => {
         const wx = typeof r.world_x === 'number' ? r.world_x : 540;
@@ -19816,7 +20620,7 @@ function renderDedicatedWorldAtlas() {
 
   // Dynamic World Lore Codex, Archaeological Relic Excavation & Bestiary Mastery Matrix Overlay (D103)
   const archaeologicalLoreCodexRecords = Array.isArray(atlas.archaeological_lore_codices) ? atlas.archaeological_lore_codices : [];
-  const archaeologicalLoreCodicesOverlaySvg = !ATLAS_LORE_CODEX_MODE ? '' : `
+  const archaeologicalLoreCodicesOverlaySvg = (!ATLAS_LORE_CODEX_MODE || !shouldRenderStudioSvgOverlay('lore_codex')) ? '<g id="studioArchaeologicalLoreCodicesOverlay" data-lens-gated="1"></g>' : `
     <g id="studioArchaeologicalLoreCodicesOverlay">
       ${archaeologicalLoreCodexRecords.map((c) => {
         const wx = typeof c.world_x === 'number' ? c.world_x : 540;
@@ -19836,7 +20640,7 @@ function renderDedicatedWorldAtlas() {
 
   // Procedural Foliage Wind-Field, Interactive Water Ripple & Destructible Environment Physics Matrix Overlay (D104)
   const destructiblePhysicsBiomeRecords = Array.isArray(atlas.destructible_physics_biomes) ? atlas.destructible_physics_biomes : [];
-  const destructiblePhysicsBiomesOverlaySvg = !ATLAS_PHYSICS_BIOME_MODE ? '' : `
+  const destructiblePhysicsBiomesOverlaySvg = (!ATLAS_PHYSICS_BIOME_MODE || !shouldRenderStudioSvgOverlay('physics_biomes')) ? '<g id="studioDestructiblePhysicsBiomesOverlay" data-lens-gated="1"></g>' : `
     <g id="studioDestructiblePhysicsBiomesOverlay">
       ${destructiblePhysicsBiomeRecords.map((b) => {
         const wx = typeof b.world_x === 'number' ? b.world_x : 540;
@@ -19856,7 +20660,7 @@ function renderDedicatedWorldAtlas() {
 
   // Dynamic Bounty Hunter Contracts, Chaotic PK Manhunt & High-Value Target Tracking Matrix Overlay (D105)
   const bountyManhuntContractRecords = Array.isArray(atlas.bounty_manhunt_contracts) ? atlas.bounty_manhunt_contracts : [];
-  const bountyManhuntContractsOverlaySvg = !ATLAS_BOUNTY_MANHUNT_MODE ? '' : `
+  const bountyManhuntContractsOverlaySvg = (!ATLAS_BOUNTY_MANHUNT_MODE || !shouldRenderStudioSvgOverlay('bounty_manhunt')) ? '<g id="studioBountyManhuntContractsOverlay" data-lens-gated="1"></g>' : `
     <g id="studioBountyManhuntContractsOverlay">
       ${bountyManhuntContractRecords.map((b) => {
         const wx = typeof b.world_x === 'number' ? b.world_x : 540;
@@ -19876,7 +20680,7 @@ function renderDedicatedWorldAtlas() {
 
   // Distributed World-State Snapshot Backup, Point-in-Time Recovery (PITR) & Disaster-Recovery Chaos Drill Matrix Overlay (D106)
   const disasterRecoveryDrillRecords = Array.isArray(atlas.disaster_recovery_pitr_drills) ? atlas.disaster_recovery_pitr_drills : [];
-  const disasterRecoveryDrillsOverlaySvg = !ATLAS_PITR_CHAOS_MODE ? '' : `
+  const disasterRecoveryDrillsOverlaySvg = (!ATLAS_PITR_CHAOS_MODE || !shouldRenderStudioSvgOverlay('pitr_chaos')) ? '<g id="studioDisasterRecoveryDrillsOverlay" data-lens-gated="1"></g>' : `
     <g id="studioDisasterRecoveryDrillsOverlay">
       ${disasterRecoveryDrillRecords.map((d) => {
         const wx = typeof d.world_x === 'number' ? d.world_x : 540;
@@ -19896,7 +20700,7 @@ function renderDedicatedWorldAtlas() {
 
   // Dynamic World Tavern Mini-Games, Bardic Music Buffs & Social Mercenary Recruitment Matrix Overlay (D107)
   const tavernSocialHubRecords = Array.isArray(atlas.tavern_social_hubs) ? atlas.tavern_social_hubs : [];
-  const tavernSocialHubsOverlaySvg = !ATLAS_TAVERN_HUBS_MODE ? '' : `
+  const tavernSocialHubsOverlaySvg = (!ATLAS_TAVERN_HUBS_MODE || !shouldRenderStudioSvgOverlay('tavern_hubs')) ? '<g id="studioTavernSocialHubsOverlay" data-lens-gated="1"></g>' : `
     <g id="studioTavernSocialHubsOverlay">
       ${tavernSocialHubRecords.map((t) => {
         const wx = typeof t.world_x === 'number' ? t.world_x : 540;
@@ -19916,7 +20720,7 @@ function renderDedicatedWorldAtlas() {
 
   // Player Sentiment Telemetry, Net-Promoter In-Game Survey & Rage-Quit Churn Intervention Matrix Overlay (D108)
   const churnInterventionRecords = Array.isArray(atlas.churn_sentiment_interventions) ? atlas.churn_sentiment_interventions : [];
-  const churnInterventionsOverlaySvg = !ATLAS_CHURN_INTERVENTION_MODE ? '' : `
+  const churnInterventionsOverlaySvg = (!ATLAS_CHURN_INTERVENTION_MODE || !shouldRenderStudioSvgOverlay('churn_care')) ? '<g id="studioChurnInterventionsOverlay" data-lens-gated="1"></g>' : `
     <g id="studioChurnInterventionsOverlay">
       ${churnInterventionRecords.map((c) => {
         const wx = typeof c.world_x === 'number' ? c.world_x : 540;
@@ -19937,97 +20741,97 @@ function renderDedicatedWorldAtlas() {
   const svgInnerHtml = `
     <image href="${isL2 ? '/studio-maps/c3_continent_parchment_relief.png' : '/studio-maps/all_interlaced_world_grid.png'}" x="0" y="0" width="1040" height="500" preserveAspectRatio="none"/>
     <rect x="0" y="0" width="1040" height="500" fill="none" stroke="#fde047" stroke-width="2" opacity="0.4"/>
-    ${farmingEfficiencyOverlaySvg}
-    ${castleSiegeDomainOverlaySvg}
-    ${worldBossSpawnRadarOverlaySvg}
-    ${sevenSealsOverlaySvg}
-    ${manorEconomyOverlaySvg}
-    ${noblesseOlympiadOverlaySvg}
-    ${intercontinentalTransitOverlaySvg}
-    ${soulCrystalOverlaySvg}
-    ${fishingSanctuaryOverlaySvg}
-    ${cursedWeaponPvpOverlaySvg}
-    ${dimensionalRiftOverlaySvg}
-    ${weaponAugmentationDyeOverlaySvg}
-    ${companionMountOverlaySvg}
-    ${clanAcademyOverlaySvg}
-    ${herbElementalBiomeOverlaySvg}
-    ${soulshotWorkshopOverlaySvg}
-    ${territoryWardOverlaySvg}
-    ${epicJewelryOverlaySvg}
-    ${vitalityObeliskOverlaySvg}
-    ${armorSetMasterworkOverlaySvg}
-    ${kamalokaPailakaOverlaySvg}
-    ${forgottenScrollOverlaySvg}
-    ${elementalQuarryOverlaySvg}
-    ${clanHallAuctionOverlaySvg}
-    ${transformationTalismanOverlaySvg}
-    ${warehouseFreightOverlaySvg}
-    ${masterTourOverlaySvg}
-    ${festivalOracleOverlaySvg}
-    ${luxuryBlackMarketOverlaySvg}
-    ${factionAllianceOverlaySvg}
-    ${fantasyPlazaOverlaySvg}
-    ${heroWeaponExchangeOverlaySvg}
-    ${treasureChestOverlaySvg}
-    ${aerialStarStoneOverlaySvg}
-    ${beltCloakWeaverOverlaySvg}
-    ${weddingCathedralOverlaySvg}
-    ${councilBenchmarkOverlaySvg}
-    ${continentalSeedOverlaySvg}
-    ${coliseumTournamentOverlaySvg}
-    ${elementalJewelOverlaySvg}
-    ${fameMonumentOverlaySvg}
-    ${delusionChamberOverlaySvg}
-    ${commandChannelRaidOverlaySvg}
-    ${nevitBlessingOverlaySvg}
-    ${councilSignoffOverlaySvg}
-    ${championMobOverlaySvg}
-    ${dualswordForgeOverlaySvg}
-    ${techArtPipelineOverlaySvg}
-    ${botSwarmSimOverlaySvg}
-    ${liveopsGmOverlaySvg}
-    ${toolsSquadOverlaySvg}
-    ${dialogueGraphOverlaySvg}
-    ${spawnerBalancerOverlaySvg}
-    ${skillTimelineOverlaySvg}
-    ${buildFarmOverlaySvg}
-    ${architectDxOverlaySvg}
-    ${twoRingSignoffOverlaySvg}
-    ${weatherAcousticOverlaySvg}
-    ${serverMeshOverlaySvg}
-    ${antiBotSentinelOverlaySvg}
-    ${godotStorybookOverlaySvg}
-    ${navmeshObstacleOverlaySvg}
-    ${liveopsEventFlagsOverlaySvg}
-    ${cinematicRailsOverlaySvg}
-    ${clientGpuBudgetOverlaySvg}
-    ${automatedQaSuitesOverlaySvg}
-    ${studio90dMasterLedgerOverlaySvg}
-    ${factionDispositionOverlaySvg}
-    ${crossRealmEscrowOverlaySvg}
-    ${worldIncursionOverlaySvg}
-    ${clanTreasuryOverlaySvg}
-    ${playerHousingEstateOverlaySvg}
-    ${globalCdnRelayOverlaySvg}
-    ${caravanTradeRoutesOverlaySvg}
-    ${localizationVoBanksOverlaySvg}
-    ${crossToolBridgesOverlaySvg}
-    ${centennial100dChartersOverlaySvg}
-    ${nocturnalAffixSpawnsOverlaySvg}
-    ${deterministicCombatReplaysOverlaySvg}
-    ${archaeologicalLoreCodicesOverlaySvg}
-    ${destructiblePhysicsBiomesOverlaySvg}
-    ${bountyManhuntContractsOverlaySvg}
-    ${disasterRecoveryDrillsOverlaySvg}
-    ${tavernSocialHubsOverlaySvg}
-    ${churnInterventionsOverlaySvg}
+    ${gateStudioOverlaySvg('farming_heatmap', farmingEfficiencyOverlaySvg)}
+    ${gateStudioOverlaySvg('siege_domain', castleSiegeDomainOverlaySvg)}
+    ${gateStudioOverlaySvg('boss_radar', worldBossSpawnRadarOverlaySvg)}
+    ${gateStudioOverlaySvg('seven_seals', sevenSealsOverlaySvg)}
+    ${gateStudioOverlaySvg('manor_economy', manorEconomyOverlaySvg)}
+    ${gateStudioOverlaySvg('olympiad', noblesseOlympiadOverlaySvg)}
+    ${gateStudioOverlaySvg('transit_lines', intercontinentalTransitOverlaySvg)}
+    ${gateStudioOverlaySvg('soul_crystal', soulCrystalOverlaySvg)}
+    ${gateStudioOverlaySvg('fishing_sanctuary', fishingSanctuaryOverlaySvg)}
+    ${gateStudioOverlaySvg('pvp_karma', cursedWeaponPvpOverlaySvg)}
+    ${gateStudioOverlaySvg('rift_sepulcher', dimensionalRiftOverlaySvg)}
+    ${gateStudioOverlaySvg('augment_dye', weaponAugmentationDyeOverlaySvg)}
+    ${gateStudioOverlaySvg('companion_mount', companionMountOverlaySvg)}
+    ${gateStudioOverlaySvg('clan_academy', clanAcademyOverlaySvg)}
+    ${gateStudioOverlaySvg('herb_biome', herbElementalBiomeOverlaySvg)}
+    ${gateStudioOverlaySvg('workshop_plaza', soulshotWorkshopOverlaySvg)}
+    ${gateStudioOverlaySvg('territory_ward', territoryWardOverlaySvg)}
+    ${gateStudioOverlaySvg('epic_jewelry', epicJewelryOverlaySvg)}
+    ${gateStudioOverlaySvg('vitality_obelisk', vitalityObeliskOverlaySvg)}
+    ${gateStudioOverlaySvg('armor_set', armorSetMasterworkOverlaySvg)}
+    ${gateStudioOverlaySvg('kamaloka', kamalokaPailakaOverlaySvg)}
+    ${gateStudioOverlaySvg('skill_scroll', forgottenScrollOverlaySvg)}
+    ${gateStudioOverlaySvg('elemental_quarry', elementalQuarryOverlaySvg)}
+    ${gateStudioOverlaySvg('clan_hall', clanHallAuctionOverlaySvg)}
+    ${gateStudioOverlaySvg('transformation', transformationTalismanOverlaySvg)}
+    ${gateStudioOverlaySvg('warehouse', warehouseFreightOverlaySvg)}
+    ${gateStudioOverlaySvg('master_tour', masterTourOverlaySvg)}
+    ${gateStudioOverlaySvg('festival_oracle', festivalOracleOverlaySvg)}
+    ${gateStudioOverlaySvg('luxury_market', luxuryBlackMarketOverlaySvg)}
+    ${gateStudioOverlaySvg('faction_alliance', factionAllianceOverlaySvg)}
+    ${gateStudioOverlaySvg('fantasy_plaza', fantasyPlazaOverlaySvg)}
+    ${gateStudioOverlaySvg('hero_weapon', heroWeaponExchangeOverlaySvg)}
+    ${gateStudioOverlaySvg('treasure_chest', treasureChestOverlaySvg)}
+    ${gateStudioOverlaySvg('aerial_dock', aerialStarStoneOverlaySvg)}
+    ${gateStudioOverlaySvg('belt_cloak', beltCloakWeaverOverlaySvg)}
+    ${gateStudioOverlaySvg('wedding', weddingCathedralOverlaySvg)}
+    ${gateStudioOverlaySvg('council_benchmark', councilBenchmarkOverlaySvg)}
+    ${gateStudioOverlaySvg('seed_cycle', continentalSeedOverlaySvg)}
+    ${gateStudioOverlaySvg('coliseum_tournament', coliseumTournamentOverlaySvg)}
+    ${gateStudioOverlaySvg('elemental_jewel', elementalJewelOverlaySvg)}
+    ${gateStudioOverlaySvg('fame_monument', fameMonumentOverlaySvg)}
+    ${gateStudioOverlaySvg('delusion_chamber', delusionChamberOverlaySvg)}
+    ${gateStudioOverlaySvg('command_raid', commandChannelRaidOverlaySvg)}
+    ${gateStudioOverlaySvg('nevit_blessing', nevitBlessingOverlaySvg)}
+    ${gateStudioOverlaySvg('council_signoff', councilSignoffOverlaySvg)}
+    ${gateStudioOverlaySvg('champion_mob', championMobOverlaySvg)}
+    ${gateStudioOverlaySvg('dualsword_forge', dualswordForgeOverlaySvg)}
+    ${gateStudioOverlaySvg('tech_art', techArtPipelineOverlaySvg)}
+    ${gateStudioOverlaySvg('bot_swarm', botSwarmSimOverlaySvg)}
+    ${gateStudioOverlaySvg('liveops_gm', liveopsGmOverlaySvg)}
+    ${gateStudioOverlaySvg('tools_squad', toolsSquadOverlaySvg)}
+    ${gateStudioOverlaySvg('dialogue_dag', dialogueGraphOverlaySvg)}
+    ${gateStudioOverlaySvg('spawner_balancer', spawnerBalancerOverlaySvg)}
+    ${gateStudioOverlaySvg('skill_timelines', skillTimelineOverlaySvg)}
+    ${gateStudioOverlaySvg('build_farm', buildFarmOverlaySvg)}
+    ${gateStudioOverlaySvg('architect_dx', architectDxOverlaySvg)}
+    ${gateStudioOverlaySvg('two_ring_80d', twoRingSignoffOverlaySvg)}
+    ${gateStudioOverlaySvg('weather_shader', weatherAcousticOverlaySvg)}
+    ${gateStudioOverlaySvg('server_mesh', serverMeshOverlaySvg)}
+    ${gateStudioOverlaySvg('anti_bot', antiBotSentinelOverlaySvg)}
+    ${gateStudioOverlaySvg('godot_storybook', godotStorybookOverlaySvg)}
+    ${gateStudioOverlaySvg('navmesh', navmeshObstacleOverlaySvg)}
+    ${gateStudioOverlaySvg('event_flags', liveopsEventFlagsOverlaySvg)}
+    ${gateStudioOverlaySvg('camera_rails', cinematicRailsOverlaySvg)}
+    ${gateStudioOverlaySvg('gpu_vram', clientGpuBudgetOverlaySvg)}
+    ${gateStudioOverlaySvg('headless_qa', automatedQaSuitesOverlaySvg)}
+    ${gateStudioOverlaySvg('studio_90d', studio90dMasterLedgerOverlaySvg)}
+    ${gateStudioOverlaySvg('faction_dispositions', factionDispositionOverlaySvg)}
+    ${gateStudioOverlaySvg('auction_escrow', crossRealmEscrowOverlaySvg)}
+    ${gateStudioOverlaySvg('world_incursions', worldIncursionOverlaySvg)}
+    ${gateStudioOverlaySvg('clan_treasury', clanTreasuryOverlaySvg)}
+    ${gateStudioOverlaySvg('housing_estates', playerHousingEstateOverlaySvg)}
+    ${gateStudioOverlaySvg('cdn_webrtc', globalCdnRelayOverlaySvg)}
+    ${gateStudioOverlaySvg('caravan_routes', caravanTradeRoutesOverlaySvg)}
+    ${gateStudioOverlaySvg('localization_vo', localizationVoBanksOverlaySvg)}
+    ${gateStudioOverlaySvg('hot_reload_bridge', crossToolBridgesOverlaySvg)}
+    ${gateStudioOverlaySvg('centennial_100d', centennial100dChartersOverlaySvg)}
+    ${gateStudioOverlaySvg('nocturnal_affix', nocturnalAffixSpawnsOverlaySvg)}
+    ${gateStudioOverlaySvg('combat_replay', deterministicCombatReplaysOverlaySvg)}
+    ${gateStudioOverlaySvg('lore_codex', archaeologicalLoreCodicesOverlaySvg)}
+    ${gateStudioOverlaySvg('physics_biomes', destructiblePhysicsBiomesOverlaySvg)}
+    ${gateStudioOverlaySvg('bounty_manhunt', bountyManhuntContractsOverlaySvg)}
+    ${gateStudioOverlaySvg('pitr_chaos', disasterRecoveryDrillsOverlaySvg)}
+    ${gateStudioOverlaySvg('tavern_hubs', tavernSocialHubsOverlaySvg)}
+    ${gateStudioOverlaySvg('churn_care', churnInterventionsOverlaySvg)}
     ${regionalOverlaySvg}
     ${highwaysSvg}
     ${travelRouteOverlaySvg}
     ${raceGrowthPathSvg}
-    ${bossHierarchyOverlaySvg}
-    ${questTrialOverlaySvg}
+    ${gateStudioOverlaySvg('boss_hierarchy', bossHierarchyOverlaySvg)}
+    ${gateStudioOverlaySvg('quest_trials', questTrialOverlaySvg)}
     ${landmarksSvg}
     ${mobPinsSvg}
   `;
@@ -20949,10 +21753,20 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
   const gods = (whc.primordial_gods || []).filter(g => STUDIO_STATUS_FILTER === 'all' || g.status === STUDIO_STATUS_FILTER);
   const epochs = whc.historical_epochs || [];
   const bindings = whc.starter_town_bindings || [];
+  const isNotesOpen = Boolean(ATLAS_STUDIO_NOTES_OPEN);
 
   return `
     ${renderWhcBigPictureSvg(whc, continents)}
-    <div class="studio-split-layout">
+    <div style="margin-bottom:10px;padding:8px 14px;border-radius:10px;background:#111b2b;border:1px solid rgba(218,179,98,0.35);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div style="font-size:11.5px;font-weight:800;color:#fde68a">
+        📚 Studio Canon Reference, 63-Zone Directory &amp; 4-Perspective Tables (Step 1 · World History, 6 Gods, Scale Law &amp; GOV-01..GOV-06)
+      </div>
+      <button type="button" class="joy-spatial-shell__toggle" aria-pressed="${isNotesOpen ? 'true' : 'false'}" onclick="toggleAtlasStudioNotes()">
+        ${isNotesOpen ? 'Hide Studio Reference Dock' : 'Show Studio Reference Dock'}
+      </button>
+    </div>
+    <div id="atlasStudioNotesReferenceDock" class="studio-split-layout" style="display:${isNotesOpen ? 'grid' : 'none'}">
+      ${isNotesOpen ? `
       <div style="display:flex;flex-direction:column;gap:16px">
         <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -21422,6 +22236,7 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
           `).join("")}
         </div>
       </aside>
+      ` : ''}
     </div>
   `;
 }
@@ -21635,7 +22450,7 @@ function renderStudioDistrictPerspective(activeContinent, districts, nodes, acti
                   <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">RESIDENT MONSTERS (${spawns.length}):</div>
                   <div style="display:flex;flex-wrap:wrap;gap:4px">
                     ${spawns.map(sp => `
-                      <button type="button" class="joy-button ${STUDIO_PINNED_MONSTER_ID === sp.monster_id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" style="height:22px;padding:0 7px;font-size:10.5px" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', monsterId: '${escapeHtml(sp.monster_id)}', inspectId: '${escapeHtml(n.id)}' })">
+                      <button type="button" class="joy-button ${STUDIO_PINNED_MONSTER_ID === sp.monster_id ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', monsterId: '${escapeHtml(sp.monster_id)}', inspectId: '${escapeHtml(n.id)}' })">
                         ${escapeHtml(sp.monster_name)} (Level ${sp.level} · ×${sp.spawn_count})
                       </button>
                     `).join('')}
@@ -21661,7 +22476,7 @@ function renderStudioDistrictPerspective(activeContinent, districts, nodes, acti
                 </div>
               </div>
 
-              <button type="button" class="joy-button joy-button--solid joy-button--sm" style="width:100%" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', monsterId: '${escapeHtml((spawns[0] && spawns[0].monster_id) || '')}', inspectId: '${escapeHtml(n.id)}' })">
+              <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(n.id)}', monsterId: '${escapeHtml((spawns[0] && spawns[0].monster_id) || '')}', inspectId: '${escapeHtml(n.id)}' })">
                 Inspect ${escapeHtml(n.name)} ➔
               </button>
             </div>
@@ -21716,7 +22531,7 @@ function renderStudioDistrictPerspective(activeContinent, districts, nodes, acti
                     Spawns: ×${totalSpawns} across ${mob.habitats.map(h => h.node_name).join(', ')}
                   </div>
                   <div style="margin-top:6px">
-                    <button type="button" class="joy-button joy-button--outline joy-button--sm" style="width:100%;height:24px;font-size:10.5px" onclick="event.stopPropagation();setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(mob.habitats[0].node_id)}', monsterId: '${escapeHtml(mob.monster_id)}', inspectId: '${escapeHtml(mob.habitats[0].node_id)}' })">
+                    <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="event.stopPropagation();setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(mob.habitats[0].node_id)}', monsterId: '${escapeHtml(mob.monster_id)}', inspectId: '${escapeHtml(mob.habitats[0].node_id)}' })">
                       Open Monster/1035 Sheet ➔
                     </button>
                   </div>
@@ -21904,7 +22719,7 @@ function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeN
                 <div class="mono" style="font-size:10px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">ITEM DROPS WITH PERCENTAGE BADGES</div>
                 <div style="display:flex;flex-wrap:wrap;gap:6px">
                   ${(activeMonster.item_drops || []).map(it => `
-                    <span class="joy-badge joy-badge--neutral joy-badge--sm" style="padding:4px 8px">
+                    <span class="joy-badge joy-badge--neutral joy-badge--sm">
                       ${escapeHtml(it.item_name)} <strong class="mono" style="color:#ffd166;margin-left:4px">${it.drop_chance_percent}%</strong>
                     </span>
                   `).join('')}
@@ -22002,7 +22817,7 @@ function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeN
                     <div style="margin-top:4px">Target: <code>${escapeHtml(p.target_node_id)}</code> (${escapeHtml(p.target_direction)})</div>
                     <div class="mono" style="font-size:10px;color:var(--joy-text-secondary);margin-top:2px">Trigger Box: (${tb.x}, ${tb.y}) ${tb.width}×${tb.height} meters</div>
                     ${p.lock_message ? `<div style="font-size:10.5px;color:#c084fc;margin-top:4px">🌫️ ${escapeHtml(p.lock_message)}</div>` : ''}
-                    <button type="button" class="joy-button joy-button--outline joy-button--sm" style="margin-top:6px;width:100%;height:24px;font-size:10.5px" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(p.target_node_id)}', inspectId: '${escapeHtml(p.target_node_id)}' })">
+                    <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="setStudioPerspective('town-or-hunting-area', { districtId: '${escapeHtml(activeDistrict.id)}', nodeId: '${escapeHtml(p.target_node_id)}', inspectId: '${escapeHtml(p.target_node_id)}' })">
                       Traverse ${dir} ➔
                     </button>
                   </div>
@@ -22031,7 +22846,7 @@ function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeN
 function inspectBtnHtml(kind, title, obj) {
   const encoded = encodeURIComponent(JSON.stringify(obj));
   const safeTitle = escapeHtml(title).replace(/'/g, "\\'");
-  return `<button type="button" class="joy-button joy-button--outline joy-button--sm" style="height:24px;padding:0 8px;font-size:11px" onclick="openInspector('${kind}', '${safeTitle}', JSON.parse(decodeURIComponent('${encoded}')))">JSONB</button>`;
+  return `<button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="openInspector('${kind}', '${safeTitle}', JSON.parse(decodeURIComponent('${encoded}')))">JSONB</button>`;
 }
 
 
@@ -22279,22 +23094,22 @@ function renderMapStructureEditor(m, prefix) {
         <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
           <div style="display:flex;justify-content:space-between"><span class="mono">Watchtower X / Z</span><strong class="mono">(${wt.x}, ${wt.z})</strong></div>
           <div style="display:flex;gap:4px">
-            <input id="${escapeHtml(prefix)}-wtx" class="joy-input mono" type="number" step="0.5" value="${wt.x}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-            <input id="${escapeHtml(prefix)}-wtz" class="joy-input mono" type="number" step="0.5" value="${wt.z}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+            <input id="${escapeHtml(prefix)}-wtx" class="joy-input mono" type="number" step="0.5" value="${wt.x}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+            <input id="${escapeHtml(prefix)}-wtz" class="joy-input mono" type="number" step="0.5" value="${wt.z}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
           </div>
         </label>
         <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
           <div style="display:flex;justify-content:space-between"><span class="mono">Watchtower r / 2F</span><strong class="mono">r=${wt.radius}m · 2F=${wt.upperFloorHeight || 3.2}m</strong></div>
           <div style="display:flex;gap:4px">
-            <input id="${escapeHtml(prefix)}-wtr" class="joy-input mono" type="number" step="0.2" value="${wt.radius}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-            <input id="${escapeHtml(prefix)}-wt2f" class="joy-input mono" type="number" step="0.1" value="${wt.upperFloorHeight || 3.2}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+            <input id="${escapeHtml(prefix)}-wtr" class="joy-input mono" type="number" step="0.2" value="${wt.radius}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+            <input id="${escapeHtml(prefix)}-wt2f" class="joy-input mono" type="number" step="0.1" value="${wt.upperFloorHeight || 3.2}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
           </div>
         </label>
         <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
           <div style="display:flex;justify-content:space-between"><span class="mono">Crystal Cave X / Z</span><strong class="mono">(${cv.x}, ${cv.z})</strong></div>
           <div style="display:flex;gap:4px">
-            <input id="${escapeHtml(prefix)}-cvx" class="joy-input mono" type="number" step="0.5" value="${cv.x}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-            <input id="${escapeHtml(prefix)}-cvz" class="joy-input mono" type="number" step="0.5" value="${cv.z}" style="height:24px;font-size:11px;padding:0 6px" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+            <input id="${escapeHtml(prefix)}-cvx" class="joy-input mono" type="number" step="0.5" value="${cv.x}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
+            <input id="${escapeHtml(prefix)}-cvz" class="joy-input mono" type="number" step="0.5" value="${cv.z}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
           </div>
         </label>
         <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
@@ -22354,7 +23169,7 @@ function renderAiCopilotBar() {
           style="flex:1;min-width:280px;height:36px;font-size:12.5px"
           onkeydown="if(event.key==='Enter'){event.preventDefault();runAiStudioAgent();}"
         />
-        <button type="button" class="joy-button joy-button--solid" style="height:36px" onclick="runAiStudioAgent()">
+        <button type="button" class="joy-button joy-button--solid" onclick="runAiStudioAgent()">
           ✨ Edit via AI Agent
         </button>
       </div>
@@ -24120,18 +24935,18 @@ function renderGear() {
     <div class="controls-panel">
       <div class="control-field">
         <label for="refBaseAtk">Weapon Base ATK</label>
-        <input id="refBaseAtk" class="joy-input" type="number" value="120" min="10" max="500" style="width:110px" oninput="updateRefineCalc()" />
+        <input id="refBaseAtk" class="joy-input" type="number" value="120" min="10" max="500" oninput="updateRefineCalc()" />
       </div>
       <div class="control-field">
         <label for="refLevel">Target Refine (+0..+15)</label>
-        <input id="refLevel" class="joy-input" type="number" value="10" min="0" max="15" style="width:110px" oninput="updateRefineCalc()" />
+        <input id="refLevel" class="joy-input" type="number" value="10" min="0" max="15" oninput="updateRefineCalc()" />
       </div>
       <div class="control-field">
         <label for="refFails">Consecutive Fails (Pity 0..5)</label>
-        <input id="refFails" class="joy-input" type="number" value="2" min="0" max="5" style="width:110px" oninput="updateRefineCalc()" />
+        <input id="refFails" class="joy-input" type="number" value="2" min="0" max="5" oninput="updateRefineCalc()" />
       </div>
       <div style="margin-left:auto">
-        <span class="joy-badge joy-badge--brand" id="refineCalcResult" style="font-size:0.85rem;padding:7px 12px"></span>
+        <span class="joy-badge joy-badge--brand" id="refineCalcResult"></span>
       </div>
     </div>
 
@@ -24667,7 +25482,7 @@ function renderElements() {
         </select>
       </div>
       <div style="margin-left:auto">
-        <span class="joy-badge joy-badge--brand" id="elemCalcOutput" style="font-size:0.9rem;padding:8px 14px">Combined Multiplier: 100%</span>
+        <span class="joy-badge joy-badge--brand" id="elemCalcOutput">Combined Multiplier: 100%</span>
       </div>
     </div>
 
@@ -24835,14 +25650,14 @@ function renderSiege() {
     <div class="controls-panel">
       <div class="control-field">
         <label for="simAttackers">Attacking Guild Members (1..50)</label>
-        <input id="simAttackers" class="joy-input" type="number" value="15" min="1" max="50" style="width:140px" oninput="updateSiegeCalc()" />
+        <input id="simAttackers" class="joy-input" type="number" value="15" min="1" max="50" oninput="updateSiegeCalc()" />
       </div>
       <div class="control-field">
         <label for="simDps">Avg Normal-Attack DPS / Player</label>
-        <input id="simDps" class="joy-input" type="number" value="620" min="50" max="5000" step="50" style="width:160px" oninput="updateSiegeCalc()" />
+        <input id="simDps" class="joy-input" type="number" value="620" min="50" max="5000" step="50" oninput="updateSiegeCalc()" />
       </div>
       <div style="margin-left:auto">
-        <span class="joy-badge joy-badge--brand" id="siegeSimResult" style="font-size:0.9rem;padding:8px 14px"></span>
+        <span class="joy-badge joy-badge--brand" id="siegeSimResult"></span>
       </div>
     </div>
 

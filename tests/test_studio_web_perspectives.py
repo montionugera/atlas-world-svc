@@ -4896,6 +4896,141 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(self_eval["atlasIterationTelemetry"]["dimensionsCount"], 108)
         self.assertIn("108-Dimension Semantic-Zoom Atlas Score (100.0/100)", self_eval["atlasIterationTelemetry"]["summaryLabel"])
 
+    def test_wave_ux1_persona_lenses_single_card_studio_switcher_and_filter_auto_heal(self) -> None:
+        html = web.INDEX_HTML
+        for token in (
+            "ATLAS_PERSONA_LENS",
+            "ATLAS_ACTIVE_STUDIO_BAR",
+            "ATLAS_LEFT_DRAWER_OPEN",
+            "ATLAS_THEATER_MODE",
+            "ATLAS_ENTITY_MATRIX_OPEN",
+            "ATLAS_PO_TELEMETRY_OPEN",
+            "joy-persona-lens-bar",
+            "joy-lens-bar",
+            "joy-spatial-shell",
+            "joy-spatial-viewport-shell",
+            "joy-context-filter-bar",
+            "joy-omni-command-bar",
+            "setAtlasPersonaLens",
+            "setAtlasActiveStudioBar",
+            "toggleAtlasLeftDrawer",
+            "toggleAtlasTheaterMode",
+            "toggleAtlasEntityMatrix",
+            "toggleAtlasPoTelemetryBar",
+            "getAtlasSpatialContext",
+            "resolveAtlasEffectiveFilter",
+            "shouldRenderStudioSvgOverlay",
+            "gateStudioOverlaySvg",
+            "handleAtlasGlobalKeyDown",
+            "atlasActiveStudioBarMount",
+            "atlasInactiveStudioBarsVault",
+            "studioAtlasFilteredEntityMatrix",
+            "Auto-switched filter to 🌐 All Layers for Dungeon Floor view",
+            "Auto-switched filter to 🌐 All Layers for Town Street Blueprint",
+        ):
+            self.assertIn(token, html, f"Missing Wave UX-1 token {token} in INDEX_HTML")
+
+    def test_f086_joy_design_spatial_contracts_and_filter_matrix(self) -> None:
+        raw_theme_css = web.load_theme_css()
+        theme_css = raw_theme_css.decode("utf-8") if isinstance(raw_theme_css, bytes) else str(raw_theme_css)
+        for css_token in (
+            ".joy-spatial-shell",
+            ".joy-spatial-shell__chrome",
+            ".joy-spatial-shell__body",
+            ".joy-spatial-shell__left",
+            ".joy-spatial-shell__canvas",
+            ".joy-spatial-shell__hud",
+            ".joy-spatial-shell__bottom",
+            ".joy-spatial-shell__toggle",
+            ".joy-lens-bar",
+            ".joy-lens-bar__tabs",
+            ".joy-lens-bar__tab",
+            ".joy-lens-bar__badge",
+            ".joy-lens-bar__kbd",
+            ".joy-lens-bar__trailing",
+            ".joy-context-filter-bar",
+            ".joy-context-filter-bar__chips",
+            ".joy-context-filter-bar__chip",
+            ".joy-context-filter-bar__notice",
+            ".joy-context-filter-bar__notice-action",
+            ".joy-omni-command-bar",
+            ".joy-omni-command-bar__field",
+            ".joy-omni-command-bar__input",
+            ".joy-omni-command-bar__kbd",
+            ".joy-omni-command-bar__tray",
+            ".joy-omni-command-bar__group",
+            ".joy-omni-command-bar__item",
+        ):
+            self.assertIn(css_token, theme_css, f"Missing F-086 CSS class {css_token} in load_theme_css()")
+
+        html = web.INDEX_HTML
+        for html_token in (
+            "joy-spatial-shell__chrome",
+            "joy-spatial-shell__body",
+            "joy-spatial-shell__left",
+            "joy-spatial-shell__canvas",
+            "joy-spatial-shell__hud",
+            "joy-spatial-shell__bottom",
+            "joy-spatial-shell__toggle",
+            "joy-lens-bar__tabs",
+            "joy-lens-bar__tab",
+            "joy-lens-bar__badge",
+            "joy-lens-bar__kbd",
+            "joy-lens-bar__trailing",
+            "joy-context-filter-bar__chips",
+            "joy-context-filter-bar__chip",
+            "joy-context-filter-bar__notice",
+            "joy-context-filter-bar__notice-action",
+            "joy-omni-command-bar__field",
+            "joy-omni-command-bar__input",
+            "joy-omni-command-bar__kbd",
+            "joy-omni-command-bar__tray",
+            "joy-omni-command-bar__group",
+            "joy-omni-command-bar__item",
+            "data-left-open=",
+            "data-bottom-open=",
+            "data-theater=",
+            "ATLAS_STUDIO_NOTES_OPEN",
+            "toggleAtlasStudioNotes",
+            "atlasStudioNotesReferenceDock",
+            "ATLAS_COMPARE_STUDIO_BAR",
+            "setAtlasCompareStudioBar",
+            "ATLAS_PERSONA_STUDIO_CATALOG",
+            "renderAtlasBelowCanvasStudioDockHtml",
+            "atlasBelowCanvasStudioDock",
+            "atlasQuickWarpCollapsibleRow",
+            "toggleAtlasPerspectiveBar",
+            "toggleAtlasQuickWarp",
+        ):
+            self.assertIn(html_token, html, f"Missing F-086 HTML token {html_token} in INDEX_HTML")
+
+    def test_wave_ux4_zero_orphan_overlays_and_below_canvas_studio_dock(self) -> None:
+        import re
+
+        html = web.INDEX_HTML
+        gate_keys = set(re.findall(r"gateStudioOverlaySvg\('([^']+)'", html))
+        self.assertGreaterEqual(len(gate_keys), 87)
+
+        catalog_match = re.search(
+            r"const\s+ATLAS_PERSONA_STUDIO_CATALOG\s*=\s*\{(.*?)\};",
+            html,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(catalog_match, "Missing ATLAS_PERSONA_STUDIO_CATALOG in INDEX_HTML")
+        catalog_keys = set(re.findall(r"'([a-z0-9_]+)'", catalog_match.group(1)))
+        orphan_keys = gate_keys - catalog_keys
+        self.assertEqual(orphan_keys, set(), f"Found orphan gated overlay keys: {orphan_keys}")
+        self.assertEqual(catalog_keys, gate_keys, f"Catalog keys != gated overlay keys: diff={catalog_keys ^ gate_keys}")
+
+    def test_wave_ux5_ux_probe_all_gates_pass(self) -> None:
+        import json
+        from probes.atlas_ux_probe import run_ux_probe
+
+        report = run_ux_probe()
+        self.assertTrue(report["overall_passed"], f"UX Probe failed: {json.dumps(report, indent=2)}")
+        for gate_name, gate_payload in report["gates"].items():
+            self.assertTrue(gate_payload["passed"], f"UX Probe gate {gate_name} failed: {gate_payload}")
+
 
 if __name__ == "__main__":
     unittest.main()
