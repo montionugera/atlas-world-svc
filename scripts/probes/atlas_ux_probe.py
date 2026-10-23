@@ -8,6 +8,9 @@ harness and verifies:
 - V-3: Zero orphan gateStudioOverlaySvg keys across ATLAS_PERSONA_STUDIO_CATALOG + Compare Overlay dual-mount.
 - V-4: Zero inline style= and zero emoji characters on .joy-* contract elements + 375px mobile overflow CSS guard.
 - V-5: Theater mode 100% SVG viewport contract and below-canvas studio dock placement.
+- V-10 (F-155): one landmark table for OL + SVG (0px), one zone predicate (SVG marks == OL features == badge per filter
+  at 1x/2.8x/6x), URL round-trip of route planner + 3D camera, lens-from-URL default overlay.
+  Test-the-test: ATLAS_V10_SIMULATE=landmark|count|url (or --simulate-v10=<kind>) perturbs the vm and must go red.
 """
 
 from __future__ import annotations
@@ -666,7 +669,78 @@ const v9Report = vm.runInContext(`(() => {
   };
 })()`, sandbox);
 
+
+// V-10 (F-155): engine parity + URL round-trip
+const v10Sim = process.env.ATLAS_V10_SIMULATE || '';
+const v10Report = vm.runInContext(`(() => {
+  const SIM = ${JSON.stringify(v10Sim)};
+  if (SIM === 'landmark') { const orig = getAtlasLandmarkAnchor; getAtlasLandmarkAnchor = id => id === 'town-kilnwatch-bastion' ? { x: 618, y: 308 } : orig(id); }
+  if (SIM === 'count') { const orig = getAtlasOverlandZoneFilterModel; getAtlasOverlandZoneFilterModel = () => { const m = orig(); return m.effFilter === 'Monster' ? { ...m, matching: m.matching.slice(1) } : m; };
+    const origB = buildAtlasspatialFeaturesList; buildAtlasspatialFeaturesList = () => { const keep = getAtlasOverlandZoneFilterModel; getAtlasOverlandZoneFilterModel = orig; try { return origB(); } finally { getAtlasOverlandZoneFilterModel = keep; } }; }
+  STUDIO_PERSPECTIVE = 'world-history-and-concept';
+  setAtlasEngineMode('2d_svg');
+  ATLAS_STATE_STORE.levelBand = 'All';
+  setAtlasFilter('All');
+  zoomStudioMap(0, true);
+  render();
+  const html = () => document.getElementById('mainContent').innerHTML;
+  // SVG side: landmark id + inner translate(x, y) straight from the rendered markup.
+  const svgLms = [...html().matchAll(/data-landmark-id="([^"]+)"[\\s\\S]*?translate\\(\\s*([-\\d.]+)[ ,]+([-\\d.]+)\\)/g)].map(m => ({ id: m[1], x: +m[2], y: +m[3] }));
+  // OL side: the feature list mountRealOpenLayersInstance turns into Point([x, 500 - y]).
+  const olById = {}; buildAtlasspatialFeaturesList().forEach(f => { olById[f.id] = f; });
+  const zoneIds = new Set(getAllAtlas63Zones(DATA.studioPerspectives.tShapedWorldAtlas).map(z => z.zone_id));
+  const landmarkRows = svgLms.map(lm => {
+    const j = ATLAS_OVERLAND_LANDMARK_ANCHORS.find(e => e.landmarkId === lm.id);
+    const f = j && olById[j.zoneId];
+    const olPt = f ? [f.x, 500 - f.y] : null;
+    return { id: lm.id, zone: j ? j.zoneId : null, zoneExists: Boolean(j && zoneIds.has(j.zoneId)), svg: [lm.x, lm.y], olSvgSpace: olPt ? [olPt[0], 500 - olPt[1]] : null,
+      d: olPt ? Math.hypot(olPt[0] - lm.x, (500 - olPt[1]) - lm.y) : null };
+  });
+  const filters = ['All', 'RaceSpawns', 'TownMarks', 'Monster', 'Mini-Boss', 'Raid', 'MVP'];
+  const counts = {};
+  for (const f of filters) {
+    setAtlasFilter(f);
+    const ol = buildAtlasspatialFeaturesList().length;
+    const row = { ol, svg: {}, badge: {} };
+    for (const z of [1.0, 2.8, 6.0]) {
+      STUDIO_MAP_ZOOM = z; render();
+      const h = html();
+      row.svg[z] = (h.match(/class="atlas-zone-mark"/g) || []).length;
+      row.badge[z] = +((h.match(/joy-context-filter-bar__count">\\s*(\\d+)/) || [])[1] || -1);
+    }
+    counts[f] = row;
+  }
+  setAtlasFilter('All');
+  zoomStudioMap(0, true);
+  // URL round-trip through the real writer and reader (history + location are vm mocks).
+  let lastUrl = '';
+  history.replaceState = (a, b, u) => { lastUrl = String(u); };
+  history.pushState = (a, b, u) => { lastUrl = String(u); };
+  const loadUrl = u => { const i = u.indexOf('#'); window.location.search = ''; window.location.hash = i >= 0 ? u.slice(i) : ''; if (i < 0) window.location.search = u; syncUrlState(); };
+  CURRENT_TAB = 'studio';
+  ATLAS_ROUTE_PLANNER_OPEN = false; toggleAtlasRoutePlanner();
+  setAtlasRouteEndpoints('zone-town-kilnwatch-bastion', 'zone-dungeon-pendulum-shaft');
+  Object.assign(ATLAS_3D_STATE, { zoom: 1.734, yaw: 0.913, pitch: 1.2, panX: 12.5, panY: -7.25 });
+  if (SIM === 'url') { const w = writeUrlState; writeUrlState = (...a) => { w(...a); lastUrl = lastUrl.replace(/[&?#](route|routeFrom|routeTo|zoom3d|yaw3d|pitch3d|pan3d)=[^&#]*/g, ''); }; }
+  writeUrlState(false);
+  const written = lastUrl;
+  Object.assign(ATLAS_3D_STATE, ATLAS_3D_CAMERA_DEFAULTS);
+  ATLAS_ROUTE_PLANNER_OPEN = false; ATLAS_ROUTE_FROM_ID = 'x'; ATLAS_ROUTE_TO_ID = 'y';
+  loadUrl(written);
+  const back = { route: ATLAS_ROUTE_PLANNER_OPEN, from: ATLAS_ROUTE_FROM_ID, to: ATLAS_ROUTE_TO_ID, cam: [ATLAS_3D_STATE.zoom, ATLAS_3D_STATE.yaw, ATLAS_3D_STATE.pitch, ATLAS_3D_STATE.panX, ATLAS_3D_STATE.panY] };
+  ATLAS_ACTIVE_STUDIO_BAR = 'stale_overlay'; ATLAS_STATE_STORE.activeStudioBar = 'stale_overlay'; ATLAS_LEFT_DRAWER_OPEN = false; ATLAS_DIMENSION_DRAWER_OPEN = false;
+  loadUrl('#tab=studio&lens=liveops');
+  const lens = { bar: ATLAS_ACTIVE_STUDIO_BAR, storeBar: ATLAS_STATE_STORE.activeStudioBar, dflt: ATLAS_LENS_DEFAULT_BAR.liveops, dim: ATLAS_DIMENSION_DRAWER_OPEN, left: ATLAS_LEFT_DRAWER_OPEN };
+  loadUrl('#tab=studio&lens=liveops&overlay=tools_squad');
+  const overlayWins = ATLAS_ACTIVE_STUDIO_BAR === 'tools_squad';
+  loadUrl('#tab=studio&zoom3d=NaN&yaw3d=abc&pitch3d=99&pan3d=1:&routeFrom=%3Cx%3E');
+  const junk = { cam: [ATLAS_3D_STATE.zoom, ATLAS_3D_STATE.yaw, ATLAS_3D_STATE.pitch, ATLAS_3D_STATE.panX, ATLAS_3D_STATE.panY], from: ATLAS_ROUTE_FROM_ID, route: ATLAS_ROUTE_PLANNER_OPEN };
+  loadUrl('#tab=studio&lens=gamer');
+  setAtlasPersonaLens('gamer');
+  return { simulate: SIM, landmarkCount: svgLms.length, tableCount: ATLAS_OVERLAND_LANDMARK_ANCHORS.length, landmarkRows, counts, written, back, lens, overlayWins, junk };
+})()`, sandbox);
 console.log(JSON.stringify({
+  v10Report,
   v9Report,
   v8Report,
   lensOutputs,
@@ -833,10 +907,46 @@ console.log(JSON.stringify({
         and "function getAtlasOlCameraFromApp(" in html
     )
 
+    v10 = vm_out.get("v10Report") or {}
+    lm_rows = v10.get("landmarkRows") or []
+    v10_bad_landmarks = [r["id"] for r in lm_rows if r.get("d") is None or r["d"] >= 0.5 or not r.get("zoneExists")]
+    v10_count_mismatch = {
+        f: r
+        for f, r in (v10.get("counts") or {}).items()
+        if not (r["ol"] > 0 and all(n == r["ol"] for n in r["svg"].values()) and all(n == r["ol"] for n in r["badge"].values()))
+    }
+    v10_back = v10.get("back") or {}
+    v10_lens = v10.get("lens") or {}
+    v10_junk = v10.get("junk") or {}
+    v10_url_ok = (
+        v10_back.get("route") is True
+        and v10_back.get("from") == "zone-town-kilnwatch-bastion"
+        and v10_back.get("to") == "zone-dungeon-pendulum-shaft"
+        and v10_back.get("cam") == [1.734, 0.913, 1.2, 12.5, -7.25]
+    )
+    v10_lens_ok = (
+        v10_lens.get("bar") == v10_lens.get("dflt")
+        and v10_lens.get("storeBar") == v10_lens.get("dflt")
+        and v10_lens.get("dim") is True
+        and v10_lens.get("left") is True
+        and v10.get("overlayWins") is True
+    )
+    v10_junk_ok = v10_junk.get("cam") == [1, -0.62, 1.45, 0, 0] and v10_junk.get("from") == "zone-town-lantern-hollow" and v10_junk.get("route") is False
+    v10_passed = (
+        v10.get("landmarkCount", 0) >= 10
+        and v10.get("landmarkCount") == v10.get("tableCount")
+        and v10_bad_landmarks == []
+        and len(v10.get("counts") or {}) == 7
+        and v10_count_mismatch == {}
+        and v10_url_ok
+        and v10_lens_ok
+        and v10_junk_ok
+    )
+
     return {
         "overall_passed": bool(
             v1_passed and v2_passed and v3_passed and v4_passed and v5_passed and v6_passed and v7_passed and v8_passed
-            and v9_passed
+            and v9_passed and v10_passed
         ),
         "gates": {
             "V-1_dom_and_render_budget": {
@@ -895,11 +1005,31 @@ console.log(JSON.stringify({
                 "zoom_fn_resolves_zone": "resolveNearestZoneFromPanAndLoc" in zoom_body,
                 **v9,
             },
+            "V-10_engine_parity_zone_counts_and_url_round_trip": {
+                "passed": v10_passed,
+                "simulate": v10.get("simulate"),
+                "landmark_count": v10.get("landmarkCount"),
+                "landmark_table_count": v10.get("tableCount"),
+                "max_landmark_delta_px": max((r["d"] for r in lm_rows if r.get("d") is not None), default=None),
+                "bad_landmarks": v10_bad_landmarks,
+                "zone_counts": v10.get("counts"),
+                "count_mismatch": v10_count_mismatch,
+                "url_round_trip_ok": v10_url_ok,
+                "url_written": v10.get("written"),
+                "url_back": v10_back,
+                "lens_default_ok": v10_lens_ok,
+                "lens": v10_lens,
+                "junk_params_ok": v10_junk_ok,
+                "junk": v10_junk,
+            },
         },
     }
 
 
 def main() -> int:
+    for arg in sys.argv[1:]:
+        if arg.startswith("--simulate-v10="):
+            os.environ["ATLAS_V10_SIMULATE"] = arg.split("=", 1)[1]
     report = run_ux_probe()
     print(json.dumps(report, indent=2))
     return 0 if report["overall_passed"] else 1

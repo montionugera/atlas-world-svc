@@ -5302,5 +5302,47 @@ console.log(JSON.stringify(sandbox.__TEST_OUT));
             server.server_close()
 
 
+    def test_f155_engine_parity_zone_counts_and_url_round_trip(self) -> None:
+        import os
+        import re
+
+        from probes.atlas_ux_probe import run_ux_probe
+
+        html = web.INDEX_HTML
+        # One landmark coordinate table: no second hardcoded table in the OL builder or the SVG landmark list.
+        self.assertIn("const ATLAS_OVERLAND_LANDMARK_ANCHORS = [", html)
+        self.assertNotIn("const anchorLookup = {", html)
+        self.assertIsNone(re.search(r"id: 'town-kilnwatch-bastion',\s*kind: 'castle',\s*priority: 1,\s*x:", html))
+        self.assertIn("{ landmarkId: 'town-kilnwatch-bastion', zoneId: 'zone-town-kilnwatch-bastion', x: 618, y: 318 }", html)
+        # One zone predicate; the badge counts zones, not landmark + mob pins.
+        self.assertIn("function atlasZoneMatchesFilter(", html)
+        self.assertNotIn("visibleLandmarks.length + visibleMobPins.length", html)
+        self.assertIn("const matchCount = zoneFilterModel.matching.length;", html)
+
+        v10 = run_ux_probe()["gates"]["V-10_engine_parity_zone_counts_and_url_round_trip"]
+        self.assertTrue(v10["passed"], v10)
+        self.assertEqual(v10["landmark_count"], 13)
+        self.assertEqual(v10["max_landmark_delta_px"], 0)
+        self.assertEqual(v10["bad_landmarks"], [])
+        expected = {"All": 63, "RaceSpawns": 6, "TownMarks": 23, "Monster": 40, "Mini-Boss": 32, "Raid": 27, "MVP": 19}
+        for f, n in expected.items():
+            row = v10["zone_counts"][f]
+            self.assertEqual(row["ol"], n, f)
+            self.assertEqual(set(row["svg"].values()), {n}, f)
+            self.assertEqual(set(row["badge"].values()), {n}, f)
+        self.assertTrue(v10["url_round_trip_ok"], v10["url_back"])
+        self.assertTrue(v10["lens_default_ok"], v10["lens"])
+        self.assertTrue(v10["junk_params_ok"], v10["junk"])
+
+        # Test-the-test: each simulated regression must turn V-10 red.
+        for kind in ("landmark", "count", "url"):
+            os.environ["ATLAS_V10_SIMULATE"] = kind
+            try:
+                red = run_ux_probe()["gates"]["V-10_engine_parity_zone_counts_and_url_round_trip"]
+            finally:
+                os.environ.pop("ATLAS_V10_SIMULATE", None)
+            self.assertFalse(red["passed"], kind)
+
+
 if __name__ == "__main__":
     unittest.main()
