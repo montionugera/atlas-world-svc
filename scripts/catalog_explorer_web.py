@@ -1966,6 +1966,16 @@ INDEX_HTML = r"""<!DOCTYPE html>
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
+      flex: 0 1 auto;
+    }
+    /* F-158: the status pill never truncates - the long title shrinks/ellipsizes instead. */
+    #topbarStatus {
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: clip;
+      max-width: none;
     }
     .scroll-stage {
       flex: 1;
@@ -3738,6 +3748,17 @@ INDEX_HTML = r"""<!DOCTYPE html>
         border-radius: 0 !important;
         border-width: 1px 0 0 !important;
       }
+    }
+    /* F-158: on short desktop/tablet windows (<=860px tall, e.g. 1080x810, 1024x768) the 3D / OpenLayers canvas is capped
+       so its bottom legend bar stays inside the viewport without scrolling. 1440x900 and taller keep the F-156 sizing. */
+    @media (min-width: 768px) and (min-height: 481px) and (max-height: 860px) {
+      body .joy-spatial-shell:not([data-engine="2d_svg"]):not([data-theater="true"]) .joy-spatial-shell__canvas,
+      body .joy-spatial-shell:not([data-engine="2d_svg"])[data-bottom-open="true"]:not([data-theater="true"]) .joy-spatial-shell__canvas {
+        min-height: 360px;
+        height: calc(100dvh - 320px);
+      }
+      /* the 3D toolbar wraps to 2-3 rows below 1180px; lift it clear of the legend instead of covering it */
+      #atlasMap3dToolbarPanel { bottom: 104px !important; }
     }
     /* Not on landscape phones (<=480px tall): there the F-156 B4 canvas math assumes a single-row 160px chrome. */
     @media (min-width: 768px) and (min-height: 481px) {
@@ -7394,22 +7415,36 @@ function parseAtlasZoneLevelRange(z) {
 
 // F-155: ONE table of overland landmark coordinates (SVG space, y down), read by BOTH 2D engines:
 // renderDedicatedWorldAtlas draws each landmark at (x, y) and OpenLayers anchors the joined zone at [x, 500 - y].
-// zoneId is the zone the landmark stands for in the 63-zone list. Kilnwatch sits at y=318 (not 308) so it lands
+// zoneId is the zone the landmark stands for in the 63-zone list; kind is the map symbol (2D) and the silhouette (3D). Kilnwatch sits at y=318 (not 308) so it lands
 // inside the C01 coast in both engines; the Crown-Beacon Astrolabe is the Crown-Beacon Citadel zone.
 const ATLAS_OVERLAND_LANDMARK_ANCHORS = [
-  { landmarkId: 'town-lantern-hollow', zoneId: 'zone-town-lantern-hollow', x: 432, y: 422 },
-  { landmarkId: 'town-porcelain-loom-sanctuary', zoneId: 'zone-town-porcelain-loom', x: 545, y: 404 },
-  { landmarkId: 'town-draft-kiln-post', zoneId: 'zone-town-draft-kiln-post', x: 305, y: 418 },
-  { landmarkId: 'town-root-train-roundhouse', zoneId: 'zone-town-root-train-roundhouse', x: 712, y: 418 },
-  { landmarkId: 'town-carillon-hearth-belfry', zoneId: 'zone-town-carillon-belfry', x: 382, y: 338 },
-  { landmarkId: 'town-cinnamon-mill-haven', zoneId: 'zone-town-cinnamon-mill', x: 215, y: 332 },
-  { landmarkId: 'town-kilnwatch-bastion', zoneId: 'zone-town-kilnwatch-bastion', x: 618, y: 318 },
-  { landmarkId: 'zone-dungeon-kiln-cellar', zoneId: 'zone-dungeon-kiln-cellar', x: 515, y: 468 },
-  { landmarkId: 'town-pinion-terminus', zoneId: 'zone-town-pinion-terminus', x: 745, y: 288 },
-  { landmarkId: 'zone-dungeon-pendulum-shaft', zoneId: 'zone-dungeon-pendulum-shaft', x: 665, y: 252 },
-  { landmarkId: 'zone-dungeon-chronometer-foundry', zoneId: 'zone-dungeon-chronometer-foundry', x: 845, y: 215 },
-  { landmarkId: 'town-starfall-haven', zoneId: 'zone-town-starfall-haven', x: 565, y: 122 },
-  { landmarkId: 'citadel-crown-lens', zoneId: 'zone-town-crown-beacon', x: 785, y: 88 }
+  { landmarkId: 'town-lantern-hollow', zoneId: 'zone-town-lantern-hollow', x: 432, y: 422, kind: 'town' },
+  { landmarkId: 'town-porcelain-loom-sanctuary', zoneId: 'zone-town-porcelain-loom', x: 545, y: 404, kind: 'town' },
+  { landmarkId: 'town-draft-kiln-post', zoneId: 'zone-town-draft-kiln-post', x: 305, y: 418, kind: 'fortress' },
+  { landmarkId: 'town-root-train-roundhouse', zoneId: 'zone-town-root-train-roundhouse', x: 712, y: 418, kind: 'town' },
+  { landmarkId: 'town-carillon-hearth-belfry', zoneId: 'zone-town-carillon-belfry', x: 382, y: 338, kind: 'town' },
+  { landmarkId: 'town-cinnamon-mill-haven', zoneId: 'zone-town-cinnamon-mill', x: 215, y: 332, kind: 'windmill' },
+  { landmarkId: 'town-kilnwatch-bastion', zoneId: 'zone-town-kilnwatch-bastion', x: 618, y: 318, kind: 'castle' },
+  { landmarkId: 'zone-dungeon-kiln-cellar', zoneId: 'zone-dungeon-kiln-cellar', x: 515, y: 468, kind: 'catacomb' },
+  { landmarkId: 'town-pinion-terminus', zoneId: 'zone-town-pinion-terminus', x: 745, y: 288, kind: 'castle' },
+  { landmarkId: 'zone-dungeon-pendulum-shaft', zoneId: 'zone-dungeon-pendulum-shaft', x: 665, y: 252, kind: 'tower' },
+  { landmarkId: 'zone-dungeon-chronometer-foundry', zoneId: 'zone-dungeon-chronometer-foundry', x: 845, y: 215, kind: 'tower' },
+  { landmarkId: 'town-starfall-haven', zoneId: 'zone-town-starfall-haven', x: 565, y: 122, kind: 'castle' },
+  { landmarkId: 'citadel-crown-lens', zoneId: 'zone-town-crown-beacon', x: 785, y: 88, kind: 'lair' }
+];
+
+// Overland spawn / boss pins in SVG space (y down); read by the 2D atlas and the 3D blockout (svgTo3dWorld).
+const ATLAS_OVERLAND_MOB_PINS = [
+  { id: 'mob-clover-pup', name: 'Clover-Dew Pup', type: 'Monster', lv: 4, x: 378, y: 468, loc: '-89200:246100', zone: 'Clover South-Gate Meadow' },
+  { id: 'mob-kiln-captain', name: '[Mini-Boss] Kiln-Shell Captain', type: 'Mini-Boss', lv: 13, x: 452, y: 472, loc: '48880:247220', zone: 'Kiln Cellar Entrance' },
+  { id: 'mob-queen-ant', name: '[MVP] Queen Ant Ash-Brood Sovereign', type: 'MVP', lv: 22, x: 602, y: 472, loc: '53100:242600', zone: 'The Ant Nest B3', dungeonWarpId: 'zone-dungeon-kiln-cellar', dungeonFloorId: 'B3' },
+  { id: 'mob-catherok-raid', name: '[Raid] Catherok Pendulum Colossus', type: 'Raid', lv: 26, x: 602, y: 242, loc: '17710:110100', zone: 'Cruma Tower 2F', dungeonWarpId: 'zone-dungeon-pendulum-shaft', dungeonFloorId: '2F' },
+  { id: 'mob-cruma-core', name: '[MVP] Core — Prime Governor', type: 'MVP', lv: 30, x: 705, y: 218, loc: '17724:108150', zone: 'Cruma Tower 3F', dungeonWarpId: 'zone-dungeon-pendulum-shaft', dungeonFloorId: '3F' },
+  { id: 'mob-hallate-raid', name: '[Raid] Hallate Clockwork Vanguard', type: 'Raid', lv: 32, x: 805, y: 256, loc: '115000:159500', zone: 'Tower of Insolence 2F', dungeonWarpId: 'zone-dungeon-chronometer-foundry', dungeonFloorId: '2F' },
+  { id: 'mob-baium-mvp', name: '[MVP] Sovereign Chronometer Aethelgard', type: 'MVP', lv: 35, x: 888, y: 186, loc: '115180:15900', zone: 'Tower of Insolence 3F', dungeonWarpId: 'zone-dungeon-chronometer-foundry', dungeonFloorId: '3F' },
+  { id: 'mob-halo-watcher', name: 'Astral Prism Sentinel', type: 'Monster', lv: 48, x: 638, y: 156, loc: '12400:-118000', zone: 'Zenith Refractory' },
+  { id: 'mob-vesper-raid', name: '[Raid] Star-Tether Leviathan', type: 'Raid', lv: 68, x: 678, y: 78, loc: '94000:-164000', zone: 'Crown-Lens Approach' },
+  { id: 'mob-architect-mvp', name: '[MVP] Apostle of the Shattered Halo', type: 'MVP', lv: 92, x: 896, y: 78, loc: '148000:-204000', zone: 'Celestial Astrolabe Core' }
 ];
 
 // Travel highways between landmarks (landmark ids). The SVG atlas draws them as curves, OpenLayers as straight
@@ -8338,106 +8373,402 @@ function buildAtlas3dBlockoutScene() {
     return { context: 'town', title: `${bp.archetype_subtitle || townNode.name} — 3D Building, Street & Wall Extrusion (#1..#12)`, meshes };
   }
 
-  // Default: Overland 3-Continent 3D Topographic Blockout
-  meshes.push({
-    name: 'C01_Hearthbloom_Basin_Plateau',
-    x: -35, y: 4 * elevMul, z: 38,
-    w: 135, h: 8 * elevMul, d: 52,
-    color: '#15803d',
-    alpha: 0.85,
-    label: 'C01 Hearthbloom Basin (Lv.1–20)',
-    poi: {
-      title: 'C01 Hearthbloom Basin (Starter Continent Plateau)',
-      category: `Continental Massif · Lv.1–20 · 6 Race Spawns · ${lensMeta.lensBadge}`,
-      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
-      hoursOrStatus: 'CONTINENT C01 · 12 DISTRICTS · 6 STARTER TOWNS',
-      summary: 'Warm pastoral starter basin housing all 6 Playable Race home villages and converging at Kilnwatch Bastion.',
-      address: 'Hearthbloom Basin · Southern Cradle',
-      coordinates: 'loc=-84120:243500 · Base Elevation: +8m',
-      scaleSpecs: '180km × 140km Continental Shelf'
-    }
+  // Default: Overland — the 2D map in 3D (F-158)
+  return atlas3dBuildOverlandScene(lensMeta, elevMul);
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// F-158: overland 3D blockout = the 2D map in 3D. ONE projection (svgTo3dWorld), the real continent polygons
+// (getAtlasContinentPolygons), the shared landmark / highway / boss-pin tables, and per-type silhouettes.
+// Mesh contract (read by V-12): every landmark part carries landmarkId + part; the primary also has landmarkPrimary,
+// landmarkKind, baseY and sits at the projected anchor; parts of one object carry pickAs = the primary's name.
+// ---------------------------------------------------------------------------------------------------------------
+function svgTo3dWorld(svgX, svgY) {
+  return { x: (svgX - 520) * 0.25, z: (svgY - 250) * 0.25 };
+}
+// 1040 svg units span the 400 km world; 1 svg unit = 0.25 scene units, so 1 scene unit = 400000 / 260 m.
+const ATLAS_3D_OVERLAND_M_PER_UNIT = 400000 / 260;
+
+const ATLAS_3D_LANDMARK_META = {
+  'town-lantern-hollow': { name: 'Lantern_Hollow', label: '🏰 Lantern Hollow', color: '#eab308', loc: '-84120:243500', lv: [1, 10], townId: 'town-lantern-hollow' },
+  'town-porcelain-loom-sanctuary': { name: 'Porcelain_Loom', label: '🏰 Porcelain Loom', color: '#38bdf8', loc: '45800:41200', lv: [1, 10], townId: 'town-porcelain-loom-sanctuary' },
+  'town-draft-kiln-post': { name: 'Draft_Kiln_Post', label: '🛡️ Draft-Kiln Post', color: '#f97316', loc: '-44800:-113200', lv: [1, 10], townId: 'town-draft-kiln-post' },
+  'town-root-train-roundhouse': { name: 'Root_Train_Roundhouse', label: '🏘️ Root-Train Roundhouse', color: '#d97706', loc: '115100:-178200', lv: [1, 10], townId: 'town-root-train-roundhouse' },
+  'town-carillon-hearth-belfry': { name: 'Carillon_Belfry', label: '🏘️ Carillon Belfry', color: '#a855f7', loc: '12400:16800', lv: [1, 10], townId: 'town-carillon-hearth-belfry' },
+  'town-cinnamon-mill-haven': { name: 'Cinnamon_Mill_Haven', label: '🌾 Cinnamon-Mill Haven', color: '#22c55e', loc: '-118200:46800', lv: [1, 10], townId: 'town-cinnamon-mill-haven' },
+  'town-kilnwatch-bastion': { name: 'Kilnwatch_Bastion', label: '🏰 Kilnwatch Bastion', color: '#ef4444', loc: '18600:145200', lv: [10, 20], townId: 'town-kilnwatch-bastion' },
+  'zone-dungeon-kiln-cellar': { name: 'Kiln_Cellar_Ruins', label: '🕳️ Kiln Cellar Ruins', color: '#a855f7', loc: '-113490:235526', lv: [9, 22], dngId: 'zone-dungeon-kiln-cellar' },
+  'town-pinion-terminus': { name: 'Pinion_Terminus', label: '⚙️ Pinion Terminus', color: '#f59e0b', loc: '82900:53200', lv: [18, 25], townId: 'town-pinion-terminus' },
+  'zone-dungeon-pendulum-shaft': { name: 'Pendulum_Shaft_Cruma', label: '🗼 Cruma Spire (3F)', color: '#22d3ee', loc: '85400:144200', lv: [20, 30], dngId: 'zone-dungeon-pendulum-shaft' },
+  'zone-dungeon-chronometer-foundry': { name: 'Chronometer_Foundry_ToI', label: '🗼 Tower of Insolence', color: '#fde047', loc: '84800:56400', lv: [25, 35], dngId: 'zone-dungeon-chronometer-foundry' },
+  'town-starfall-haven': { name: 'Starfall_Haven_Capital', label: '✨ Starfall Haven', color: '#c084fc', loc: '-14200:-124000', lv: [38, 55], townId: 'town-starfall-haven' },
+  'citadel-crown-lens': { name: 'Crown_Beacon_Astrolabe', label: '👑 Crown-Beacon (Lv.99)', color: '#f43f5e', loc: '142000:-198000', lv: [60, 99], dngId: 'zone-dungeon-kiln-cellar' }
+};
+
+// Terrain per continent: stepped plateaus inset toward the polygon centroid. top = height above the sea plane.
+const ATLAS_3D_CONTINENT_SPEC = {
+  C01: { slug: 'Hearthbloom_Basin', shelf: '#1f6f7a', steps: [{ k: 1.0, top: 3, color: '#2f8a57' }, { k: 0.78, top: 5, color: '#46a36a' }],
+    poi: { title: 'C01 Hearthbloom Basin (Starter Continent Plateau)', category: 'Continental Massif · Lv.1–20 · 6 Race Spawns', hours: 'CONTINENT C01 · 12 DISTRICTS · 6 STARTER TOWNS', summary: 'Warm pastoral starter basin housing all 6 Playable Race home villages and converging at Kilnwatch Bastion.', address: 'Hearthbloom Basin · Southern Cradle', coords: 'loc=-84120:243500 · Base Elevation: +3m', scale: '180km × 140km Continental Shelf', label: 'C01 Hearthbloom Basin (Lv.1–20)' } },
+  C02: { slug: 'Clockwork_Steppe', shelf: '#1f6f7a', steps: [{ k: 1.0, top: 8, color: '#a8721f' }, { k: 0.84, top: 12, color: '#b9822a' }, { k: 0.6, top: 15, color: '#cc9535' }],
+    poi: { title: 'C02 The Clockwork Steppe (Midgame Mesa)', category: 'Continental Mesa · Lv.18–35 · Spire Dungeons', hours: 'CONTINENT C02 · PINION TERMINUS & CRUMA/TOI SPIRES', summary: 'Elevated brass-and-basalt plateau featuring Pendulum Shaft (Cruma) and Chronometer Foundry (Tower of Insolence).', address: 'The Clockwork Steppe · Eastern Highland', coords: 'loc=82900:53200 · Base Elevation: +8m', scale: '150km × 120km Terraced Mesa', label: 'C02 Clockwork Steppe (Lv.18–35)' } },
+  C03: { slug: 'Shattered_Sky_Halo_Caldera', shelf: '#2a5a8a', steps: [{ k: 1.0, top: 14, color: '#5b3f9c' }, { k: 0.84, top: 20, color: '#7452bd' }], abyss: { k: 0.42, color: '#120826' },
+    poi: { title: 'C03 The Shattered Sky-Halo (Endgame Caldera)', category: 'Celestial Ring Continent · Lv.35–99 · Sovereign Sanctums', hours: 'CONTINENT C03 · STARFALL HAVEN & CROWN-BEACON', summary: 'High-altitude floating astral caldera where guilds contest Castle Sieges and the 6 Sealed God Apostles.', address: 'The Shattered Halo · Northern Zenith', coords: 'loc=-14200:-124000 · Base Elevation: +14m', scale: '160km × 95km Floating Ring', label: 'C03 Shattered Sky-Halo (Lv.35–99)' } }
+};
+
+// Mountain / highland zones of the 63-zone list; placed with the same pixel-CRS placement the 2D map uses.
+const ATLAS_3D_MOUNTAIN_ZONES = [
+  // off = [dx, dz] in scene units from the zone's projected anchor. In 2D the five mountain zones plot within ~30 svg px of
+  // Kilnwatch Bastion, so the massifs fan out around that cluster instead of burying the castle.
+  { zoneId: 'zone-field-brass-spur-ridge', name: 'Brass_Spur_Ridge', off: [6.8, 9.8], rx: 10, rz: 4.2, rot: 0.2, heights: [6, 5, 5, 4], color: '#8a6a45', peaks: 2 },
+  { zoneId: 'zone-field-caldera-rim', name: 'Mainspring_Caldera_Rim', off: [2.3, -5.3], rx: 5.2, rz: 5.2, rot: 0.3, heights: [7, 6], color: '#7a5a52', caldera: true },
+  { zoneId: 'zone-field-astrolabe-rift', name: 'Astrolabe_Rift_Escarpment', off: [1.5, -15], rx: 10, rz: 3.4, rot: 1.35, heights: [5, 5, 5, 4], color: '#7c7468', peaks: 2 },
+  { zoneId: 'zone-fortress-dragonspine-cog', name: 'Dragonspine_Cog', off: [7.1, -1.8], rx: 6.6, rz: 5.8, rot: 0.2, heights: [7, 6, 6, 5], color: '#6b7280', peaks: 1, snow: true },
+  { zoneId: 'zone-fortress-cloud-halo', name: 'Cloud_Halo_Crag', off: [0, 0], rx: 8, rz: 6, rot: -0.2, heights: [7, 6, 6, 5], color: '#6e7787', peaks: 2, snow: true }
+];
+
+const ATLAS_3D_BOSS_PIN_COLORS = { Monster: '#2dd4bf', 'Mini-Boss': '#fb923c', Raid: '#f43f5e', MVP: '#fde047' };
+
+function atlas3dMixHex(hex, other, t) {
+  const a = hexToRgbNormalized(hex), b = hexToRgbNormalized(other);
+  const c = a.map((v, i) => Math.round((v + (b[i] - v) * t) * 255));
+  return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+function atlas3dPolyCentroid(pts) {
+  let sx = 0, sz = 0;
+  pts.forEach(p => { sx += p[0]; sz += p[1]; });
+  return [sx / pts.length, sz / pts.length];
+}
+
+function atlas3dBlobPts(cx, cz, rx, rz, rot, n) {
+  const out = [];
+  const cr = Math.cos(rot), sr = Math.sin(rot);
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const j = 1 + 0.12 * Math.sin(i * 2.3 + rx) + 0.08 * Math.cos(i * 3.1 + rz);
+    const px = Math.cos(a) * rx * j, pz = Math.sin(a) * rz * j;
+    out.push([+(cx + px * cr - pz * sr).toFixed(3), +(cz + px * sr + pz * cr).toFixed(3)]);
+  }
+  return out;
+}
+
+function atlas3dRegPoly(cx, cz, r) {
+  const out = [];
+  for (let i = 0; i < 8; i++) { const t = (i / 8) * Math.PI * 2 + Math.PI / 8; out.push([+(cx + Math.cos(t) * r).toFixed(3), +(cz + Math.sin(t) * r).toFixed(3)]); }
+  return out;
+}
+
+function atlas3dMk(name, part, x, y0, z, w, h, d, color, alpha, extra) {
+  return Object.assign({ name, part, x, y: y0 + h / 2, z, w, h, d, color, alpha: alpha === undefined ? 0.95 : alpha, label: '' }, extra || {});
+}
+
+// Polygon prism. pts = [[x, z], ...] unclosed, kept in the given order; winding records the sign of its area.
+function atlas3dMkPrism(name, part, pts, y0, h, color, alpha, extra) {
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity, area = 0;
+  pts.forEach((p, i) => {
+    const q = pts[(i + 1) % pts.length];
+    area += p[0] * q[1] - q[0] * p[1];
+    if (p[0] < minX) minX = p[0];
+    if (p[0] > maxX) maxX = p[0];
+    if (p[1] < minZ) minZ = p[1];
+    if (p[1] > maxZ) maxZ = p[1];
   });
-  meshes.push({
-    name: 'C02_Clockwork_Steppe_Mesa',
-    x: 68, y: 9 * elevMul, z: 2,
-    w: 88, h: 18 * elevMul, d: 46,
-    color: '#b45309',
-    alpha: 0.88,
-    label: 'C02 Clockwork Steppe (Lv.18–35)',
-    poi: {
-      title: 'C02 The Clockwork Steppe (Midgame Mesa)',
-      category: `Continental Mesa · Lv.18–35 · Spire Dungeons · ${lensMeta.lensBadge}`,
-      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
-      hoursOrStatus: 'CONTINENT C02 · PINION TERMINUS & CRUMA/TOI SPIRES',
-      summary: 'Elevated brass-and-basalt plateau featuring Pendulum Shaft (Cruma) and Chronometer Foundry (Tower of Insolence).',
-      address: 'The Clockwork Steppe · Eastern Highland',
-      coordinates: 'loc=82900:53200 · Base Elevation: +18m',
-      scaleSpecs: '150km × 120km Terraced Mesa'
-    }
+  return Object.assign({ name, part, pts, winding: area >= 0 ? 1 : -1, x: (minX + maxX) / 2, y: y0 + h / 2, z: (minZ + maxZ) / 2,
+    w: maxX - minX, h, d: maxZ - minZ, color, alpha: alpha === undefined ? 0.95 : alpha, label: '' }, extra || {});
+}
+
+function atlas3dBuildTerrain(E) {
+  const terraces = [];
+  getAtlasContinentPolygons().forEach(c => {
+    const spec = ATLAS_3D_CONTINENT_SPEC[c.code];
+    if (!spec) return;
+    const base = c.pts.slice(0, -1).map(q => { const w = svgTo3dWorld(q[0], 500 - q[1]); return [w.x, w.z]; });
+    const cen = atlas3dPolyCentroid(base);
+    const scaled = k => base.map(p => [cen[0] + (p[0] - cen[0]) * k, cen[1] + (p[1] - cen[1]) * k]);
+    spec.steps.forEach((st, i) => terraces.push({ code: c.code, spec, idx: i, pts: k1(i === 0 ? base : scaled(st.k)), top: st.top * E, color: st.color }));
+    terraces.push({ code: c.code, spec, idx: -1, pts: scaled(1.1), top: 0, color: spec.shelf, shelf: true });
+    if (spec.abyss) terraces.push({ code: c.code, spec, idx: -2, pts: scaled(spec.abyss.k), top: spec.steps[spec.steps.length - 1].top * E, color: spec.abyss.color, abyss: true });
   });
-  meshes.push({
-    name: 'C03_Shattered_Sky_Halo_Caldera',
-    x: 32, y: 16 * elevMul, z: -44,
-    w: 96, h: 32 * elevMul, d: 34,
-    color: '#6d28d9',
-    alpha: 0.9,
-    label: 'C03 Shattered Sky-Halo (Lv.35–99)',
-    poi: {
-      title: 'C03 The Shattered Sky-Halo (Endgame Caldera)',
-      category: `Celestial Ring Continent · Lv.35–99 · Sovereign Sanctums · ${lensMeta.lensBadge}`,
-      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
-      hoursOrStatus: 'CONTINENT C03 · STARFALL HAVEN & CROWN-BEACON',
-      summary: 'High-altitude floating astral caldera where guilds contest Castle Sieges and the 6 Sealed God Apostles.',
-      address: 'The Shattered Halo · Northern Zenith',
-      coordinates: 'loc=-14200:-124000 · Base Elevation: +32m',
-      scaleSpecs: '160km × 95km Floating Ring'
-    }
+  function k1(p) { return p.map(q => [+q[0].toFixed(3), +q[1].toFixed(3)]); }
+  const land = terraces.filter(t => !t.shelf && !t.abyss);
+  land.forEach(t => {
+    let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
+    t.pts.forEach(p => { a = Math.min(a, p[0]); b = Math.max(b, p[0]); c = Math.min(c, p[1]); d = Math.max(d, p[1]); });
+    t.bb = [a, b, c, d];
   });
-  const worldTowers = [
-    { name: 'Lantern_Hollow', x: -52, z: 46, h: 18, c: '#eab308', lbl: '🏰 Lantern Hollow', kind: 'town', townId: 'town-lantern-hollow', loc: '-84120:243500', lv: [1, 10] },
-    { name: 'Porcelain_Loom', x: -12, z: 34, h: 18, c: '#38bdf8', lbl: '🏰 Porcelain Loom', kind: 'town', townId: 'town-porcelain-loom-sanctuary', loc: '45800:41200', lv: [1, 10] },
-    { name: 'Draft_Kiln_Post', x: -85, z: 40, h: 17, c: '#f97316', lbl: '🛡️ Draft-Kiln Post', kind: 'town', townId: 'town-draft-kiln-post', loc: '-44800:-113200', lv: [1, 10] },
-    { name: 'Kilnwatch_Bastion', x: 8, z: 22, h: 28, c: '#ef4444', lbl: '🏰 Kilnwatch Bastion', kind: 'town', townId: 'town-kilnwatch-bastion', loc: '18600:145200', lv: [10, 20] },
-    { name: 'Pendulum_Shaft_Cruma', x: 42, z: 4, h: 42, c: '#22d3ee', lbl: '🗼 Cruma Spire (3F)', kind: 'dungeon', dngId: 'zone-dungeon-pendulum-shaft', loc: '85400:144200', lv: [20, 30] },
-    { name: 'Pinion_Terminus', x: 68, z: 8, h: 26, c: '#f59e0b', lbl: '⚙️ Pinion Terminus', kind: 'town', townId: 'town-pinion-terminus', loc: '82900:53200', lv: [18, 25] },
-    { name: 'Chronometer_Foundry_ToI', x: 96, z: -8, h: 48, c: '#fde047', lbl: '🗼 Tower of Insolence', kind: 'dungeon', dngId: 'zone-dungeon-chronometer-foundry', loc: '84800:56400', lv: [25, 35] },
-    { name: 'Starfall_Haven_Capital', x: 18, z: -42, h: 46, c: '#c084fc', lbl: '✨ Starfall Haven', kind: 'town', townId: 'town-starfall-haven', loc: '-14200:-124000', lv: [38, 55] },
-    { name: 'Crown_Beacon_Astrolabe', x: 64, z: -48, h: 56, c: '#f43f5e', lbl: '👑 Crown-Beacon (Lv.99)', kind: 'dungeon', dngId: 'zone-dungeon-kiln-cellar', loc: '142000:-198000', lv: [60, 99] }
-  ];
-  worldTowers.forEach(t => {
-    const th = t.h * elevMul;
-    const tLens = getAtlasPersonaLensTelemetrySummary({ id: t.townId || t.dngId || t.name, name: t.lbl, actionType: t.kind, levelRange: t.lv, locCoord: t.loc });
-    meshes.push({
-      name: t.name,
-      x: t.x, y: th / 2 + 4, z: t.z,
-      w: 11, h: th, d: 11,
-      color: t.c,
-      alpha: 0.95,
-      label: t.lbl,
-      drillContext3d: t.kind,
-      townId: t.townId || '',
-      dungeonId: t.dngId || '',
-      poi: {
-        title: `${t.lbl} (3D Landmark Spire)`,
-        category: `${t.kind === 'dungeon' ? 'Multi-Floor Spire' : 'Walled Town Keep'} · Lv.${t.lv[0]}–${t.lv[1]} · ${tLens.lensBadge}`,
-        thumb: '/thumbs/buildings/tower_round_roof_a.webp',
-        hoursOrStatus: `3D LANDMARK (${t.name}) · Double-click to drill into ${t.kind.toUpperCase()} 3D`,
-        summary: `Click to inspect in Place Drawer, or double-click in 3D Blockout to drill directly into the ${t.kind === 'dungeon' ? 'Multi-Floor Dungeon Cutaway' : 'Town #1..#12 Building Blockout'}.`,
-        address: `${t.lbl} · Cradle of Embers`,
-        coordinates: `loc=${t.loc} · Spire Height: ${Math.round(th)}m`,
-        scaleSpecs: '11m × 11m Footprint · 1:1 Godot 4 Blockout Node',
-        townBlueprintId: t.townId || '',
-        dungeonWarpId: t.dngId || '',
-        dungeonFloorId: t.dngId ? '1F' : '',
-        inspectId: t.townId || t.dngId || t.name
-      }
+  const top = (x, z) => {
+    let h = 0;
+    for (let i = 0; i < land.length; i++) {
+      const t = land[i];
+      if (t.top > h && x >= t.bb[0] && x <= t.bb[1] && z >= t.bb[2] && z <= t.bb[3] && isPointInAtlasPolygon(x, z, t.pts)) h = t.top;
+    }
+    return h;
+  };
+  return { terraces, top };
+}
+
+function atlas3dLandmarkPoi(meta, kind, tLens, th, footprint) {
+  const isDng = Boolean(meta.dngId);
+  return {
+    title: `${meta.label} (3D Landmark ${kind === 'tower' ? 'Spire' : (kind === 'catacomb' || kind === 'lair' ? 'Crypt' : 'Keep')})`,
+    category: `${isDng ? 'Multi-Floor Dungeon' : 'Walled Town Keep'} · Lv.${meta.lv[0]}–${meta.lv[1]} · ${tLens.lensBadge}`,
+    thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+    hoursOrStatus: `3D LANDMARK (${meta.name}) · Double-click to drill into ${isDng ? 'DUNGEON' : 'TOWN'} 3D`,
+    summary: `Click to inspect in Place Drawer, or double-click in 3D Blockout to drill directly into the ${isDng ? 'Multi-Floor Dungeon Cutaway' : 'Town #1..#12 Building Blockout'}.`,
+    address: `${meta.label} · Cradle of Embers`,
+    coordinates: `loc=${meta.loc} · Height: ${Math.round(th)}m`,
+    scaleSpecs: `${Math.round(footprint)}m Footprint · 1:1 Godot 4 Blockout Node`,
+    townBlueprintId: meta.townId || '',
+    dungeonWarpId: meta.dngId || '',
+    dungeonFloorId: meta.dngId ? '1F' : '',
+    inspectId: meta.townId || meta.dngId || meta.name
+  };
+}
+
+// Builds every part of one landmark. L: { id, kind, cx, cz, b (base y), low (lowest terrain under footprint), meta }.
+function atlas3dBuildLandmark(L, E, tLens) {
+  const { cx, cz, meta, kind } = L;
+  const parts = [];
+  const add = m => { m.landmarkId = L.id; m.landmarkKind = kind; m.baseY = L.b; m.layer = 8; parts.push(m); return m; };
+  const col = meta.color;
+  let primary = null;
+  const plinth = (S, extraH) => add(atlas3dMk(`${meta.name}_Plinth`, 'foundation', cx, L.low - 0.4, cz, S, (L.b + 0.5) - (L.low - 0.4), S, '#57534e', 1));
+  if (kind === 'town' || kind === 'castle' || kind === 'fortress') {
+    const S = kind === 'castle' ? 12 : (kind === 'fortress' ? 11 : 10);
+    const K = kind === 'castle' ? 1.3 : (kind === 'fortress' ? 1.1 : 1.0);
+    const half = S / 2, wt = 1.1, wallH = 2.4 * E, tw = 2.6, towH = 5.2 * E;
+    plinth(S + 1.6);
+    const yb = L.b + 0.5;
+    const wallCol = '#94a3b8';
+    add(atlas3dMk(`${meta.name}_Wall_N`, 'curtain_wall', cx, yb, cz - half + wt / 2, S, wallH, wt, wallCol));
+    add(atlas3dMk(`${meta.name}_Wall_S`, 'curtain_wall', cx, yb, cz + half - wt / 2, S, wallH, wt, wallCol));
+    add(atlas3dMk(`${meta.name}_Wall_W`, 'curtain_wall', cx - half + wt / 2, yb, cz, wt, wallH, S - 2 * wt, wallCol));
+    add(atlas3dMk(`${meta.name}_Wall_E`, 'curtain_wall', cx + half - wt / 2, yb, cz, wt, wallH, S - 2 * wt, wallCol));
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz], i) => {
+      const tx = cx + sx * (half - tw / 2 + 0.1), tz = cz + sz * (half - tw / 2 + 0.1);
+      add(atlas3dMk(`${meta.name}_CornerTower_${i + 1}`, 'corner_tower', tx, yb, tz, tw, towH, tw, '#64748b'));
+      add(atlas3dMk(`${meta.name}_TowerCap_${i + 1}`, 'tower_cap', tx, yb + towH, tz, tw + 0.7, 0.7 * E, tw + 0.7, col));
     });
+    const h1 = 3.2 * K * E, h2 = 2.4 * K * E, h3 = 1.5 * K * E;
+    primary = add(atlas3dMk(`${meta.name}`, 'keep', cx, yb, cz, 0.42 * S, h1, 0.42 * S, col, 0.97));
+    add(atlas3dMk(`${meta.name}_KeepUpper`, 'keep_upper', cx, yb + h1, cz, 0.3 * S, h2, 0.3 * S, atlas3dMixHex(col, '#ffffff', 0.18)));
+    add(atlas3dMk(`${meta.name}_KeepTop`, 'keep_top', cx, yb + h1 + h2, cz, 0.18 * S, h3, 0.18 * S, atlas3dMixHex(col, '#ffffff', 0.34)));
+    const ty = yb + h1 + h2 + h3;
+    add(atlas3dMk(`${meta.name}_BannerPole`, 'banner_pole', cx, ty, cz, 0.25, 2.4 * E, 0.25, '#e2e8f0'));
+    add(atlas3dMk(`${meta.name}_BannerFlag`, 'banner_flag', cx + 0.9, ty + 1.3 * E, cz, 1.6, 1.0, 0.15, col));
+  } else if (kind === 'tower') {
+    const K = L.id === 'zone-dungeon-chronometer-foundry' ? 1.15 : 1.0;
+    const W = 7 * K;
+    plinth(W + 2);
+    const yb = L.b + 0.5;
+    const tiers = [[W, 5], [W * 0.78, 5], [W * 0.57, 5], [W * 0.4, 4]];
+    let y = yb;
+    tiers.forEach(([w, h], i) => {
+      const hh = h * E;
+      const m = add(atlas3dMk(i === 0 ? meta.name : `${meta.name}_Tier_${i + 1}`, 'tier', cx, y, cz, w, hh, w, atlas3dMixHex(col, '#1e293b', 0.55 - i * 0.1), 0.97));
+      if (i === 0) primary = m;
+      y += hh;
+      add(atlas3dMk(`${meta.name}_Ring_${i + 1}`, 'ring', cx, y - 0.15, cz, w + 0.8, 0.35, w + 0.8, col, 0.95));
+    });
+    add(atlas3dMk(`${meta.name}_Spire`, 'spire_tip', cx, y, cz, W * 0.2, 5 * E, W * 0.2, atlas3dMixHex(col, '#ffffff', 0.4)));
+  } else if (kind === 'catacomb' || kind === 'lair') {
+    const K = kind === 'lair' ? 1.25 : 1.0;
+    const R = 5.2 * K;
+    const rimH = 1.3 * E;
+    primary = add(atlas3dMkPrism(`${meta.name}`, 'crater', atlas3dRegPoly(cx, cz, R), L.b, rimH + 0.6, '#57534e', 0.97));
+    const ring = (r, c, dy, name) => add(atlas3dMkPrism(name, 'crater_pit', atlas3dRegPoly(cx, cz, r), L.b + rimH + 0.6, dy, c, 1));
+    ring(R * 0.66, '#0b0614', 0.06, `${meta.name}_Pit_1`);
+    ring(R * 0.46, atlas3dMixHex('#1e1038', col, 0.25), 0.12, `${meta.name}_Pit_2`);
+    ring(R * 0.26, col, 0.18, `${meta.name}_Pit_3`);
+    const gz = cz + R + 0.2;
+    add(atlas3dMk(`${meta.name}_GateL`, 'gate_pillar', cx - 1.7 * K, L.b, gz, 0.9, 3.4 * E, 0.9, '#a8a29e'));
+    add(atlas3dMk(`${meta.name}_GateR`, 'gate_pillar', cx + 1.7 * K, L.b, gz, 0.9, 3.4 * E, 0.9, '#a8a29e'));
+    add(atlas3dMk(`${meta.name}_GateArch`, 'gate_arch', cx, L.b + 3.4 * E, gz, 4.6 * K, 0.9, 1.1, '#d6d3d1'));
+    if (kind === 'lair') {
+      [[-1, -1], [1, -1], [0, 1]].forEach(([sx, sz], i) => add(atlas3dMk(`${meta.name}_Fang_${i + 1}`, 'fang', cx + sx * R * 0.8, L.b + rimH + 0.6, cz + sz * R * 0.7, 1.1, 3.6 * E, 1.1, col)));
+    }
+  } else if (kind === 'windmill') {
+    plinth(5.6);
+    const yb = L.b + 0.5;
+    primary = add(atlas3dMk(`${meta.name}`, 'mill_body', cx, yb, cz, 3.4, 3.6 * E, 3.4, '#e7e5e4', 0.97));
+    add(atlas3dMk(`${meta.name}_BodyUpper`, 'mill_body_upper', cx, yb + 3.6 * E, cz, 2.6, 2.2 * E, 2.6, '#d6d3d1'));
+    add(atlas3dMk(`${meta.name}_Cap`, 'mill_cap', cx, yb + 5.8 * E, cz, 3.1, 1.0, 3.1, col));
+    add(atlas3dMk(`${meta.name}_SailH`, 'mill_sail', cx, yb + 5.0 * E, cz + 1.9, 7.4, 0.5, 0.25, '#f1f5f9'));
+    add(atlas3dMk(`${meta.name}_SailV`, 'mill_sail', cx, yb + 5.0 * E - 3.4, cz + 1.9, 0.5, 7.4, 0.25, '#f1f5f9'));
+    add(atlas3dMk(`${meta.name}_Plot_1`, 'farm_plot', cx + 5.2, L.b, cz + 2.0, 4.2, 0.35, 3.2, '#a3b838'));
+    add(atlas3dMk(`${meta.name}_Plot_2`, 'farm_plot', cx - 5.4, L.b, cz + 3.0, 4.2, 0.35, 3.2, '#84a63a'));
+  }
+  const tops = parts.reduce((s, m) => Math.max(s, m.y + m.h / 2), -Infinity);
+  const foot = parts.reduce((s, m) => Math.max(s, Math.max(m.w, m.d)), 0);
+  primary.landmarkPrimary = true;
+  primary.label = meta.label;
+  primary.drillContext3d = meta.dngId ? 'dungeon' : 'town';
+  primary.townId = meta.townId || '';
+  primary.dungeonId = meta.dngId || '';
+  primary.poi = atlas3dLandmarkPoi(meta, kind, tLens, tops - L.b, foot);
+  parts.forEach(m => { if (m !== primary) m.pickAs = primary.name; });
+  return parts;
+}
+
+function atlas3dBuildOverlandScene(lensMeta, E) {
+  const meshes = [];
+  const sp = (DATA && DATA.studioPerspectives) || {};
+  const tatlas = sp.tShapedWorldAtlas || {};
+  const zones = getAllAtlas63Zones(tatlas);
+  const placed = getAtlasPlacedZonePoints(tatlas, zones);
+  const zoneById = {};
+  zones.forEach(z => { zoneById[z.zone_id] = z; });
+  const terrain = atlas3dBuildTerrain(E);
+
+  meshes.push(atlas3dMk('Sea_Ocean_Basin', 'sea', 0, -3, 0, 280, 3, 140, '#0c3b66', 0.96, { layer: 0 }));
+  // Continents: the real 2D polygons, extruded as stepped plateaus (shelf, basin, terraces, caldera abyss).
+  terrain.terraces.forEach(t => {
+    const spec = t.spec;
+    if (t.shelf) {
+      meshes.push(atlas3dMkPrism(`${t.code}_${spec.slug}_Shelf`, 'shelf', t.pts, -0.6, 1.2, t.color, 0.8, { layer: 1 }));
+      return;
+    }
+    if (t.abyss) {
+      meshes.push(atlas3dMkPrism(`${t.code}_${spec.slug}_Abyss`, 'abyss', t.pts, t.top, 0.1, t.color, 1, { layer: 6 }));
+      return;
+    }
+    const extra = { terrace: t.idx, layer: 2 + t.idx };
+    if (t.idx === 0) {
+      const p = spec.poi;
+      Object.assign(extra, {
+        label: p.label,
+        poi: { title: p.title, category: `${p.category} · ${lensMeta.lensBadge}`, thumb: '/thumbs/buildings/tower_round_roof_a.webp', hoursOrStatus: p.hours,
+          summary: p.summary, address: p.address, coordinates: p.coords, scaleSpecs: p.scale }
+      });
+    }
+    const name = t.idx === 0 ? `${t.code}_${spec.slug}_Plateau` : `${t.code}_${spec.slug}_Terrace_${t.idx}`;
+    const mesh = atlas3dMkPrism(name, 'continent', t.pts, t.idx === 0 ? -0.6 : spec.steps[t.idx - 1].top * E, t.top - (t.idx === 0 ? -0.6 : spec.steps[t.idx - 1].top * E), t.color, 0.97, extra);
+    if (t.idx > 0) mesh.pickAs = `${t.code}_${spec.slug}_Plateau`;
+    meshes.push(mesh);
   });
+
+  // Mountains and highlands at the mountain zones.
+  ATLAS_3D_MOUNTAIN_ZONES.forEach(mz => {
+    const q = placed[mz.zoneId];
+    if (!q) return;
+    const c0 = svgTo3dWorld(q.x, q.y);
+    const c = { x: c0.x + mz.off[0], z: c0.z + mz.off[1] };
+    const z = zoneById[mz.zoneId] || {};
+    const code = (getAtlasContinentCode(z.continent_id) || 'C02');
+    const base = terrain.top(c.x, c.z);
+    const peaks = mz.peaks || 1;
+    const first = `${code}_Mtn_${mz.name}`;
+    for (let pk = 0; pk < peaks; pk++) {
+      const off = peaks === 1 ? 0 : (pk === 0 ? -0.5 : 0.5) * mz.rx * 0.9;
+      const px = c.x + off * Math.cos(mz.rot), pz = c.z + off * Math.sin(mz.rot);
+      const pBase = Math.max(base, terrain.top(px, pz));
+      let y = pBase - 0.5;
+      const stages = mz.caldera ? 2 : mz.heights.length;
+      for (let s = 0; s < stages; s++) {
+        const k = [1, 0.74, 0.5, 0.28][s];
+        const kk = k * (pk === 1 ? 0.85 : 1);
+        const h = mz.heights[s] * E * (pk === 1 ? 0.88 : 1) + (s === 0 ? 0.5 : 0);
+        const isTopSnow = mz.snow && s >= stages - 2;
+        const color = isTopSnow ? '#e5e7eb' : atlas3dMixHex(mz.color, '#ffffff', s * 0.14);
+        const name = pk === 0 && s === 0 ? first : `${first}_P${pk + 1}_S${s + 1}`;
+        const mesh = atlas3dMkPrism(name, 'mountain', atlas3dBlobPts(px, pz, mz.rx * kk * (peaks > 1 ? 0.62 : 1), mz.rz * kk * (peaks > 1 ? 0.85 : 1), mz.rot, 10), y, h, color, 0.98, { zoneId: mz.zoneId, layer: 8 });
+        if (name === first) {
+          mesh.label = `⛰ ${(z.name || mz.name).split(' (')[0]}`;
+          mesh.poi = { title: z.name || mz.name, category: `Mountain / Highland · ${z.zoneCategory || 'Hunting Zone'} · ${lensMeta.lensBadge}`, thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+            hoursOrStatus: `Highland relief · loc=${z.loc_coord || '0:0'}`, summary: 'Stepped mountain relief placed at this zone with the same pixel-CRS anchor as the 2D map.',
+            address: z.territory_name || mz.name, coordinates: `loc=${z.loc_coord || '0:0'}`, scaleSpecs: `Peak +${Math.round(y + h)}m above sea`, inspectId: z.studio_node_id || mz.zoneId };
+        } else mesh.pickAs = first;
+        meshes.push(mesh);
+        y += h;
+      }
+      if (mz.caldera) {
+        const top = y;
+        meshes.push(atlas3dMkPrism(`${first}_P${pk + 1}_Pit`, 'mountain', atlas3dBlobPts(px, pz, mz.rx * 0.36, mz.rz * 0.36, mz.rot, 10), top, 0.12, '#2a0f0f', 1, { zoneId: mz.zoneId, layer: 8, pickAs: first }));
+        meshes.push(atlas3dMkPrism(`${first}_P${pk + 1}_Lava`, 'mountain', atlas3dBlobPts(px, pz, mz.rx * 0.18, mz.rz * 0.18, mz.rot, 8), top + 0.12, 0.1, '#f97316', 1, { zoneId: mz.zoneId, layer: 8, pickAs: first }));
+      }
+    }
+  });
+
+  // Roads and sea bridges: the same highway table and the same curve as the 2D map, stepping with the terrain.
+  const anchorOf = id => getAtlasLandmarkAnchor(id);
+  ATLAS_OVERLAND_HIGHWAYS.forEach(([aId, bId], hi) => {
+    const a = anchorOf(aId), b = anchorOf(bId);
+    if (!a || !b) return;
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2 - 10;
+    const n = Math.max(4, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 24));
+    const pts = [];
+    for (let i = 0; i <= n; i++) {
+      const t = i / n, u = 1 - t;
+      pts.push(svgTo3dWorld(u * u * a.x + 2 * u * t * mx + t * t * b.x, u * u * a.y + 2 * u * t * my + t * t * b.y));
+    }
+    const hs = [];
+    for (let i = 0; i < n; i++) hs.push(terrain.top((pts[i].x + pts[i + 1].x) / 2, (pts[i].z + pts[i + 1].z) / 2));
+    // Sea spans become bridge decks interpolated between the land on either side.
+    const deck = hs.map((h, i) => {
+      if (h > 0.01) return h;
+      let l = i - 1; while (l >= 0 && hs[l] <= 0.01) l--;
+      let r = i + 1; while (r < n && hs[r] <= 0.01) r++;
+      const hl = l >= 0 ? hs[l] : (r < n ? hs[r] : 4), hr = r < n ? hs[r] : hl;
+      const f = (i - l) / Math.max(1, r - l);
+      return Math.max(4, hl + (hr - hl) * f);
+    });
+    for (let i = 0; i < n; i++) {
+      const p0 = pts[i], p1 = pts[i + 1];
+      const dx = p1.x - p0.x, dz = p1.z - p0.z, len = Math.hypot(dx, dz) || 1;
+      const nx = -dz / len * 0.75, nz = dx / len * 0.75;
+      const isBridge = hs[i] <= 0.01;
+      const y0 = deck[i] - 0.25;
+      const corners = [[p0.x + nx, p0.z + nz], [p1.x + nx, p1.z + nz], [p1.x - nx, p1.z - nz], [p0.x - nx, p0.z - nz]];
+      meshes.push(atlas3dMkPrism(`Road_${hi + 1}_${isBridge ? 'Bridge_' : ''}${i + 1}`, 'road', corners, y0, 0.65, isBridge ? '#cbd5e1' : '#e2c778', 0.95,
+        { ends: [[p0.x, p0.z], [p1.x, p1.z]], highway: hi, layer: 6 }));
+      if (isBridge && i % 2 === 0) {
+        meshes.push(atlas3dMk(`Road_${hi + 1}_Pier_${i + 1}`, 'bridge_pier', (p0.x + p1.x) / 2, -0.5, (p0.z + p1.z) / 2, 1.0, y0 + 0.5, 1.0, '#64748b', 0.95, { layer: 6 }));
+      }
+    }
+  });
+
+  // Landmarks: distinct silhouettes by 2D type, each at its projected anchor.
+  ATLAS_OVERLAND_LANDMARK_ANCHORS.forEach(a => {
+    const meta = ATLAS_3D_LANDMARK_META[a.landmarkId];
+    if (!meta) return;
+    const c = svgTo3dWorld(a.x, a.y);
+    const foot = (a.kind === 'castle' ? 12 : 10) / 2 + 1;
+    const samples = [[0, 0], [foot, foot], [-foot, foot], [foot, -foot], [-foot, -foot]].map(([dx, dz]) => terrain.top(c.x + dx, c.z + dz));
+    const tLens = getAtlasPersonaLensTelemetrySummary({ id: meta.townId || meta.dngId || meta.name, name: meta.label, actionType: meta.dngId ? 'dungeon' : 'town', levelRange: meta.lv, locCoord: meta.loc });
+    atlas3dBuildLandmark({ id: a.landmarkId, kind: a.kind, cx: c.x, cz: c.z, b: Math.max.apply(null, samples), low: Math.min.apply(null, samples), meta }, E, tLens).forEach(m => meshes.push(m));
+  });
+
+  // Harbor piers at the harbor zones (reach toward the nearest water).
+  zones.filter(z => /^zone-harbor-/.test(z.zone_id)).forEach(z => {
+    const q = placed[z.zone_id];
+    if (!q) return;
+    const c = svgTo3dWorld(q.x, q.y);
+    const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    let best = dirs[0], bh = Infinity;
+    dirs.forEach(dv => { const h = terrain.top(c.x + dv[0] * 6, c.z + dv[1] * 6); if (h < bh) { bh = h; best = dv; } });
+    const along = best[0] !== 0;
+    const base = terrain.top(c.x, c.z);
+    meshes.push(atlas3dMk(`Pier_${z.zone_id.replace(/[^a-zA-Z0-9]+/g, '_')}`, 'harbor_pier', c.x + best[0] * 3, base + 0.2, c.z + best[1] * 3, along ? 7 : 1.8, 0.6, along ? 1.8 : 7, '#a16207', 0.96, { layer: 8 }));
+  });
+
+  // Boss / spawn pins (same table and anchors as the 2D map).
+  ATLAS_OVERLAND_MOB_PINS.forEach(mp => {
+    const c = svgTo3dWorld(mp.x, mp.y);
+    const base = terrain.top(c.x, c.z);
+    const col = ATLAS_3D_BOSS_PIN_COLORS[mp.type] || '#f8fafc';
+    const hgt = (mp.type === 'MVP' ? 5.5 : (mp.type === 'Raid' ? 4.6 : 3.4)) * E;
+    const name = `Pin_${mp.id.replace(/[^a-zA-Z0-9]+/g, '_')}`;
+    meshes.push(atlas3dMk(name, 'boss_pin', c.x, base, c.z, 0.9, hgt, 0.9, col, 1, { pinId: mp.id, layer: 8,
+      poi: { title: mp.name, category: `${mp.type} Spawn Pin · Lv.${mp.lv} · ${lensMeta.lensBadge}`, thumb: '/thumbs/buildings/tower_round_roof_a.webp', hoursOrStatus: `${mp.type} · loc=${mp.loc}`,
+        summary: `${mp.type} habitat in ${mp.zone}.`, address: mp.zone, coordinates: `loc=${mp.loc}`, scaleSpecs: 'Spawn marker', dungeonWarpId: mp.dungeonWarpId || '', dungeonFloorId: mp.dungeonFloorId || '', inspectId: mp.id } }));
+    meshes.push(atlas3dMk(`${name}_Cap`, 'boss_pin_cap', c.x, base + hgt, c.z, 1.9, 1.1, 1.9, col, 1, { layer: 8, pickAs: name }));
+  });
+
   return { context: 'overland', title: 'Cradle of Embers — 3D Continental Elevation & Spire Blockout', meshes };
 }
 
 function isAtlas3dGroundMesh(m) {
-  return /^(Town_Plaza_Ground|Road_|Wall_|Floor_.*_Slab|C0\d_)/.test(String((m && m.name) || ''));
+  return /^(Town_Plaza_Ground|Road_|Wall_|Floor_.*_Slab|C0\d_|Sea_)/.test(String((m && m.name) || ''));
 }
 
 function isPointInAtlasPolygon(x, y, poly) {
@@ -8622,11 +8953,13 @@ function initOrUpdateAtlasMap3dEngine() {
       ctx.beginPath(); ctx.moveTo(c.sx, c.sy); ctx.lineTo(d.sx, d.sy); ctx.stroke();
     }
 
-    // Sort meshes back-to-front by centroid depth
+    // Sort meshes back-to-front: by draw layer first (sea, shelf, terraces, roads, objects; 0 when unset), then by centroid depth
     const sorted = scene.meshes.slice().map(m => {
       const p = project(m.x, m.y, m.z);
       return { m, depth: p.depth, center: p };
-    }).sort((a, b) => a.depth - b.depth);
+    }).sort((a, b) => ((a.m.layer || 0) - (b.m.layer || 0)) || (a.depth - b.depth));
+    const primaryByName = {};
+    scene.meshes.forEach(m => { if (m.poi) primaryByName[m.name] = m; });
 
     const pendingLabels = [];
     const nextBounds = [];
@@ -8634,16 +8967,50 @@ function initOrUpdateAtlasMap3dEngine() {
       const hw = m.w / 2;
       const hh = m.h / 2;
       const hd = m.d / 2;
-      const v = [
-        project(m.x - hw, m.y - hh, m.z - hd),
-        project(m.x + hw, m.y - hh, m.z - hd),
-        project(m.x + hw, m.y - hh, m.z + hd),
-        project(m.x - hw, m.y - hh, m.z + hd),
-        project(m.x - hw, m.y + hh, m.z - hd),
-        project(m.x + hw, m.y + hh, m.z - hd),
-        project(m.x + hw, m.y + hh, m.z + hd),
-        project(m.x - hw, m.y + hh, m.z + hd)
-      ];
+      const pickM = m.poi ? m : (m.pickAs ? primaryByName[m.pickAs] : null);
+      const isSelected = ATLAS_3D_STATE.selectedMeshName === m.name || (Boolean(m.pickAs) && ATLAS_3D_STATE.selectedMeshName === m.pickAs);
+      const isHovered = ATLAS_3D_STATE.hoveredMeshName === m.name || (Boolean(m.pickAs) && ATLAS_3D_STATE.hoveredMeshName === m.pickAs);
+      let v;
+      let faces;
+      let drawTop = null;
+      if (m.pts) {
+        // F-158 polygon prism: vertices 0..n-1 bottom, n..2n-1 top. Visible sides are the outward-facing ones; top is drawn last.
+        const n = m.pts.length;
+        const y0 = m.y - hh, y1 = m.y + hh;
+        v = m.pts.map(q => project(q[0], y0, q[1])).concat(m.pts.map(q => project(q[0], y1, q[1])));
+        faces = [];
+        for (let i = 0; i < n; i++) {
+          const j = (i + 1) % n;
+          const dx = m.pts[j][0] - m.pts[i][0], dz = m.pts[j][1] - m.pts[i][1];
+          const nx = dz * m.winding, nz = -dx * m.winding;
+          const nrz = nx * sinY + nz * cosY;
+          if (nrz <= 0) continue;
+          const nrx = nx * cosY - nz * sinY;
+          const nl = Math.hypot(nx, nz) || 1;
+          faces.push({ idx: [i, j, n + j, n + i], shade: 0.64 + 0.3 * (nrz / nl) - 0.1 * (nrx / nl), depth: (v[i].depth + v[j].depth + v[n + i].depth + v[n + j].depth) / 4 });
+        }
+        faces.sort((fa, fb) => fa.depth - fb.depth);
+        drawTop = { idx: Array.from({ length: n }, (_, i) => n + i), shade: 1.08 };
+        faces.push(drawTop);
+      } else {
+        v = [
+          project(m.x - hw, m.y - hh, m.z - hd),
+          project(m.x + hw, m.y - hh, m.z - hd),
+          project(m.x + hw, m.y - hh, m.z + hd),
+          project(m.x - hw, m.y - hh, m.z + hd),
+          project(m.x - hw, m.y + hh, m.z - hd),
+          project(m.x + hw, m.y + hh, m.z - hd),
+          project(m.x + hw, m.y + hh, m.z + hd),
+          project(m.x - hw, m.y + hh, m.z + hd)
+        ];
+        faces = [
+          { idx: [0, 1, 5, 4], shade: 0.72 },
+          { idx: [1, 2, 6, 5], shade: 0.84 },
+          { idx: [2, 3, 7, 6], shade: 0.92 },
+          { idx: [3, 0, 4, 7], shade: 0.68 },
+          { idx: [4, 5, 6, 7], shade: 1.08 }
+        ];
+      }
       let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
       v.forEach(pt => {
         if (pt.sx < minX) minX = pt.sx;
@@ -8651,24 +9018,17 @@ function initOrUpdateAtlasMap3dEngine() {
         if (pt.sx > maxX) maxX = pt.sx;
         if (pt.sy > maxY) maxY = pt.sy;
       });
-      const faces = [
-        { idx: [0, 1, 5, 4], shade: 0.72 },
-        { idx: [1, 2, 6, 5], shade: 0.84 },
-        { idx: [2, 3, 7, 6], shade: 0.92 },
-        { idx: [3, 0, 4, 7], shade: 0.68 },
-        { idx: [4, 5, 6, 7], shade: 1.08 }
-      ];
-      if (m.poi) {
+      if (pickM) {
         const polys = faces.map(f => f.idx.map(i => [v[i].sx, v[i].sy]));
-        nextBounds.push({ m, depth, minX, minY, maxX, maxY, polys, isGround: isAtlas3dGroundMesh(m) });
+        nextBounds.push({ m: pickM, depth, minX, minY, maxX, maxY, polys, isGround: isAtlas3dGroundMesh(m) });
       }
-      const isSelected = ATLAS_3D_STATE.selectedMeshName === m.name;
-      const isHovered = ATLAS_3D_STATE.hoveredMeshName === m.name;
-      faces.sort((fa, fb) => {
-        const da = fa.idx.reduce((s, i) => s + v[i].depth, 0) / 4;
-        const db = fb.idx.reduce((s, i) => s + v[i].depth, 0) / 4;
-        return da - db;
-      });
+      if (!m.pts) {
+        faces.sort((fa, fb) => {
+          const da = fa.idx.reduce((s, i) => s + v[i].depth, 0) / 4;
+          const db = fb.idx.reduce((s, i) => s + v[i].depth, 0) / 4;
+          return da - db;
+        });
+      }
       faces.forEach(f => {
         ctx.beginPath();
         f.idx.forEach((vi, i) => {
@@ -8687,7 +9047,7 @@ function initOrUpdateAtlasMap3dEngine() {
         ctx.stroke();
       });
       ctx.globalAlpha = 1.0;
-      if (m.label || isSelected) {
+      if (m.label || (isSelected && pickM === m)) {
         const topPt = project(m.x, m.y + hh + 3, m.z);
         pendingLabels.push({ m, topPt, depth: isSelected ? depth + 1000 : depth, isSelected });
       }
@@ -8868,6 +9228,38 @@ function hexToRgbNormalized(hex) {
   return [((num >> 16) & 255) / 255, ((num >> 8) & 255) / 255, (num & 255) / 255];
 }
 
+// Ear-clipping triangulation of a simple polygon (x, z points, any winding) -> [[i, j, k], ...] counter-clockwise in (x, z).
+function atlasTriangulatePoly(pts) {
+  const n = pts.length;
+  if (n < 3) return [];
+  let area = 0;
+  for (let i = 0; i < n; i++) { const q = pts[(i + 1) % n]; area += pts[i][0] * q[1] - q[0] * pts[i][1]; }
+  const idx = pts.map((_, i) => i);
+  if (area < 0) idx.reverse();
+  const cross = (a, b, c) => (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+  const tris = [];
+  let guard = 0;
+  while (idx.length > 3 && guard++ < 10000) {
+    let clipped = false;
+    for (let i = 0; i < idx.length; i++) {
+      const ia = idx[(i + idx.length - 1) % idx.length], ib = idx[i], ic = idx[(i + 1) % idx.length];
+      const a = pts[ia], b = pts[ib], c = pts[ic];
+      if (cross(a, b, c) <= 1e-9) continue;
+      let ok = true;
+      for (let k = 0; k < idx.length; k++) {
+        const j = idx[k];
+        if (j === ia || j === ib || j === ic) continue;
+        const p = pts[j];
+        if (cross(a, b, p) >= 0 && cross(b, c, p) >= 0 && cross(c, a, p) >= 0) { ok = false; break; }
+      }
+      if (ok) { tris.push([ia, ib, ic]); idx.splice(i, 1); clipped = true; break; }
+    }
+    if (!clipped) break;
+  }
+  if (idx.length === 3) tris.push([idx[0], idx[1], idx[2]]);
+  return tris;
+}
+
 function buildAtlasGlbArrayBuffer(sceneInput) {
   const scene = sceneInput || buildAtlas3dBlockoutScene();
   const meshes = scene.meshes || [];
@@ -8889,49 +9281,79 @@ function buildAtlasGlbArrayBuffer(sceneInput) {
   const gltfMeshes = [];
   const gltfAccessors = [];
   const childNodeIndices = [];
-  const totalVerts = meshes.length * 24;
+
+  // Per-mesh geometry first (boxes are 24 vertices / 36 indices; F-158 polygon prisms are variable), then pack.
+  const geoms = meshes.map(m => {
+    const g = { pos: [], nrm: [], idx: [], min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] };
+    const pushV = (px, py, pz, n) => {
+      px = +px.toFixed(3); py = +py.toFixed(3); pz = +pz.toFixed(3);
+      g.pos.push(px, py, pz);
+      g.nrm.push(n[0], n[1], n[2]);
+      if (px < g.min[0]) g.min[0] = px;
+      if (py < g.min[1]) g.min[1] = py;
+      if (pz < g.min[2]) g.min[2] = pz;
+      if (px > g.max[0]) g.max[0] = px;
+      if (py > g.max[1]) g.max[1] = py;
+      if (pz > g.max[2]) g.max[2] = pz;
+    };
+    if (m.pts) {
+      const n = m.pts.length;
+      const y0 = m.y - m.h / 2, y1 = m.y + m.h / 2;
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        const dx = m.pts[j][0] - m.pts[i][0], dz = m.pts[j][1] - m.pts[i][1];
+        const nl = Math.hypot(dx, dz) || 1;
+        const nrm = [dz * m.winding / nl, 0, -dx * m.winding / nl];
+        const base = g.pos.length / 3;
+        pushV(m.pts[i][0], y0, m.pts[i][1], nrm);
+        pushV(m.pts[i][0], y1, m.pts[i][1], nrm);
+        pushV(m.pts[j][0], y1, m.pts[j][1], nrm);
+        pushV(m.pts[j][0], y0, m.pts[j][1], nrm);
+        if (m.winding > 0) g.idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+        else g.idx.push(base, base + 2, base + 1, base, base + 3, base + 2);
+      }
+      const tris = atlasTriangulatePoly(m.pts);
+      const topBase = g.pos.length / 3;
+      m.pts.forEach(q => pushV(q[0], y1, q[1], [0, 1, 0]));
+      const botBase = g.pos.length / 3;
+      m.pts.forEach(q => pushV(q[0], y0, q[1], [0, -1, 0]));
+      tris.forEach(([ia, ib, ic]) => g.idx.push(topBase + ia, topBase + ic, topBase + ib, botBase + ia, botBase + ib, botBase + ic));
+    } else {
+      const hw = (m.w || 10) / 2, hh = (m.h || 10) / 2, hd = (m.d || 10) / 2;
+      cubeFaces.forEach(face => {
+        const faceBase = g.pos.length / 3;
+        face.v.forEach(([vx, vy, vz]) => pushV(m.x + vx * hw, m.y + vy * hh, m.z + vz * hd, face.n));
+        g.idx.push(faceBase, faceBase + 1, faceBase + 2, faceBase, faceBase + 2, faceBase + 3);
+      });
+    }
+    return g;
+  });
+  const totalVerts = geoms.reduce((s, g) => s + g.pos.length / 3, 0);
   const useUint32 = totalVerts > 65535;
   const idxComponentType = useUint32 ? 5125 : 5123;
   const idxBytesPerElem = useUint32 ? 4 : 2;
-
+  let vertCursor = 0;
+  let idxCursor = 0;
   meshes.forEach((m, mIdx) => {
-    const hw = (m.w || 10) / 2;
-    const hh = (m.h || 10) / 2;
-    const hd = (m.d || 10) / 2;
-    const [r, g, b] = hexToRgbNormalized(m.color);
-    let minX = Infinity, minY = Infinity, minZ = Infinity;
-    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
-    let localVertex = 0;
-
-    cubeFaces.forEach(face => {
-      const faceBase = localVertex;
-      face.v.forEach(([vx, vy, vz]) => {
-        const px = +(m.x + vx * hw).toFixed(3);
-        const py = +(m.y + vy * hh).toFixed(3);
-        const pz = +(m.z + vz * hd).toFixed(3);
-        positions.push(px, py, pz);
-        normals.push(face.n[0], face.n[1], face.n[2]);
-        colors.push(+r.toFixed(4), +g.toFixed(4), +b.toFixed(4));
-        if (px < minX) minX = px;
-        if (py < minY) minY = py;
-        if (pz < minZ) minZ = pz;
-        if (px > maxX) maxX = px;
-        if (py > maxY) maxY = py;
-        if (pz > maxZ) maxZ = pz;
-        localVertex++;
-      });
-      indices.push(faceBase, faceBase + 1, faceBase + 2, faceBase, faceBase + 2, faceBase + 3);
-    });
+    const g = geoms[mIdx];
+    const [r, gg, b] = hexToRgbNormalized(m.color);
+    const vCount = g.pos.length / 3;
+    for (let i = 0; i < vCount; i++) colors.push(+r.toFixed(4), +gg.toFixed(4), +b.toFixed(4));
+    g.pos.forEach(v => positions.push(v));
+    g.nrm.forEach(v => normals.push(v));
+    g.idx.forEach(v => indices.push(v)); // local to this primitive's accessors (their byteOffset already selects the vertices)
 
     const posAccIdx = gltfAccessors.length;
-    const vecByteOffset = mIdx * 24 * 12;
-    const idxByteOffset = mIdx * 36 * idxBytesPerElem;
+    const vecByteOffset = vertCursor * 12;
+    const idxByteOffset = idxCursor * idxBytesPerElem;
     gltfAccessors.push(
-      { bufferView: 0, byteOffset: vecByteOffset, componentType: 5126, count: 24, type: 'VEC3', min: [minX, minY, minZ], max: [maxX, maxY, maxZ] },
-      { bufferView: 1, byteOffset: vecByteOffset, componentType: 5126, count: 24, type: 'VEC3' },
-      { bufferView: 2, byteOffset: vecByteOffset, componentType: 5126, count: 24, type: 'VEC3' },
-      { bufferView: 3, byteOffset: idxByteOffset, componentType: idxComponentType, count: 36, type: 'SCALAR' }
+      { bufferView: 0, byteOffset: vecByteOffset, componentType: 5126, count: vCount, type: 'VEC3', min: g.min, max: g.max },
+      { bufferView: 1, byteOffset: vecByteOffset, componentType: 5126, count: vCount, type: 'VEC3' },
+      { bufferView: 2, byteOffset: vecByteOffset, componentType: 5126, count: vCount, type: 'VEC3' },
+      { bufferView: 3, byteOffset: idxByteOffset, componentType: idxComponentType, count: g.idx.length, type: 'SCALAR' }
     );
+    vertCursor += vCount;
+    idxCursor += g.idx.length;
 
     const meshName = String(m.name || m.label || (`Mesh_${mIdx}`));
     gltfMeshes.push({
@@ -8957,7 +9379,7 @@ function buildAtlasGlbArrayBuffer(sceneInput) {
     name: `Atlas_${scene.context}_Root`,
     children: childNodeIndices,
     extras: {
-      unit: '1u = 1m (Godot 4 blockout scale; overland miniature 1u = 1.86km)',
+      unit: '1u = 1m (Godot 4 blockout scale; overland miniature 1u = 1.54km)',
       worldSpanMeters: 400000,
       context: scene.context
     }
@@ -8981,9 +9403,9 @@ function buildAtlasGlbArrayBuffer(sceneInput) {
       version: '2.0',
       generator: 'Atlas World Studio map3d Blockout Exporter (Godot 4)',
       extras: {
-        // Overland is a 215u miniature of the 400 km world (≈1860 m/u); town and dungeon are true 1u = 1m.
-        unit: scene.context === 'overland' ? '1u = 1860m (overland miniature; scale by metersPerUnit for Godot 4)' : '1u = 1m (Godot 4 compatible)',
-        metersPerUnit: scene.context === 'overland' ? 1860 : 1,
+        // Overland is a 260u miniature of the 400 km world (svgTo3dWorld: 1 svg unit = 0.25u, so ≈1538 m/u); town and dungeon are true 1u = 1m.
+        unit: scene.context === 'overland' ? '1u = 1538m (overland miniature; scale by metersPerUnit for Godot 4)' : '1u = 1m (Godot 4 compatible)',
+        metersPerUnit: scene.context === 'overland' ? ATLAS_3D_OVERLAND_M_PER_UNIT : 1,
         worldSpanMeters: 400000,
         context: scene.context
       }
@@ -20420,19 +20842,8 @@ function renderDedicatedWorldAtlas() {
 
   registerAtlasOverlandPinAnchors(overlandLandmarks, tatlas);
 
-  // Overland Monster / Mini-Boss / Raid / MVP Spawn Pins
-  const overlandMobPins = [
-    { id: 'mob-clover-pup', name: 'Clover-Dew Pup', type: 'Monster', lv: 4, x: 378, y: 468, loc: '-89200:246100', zone: 'Clover South-Gate Meadow' },
-    { id: 'mob-kiln-captain', name: '[Mini-Boss] Kiln-Shell Captain', type: 'Mini-Boss', lv: 13, x: 452, y: 472, loc: '48880:247220', zone: 'Kiln Cellar Entrance' },
-    { id: 'mob-queen-ant', name: '[MVP] Queen Ant Ash-Brood Sovereign', type: 'MVP', lv: 22, x: 602, y: 472, loc: '53100:242600', zone: 'The Ant Nest B3', dungeonWarpId: 'zone-dungeon-kiln-cellar', dungeonFloorId: 'B3' },
-    { id: 'mob-catherok-raid', name: '[Raid] Catherok Pendulum Colossus', type: 'Raid', lv: 26, x: 602, y: 242, loc: '17710:110100', zone: 'Cruma Tower 2F', dungeonWarpId: 'zone-dungeon-pendulum-shaft', dungeonFloorId: '2F' },
-    { id: 'mob-cruma-core', name: '[MVP] Core — Prime Governor', type: 'MVP', lv: 30, x: 705, y: 218, loc: '17724:108150', zone: 'Cruma Tower 3F', dungeonWarpId: 'zone-dungeon-pendulum-shaft', dungeonFloorId: '3F' },
-    { id: 'mob-hallate-raid', name: '[Raid] Hallate Clockwork Vanguard', type: 'Raid', lv: 32, x: 805, y: 256, loc: '115000:159500', zone: 'Tower of Insolence 2F', dungeonWarpId: 'zone-dungeon-chronometer-foundry', dungeonFloorId: '2F' },
-    { id: 'mob-baium-mvp', name: '[MVP] Sovereign Chronometer Aethelgard', type: 'MVP', lv: 35, x: 888, y: 186, loc: '115180:15900', zone: 'Tower of Insolence 3F', dungeonWarpId: 'zone-dungeon-chronometer-foundry', dungeonFloorId: '3F' },
-    { id: 'mob-halo-watcher', name: 'Astral Prism Sentinel', type: 'Monster', lv: 48, x: 638, y: 156, loc: '12400:-118000', zone: 'Zenith Refractory' },
-    { id: 'mob-vesper-raid', name: '[Raid] Star-Tether Leviathan', type: 'Raid', lv: 68, x: 678, y: 78, loc: '94000:-164000', zone: 'Crown-Lens Approach' },
-    { id: 'mob-architect-mvp', name: '[MVP] Apostle of the Shattered Halo', type: 'MVP', lv: 92, x: 896, y: 78, loc: '148000:-204000', zone: 'Celestial Astrolabe Core' }
-  ];
+  // Overland Monster / Mini-Boss / Raid / MVP Spawn Pins (table shared with the 3D blockout, F-158)
+  const overlandMobPins = ATLAS_OVERLAND_MOB_PINS;
 
   const visibleLandmarks = overlandLandmarks.filter(lm => {
     if (!matchesAtlasLevelBand(lm.lv)) return false;

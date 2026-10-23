@@ -5241,7 +5241,10 @@ console.log(JSON.stringify(sandbox.__TEST_OUT));
         self.assertTrue(v7["dungeonHasTownOnlyNote"])
         self.assertTrue(v7["poiClearedOnDungeon"])
         self.assertTrue(v7["poiClearedOnField"])
-        self.assertEqual(v7["metersPerUnit"], {"overland": 1860, "town": 1, "dungeon": 1})
+        # F-158: the overland 3D blockout spans 260 units (svgTo3dWorld: 1 svg unit = 0.25u), so the honest scale is
+        # 400000 / 260 m per unit; town and dungeon stay 1u = 1m.
+        self.assertAlmostEqual(v7["metersPerUnit"]["overland"], 400000 / 260, places=6)
+        self.assertEqual((v7["metersPerUnit"]["town"], v7["metersPerUnit"]["dungeon"]), (1, 1))
         self.assertTrue(v7["polyHit"])
         self.assertTrue(v7["groundRank"])
 
@@ -5313,7 +5316,8 @@ console.log(JSON.stringify(sandbox.__TEST_OUT));
         self.assertIn("const ATLAS_OVERLAND_LANDMARK_ANCHORS = [", html)
         self.assertNotIn("const anchorLookup = {", html)
         self.assertIsNone(re.search(r"id: 'town-kilnwatch-bastion',\s*kind: 'castle',\s*priority: 1,\s*x:", html))
-        self.assertIn("{ landmarkId: 'town-kilnwatch-bastion', zoneId: 'zone-town-kilnwatch-bastion', x: 618, y: 318 }", html)
+        # F-158 added a `kind` (map symbol / 3D silhouette) to each row; the coordinates are what this asserts.
+        self.assertIn("{ landmarkId: 'town-kilnwatch-bastion', zoneId: 'zone-town-kilnwatch-bastion', x: 618, y: 318, kind: 'castle' }", html)
         # One zone predicate; the badge counts zones, not landmark + mob pins.
         self.assertIn("function atlasZoneMatchesFilter(", html)
         self.assertNotIn("visibleLandmarks.length + visibleMobPins.length", html)

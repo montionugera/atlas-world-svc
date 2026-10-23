@@ -742,6 +742,92 @@ const v10Report = vm.runInContext(`(() => {
   setAtlasPersonaLens('gamer');
   return { simulate: SIM, landmarkCount: svgLms.length, tableCount: ATLAS_OVERLAND_LANDMARK_ANCHORS.length, landmarkRows, counts, written, back, lens, overlayWins, junk };
 })()`, sandbox);
+
+// V-12 (F-158): the overland 3D blockout is the 2D map in 3D (shared projection, polygons, landmark table).
+const v12Report = vm.runInContext(`(() => {
+  setAtlasEngineMode('3d_map3d');
+  setAtlas3dOption('contextOverride', 'overland');
+  const out = { hasProjection: typeof svgTo3dWorld === 'function' };
+  if (!out.hasProjection) return out;
+  const scene = buildAtlas3dBlockoutScene();
+  const P = svgTo3dWorld;
+  const p0 = P(520, 250), p1 = P(1040, 500);
+  out.projectionOk = Math.abs(p0.x) < 1e-9 && Math.abs(p0.z) < 1e-9 && Math.abs(p1.x - 130) < 1e-9 && Math.abs(p1.z - 62.5) < 1e-9;
+  const top = m => m.y + m.h / 2, bot = m => m.y - m.h / 2;
+  out.landmarks = ATLAS_OVERLAND_LANDMARK_ANCHORS.map(a => {
+    const parts = scene.meshes.filter(m => m.landmarkId === a.landmarkId);
+    const prim = parts.find(m => m.landmarkPrimary);
+    const e = P(a.x, a.y);
+    const foot = parts.reduce((s, m) => Math.max(s, Math.max(m.w, m.d)), 0);
+    const maxTop = parts.reduce((s, m) => Math.max(s, top(m)), -Infinity);
+    const minBot = parts.reduce((s, m) => Math.min(s, bot(m)), Infinity);
+    const roles = Array.from(new Set(parts.map(m => m.part))).sort();
+    return { id: a.landmarkId, kind: prim ? prim.landmarkKind : null, found: Boolean(prim), parts: parts.length, roles,
+      d: prim ? Math.hypot(prim.x - e.x, prim.z - e.z) : null, maxPartDist: parts.reduce((s, m) => Math.max(s, Math.hypot(m.x - e.x, m.z - e.z)), 0),
+      foot, height: maxTop - (prim ? prim.baseY : 0), aspect: prim ? (maxTop - prim.baseY) / foot : null,
+      cornerTowers: parts.filter(m => m.part === 'corner_tower').length, tiers: parts.filter(m => m.part === 'tier').length,
+      hasCrater: parts.some(m => m.part === 'crater'), hasGate: parts.some(m => m.part === 'gate_arch'), minBot };
+  });
+  const sea = scene.meshes.filter(m => /^Sea_/.test(m.name));
+  out.sea = sea.map(m => ({ name: m.name, w: m.w, d: m.d }));
+  const polys = getAtlasContinentPolygons();
+  const conts = scene.meshes.filter(m => m.part === 'continent');
+  out.continents = conts.map(m => ({ name: m.name, n: (m.pts || []).length }));
+  out.continentPolyMatch = polys.every(pg => {
+    const m = conts.find(c => c.name.indexOf(pg.code + '_') === 0 && c.terrace === 0);
+    if (!m || !m.pts || m.pts.length < pg.pts.length - 1) return false;
+    return pg.pts.slice(0, -1).every((q, i) => { const e = P(q[0], 500 - q[1]); return Math.hypot(m.pts[i][0] - e.x, m.pts[i][1] - e.z) < 0.01; });
+  });
+  out.hardcodedC0Boxes = scene.meshes.filter(m => /^C0\\d_/.test(m.name) && !(m.pts && m.pts.length >= 4)).map(m => m.name);
+  const mtn = scene.meshes.filter(m => m.part === 'mountain');
+  const placed = getAtlasOverlandZoneFilterModel().placedById;
+  out.mountains = mtn.map(m => { const q = placed[m.zoneId]; const e = q ? P(q.x, q.y) : null; return { zone: m.zoneId, h: m.h, d: e ? Math.hypot(m.x - e.x, m.z - e.z) : null }; });
+  out.mountainZones = Array.from(new Set(mtn.map(m => m.zoneId))).sort();
+  const landTop = Math.max.apply(null, conts.map(top));
+  out.mountainMaxH = mtn.reduce((s, m) => Math.max(s, top(m)), 0);
+  out.landTop = landTop;
+  const roads = scene.meshes.filter(m => /^Road_/.test(m.name) && m.ends);
+  out.roadHighways = Array.from(new Set(roads.map(r => r.highway))).length;
+  out.roadEndsOk = ATLAS_OVERLAND_HIGHWAYS.every(([ai, bi], hi) => {
+    const segs = roads.filter(r => r.highway === hi);
+    if (!segs.length) return false;
+    const a = getAtlasLandmarkAnchor(ai), b = getAtlasLandmarkAnchor(bi);
+    const pa = P(a.x, a.y), pb = P(b.x, b.y);
+    const f = segs[0].ends[0], l = segs[segs.length - 1].ends[1];
+    return Math.hypot(f[0] - pa.x, f[1] - pa.z) < 0.5 && Math.hypot(l[0] - pb.x, l[1] - pb.z) < 0.5;
+  });
+  const pins = scene.meshes.filter(m => m.part === 'boss_pin');
+  out.bossPins = pins.length;
+  out.bossPinsOk = typeof ATLAS_OVERLAND_MOB_PINS !== 'undefined' && ATLAS_OVERLAND_MOB_PINS.filter(mp => mp.type !== 'Monster').every(mp => {
+    const e = P(mp.x, mp.y); const m = pins.find(q => q.pinId === mp.id);
+    return m && Math.hypot(m.x - e.x, m.z - e.z) < 0.5;
+  });
+  out.glbOk = (() => { const b = buildAtlasGlbArrayBuffer(scene); const dv = new DataView(b); return dv.getUint32(0, true) === 0x46546C67 && dv.getUint32(8, true) === b.byteLength; })();
+  // glTF indices are relative to the primitive's own POSITION accessor: decode each GLB and bound-check every index.
+  out.glbIndexBad = {};
+  for (const ctxName of ['overland', 'town', 'dungeon']) {
+    setAtlas3dOption('contextOverride', ctxName);
+    const b = buildAtlasGlbArrayBuffer();
+    const dv = new DataView(b);
+    const jl = dv.getUint32(12, true);
+    const gltf = JSON.parse(Buffer.from(new Uint8Array(b, 20, jl)).toString('utf8').trim());
+    const binStart = 20 + jl + 8;
+    let bad = 0;
+    gltf.meshes.forEach(m => {
+      const pr = m.primitives[0];
+      const ia = gltf.accessors[pr.indices], pa = gltf.accessors[pr.attributes.POSITION];
+      const base = binStart + gltf.bufferViews[ia.bufferView].byteOffset + (ia.byteOffset || 0);
+      const w = ia.componentType === 5125 ? 4 : 2;
+      let mx = -1;
+      for (let i = 0; i < ia.count; i++) { const v = w === 4 ? dv.getUint32(base + i * 4, true) : dv.getUint16(base + i * 2, true); if (v > mx) mx = v; }
+      if (mx >= pa.count) bad++;
+    });
+    out.glbIndexBad[ctxName] = bad;
+  }
+  setAtlas3dOption('contextOverride', 'town');
+  setAtlasEngineMode('2d_svg');
+  return out;
+})()`, sandbox);
 // V-11 (F-157): frame clip, sidebar/drawer state machines
 const v11Report = vm.runInContext(`(() => {
   STUDIO_PERSPECTIVE = 'world-history-and-concept';
@@ -759,6 +845,7 @@ const v11Report = vm.runInContext(`(() => {
   return { clipDef, wrapped, hasSidebarFn, drawerAfterClose, hasMaximize };
 })()`, sandbox);
 console.log(JSON.stringify({
+  v12Report,
   v11Report,
   v10Report,
   v9Report,
@@ -864,7 +951,7 @@ console.log(JSON.stringify({
         and v7.get("dungeonHasTownOnlyNote") is True
         and v7.get("poiClearedOnDungeon") is True
         and v7.get("poiClearedOnField") is True
-        and v7.get("metersPerUnit") == {"overland": 1860, "town": 1, "dungeon": 1}
+        and abs((v7.get("metersPerUnit") or {}).get("overland", 0) - 400000 / 260) < 1e-6 and (v7.get("metersPerUnit") or {}).get("town") == 1 and (v7.get("metersPerUnit") or {}).get("dungeon") == 1  # F-158: overland 3D spans 260u (svgTo3dWorld), so 1u = 400000/260 m
         and v7.get("polyHit") is True
         and v7.get("groundRank") is True
     )
@@ -963,6 +1050,44 @@ console.log(JSON.stringify({
         and v10_junk_ok
     )
 
+
+    v12 = vm_out.get("v12Report") or {}
+    v12_lms = v12.get("landmarks") or []
+    v12_by_kind: dict = {}
+    for r in v12_lms:
+        v12_by_kind.setdefault(r.get("kind"), []).append(r)
+    compound = [r for k in ("town", "castle", "fortress") for r in v12_by_kind.get(k, [])]
+    tower = v12_by_kind.get("tower", [])
+    crypt = [r for k in ("catacomb", "lair") for r in v12_by_kind.get(k, [])]
+    windmill = v12_by_kind.get("windmill", [])
+    v12_bad_align = [r["id"] for r in v12_lms if not r.get("found") or r.get("d") is None or r["d"] >= 0.5 or r.get("maxPartDist", 99) > 12]
+    sig = lambda rs: sorted({tuple(r["roles"]) for r in rs})
+    v12_signatures_ok = bool(
+        compound and tower and crypt and windmill
+        and all(r["cornerTowers"] == 4 and "keep" in r["roles"] and "curtain_wall" in r["roles"] and r["aspect"] <= 1.0 and r["foot"] >= 8 for r in compound)
+        and all(r["tiers"] >= 3 and r["aspect"] >= 1.8 for r in tower)
+        and all(r["hasCrater"] and r["hasGate"] and r["aspect"] < 0.6 for r in crypt)
+        and not (set(sig(compound)) & set(sig(tower))) and not (set(sig(compound)) & set(sig(crypt))) and not (set(sig(tower)) & set(sig(crypt)))
+    )
+    v12_mountain_zones = {"zone-field-brass-spur-ridge", "zone-field-caldera-rim", "zone-field-astrolabe-rift", "zone-fortress-dragonspine-cog", "zone-fortress-cloud-halo"}
+    v12_mountains_ok = bool(
+        v12_mountain_zones <= set(v12.get("mountainZones") or [])
+        and all(min((m["d"] for m in (v12.get("mountains") or []) if m.get("zone") == z and m.get("d") is not None), default=99) < 16 for z in v12_mountain_zones)  # nearest massif within 16 units (64 svg px) of its zone anchor
+        and v12.get("mountainMaxH", 0) > v12.get("landTop", 1e9) + 4
+    )
+    v12_passed = bool(
+        v12.get("hasProjection") and v12.get("projectionOk")
+        and len(v12_lms) == 13 and v12_bad_align == []
+        and v12_signatures_ok
+        and any(s["w"] >= 260 and s["d"] >= 125 for s in (v12.get("sea") or []))
+        and len(v12.get("continents") or []) >= 3 and v12.get("continentPolyMatch") and v12.get("hardcodedC0Boxes") == []
+        and v12_mountains_ok
+        and v12.get("roadHighways", 0) >= 12 and v12.get("roadEndsOk")
+        and v12.get("bossPinsOk") and v12.get("bossPins", 0) >= 6
+        and v12.get("glbOk")
+        and v12.get("glbIndexBad") == {"overland": 0, "town": 0, "dungeon": 0}
+    )
+
     v11 = vm_out.get("v11Report") or {}
     v11_css = {
         "sidebar_collapse_css": bool(re.search(r'body\[data-sidebar-collapsed="true"\]\s+\.sidebar\s*\{[^}]*width:\s*0', html)),
@@ -985,7 +1110,7 @@ console.log(JSON.stringify({
     return {
         "overall_passed": bool(
             v1_passed and v2_passed and v3_passed and v4_passed and v5_passed and v6_passed and v7_passed and v8_passed
-            and v9_passed and v10_passed and v11_passed
+            and v9_passed and v10_passed and v11_passed and v12_passed
         ),
         "gates": {
             "V-1_dom_and_render_budget": {
@@ -1065,6 +1190,26 @@ console.log(JSON.stringify({
                 "lens": v10_lens,
                 "junk_params_ok": v10_junk_ok,
                 "junk": v10_junk,
+            },
+            "V-12_overland_3d_is_the_2d_map_in_3d": {
+                "passed": v12_passed,
+                "has_projection": v12.get("hasProjection"),
+                "projection_ok": v12.get("projectionOk"),
+                "landmarks_found": len([r for r in v12_lms if r.get("found")]),
+                "bad_alignment": v12_bad_align,
+                "max_landmark_delta_units": max((r["d"] for r in v12_lms if r.get("d") is not None), default=None),
+                "signatures_ok": v12_signatures_ok,
+                "sea": v12.get("sea"),
+                "continent_polygons_match": v12.get("continentPolyMatch"),
+                "hardcoded_continent_boxes": v12.get("hardcodedC0Boxes"),
+                "mountain_zones": v12.get("mountainZones"),
+                "mountains_ok": v12_mountains_ok,
+                "road_highways": v12.get("roadHighways"),
+                "road_ends_ok": v12.get("roadEndsOk"),
+                "boss_pins": v12.get("bossPins"),
+                "boss_pins_ok": v12.get("bossPinsOk"),
+                "glb_ok": v12.get("glbOk"),
+                "glb_index_out_of_range_meshes": v12.get("glbIndexBad"),
             },
         },
     }
