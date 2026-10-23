@@ -3659,6 +3659,20 @@ INDEX_HTML = r"""<!DOCTYPE html>
     .joy-spatial-shell[data-theater="true"] .joy-spatial-shell__body {
       height: 100%;
     }
+    /* F-156 B4: landscape phones (>=768px wide, <=480px tall) are wider than the phone breakpoint but too short
+       for the 560px canvas, which pushed the OL/3D toolbars below the fold. Fit the canvas under the chrome. */
+    @media (max-height: 480px) and (min-width: 768px) {
+      .joy-spatial-shell:not([data-theater="true"]) .joy-spatial-shell__canvas {
+        min-height: 0;
+        height: max(200px, calc(100dvh - 160px));
+      }
+      /* The top-left HUD (map style buttons) is taller than the short canvas leaves free; keep the engine
+         toolbar above it so its buttons stay reachable. */
+      #atlasOlToolbarPanel,
+      #atlasMap3dToolbarPanel {
+        z-index: 200 !important;
+      }
+    }
     .joy-spatial-shell[data-theater="true"] .joy-spatial-shell__canvas {
       min-height: 0;
       height: 100%;
@@ -3748,6 +3762,24 @@ INDEX_HTML = r"""<!DOCTYPE html>
       font-weight: 700;
       cursor: pointer;
       padding: 0 4px;
+      /* F-156 B1: flex-shrunk to 8px on phones; keep a tappable box. */
+      flex: 0 0 auto;
+      min-width: 32px;
+      min-height: 32px;
+    }
+    .joy-omni-command-bar__close {
+      display: none;
+      float: right;
+      width: 36px;
+      height: 36px;
+      margin: 0 0 4px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--joy-border-default);
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-primary);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
     }
     .joy-omni-command-bar__chips-row {
       display: flex;
@@ -3851,6 +3883,18 @@ INDEX_HTML = r"""<!DOCTYPE html>
         overflow-x: auto;
         flex-wrap: nowrap;
         scrollbar-width: none;
+      }
+      /* F-156 B1: the omni bar owns its own full-width row; otherwise the content-sized flex item
+         collapsed the input (width:0) to nothing. B2: phone sheet gets a close control. */
+      .joy-lens-bar__trailing {
+        flex-wrap: wrap;
+      }
+      .joy-lens-bar__trailing .joy-omni-command-bar {
+        flex: 1 1 100%;
+        min-width: 0;
+      }
+      .joy-omni-command-bar__close {
+        display: block;
       }
       .joy-spatial-shell__canvas {
         min-height: clamp(360px, calc(100dvh - 180px), 75dvh);
@@ -6574,6 +6618,7 @@ function selectDungeonRoomPoi(poiJsonStr, evt) {
 }
 
 function setAtlasOmniSearch(query) {
+  ATLAS_OMNI_TRAY_DISMISSED = false;
   ATLAS_OMNI_SEARCH_QUERY = String(query || '');
   ATLAS_STATE_STORE.omniSearchQuery = ATLAS_OMNI_SEARCH_QUERY;
   writeUrlState(false);
@@ -6897,6 +6942,8 @@ if (typeof window !== 'undefined' && window.addEventListener) {
 function zoomActiveAtlasEngine(delta, reset = false, targetZoom = null) {
   if (getAtlasEffectiveEngineMode() === '3d_map3d') {
     if (reset) {
+      // F-156 B5: "1:1" must also undo what the HUD's 5.2x set (TOWN scene, 2D zoom), not just the 3D camera.
+      zoomStudioMap(0, true);
       setAtlas3dOption('reset', true);
     } else {
       const next = targetZoom !== null ? targetZoom : ATLAS_3D_STATE.zoom * (delta > 0 ? 1.14 : 0.88);
@@ -7007,6 +7054,8 @@ let ATLAS_ACTIVE_STUDIO_BAR = 'boss_hierarchy';
 let ATLAS_ROUTE_PLANNER_OPEN = false;
 let ATLAS_RACE_GROWTH_OPEN = false;
 let ATLAS_PRESET_CHIPS_OPEN = false;
+// F-156 B2: set when the user dismisses the search tray; cleared by typing/searching or toggling Presets.
+let ATLAS_OMNI_TRAY_DISMISSED = false;
 let ATLAS_LEFT_DRAWER_OPEN = false;
 let ATLAS_THEATER_MODE = false;
 let ATLAS_ENTITY_MATRIX_OPEN = false;
@@ -7700,7 +7749,8 @@ function mountRealOpenLayersInstance(targetEl, features) {
         center: cam0.center,
         resolution: Math.max(minRes, Math.min(maxRes, cam0.resolution)),
         resolutions: resLadder,
-        constrainResolution: false
+        constrainResolution: false,
+        enableRotation: false // F-156 B7: the atlas is north-up; a two-finger twist must not rotate it
       })
     });
     // Two quick ruler clicks must not double-click-zoom the map.
@@ -8669,12 +8719,15 @@ function initOrUpdateAtlasMap3dEngine() {
       canvas.onmousemove({ clientX: e.clientX, clientY: e.clientY, shiftKey: false });
     }
   };
-  canvas.onpointerup = canvas.onpointercancel = (e) => {
+  const endTouch3d = (e, cancelled) => {
     if (e.pointerType === 'mouse' || !touches3d.has(e.pointerId)) return;
     touches3d.delete(e.pointerId);
     if (pinch3d) { if (touches3d.size < 2) { pinch3d = null; scheduleAtlas3dCameraUrlWrite(); } return; }
-    if (touches3d.size === 0) canvas.onmouseup({ clientX: e.clientX, clientY: e.clientY });
+    // F-156 B6: a cancelled touch (system gesture, palm rejection) is not a tap, so it must not select a mesh.
+    if (touches3d.size === 0) canvas.onmouseup(cancelled ? null : { clientX: e.clientX, clientY: e.clientY });
   };
+  canvas.onpointerup = (e) => endTouch3d(e, false);
+  canvas.onpointercancel = (e) => endTouch3d(e, true);
 }
 
 function syncAtlasActiveSpatialEngine() {
@@ -9097,6 +9150,7 @@ function toggleAtlasRaceGrowthBar() {
 }
 
 function toggleAtlasPresetChips() {
+  ATLAS_OMNI_TRAY_DISMISSED = false;
   ATLAS_PRESET_CHIPS_OPEN = !ATLAS_PRESET_CHIPS_OPEN;
   ATLAS_STATE_STORE.presetChipsOpen = ATLAS_PRESET_CHIPS_OPEN;
   render();
@@ -9111,7 +9165,28 @@ function toggleAtlasLeftDrawer() {
 
 // F-155: Esc priority on the atlas - clear an active ruler first, else leave theater mode. Returns true when it
 // consumed the key (callers then skip their own Esc behaviour).
+function isAtlasOmniTrayOpen() {
+  const bar = typeof document !== 'undefined' && document.querySelector ? document.querySelector('.joy-lens-bar .joy-omni-command-bar') : null;
+  return Boolean(bar && bar.getAttribute('data-open') === 'true');
+}
+
+// F-156 B2: close the search tray without a re-render (the DOM stays; data-open hides it, the flag keeps it hidden
+// across the next render). The query text is kept so reopening Presets or typing shows results again.
+function dismissAtlasOmniTray() {
+  ATLAS_OMNI_TRAY_DISMISSED = true;
+  ATLAS_PRESET_CHIPS_OPEN = false;
+  ATLAS_STATE_STORE.presetChipsOpen = false;
+  const bar = document.querySelector('.joy-lens-bar .joy-omni-command-bar');
+  if (bar) bar.setAttribute('data-open', 'false');
+  const input = document.getElementById('atlasOmniSearchInput');
+  if (input && typeof input.blur === 'function') input.blur();
+}
+
 function consumeAtlasEscape() {
+  if (isAtlasOmniTrayOpen()) {
+    dismissAtlasOmniTray();
+    return true;
+  }
   if (ATLAS_OL_RULER_ACTIVE || ATLAS_OL_RULER_POINTS.length) {
     ATLAS_OL_RULER_ACTIVE = false;
     ATLAS_OL_RULER_POINTS = [];
@@ -9519,6 +9594,10 @@ function handleAtlasGlobalKeyDown(evt) {
     }
     return;
   }
+  if (evt.key === 'Escape' && isInput && evt.target && evt.target.id === 'atlasOmniSearchInput' && isAtlasOmniTrayOpen()) {
+    dismissAtlasOmniTray();
+    return;
+  }
   if (isInput || evt.metaKey || evt.ctrlKey || evt.altKey) return;
   if (evt.key === 'Escape' && !evt.defaultPrevented && CURRENT_TAB === 'studio') {
     if (consumeAtlasEscape()) evt.preventDefault();
@@ -9544,6 +9623,14 @@ function handleAtlasGlobalKeyDown(evt) {
 }
 if (typeof window !== 'undefined' && window.addEventListener) {
   window.addEventListener('keydown', handleAtlasGlobalKeyDown);
+  // F-156 B2: on a phone the search tray is a bottom sheet; a tap anywhere outside the omni bar dismisses it.
+  document.addEventListener('pointerdown', (evt) => {
+    if (!window.matchMedia || !window.matchMedia('(max-width: 767px)').matches) return;
+    if (!isAtlasOmniTrayOpen()) return;
+    const t = evt.target;
+    if (t && t.closest && t.closest('.joy-omni-command-bar')) return;
+    dismissAtlasOmniTray();
+  }, true);
 }
 
 // F-155: click on a 2D SVG zone mark selects the same POI an OpenLayers feature click selects.
@@ -10087,7 +10174,7 @@ function renderCartoShellHtml({
             </g>
             <rect width="1040" height="500" fill="none" stroke="#1c160e" stroke-width="10" pointer-events="none"/>
           </svg>
-          ${getAtlasEffectiveEngineMode() !== '2d_svg' ? `<div id="atlasAdvancedEngineMount" data-engine-mode="${escapeHtml(ATLAS_ENGINE_MODE)}" style="position:relative;width:100%;height:100%;min-height:460px;background:#090f1a;overflow:hidden"></div>` : ''}
+          ${getAtlasEffectiveEngineMode() !== '2d_svg' ? `<div id="atlasAdvancedEngineMount" data-engine-mode="${escapeHtml(ATLAS_ENGINE_MODE)}" style="position:relative;width:100%;height:100%;min-height:min(460px,100%);background:#090f1a;overflow:hidden"></div>` : ''}
 
           <!-- Bottom Cartographic Scale Bar & Legend -->
           <div style="position:absolute;bottom:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(15,13,10,0.92);border:1px solid rgba(212,175,55,0.28);font-size:11px;color:#e7e5e4;pointer-events:none">
@@ -18357,7 +18444,7 @@ function renderAtlasFilterBarHtml(matchCount) {
   ];
 
   const curatedKeysByPersona = ATLAS_PERSONA_STUDIO_CATALOG;
-  const showPresetChips = Boolean(omniQuery) || ATLAS_PRESET_CHIPS_OPEN;
+  const showPresetChips = !ATLAS_OMNI_TRAY_DISMISSED && (Boolean(omniQuery) || ATLAS_PRESET_CHIPS_OPEN);
   const showRoutePlanner = ATLAS_ROUTE_PLANNER_OPEN;
   const showRaceGrowthRow = ATLAS_RACE_GROWTH_OPEN || (ATLAS_STATE_STORE.raceGrowthRoute && ATLAS_STATE_STORE.raceGrowthRoute !== 'All');
   const spatialCtx = getAtlasSpatialContext();
@@ -18399,6 +18486,7 @@ function renderAtlasFilterBarHtml(matchCount) {
           </div>
           <div id="atlasOmniQuickJumpPills" class="joy-omni-command-bar__tray">
             ${showPresetChips ? `
+            <button type="button" class="joy-omni-command-bar__close" onclick="dismissAtlasOmniTray()" title="Close search" aria-label="Close search">&times;</button>
             <div id="atlasPresetSearchChipsRow" class="joy-omni-command-bar__chips-row">
               ${presetSearchChips.map(chip => {
                 const isAct = omniQuery.toLowerCase() === chip.toLowerCase();
@@ -18414,7 +18502,7 @@ function renderAtlasFilterBarHtml(matchCount) {
                 ${omniQuery ? `Quick-Jump Matches (${omniResults.length}):` : 'Instant Quick-Jump Action Pills:'}
               </div>
               ${omniResults.map(res => `
-                <button type="button" class="joy-omni-command-bar__item" onclick="${res.actionJs}">
+                <button type="button" class="joy-omni-command-bar__item" onclick="if(window.matchMedia&&window.matchMedia('(max-width: 767px)').matches)dismissAtlasOmniTray();${res.actionJs}">
                   <span>${escapeHtml(res.title.slice(0, 34))}</span>
                   <span class="joy-omni-command-bar__action mono">[${escapeHtml(String(res.actionLabel || '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim())}]</span>
                 </button>
