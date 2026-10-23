@@ -5343,6 +5343,27 @@ console.log(JSON.stringify(sandbox.__TEST_OUT));
                 os.environ.pop("ATLAS_V10_SIMULATE", None)
             self.assertFalse(red["passed"], kind)
 
+    def test_f156_phone_touch_audit_fixes_present_in_page_source(self) -> None:
+        """F-156 B1-B7 guards on the shipped CSS/JS strings (the behavioural proof is
+        scripts/probes/atlas_phone_touch_audit.mjs, which needs Chrome)."""
+        html = web.INDEX_HTML
+        # B1: the omni bar owns a full-width row on phones; buttons keep a tappable box.
+        self.assertIn(".joy-lens-bar__trailing .joy-omni-command-bar {\n        flex: 1 1 100%;", html)
+        self.assertIn("min-width: 32px;\n      min-height: 32px;", html)
+        # B2: close control + dismissal paths.
+        self.assertIn("joy-omni-command-bar__close", html)
+        self.assertIn("function dismissAtlasOmniTray()", html)
+        self.assertIn("ATLAS_OMNI_TRAY_DISMISSED", html)
+        # B3/B4: the engine mount no longer forces 460px over a shorter shell.
+        self.assertNotIn("min-height:460px", html)
+        self.assertIn("min-height:min(460px,100%)", html)
+        # B5: 3D reset also resets the 2D scene/zoom.
+        self.assertIn("zoomStudioMap(0, true);\n      setAtlas3dOption('reset', true);", html)
+        # B6: cancel must not pick.
+        self.assertIn("canvas.onmouseup(cancelled ? null :", html)
+        # B7: no OL rotation.
+        self.assertIn("enableRotation: false", html)
+
 
 if __name__ == "__main__":
     unittest.main()
