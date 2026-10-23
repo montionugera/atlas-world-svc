@@ -11,6 +11,9 @@ harness and verifies:
 - V-10 (F-155): one landmark table for OL + SVG (0px), one zone predicate (SVG marks == OL features == badge per filter
   at 1x/2.8x/6x), URL round-trip of route planner + 3D camera, lens-from-URL default overlay.
   Test-the-test: ATLAS_V10_SIMULATE=landmark|count|url (or --simulate-v10=<kind>) perturbs the vm and must go red.
+- V-11 (F-157): clipPath #atlasWorldFrameClip wraps #studioCartoViewport, app-sidebar collapse state machine + CSS,
+  closing the place inspector collapses its drawer column, lens-bar never clips its buttons (CSS contract; real layout
+  widths are asserted by atlas_zoom_drift_check.mjs).
 """
 
 from __future__ import annotations
@@ -739,7 +742,24 @@ const v10Report = vm.runInContext(`(() => {
   setAtlasPersonaLens('gamer');
   return { simulate: SIM, landmarkCount: svgLms.length, tableCount: ATLAS_OVERLAND_LANDMARK_ANCHORS.length, landmarkRows, counts, written, back, lens, overlayWins, junk };
 })()`, sandbox);
+// V-11 (F-157): frame clip, sidebar/drawer state machines
+const v11Report = vm.runInContext(`(() => {
+  STUDIO_PERSPECTIVE = 'world-history-and-concept';
+  setAtlasEngineMode('2d_svg');
+  render();
+  const html = document.getElementById('mainContent').innerHTML;
+  const clipDef = /<clipPath id="atlasWorldFrameClip"[^>]*>\\s*<rect[^>]*x="0"[^>]*y="0"[^>]*width="1040"[^>]*height="500"/.test(html);
+  const wrapped = /<g clip-path="url\\(#atlasWorldFrameClip\\)">\\s*(?:<!--[\\s\\S]*?-->\\s*)*<g id="studioCartoViewport"/.test(html);
+  const hasSidebarFn = typeof toggleAppSidebar === 'function';
+  let drawerAfterClose = null;
+  STUDIO_MAP_SELECTED_POI = { title: 'Probe', category: 'Probe' };
+  ATLAS_LEFT_DRAWER_OPEN = true;
+  try { closeStudioMapPoi(); drawerAfterClose = ATLAS_LEFT_DRAWER_OPEN; } catch (e) { drawerAfterClose = 'err:' + e.message; }
+  const hasMaximize = typeof toggleAtlasMaximizeMap === 'function';
+  return { clipDef, wrapped, hasSidebarFn, drawerAfterClose, hasMaximize };
+})()`, sandbox);
 console.log(JSON.stringify({
+  v11Report,
   v10Report,
   v9Report,
   v8Report,
@@ -943,10 +963,29 @@ console.log(JSON.stringify({
         and v10_junk_ok
     )
 
+    v11 = vm_out.get("v11Report") or {}
+    v11_css = {
+        "sidebar_collapse_css": bool(re.search(r'body\[data-sidebar-collapsed="true"\]\s+\.sidebar\s*\{[^}]*width:\s*0', html)),
+        "sidebar_reopen_tab": 'id="appSidebarReopenTab"' in html,
+        "sidebar_hotkey": "evt.key === '['" in html and "toggleAppSidebar();" in html,
+        "sidebar_url_state": "sidebar=" in html or "params.set('sidebar'" in html,
+        "lens_bar_wraps": bool(re.search(r"\.joy-lens-bar\s*\{[^}]*flex-wrap:\s*wrap", html)),
+        "lens_buttons_nowrap": bool(re.search(r"\.joy-spatial-shell__toggle[^{]*\{[^}]*white-space:\s*nowrap", html)),
+        "drawer_overlay_le_1180": bool(re.search(r"max-width: 1180px\) and \(min-width: 768px\)\s*\{\s*\.joy-spatial-shell\[data-left-open=\"true\"\] \.joy-spatial-shell__body[^}]*\}[^}]*position: absolute", html)),
+    }
+    v11_passed = (
+        v11.get("clipDef") is True
+        and v11.get("wrapped") is True
+        and v11.get("hasSidebarFn") is True
+        and v11.get("hasMaximize") is True
+        and v11.get("drawerAfterClose") is False
+        and all(v11_css.values())
+    )
+
     return {
         "overall_passed": bool(
             v1_passed and v2_passed and v3_passed and v4_passed and v5_passed and v6_passed and v7_passed and v8_passed
-            and v9_passed and v10_passed
+            and v9_passed and v10_passed and v11_passed
         ),
         "gates": {
             "V-1_dom_and_render_budget": {
@@ -1004,6 +1043,11 @@ console.log(JSON.stringify({
                 "zoom_fn_mutates_loc": "STUDIO_MAP_LOC =" in zoom_body,
                 "zoom_fn_resolves_zone": "resolveNearestZoneFromPanAndLoc" in zoom_body,
                 **v9,
+            },
+            "V-11_frame_clip_sidebar_drawer_lens_bar": {
+                "passed": v11_passed,
+                **v11,
+                "css": v11_css,
             },
             "V-10_engine_parity_zone_counts_and_url_round_trip": {
                 "passed": v10_passed,
