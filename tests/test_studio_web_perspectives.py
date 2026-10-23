@@ -5178,6 +5178,44 @@ console.log(JSON.stringify(sandbox.__TEST_OUT));
         self.assertIsNotNone(out["invZoom"])
         self.assertLess(float(out["invZoom"]), 1.0)
 
+    def test_zoom_invariance_pins_loc_and_tier(self) -> None:
+        """Zoom is pure camera: pins stay anchored, LOC is not rewritten, no field/town hijack."""
+        import re
+
+        from probes.atlas_ux_probe import run_ux_probe
+
+        html = web.INDEX_HTML
+        pin_css = re.search(r"\.atlas-screen-pin \{(.*?)\}", html, re.DOTALL).group(1)
+        self.assertIn("transform-box: view-box", pin_css)
+        self.assertNotIn("fill-box", pin_css)
+        zoom_fn = re.search(r"function zoomStudioMap\(.*?\n}\n", html, re.DOTALL).group(0)
+        self.assertNotIn("STUDIO_MAP_LOC =", zoom_fn)
+        self.assertNotIn("resolveNearestZoneFromPanAndLoc", zoom_fn)
+        self.assertIn("function clientToAtlasSvgPoint(", html)
+        # N2: boss chain nodes read the data field `loc`; N8: seal click uses seal_catacomb_zone_id.
+        self.assertIn("m.loc || m.loc_coord", html)
+        self.assertIn("activeBossChain.seal_catacomb_zone_id", html)
+        # N10: the global hotkey guard no longer checks a perspective that is never assigned.
+        self.assertNotIn("STUDIO_PERSPECTIVE !== 'world_atlas'", html)
+        # No stale raster reference (404 at load).
+        self.assertNotIn("d01_hunting_zone_radar.png", html)
+
+        v9 = run_ux_probe()["gates"]["V-9_zoom_invariance_no_loc_teleport_no_tier_hijack"]
+        self.assertTrue(v9["passed"], v9)
+        self.assertEqual(v9["nonOverlandSteps"], [])
+        self.assertEqual(v9["scaleJumps"], [])
+        self.assertTrue(v9["locUnchanged"])
+        self.assertEqual(v9["lostLabels"], [])
+        self.assertEqual(v9["locRoundTripErr"], 0)  # N4: svgToL2Loc inverts clampWorldLocCoord
+        self.assertEqual(v9["unknownDungeonOpened"], "")  # N8: no silent fallback to dungeons[0]
+        self.assertGreaterEqual(v9["bossEnds"], 4)  # N2: chain nodes no longer stack on seal_loc
+        self.assertTrue(v9["dungeonClearsTownInterior"])  # A7
+        self.assertTrue(v9["nearestZoneNoHijack"])  # R3: zoom never picks a blueprint
+        self.assertEqual(v9["bogusFieldCtx"], "overland")  # R2: unresolved ?field= is not a half-state
+        # A1/A2: OL view comes from the app camera, not a hard-coded centre/zoom reset on every render().
+        self.assertNotRegex(html, r"center: \[520, 250\],\s*zoom: 1,")
+        self.assertIn("map.on('moveend', () => applyAtlasOlViewToApp(map, targetEl));", html)
+
     def test_wave_ux11_town_only_shops_zone_coverage_and_glb_scale(self) -> None:
         from probes.atlas_ux_probe import run_ux_probe
 
