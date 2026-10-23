@@ -800,6 +800,27 @@ const v12Report = vm.runInContext(`(() => {
     return m && Math.hypot(m.x - e.x, m.z - e.z) < 0.5;
   });
   out.glbOk = (() => { const b = buildAtlasGlbArrayBuffer(scene); const dv = new DataView(b); return dv.getUint32(0, true) === 0x46546C67 && dv.getUint32(8, true) === b.byteLength; })();
+  // glTF indices are relative to the primitive's own POSITION accessor: decode each GLB and bound-check every index.
+  out.glbIndexBad = {};
+  for (const ctxName of ['overland', 'town', 'dungeon']) {
+    setAtlas3dOption('contextOverride', ctxName);
+    const b = buildAtlasGlbArrayBuffer();
+    const dv = new DataView(b);
+    const jl = dv.getUint32(12, true);
+    const gltf = JSON.parse(Buffer.from(new Uint8Array(b, 20, jl)).toString('utf8').trim());
+    const binStart = 20 + jl + 8;
+    let bad = 0;
+    gltf.meshes.forEach(m => {
+      const pr = m.primitives[0];
+      const ia = gltf.accessors[pr.indices], pa = gltf.accessors[pr.attributes.POSITION];
+      const base = binStart + gltf.bufferViews[ia.bufferView].byteOffset + (ia.byteOffset || 0);
+      const w = ia.componentType === 5125 ? 4 : 2;
+      let mx = -1;
+      for (let i = 0; i < ia.count; i++) { const v = w === 4 ? dv.getUint32(base + i * 4, true) : dv.getUint16(base + i * 2, true); if (v > mx) mx = v; }
+      if (mx >= pa.count) bad++;
+    });
+    out.glbIndexBad[ctxName] = bad;
+  }
   setAtlas3dOption('contextOverride', 'town');
   setAtlasEngineMode('2d_svg');
   return out;
@@ -1044,6 +1065,7 @@ console.log(JSON.stringify({
         and v12.get("roadHighways", 0) >= 12 and v12.get("roadEndsOk")
         and v12.get("bossPinsOk") and v12.get("bossPins", 0) >= 6
         and v12.get("glbOk")
+        and v12.get("glbIndexBad") == {"overland": 0, "town": 0, "dungeon": 0}
     )
 
     return {
@@ -1143,6 +1165,7 @@ console.log(JSON.stringify({
                 "boss_pins": v12.get("bossPins"),
                 "boss_pins_ok": v12.get("bossPinsOk"),
                 "glb_ok": v12.get("glbOk"),
+                "glb_index_out_of_range_meshes": v12.get("glbIndexBad"),
             },
         },
     }

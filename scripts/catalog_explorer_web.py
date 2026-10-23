@@ -9201,7 +9201,7 @@ function buildAtlasGlbArrayBuffer(sceneInput) {
     for (let i = 0; i < vCount; i++) colors.push(+r.toFixed(4), +gg.toFixed(4), +b.toFixed(4));
     g.pos.forEach(v => positions.push(v));
     g.nrm.forEach(v => normals.push(v));
-    g.idx.forEach(v => indices.push(v + vertCursor));
+    g.idx.forEach(v => indices.push(v)); // local to this primitive's accessors (their byteOffset already selects the vertices)
 
     const posAccIdx = gltfAccessors.length;
     const vecByteOffset = vertCursor * 12;
@@ -20650,7 +20650,7 @@ function renderDedicatedWorldAtlas() {
   ].map(lm => {
     // F-155: coordinates come only from ATLAS_OVERLAND_LANDMARK_ANCHORS (shared with OpenLayers).
     const anchor = getAtlasLandmarkAnchor(lm.id);
-    return anchor ? { ...lm, x: anchor.x, y: anchor.y, kind: anchor.kind || lm.kind } : null;
+    return anchor ? { ...lm, x: anchor.x, y: anchor.y } : null;
   }).filter(Boolean);
 
   registerAtlasOverlandPinAnchors(overlandLandmarks, tatlas);
