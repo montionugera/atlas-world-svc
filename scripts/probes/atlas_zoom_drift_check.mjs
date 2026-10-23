@@ -6,8 +6,15 @@
 // that wheel zoom keeps the world point under the cursor fixed, and that the
 // wheel does not teleport STUDIO_MAP_LOC or flip the zoom tier to field/town.
 //
+// F-155 adds engine parity: every landmark both 2D engines draw sits at the same SVG-space point (OL
+// geometry [x, 500 - y] vs SVG inner translate(x,y), < 0.5px), SVG and OL show the same zone set and count for
+// every filter at 1x/2.8x/6x, and the URL round-trips route planner + 3D camera + lens default overlay.
+//
 // Usage:
 //   node scripts/probes/atlas_zoom_drift_check.mjs [--url http://127.0.0.1:8788/] [--out result.json] [--keep]
+//   test-the-test: --simulate-landmark-drift | --simulate-count-drift | --simulate-url-drop
+// F-155 also audits OL declutter (pins always drawn, core labels monotonic), the ruler layer, OL 8x range,
+// theater geometry, Esc order and touch pan/pinch (2D SVG + 3D). Those go red against the pre-F-155 build.
 // Exit 0 = all assertions PASS, 1 = any FAIL, 2 = harness error.
 
 import { spawn } from 'node:child_process';
@@ -411,6 +418,298 @@ async function main() {
   const nonOverland = steps.filter(s => s.tier !== 'overland');
   assert('wheel: zoom tier stays overland through >= 4.5', reached >= 4.5 && nonOverland.length === 0,
     nonOverland.length ? nonOverland.map(s => `${s.from}→${s.to}: ${s.tier} (lod ${s.lodTier}, town=${s.activeTownId}, field=${s.activeFieldOrFortId})`).join('; ') : `overland to ${reached}`);
+
+
+  // ---------------------------------------------------------------- 5. F-155 engine parity (OL vs SVG)
+  phase = 'parity';
+  const SIM_LM = args.includes('--simulate-landmark-drift');
+  const SIM_COUNT = args.includes('--simulate-count-drift');
+  const SIM_URL = args.includes('--simulate-url-drop');
+  if (SIM_LM) {
+    // Test-the-test: reintroduce the pre-F-155 two-table state (SVG Kilnwatch at y=308, OL at 318).
+    await cdp.eval(`(() => { const orig = getAtlasLandmarkAnchor; getAtlasLandmarkAnchor = id => id === 'town-kilnwatch-bastion' ? { x: 618, y: 308 } : orig(id); return true; })()`);
+  }
+  if (SIM_COUNT) {
+    // Test-the-test: drop one SVG zone mark after every render (SVG under-reports one zone).
+    await cdp.eval(`(() => { const drop = () => { const m = document.querySelector('#atlasSvgZoneFilterLayer .atlas-zone-mark'); if (m) m.remove(); };
+      new MutationObserver(() => { if (!document.querySelector('#atlasSvgZoneFilterLayer[data-qa-dropped]')) { const l = document.getElementById('atlasSvgZoneFilterLayer'); if (l) { l.setAttribute('data-qa-dropped', '1'); drop(); } } }).observe(document.body, { childList: true, subtree: true }); return true; })()`);
+  }
+  if (SIM_URL) {
+    // Test-the-test: the URL writer loses the route planner and 3D camera params.
+    await cdp.eval(`(() => { const strip = u => { const s = String(u); return s.replace(/[&?#](route|routeFrom|routeTo|zoom3d|yaw3d|pitch3d|pan3d)=[^&#]*/g, ''); };
+      const rs = history.replaceState.bind(history), ps = history.pushState.bind(history);
+      history.replaceState = (a, b, u) => rs(a, b, strip(u)); history.pushState = (a, b, u) => ps(a, b, strip(u)); return true; })()`);
+  }
+  const PARITY_HELPERS = String.raw`
+window.__qaWaitOl = async () => { for (let i = 0; i < 80; i++) { const m = window.__ATLAS_OL_MAP_INSTANCE; if (m && m.getLayers) return true; await new Promise(r => setTimeout(r, 100)); } return false; };
+window.__qaOlZonePoints = () => {
+  const m = window.__ATLAS_OL_MAP_INSTANCE; if (!m) return null;
+  const out = [];
+  m.getLayers().getArray().forEach(l => { const src = l.getSource && l.getSource(); if (!src || !src.getFeatures) return;
+    src.getFeatures().forEach(f => { const meta = f.get('zoneMeta'); if (!meta) return; const c = f.getGeometry().getCoordinates(); out.push({ id: meta.id, x: c[0], y: 500 - c[1] }); }); });
+  return out;
+};
+window.__qaSvgLandmarks = () => [...document.querySelectorAll('#studioCartoViewport .atlas-screen-pin[data-landmark-id]')].map(p => {
+  const g = [...p.children].find(c => c.tagName === 'g' && /^translate\(/.test(c.getAttribute('transform') || ''));
+  const m = g && g.getAttribute('transform').match(/translate\(\s*([-\d.]+)[ ,]+([-\d.]+)/);
+  return { id: p.getAttribute('data-landmark-id'), x: m ? +m[1] : NaN, y: m ? +m[2] : NaN };
+});
+window.__qaSvgZoneMarks = () => [...document.querySelectorAll('#studioCartoViewport #atlasSvgZoneFilterLayer .atlas-zone-mark')]
+  .map(c => ({ id: c.getAttribute('data-zone-id'), x: +c.getAttribute('cx'), y: +c.getAttribute('cy') }));
+window.__qaBadge = () => { const b = document.querySelector('.joy-context-filter-bar__count'); return b ? +b.textContent.trim() : null; };
+true;`;
+  await cdp.eval(PARITY_HELPERS);
+  await cdp.eval(`(async () => { setAtlasEngineMode('2d_svg'); ATLAS_STATE_STORE.levelBand = 'All'; setAtlasFilter('All'); zoomStudioMap(0, true); await __qaFrame(); return true; })()`);
+  const svgLms = await cdp.eval('__qaSvgLandmarks()');
+  const joinTable = await cdp.eval(`typeof ATLAS_OVERLAND_LANDMARK_ANCHORS === 'undefined' ? [] : ATLAS_OVERLAND_LANDMARK_ANCHORS.map(e => ({ landmarkId: e.landmarkId, zoneId: e.zoneId }))`);
+  await cdp.eval(`(async () => { setAtlasEngineMode('2d_ol'); await __qaWaitOl(); await __qaFrame(); return true; })()`);
+  const olAll = await cdp.eval('__qaOlZonePoints()');
+  const olById = Object.fromEntries((olAll || []).map(p => [p.id, p]));
+  const parityRows = svgLms.map(lm => {
+    const j = joinTable.find(e => e.landmarkId === lm.id);
+    const o = j && olById[j.zoneId];
+    return { landmark: lm.id, zone: j ? j.zoneId : null, svg: [lm.x, lm.y], ol: o ? [+o.x.toFixed(3), +o.y.toFixed(3)] : null, dPx: o ? +Math.hypot(o.x - lm.x, o.y - lm.y).toFixed(3) : null };
+  });
+  const unmatched = parityRows.filter(r => r.dPx === null).map(r => r.landmark);
+  const worst = parityRows.reduce((a, r) => (r.dPx !== null && r.dPx > a ? r.dPx : a), 0);
+  result.parity = { landmarks: parityRows };
+  assert('parity: OL live map mounted with zone features', Array.isArray(olAll) && olAll.length > 0, `${olAll ? olAll.length : 0} OL zone points`);
+  assert(`parity: every SVG landmark has an OL zone partner (>= ${MIN_LANDMARKS} landmarks)`, svgLms.length >= MIN_LANDMARKS && unmatched.length === 0,
+    unmatched.length ? `unmatched: ${unmatched.join(', ')}` : `${svgLms.length} landmarks joined`);
+  assert(`parity: OL vs SVG landmark coordinate delta < ${TOL}px for all shared landmarks`, parityRows.length > 0 && unmatched.length === 0 && worst < TOL,
+    parityRows.filter(r => r.dPx === null || r.dPx >= TOL).map(r => `${r.landmark}: svg ${r.svg} ol ${r.ol} d=${r.dPx}`).join('; ') || `max ${worst}px over ${parityRows.length}`);
+
+  const FILTERS = ['All', 'RaceSpawns', 'TownMarks', 'Monster', 'Mini-Boss', 'Raid', 'MVP'];
+  const countRows = [];
+  for (const f of FILTERS) {
+    const ol = await cdp.eval(`(async () => { setAtlasEngineMode('2d_ol'); setAtlasFilter('${f}'); await __qaWaitOl(); await __qaFrame(); return { pts: __qaOlZonePoints(), badge: __qaBadge() }; })()`);
+    const row = { filter: f, ol: ol.pts ? ol.pts.length : null, olBadge: ol.badge, svg: {}, svgBadge: null, idMismatch: [], posMismatch: 0 };
+    const olIds = new Set((ol.pts || []).map(p => p.id));
+    const olPos = Object.fromEntries((ol.pts || []).map(p => [p.id, p]));
+    for (const z of [1.0, 2.8, 6.0]) {
+      const sv = await cdp.eval(`(async () => { setAtlasEngineMode('2d_svg'); setAtlasFilter('${f}'); zoomStudioMap(0, false, ${z}); await __qaFrame(); return { marks: __qaSvgZoneMarks(), badge: __qaBadge() }; })()`);
+      row.svg[z] = sv.marks.length;
+      row.svgBadge = sv.badge;
+      const svIds = new Set(sv.marks.map(m => m.id));
+      const diff = [...olIds].filter(i => !svIds.has(i)).concat([...svIds].filter(i => !olIds.has(i)));
+      if (diff.length) row.idMismatch.push(`${z}x: ${diff.slice(0, 4).join(',')}`);
+      row.posMismatch += sv.marks.filter(m => !olPos[m.id] || Math.hypot(olPos[m.id].x - m.x, olPos[m.id].y - m.y) >= TOL).length;
+    }
+    countRows.push(row);
+  }
+  await cdp.eval(`(async () => { setAtlasFilter('All'); setAtlasEngineMode('2d_svg'); zoomStudioMap(0, true); await __qaFrame(); return true; })()`);
+  result.parity.zoneCounts = countRows;
+  for (const r of countRows) {
+    const svgCounts = Object.values(r.svg);
+    assert(`zone filter '${r.filter}': SVG marks == OL zones == badge at 1x/2.8x/6x`,
+      r.ol > 0 && svgCounts.every(n => n === r.ol) && r.olBadge === r.ol && r.svgBadge === r.ol && r.idMismatch.length === 0 && r.posMismatch === 0,
+      `OL=${r.ol} SVG=${JSON.stringify(r.svg)} badge(ol/svg)=${r.olBadge}/${r.svgBadge}${r.idMismatch.length ? ' ids≠ ' + r.idMismatch.join('; ') : ''}${r.posMismatch ? ' posMismatch=' + r.posMismatch : ''}`);
+  }
+
+  // ---------------------------------------------------------------- 7. F-155 OL declutter / ruler / zoom range, theater, Esc, touch
+  phase = 'ol-audit';
+  await cdp.eval(`(async () => { setAtlasEngineMode('2d_ol'); setAtlasFilter('All'); zoomStudioMap(0, true); await __qaWaitOl(); return true; })()`);
+  // Hit detection respects decluttering: a decluttered-away pin or label is not hit at its own pixel.
+  const olAudit = await cdp.eval(`(async () => {
+    const m = window.__ATLAS_OL_MAP_INSTANCE; const v = m.getView();
+    const k = getAtlasOlCameraFromApp(m.getTargetElement()).k;
+    const c0 = v.getCenter();
+    const rows = [];
+    for (const s of [1, 1.5, 2.2, 3.2, 4.5]) {
+      v.setCenter(c0); v.setResolution(1 / (k * s));
+      await new Promise(r => { m.once('rendercomplete', r); m.render(); });
+      const size = m.getSize(); const F = buildAtlasspatialFeaturesList();
+      const row = { s, inView: 0, pinsHit: 0, coreInView: [], coreLabeled: [] };
+      F.forEach(f => {
+        const p = m.getPixelFromCoordinate([f.x, 500 - f.y]);
+        if (!p || p[0] < 10 || p[1] < 10 || p[0] > size[0] - 10 || p[1] > size[1] - 30) return;
+        row.inView++;
+        let pin = false; m.forEachFeatureAtPixel(p, ft => { const z = ft.get('zoneMeta'); if (z && z.id === f.id) pin = true; }, { hitTolerance: 1 });
+        if (pin) row.pinsHit++;
+        if (f.actionType === 'town' || f.actionType === 'dungeon' || f.actionType === 'fortress') {
+          row.coreInView.push(f.id);
+          let lab = false; m.forEachFeatureAtPixel([p[0], p[1] + 14], ft => { const z = ft.get('labelMeta') || ft.get('zoneMeta'); if (z && z.id === f.id) lab = true; }, { hitTolerance: 2 });
+          if (lab) row.coreLabeled.push(f.id);
+        }
+      });
+      rows.push(row);
+    }
+    v.setResolution(1e-6); await new Promise(r => setTimeout(r, 200));
+    const maxZoom = +(1 / (v.getResolution() * k)).toFixed(3);
+    v.setCenter(c0); v.setResolution(1 / k);
+    await new Promise(r => setTimeout(r, 300));
+    zoomStudioMap(0, true);
+    // Ruler: one start point must be drawn (own non-decluttered layer, on top of zone pins).
+    // Audited repro: ruler A on Lantern Hollow, B on Porcelain Loom at 2.5x. With the ruler in the decluttered
+    // zone layer, adding B made the A marker vanish. Both markers must stay painted.
+    ATLAS_OL_RULER_ACTIVE = true; ATLAS_OL_RULER_POINTS = [];
+    const FL = buildAtlasspatialFeaturesList();
+    const FA = FL.find(f => f.id === 'zone-town-lantern-hollow'), FB = FL.find(f => f.id === 'zone-town-porcelain-loom');
+    initOrUpdateAtlasOpenLayersEngine();
+    const m1 = window.__ATLAS_OL_MAP_INSTANCE;
+    await new Promise(r => { m1.once('rendercomplete', r); m1.render(); });
+    m1.getView().setCenter([488, 500 - 413]); m1.getView().setResolution(m1.getView().getResolution() / 2.5);
+    await new Promise(r => setTimeout(r, 500));
+    ATLAS_OL_RULER_POINTS.push({ x: FA.x, y: FA.y }, { x: FB.x, y: FB.y });
+    initOrUpdateAtlasOpenLayersEngine();
+    const m2 = window.__ATLAS_OL_MAP_INSTANCE;
+    await new Promise(r => { m2.once('rendercomplete', r); m2.render(); });
+    // Pixel truth: each marker's red fill (#ef4444) must be on the canvas at its own pixel.
+    const vp = m2.getTargetElement(); const vr = vp.getBoundingClientRect();
+    const redAt = rp => { let seen = false; vp.querySelectorAll('canvas').forEach(c => { const r = c.getBoundingClientRect(); if (!r.width) return; const ctx = c.getContext('2d', { willReadFrequently: true }); if (!ctx) return;
+      const sx = Math.round((vr.left + rp[0] - r.left) * c.width / r.width), sy = Math.round((vr.top + rp[1] - r.top) * c.height / r.height);
+      const d = ctx.getImageData(sx - 2, sy - 2, 5, 5).data; for (let i = 0; i < d.length; i += 4) if (d[i] > 200 && d[i + 1] < 100 && d[i + 2] < 100 && d[i + 3] > 200) seen = true; }); return seen; };
+    const rulerMarks = [FA, FB].map(f => redAt(m2.getPixelFromCoordinate([f.x, 500 - f.y])));
+    const rulerHit = rulerMarks.every(Boolean);
+    ATLAS_OL_RULER_POINTS = []; initOrUpdateAtlasOpenLayersEngine();
+    const m3 = window.__ATLAS_OL_MAP_INSTANCE;
+    await new Promise(r => { m3.once('rendercomplete', r); m3.render(); }); // moveend only fires after a first frame
+    m3.getView().setResolution(m3.getView().getMinResolution());
+    await new Promise(r => setTimeout(r, 400));
+    const tr = m3.getTargetElement().getBoundingClientRect();
+    // A click point that is really on the OL canvas (not under a HUD panel), with room for a second click 24px right.
+    const tgt = m3.getTargetElement();
+    let clickAt = null;
+    for (const fy of [0.55, 0.65, 0.45, 0.75, 0.35]) for (const fx of [0.5, 0.4, 0.6, 0.3, 0.7]) {
+      if (clickAt) break;
+      const x = tr.left + tr.width * fx + 0.37, y = tr.top + tr.height * fy + 0.29;
+      const e1 = document.elementFromPoint(x, y), e2 = document.elementFromPoint(x + 24, y);
+      if (e1 && e2 && tgt.contains(e1) && tgt.contains(e2) && e1.tagName === 'CANVAS' && e2.tagName === 'CANVAS') clickAt = { x, y };
+    }
+    return { rows, maxZoom, rulerHit, rulerMarks, clickAt: clickAt || { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 }, clickOnCanvas: !!clickAt, resBefore: m3.getView().getResolution() };
+  })()`);
+  // Two quick real clicks in ruler mode: both become ruler points with fractional world coords, no double-click zoom.
+  const clickOnce = async (x, y) => {
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
+  };
+  await clickOnce(olAudit.clickAt.x, olAudit.clickAt.y);
+  await sleep(60);
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: olAudit.clickAt.x + 24, y: olAudit.clickAt.y, button: 'left', clickCount: 2 });
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: olAudit.clickAt.x + 24, y: olAudit.clickAt.y, button: 'left', clickCount: 2 });
+  await sleep(900);
+  const rc = await cdp.eval(`({ pts: ATLAS_OL_RULER_POINTS.map(p => [p.x, p.y]), res: window.__ATLAS_OL_MAP_INSTANCE ? window.__ATLAS_OL_MAP_INSTANCE.getView().getResolution() : null })`);
+  olAudit.rulerClicks = rc;
+  olAudit.rulerKeptFraction = rc.pts.length >= 1 && rc.pts.some(p => p[0] % 1 !== 0 || p[1] % 1 !== 0);
+  olAudit.dblZoomOk = rc.pts.length === 2 && rc.res !== null && Math.abs(rc.res - olAudit.resBefore) < 1e-9;
+  await cdp.eval(`(() => { ATLAS_OL_RULER_ACTIVE = false; ATLAS_OL_RULER_POINTS = []; zoomStudioMap(0, true); syncAtlasActiveSpatialEngine(); return true; })()`);
+  result.olAudit = olAudit;
+  const pinRows = olAudit.rows.map(r => `${r.s}x ${r.pinsHit}/${r.inView}`);
+  assert('OL: every zone pin in view is drawn (pins never declutter) at 1x..4.5x', olAudit.rows.every(r => r.inView > 0 ? r.pinsHit === r.inView : true) && olAudit.rows[0].inView >= 40, pinRows.join('; '));
+  const lostCore = [];
+  for (let i = 1; i < olAudit.rows.length; i++) {
+    const prev = olAudit.rows[i - 1], cur = olAudit.rows[i];
+    prev.coreLabeled.filter(id => cur.coreInView.includes(id) && !cur.coreLabeled.includes(id)).forEach(id => lostCore.push(`${prev.s}→${cur.s}: ${id}`));
+  }
+  assert('OL: core landmark labels never vanish while zooming in (monotonic 1x→4.5x)', lostCore.length === 0 && olAudit.rows[0].coreLabeled.length > 0,
+    lostCore.length ? lostCore.slice(0, 6) : olAudit.rows.map(r => `${r.s}x ${r.coreLabeled.length}/${r.coreInView.length}`).join('; '));
+  assert('OL: both ruler markers stay drawn after the 2nd point (start marker not decluttered)', olAudit.rulerHit === true, `markers painted [A,B]=${JSON.stringify(olAudit.rulerMarks)}`);
+  assert('OL: two quick ruler clicks = 2 fractional points, no double-click zoom', olAudit.rulerKeptFraction === true && olAudit.dblZoomOk === true,
+    JSON.stringify({ ...olAudit.rulerClicks, resBefore: olAudit.resBefore }));
+  assert('OL: zoom range reaches the app max 8x', olAudit.maxZoom >= 7.99, `max ${olAudit.maxZoom}x`);
+
+  // One real wheel notch over the OL map is one ladder step (not a 0.85x->8x jump).
+  const olBox = await cdp.eval(`(async () => { zoomStudioMap(0, true); syncAtlasActiveSpatialEngine(); await __qaWaitOl(); const m = window.__ATLAS_OL_MAP_INSTANCE;
+    await new Promise(r => { m.once('rendercomplete', r); m.render(); }); const r = m.getTargetElement().getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), z: STUDIO_MAP_ZOOM }; })()`);
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: olBox.x, y: olBox.y });
+  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: olBox.x, y: olBox.y, deltaX: 0, deltaY: -100 });
+  await sleep(1200);
+  const olNotch = await cdp.eval('STUDIO_MAP_ZOOM');
+  assert('OL: one wheel notch zooms one step (x1.1-x2.4), not the whole range', olNotch / olBox.z >= 1.1 && olNotch / olBox.z <= 2.4, `${olBox.z}x -> ${olNotch}x`);
+
+  // Esc: first press clears the ruler, second leaves theater (real key events).
+  phase = 'theater';
+  const esc = async () => {
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    await sleep(250);
+  };
+  await cdp.eval(`(async () => { setAtlasEngineMode('2d_ol'); ATLAS_OL_RULER_ACTIVE = true; ATLAS_OL_RULER_POINTS = [{ x: 400.5, y: 300.5 }]; syncAtlasActiveSpatialEngine(); if (!ATLAS_THEATER_MODE) toggleAtlasTheaterMode(); await new Promise(r => setTimeout(r, 300)); document.activeElement && document.activeElement.blur && document.activeElement.blur(); return true; })()`);
+  await esc();
+  const esc1 = await cdp.eval(`({ ruler: ATLAS_OL_RULER_ACTIVE || ATLAS_OL_RULER_POINTS.length > 0, theater: ATLAS_THEATER_MODE })`);
+  await esc();
+  const esc2 = await cdp.eval(`({ theater: ATLAS_THEATER_MODE })`);
+  assert('Esc clears the OL ruler first, then exits theater', esc1.ruler === false && esc1.theater === true && esc2.theater === false,
+    `after 1st Esc ${JSON.stringify(esc1)}, after 2nd ${JSON.stringify(esc2)}`);
+  const theater = await cdp.eval(`(async () => { setAtlasEngineMode('2d_svg'); if (!ATLAS_THEATER_MODE) toggleAtlasTheaterMode(); await new Promise(r => setTimeout(r, 300));
+    const sh = document.querySelector('.joy-spatial-shell').getBoundingClientRect(); const cv = document.querySelector('.joy-spatial-shell__canvas').getBoundingClientRect();
+    const out = { ih: innerHeight, iw: innerWidth, shell: [sh.top, sh.height, sh.width], canvasBottom: cv.bottom, scrollH: document.documentElement.scrollHeight };
+    toggleAtlasTheaterMode(); return out; })()`);
+  assert('theater: shell fills the viewport exactly (no page strip, no overflow)', Math.abs(theater.shell[0]) < 0.5 && Math.abs(theater.shell[1] - theater.ih) < 0.5
+    && Math.abs(theater.shell[2] - theater.iw) < 0.5 && theater.canvasBottom <= theater.ih + 0.5 && theater.scrollH <= theater.ih, JSON.stringify(theater));
+
+  // Touch: one-finger pan + two-finger pinch on the 2D SVG and the 3D canvas (CDP touch events).
+  phase = 'touch';
+  await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  const touchSeq = async (cx, cy, mode) => {
+    const pts = (d) => mode === 'pinch' ? [{ x: cx - d, y: cy, id: 1 }, { x: cx + d, y: cy, id: 2 }] : [{ x: cx + d, y: cy, id: 1 }];
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: pts(mode === 'pinch' ? 40 : 0) });
+    for (let i = 1; i <= 8; i++) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: pts(mode === 'pinch' ? 40 + i * 12 : i * 15) }); await sleep(30); }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await sleep(250);
+  };
+  await cdp.eval(`(async () => { setAtlasEngineMode('2d_svg'); zoomStudioMap(0, false, 2); await __qaFrame(); return true; })()`);
+  const svgBox = await cdp.eval(`(() => { const r = document.getElementById('dedicatedWorldAtlasSvg').getBoundingClientRect(); return { x: Math.round(r.left + r.width * 0.45), y: Math.round(r.top + r.height * 0.6), ta: getComputedStyle(document.getElementById('dedicatedWorldAtlasSvg')).touchAction }; })()`);
+  const t0 = await cdp.eval('({ z: STUDIO_MAP_ZOOM, px: STUDIO_MAP_PAN_X })');
+  await touchSeq(svgBox.x, svgBox.y, 'pan');
+  const t1 = await cdp.eval('({ z: STUDIO_MAP_ZOOM, px: STUDIO_MAP_PAN_X })');
+  await touchSeq(svgBox.x, svgBox.y, 'pinch');
+  const t2 = await cdp.eval('({ z: STUDIO_MAP_ZOOM, px: STUDIO_MAP_PAN_X })');
+  assert('touch (2D SVG): one-finger drag pans, two-finger pinch zooms in; touch-action none', t1.px > t0.px + 5 && t2.z > t1.z + 0.3 && svgBox.ta === 'none',
+    `pan ${t0.px.toFixed(1)}→${t1.px.toFixed(1)}, zoom ${t1.z}→${t2.z}, touch-action=${svgBox.ta}`);
+  await cdp.eval(`(async () => { zoomStudioMap(0, true); setAtlasEngineMode('3d_map3d'); await new Promise(r => setTimeout(r, 600)); return true; })()`);
+  const cvBox = await cdp.eval(`(() => { const c = document.getElementById('atlasMap3dCanvas'); if (!c) return null; const r = c.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height * 0.55), z: ATLAS_3D_STATE.zoom, yaw: ATLAS_3D_STATE.yaw }; })()`);
+  let d3 = null;
+  if (cvBox) {
+    await touchSeq(cvBox.x, cvBox.y, 'pan');
+    const a = await cdp.eval('({ z: ATLAS_3D_STATE.zoom, yaw: ATLAS_3D_STATE.yaw })');
+    await touchSeq(cvBox.x, cvBox.y, 'pinch');
+    const b = await cdp.eval('({ z: ATLAS_3D_STATE.zoom, yaw: ATLAS_3D_STATE.yaw })');
+    d3 = { before: cvBox, afterPan: a, afterPinch: b };
+  }
+  assert('touch (3D): one-finger drag orbits, two-finger pinch zooms in', !!d3 && Math.abs(d3.afterPan.yaw - d3.before.yaw) > 0.05 && d3.afterPinch.z > d3.afterPan.z + 0.1, JSON.stringify(d3));
+  await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+  await cdp.eval(`(async () => { setAtlasEngineMode('2d_svg'); zoomStudioMap(0, true); return true; })()`);
+
+  // ---------------------------------------------------------------- 6. F-155 URL round-trip
+  phase = 'url';
+  const want = { route: true, from: 'zone-town-kilnwatch-bastion', to: 'zone-dungeon-pendulum-shaft', zoom: 1.734, yaw: 0.913, pitch: 1.2, panX: 12.5, panY: -7.25 };
+  const href = await cdp.eval(`(async () => {
+    if (!ATLAS_ROUTE_PLANNER_OPEN) toggleAtlasRoutePlanner();
+    setAtlasRouteEndpoints('${want.from}', '${want.to}');
+    setAtlasEngineMode('3d_map3d'); await new Promise(r => setTimeout(r, 400));
+    Object.assign(ATLAS_3D_STATE, { zoom: ${want.zoom}, yaw: ${want.yaw}, pitch: ${want.pitch}, panX: ${want.panX}, panY: ${want.panY} });
+    if (typeof scheduleAtlas3dCameraUrlWrite === 'function') scheduleAtlas3dCameraUrlWrite(); else writeUrlState(false);
+    await new Promise(r => setTimeout(r, 300));
+    return location.href; })()`);
+  const readBack = async u => {
+    // Leave the document first: navigating to the current URL with a #hash is a same-document jump, not a reload.
+    await cdp.send('Page.navigate', { url: 'about:blank' });
+    await sleep(200);
+    await cdp.send('Page.navigate', { url: u });
+    for (let i = 0; i < 60; i++) { await sleep(250); if (await cdp.eval(`typeof zoomStudioMap === 'function' && !!document.getElementById('joyPersonaLensBar')`).catch(() => false)) break; }
+    return cdp.eval(`({ route: ATLAS_ROUTE_PLANNER_OPEN, from: ATLAS_ROUTE_FROM_ID, to: ATLAS_ROUTE_TO_ID, zoom: ATLAS_3D_STATE.zoom, yaw: ATLAS_3D_STATE.yaw, pitch: ATLAS_3D_STATE.pitch, panX: ATLAS_3D_STATE.panX, panY: ATLAS_3D_STATE.panY, engine: ATLAS_ENGINE_MODE,
+      lens: ATLAS_PERSONA_LENS, bar: ATLAS_ACTIVE_STUDIO_BAR, storeBar: ATLAS_STATE_STORE.activeStudioBar, defaultBar: ATLAS_LENS_DEFAULT_BAR[ATLAS_PERSONA_LENS], dimDrawer: ATLAS_DIMENSION_DRAWER_OPEN, leftDrawer: ATLAS_LEFT_DRAWER_OPEN })`);
+  };
+  const back = await readBack(href);
+  const urlBad = Object.keys(want).filter(k => (typeof want[k] === 'number' ? Math.abs(back[k] - want[k]) > 1e-6 : back[k] !== want[k]));
+  result.urlRoundTrip = { href, back };
+  assert('url: route planner (open/origin/dest) + 3D camera (zoom/yaw/pitch/pan) survive a reload', urlBad.length === 0,
+    urlBad.length ? urlBad.map(k => `${k}: want ${want[k]} got ${back[k]}`).join('; ') : `restored from ${href.split('?')[1] || href}`);
+  const base = URL_ARG.replace(/[?#].*$/, '');
+  const lensBack = await readBack(`${base}?tab=studio&perspective=world-history-and-concept&lens=liveops`);
+  result.urlLens = lensBack;
+  assert('url: lens restored from URL applies its default overlay + drawers', lensBack.lens === 'liveops' && lensBack.bar === lensBack.defaultBar
+    && lensBack.storeBar === lensBack.defaultBar && lensBack.dimDrawer === true && lensBack.leftDrawer === true,
+    `bar=${lensBack.bar} store=${lensBack.storeBar} default=${lensBack.defaultBar} dim=${lensBack.dimDrawer} left=${lensBack.leftDrawer}`);
+  const ovBack = await readBack(`${base}?tab=studio&perspective=world-history-and-concept&lens=liveops&overlay=tools_squad`);
+  assert('url: explicit overlay param wins over the lens default', ovBack.bar === 'tools_squad' && ovBack.storeBar === 'tools_squad',
+    `bar=${ovBack.bar} store=${ovBack.storeBar}`);
+  const junk = await readBack(`${base}?tab=studio&perspective=world-history-and-concept&zoom3d=NaN&yaw3d=abc&pitch3d=99&pan3d=1:&routeFrom=%3Cx%3E`);
+  assert('url: junk 3D/route params fall back to defaults or clamp (NaN-safe)', junk.zoom === 1 && junk.yaw === -0.62 && junk.pitch === 1.45 && junk.panX === 0 && junk.panY === 0
+    && junk.from === 'zone-town-lantern-hollow' && junk.route === false,
+    JSON.stringify({ zoom: junk.zoom, yaw: junk.yaw, pitch: junk.pitch, pan: [junk.panX, junk.panY], from: junk.from, route: junk.route }));
 
   // ---------------------------------------------------------------- 4. console
   await sleep(300);
