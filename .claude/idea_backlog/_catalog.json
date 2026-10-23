@@ -1479,5 +1479,11 @@
     "title": "Atlas engine parity: zone filter counts, Kilnwatch OL/SVG anchor, URL route+3D camera, theater/mobile/OL ruler audit",
     "created_at": "2026-10-23T02:24:46.048589+00:00",
     "promoted_to": "F-155"
+  },
+  {
+    "id": "I-236",
+    "title": "Atlas zone loc vs pin mismatch: zone loc projects far from drawn pin (e.g. Lantern Hollow loc->(158,454), pin (432,422)); ruler scale 384.6 m/unit confirmed vs F-045 400km model",
+    "created_at": "2026-10-23T04:26:04.859965+00:00",
+    "promoted_to": null
   }
 ]
