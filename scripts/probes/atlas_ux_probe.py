@@ -580,7 +580,94 @@ for (const body of handlerBodies) {
 v8Report.handlerCount = handlerBodies.length;
 v8Report.handlerParseFailures = handlerParseFailures;
 
+// V-9: zoom is pure camera (no LOC teleport, no field/town hijack, continuous overland scale, monotonic labels)
+const v9Report = vm.runInContext(`(() => {
+  STUDIO_PERSPECTIVE = 'world-history-and-concept';
+  zoomStudioMap(0, true);
+  setAtlasFilter('All');
+  const loc0 = JSON.stringify(STUDIO_MAP_LOC);
+  const steps = [];
+  const labelsAt = () => {
+    const h = document.getElementById('mainContent').innerHTML;
+    return [...h.matchAll(/<g\\b[^>]*>/g)]
+      .map(m => m[0])
+      .filter(t => t.includes('class="atlas-screen-pin"'))
+      .map(t => (t.match(/aria-label="([^"]+)"/) || [])[1])
+      .filter(Boolean)
+      .map(l => l.split(' (')[0]);
+  };
+  let prevLabels = labelsAt();
+  const initialLabelCount = prevLabels.length;
+  const lostLabels = [];
+  for (let i = 0; i < 30 && STUDIO_MAP_ZOOM < 8.0; i++) {
+    zoomStudioMap(0.35, false, null, 300, 200);
+    render();
+    const scale = getStudioMapEffScale(STUDIO_MAP_ZOOM);
+    const labels = labelsAt();
+    prevLabels.forEach(l => { if (!labels.includes(l)) lostLabels.push(STUDIO_MAP_ZOOM + ':' + l); });
+    prevLabels = labels;
+    steps.push({ z: STUDIO_MAP_ZOOM, ctx: getAtlasSpatialContext(), scale, field: ATLAS_STATE_STORE.activeFieldOrFortId });
+  }
+  const wheelMaxZoom = STUDIO_MAP_ZOOM;
+  const locUnchanged = JSON.stringify(STUDIO_MAP_LOC) === loc0;
+  focusTownStreetBlueprint('town-lantern-hollow');
+  const lensTownCtx = getAtlasSpatialContext();
+  zoomStudioMap(0, false, 2.8);
+  const afterRegionalCtx = getAtlasSpatialContext();
+  focusFieldTacticalBlueprint('zone-field-clover-south-gate');
+  const lensFieldCtx = getAtlasSpatialContext();
+  zoomStudioMap(0, true);
+  openDungeonSubMap('zone-dungeon-does-not-exist', 'B1');
+  const unknownDungeonOpened = ATLAS_STATE_STORE.activeDungeonId;
+  const unknownDungeonToast = ATLAS_STATE_STORE.toastMessage;
+  zoomStudioMap(0, true);
+  ATLAS_SHOW_ALL_SVG_OVERLAYS = true;
+  render();
+  const bossHtml = (document.getElementById('mainContent').innerHTML.match(/<g id="studioBossHierarchyChainOverlay">[\\s\\S]*?<\\/g>/) || [''])[0];
+  const bossEnds = new Set([...bossHtml.matchAll(/x2="([^"]+)" y2="([^"]+)"/g)].map(m => m[1] + ',' + m[2])).size;
+  const sealOnclick = (bossHtml.match(/onclick="(openDungeonSubMap\\([^"]*)"/) || [])[1] || '';
+  ATLAS_SHOW_ALL_SVG_OVERLAYS = false;
+  zoomStudioMap(0, true);
+  focusTownStreetBlueprint('town-lantern-hollow');
+  openDungeonSubMap('zone-dungeon-kiln-cellar', 'B1');
+  const dungeonClearsTownInterior = STUDIO_MAP_TOWN_INTERIOR === false;
+  zoomStudioMap(0, true);
+  const townBefore = ATLAS_STATE_STORE.activeTownId;
+  resolveNearestZoneFromPanAndLoc(5.0, clampWorldLocCoord('72986:113330'), 0, 0);
+  const nearestZoneNoHijack = !ATLAS_STATE_STORE.activeFieldOrFortId && ATLAS_STATE_STORE.activeTownId === townBefore;
+  zoomStudioMap(0, false, 3.0);
+  ATLAS_STATE_STORE.activeFieldOrFortId = 'zone-field-does-not-exist';
+  const bogusFieldCtx = getAtlasSpatialContext();
+  const bogusFieldScale = getStudioMapEffScale();
+  ATLAS_STATE_STORE.activeFieldOrFortId = '';
+  zoomStudioMap(0, true);
+  const sl = svgToL2Loc(700, 120);
+  const rt = clampWorldLocCoord(sl.x + ':' + sl.y);
+  return {
+    steps: steps.length,
+    initialLabelCount,
+    nonOverlandSteps: steps.filter(st => st.ctx !== 'overland' || st.field).map(st => st.z),
+    scaleJumps: steps.filter(st => Math.abs(st.scale - st.z) > 1e-9).map(st => st.z),
+    wheelMaxZoom,
+    locUnchanged,
+    lostLabels,
+    lensTownCtx,
+    afterRegionalCtx,
+    lensFieldCtx,
+    locRoundTripErr: Math.abs(rt.svgX - 700) + Math.abs(rt.svgY - 120),
+    unknownDungeonOpened,
+    dungeonClearsTownInterior,
+    nearestZoneNoHijack,
+    bogusFieldCtx,
+    bogusFieldScale,
+    unknownDungeonToast,
+    bossEnds,
+    sealOnclick
+  };
+})()`, sandbox);
+
 console.log(JSON.stringify({
+  v9Report,
   v8Report,
   lensOutputs,
   stateMutationFailures,
@@ -711,9 +798,45 @@ console.log(JSON.stringify({
         and ol_vendor_bytes > 100 * 1024
     )
 
+    v9 = vm_out.get("v9Report") or {}
+    zoom_fn = re.search(r"function zoomStudioMap\(.*?\n}\n", html, re.DOTALL)
+    zoom_body = zoom_fn.group(0) if zoom_fn else ""
+    pin_css = re.search(r"\.atlas-screen-pin \{(.*?)\}", html, re.DOTALL)
+    pin_css_body = pin_css.group(1) if pin_css else ""
+    v9_passed = (
+        "transform-box: view-box" in pin_css_body
+        and "fill-box" not in pin_css_body
+        and bool(zoom_body)
+        and "STUDIO_MAP_LOC =" not in zoom_body
+        and "resolveNearestZoneFromPanAndLoc" not in zoom_body
+        and v9.get("steps", 0) >= 15
+        and v9.get("initialLabelCount", 0) >= 10
+        and v9.get("nonOverlandSteps") == []
+        and v9.get("scaleJumps") == []
+        and v9.get("wheelMaxZoom") == 8.0
+        and v9.get("locUnchanged") is True
+        and v9.get("lostLabels") == []
+        and v9.get("lensTownCtx") == "town"
+        and v9.get("afterRegionalCtx") == "overland"
+        and v9.get("lensFieldCtx") == "field"
+        and v9.get("locRoundTripErr", 99) <= 1
+        and v9.get("unknownDungeonOpened") == ""
+        and "not found" in str(v9.get("unknownDungeonToast") or "")
+        and v9.get("bossEnds", 0) >= 4
+        and "zone-catacomb-" in str(v9.get("sealOnclick") or "")
+        and "STUDIO_PERSPECTIVE !== 'world_atlas'" not in html
+        and v9.get("dungeonClearsTownInterior") is True
+        and v9.get("nearestZoneNoHijack") is True
+        and v9.get("bogusFieldCtx") == "overland"
+        and v9.get("bogusFieldScale") == 3.0
+        and "function getAtlasEffectiveEngineMode(" in html
+        and "function getAtlasOlCameraFromApp(" in html
+    )
+
     return {
         "overall_passed": bool(
             v1_passed and v2_passed and v3_passed and v4_passed and v5_passed and v6_passed and v7_passed and v8_passed
+            and v9_passed
         ),
         "gates": {
             "V-1_dom_and_render_budget": {
@@ -764,6 +887,13 @@ console.log(JSON.stringify({
                 "no_cdn_jsdelivr": "cdn.jsdelivr" not in html,
                 "no_pending_drawer_timer": "pendingDrawerTimer" not in html,
                 "vendor_ol_js_bytes": ol_vendor_bytes,
+            },
+            "V-9_zoom_invariance_no_loc_teleport_no_tier_hijack": {
+                "passed": v9_passed,
+                "pin_css_view_box": "transform-box: view-box" in pin_css_body,
+                "zoom_fn_mutates_loc": "STUDIO_MAP_LOC =" in zoom_body,
+                "zoom_fn_resolves_zone": "resolveNearestZoneFromPanAndLoc" in zoom_body,
+                **v9,
             },
         },
     }

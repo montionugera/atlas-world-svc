@@ -3786,10 +3786,23 @@ INDEX_HTML = r"""<!DOCTYPE html>
         height: clamp(360px, calc(100dvh - 180px), 75dvh);
       }
     }
+    /* The lens bar scrolls horizontally (overflow-x:auto clips absolute children), so on desktop the
+       omni-search tray is fixed-positioned under the input (vars set by positionAtlasOmniTray). */
+    @media (min-width: 768px) {
+      .joy-lens-bar .joy-omni-command-bar__tray {
+        position: fixed;
+        inset-inline: auto;
+        left: var(--atlas-omni-tray-left, 16px);
+        top: var(--atlas-omni-tray-top, 96px);
+        width: var(--atlas-omni-tray-width, 560px);
+      }
+    }
     .atlas-screen-pin {
       transform: scale(var(--atlas-inv-zoom, 1));
-      transform-box: fill-box;
-      transform-origin: center;
+      /* view-box: each pin's inline transform-origin (its world anchor x,y) resolves in the
+         same user space as its x/y attributes, so the anchor stays fixed at every zoom. */
+      transform-box: view-box;
+      transform-origin: 0 0;
     }
     [id="studioCartoViewport"] path,
     [id="studioCartoViewport"] line,
@@ -4093,6 +4106,10 @@ function syncUrlState() {
     const nextLens = validLenses.includes(lensParam) ? lensParam : 'gamer';
     ATLAS_PERSONA_LENS = nextLens;
     ATLAS_STATE_STORE.personaLens = nextLens;
+    if (typeof ATLAS_LENS_DEFAULT_BAR !== 'undefined') {
+      ATLAS_ACTIVE_STUDIO_BAR = ATLAS_LENS_DEFAULT_BAR[nextLens] || 'boss_hierarchy';
+      ATLAS_DIMENSION_DRAWER_OPEN = nextLens !== 'gamer';
+    }
     if (typeof ATLAS_PO_TELEMETRY_OPEN !== 'undefined') {
       ATLAS_PO_TELEMETRY_OPEN = nextLens === 'architect';
     }
@@ -4109,15 +4126,29 @@ function syncUrlState() {
     const zVal = parseFloat(zoomParam);
     STUDIO_MAP_ZOOM = Number.isFinite(zVal) ? Math.max(0.85, Math.min(12.0, +zVal.toFixed(2))) : 1.0;
   }
+  if (typeof STUDIO_MAP_TOWN_INTERIOR !== 'undefined') {
+    STUDIO_MAP_TOWN_INTERIOR = params.get('interior') === 'town';
+  }
+  const panParam = params.get('pan');
+  if (typeof STUDIO_MAP_PAN_X !== 'undefined') {
+    const pp = String(panParam || '0:0').split(':').map(Number);
+    STUDIO_MAP_PAN_X = Number.isFinite(pp[0]) ? pp[0] : 0;
+    STUDIO_MAP_PAN_Y = Number.isFinite(pp[1]) ? pp[1] : 0;
+  }
+  if (typeof ATLAS_STATE_STORE !== 'undefined') {
+    // Absent params clear their state so Back/forward never leaves a blueprint the URL no longer names.
+    ATLAS_STATE_STORE.activeTownId = params.get('town') || 'town-lantern-hollow';
+    ATLAS_STATE_STORE.activeFieldOrFortId = params.get('field') || '';
+    ATLAS_STATE_STORE.activeDungeonId = params.get('dungeon') || '';
+    ATLAS_STATE_STORE.activeFloorId = params.get('floor') || '';
+  }
+  if (typeof clampStudioMapPan === 'function' && typeof DATA !== 'undefined') {
+    clampStudioMapPan();
+  }
   if (locParam && typeof clampWorldLocCoord === 'function') {
-    STUDIO_MAP_LOC = clampWorldLocCoord(locParam);
+    STUDIO_MAP_LOC = resolveAtlasFocusLoc(locParam);
   }
-  if (dungeonParam && typeof ATLAS_STATE_STORE !== 'undefined') {
-    ATLAS_STATE_STORE.activeDungeonId = dungeonParam;
-  }
-  if (floorParam && typeof ATLAS_STATE_STORE !== 'undefined') {
-    ATLAS_STATE_STORE.activeFloorId = floorParam;
-  }
+
   if (engineParam && typeof ATLAS_ENGINE_MODE !== 'undefined') {
     const validEngines = ['2d_svg', '2d_ol', '3d_map3d'];
     ATLAS_ENGINE_MODE = validEngines.includes(engineParam) ? engineParam : '2d_svg';
@@ -4156,6 +4187,16 @@ function writeUrlState(pushHistory = true) {
     }
     if (typeof STUDIO_MAP_ZOOM !== 'undefined') {
       params.set('zoom', String(Math.max(0.85, Math.min(12.0, +STUDIO_MAP_ZOOM.toFixed(2)))));
+    }
+    if (typeof STUDIO_MAP_TOWN_INTERIOR !== 'undefined' && STUDIO_MAP_TOWN_INTERIOR) {
+      params.set('interior', 'town');
+    }
+    if (typeof STUDIO_MAP_PAN_X !== 'undefined' && (STUDIO_MAP_PAN_X || STUDIO_MAP_PAN_Y)) {
+      params.set('pan', `${+STUDIO_MAP_PAN_X.toFixed(1)}:${+STUDIO_MAP_PAN_Y.toFixed(1)}`);
+    }
+    if (typeof ATLAS_STATE_STORE !== 'undefined') {
+      if (ATLAS_STATE_STORE.activeTownId) params.set('town', ATLAS_STATE_STORE.activeTownId);
+      if (ATLAS_STATE_STORE.activeFieldOrFortId) params.set('field', ATLAS_STATE_STORE.activeFieldOrFortId);
     }
     if (typeof ATLAS_STATE_STORE !== 'undefined') {
       if (ATLAS_STATE_STORE.activeDungeonId) params.set('dungeon', ATLAS_STATE_STORE.activeDungeonId);
@@ -4408,6 +4449,7 @@ function render() {
     STUDIO_POI_REGISTRY = {};
     STUDIO_POI_SEQ = 0;
     main.innerHTML = renderTopDownStudio();
+    if (typeof positionAtlasOmniTray === 'function') positionAtlasOmniTray();
     if (typeof syncAtlasActiveSpatialEngine === 'function') {
       syncAtlasActiveSpatialEngine();
     }
@@ -4449,7 +4491,7 @@ function syncStudioNodeToDedicatedAtlas(targetNodeId, perspective = '') {
     ATLAS_STATE_STORE.activeFloorId = (matchedDng.floors && matchedDng.floors[0] && matchedDng.floors[0].floor_id) || 'B1';
     ATLAS_STATE_STORE.activeFieldOrFortId = '';
     if (matchedDng.entrance_loc) {
-      STUDIO_MAP_LOC = clampWorldLocCoord(matchedDng.entrance_loc);
+      STUDIO_MAP_LOC = resolveAtlasFocusLoc(matchedDng.entrance_loc, matchedDng.dungeon_id, matchedDng.studio_node_id);
     }
     return;
   }
@@ -4478,7 +4520,7 @@ function syncStudioNodeToDedicatedAtlas(targetNodeId, perspective = '') {
     ATLAS_STATE_STORE.activeDungeonId = '';
     ATLAS_STATE_STORE.activeFloorId = '';
     if (matchedZone && matchedZone.loc_coord) {
-      STUDIO_MAP_LOC = clampWorldLocCoord(matchedZone.loc_coord);
+      STUDIO_MAP_LOC = resolveAtlasFocusLoc(matchedZone.loc_coord, matchedZone.zone_id, matchedZone.studio_node_id);
     }
   } else if (isFieldOrFort) {
     const resolvedFieldId = (matchedZone && matchedZone.zone_id) || rawId;
@@ -4492,7 +4534,7 @@ function syncStudioNodeToDedicatedAtlas(targetNodeId, perspective = '') {
     ATLAS_STATE_STORE.activeDungeonId = '';
     ATLAS_STATE_STORE.activeFloorId = '';
     if (matchedZone && matchedZone.loc_coord) {
-      STUDIO_MAP_LOC = clampWorldLocCoord(matchedZone.loc_coord);
+      STUDIO_MAP_LOC = resolveAtlasFocusLoc(matchedZone.loc_coord, matchedZone.zone_id, matchedZone.studio_node_id);
     }
   }
 }
@@ -4825,6 +4867,12 @@ function renderTopDownStudio() {
 // ============================================================================
 let STUDIO_CARTO_THEME = 'l2hub'; // 'l2hub' (L2 Aden Parchment) | 'google' (Google/Apple Dark GIS)
 let STUDIO_MAP_ZOOM = 1.0;
+// Explicit Town Street interior: only focusTownStreetBlueprint (5.2x lens) enters it; wheel/+/- never do.
+let STUDIO_MAP_TOWN_INTERIOR = false;
+// Coordinate space the current pan belongs to ('overland' | 'town:<id>' | 'field:<id>' | 'dungeon:<id>').
+let STUDIO_MAP_PAN_SPACE = null;
+// World-space pin anchors of the overland landmarks, registered at render: 'id:<zone/node id>' and 'loc:<x:y>' keys.
+const ATLAS_OVERLAND_PIN_ANCHORS = {};
 let STUDIO_MAP_PAN_X = 0;
 let STUDIO_MAP_PAN_Y = 0;
 let STUDIO_MAP_SELECTED_POI = null;
@@ -6094,7 +6142,7 @@ function setAtlasSiegeDomain(domainId) {
   const domains = tatlas.castle_siege_domains || [];
   const activeDom = domains.find(d => d.domain_id === ATLAS_SIEGE_DOMAIN_ID || d.stronghold_zone_id === ATLAS_SIEGE_DOMAIN_ID);
   if (activeDom && activeDom.artifact_altar_loc) {
-    STUDIO_MAP_LOC = clampWorldLocCoord(activeDom.artifact_altar_loc);
+    STUDIO_MAP_LOC = resolveAtlasFocusLoc(activeDom.artifact_altar_loc);
   }
   writeUrlState(false);
   render();
@@ -6132,7 +6180,7 @@ function selectAtlasQuestChain(questId) {
   const quests = tatlas.quest_trial_chains || [];
   const activeQuest = quests.find(q => q.quest_id === ATLAS_ACTIVE_QUEST_ID);
   if (activeQuest && activeQuest.objective_loc) {
-    STUDIO_MAP_LOC = clampWorldLocCoord(activeQuest.objective_loc);
+    STUDIO_MAP_LOC = resolveAtlasFocusLoc(activeQuest.objective_loc);
   }
   writeUrlState(false);
   render();
@@ -6153,7 +6201,7 @@ function setAtlasBossGodChain(godId) {
   const chains = tatlas.boss_hierarchy_chains || [];
   const activeChain = chains.find(c => c.god_id === ATLAS_BOSS_GOD_ID || c.god_short_label === ATLAS_BOSS_GOD_ID);
   if (activeChain && activeChain.seal_loc) {
-    STUDIO_MAP_LOC = clampWorldLocCoord(activeChain.seal_loc);
+    STUDIO_MAP_LOC = resolveAtlasFocusLoc(activeChain.seal_loc);
   }
   writeUrlState(false);
   render();
@@ -6363,10 +6411,11 @@ function setAtlasRouteEndpoints(fromZoneId, toZoneId) {
   if (STUDIO_MAP_ZOOM >= 3.5) {
     STUDIO_MAP_ZOOM = 2.4;
   }
+  STUDIO_MAP_TOWN_INTERIOR = false;
   const sp = (DATA && DATA.studioPerspectives) || {};
   const routeRes = computeShortestAtlasZonePath(ATLAS_ROUTE_FROM_ID, ATLAS_ROUTE_TO_ID, sp.tShapedWorldAtlas || {});
   if (routeRes.destination && routeRes.destination.loc_coord) {
-    STUDIO_MAP_LOC = clampWorldLocCoord(routeRes.destination.loc_coord);
+    STUDIO_MAP_LOC = resolveAtlasFocusLoc(routeRes.destination.loc_coord, routeRes.destination.zone_id, routeRes.destination.studio_node_id);
   }
   writeUrlState(false);
   render();
@@ -6472,24 +6521,7 @@ function resolveNearestZoneFromPanAndLoc(
   ATLAS_FOCUSED_FIELD_ID = (nearestField && (nearestField.zone_id || nearestField.studio_node_id)) || '';
   ATLAS_FOCUSED_FORTRESS_ID = (nearestFort && (nearestFort.zone_id || nearestFort.studio_node_id)) || '';
 
-  if (zoomVal >= 4.5) {
-    ATLAS_STATE_STORE.activeTownId = ATLAS_FOCUSED_TOWN_ID;
-    ATLAS_STATE_STORE.activeFieldOrFortId = '';
-    STUDIO_SELECTED_NODE_ID = ATLAS_FOCUSED_TOWN_ID;
-  } else if (zoomVal >= 3.5) {
-    if (minTownDist <= Math.min(minFieldDist, minFortDist)) {
-      ATLAS_STATE_STORE.activeTownId = ATLAS_FOCUSED_TOWN_ID;
-      ATLAS_STATE_STORE.activeFieldOrFortId = '';
-      STUDIO_SELECTED_NODE_ID = ATLAS_FOCUSED_TOWN_ID;
-    } else if (minFieldDist <= minFortDist && ATLAS_FOCUSED_FIELD_ID) {
-      ATLAS_STATE_STORE.activeFieldOrFortId = ATLAS_FOCUSED_FIELD_ID;
-      STUDIO_SELECTED_NODE_ID = ATLAS_FOCUSED_FIELD_ID;
-    } else if (ATLAS_FOCUSED_FORTRESS_ID) {
-      ATLAS_STATE_STORE.activeFieldOrFortId = ATLAS_FOCUSED_FORTRESS_ID;
-      STUDIO_SELECTED_NODE_ID = ATLAS_FOCUSED_FORTRESS_ID;
-    }
-  }
-
+  // Focus hints only: zoom level never selects or enters a town/field blueprint (explicit lens buttons do).
   return {
     townId: ATLAS_FOCUSED_TOWN_ID,
     fieldId: ATLAS_FOCUSED_FIELD_ID,
@@ -6528,9 +6560,109 @@ function clampWorldLocCoord(locStrOrObj) {
 }
 
 function getSemanticZoomLodTier(zoomVal = STUDIO_MAP_ZOOM) {
-  if (zoomVal >= 4.5) return 3; // Tier 3: Town Street, Building & Shop/Refinement Blueprint (4.5x - 12.0x)
+  if (zoomVal >= 4.5 && STUDIO_MAP_TOWN_INTERIOR) return 3; // Tier 3: Town Street, Building & Shop/Refinement Blueprint (4.5x - 12.0x)
   if (zoomVal >= 2.2) return 2; // Tier 2: Regional Roads, Level Bands & Dungeon Entrance Portals (2.2x - 4.5x)
   return 1;                     // Tier 1: Macro Geography, Travel Highways & 6 Race Spawns (1.0x - 2.2x)
+}
+
+function resolveActiveFieldOrFortEntry() {
+  const id = ATLAS_STATE_STORE.activeFieldOrFortId;
+  if (!id) return null;
+  const tatlas = ((DATA && DATA.studioPerspectives) || {}).tShapedWorldAtlas || {};
+  return getAllAtlasFieldEntries(tatlas).find(f => f.zone_id === id || f.studio_node_id === id)
+    || getAllAtlasFortressEntries(tatlas).find(h => h.zone_id === id || h.studio_node_id === id)
+    || null;
+}
+
+function isStudioMapOverland() {
+  return !ATLAS_STATE_STORE.activeDungeonId && !resolveActiveFieldOrFortEntry() && !STUDIO_MAP_TOWN_INTERIOR;
+}
+
+// Single source for the viewport scale: overland is continuous (scale == zoom, up to 8x);
+// blueprints/sub-maps keep their 5.2x == 1:1 framing from 4.5x upward.
+function getStudioMapEffScale(zoomVal = STUDIO_MAP_ZOOM) {
+  if (isStudioMapOverland()) return zoomVal;
+  return zoomVal >= 4.5 ? Math.max(1.0, +(zoomVal / 5.2).toFixed(2)) : zoomVal;
+}
+
+// Client (CSS px) -> outer atlas SVG viewBox coords (0..1040 x 0..500), honouring the
+// xMidYMid meet letterbox. Prefers the browser CTM; falls back to letterbox math.
+function clientToAtlasSvgPoint(svgEl, clientX, clientY) {
+  if (!svgEl) return null;
+  if (typeof svgEl.getScreenCTM === 'function' && typeof svgEl.createSVGPoint === 'function') {
+    const ctm = svgEl.getScreenCTM();
+    if (ctm) {
+      const pt = svgEl.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      const out = pt.matrixTransform(ctm.inverse());
+      return { x: out.x, y: out.y };
+    }
+  }
+  if (typeof svgEl.getBoundingClientRect !== 'function') return null;
+  const rect = svgEl.getBoundingClientRect();
+  if (!(rect.width > 0 && rect.height > 0)) return null;
+  const scale = Math.min(rect.width / 1040, rect.height / 500);
+  const offX = (rect.width - 1040 * scale) / 2;
+  const offY = (rect.height - 500 * scale) / 2;
+  return { x: (clientX - rect.left - offX) / scale, y: (clientY - rect.top - offY) / scale };
+}
+
+// One pan clamp for wheel, buttons, drag and arrow keys.
+function clampStudioMapPan(effScale = getStudioMapEffScale()) {
+  const maxPanX = Math.max(160, (effScale - 1) * 520 + 180);
+  const maxPanY = Math.max(90, (effScale - 1) * 250 + 110);
+  STUDIO_MAP_PAN_X = Math.max(-maxPanX, Math.min(maxPanX, STUDIO_MAP_PAN_X));
+  STUDIO_MAP_PAN_Y = Math.max(-maxPanY, Math.min(maxPanY, STUDIO_MAP_PAN_Y));
+}
+
+// Loc-driven focus (route planner, dungeon entrances, quests, siege, deep links): when the target is an
+// overland landmark, aim the crosshair at the landmark pin itself instead of the raw projected loc.
+function resolveAtlasFocusLoc(locStrOrObj, ...ids) {
+  const loc = clampWorldLocCoord(locStrOrObj);
+  const hit = ids.map(id => id && ATLAS_OVERLAND_PIN_ANCHORS['id:' + id]).find(Boolean)
+    || ATLAS_OVERLAND_PIN_ANCHORS['loc:' + loc.x + ':' + loc.y];
+  return hit ? { ...loc, svgX: hit.x, svgY: hit.y } : loc;
+}
+
+// A context jump (town / field / dungeon / search) drops a stale selection unless it targets that selection.
+function clearAtlasSelectionUnlessTarget(targetId) {
+  const poi = STUDIO_MAP_SELECTED_POI;
+  if (!poi) return;
+  const ids = [poi.inspectId, poi.townBlueprintId, poi.dungeonWarpId, poi.zoneId, poi.id].filter(Boolean);
+  const t = String(targetId || '');
+  if (t && ids.some(id => id === t || 'zone-' + id === t || id === 'zone-' + t)) return;
+  STUDIO_MAP_SELECTED_POI = null;
+}
+
+function registerAtlasOverlandPinAnchors(landmarks, tatlas) {
+  const zones = getAllAtlas63Zones(tatlas);
+  const dungeons = (tatlas && tatlas.multi_floor_dungeons) || [];
+  landmarks.forEach(lm => {
+    const a = { x: lm.x, y: lm.y };
+    const ids = [lm.id, 'zone-' + lm.id, lm.townBlueprintId, lm.dungeonWarpId].filter(Boolean);
+    const locs = [lm.loc];
+    zones.forEach(z => {
+      if (ids.includes(z.zone_id) || ids.includes(z.studio_node_id)) {
+        ids.push(z.zone_id, z.studio_node_id);
+        locs.push(z.loc_coord);
+      }
+    });
+    dungeons.forEach(d => {
+      if (ids.includes(d.dungeon_id) || ids.includes(d.studio_node_id)) locs.push(d.entrance_loc);
+    });
+    ids.filter(Boolean).forEach(id => { ATLAS_OVERLAND_PIN_ANCHORS['id:' + id] = a; });
+    locs.filter(Boolean).forEach(l => {
+      const c = clampWorldLocCoord(l);
+      ATLAS_OVERLAND_PIN_ANCHORS['loc:' + c.x + ':' + c.y] = a;
+    });
+  });
+}
+
+// Outer SVG coords -> world (studioCartoViewport content) coords, inverting the viewport transform.
+function atlasSvgToWorldPoint(svgX, svgY) {
+  const s = Math.max(0.1, getStudioMapEffScale());
+  return { x: 520 + (svgX - 520 - STUDIO_MAP_PAN_X) / s, y: 250 + (svgY - 250 - STUDIO_MAP_PAN_Y) / s };
 }
 
 function getAtlasBossHierarchyChains(tatlas) {
@@ -6556,8 +6688,8 @@ function svgToL2Loc(svgX, svgY) {
   const spec = (sp.tShapedWorldAtlas && sp.tShapedWorldAtlas.world_grid_spec) || {};
   const bx = spec.coord_bounds_x || [-131072, 229376];
   const by = spec.coord_bounds_y || [-262144, 262144];
-  const lx = Math.round(bx[0] + (svgX / 1040) * (bx[1] - bx[0]));
-  const ly = Math.round(by[0] + (svgY / 500) * (by[1] - by[0]));
+  const lx = Math.round(bx[0] + ((svgX - 30) / 980) * (bx[1] - bx[0]));
+  const ly = Math.round(by[0] + ((svgY - 30) / 440) * (by[1] - by[0]));
   return {
     x: Math.max(bx[0], Math.min(bx[1], lx)),
     y: Math.max(by[0], Math.min(by[1], ly)),
@@ -6567,54 +6699,86 @@ function svgToL2Loc(svgX, svgY) {
 }
 
 function zoomStudioMap(delta, reset = false, targetZoom = null, pivotSvgX = null, pivotSvgY = null) {
-  const prevZoom = STUDIO_MAP_ZOOM;
+  // Zoom is pure camera: it never rewrites STUDIO_MAP_LOC and never auto-enters a field/town
+  // blueprint. Only explicit lens buttons (focusTownStreetBlueprint / focusFieldTacticalBlueprint) do.
   const prevTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
-  const prevEffScale = prevTier === 3 ? Math.max(1.0, +(prevZoom / 5.2).toFixed(2)) : prevZoom;
+  const prevEffScale = getStudioMapEffScale(STUDIO_MAP_ZOOM);
+  const prevTownInterior = STUDIO_MAP_TOWN_INTERIOR;
+  const maxZoom = isStudioMapOverland() ? 8.0 : 12.0;
   if (reset) {
     STUDIO_MAP_ZOOM = 1.0;
     STUDIO_MAP_PAN_X = 0;
     STUDIO_MAP_PAN_Y = 0;
+    STUDIO_MAP_TOWN_INTERIOR = false;
+    ATLAS_STATE_STORE.toastMessage = '';
     ATLAS_STATE_STORE.activeDungeonId = '';
     ATLAS_STATE_STORE.activeFloorId = '';
     ATLAS_STATE_STORE.activeFieldOrFortId = '';
     ATLAS_FOCUSED_FIELD_ID = '';
     ATLAS_FOCUSED_FORTRESS_ID = '';
   } else if (targetZoom !== null && Number.isFinite(targetZoom)) {
-    STUDIO_MAP_ZOOM = Math.max(0.85, Math.min(12.0, +targetZoom.toFixed(2)));
+    STUDIO_MAP_ZOOM = Math.max(0.85, Math.min(maxZoom, +targetZoom.toFixed(2)));
   } else {
-    STUDIO_MAP_ZOOM = Math.max(0.85, Math.min(12.0, +(STUDIO_MAP_ZOOM + delta).toFixed(2)));
+    STUDIO_MAP_ZOOM = Math.max(0.85, Math.min(maxZoom, +(STUDIO_MAP_ZOOM + delta).toFixed(2)));
+  }
+  // Zooming out of the Town Street interior below its 4.5x floor returns to the overland map.
+  if (STUDIO_MAP_TOWN_INTERIOR && STUDIO_MAP_ZOOM < 4.5) {
+    STUDIO_MAP_TOWN_INTERIOR = false;
+    STUDIO_MAP_PAN_X = 0;
+    STUDIO_MAP_PAN_Y = 0;
   }
   const nextTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
-  const nextEffScale = nextTier === 3 ? Math.max(1.0, +(STUDIO_MAP_ZOOM / 5.2).toFixed(2)) : STUDIO_MAP_ZOOM;
-  if (!reset && pivotSvgX !== null && pivotSvgY !== null && Number.isFinite(pivotSvgX) && Number.isFinite(pivotSvgY)) {
+  const nextEffScale = getStudioMapEffScale(STUDIO_MAP_ZOOM);
+  if (!reset && prevTownInterior === STUDIO_MAP_TOWN_INTERIOR && pivotSvgX !== null && pivotSvgY !== null && Number.isFinite(pivotSvgX) && Number.isFinite(pivotSvgY)) {
+    // Keep the world point under the pivot stationary: pan' = (p - c) - (s'/s) * (p - c - pan)
     const cx = 520;
     const cy = 250;
-    const worldX = cx + (pivotSvgX - cx - STUDIO_MAP_PAN_X) / Math.max(0.1, prevEffScale);
-    const worldY = cy + (pivotSvgY - cy - STUDIO_MAP_PAN_Y) / Math.max(0.1, prevEffScale);
-    if ((prevTier < 3 && nextTier < 3) || (prevTier === 3 && nextTier === 3)) {
-      const ratio = nextEffScale / Math.max(0.1, prevEffScale);
-      const nextPanX = (pivotSvgX - cx) - ratio * (pivotSvgX - cx - STUDIO_MAP_PAN_X);
-      const nextPanY = (pivotSvgY - cy) - ratio * (pivotSvgY - cy - STUDIO_MAP_PAN_Y);
-      const maxPanX = Math.max(160, (nextEffScale - 1) * 520 + 180);
-      const maxPanY = Math.max(90, (nextEffScale - 1) * 250 + 110);
-      STUDIO_MAP_PAN_X = Math.max(-maxPanX, Math.min(maxPanX, Math.round(nextPanX)));
-      STUDIO_MAP_PAN_Y = Math.max(-maxPanY, Math.min(maxPanY, Math.round(nextPanY)));
-    }
-    if (prevTier < 3) {
-      STUDIO_MAP_LOC = svgToL2Loc(Math.max(0, Math.min(1040, worldX)), Math.max(0, Math.min(500, worldY)));
-    }
+    const ratio = nextEffScale / Math.max(0.1, prevEffScale);
+    STUDIO_MAP_PAN_X = (pivotSvgX - cx) - ratio * (pivotSvgX - cx - STUDIO_MAP_PAN_X);
+    STUDIO_MAP_PAN_Y = (pivotSvgY - cy) - ratio * (pivotSvgY - cy - STUDIO_MAP_PAN_Y);
   }
-  const crossed35 = (prevZoom < 3.5 && STUDIO_MAP_ZOOM >= 3.5) || (prevZoom >= 3.5 && STUDIO_MAP_ZOOM < 3.5);
-  const crossed45 = (prevZoom < 4.5 && STUDIO_MAP_ZOOM >= 4.5) || (prevZoom >= 4.5 && STUDIO_MAP_ZOOM < 4.5);
-  if (!reset && targetZoom === null && (crossed35 || crossed45)) {
-    resolveNearestZoneFromPanAndLoc(STUDIO_MAP_ZOOM, STUDIO_MAP_LOC, STUDIO_MAP_PAN_X, STUDIO_MAP_PAN_Y);
-  }
+  clampStudioMapPan(nextEffScale);
   writeUrlState(false);
-  if (prevTier !== nextTier || crossed35 || crossed45 || reset || targetZoom !== null) {
+  if (prevTier !== nextTier || prevTownInterior !== STUDIO_MAP_TOWN_INTERIOR || reset || targetZoom !== null) {
     render();
   } else {
     applyStudioMapTransform();
   }
+}
+
+function positionAtlasOmniTray() {
+  if (typeof document === 'undefined' || typeof document.querySelector !== 'function') return;
+  const bar = document.querySelector('.joy-lens-bar .joy-omni-command-bar');
+  const root = document.documentElement;
+  if (!bar || !root || !root.style || typeof bar.getBoundingClientRect !== 'function') return;
+  const r = bar.getBoundingClientRect();
+  const vw = (typeof window !== 'undefined' && window.innerWidth) || 1440;
+  const width = Math.min(Math.max(r.width, 420), vw - 32);
+  const left = Math.max(16, Math.min(r.left, vw - 16 - width));
+  root.style.setProperty('--atlas-omni-tray-left', `${Math.round(left)}px`);
+  root.style.setProperty('--atlas-omni-tray-top', `${Math.round(r.bottom + 4)}px`);
+  root.style.setProperty('--atlas-omni-tray-width', `${Math.round(width)}px`);
+}
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('resize', () => positionAtlasOmniTray());
+  window.addEventListener('scroll', () => positionAtlasOmniTray(), true);
+  window.addEventListener('focusin', () => positionAtlasOmniTray());
+}
+
+function zoomActiveAtlasEngine(delta, reset = false, targetZoom = null) {
+  if (getAtlasEffectiveEngineMode() === '3d_map3d') {
+    if (reset) {
+      setAtlas3dOption('reset', true);
+    } else {
+      const next = targetZoom !== null ? targetZoom : ATLAS_3D_STATE.zoom * (delta > 0 ? 1.14 : 0.88);
+      ATLAS_3D_STATE.zoom = Math.max(0.45, Math.min(3.5, +next.toFixed(3)));
+      redrawAtlas3dInPlace();
+    }
+    const lbl = document.getElementById('studioCartoZoomReadout');
+    if (lbl) lbl.textContent = `${ATLAS_3D_STATE.zoom.toFixed(2)}\u00d7 3D`;
+    return;
+  }
+  zoomStudioMap(delta, reset, targetZoom, reset ? null : 520, reset ? null : 250);
 }
 
 function applyStudioMapTransform() {
@@ -6623,7 +6787,7 @@ function applyStudioMapTransform() {
   const lbl = document.getElementById('studioCartoZoomReadout');
   const tierBadge = document.getElementById('studioSemanticLodBadge');
   const tier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
-  const effScale = tier === 3 ? Math.max(1.0, +(STUDIO_MAP_ZOOM / 5.2).toFixed(2)) : STUDIO_MAP_ZOOM;
+  const effScale = getStudioMapEffScale(STUDIO_MAP_ZOOM);
   const invZoom = (1 / Math.max(1, effScale)).toFixed(4);
   if (svgEl && svgEl.style && typeof svgEl.style.setProperty === 'function') {
     svgEl.style.setProperty('--atlas-inv-zoom', invZoom);
@@ -6641,10 +6805,11 @@ function applyStudioMapTransform() {
   if (lbl) {
     lbl.textContent = `${STUDIO_MAP_ZOOM.toFixed(2)}\u00d7`;
   }
+  syncAtlasOlViewFromApp();
   if (tierBadge) {
     tierBadge.textContent = tier === 3
       ? '🏘️ LOD Tier 3: Town Street & Shop/Refinement Blueprint (4.5×–12.0×)'
-      : (tier === 2 ? '🛤️ LOD Tier 2: Regional Roads, Lv.Bands & Dungeon Portals (2.2×–4.5×)' : '🌍 LOD Tier 1: Macro Geography & 6 Race Spawns (1.0×–2.2×)');
+      : (tier === 2 ? '🛤️ LOD Tier 2: Regional Roads, Lv.Bands & Dungeon Portals (2.2×–8.0×)' : '🌍 LOD Tier 1: Macro Geography & 6 Race Spawns (1.0×–2.2×)');
   }
 }
 
@@ -6655,11 +6820,11 @@ function onStudioMapWheel(evt) {
   let pivotX = null;
   let pivotY = null;
   const svg = evt.currentTarget || document.getElementById('dedicatedWorldAtlasSvg');
-  if (svg && typeof svg.getBoundingClientRect === 'function' && evt.clientX !== undefined) {
-    const rect = svg.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      pivotX = ((evt.clientX - rect.left) / rect.width) * 1040;
-      pivotY = ((evt.clientY - rect.top) / rect.height) * 500;
+  if (svg && evt.clientX !== undefined) {
+    const pt = clientToAtlasSvgPoint(svg, evt.clientX, evt.clientY);
+    if (pt) {
+      pivotX = pt.x;
+      pivotY = pt.y;
     }
   }
   zoomStudioMap(delta, false, null, pivotX, pivotY);
@@ -7180,6 +7345,47 @@ function getAtlasContinentCode(continentId) {
   return m ? 'C0' + m[1] : '';
 }
 
+// OL only draws the overland vector map; town/field/dungeon contexts fall back to the 2D SVG renderer.
+function getAtlasEffectiveEngineMode() {
+  if (ATLAS_ENGINE_MODE === '2d_ol' && getAtlasSpatialContext() !== 'overland') return '2d_svg';
+  return ATLAS_ENGINE_MODE;
+}
+
+// The app camera (STUDIO_MAP_ZOOM + PAN) is the single source of truth for SVG and OL:
+// OL resolution = SVG units per CSS px at that zoom, OL centre = the world point at the SVG view centre.
+function getAtlasOlCameraFromApp(el) {
+  const rect = el && typeof el.getBoundingClientRect === 'function' ? el.getBoundingClientRect() : { width: 1040, height: 500 };
+  const k = Math.min((rect.width || 1040) / 1040, (rect.height || 500) / 500) || 1;
+  const s = Math.max(0.1, getStudioMapEffScale());
+  const c = atlasSvgToWorldPoint(520, 250);
+  return { k, center: [c.x, 500 - c.y], resolution: 1 / (k * s) };
+}
+
+function applyAtlasOlViewToApp(map, el) {
+  const view = map && typeof map.getView === 'function' ? map.getView() : null;
+  if (!view || !isStudioMapOverland()) return;
+  const res = view.getResolution();
+  const c = view.getCenter();
+  if (!res || !c) return;
+  const { k } = getAtlasOlCameraFromApp(el);
+  const s = Math.max(0.85, Math.min(8.0, 1 / (res * k)));
+  STUDIO_MAP_ZOOM = +s.toFixed(2);
+  STUDIO_MAP_PAN_X = -s * (c[0] - 520);
+  STUDIO_MAP_PAN_Y = -s * ((500 - c[1]) - 250);
+  const lbl = document.getElementById('studioCartoZoomReadout');
+  if (lbl) lbl.textContent = `${STUDIO_MAP_ZOOM.toFixed(2)}\u00d7`;
+  writeUrlState(false);
+}
+
+function syncAtlasOlViewFromApp() {
+  const map = typeof window !== 'undefined' ? window.__ATLAS_OL_MAP_INSTANCE : null;
+  if (!map || getAtlasEffectiveEngineMode() !== '2d_ol' || typeof map.getView !== 'function') return;
+  const el = typeof map.getTargetElement === 'function' ? map.getTargetElement() : null;
+  const cam = getAtlasOlCameraFromApp(el);
+  map.getView().setCenter(cam.center);
+  map.getView().setResolution(cam.resolution);
+}
+
 function mountRealOpenLayersInstance(targetEl, features) {
   if (!targetEl || typeof window === 'undefined' || !window.ol || !window.ol.Map || !window.ol.View) return false;
   try {
@@ -7190,6 +7396,10 @@ function mountRealOpenLayersInstance(targetEl, features) {
       extent: [0, 0, 1040, 500]
     });
     window.__ATLAS_OL_PROJECTION = proj;
+    // Dispose the previous map (render() remounts) - its camera lives on in the app camera.
+    const prevMap = window.__ATLAS_OL_MAP_INSTANCE;
+    if (prevMap && typeof prevMap.setTarget === 'function') prevMap.setTarget(null);
+    window.__ATLAS_OL_MAP_INSTANCE = null;
     targetEl.innerHTML = '';
     const olFeatures = [];
     if (ol.Feature && ol.geom && ol.geom.Polygon && ol.style && ol.style.Style) {
@@ -7276,14 +7486,20 @@ function mountRealOpenLayersInstance(targetEl, features) {
     const map = new ol.Map({
       target: targetEl,
       layers: [vectorLayer],
-      view: new ol.View({
-        projection: proj,
-        center: [520, 250],
-        zoom: 1,
-        minZoom: 0.5,
-        maxZoom: 6
-      })
+      view: (() => {
+        const cam = getAtlasOlCameraFromApp(targetEl);
+        return new ol.View({
+          projection: proj,
+          center: cam.center,
+          resolution: cam.resolution,
+          minResolution: 1 / (cam.k * 8.0),
+          maxResolution: 1 / (cam.k * 0.85)
+        });
+      })()
     });
+    if (typeof map.on === 'function') {
+      map.on('moveend', () => applyAtlasOlViewToApp(map, targetEl));
+    }
     if (typeof map.on === 'function') {
       map.on('singleclick', (evt) => {
         const coord = evt.coordinate || [520, 250];
@@ -7295,7 +7511,18 @@ function mountRealOpenLayersInstance(targetEl, features) {
           initOrUpdateAtlasOpenLayersEngine();
           return;
         }
-        const clicked = features.find(f => Math.hypot(f.x - cx, f.y - cy) <= 18);
+        // Nearest feature in screen pixels (tolerance 14px at any zoom), not the first within 18 map units.
+        const view = typeof map.getView === 'function' ? map.getView() : null;
+        const res = (view && typeof view.getResolution === 'function' && view.getResolution()) || 1;
+        let clicked = null;
+        let bestPx = 14;
+        features.forEach(f => {
+          const dPx = Math.hypot(f.x - coord[0], (500 - f.y) - coord[1]) / res;
+          if (dPx <= bestPx) {
+            bestPx = dPx;
+            clicked = f;
+          }
+        });
         if (clicked) {
           if (clicked.poi) {
             STUDIO_MAP_SELECTED_POI = clicked.poi;
@@ -7322,7 +7549,7 @@ function mountRealOpenLayersInstance(targetEl, features) {
 
 function initOrUpdateAtlasOpenLayersEngine() {
   const mount = document.getElementById('atlasAdvancedEngineMount');
-  if (!mount || ATLAS_ENGINE_MODE !== '2d_ol') return;
+  if (!mount || getAtlasEffectiveEngineMode() !== '2d_ol') return;
   ensureOpenLayersRuntimeLoaded();
   attachAtlasEngineResizeObserver(mount);
   const features = buildAtlasspatialFeaturesList();
@@ -8145,8 +8372,9 @@ function initOrUpdateAtlasMap3dEngine() {
     ATLAS_3D_STATE.lastX = e.clientX;
     ATLAS_3D_STATE.lastY = e.clientY;
     if (e.shiftKey || ATLAS_3D_STATE.dragButton === 2) {
-      ATLAS_3D_STATE.panX += dx;
-      ATLAS_3D_STATE.panY += dy;
+      const curScale = clientToLogical3d(0, 0).curScale;
+      ATLAS_3D_STATE.panX += dx / curScale;
+      ATLAS_3D_STATE.panY += dy / curScale;
     } else {
       ATLAS_3D_STATE.yaw += dx * 0.008;
       ATLAS_3D_STATE.pitch = Math.max(0.2, Math.min(1.45, ATLAS_3D_STATE.pitch + dy * 0.006));
@@ -8172,16 +8400,38 @@ function initOrUpdateAtlasMap3dEngine() {
     }
   };
   canvas.onmouseleave = () => { ATLAS_3D_STATE.dragging = false; };
+  const clientToLogical3d = (clientX, clientY) => {
+    const rect = canvas.getBoundingClientRect();
+    const curScale = Math.min(rect.width / 1040, rect.height / 500) || 1;
+    return {
+      x: (clientX - rect.left - (rect.width - 1040 * curScale) / 2) / curScale,
+      y: (clientY - rect.top - (rect.height - 500 * curScale) / 2) / curScale,
+      curScale
+    };
+  };
   canvas.onwheel = (e) => {
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.12 : 0.89;
-    ATLAS_3D_STATE.zoom = Math.max(0.45, Math.min(3.5, +(ATLAS_3D_STATE.zoom * factor).toFixed(3)));
+    const prevZoom = ATLAS_3D_STATE.zoom;
+    ATLAS_3D_STATE.zoom = Math.max(0.45, Math.min(3.5, +(prevZoom * factor).toFixed(3)));
+    // Cursor-anchored: keep the scene point under the cursor fixed (projection centre is 520+panX, 265+panY).
+    const L = clientToLogical3d(e.clientX, e.clientY);
+    const ratio = ATLAS_3D_STATE.zoom / prevZoom;
+    ATLAS_3D_STATE.panX = L.x - 520 - (L.x - 520 - ATLAS_3D_STATE.panX) * ratio;
+    ATLAS_3D_STATE.panY = L.y - 265 - (L.y - 265 - ATLAS_3D_STATE.panY) * ratio;
     drawScene();
+    const lbl = document.getElementById('studioCartoZoomReadout');
+    if (lbl) lbl.textContent = `${ATLAS_3D_STATE.zoom.toFixed(2)}\u00d7 3D`;
   };
 }
 
 function syncAtlasActiveSpatialEngine() {
-  if (ATLAS_ENGINE_MODE === '2d_ol') {
+  const effMode = getAtlasEffectiveEngineMode();
+  if (effMode !== '2d_ol' && typeof window !== 'undefined' && window.__ATLAS_OL_MAP_INSTANCE) {
+    if (typeof window.__ATLAS_OL_MAP_INSTANCE.setTarget === 'function') window.__ATLAS_OL_MAP_INSTANCE.setTarget(null);
+    window.__ATLAS_OL_MAP_INSTANCE = null;
+  }
+  if (effMode === '2d_ol') {
     initOrUpdateAtlasOpenLayersEngine();
   } else if (ATLAS_ENGINE_MODE === '3d_map3d') {
     initOrUpdateAtlasMap3dEngine();
@@ -8461,11 +8711,8 @@ function setAtlasCompareStudioBar(barKey) {
 
 function getAtlasSpatialContext() {
   if (ATLAS_STATE_STORE.activeDungeonId) return 'dungeon';
-  const lodTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
-  const candidateFieldOrFortId = ATLAS_STATE_STORE.activeFieldOrFortId
-    || (STUDIO_MAP_ZOOM >= 3.5 && STUDIO_MAP_ZOOM < 4.5 ? (ATLAS_FOCUSED_FIELD_ID || ATLAS_FOCUSED_FORTRESS_ID || STUDIO_SELECTED_NODE_ID) : '');
-  if (candidateFieldOrFortId) return 'field';
-  if (lodTier === 3) return 'town';
+  if (resolveActiveFieldOrFortEntry()) return 'field';
+  if (STUDIO_MAP_TOWN_INTERIOR) return 'town';
   return 'overland';
 }
 
@@ -8638,11 +8885,13 @@ function focusTownStreetBlueprint(townId, locCoord) {
   const res = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'town');
   ATLAS_STATE_STORE.contextAutoHealNote = res.reason;
   if (locCoord) {
-    STUDIO_MAP_LOC = clampWorldLocCoord(locCoord);
+    STUDIO_MAP_LOC = resolveAtlasFocusLoc(locCoord, ATLAS_STATE_STORE.activeTownId);
   }
   STUDIO_SELECTED_NODE_ID = ATLAS_STATE_STORE.activeTownId;
   STUDIO_MAP_PAN_X = 0;
   STUDIO_MAP_PAN_Y = 0;
+  clearAtlasSelectionUnlessTarget(ATLAS_STATE_STORE.activeTownId);
+  STUDIO_MAP_TOWN_INTERIOR = true;
   zoomStudioMap(0, false, 5.2);
   scrollCanvasIntoViewSmooth();
 }
@@ -8664,11 +8913,13 @@ function focusFieldTacticalBlueprint(fieldOrFortId, locCoord = '') {
   const res = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'field');
   ATLAS_STATE_STORE.contextAutoHealNote = res.reason;
   if (locCoord) {
-    STUDIO_MAP_LOC = clampWorldLocCoord(locCoord);
+    STUDIO_MAP_LOC = resolveAtlasFocusLoc(locCoord, targetId);
   }
   STUDIO_SELECTED_NODE_ID = ATLAS_STATE_STORE.activeFieldOrFortId;
   STUDIO_MAP_PAN_X = 0;
   STUDIO_MAP_PAN_Y = 0;
+  clearAtlasSelectionUnlessTarget(targetId);
+  STUDIO_MAP_TOWN_INTERIOR = false;
   zoomStudioMap(0, false, 4.8);
   scrollCanvasIntoViewSmooth();
 }
@@ -8682,12 +8933,16 @@ function openDungeonSubMap(dungeonId, floorId = '') {
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
   const dungeons = tatlas.multi_floor_dungeons || [];
-  let dng = dungeons.find(d => d.dungeon_id === dungeonId || d.studio_node_id === dungeonId);
-  if (!dng && dungeons.length > 0) {
-    dng = dungeons[0];
+  const dng = dungeons.find(d => d.dungeon_id === dungeonId || d.studio_node_id === dungeonId);
+  if (!dng) {
+    // Never silently open another dungeon: tell the user the warp target is unknown.
+    ATLAS_STATE_STORE.toastMessage = `Dungeon "${dungeonId || '(none)'}" not found`;
+    render();
+    return;
   }
-  if (!dng) return;
   clearAtlasLingeringTownShopPoi();
+  clearAtlasSelectionUnlessTarget(dng.dungeon_id);
+  STUDIO_MAP_TOWN_INTERIOR = false;
   ATLAS_ACTIVE_DUNGEON_ID = dng.dungeon_id;
   ATLAS_STATE_STORE.activeDungeonId = dng.dungeon_id;
   // Pure render-path filter resolution (resolveAtlasEffectiveFilter) preserves ATLAS_STATE_STORE.filter
@@ -8710,7 +8965,7 @@ function openDungeonSubMap(dungeonId, floorId = '') {
     }
   }
   if (dng.entrance_loc) {
-    STUDIO_MAP_LOC = clampWorldLocCoord(dng.entrance_loc);
+    STUDIO_MAP_LOC = resolveAtlasFocusLoc(dng.entrance_loc, dng.dungeon_id, dng.studio_node_id);
   }
   STUDIO_MAP_PAN_X = 0;
   STUDIO_MAP_PAN_Y = 0;
@@ -8741,7 +8996,7 @@ function switchDungeonFloor(floorId, targetLoc = '') {
     ATLAS_STATE_STORE.toastMessage = `Floor "${floorId}" not found — showing ${fallback}`;
   }
   if (targetLoc) {
-    STUDIO_MAP_LOC = clampWorldLocCoord(targetLoc);
+    STUDIO_MAP_LOC = resolveAtlasFocusLoc(targetLoc);
   }
   writeUrlState(true);
   render();
@@ -8753,11 +9008,12 @@ function exitDungeonSubMap(targetLoc = '') {
   ATLAS_STATE_STORE.activeFloorId = '';
   ATLAS_STATE_STORE.toastMessage = '';
   if (targetLoc) {
-    STUDIO_MAP_LOC = clampWorldLocCoord(targetLoc);
+    STUDIO_MAP_LOC = resolveAtlasFocusLoc(targetLoc);
   }
   if (STUDIO_MAP_ZOOM >= 4.5) {
     STUDIO_MAP_ZOOM = 2.6;
   }
+  STUDIO_MAP_TOWN_INTERIOR = false;
   writeUrlState(true);
   render();
 }
@@ -8809,25 +9065,29 @@ function onStudioMapKeyDown(evt) {
   }
   if (key === '+' || key === '=') {
     evt.preventDefault();
-    zoomStudioMap(0.55, false);
+    zoomStudioMap(0.55, false, null, 520, 250);
   } else if (key === '-' || key === '_') {
     evt.preventDefault();
-    zoomStudioMap(-0.55, false);
+    zoomStudioMap(-0.55, false, null, 520, 250);
   } else if (key === 'ArrowLeft') {
     evt.preventDefault();
     STUDIO_MAP_PAN_X += 42;
+    clampStudioMapPan();
     applyStudioMapTransform();
   } else if (key === 'ArrowRight') {
     evt.preventDefault();
     STUDIO_MAP_PAN_X -= 42;
+    clampStudioMapPan();
     applyStudioMapTransform();
   } else if (key === 'ArrowUp') {
     evt.preventDefault();
     STUDIO_MAP_PAN_Y += 42;
+    clampStudioMapPan();
     applyStudioMapTransform();
   } else if (key === 'ArrowDown') {
     evt.preventDefault();
     STUDIO_MAP_PAN_Y -= 42;
+    clampStudioMapPan();
     applyStudioMapTransform();
   } else if (key === 'Escape') {
     evt.preventDefault();
@@ -8856,9 +9116,14 @@ function onStudioMapKeyDown(evt) {
 
 function onStudioMapPointerDown(evt) {
   if (evt.target && evt.target.closest && evt.target.closest('[data-poi-clickable="1"]')) return;
+  const svg = evt.currentTarget || document.getElementById('dedicatedWorldAtlasSvg');
+  const p0 = clientToAtlasSvgPoint(svg, evt.clientX, evt.clientY);
   STUDIO_MAP_DRAG = {
-    startX: evt.clientX - STUDIO_MAP_PAN_X,
-    startY: evt.clientY - STUDIO_MAP_PAN_Y,
+    svg,
+    startPanX: STUDIO_MAP_PAN_X,
+    startPanY: STUDIO_MAP_PAN_Y,
+    startSvgX: p0 ? p0.x : evt.clientX,
+    startSvgY: p0 ? p0.y : evt.clientY,
     downClientX: evt.clientX,
     downClientY: evt.clientY
   };
@@ -8866,19 +9131,20 @@ function onStudioMapPointerDown(evt) {
 
 function onStudioMapPointerMove(evt) {
   if (!STUDIO_MAP_DRAG) return;
-  STUDIO_MAP_PAN_X = evt.clientX - STUDIO_MAP_DRAG.startX;
-  STUDIO_MAP_PAN_Y = evt.clientY - STUDIO_MAP_DRAG.startY;
+  const p = clientToAtlasSvgPoint(STUDIO_MAP_DRAG.svg, evt.clientX, evt.clientY) || { x: evt.clientX, y: evt.clientY };
+  STUDIO_MAP_PAN_X = STUDIO_MAP_DRAG.startPanX + (p.x - STUDIO_MAP_DRAG.startSvgX);
+  STUDIO_MAP_PAN_Y = STUDIO_MAP_DRAG.startPanY + (p.y - STUDIO_MAP_DRAG.startSvgY);
+  clampStudioMapPan();
   applyStudioMapTransform();
 }
 
 function onStudioMapPointerUp(evt) {
   if (STUDIO_MAP_DRAG && evt && Math.hypot(evt.clientX - STUDIO_MAP_DRAG.downClientX, evt.clientY - STUDIO_MAP_DRAG.downClientY) < 5) {
     const svg = evt.currentTarget;
-    if (svg && svg.getBoundingClientRect) {
-      const rect = svg.getBoundingClientRect();
-      const sx = ((evt.clientX - rect.left) / rect.width) * 1040;
-      const sy = ((evt.clientY - rect.top) / rect.height) * 500;
-      STUDIO_MAP_LOC = svgToL2Loc(sx, sy);
+    const pt = clientToAtlasSvgPoint(svg, evt.clientX, evt.clientY);
+    if (pt) {
+      const w = atlasSvgToWorldPoint(pt.x, pt.y);
+      STUDIO_MAP_LOC = svgToL2Loc(w.x, w.y);
       const locBadge = document.getElementById('studioL2LocReadout');
       if (locBadge) locBadge.textContent = `loc=${STUDIO_MAP_LOC.x}:${STUDIO_MAP_LOC.y}`;
       const ch = document.getElementById('studioL2Crosshair');
@@ -8917,7 +9183,13 @@ function handleAtlasGlobalKeyDown(evt) {
     return;
   }
   if (isInput || evt.metaKey || evt.ctrlKey || evt.altKey) return;
-  if (STUDIO_PERSPECTIVE !== 'world_atlas') return;
+  if (evt.defaultPrevented) return;
+  if (CURRENT_TAB !== 'studio' || !document.getElementById('dedicatedWorldAtlasSvg')) return;
+  if (['+', '=', '-', '_'].includes(evt.key) && getAtlasEffectiveEngineMode() === '2d_ol') {
+    evt.preventDefault();
+    zoomActiveAtlasEngine(evt.key === '+' || evt.key === '=' ? 0.55 : -0.55);
+    return;
+  }
   if ((evt.key === 'f' || evt.key === 'F')) {
     evt.preventDefault();
     toggleAtlasTheaterMode();
@@ -9179,7 +9451,7 @@ function buildStudioPlaceDrawerHtml(poi) {
               🔍 ${escapeHtml(poi.drillLabel || 'Zoom Into Map')}
             </button>
           ` : `
-            <button type="button" onclick="zoomStudioMap(0.65, false)" style="height:36px;border-radius:10px;border:none;background:#2563eb;color:#ffffff;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px">
+            <button type="button" onclick="zoomStudioMap(0.65, false, null, 520, 250)" style="height:36px;border-radius:10px;border:none;background:#2563eb;color:#ffffff;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px">
               🔍 Zoom Closer
             </button>
           `)))}
@@ -9327,8 +9599,9 @@ function renderCartoShellHtml({
   const isL2 = STUDIO_CARTO_THEME === 'l2hub';
   const poi = STUDIO_MAP_SELECTED_POI || defaultPoi;
   const lodTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
-  const initEffScale = lodTier === 3 ? Math.max(1.0, +(STUDIO_MAP_ZOOM / 5.2).toFixed(2)) : STUDIO_MAP_ZOOM;
+  const initEffScale = getStudioMapEffScale(STUDIO_MAP_ZOOM);
   const initInvZoom = (1 / Math.max(1, initEffScale)).toFixed(4);
+  const crosshairLoc = resolveAtlasFocusLoc(STUDIO_MAP_LOC);
   const zoomScales = [
     { idx: 1, code: 'LOD 1 · MACRO', label: '🌍 Lv.1 Macro Geography (1.0×)', persp: 'world-history-and-concept', z: 1.0 },
     { idx: 2, code: 'LOD 2 · REGIONAL', label: '🗺️ Lv.2 Regional Roads & Portals (2.8×)', persp: 'continent', z: 2.8 },
@@ -9357,7 +9630,7 @@ function renderCartoShellHtml({
               <span id="studioSemanticLodBadge" class="mono" style="padding:1px 6px;border-radius:4px;background:rgba(56,189,248,0.16);border:1px solid rgba(56,189,248,0.45);color:#7dd3fc;font-size:9.5px;font-weight:800">
                 ${ATLAS_STATE_STORE.activeDungeonId
                   ? `🕳️ SUB-MAP: ${escapeHtml(ATLAS_STATE_STORE.activeDungeonId)} (${escapeHtml(ATLAS_STATE_STORE.activeFloorId)})`
-                  : (lodTier === 3 ? '🏘️ LOD Tier 3: Town Street & Shop/Refinement Blueprint (4.5×–12.0×)' : (lodTier === 2 ? '🛤️ LOD Tier 2: Regional Roads, Lv.Bands & Dungeon Portals (2.2×–4.5×)' : '🌍 LOD Tier 1: Macro Geography & 6 Race Spawns (1.0×–2.2×)'))}
+                  : (lodTier === 3 ? '🏘️ LOD Tier 3: Town Street & Shop/Refinement Blueprint (4.5×–12.0×)' : (lodTier === 2 ? '🛤️ LOD Tier 2: Regional Roads, Lv.Bands & Dungeon Portals (2.2×–8.0×)' : '🌍 LOD Tier 1: Macro Geography & 6 Race Spawns (1.0×–2.2×)'))}
               </span>
               <span style="display:none" title="${escapeHtml(subtitle || '')}">${title}</span>
               <div style="display:inline-flex;background:#0d1624;padding:1px;border-radius:5px;border:1px solid rgba(255,255,255,0.16)">
@@ -9387,7 +9660,7 @@ function renderCartoShellHtml({
               </button>
               <span style="display:none">
                 ${zoomScales.map(zs => `
-                  <button type="button" onclick="ATLAS_STATE_STORE.activeDungeonId=''; ATLAS_STATE_STORE.activeFloorId=''; STUDIO_MAP_PAN_X=0; STUDIO_MAP_PAN_Y=0; STUDIO_MAP_ZOOM=${zs.z}; setStudioPerspective('${zs.persp}');">${zs.label}</button>
+                  <button type="button" onclick="ATLAS_STATE_STORE.activeDungeonId=''; ATLAS_STATE_STORE.activeFloorId=''; STUDIO_MAP_PAN_X=0; STUDIO_MAP_PAN_Y=0; STUDIO_MAP_TOWN_INTERIOR=${zs.z >= 4.5}; STUDIO_MAP_ZOOM=${zs.z}; setStudioPerspective('${zs.persp}');">${zs.label}</button>
                 `).join('')}
               </span>
             </div>
@@ -9401,12 +9674,12 @@ function renderCartoShellHtml({
           <!-- Floating Map Zoom Controls (+ / - / 1:1 / Street Blueprint) -->
           <div class="joy-spatial-shell__hud joy-spatial-shell__hud--top-right">
             <div class="joy-spatial-shell__hud-panel joy-spatial-shell__hud-panel--zoom">
-              <button type="button" onclick="zoomStudioMap(0.65, false)" title="Zoom In (+ key)" style="width:34px;height:32px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#29251d;color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer">+</button>
-              <div id="studioCartoZoomReadout" class="mono" style="font-size:10px;text-align:center;color:#fde047;padding:2px 0">${STUDIO_MAP_ZOOM.toFixed(2)}×</div>
-              <button type="button" onclick="zoomStudioMap(-0.65, false)" title="Zoom Out (- key)" style="width:34px;height:32px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#29251d;color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer">−</button>
-              <button type="button" onclick="zoomStudioMap(0, false, 2.8)" title="Regional Roads LOD (2.8x)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(56,189,248,0.45);background:#0f172a;color:#38bdf8;font-size:9.5px;font-weight:800;cursor:pointer">2.8×</button>
+              <button type="button" onclick="zoomActiveAtlasEngine(0.65)" title="Zoom In (+ key)" style="width:34px;height:32px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#29251d;color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer">+</button>
+              <div id="studioCartoZoomReadout" class="mono" style="font-size:10px;text-align:center;color:#fde047;padding:2px 0">${getAtlasEffectiveEngineMode() === '3d_map3d' ? `${ATLAS_3D_STATE.zoom.toFixed(2)}× 3D` : `${STUDIO_MAP_ZOOM.toFixed(2)}×`}</div>
+              <button type="button" onclick="zoomActiveAtlasEngine(-0.65)" title="Zoom Out (- key)" style="width:34px;height:32px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#29251d;color:#f8fafc;font-size:16px;font-weight:800;cursor:pointer">−</button>
+              <button type="button" onclick="zoomActiveAtlasEngine(0, false, 2.8)" title="Regional Roads LOD (2.8x)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(56,189,248,0.45);background:#0f172a;color:#38bdf8;font-size:9.5px;font-weight:800;cursor:pointer">2.8×</button>
               <button type="button" onclick="focusTownStreetBlueprint(ATLAS_STATE_STORE.activeTownId || 'town-lantern-hollow')" title="Town Street & Shop Blueprint LOD (5.2x)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(250,204,21,0.55);background:#422006;color:#fde047;font-size:9.5px;font-weight:800;cursor:pointer">5.2×</button>
-              <button type="button" onclick="zoomStudioMap(0, true)" title="Reset Pan & Zoom (1:1 Macro)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#17140f;color:#fde047;font-size:10px;font-weight:700;cursor:pointer">1:1</button>
+              <button type="button" onclick="zoomActiveAtlasEngine(0, true)" title="Reset Pan & Zoom (1:1 Macro)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#17140f;color:#fde047;font-size:10px;font-weight:700;cursor:pointer">1:1</button>
               <button type="button" onclick="toggleAtlasLeftDrawer()" title="Toggle Left Inspector Drawer" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(56,189,248,0.45);background:#0f172a;color:#7dd3fc;font-size:10px;font-weight:800;cursor:pointer">${ATLAS_LEFT_DRAWER_OPEN ? '◀' : '▶'}</button>
               <button type="button" onclick="toggleAtlasTheaterMode()" title="Toggle Full-Viewport Theater Mode (Hotkey: F)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(250,204,21,0.45);background:#1c1917;color:#fde047;font-size:10px;font-weight:800;cursor:pointer">⛶</button>
             </div>
@@ -9421,7 +9694,7 @@ function renderCartoShellHtml({
                onmousemove="onStudioMapPointerMove(event)"
                onmouseup="onStudioMapPointerUp(event)"
                onmouseleave="onStudioMapPointerUp(event)"
-               style="display:${ATLAS_ENGINE_MODE === '2d_svg' ? 'block' : 'none'};width:100%;height:100%;cursor:grab;user-select:none;outline:none;--atlas-inv-zoom:${initInvZoom}">
+               style="display:${getAtlasEffectiveEngineMode() === '2d_svg' ? 'block' : 'none'};width:100%;height:100%;cursor:grab;user-select:none;outline:none;--atlas-inv-zoom:${initInvZoom}">
             <defs>
               <radialGradient id="cartoSeaGrad" cx="50%" cy="50%" r="72%">
                 <stop offset="0%" stop-color="${isL2 ? '#3d5a5e' : '#21436a'}"/>
@@ -9446,7 +9719,7 @@ function renderCartoShellHtml({
             <g id="studioCartoViewport" transform="translate(${520 + STUDIO_MAP_PAN_X}, ${250 + STUDIO_MAP_PAN_Y}) scale(${initEffScale}) translate(-520, -250)">
               ${svgInnerHtml}
               <!-- Interactive L2Hub Red/White Crosshair Target (+ at loc=X:Y) -->
-              <g id="studioL2Crosshair" transform="translate(${STUDIO_MAP_LOC.svgX}, ${STUDIO_MAP_LOC.svgY})" pointer-events="none">
+              <g id="studioL2Crosshair" transform="translate(${crosshairLoc.svgX}, ${crosshairLoc.svgY})" pointer-events="none">
                 <circle cx="0" cy="0" r="10" fill="rgba(220,38,38,0.22)" stroke="#ef4444" stroke-width="1.5"/>
                 <line x1="-9" y1="0" x2="9" y2="0" stroke="#ef4444" stroke-width="3.2"/>
                 <line x1="0" y1="-9" x2="0" y2="9" stroke="#ef4444" stroke-width="3.2"/>
@@ -9456,7 +9729,7 @@ function renderCartoShellHtml({
             </g>
             <rect width="1040" height="500" fill="none" stroke="#1c160e" stroke-width="10" pointer-events="none"/>
           </svg>
-          ${ATLAS_ENGINE_MODE !== '2d_svg' ? `<div id="atlasAdvancedEngineMount" data-engine-mode="${escapeHtml(ATLAS_ENGINE_MODE)}" style="position:relative;width:100%;height:100%;min-height:460px;background:#090f1a;overflow:hidden"></div>` : ''}
+          ${getAtlasEffectiveEngineMode() !== '2d_svg' ? `<div id="atlasAdvancedEngineMount" data-engine-mode="${escapeHtml(ATLAS_ENGINE_MODE)}" style="position:relative;width:100%;height:100%;min-height:460px;background:#090f1a;overflow:hidden"></div>` : ''}
 
           <!-- Bottom Cartographic Scale Bar & Legend -->
           <div style="position:absolute;bottom:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(15,13,10,0.92);border:1px solid rgba(212,175,55,0.28);font-size:11px;color:#e7e5e4;pointer-events:none">
@@ -18207,7 +18480,7 @@ function renderAtlasOverviewMiniMapPipSvg(activeZoneOrId, tatlas, viewKind = 'to
   const activeLocStr = activeZone.loc_coord
     || (activeZoneOrId && (activeZoneOrId.entrance_loc || activeZoneOrId.loc_coord))
     || `${STUDIO_MAP_LOC.x}:${STUDIO_MAP_LOC.y}`;
-  const activeCoord = clampWorldLocCoord(activeLocStr);
+  const activeCoord = resolveAtlasFocusLoc(activeLocStr, activeZone.zone_id, activeZone.studio_node_id, targetId);
 
   // Place PiP in bottom-left when in dungeon sub-map (since vertical cutaway occupies right) or bottom-right in Town/Field/Fortress views
   const pipW = 248;
@@ -19238,7 +19511,7 @@ function renderFieldOrFortressTacticalBlueprintAtlas(targetIdOrEntry, tatlas) {
 
   const svgInnerHtml = `
     <rect x="0" y="0" width="1040" height="500" fill="${isFort ? '#1e2433' : '#14291e'}"/>
-    <image href="/studio-maps/d01_hunting_zone_radar.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.32"/>
+    <image href="/studio-maps/d01_field_radar_map.png" x="0" y="0" width="1040" height="500" preserveAspectRatio="xMidYMid meet" opacity="0.32"/>
     <polygon points="${perimPts}" fill="${isFort ? 'rgba(30,41,59,0.68)' : 'rgba(20,83,45,0.52)'}" stroke="${isFort ? '#fb923c' : '#4ade80'}" stroke-width="4" stroke-linejoin="round" stroke-dasharray="${isFort ? 'none' : '10 5'}"/>
     ${trailsSvg}
     ${territoriesSvg}
@@ -19288,6 +19561,17 @@ function renderFieldOrFortressTacticalBlueprintAtlas(targetIdOrEntry, tatlas) {
 }
 
 function renderDedicatedWorldAtlas() {
+  // Pan is in the coordinate space of the map being shown; entering/leaving a blueprint or sub-map recentres.
+  const panSpace = ATLAS_STATE_STORE.activeDungeonId
+    ? 'dungeon:' + ATLAS_STATE_STORE.activeDungeonId
+    : (ATLAS_STATE_STORE.activeFieldOrFortId
+      ? 'field:' + ATLAS_STATE_STORE.activeFieldOrFortId
+      : (STUDIO_MAP_TOWN_INTERIOR ? 'town:' + (ATLAS_STATE_STORE.activeTownId || '') : 'overland'));
+  if (STUDIO_MAP_PAN_SPACE !== null && STUDIO_MAP_PAN_SPACE !== panSpace) {
+    STUDIO_MAP_PAN_X = 0;
+    STUDIO_MAP_PAN_Y = 0;
+  }
+  STUDIO_MAP_PAN_SPACE = panSpace;
   const isL2 = STUDIO_CARTO_THEME === 'l2hub';
   const sp = (DATA && DATA.studioPerspectives) || {};
   const whc = sp.worldHistoryAndConcept || {};
@@ -19308,18 +19592,15 @@ function renderDedicatedWorldAtlas() {
   const lodTier = getSemanticZoomLodTier(STUDIO_MAP_ZOOM);
   const allFields = getAllAtlasFieldEntries(tatlas);
   const allForts = getAllAtlasFortressEntries(tatlas);
-  const candidateFieldOrFortId = ATLAS_STATE_STORE.activeFieldOrFortId
-    || (STUDIO_MAP_ZOOM >= 3.5 && STUDIO_MAP_ZOOM < 4.5 ? (ATLAS_FOCUSED_FIELD_ID || ATLAS_FOCUSED_FORTRESS_ID || STUDIO_SELECTED_NODE_ID) : '');
-  if (candidateFieldOrFortId) {
-    const matchedFieldOrFort = allFields.find(f => f.zone_id === candidateFieldOrFortId || f.studio_node_id === candidateFieldOrFortId)
-      || allForts.find(h => h.zone_id === candidateFieldOrFortId || h.studio_node_id === candidateFieldOrFortId);
-    if (matchedFieldOrFort) {
-      return renderFieldOrFortressTacticalBlueprintAtlas(matchedFieldOrFort, tatlas);
-    }
+  const matchedFieldOrFort = resolveActiveFieldOrFortEntry();
+  if (matchedFieldOrFort) {
+    return renderFieldOrFortressTacticalBlueprintAtlas(matchedFieldOrFort, tatlas);
   }
+  // A stale/bogus field id must not leave a half-state behind (overland render, field scale).
+  ATLAS_STATE_STORE.activeFieldOrFortId = '';
 
-  // 3. If Semantic Zoom >= 4.5x (Tier 3), automatically transition to the Town Street, Building & Service-Mark Blueprint!
-  if (lodTier === 3) {
+  // 3. Town Street, Building & Service-Mark Blueprint: only when explicitly entered (5.2x lens / focusTownStreetBlueprint)
+  if (STUDIO_MAP_TOWN_INTERIOR) {
     const allTownEntries = getAllAtlasTownEntries(tatlas);
     const targetTownId = ATLAS_STATE_STORE.activeTownId || ATLAS_FOCUSED_TOWN_ID || STUDIO_SELECTED_NODE_ID || 'town-lantern-hollow';
     const activeTown = nodes.find(n => n.id === targetTownId)
@@ -19546,6 +19827,8 @@ function renderDedicatedWorldAtlas() {
       districtId: 'district-starfall-haven'
     }
   ];
+
+  registerAtlasOverlandPinAnchors(overlandLandmarks, tatlas);
 
   // Overland Monster / Mini-Boss / Raid / MVP Spawn Pins
   const overlandMobPins = [
@@ -19832,20 +20115,33 @@ function renderDedicatedWorldAtlas() {
   ` : '';
 
   // Priority AABB Label Culling at Macro & Regional Zoom (lodTier <= 2) so labels, badges & mob pins never collide
+  // Pins render at constant screen size (scale(--atlas-inv-zoom) about their anchor), so their
+  // collision boxes shrink in world units as we zoom in: culling is screen-space and monotonic.
+  const cullInvZoom = 1 / Math.max(1, getStudioMapEffScale(STUDIO_MAP_ZOOM));
   const placedBoxes = [];
-  function tryPlaceAtlasBox(box) {
-    const collides = placedBoxes.some(pb => !(box.x2 < pb.x1 || box.x1 > pb.x2 || box.y2 < pb.y1 || box.y1 > pb.y2));
-    if (!collides) placedBoxes.push(box);
+  function tryPlaceAtlasBox(box, ax, ay) {
+    const b = { x1: ax + (box.x1 - ax) * cullInvZoom, y1: ay + (box.y1 - ay) * cullInvZoom, x2: ax + (box.x2 - ax) * cullInvZoom, y2: ay + (box.y2 - ay) * cullInvZoom };
+    const collides = placedBoxes.some(pb => !(b.x2 < pb.x1 || b.x1 > pb.x2 || b.y2 < pb.y1 || b.y1 > pb.y2));
+    if (!collides) placedBoxes.push(b);
     return !collides;
   }
-  const landmarksSvg = visibleLandmarks
-    .slice()
-    .sort((a, b) => a.priority - b.priority)
+  const sortedLandmarks = visibleLandmarks.slice().sort((a, b) => a.priority - b.priority);
+  // Pass 0: the 6 race-spawn badges are core and always shown; they reserve space first so greedy
+  // culling of lower-priority items can never evict them when zooming in.
+  sortedLandmarks.forEach(lm => {
+    if (lm.isRaceSpawn) tryPlaceAtlasBox({ x1: lm.x - 60, y1: lm.y - 38, x2: lm.x + 60, y2: lm.y - 18 }, lm.x, lm.y);
+  });
+  // Pass 1: core landmark label boxes (towns, towers, castles, dungeons) claim space before badges and mob labels.
+  const landmarkCollides = new Map(sortedLandmarks.map(lm => {
+    const displayLabel = lodTier === 1 ? lm.label.split(' (')[0] : lm.label;
+    const halfW = Math.max(58, Math.round(displayLabel.length * 3.6 + 14));
+    const box = { x1: lm.x - halfW, y1: lm.y - 20, x2: lm.x + halfW, y2: lm.y + 42 };
+    return [lm.id, lodTier <= 2 && !tryPlaceAtlasBox(box, lm.x, lm.y)];
+  }));
+  const landmarksSvg = sortedLandmarks
     .map(lm => {
       const displayLabel = lodTier === 1 ? lm.label.split(' (')[0] : lm.label;
-      const halfW = Math.max(58, Math.round(displayLabel.length * 3.6 + 14));
-      const box = { x1: lm.x - halfW, y1: lm.y - 20, x2: lm.x + halfW, y2: lm.y + 42 };
-      const collides = lodTier <= 2 && !tryPlaceAtlasBox(box);
+      const collides = landmarkCollides.get(lm.id);
 
       const poiObj = {
         title: lm.label,
@@ -19873,9 +20169,9 @@ function renderDedicatedWorldAtlas() {
         ]
       };
 
-      const canPlaceRaceBadge = lm.isRaceSpawn && tryPlaceAtlasBox({ x1: lm.x - 60, y1: lm.y - 38, x2: lm.x + 60, y2: lm.y - 18 });
+      const canPlaceRaceBadge = Boolean(lm.isRaceSpawn);
       const raceSpawnBadgeSvg = canPlaceRaceBadge ? `
-        <g class="atlas-screen-pin" style="transform-origin:${lm.x}px ${lm.y - 26}px" pointer-events="none">
+        <g class="atlas-screen-pin" style="transform-origin:${lm.x}px ${lm.y}px" pointer-events="none">
           <rect x="${lm.x - 58}" y="${lm.y - 35}" width="116" height="16" rx="8" fill="#064e3b" stroke="#34d399" stroke-width="1.3"/>
           <text x="${lm.x}" y="${lm.y - 24}" text-anchor="middle" fill="#ecfdf5" font-size="8" font-weight="900" font-family="monospace">
             🧬 ${escapeHtml(lm.raceName.split(' ')[0].toUpperCase())} SPAWN
@@ -19883,9 +20179,9 @@ function renderDedicatedWorldAtlas() {
         </g>
       ` : '';
 
-      const canPlaceWarpBadge = (lm.dungeonWarpId && lodTier >= 2) && tryPlaceAtlasBox({ x1: lm.x - 80, y1: lm.y - 40, x2: lm.x + 80, y2: lm.y - 18 });
+      const canPlaceWarpBadge = (lm.dungeonWarpId && lodTier >= 2) && tryPlaceAtlasBox({ x1: lm.x - 80, y1: lm.y - 40, x2: lm.x + 80, y2: lm.y - 18 }, lm.x, lm.y);
       const dngWarpPortalBadgeSvg = canPlaceWarpBadge ? `
-        <g data-poi-clickable="1" class="atlas-screen-pin" style="cursor:pointer;transform-origin:${lm.x}px ${lm.y - 28}px" onclick="openDungeonSubMap('${escapeHtml(lm.dungeonWarpId)}', '${escapeHtml(lm.dungeonFloorId)}')">
+        <g data-poi-clickable="1" class="atlas-screen-pin" style="cursor:pointer;transform-origin:${lm.x}px ${lm.y}px" onclick="openDungeonSubMap('${escapeHtml(lm.dungeonWarpId)}', '${escapeHtml(lm.dungeonFloorId)}')">
           <rect x="${lm.x - 78}" y="${lm.y - 38}" width="156" height="18" rx="9" fill="#581c87" stroke="#fde047" stroke-width="1.5"/>
           <text x="${lm.x}" y="${lm.y - 26}" text-anchor="middle" fill="#fde047" font-size="8.5" font-weight="900" font-family="monospace">
             🕳️ WARP TO SUB-MAP (${escapeHtml(lm.dungeonFloorId)})
@@ -19932,7 +20228,7 @@ function renderDedicatedWorldAtlas() {
       connections: [{ label: `📍 Habitat: ${mp.zone}`, badge: `Lv.${mp.lv}` }]
     };
     const encMobPoi = encodePoiAttr({ ...poiMob, svgX: mp.x, svgY: mp.y });
-    const showMobLabel = (lodTier >= 2 || fFilter !== 'All') && tryPlaceAtlasBox({ x1: mp.x - 64, y1: mp.y - 26, x2: mp.x + 64, y2: mp.y - 8 });
+    const showMobLabel = (lodTier >= 2 || fFilter !== 'All') && tryPlaceAtlasBox({ x1: mp.x - 64, y1: mp.y - 26, x2: mp.x + 64, y2: mp.y - 8 }, mp.x, mp.y);
     return `
       <g data-poi-clickable="1" tabindex="0" role="button" aria-label="${escapeHtml(poiMob.title)}" class="atlas-screen-pin" style="cursor:pointer;transform-origin:${mp.x}px ${mp.y}px" onclick="selectStudioMapPoi('${encMobPoi}', event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectStudioMapPoi('${encMobPoi}', event);}" filter="url(#cartoDropShadow)">
         <circle cx="${mp.x}" cy="${mp.y}" r="${isMvp ? 12 : 10}" fill="${col}" stroke="#ffffff" stroke-width="1.8"/>
@@ -19954,15 +20250,15 @@ function renderDedicatedWorldAtlas() {
     const godCoord = clampWorldLocCoord(activeBossChain.seal_loc || '-72400:256800');
     const themeCol = activeBossChain.theme_color || '#f43f5e';
     const mvpNodes = (activeBossChain.mvp_apostles || []).map((m, idx) => {
-      const c = clampWorldLocCoord(m.loc_coord || activeBossChain.seal_loc || '-72400:256800');
+      const c = clampWorldLocCoord(m.loc || m.loc_coord || activeBossChain.seal_loc || '-72400:256800');
       return { ...m, sx: c.svgX + (idx * 18 - 9), sy: c.svgY - 14 };
     });
     const raidNodes = (activeBossChain.raid_bosses || []).map((r, idx) => {
-      const c = clampWorldLocCoord(r.loc_coord || activeBossChain.seal_loc || '-72400:256800');
+      const c = clampWorldLocCoord(r.loc || r.loc_coord || activeBossChain.seal_loc || '-72400:256800');
       return { ...r, sx: c.svgX + (idx * 22 - 11), sy: c.svgY + 12 };
     });
     const miniNodes = (activeBossChain.mini_bosses || []).map((mb, idx) => {
-      const c = clampWorldLocCoord(mb.loc_coord || activeBossChain.seal_loc || '-72400:256800');
+      const c = clampWorldLocCoord(mb.loc || mb.loc_coord || activeBossChain.seal_loc || '-72400:256800');
       return { ...mb, sx: c.svgX + (idx * 16 - 8), sy: c.svgY + 20 };
     });
 
@@ -19982,7 +20278,7 @@ function renderDedicatedWorldAtlas() {
     bossHierarchyOverlaySvg = `
       <g id="studioBossHierarchyChainOverlay">
         ${linesSvg.join('')}
-        <g data-poi-clickable="1" style="cursor:pointer" onclick="openDungeonSubMap('${escapeHtml(activeBossChain.seal_catacomb_id || 'dungeon-ember-catacombs')}', '${escapeHtml(activeBossChain.seal_floor_id || 'B3')}')" filter="url(#cartoDropShadow)">
+        <g data-poi-clickable="1" style="cursor:pointer" onclick="openDungeonSubMap('${escapeHtml(activeBossChain.seal_catacomb_zone_id || activeBossChain.seal_catacomb_id || '')}', '${escapeHtml(activeBossChain.seal_floor_id || 'B3')}')" filter="url(#cartoDropShadow)">
           <circle cx="${godCoord.svgX}" cy="${godCoord.svgY}" r="18" fill="rgba(244,63,94,0.25)" stroke="${themeCol}" stroke-width="2.2" stroke-dasharray="4 2"/>
           <circle cx="${godCoord.svgX}" cy="${godCoord.svgY}" r="12" fill="#090d16" stroke="${themeCol}" stroke-width="2.4"/>
           <text x="${godCoord.svgX}" y="${godCoord.svgY + 4}" text-anchor="middle" font-size="11">${activeBossChain.icon || '🔱'}</text>
@@ -22687,6 +22983,15 @@ function renderDedicatedWorldAtlas() {
     ${gateStudioOverlaySvg('quest_trials', questTrialOverlaySvg)}
     ${landmarksSvg}
     ${mobPinsSvg}
+    ${(() => {
+      if (!ATLAS_STATE_STORE.toastMessage) return '';
+      const tw = atlasSvgToWorldPoint(520, 27);
+      return `
+        <g class="atlas-screen-pin" data-atlas-toast="1" style="transform-origin:${tw.x}px ${tw.y}px" pointer-events="none">
+          <rect x="${tw.x - 210}" y="${tw.y - 13}" width="420" height="26" rx="6" fill="rgba(220,38,38,0.92)" stroke="#fde047" stroke-width="1.5"/>
+          <text x="${tw.x}" y="${tw.y + 4}" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="800" font-family="monospace">⚠️ ${escapeHtml(ATLAS_STATE_STORE.toastMessage)}</text>
+        </g>`;
+    })()}
   `;
 
   const matchCount = visibleLandmarks.length + visibleMobPins.length;
