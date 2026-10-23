@@ -297,6 +297,62 @@ storybook_tests() {
 
 map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/map-builder/tests/*.test.mjs ) }
 
+# F-156: atlas explorer probes (scripts/probes/). atlas_ux_probe.py is pure Python (no server, no browser);
+# atlas_zoom_drift_check.mjs and atlas_phone_touch_audit.mjs drive headless Chrome against a throwaway
+# catalog_explorer_web.py server on a free port. Runs only when the change can reach the explorer
+# (fails closed to RUN when the diff cannot be computed); ATLAS_FORCE_EXPLORER_PROBES=1 always runs them.
+# The two Chrome probes SKIP loudly (exit 0) when Chrome is absent (CI runners without it; set CHROME_BIN or
+# install Chrome to enable) - the Python probe and tests/test_studio_web_perspectives.py still run.
+EXPLORER_PROBE_PATHS='^(scripts/catalog_explorer_web\.py|scripts/studio_|scripts/probes/atlas_|tests/test_studio_web_perspectives\.py|scripts/precheck\.sh$)'
+explorer_probes_skip_reason() {
+  [ "${ATLAS_FORCE_EXPLORER_PROBES:-0}" = "1" ] && return 1
+  local base="${PSRW_GATE_BASE:-}" rel changed
+  if [ -z "$base" ]; then
+    rel=$(node -e 'const r=require("./.release.json"); if (r.in_progress && r.version) console.log("release/" + r.version)' 2>/dev/null)
+    if [ -n "$rel" ] && git rev-parse -q --verify "$rel^{commit}" >/dev/null; then
+      base=$(git merge-base HEAD "$rel") || return 1
+    else
+      base=$(git merge-base HEAD origin/main) || return 1
+    fi
+  fi
+  base=$(git rev-parse -q --verify "$base^{commit}") || return 1
+  [ "$base" = "$(git rev-parse HEAD)" ] && return 1
+  changed=$( { git -c core.quotePath=false diff --name-only --no-renames "$base" -- &&
+    git -c core.quotePath=false ls-files --others --exclude-standard; } ) || return 1
+  [ -z "$changed" ] && return 1
+  grep -qE "$EXPLORER_PROBE_PATHS" <<<"$changed" && return 1
+  echo "explorer probes SKIPPED: no change under their inputs since ${base:0:12} (ATLAS_FORCE_EXPLORER_PROBES=1 forces)"
+}
+
+explorer_probes() {
+  ( cd "$REPO_ROOT" && explorer_probes_skip_reason ) && return 0
+  python3 "$REPO_ROOT/scripts/probes/atlas_ux_probe.py" >/dev/null || { echo "atlas_ux_probe.py FAILED"; return 1; }
+  echo "atlas_ux_probe.py ok"
+  local chrome="${CHROME_BIN:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
+  if [ ! -x "$chrome" ]; then
+    echo "explorer Chrome probes SKIPPED: Chrome not found at '$chrome' (set CHROME_BIN)"
+    return 0
+  fi
+  local port log pid rc=0
+  port=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1])') || return 1
+  log=$(mktemp)
+  python3 "$REPO_ROOT/scripts/catalog_explorer_web.py" --port "$port" >"$log" 2>&1 &
+  pid=$!
+  local up=0 i
+  for i in $(seq 1 40); do
+    curl -fs "http://127.0.0.1:$port/" >/dev/null 2>&1 && { up=1; break; }
+    sleep 0.5
+  done
+  if [ "$up" -ne 1 ]; then echo "explorer server did not start on :$port"; tail -5 "$log"; kill "$pid" 2>/dev/null; return 1; fi
+  node "$REPO_ROOT/scripts/probes/atlas_zoom_drift_check.mjs" --url "http://127.0.0.1:$port/" | tail -3
+  [ "${PIPESTATUS[0]}" -eq 0 ] || rc=1
+  node "$REPO_ROOT/scripts/probes/atlas_phone_touch_audit.mjs" --url "http://127.0.0.1:$port/" | tail -9
+  [ "${PIPESTATUS[0]}" -eq 0 ] || rc=1
+  kill "$pid" 2>/dev/null; wait "$pid" 2>/dev/null
+  rm -f "$log"
+  return "$rc"
+}
+
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
 run_section "contracts: tsc build"          contracts_build
@@ -309,6 +365,7 @@ run_section "system deps: binary check (scripts/system-deps.json)" system_deps_c
 run_section "art-forge: node --test suite"  art_forge_tests
 run_section "asset-storybook: node --test suite" storybook_tests
 run_section "map-builder: node --test suite" map_builder_tests
+run_section "atlas explorer: UX + touch probes (F-156)" explorer_probes
 run_section "combat-lab: model gates"       combat_lab
 run_section "content: spine gates (--only=spine)" content_spine
 run_section "world digest (G-WORLD-DIGEST)" world_digest
