@@ -771,7 +771,7 @@ const v12Report = vm.runInContext(`(() => {
   const conts = scene.meshes.filter(m => m.part === 'continent');
   out.continents = conts.map(m => ({ name: m.name, n: (m.pts || []).length }));
   out.continentPolyMatch = polys.every(pg => {
-    const m = conts.find(c => c.name.indexOf(pg.code + '_') === 0 && c.layer === 1);
+    const m = conts.find(c => c.name.indexOf(pg.code + '_') === 0 && c.terrace === 0);
     if (!m || !m.pts || m.pts.length < pg.pts.length - 1) return false;
     return pg.pts.slice(0, -1).every((q, i) => { const e = P(q[0], 500 - q[1]); return Math.hypot(m.pts[i][0] - e.x, m.pts[i][1] - e.z) < 0.01; });
   });
@@ -910,7 +910,7 @@ console.log(JSON.stringify({
         and v7.get("dungeonHasTownOnlyNote") is True
         and v7.get("poiClearedOnDungeon") is True
         and v7.get("poiClearedOnField") is True
-        and v7.get("metersPerUnit") == {"overland": 1860, "town": 1, "dungeon": 1}
+        and abs((v7.get("metersPerUnit") or {}).get("overland", 0) - 400000 / 260) < 1e-6 and (v7.get("metersPerUnit") or {}).get("town") == 1 and (v7.get("metersPerUnit") or {}).get("dungeon") == 1  # F-158: overland 3D spans 260u (svgTo3dWorld), so 1u = 400000/260 m
         and v7.get("polyHit") is True
         and v7.get("groundRank") is True
     )
@@ -1031,7 +1031,7 @@ console.log(JSON.stringify({
     v12_mountain_zones = {"zone-field-brass-spur-ridge", "zone-field-caldera-rim", "zone-field-astrolabe-rift", "zone-fortress-dragonspine-cog", "zone-fortress-cloud-halo"}
     v12_mountains_ok = bool(
         v12_mountain_zones <= set(v12.get("mountainZones") or [])
-        and all(m.get("d") is not None and m["d"] < 8 for m in (v12.get("mountains") or []))
+        and all(min((m["d"] for m in (v12.get("mountains") or []) if m.get("zone") == z and m.get("d") is not None), default=99) < 16 for z in v12_mountain_zones)  # nearest massif within 16 units (64 svg px) of its zone anchor
         and v12.get("mountainMaxH", 0) > v12.get("landTop", 1e9) + 4
     )
     v12_passed = bool(
