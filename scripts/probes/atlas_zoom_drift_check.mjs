@@ -747,6 +747,64 @@ true;`;
     JSON.stringify({ sea: f158.sea, continents: f158.continents, mountains: f158.mountains }));
   await cdp.eval(`(async () => { setAtlas3dOption('contextOverride', ''); setAtlasEngineMode('2d_svg'); zoomStudioMap(0, true); return true; })()`);
 
+  // ---------------------------------------------------------------- 8. F-157 / V-11 layout: clip frame, app sidebar, drawer, lens bar
+  {
+    const metrics = (w, h) => cdp.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
+    const canvasW = () => cdp.eval(`Math.round(document.querySelector('.joy-spatial-shell__canvas').getBoundingClientRect().width)`);
+    const sideW = () => cdp.eval(`Math.round(document.querySelector('.sidebar').getBoundingClientRect().width)`);
+    await metrics(1440, 900);
+    await cdp.eval(`(()=>{ try { localStorage.removeItem('atlas-sidebar-collapsed'); } catch (e) {} setAtlasEngineMode('2d_svg'); ATLAS_RASTER_RELIEF_OVERLAY = true; STUDIO_MAP_SELECTED_POI = null; ATLAS_LEFT_DRAWER_OPEN = false; render(); return 1; })()`);
+    await sleep(500);
+    const clip = await cdp.eval(`(()=>{ const c = document.getElementById('atlasWorldFrameClip'); const r = c && c.querySelector('rect'); const vp = document.getElementById('studioCartoViewport'); const g = vp && vp.parentElement;
+      return { exists: !!c, tag: c && c.tagName, rect: r ? [r.getAttribute('x'), r.getAttribute('y'), r.getAttribute('width'), r.getAttribute('height')].map(Number) : null, wrapped: !!(g && g.tagName.toLowerCase() === 'g' && /atlasWorldFrameClip/.test(g.getAttribute('clip-path') || '')), insideSvg: !!(c && c.closest('#dedicatedWorldAtlasSvg')) }; })()`);
+    assert('F-157 clipPath #atlasWorldFrameClip (0 0 1040 500) wraps #studioCartoViewport inside the atlas svg',
+      clip.exists && clip.insideSvg && clip.wrapped && clip.rect && clip.rect[0] === 0 && clip.rect[1] === 0 && clip.rect[2] === 1040 && clip.rect[3] === 500, JSON.stringify(clip));
+
+    // app sidebar: collapse, widen >= 240, hotkey, persistence, visible reopen control
+    const hasFn = await cdp.eval(`typeof toggleAppSidebar === 'function'`);
+    let sb = { hasFn };
+    if (hasFn) {
+      sb.w0 = await canvasW(); sb.side0 = await sideW();
+      await cdp.eval(`toggleAppSidebar(); 0`); await sleep(400);
+      sb.w1 = await canvasW(); sb.side1 = await sideW();
+      sb.reopen = await cdp.eval(`(()=>{ const b = document.getElementById('appSidebarReopenTab'); if (!b) return null; const r = b.getBoundingClientRect(); return r.width > 8 && r.height > 8 && getComputedStyle(b).visibility !== 'hidden' && r.left >= 0 && r.left < innerWidth; })()`);
+      sb.stored = await cdp.eval(`(()=>{ try { return localStorage.getItem('atlas-sidebar-collapsed'); } catch (e) { return 'err'; } })()`);
+      sb.url = await cdp.eval(`location.search.includes('sidebar=0')`);
+      await cdp.send('Page.reload'); await sleep(2500);
+      sb.afterReload = await sideW();
+      for (const t of ['keyDown', 'keyUp']) await cdp.send('Input.dispatchKeyEvent', { type: t, key: '[', code: 'BracketLeft', text: t === 'keyDown' ? '[' : undefined });
+      await sleep(400);
+      sb.afterHotkey = await sideW();
+      for (const t of ['keyDown', 'keyUp']) await cdp.send('Input.dispatchKeyEvent', { type: t, key: '[', code: 'BracketLeft', text: t === 'keyDown' ? '[' : undefined });
+      await sleep(400);
+      sb.afterHotkey2 = await sideW();
+    }
+    assert('F-157 toggleAppSidebar() collapses .sidebar to 0px, widens the map >=240px, persists (localStorage + URL), [ hotkey toggles, re-open tab visible',
+      hasFn && sb.side0 > 200 && sb.side1 === 0 && sb.w1 - sb.w0 >= 240 && sb.reopen === true && sb.stored === '1' && sb.url === true && sb.afterReload === 0 && sb.afterHotkey > 200 && sb.afterHotkey2 === 0, JSON.stringify(sb));
+    if (hasFn) await cdp.eval(`(()=>{ if (typeof APP_SIDEBAR_COLLAPSED !== 'undefined' && APP_SIDEBAR_COLLAPSED) toggleAppSidebar(); return 1; })()`);
+    await sleep(300);
+
+    // place inspector: closing it must hand its column back to the map (>= 300px at 1440)
+    await cdp.eval(`(()=>{ setAtlasEngineMode('2d_svg'); STUDIO_MAP_SELECTED_POI = { title: 'Probe Place', category: 'Probe' }; ATLAS_LEFT_DRAWER_OPEN = true; render(); return 1; })()`);
+    await sleep(400);
+    const dw0 = await canvasW();
+    await cdp.eval(`closeStudioMapPoi(); 0`); await sleep(400);
+    const dw1 = await canvasW();
+    assert('F-157 closing the Place Inspector widens the map canvas >=300px (drawer area collapses)', dw1 - dw0 >= 300, `open=${dw0} closed=${dw1}`);
+
+    // lens bar: no truncated or clipped button at tablet/desktop widths
+    const lensBad = [];
+    for (const w of [900, 1024, 1080, 1180, 1280]) {
+      await metrics(w, 800); await sleep(500);
+      const bad = await cdp.eval(`(()=>{ const bar = document.getElementById('joyPersonaLensBar'); const br = bar.getBoundingClientRect();
+        return [...bar.querySelectorAll('button')].filter(b => { const r = b.getBoundingClientRect(); if (r.width === 0) return false; const cs = getComputedStyle(b);
+          return b.scrollWidth > b.clientWidth || cs.textOverflow === 'ellipsis' || r.left < br.left - 0.5 || r.right > br.right + 0.5 || r.right > innerWidth + 0.5; }).map(b => (b.textContent || '').trim().slice(0, 14)); })()`);
+      if (bad.length) lensBad.push(`${w}px: ${bad.join(',')}`);
+    }
+    assert('F-157 #joyPersonaLensBar has zero truncated/clipped buttons at 900/1024/1080/1180/1280px', lensBad.length === 0, lensBad.join(' | ') || 'ok');
+    await metrics(1440, 900); await sleep(300);
+  }
+
   // ---------------------------------------------------------------- 4. console
   await sleep(300);
   result.consoleErrors = consoleErrors;

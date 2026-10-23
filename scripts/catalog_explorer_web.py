@@ -3603,9 +3603,9 @@ INDEX_HTML = r"""<!DOCTYPE html>
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    /* F-155: tablet widths - the place drawer overlays the map instead of taking a grid column (the map kept
-       only ~134px at 768px with the nav + drawer side by side). */
-    @media (max-width: 899px) and (min-width: 768px) {
+    /* F-155/F-157: tablet and small-laptop widths (up to 1180px, an iPad in landscape) - the place drawer overlays
+       the map instead of taking a grid column (the map kept ~134px at 768px with the nav + drawer side by side). */
+    @media (max-width: 1180px) and (min-width: 768px) {
       .joy-spatial-shell[data-left-open="true"] .joy-spatial-shell__body {
         grid-template-columns: minmax(0, 1fr);
         position: relative;
@@ -3615,7 +3615,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
         inset-block: 0;
         inset-inline-start: 0;
         width: min(340px, 72%);
-        z-index: 40;
+        z-index: 500;
         box-shadow: 8px 0 24px rgba(0, 0, 0, 0.55);
       }
     }
@@ -3676,6 +3676,117 @@ INDEX_HTML = r"""<!DOCTYPE html>
     .joy-spatial-shell[data-theater="true"] .joy-spatial-shell__canvas {
       min-height: 0;
       height: 100%;
+    }
+    /* F-157: collapsible app sidebar. Width 0 (not display:none) keeps the layout a plain flex row. */
+    .app-sidebar-reopen {
+      display: none;
+    }
+    body[data-sidebar-collapsed="true"] .sidebar {
+      width: 0;
+      min-width: 0;
+      border-right: 0;
+      overflow: hidden;
+      visibility: hidden;
+    }
+    body[data-sidebar-collapsed="true"] .app-sidebar-reopen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      left: 0;
+      top: 96px;
+      width: 22px;
+      height: 44px;
+      padding: 0;
+      z-index: 900;
+      border: 1px solid var(--hub-chrome-border);
+      border-left: 0;
+      border-radius: 0 10px 10px 0;
+      background: var(--hub-sidebar-bg);
+      color: #fde047;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 4px 0 14px rgba(0, 0, 0, 0.45);
+    }
+    @media (max-width: 767px) {
+      .topbar__sidebar-toggle,
+      body[data-sidebar-collapsed="true"] .app-sidebar-reopen {
+        display: none !important;
+      }
+    }
+    /* F-157: >=768px - the 2D Crisp Vector canvas takes the world's 1040:500 aspect (no dead sea-blue below the
+       map, legend bar directly under it); it is capped so a short window never pushes the legend off-screen.
+       2D OpenLayers and 3D keep the tall canvas. */
+    @media (min-width: 768px) {
+      .joy-spatial-shell[data-engine="2d_svg"]:not([data-theater="true"]) .joy-spatial-shell__canvas,
+      .joy-spatial-shell[data-engine="2d_svg"][data-bottom-open="true"]:not([data-theater="true"]) .joy-spatial-shell__canvas {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 0;
+      }
+      .joy-spatial-shell[data-engine="2d_svg"]:not([data-theater="true"]) .joy-spatial-shell__canvas > #dedicatedWorldAtlasSvg {
+        flex: 0 0 auto;
+        height: auto !important;
+        aspect-ratio: 1040 / 500;
+        max-height: calc(100dvh - 250px);
+      }
+      .joy-spatial-shell[data-engine="2d_svg"]:not([data-theater="true"]) .atlas-map-legend {
+        position: static !important;
+        flex: 0 0 auto;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border-width: 1px 0 0 !important;
+      }
+    }
+    /* Not on landscape phones (<=480px tall): there the F-156 B4 canvas math assumes a single-row 160px chrome. */
+    @media (min-width: 768px) and (min-height: 481px) {
+      body .joy-lens-bar {
+        flex-wrap: wrap;
+        max-height: none;
+        overflow: visible;
+        row-gap: 4px;
+      }
+      body .joy-lens-bar__tabs {
+        flex: 0 1 auto;
+        flex-wrap: wrap;
+        max-width: 100%;
+        overflow: visible;
+      }
+      body .joy-lens-bar__trailing {
+        flex: 1 1 560px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        row-gap: 4px;
+      }
+      body .joy-lens-bar__trailing .joy-omni-command-bar {
+        flex: 1 1 220px;
+        min-width: 180px;
+      }
+      body .joy-lens-bar .joy-spatial-shell__toggle,
+      body .joy-lens-bar__tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+      body .topbar {
+        flex-wrap: wrap;
+        max-height: none;
+        overflow: visible;
+      }
+      body .topbar__end {
+        flex-wrap: wrap;
+        flex-shrink: 1;
+      }
+      body .topbar__start {
+        flex: 1 1 340px;
+        min-width: 260px;
+      }
+    }
+    /* F-157: the 1-5 hotkey hints on the lens tabs cost ~20px each; drop them where the bar is tight. */
+    @media (min-width: 768px) and (max-width: 1560px) {
+      .joy-lens-bar__kbd {
+        display: none;
+      }
     }
     .joy-spatial-shell[data-carto-theme="google"] #joySpatialViewportShell.joy-spatial-shell__body,
     .joy-spatial-shell[data-carto-theme="google"] .joy-spatial-shell__canvas {
@@ -3973,6 +4084,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
     </div>
   </aside>
   <div id="mobileNavScrim" class="mobile-nav-scrim" onclick="toggleMobileNavDrawer(false)"></div>
+  <button id="appSidebarReopenTab" type="button" class="app-sidebar-reopen" onclick="toggleAppSidebar(false)" title="Show the navigation sidebar (hotkey [)" aria-label="Show navigation sidebar" aria-expanded="false">&#9656;</button>
 
   <!-- Main Workspace -->
   <div class="main">
@@ -3980,6 +4092,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
       <div class="topbar__start">
         <button id="mobileNavMenuBtn" type="button" class="topbar-mobile-nav-btn" aria-label="Toggle Navigation Menu" aria-expanded="false" onclick="toggleMobileNavDrawer()">Menu</button>
         <div class="topbar__history" style="display:inline-flex;gap:4px;margin-right:6px">
+          <button id="appSidebarToggleBtn" type="button" class="joy-button joy-button--outline joy-button--sm topbar__sidebar-toggle" onclick="toggleAppSidebar()" title="Hide or show the navigation sidebar (hotkey [)" aria-label="Toggle navigation sidebar" aria-expanded="true">&#9776;</button>
           <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="window.history.back()" title="Browser Back" aria-label="Browser Back">←<span class="topbar__history-label"> Back</span></button>
           <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="window.history.forward()" title="Browser Forward" aria-label="Browser Forward"><span class="topbar__history-label">Forward </span>→</button>
         </div>
@@ -4184,6 +4297,9 @@ function syncUrlState() {
   const lensParam = params.get('lens');
   const theaterParam = params.get('theater');
   const leftDrawerParam = params.get('leftDrawer');
+  const sidebarParam = params.get('sidebar');
+  if (sidebarParam !== null) APP_SIDEBAR_COLLAPSED = sidebarParam === '0';
+  applyAppSidebarState();
   const engineParam = params.get('engine');
   const ctx3dParam = params.get('ctx3d');
   if (perspective) {
@@ -4366,6 +4482,7 @@ function writeUrlState(pushHistory = true) {
       if (ATLAS_THEATER_MODE) params.set('theater', '1');
       params.set('leftDrawer', ATLAS_LEFT_DRAWER_OPEN ? '1' : '0');
     }
+    if (APP_SIDEBAR_COLLAPSED) params.set('sidebar', '0');
     if (typeof ATLAS_ENGINE_MODE !== 'undefined') {
       params.set('engine', ATLAS_ENGINE_MODE || '2d_svg');
     }
@@ -7057,6 +7174,8 @@ let ATLAS_PRESET_CHIPS_OPEN = false;
 // F-156 B2: set when the user dismisses the search tray; cleared by typing/searching or toggling Presets.
 let ATLAS_OMNI_TRAY_DISMISSED = false;
 let ATLAS_LEFT_DRAWER_OPEN = false;
+// F-157: the app navigation sidebar can be collapsed to give the map the full width (localStorage + ?sidebar=0).
+let APP_SIDEBAR_COLLAPSED = (() => { try { return localStorage.getItem('atlas-sidebar-collapsed') === '1'; } catch (e) { return false; } })();
 let ATLAS_THEATER_MODE = false;
 let ATLAS_ENTITY_MATRIX_OPEN = false;
 let ATLAS_PO_TELEMETRY_OPEN = false;
@@ -9564,6 +9683,38 @@ function toggleAtlasLeftDrawer() {
   render();
 }
 
+// F-157: app navigation sidebar collapse. State lives in APP_SIDEBAR_COLLAPSED, mirrored to
+// body[data-sidebar-collapsed], localStorage and ?sidebar=0 (absent = open).
+function applyAppSidebarState() {
+  if (typeof document === 'undefined' || !document.body) return;
+  document.body.setAttribute('data-sidebar-collapsed', APP_SIDEBAR_COLLAPSED ? 'true' : 'false');
+  ['appSidebarToggleBtn', 'appSidebarReopenTab'].forEach(id => {
+    const el = document.getElementById ? document.getElementById(id) : null;
+    if (el) el.setAttribute('aria-expanded', APP_SIDEBAR_COLLAPSED ? 'false' : 'true');
+  });
+}
+
+function toggleAppSidebar(forceCollapsed) {
+  APP_SIDEBAR_COLLAPSED = typeof forceCollapsed === 'boolean' ? forceCollapsed : !APP_SIDEBAR_COLLAPSED;
+  try { localStorage.setItem('atlas-sidebar-collapsed', APP_SIDEBAR_COLLAPSED ? '1' : '0'); } catch (e) {}
+  applyAppSidebarState();
+  writeUrlState(false);
+  // Map engines (OpenLayers, 3D) size themselves at mount, so re-render to pick up the new canvas width.
+  if (CURRENT_TAB === 'studio') render();
+}
+
+// F-157: one control hands the map the whole screen width (sidebar + inspector drawer), a second press restores the sidebar.
+function toggleAtlasMaximizeMap() {
+  const maximized = APP_SIDEBAR_COLLAPSED && !ATLAS_LEFT_DRAWER_OPEN;
+  ATLAS_LEFT_DRAWER_OPEN = false;
+  ATLAS_STATE_STORE.leftDrawerOpen = false;
+  APP_SIDEBAR_COLLAPSED = !maximized;
+  try { localStorage.setItem('atlas-sidebar-collapsed', APP_SIDEBAR_COLLAPSED ? '1' : '0'); } catch (e) {}
+  applyAppSidebarState();
+  writeUrlState(false);
+  render();
+}
+
 // F-155: Esc priority on the atlas - clear an active ruler first, else leave theater mode. Returns true when it
 // consumed the key (callers then skip their own Esc behaviour).
 function isAtlasOmniTrayOpen() {
@@ -10000,6 +10151,11 @@ function handleAtlasGlobalKeyDown(evt) {
     return;
   }
   if (isInput || evt.metaKey || evt.ctrlKey || evt.altKey) return;
+  if (evt.key === '[' && !evt.defaultPrevented) {
+    evt.preventDefault();
+    toggleAppSidebar();
+    return;
+  }
   if (evt.key === 'Escape' && !evt.defaultPrevented && CURRENT_TAB === 'studio') {
     if (consumeAtlasEscape()) evt.preventDefault();
     return;
@@ -10087,6 +10243,10 @@ function selectStudioMapPoi(poiJsonStr, evt) {
 function closeStudioMapPoi(evt) {
   if (evt && evt.stopPropagation) evt.stopPropagation();
   STUDIO_MAP_SELECTED_POI = null;
+  // F-157: closing the inspector also hands its column back to the map (it used to leave an empty drawer).
+  ATLAS_LEFT_DRAWER_OPEN = false;
+  if (typeof ATLAS_STATE_STORE !== 'undefined') ATLAS_STATE_STORE.leftDrawerOpen = false;
+  writeUrlState(false);
   render();
 }
 
@@ -10271,7 +10431,8 @@ function buildStudioPlaceDrawerHtml(poi) {
             <div style="font-size:17px;font-weight:800;color:#f8fafc;line-height:1.25">${escapeHtml(poi.title || 'Selected Place')}</div>
             <div style="font-size:12px;color:#94a3b8;margin-top:3px;font-weight:600">${escapeHtml(poi.category || 'Cartographic Feature')}</div>
           </div>
-          <button type="button" onclick="closeStudioMapPoi(event)" title="Reset to Default Overview" style="width:28px;height:28px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);background:#243244;color:#cbd5e1;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center">×</button>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><button type="button" onclick="toggleAtlasLeftDrawer()" title="Collapse panel (keep the selection)" aria-label="Collapse panel" style="height:28px;padding:0 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);background:#243244;color:#cbd5e1;cursor:pointer;font-size:11px;font-weight:700;flex-shrink:0;white-space:nowrap">Collapse panel</button>
+          <button type="button" onclick="closeStudioMapPoi(event)" title="Reset to Default Overview" style="width:28px;height:28px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);background:#243244;color:#cbd5e1;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center">×</button></div>
         </div>
 
         <!-- Primary Action Bar (Directions / Zoom Here / Warp to Dungeon / Center View) -->
@@ -10454,7 +10615,7 @@ function renderCartoShellHtml({
   const placeDrawerHtml = buildStudioPlaceDrawerHtml(poi);
 
   return `
-    <div class="joy-spatial-shell" data-carto-theme="${isL2 ? 'l2hub' : 'google'}" data-left-open="${ATLAS_LEFT_DRAWER_OPEN ? 'true' : 'false'}" data-bottom-open="${!ATLAS_THEATER_MODE ? 'true' : 'false'}" data-theater="${ATLAS_THEATER_MODE ? 'true' : 'false'}">
+    <div class="joy-spatial-shell" data-engine="${getAtlasEffectiveEngineMode()}" data-carto-theme="${isL2 ? 'l2hub' : 'google'}" data-left-open="${ATLAS_LEFT_DRAWER_OPEN ? 'true' : 'false'}" data-bottom-open="${!ATLAS_THEATER_MODE ? 'true' : 'false'}" data-theater="${ATLAS_THEATER_MODE ? 'true' : 'false'}">
       <div class="joy-spatial-shell__chrome">
         ${filterBarHtml || renderAtlasFilterBarHtml(0)}
       </div>
@@ -10523,6 +10684,7 @@ function renderCartoShellHtml({
               <button type="button" onclick="focusTownStreetBlueprint(ATLAS_STATE_STORE.activeTownId || 'town-lantern-hollow')" title="Town Street & Shop Blueprint LOD (5.2x)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(250,204,21,0.55);background:#422006;color:#fde047;font-size:9.5px;font-weight:800;cursor:pointer">5.2×</button>
               <button type="button" onclick="zoomActiveAtlasEngine(0, true)" title="Reset Pan & Zoom (1:1 Macro)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#17140f;color:#fde047;font-size:10px;font-weight:700;cursor:pointer">1:1</button>
               <button type="button" onclick="toggleAtlasLeftDrawer()" title="Toggle Left Inspector Drawer" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(56,189,248,0.45);background:#0f172a;color:#7dd3fc;font-size:10px;font-weight:800;cursor:pointer">${ATLAS_LEFT_DRAWER_OPEN ? '◀' : '▶'}</button>
+              <button type="button" onclick="toggleAtlasMaximizeMap()" title="Maximize map: hide the sidebar and the inspector (press again to restore)" aria-label="Maximize map" style="height:24px;padding:0 6px;border-radius:7px;border:1px solid rgba(56,189,248,0.45);background:#0f172a;color:#7dd3fc;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap">Max map</button>
               <button type="button" onclick="toggleAtlasTheaterMode()" title="Toggle Full-Viewport Theater Mode (Hotkey: F)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(250,204,21,0.45);background:#1c1917;color:#fde047;font-size:10px;font-weight:800;cursor:pointer">⛶</button>
             </div>
           </div>
@@ -10558,10 +10720,13 @@ function renderCartoShellHtml({
               <filter id="cartoDropShadow" x="-15%" y="-15%" width="130%" height="130%">
                 <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#000000" flood-opacity="0.65"/>
               </filter>
+              <!-- F-157: nothing (raster plate, zoomed or panned content) may draw outside the 0..1040 x 0..500 world frame. -->
+              <clipPath id="atlasWorldFrameClip"><rect x="0" y="0" width="1040" height="500" rx="6"/></clipPath>
             </defs>
             <rect width="1040" height="500" fill="url(#cartoSeaGrad)"/>
             <rect width="1040" height="500" fill="url(#cartoGridPat)"/>
             <!-- Vignette Parchment Frame like L2Hub Aden Map -->
+            <g clip-path="url(#atlasWorldFrameClip)">
             <g id="studioCartoViewport" transform="translate(${520 + STUDIO_MAP_PAN_X}, ${250 + STUDIO_MAP_PAN_Y}) scale(${initEffScale}) translate(-520, -250)">
               ${svgInnerHtml}
               <!-- Interactive L2Hub Red/White Crosshair Target (+ at loc=X:Y) -->
@@ -10573,12 +10738,13 @@ function renderCartoShellHtml({
                 <line x1="0" y1="-7" x2="0" y2="7" stroke="#ffffff" stroke-width="1.4"/>
               </g>
             </g>
+            </g>
             <rect width="1040" height="500" fill="none" stroke="#1c160e" stroke-width="10" pointer-events="none"/>
           </svg>
           ${getAtlasEffectiveEngineMode() !== '2d_svg' ? `<div id="atlasAdvancedEngineMount" data-engine-mode="${escapeHtml(ATLAS_ENGINE_MODE)}" style="position:relative;width:100%;height:100%;min-height:min(460px,100%);background:#090f1a;overflow:hidden"></div>` : ''}
 
           <!-- Bottom Cartographic Scale Bar & Legend -->
-          <div style="position:absolute;bottom:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(15,13,10,0.92);border:1px solid rgba(212,175,55,0.28);font-size:11px;color:#e7e5e4;pointer-events:none">
+          <div class="atlas-map-legend" style="position:absolute;bottom:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(15,13,10,0.92);border:1px solid rgba(212,175,55,0.28);font-size:11px;color:#e7e5e4;pointer-events:none">
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
               ${(legendItems || []).map(item => `
                 <span style="display:inline-flex;align-items:center;gap:5px">
