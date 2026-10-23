@@ -1966,6 +1966,16 @@ INDEX_HTML = r"""<!DOCTYPE html>
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
+      flex: 0 1 auto;
+    }
+    /* F-158: the status pill never truncates - the long title shrinks/ellipsizes instead. */
+    #topbarStatus {
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: clip;
+      max-width: none;
     }
     .scroll-stage {
       flex: 1;
@@ -3737,6 +3747,15 @@ INDEX_HTML = r"""<!DOCTYPE html>
         margin: 0 !important;
         border-radius: 0 !important;
         border-width: 1px 0 0 !important;
+      }
+    }
+    /* F-158: on short desktop/tablet windows (<=860px tall, e.g. 1080x810, 1024x768) the 3D / OpenLayers canvas is capped
+       so its bottom legend bar stays inside the viewport without scrolling. 1440x900 and taller keep the F-156 sizing. */
+    @media (min-width: 768px) and (min-height: 481px) and (max-height: 860px) {
+      body .joy-spatial-shell:not([data-engine="2d_svg"]):not([data-theater="true"]) .joy-spatial-shell__canvas,
+      body .joy-spatial-shell:not([data-engine="2d_svg"])[data-bottom-open="true"]:not([data-theater="true"]) .joy-spatial-shell__canvas {
+        min-height: 360px;
+        height: calc(100dvh - 320px);
       }
     }
     /* Not on landscape phones (<=480px tall): there the F-156 B4 canvas math assumes a single-row 160px chrome. */

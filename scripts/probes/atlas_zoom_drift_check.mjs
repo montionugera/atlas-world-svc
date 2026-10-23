@@ -805,6 +805,33 @@ true;`;
     await metrics(1440, 900); await sleep(300);
   }
 
+  // ---------------------------------------------------------------- 9. F-158 polish: header status pill never truncates; legend visible without scrolling at 1080x810 / 1024x768
+  {
+    const metrics = (w, h) => cdp.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
+    const pillBad = [];
+    for (const [w, h] of [[1024, 768], [1080, 810], [1440, 900]]) {
+      await metrics(w, h); await sleep(500);
+      const r = await cdp.eval(`(()=>{ const p = document.getElementById('topbarStatus'); const b = p.getBoundingClientRect(); const cs = getComputedStyle(p);
+        return { sw: p.scrollWidth, cw: p.clientWidth, ell: cs.textOverflow === 'ellipsis' && p.scrollWidth > p.clientWidth, shrink: cs.flexShrink, ws: cs.whiteSpace, w: Math.round(b.width), right: Math.round(b.right), vw: innerWidth }; })()`);
+      if (!(r.sw <= r.cw && !r.ell && r.shrink === '0' && r.ws === 'nowrap' && r.right <= r.vw)) pillBad.push(`${w}: ${JSON.stringify(r)}`);
+    }
+    assert('F-158 #topbarStatus (Ready pill) is never truncated at 1024/1080/1440px (scrollWidth<=clientWidth, no ellipsis, nowrap, no shrink)', pillBad.length === 0, pillBad.join(' | ') || 'ok');
+    const legBad = [];
+    for (const [w, h] of [[1080, 810], [1024, 768]]) {
+      for (const mode of ['2d_svg', '3d_map3d']) {
+        await metrics(w, h);
+        await cdp.eval(`(()=>{ try { localStorage.removeItem('atlas-sidebar-collapsed'); } catch (e) {} if (typeof APP_SIDEBAR_COLLAPSED !== 'undefined' && APP_SIDEBAR_COLLAPSED) toggleAppSidebar(false); setAtlasEngineMode('${mode}'); render(); window.scrollTo(0, 0); return 1; })()`);
+        await sleep(900);
+        const r = await cdp.eval(`(()=>{ const l = document.querySelector('.atlas-map-legend'); if (!l) return { missing: true }; const b = l.getBoundingClientRect();
+          return { top: Math.round(b.top), bottom: Math.round(b.bottom), vh: innerHeight, side: Math.round(document.querySelector('.sidebar').getBoundingClientRect().width), docH: document.documentElement.scrollHeight }; })()`);
+        if (r.missing || !(r.bottom <= r.vh && r.side > 100)) legBad.push(`${w}x${h} ${mode}: ${JSON.stringify(r)}`);
+      }
+    }
+    assert('F-158 bottom legend bar is fully inside the viewport (no scroll) at 1080x810 and 1024x768, sidebar open, in 2d_svg and 3d_map3d', legBad.length === 0, legBad.join(' | ') || 'ok');
+    await cdp.eval(`(()=>{ setAtlasEngineMode('2d_svg'); render(); return 1; })()`);
+    await metrics(1440, 900); await sleep(300);
+  }
+
   // ---------------------------------------------------------------- 4. console
   await sleep(300);
   result.consoleErrors = consoleErrors;
