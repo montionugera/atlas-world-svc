@@ -138,6 +138,7 @@ if [ "$DO_SERVER" -eq 1 ]; then
   fi
 fi
 [ "$DO_STORYBOOK" -eq 1 ] && kubectl apply -f "$REPO_ROOT/k8s/local/storybook.yaml"
+[ -f "$REPO_ROOT/k8s/local/ingress.yaml" ] && kubectl apply -f "$REPO_ROOT/k8s/local/ingress.yaml"
 
 # --- Roll out -----------------------------------------------------------------
 # imagePullPolicy:Never + a stable :local tag means the manifests are unchanged
@@ -170,12 +171,13 @@ echo ""
 echo "======================================"
 echo " Deployment Complete!"
 echo "======================================"
+echo " Atlas Studio  : http://atlas-world.joymify.local.com/ (or http://127.0.0.1:8788/)"
 if [ "$DO_SERVER" -eq 1 ]; then
   echo " Server-RS WS  : ws://localhost:2567?token=<jwt>"
   echo " Server-RS Pod : deployment/server-rs (port 2567)"
 fi
 [ "$DO_STORYBOOK" -eq 1 ] && \
-  echo " Storybook     : http://localhost:6006/      (health: /healthz)"
+  echo " Storybook     : http://atlas-storybook.joymify.local.com/ (or http://localhost:6006/)"
 if [ "$DO_META" -eq 1 ]; then
   echo " Nakama API    : http://localhost:7350       (health: /healthcheck)"
   echo " Nakama console: http://localhost:7351       (admin/password)"

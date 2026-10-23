@@ -7,7 +7,7 @@
 
 *
 !game-client/assets/**
-!colyseus-server/generated/asset-keys.json
+!content/generated/asset-keys.json
 !atelier/asset-storybook/**
 !atelier/combat-lab/**
 !content/story/**

@@ -59,8 +59,10 @@ COPY atelier/art-forge/runs atelier/art-forge/runs
 COPY atelier/art-forge/briefs atelier/art-forge/briefs
 
 # Small and frequently edited — these come last so they invalidate as little as
-# possible.
-COPY colyseus-server/generated/asset-keys.json colyseus-server/generated/asset-keys.json
+# possible. Copy to both content/generated/ and legacy colyseus-server/generated/
+# so both the new path and existing storybook relative fetches resolve.
+COPY content/generated/asset-keys.json content/generated/asset-keys.json
+COPY content/generated/asset-keys.json colyseus-server/generated/asset-keys.json
 COPY atelier/combat-lab atelier/combat-lab
 COPY atelier/asset-storybook atelier/asset-storybook
 
