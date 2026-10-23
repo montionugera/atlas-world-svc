@@ -2032,9 +2032,10 @@
     "title": "Atlas explorer layout + sidebar: clip map frame (raster plate bleed), persona lens bar buttons truncated, toggleable app sidebar and inspector drawer for max map area",
     "from_idea": "I-240",
     "created_at": "2026-10-23T09:45:39.611176+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-23T09:46:16.091453+00:00"
   },
   {
     "id": "F-158",
