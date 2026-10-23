@@ -36,9 +36,24 @@ function readVerdicts(doc) {
   return v;
 }
 
+// The queue file is shared with the observatory's Review Gate Inbox, which owns
+// `proposals`, `playerScaleAnchor` and `agentEditLog`. Those keys (and any the
+// file grows later) must survive a parse → serialize round trip untouched:
+// rebuilding the document from {version, verdicts, workOrders} alone silently
+// deleted them from anyone who committed an export.
+const OWNED_KEYS = new Set(["version", "verdicts", "workOrders"]);
+
+function extraKeys(doc) {
+  if (!doc || typeof doc !== "object" || Array.isArray(doc)) return {};
+  const out = {};
+  for (const [k, v] of Object.entries(doc)) if (!OWNED_KEYS.has(k)) out[k] = v;
+  return out;
+}
+
 /**
  * Parse a review-queue.json string. A legacy file without `workOrders`
- * degrades to an empty array so the key always exists downstream.
+ * degrades to an empty array so the key always exists downstream. Unknown
+ * top-level keys are carried through verbatim.
  * @param {string} json
  */
 export function parseQueue(json) {
@@ -50,7 +65,7 @@ export function parseQueue(json) {
   }
   const verdicts = readVerdicts(doc);
   const workOrders = Array.isArray(doc && doc.workOrders) ? doc.workOrders : [];
-  return { version: 1, verdicts, workOrders };
+  return { version: 1, verdicts, workOrders, ...extraKeys(doc) };
 }
 
 /**
@@ -68,6 +83,7 @@ export function serializeQueue(queue) {
     version: queue.version ?? 1,
     verdicts,
     workOrders: Array.isArray(queue.workOrders) ? queue.workOrders : [],
+    ...extraKeys(queue),
   };
   return JSON.stringify(out, null, 2) + "\n";
 }
@@ -105,8 +121,12 @@ export function addWorkOrder(queue, order) {
   ) {
     throw new Error("seed must be a non-negative integer");
   }
+  const id = `wo-${order.briefId}-${order.cell}-${Date.now()}-${++woSeq}`;
   const wo = {
-    id: `wo-${order.briefId}-${order.cell}-${Date.now()}-${++woSeq}`,
+    id,
+    // Inside the observatory the server assigns the real `wo-NNNN` id; this
+    // client-minted id rides along as `clientId` so a retried POST is a no-op.
+    clientId: id,
     briefId: order.briefId,
     cell: order.cell,
     reason: trimmed,
@@ -123,9 +143,30 @@ export function addWorkOrder(queue, order) {
  * @param {(local:object)=>void} [opts.persist]  called after every mutation
  */
 export function createStore({ committed, local, persist }) {
-  const base = readVerdicts(committed);
+  let base = readVerdicts(committed);
   const buffer = { ...(local || {}) };
   const save = () => persist && persist(buffer);
+
+  // A buffered mark that says nothing the committed file does not already say is
+  // not an unsaved change (a mark the server accepted in an earlier session, or a
+  // clear of a verdict that is already gone). Dropping them keeps unsavedCount()
+  // honest after a reload instead of reporting the same marks forever.
+  function pruneBuffer() {
+    let changed = false;
+    for (const [key, rec] of Object.entries(buffer)) {
+      const prior = base[key];
+      const redundant =
+        rec === CLEARED
+          ? !prior
+          : !!prior && prior.verdict === rec.verdict && prior.note === rec.note;
+      if (redundant) {
+        delete buffer[key];
+        changed = true;
+      }
+    }
+    return changed;
+  }
+  if (pruneBuffer()) save();
 
   function effective() {
     const out = { ...base };
@@ -175,6 +216,13 @@ export function createStore({ committed, local, persist }) {
       save();
     },
 
+    // The server accepted `verdicts` (the effective view at the time of the POST):
+    // that is now the committed baseline, and whatever the buffer held for it is saved.
+    rebase(verdicts) {
+      base = { ...readVerdicts({ verdicts }) };
+      if (pruneBuffer()) save();
+    },
+
     unsavedCount() {
       return Object.keys(buffer).length;
     },
@@ -205,6 +253,7 @@ export function createStore({ committed, local, persist }) {
       const verdicts = {};
       for (const key of Object.keys(eff).sort()) verdicts[key] = eff[key];
       return serializeQueue({
+        ...extraKeys(committed),
         version: 1,
         verdicts,
         workOrders:

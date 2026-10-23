@@ -389,8 +389,26 @@ export function rerunChains(jobs) {
 }
 
 /** The log-tail route the log viewer polls (app.mjs `GET /api/jobs/:id/log?tail=`). */
-export function logTailUrl(id, n) {
-  return "/api/jobs/" + id + "/log?tail=" + n;
+export function logTailUrl(id, n, apiBase = "/api") {
+  return apiBase + "/jobs/" + id + "/log?tail=" + n;
+}
+
+/**
+ * Where the UI finds the Map Builder API. Served by the service itself (port 6016) the routes
+ * sit at /api; mounted as an observatory panel they sit behind the proxy at /api/map-builder.
+ */
+export function defaultApiBase(loc) {
+  return loc && String(loc.port) === "6016" ? "/api" : "/api/map-builder";
+}
+
+/** Draft sheets live under build/ (never statically mounted by the observatory) — the proxy serves them. */
+export function defaultFileBase(apiBase) {
+  return apiBase === "/api" ? "" : apiBase + "-files";
+}
+
+/** Rewrites a root-absolute `/build/…` sheet path through `fileBase`; everything else is unchanged. */
+export function sheetUrl(path, fileBase = "") {
+  return fileBase && typeof path === "string" && path.startsWith("/build/") ? fileBase + path : path;
 }
 
 /** The fixed reject-reason set (spec §6 Review screen). */

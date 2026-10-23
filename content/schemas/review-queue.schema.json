@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas review queue",
+  "description": "content/review-queue.json. Single writer: scripts/atlas_world_web/review_queue.py (locked read-modify-write, atomic replace). `proposals`, `playerScaleAnchor` and `agentEditLog` belong to the observatory's Review Gate Inbox; unknown top-level keys are preserved on every write, so additionalProperties stays true.",
+  "type": "object",
+  "required": ["version", "verdicts", "workOrders"],
+  "properties": {
+    "version": { "const": 1 },
+    "verdicts": {
+      "type": "object",
+      "description": "Keyed by asset-storybook key (e.g. mob:aggressive). A verdict is a work order for the art pipeline, so the note is mandatory.",
+      "propertyNames": { "pattern": "^\\S{1,200}$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["verdict", "note"],
+        "properties": {
+          "verdict": { "enum": ["reject", "rebuild"] },
+          "note": { "type": "string", "minLength": 1, "pattern": "\\S" },
+          "updatedAt": { "type": "string" },
+          "source": {
+            "type": "string",
+            "description": "`assets` for the asset verdict UI, or `proposal:<id>` when a Review Gate Inbox reject resolved an asset-keyed proposal.",
+            "pattern": "^(assets|proposal:.+)$"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "workOrders": {
+      "type": "array",
+      "description": "Append-only queue. Ids are server-assigned `wo-NNNN` (max existing + 1); a repeated `clientId` is a no-op. Legacy ids from before the merge (`wo-001`, `wo-<brief>-<cell>-<ms>-<seq>`) remain valid.",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^wo-" },
+          "kind": { "enum": ["forge", "proposal-reroll"] },
+          "createdAt": { "type": "string" },
+          "clientId": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{1,120}$" },
+          "briefId": { "type": "string", "pattern": "^[A-Za-z0-9-]+$" },
+          "cell": { "enum": ["blockin", "render", "gate", "intake"] },
+          "reason": { "type": "string" },
+          "seed": { "type": "integer", "minimum": 0 },
+          "proposalId": { "type": "string" },
+          "targetId": { "type": ["string", "null"] },
+          "feedback": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "proposals": { "type": "array", "items": { "type": "object" } },
+    "playerScaleAnchor": { "type": "object" },
+    "agentEditLog": { "type": "array", "items": { "type": "object" } }
+  },
+  "additionalProperties": true
+}

@@ -19,6 +19,9 @@ import {
   historyRows,
   rerunChains,
   logTailUrl,
+  defaultApiBase,
+  defaultFileBase,
+  sheetUrl,
   staleInFlightIds,
   PUBLISH_STEPS,
 } from "../js/map-builder-model.mjs";
@@ -336,4 +339,26 @@ test("staleInFlightIds: non-terminal jobs the synced page did not cover, any kin
   const page = [job({ id: "d-run", status: "succeeded" }), job({ id: "d-done", status: "succeeded" })];
   assert.deepEqual(staleInFlightIds(jobs, page), ["p-run", "u-queued", "dry-run"]);
   assert.deepEqual(staleInFlightIds(new Map(), page), []);
+});
+
+test("logTailUrl honours an apiBase and defaults to /api", () => {
+  assert.equal(logTailUrl("j1", 50, "/api/map-builder"), "/api/map-builder/jobs/j1/log?tail=50");
+  assert.equal(logTailUrl("j1", 50), "/api/jobs/j1/log?tail=50");
+});
+
+test("defaultApiBase: /api on the service's own port, the proxy prefix everywhere else", () => {
+  assert.equal(defaultApiBase({ port: "6016" }), "/api");
+  assert.equal(defaultApiBase({ port: "8788" }), "/api/map-builder");
+  assert.equal(defaultApiBase({ port: "" }), "/api/map-builder");
+  assert.equal(defaultApiBase(undefined), "/api/map-builder");
+});
+
+test("defaultFileBase and sheetUrl route only /build/ sheets through the proxy", () => {
+  assert.equal(defaultFileBase("/api"), "");
+  assert.equal(defaultFileBase("/api/map-builder"), "/api/map-builder-files");
+  const base = defaultFileBase("/api/map-builder");
+  assert.equal(sheetUrl("/build/mapforge/r1/sheets/fabric.svg", base), "/api/map-builder-files/build/mapforge/r1/sheets/fabric.svg");
+  assert.equal(sheetUrl("/game-client/assets/art/maps/x.svg", base), "/game-client/assets/art/maps/x.svg");
+  assert.equal(sheetUrl("/build/mapforge/r1/sheets/fabric.svg", ""), "/build/mapforge/r1/sheets/fabric.svg");
+  assert.equal(sheetUrl(null, base), null);
 });

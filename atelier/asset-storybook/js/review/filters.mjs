@@ -11,6 +11,13 @@
 import { REJECTED_CLASS, REBUILD_CLASS, UNREVIEWED_CLASS } from "../state.mjs";
 import { buildSidebarItem, classLabel } from "../sidebar.mjs";
 import { getStore } from "./ui.mjs";
+import { matchesVerdict } from "./verdict-filter.mjs";
+
+const FILTER_OF_CLASS = {
+  [REJECTED_CLASS]: "reject",
+  [REBUILD_CLASS]: "rebuild",
+  [UNREVIEWED_CLASS]: "unreviewed",
+};
 
 export function mountVerdictFilters({
   sidebarNav,
@@ -28,13 +35,8 @@ export function mountVerdictFilters({
   function applyVerdictFilter(cls) {
     const store = getStore();
     if (!store) return;
-    const keep = (key) => {
-      const rec = store.get(key);
-      if (cls === REJECTED_CLASS) return rec?.verdict === "reject";
-      if (cls === REBUILD_CLASS) return rec?.verdict === "rebuild";
-      if (cls === UNREVIEWED_CLASS) return !rec;
-      return true;
-    };
+    const keep = (key) =>
+      matchesVerdict(FILTER_OF_CLASS[cls] || "all", store.get(key));
     for (const [groupKey, grid] of sectionGrids) {
       const list = groups.get(groupKey).filter(([key]) => keep(key));
       grid.setItems(list);

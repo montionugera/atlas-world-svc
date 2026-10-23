@@ -1,19 +1,26 @@
 #!/usr/bin/env node
-// F-053 Phase 1 — headless smoke for the asset storybook's Forge tab.
+// F-053 Phase 1 / SSOT merge W3 — headless smoke for the atlas-world panels.
 //
-// Zero npm dependencies: a node:http server at the repo root + the SYSTEM
-// Chrome driven over the DevTools protocol on --remote-debugging-pipe (fd 3
-// in, fd 4 out, NUL-delimited JSON). Chosen over the spec's --dump-dom iframe
-// harness because this gate must see console errors thrown by the page's own
+// The asset storybook now lives inside atlas-world (scripts/catalog_explorer_web.py), so this
+// gate spawns THAT server on a free port, with ATLAS_REVIEW_QUEUE_PATH pointed at a temp copy of
+// content/review-queue.json (a smoke run never dirties the repo) and MAP_BUILDER_PORT pointed at
+// a port nothing listens on (the map-builder-down scenario is deterministic), and polls /healthz.
+// Each scenario gets a thin node:http proxy in front of it that can force a 404 (`fail`) or swap
+// a file (`override`) for one repo path and logs every request; everything else is forwarded.
+//
+// Zero npm dependencies: the SYSTEM Chrome driven over the DevTools protocol on
+// --remote-debugging-pipe (fd 3 in, fd 4 out, NUL-delimited JSON). Chosen over the spec's
+// --dump-dom iframe harness because this gate must see console errors thrown by the page's own
 // module scripts. Works on Node 18 (the CI pin).
 //
 // Exit: 0 all ok (or "SKIPPED: no Chrome"), 1 a scenario failed,
 //       2 no Chrome while STORYBOOK_SMOKE_REQUIRED=1.
 import { spawn } from "node:child_process";
-import { createServer } from "node:http";
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { createServer, request as httpRequest } from "node:http";
+import { createServer as createNetServer } from "node:net";
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { delimiter, dirname, extname, isAbsolute, join, resolve, sep } from "node:path";
+import { delimiter, dirname, extname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SCENARIOS } from "./scenarios.mjs";
 
@@ -46,31 +53,107 @@ function findChrome() {
   return null;
 }
 
-function startServer({ fail = [], override = {} }) {
+function freePort() {
+  return new Promise((ok, fail) => {
+    const srv = createNetServer();
+    srv.on("error", fail);
+    srv.listen(0, "127.0.0.1", () => {
+      const { port } = srv.address();
+      srv.close(() => ok(port));
+    });
+  });
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function getStatus(url) {
+  try {
+    const res = await fetch(url);
+    return res.status;
+  } catch {
+    return 0;
+  }
+}
+
+// Spawns scripts/catalog_explorer_web.py and waits for /healthz. `queueFile` is the temp copy
+// every write lands in; `deadPort` is a port with no listener (stands in for the Map Builder).
+async function startExplorer() {
+  const dir = mkdtempSync(join(tmpdir(), "sb-smoke-explorer-"));
+  const queueFile = join(dir, "review-queue.json");
+  copyFileSync(join(REPO_ROOT, "content/review-queue.json"), queueFile);
+  const port = await freePort();
+  const deadPort = await freePort();
+  const proc = spawn("python3", [join(REPO_ROOT, "scripts/catalog_explorer_web.py"), "--port", String(port)], {
+    cwd: REPO_ROOT,
+    env: { ...process.env, ATLAS_REVIEW_QUEUE_PATH: queueFile, MAP_BUILDER_PORT: String(deadPort) },
+    stdio: ["ignore", "ignore", "pipe"],
+  });
+  let stderr = "";
+  proc.stderr.on("data", (d) => { stderr = (stderr + d).slice(-4000); });
+  let exitedWith = null;
+  proc.on("exit", (code, signal) => { exitedWith = `code=${code} signal=${signal}`; });
+  proc.on("error", (err) => { exitedWith = `spawn error: ${err.message}`; });
+  const base = `http://127.0.0.1:${port}`;
+  const deadline = Date.now() + Number(process.env.SMOKE_SERVER_TIMEOUT_MS || 90000);
+  while (Date.now() < deadline) {
+    if (exitedWith) throw new Error(`catalog_explorer_web.py exited before /healthz answered (${exitedWith}): ${stderr.trim()}`);
+    if ((await getStatus(base + "/healthz")) === 200) {
+      return {
+        base,
+        queueFile,
+        async close() {
+          if (exitedWith === null) {
+            proc.kill();
+            await Promise.race([new Promise((r) => proc.once("exit", r)), sleep(3000)]);
+          }
+          rmSync(dir, { recursive: true, force: true });
+        },
+      };
+    }
+    await sleep(250);
+  }
+  proc.kill();
+  throw new Error(`catalog_explorer_web.py did not answer /healthz within the timeout: ${stderr.trim()}`);
+}
+
+// A per-scenario proxy in front of the explorer. `fail` = repo paths answered 404, `override` =
+// repo path -> fixture file served instead; all else is forwarded verbatim (method, headers —
+// Host and Origin included, so the explorer's same-origin write guard sees what the browser sent).
+function startProxy({ upstream, fail = [], override = {} }) {
   const log = [];
   const server = createServer((req, res) => {
     const repoPath = decodeURIComponent(new URL(req.url, "http://smoke").pathname).replace(/^\/+/, "");
-    log.push({ method: req.method, path: repoPath });
+    const entry = { method: req.method, path: repoPath, status: 0 };
+    log.push(entry);
     if (fail.includes(repoPath)) {
+      entry.status = 404;
       res.writeHead(404);
       res.end("smoke: forced 404");
+      req.resume();
       return;
     }
-    const file = override[repoPath] ? resolve(HERE, override[repoPath]) : resolve(REPO_ROOT, repoPath);
-    if (!override[repoPath] && !file.startsWith(REPO_ROOT + sep)) {
-      res.writeHead(403);
-      res.end();
+    if (override[repoPath]) {
+      entry.status = 200;
+      res.writeHead(200, { "content-type": MIME[extname(override[repoPath])] || "application/octet-stream" });
+      res.end(readFileSync(resolve(HERE, override[repoPath])));
+      req.resume();
       return;
     }
-    try {
-      if (!statSync(file).isFile()) throw new Error("not a file");
-      const body = readFileSync(file);
-      res.writeHead(200, { "content-type": MIME[extname(file)] || "application/octet-stream" });
-      res.end(body);
-    } catch {
-      res.writeHead(404);
-      res.end();
-    }
+    const up = new URL(upstream);
+    const proxied = httpRequest(
+      { host: up.hostname, port: up.port, path: req.url, method: req.method, headers: req.headers },
+      (upRes) => {
+        entry.status = upRes.statusCode;
+        res.writeHead(upRes.statusCode, upRes.headers);
+        upRes.pipe(res);
+      },
+    );
+    proxied.on("error", (err) => {
+      entry.status = 502;
+      res.writeHead(502);
+      res.end("smoke proxy: " + err.message);
+    });
+    req.pipe(proxied);
   });
   return new Promise((ok) =>
     server.listen(0, "127.0.0.1", () => ok({ server, log, base: `http://127.0.0.1:${server.address().port}` })),
@@ -80,7 +163,8 @@ function startServer({ fail = [], override = {} }) {
 function launchChrome(chromePath) {
   const userDataDir = mkdtempSync(join(tmpdir(), "sb-smoke-chrome-"));
   const args = [
-    "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
+    // SwiftShader (software WebGL), not --disable-gpu: <model-viewer> throws on a null renderer.
+    "--headless=new", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist", "--no-first-run", "--no-default-browser-check",
     "--remote-debugging-pipe", `--user-data-dir=${userDataDir}`, "--window-size=1440,1000", "about:blank",
   ];
   if (process.env.CI && process.platform === "linux") args.push("--no-sandbox"); // GitHub's ubuntu runners restrict the Chrome sandbox
@@ -198,7 +282,7 @@ function launchChrome(chromePath) {
   };
 }
 
-async function runScenario({ browser, base, scenario, expectedBriefs }) {
+async function runScenario({ browser, base, scenario, expectedBriefs, log, queueFile }) {
   const consoleErrors = [];
   let browserContextId;
   let onMessage;
@@ -250,9 +334,14 @@ async function runScenario({ browser, base, scenario, expectedBriefs }) {
     // refused) immediately instead of letting it masquerade as a slow page
     // and reporting a misleading "timed out waiting for: ..." ~TIMEOUT_MS
     // later.
-    const nav = await send("Page.navigate", { url: `${base}/atelier/asset-storybook/index.html` });
+    const nav = await send("Page.navigate", { url: `${base}${scenario.path || "/?tab=forge"}` });
     if (nav?.errorText) throw new Error(`navigation failed: ${nav.errorText}`);
-    await scenario.steps({ evaluate, waitFor, expectedBriefs, reload: () => send("Page.reload") });
+    const readQueue = () => JSON.parse(readFileSync(queueFile, "utf8"));
+    const requests = (pred) => (log || []).filter(pred);
+    await scenario.steps({
+      evaluate, waitFor, expectedBriefs, readQueue, requests,
+      reload: () => send("Page.reload"),
+    });
     if (consoleErrors.length) throw new Error(`console errors: ${consoleErrors.join(" | ")}`);
     return { name: scenario.name, ok: true };
   } catch (err) {
@@ -306,9 +395,13 @@ async function main() {
   const browser = launchChrome(chrome);
   activeBrowser = browser;
   const results = [];
+  let explorer = null;
   try {
+    if (!process.env.SMOKE_BASE) explorer = await startExplorer();
     for (const scenario of SCENARIOS) {
-      if (process.env.SMOKE_BASE && scenario.server) {
+      // Scenarios that fail/override a path or write the queue need the spawned explorer: against an
+      // external SMOKE_BASE there is no proxy and no temp queue (a write would hit the real repo file).
+      if (process.env.SMOKE_BASE && (scenario.server || scenario.writes)) {
         console.log(`SKIPPED (needs local server): ${scenario.name}`);
         // Fix round 1, item 2: push a (skipped) result instead of `continue`
         // silently dropping it, so the final summary's denominator reflects
@@ -317,16 +410,27 @@ async function main() {
         continue;
       }
       let local = null;
-      if (!process.env.SMOKE_BASE) {
-        local = await startServer({
+      if (explorer) {
+        local = await startProxy({
+          upstream: explorer.base,
           fail: scenario.server?.fail,
           override: { ...globalOverride, ...(scenario.server?.override || {}) },
         });
       }
-      const result = await runScenario({ browser, base: process.env.SMOKE_BASE || local.base, scenario, expectedBriefs });
+      const result = await runScenario({
+        browser, base: process.env.SMOKE_BASE || local.base, scenario, expectedBriefs,
+        log: local?.log, queueFile: explorer?.queueFile,
+      });
       if (local) {
+        // Writes are only legitimate for scenarios that declare them (`writes: true`).
         const nonGet = local.log.filter((r) => r.method !== "GET" && r.method !== "HEAD");
-        if (result.ok && nonGet.length) Object.assign(result, { ok: false, reason: `non-GET requests: ${JSON.stringify(nonGet)}` });
+        if (result.ok && nonGet.length && !scenario.writes) Object.assign(result, { ok: false, reason: `non-GET requests: ${JSON.stringify(nonGet)}` });
+        // A panel module or the vendored viewer that 404s is a broken page even if nothing threw.
+        const forced = new Set(scenario.server?.fail || []);
+        const broken = local.log.filter((r) =>
+          (r.status === 0 || r.status >= 400) && !forced.has(r.path) &&
+          (r.path.startsWith("atelier/asset-storybook/js/") || r.path.startsWith("atelier/asset-storybook/css/") || r.path.startsWith("vendor/")));
+        if (result.ok && broken.length) Object.assign(result, { ok: false, reason: `page code failed to load: ${JSON.stringify(broken)}` });
         local.server.close();
       }
       console.log(result.ok ? `ok    ${result.name}` : `FAIL  ${result.name} — ${result.reason}`);
@@ -335,6 +439,7 @@ async function main() {
   } finally {
     await browser.close();
     activeBrowser = null;
+    if (explorer) await explorer.close();
   }
   // Fix round 1, item 2: the false-green hole — with SMOKE_BASE set and
   // Chrome failing to launch/dying, the old code could reach here having run

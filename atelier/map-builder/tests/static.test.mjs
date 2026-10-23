@@ -32,11 +32,11 @@ const get = (port, urlPath, headers = {}) => new Promise((resolve, reject) => {
   req.end();
 });
 
-test("GET / redirects to the storybook index", async () => {
+test("GET / redirects to the observatory's Map Builder panel", async () => {
   await withServer(async (port) => {
     const res = await get(port, "/");
     assert.equal(res.status, 302);
-    assert.equal(res.headers.location, "/atelier/asset-storybook/index.html");
+    assert.equal(res.headers.location, "http://127.0.0.1:8788/?tab=map-builder");
   });
 });
 

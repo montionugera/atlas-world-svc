@@ -2,7 +2,7 @@
 // Generates atelier/asset-storybook/audio-index.json — a flat listing of the
 // baked SFX the game ships, under game-client/assets/audio/.
 //
-// The asset storybook (atelier/asset-storybook/index.html) fetches this file at
+// The atlas-world audio panel (atelier/asset-storybook/js/panels/audio.mjs) fetches this file at
 // runtime to render the soundboard, then cross-references audio-manifest.json
 // to badge each tile with its sfx:* event key. It exists so the page never has
 // to guess or hand-invent the file list: this script reads the real directory

@@ -261,7 +261,7 @@ art_forge_tests() {
 # count. Gitignored generated inputs (e.g. the asset thumbs) are invisible to
 # git diff, so a change only to those skips here; CI still covers it.
 # ATLAS_FORCE_STORYBOOK_SMOKE=1 always runs it.
-STORYBOOK_SMOKE_PATHS='^(atelier/asset-storybook/|atelier/art-forge/|atelier/mapforge/|content/|game-client/assets/|colyseus-server/generated/|scripts/lib/|scripts/precheck\.sh$)'
+STORYBOOK_SMOKE_PATHS='^(atelier/asset-storybook/|atelier/art-forge/|atelier/mapforge/|atelier/map-builder/|content/|game-client/assets/|colyseus-server/generated/|scripts/lib/|scripts/catalog_explorer_web\.py$|scripts/atlas_world_web/|tools/mac-observatory/vendor/|scripts/precheck\.sh$)'
 storybook_smoke_skip_reason() {
   [ "${ATLAS_FORCE_STORYBOOK_SMOKE:-0}" = "1" ] && return 1
   local base="${PSRW_GATE_BASE:-}" rel changed
@@ -303,7 +303,7 @@ map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLA
 # (fails closed to RUN when the diff cannot be computed); ATLAS_FORCE_EXPLORER_PROBES=1 always runs them.
 # The two Chrome probes SKIP loudly (exit 0) when Chrome is absent (CI runners without it; set CHROME_BIN or
 # install Chrome to enable) - the Python probe and tests/test_studio_web_perspectives.py still run.
-EXPLORER_PROBE_PATHS='^(scripts/catalog_explorer_web\.py|scripts/studio_|scripts/probes/atlas_|tests/test_studio_web_perspectives\.py|scripts/precheck\.sh$)'
+EXPLORER_PROBE_PATHS='^(scripts/catalog_explorer_web\.py|scripts/atlas_world_web/|atelier/asset-storybook/|scripts/studio_|scripts/probes/atlas_|tests/test_studio_web_perspectives\.py|scripts/precheck\.sh$)'
 explorer_probes_skip_reason() {
   [ "${ATLAS_FORCE_EXPLORER_PROBES:-0}" = "1" ] && return 1
   local base="${PSRW_GATE_BASE:-}" rel changed

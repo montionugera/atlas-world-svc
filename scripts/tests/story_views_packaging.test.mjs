@@ -1,47 +1,45 @@
-// Guards the storybook's story registry against its Docker packaging.
+// Guards the story registry against the web surface that serves it.
 //
-// atelier/asset-storybook/Dockerfile.dockerignore is a `*`-then-allowlist, and
-// its own header says to keep it in sync with the Dockerfile's COPY lines. A
-// registry entry pointing at a path that is copied but not allowlisted (or
-// neither) still works in local dev — which serves the repo root directly —
-// and silently renders an empty section in the container. This test makes that
-// mistake fail in CI instead.
+// The story panel (atelier/asset-storybook/js/panels/story.mjs) iframes the pages named in
+// atelier/asset-storybook/story-views.json, resolved to root-absolute URLs. atlas-world
+// (scripts/catalog_explorer_web.py) only serves repo paths on the static-mount allowlist in
+// scripts/atlas_world_web/static_mounts.py. A registry entry whose page is not mounted still
+// works under any dev server that serves the whole repo, and silently 404s in the iframe on the
+// real surface. This asks the real `safe_resolve` — not a copy of its allowlist — so the mistake
+// fails in CI instead. (It replaces the retired storybook Dockerfile COPY/.dockerignore check.)
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
-import { join, dirname, resolve, relative } from "node:path";
+import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const STORYBOOK_DIR = join(ROOT, "atelier/asset-storybook");
 const REGISTRY = join(STORYBOOK_DIR, "story-views.json");
-const DOCKERFILE = join(STORYBOOK_DIR, "Dockerfile");
-const DOCKERIGNORE = join(STORYBOOK_DIR, "Dockerfile.dockerignore");
+const STORY_VIEWS_URL = "/atelier/asset-storybook/story-views.json"; // SB_BASE + "story-views.json" in state.mjs
 
-// A COPY/allowlist line covers a path when it names that path or any ancestor
-// directory of it — `COPY content/story content/story` covers
-// `content/story/quests.json`.
-function coveredBy(lines, repoRelPath) {
-  return lines.some((covered) => {
-    const rel = relative(covered, repoRelPath);
-    return rel === "" || !rel.startsWith("..");
+// URL path -> served file path, or null, exactly as the server decides it.
+function resolveMounted(urlPaths) {
+  const code = [
+    "import json, sys",
+    "sys.path.insert(0, sys.argv[1])",
+    "from atlas_world_web import static_mounts",
+    "out = {}",
+    "for p in json.loads(sys.argv[2]):",
+    "    r = static_mounts.safe_resolve(p)",
+    "    out[p] = str(r) if r else None",
+    "print(json.dumps(out))",
+  ].join("\n");
+  const raw = execFileSync("python3", ["-I", "-c", code, join(ROOT, "scripts"), JSON.stringify(urlPaths)], {
+    cwd: ROOT,
+    encoding: "utf8",
   });
+  return JSON.parse(raw);
 }
 
-function copyPaths() {
-  return readFileSync(DOCKERFILE, "utf8")
-    .split("\n")
-    .filter((l) => l.trim().startsWith("COPY "))
-    .map((l) => l.trim().split(/\s+/)[1]);
-}
-
-function allowlistPaths() {
-  return readFileSync(DOCKERIGNORE, "utf8")
-    .split("\n")
-    .map((l) => l.trim())
-    .filter((l) => l.startsWith("!"))
-    .map((l) => l.slice(1).replace(/\/\*\*$/, "").replace(/\/$/, ""));
-}
+// What story.mjs does with a registry `src`: new URL(src, new URL(STORY_VIEWS_URL, page)).pathname
+const urlPathOf = (src) => new URL(src, new URL(STORY_VIEWS_URL, "http://x")).pathname;
 
 test("every story-views.json src exists on disk", () => {
   const views = JSON.parse(readFileSync(REGISTRY, "utf8"));
@@ -52,39 +50,41 @@ test("every story-views.json src exists on disk", () => {
   }
 });
 
-test("every story-views.json src is packaged into the storybook image", () => {
+test("every story-views.json src is served by the atlas-world static-mount allowlist", () => {
   const views = JSON.parse(readFileSync(REGISTRY, "utf8"));
-  const copies = copyPaths();
-  const allowed = allowlistPaths();
-  for (const view of views) {
-    const repoRel = relative(ROOT, resolve(STORYBOOK_DIR, view.src));
+  const urls = views.map((v) => urlPathOf(v.src));
+  const served = resolveMounted(urls);
+  for (const [i, view] of views.entries()) {
     assert.ok(
-      coveredBy(copies, repoRel),
-      `story view "${view.id}" (${repoRel}) has no COPY line in atelier/asset-storybook/Dockerfile`,
+      served[urls[i]],
+      `story view "${view.id}" (${urls[i]}) is not served by scripts/atlas_world_web/static_mounts.py — its iframe would 404 on atlas-world`,
     );
-    assert.ok(
-      coveredBy(allowed, repoRel),
-      `story view "${view.id}" (${repoRel}) has no "!" allowlist line in atelier/asset-storybook/Dockerfile.dockerignore`,
+    assert.equal(
+      served[urls[i]],
+      resolve(STORYBOOK_DIR, view.src),
+      `story view "${view.id}" resolves to a different file than its registry src`,
     );
   }
 });
 
-// content/story/*.json is not a registry `src` — it's a runtime data dependency
-// that the "reader" and "graph" registry entries fetch after they load (see
-// atelier/story-explorer/reader.html and index.html, both of which
-// `fetch("../../content/story/${filename}")`). The walk above only ever checks
-// registry `src` paths, so it can never catch a dropped `content/story` COPY or
-// allowlist line — that class of break stays green in this suite while the
-// shipped pages 404 on their data fetch and render empty. Assert it directly.
-test("content/story (the reader/graph pages' runtime data fetch) is packaged into the storybook image", () => {
-  const copies = copyPaths();
-  const allowed = allowlistPaths();
+// content/story/*.json is not a registry `src` — it is a runtime data dependency the "reader" and
+// "graph" pages fetch after they load (atelier/story-explorer/reader.html and index.html both
+// fetch ../../content/story/<file>). The walk above only checks registry `src` paths, so it can
+// never catch a dropped content/story mount — that break stays green here while the iframes
+// render empty. Assert it directly, using a file that really exists.
+test("content/story (the reader/graph pages' runtime data fetch) is served by the allowlist", () => {
+  const sample = "acts.json"; // a committed content/story file the reader/graph pages load
+  const url = `/content/story/${sample}`;
+  assert.ok(existsSync(join(ROOT, "content/story", sample)), `fixture ${url} missing on disk`);
+  const served = resolveMounted([url]);
   assert.ok(
-    coveredBy(copies, "content/story"),
-    'content/story has no COPY line in atelier/asset-storybook/Dockerfile — the "reader" and "graph" views fetch content/story/*.json at runtime and would render empty',
+    served[url],
+    `${url} is not served by static_mounts.py — the "reader" and "graph" views fetch content/story/*.json at runtime and would render empty`,
   );
-  assert.ok(
-    coveredBy(allowed, "content/story"),
-    'content/story has no "!" allowlist line in atelier/asset-storybook/Dockerfile.dockerignore — the "reader" and "graph" views fetch content/story/*.json at runtime and would render empty',
-  );
+});
+
+test("the allowlist stays a deny-by-default door (a sibling of a mounted dir is not served)", () => {
+  const served = resolveMounted(["/atelier/story-explorer/../../.git/config", "/docs/story/undertow-private/x.html"]);
+  assert.equal(served["/atelier/story-explorer/../../.git/config"], null);
+  assert.equal(served["/docs/story/undertow-private/x.html"], null);
 });

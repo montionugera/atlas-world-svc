@@ -3,6 +3,15 @@
 // verbatim from the top of that script; see index.html's git history
 // for the original single-file version.
 
+// SSOT merge (W0-5b): the storybook's OWN data files (audio-index, maps-index,
+// world-index, forge-briefs-index, story-views) are fetched through this
+// root-absolute base, not "./x.json". "./" resolves against the host document:
+// fine for the legacy standalone page at /atelier/asset-storybook/index.html,
+// wrong once the modules are mounted into the observatory page at "/". The
+// shared-repo paths below ("../../content/…") clamp to "/content/…" from "/"
+// and are unchanged on purpose.
+export const SB_BASE = "/atelier/asset-storybook/";
+
 export const MANIFEST_URL = "../../game-client/assets/manifest.json";
 export const CATALOG_MANIFEST_URL =
   "../../game-client/assets/catalog-manifest.json";
@@ -34,7 +43,7 @@ export const RUNS_BASE_URL = "../../atelier/art-forge/runs/";
 export const BRIEFS_BASE_URL = "../../atelier/art-forge/briefs/";
 // F-053: every brief id, including briefs with no ledger yet (a static page
 // cannot list briefs/). Parity with briefs/*.json: tests/forge-briefs-index.test.mjs.
-export const FORGE_BRIEFS_INDEX_URL = "./forge-briefs-index.json";
+export const FORGE_BRIEFS_INDEX_URL = SB_BASE + "forge-briefs-index.json";
 // F-050: root of the art-forge tree, for linking ledger `out` PNG paths.
 export const ART_FORGE_ROOT_URL = "../../atelier/art-forge/";
 // Synthetic sidebar classes for the verdict filters (F-038 Phase 4). Not asset
@@ -48,8 +57,11 @@ export const THUMB_INDEX_URL = "../../game-client/assets/.thumbs/index.json";
 // so classLabel() stays a pure lookup rather than threading the registry
 // through buildSidebarItem's every caller (combat-lab.mjs, story.mjs).
 export const taxonomyState = { taxonomy: null };
-export const ASSET_KEYS_URL = "../../colyseus-server/generated/asset-keys.json";
-export const AUDIO_INDEX_URL = "./audio-index.json";
+// The codegen output lives at content/generated/ (moved out of colyseus-server/
+// in 98fd5aca9). The old path only ever existed inside the nginx image, so the
+// Coverage tab silently never appeared anywhere else.
+export const ASSET_KEYS_URL = "../../content/generated/asset-keys.json";
+export const AUDIO_INDEX_URL = SB_BASE + "audio-index.json";
 export const ASSET_ROOT = "../../game-client/"; // scene/stream paths are "res://assets/..." relative to game-client/
 export const RAW_AUDIO_ROOT = "../../game-client/assets/audio/"; // baked SFX the game ships (audio-index.json lists this dir)
 export const ART_ROOT = "../../game-client/assets/art/"; // concept-art PNGs are plain files, not res:// scene/stream paths (art-manifest.json "file" is relative to this dir — mirrors RAW_AUDIO_ROOT)
@@ -101,11 +113,11 @@ export const STORY_CLASS = "story";
 // here would collide with that group's label in the sidebar, and confuse a
 // click between "the mapforge SVG sheets" and "concept art of maps".
 export const MAPS_CLASS = "map-sheets";
-export const MAPS_INDEX_URL = "./maps-index.json";
+export const MAPS_INDEX_URL = SB_BASE + "maps-index.json";
 // Plan D — the Places & Meaning panel's roster (one row per committed
 // content/world/resolved/continent-NN.json), kept in parity by
 // tests/world-index.test.mjs.
-export const WORLD_INDEX_URL = "./world-index.json";
+export const WORLD_INDEX_URL = SB_BASE + "world-index.json";
 // maps-index.json's svg/png fields are REPO-relative (they mirror
 // SHEETS[id].outSvg/outPng byte-for-byte, e.g.
 // "game-client/assets/art/maps/atlas-world.svg") — unlike ASSET_ROOT above,
@@ -115,7 +127,7 @@ export const REPO_ROOT_REL = "../../";
 // Plan A Task 10: the render lock is an artifact this repo produces, so it is
 // observable here — each Map Sheets card shows the sha256 the gate pins.
 export const RENDER_LOCK_URL = "../../content/world/render-lock.json";
-export const STORY_VIEWS_URL = "./story-views.json";
+export const STORY_VIEWS_URL = SB_BASE + "story-views.json";
 // Fallback mirrors ART_GROUPS_FALLBACK: a missing/unreadable registry degrades
 // the section to the three known views instead of breaking the page.
 export const STORY_VIEWS_FALLBACK = [
@@ -146,7 +158,7 @@ export const health = {};
 
 /**
  * Fetch a JSON URL, throwing on non-2xx with the caller's label for context.
- * Shared helper — main.mjs and the forge tab both fetch through this.
+ * Shared helper — the panels and the forge tab all fetch through this.
  * @param {string} url
  * @param {string} label
  */

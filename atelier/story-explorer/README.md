@@ -50,10 +50,9 @@ serve from the repo root:
 python3 -m http.server 7788 --bind 127.0.0.1
 ```
 
-Both views are also embedded in the asset storybook (I-082) as the **Story**
-section's Reader and Graph tabs, alongside the Undertow novel — see
-`atelier/asset-storybook/story-views.json`. Serving the repo root and opening
-`/atelier/asset-storybook/index.html` reaches all three without a second server.
+Both views are also embedded in atlas-world (I-082) as the **Story** tab's Reader and Graph
+sub-views (`/?tab=story&view=reader|graph|undertow`), alongside the Undertow novel — see
+`atelier/asset-storybook/story-views.json`. `python3 scripts/catalog_explorer_web.py --port 8788` reaches all three without a second server.
 
 Then open <http://127.0.0.1:7788/atelier/story-explorer/index.html> (graph) or
 <http://127.0.0.1:7788/atelier/story-explorer/reader.html> (reader mode).

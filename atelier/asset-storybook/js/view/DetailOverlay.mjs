@@ -55,7 +55,16 @@ function ensureOverlay() {
       <div class="detail-stage"></div>
       <div class="detail-meta"></div>
     </div>`;
-  document.body.appendChild(el);
+  // Inside the observatory, panels.css scopes every rule under `.atlas-panel`, so a
+  // node appended straight to <body> would be unstyled. The panel host hands out a
+  // styled root for exactly this; the standalone storybook has none and uses <body>.
+  const host =
+    typeof window !== "undefined" &&
+    window.ATLAS_PANELS &&
+    typeof window.ATLAS_PANELS.overlayRoot === "function"
+      ? window.ATLAS_PANELS.overlayRoot()
+      : document.body;
+  host.appendChild(el);
 
   el.addEventListener("click", (e) => {
     if (e.target.dataset && e.target.dataset.close) closeDetail();
@@ -84,13 +93,27 @@ function step(delta) {
   if (!state) return;
   const next = state.index + delta;
   if (next < 0 || next >= state.items.length) return;
-  openDetail({ items: state.items, index: next, renderSpec: state.renderSpec });
+  openDetail({
+    items: state.items,
+    index: next,
+    renderSpec: state.renderSpec,
+    onChange: state.onChange,
+    onClose: state.onClose,
+  });
 }
 
-export function openDetail({ items, index, renderSpec }) {
+/**
+ * @param {object} opts
+ * @param {Array} opts.items         [key, entry] pairs the arrow keys step through
+ * @param {number} opts.index
+ * @param {object} opts.renderSpec
+ * @param {(key:string)=>void} [opts.onChange]  after every open AND arrow-step, with the shown key
+ * @param {()=>void} [opts.onClose]             when the user closes it (not on closeDetail({silent}))
+ */
+export function openDetail({ items, index, renderSpec, onChange, onClose }) {
   const el = ensureOverlay();
   const [key, entry] = items[index];
-  state = { items, index, renderSpec };
+  state = { items, index, renderSpec, onChange, onClose };
 
   const stage = el.querySelector(".detail-stage");
   disposeViewport(stage); // tear the previous one down before mounting the next
@@ -131,15 +154,22 @@ export function openDetail({ items, index, renderSpec }) {
   el.hidden = false;
   document.body.style.overflow = "hidden";
   el.querySelector(".detail-close").focus();
+  if (onChange) onChange(key);
 }
 
-export function closeDetail() {
+/**
+ * @param {{ silent?: boolean }} [opts]  silent: tear down without calling onClose —
+ *   for a panel that is being hidden or reacting to a URL it did not write itself.
+ */
+export function closeDetail({ silent = false } = {}) {
   const el = document.getElementById("detail-overlay");
   if (!el) return;
+  const onClose = state && state.onClose;
   disposeViewport(el.querySelector(".detail-stage"));
   el.hidden = true;
   document.body.style.overflow = "";
   state = null;
+  if (onClose && !silent) onClose();
 }
 
 export function isDetailOpen() {

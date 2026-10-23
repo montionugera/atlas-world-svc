@@ -7,9 +7,10 @@
 // cannot quietly stop agreeing with the files it claims to read.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveMounted } from "./_mounted.mjs";
 import { fabricCensusRows, fabricCensusHtml, loadFabric } from "../js/maps-fabric.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -90,15 +91,14 @@ test("the panel is mounted by the Maps tab, not left as an unreferenced module",
   assert.match(src, /await mountFabricCensus\(section\)/);
 });
 
-test("the containerised storybook ships the fabric it reads", () => {
-  // A1 Task 10's lesson, restated for this panel: the storybook Dockerfile
-  // copies a SUBSET of the repo, so a panel that reads content/world/fabric/
-  // is blank in the container unless that path is copied in. Checked from the
-  // Dockerfile rather than from a running container, because CI has neither.
-  const df = join(REPO_ROOT, "atelier/asset-storybook/Dockerfile");
-  if (!existsSync(df)) return;          // no container image, nothing to promise
-  const text = readFileSync(df, "utf8");
-  assert.match(text, /content\/world/,
-    "atelier/asset-storybook/Dockerfile does not copy content/world/ — the fabric census panel would be " +
-    "silently absent in the containerised storybook, which is the exact failure A1 Task 10 recorded");
+test("atlas-world serves the fabric the census panel reads", () => {
+  // A1 Task 10's lesson, restated for the merged surface: a panel that reads content/world/fabric/
+  // is blank unless the server's static-mount allowlist (scripts/atlas_world_web/static_mounts.py)
+  // names that path. (This used to assert the storybook Dockerfile COPYed content/world.)
+  const rel = "content/world/fabric";
+  const f = existsSync(join(REPO_ROOT, rel)) && readdirSync(join(REPO_ROOT, rel)).find((n) => n.endsWith(".json"));
+  if (!f) return; // no fabric committed, nothing to promise
+  const url = `/${rel}/${f}`;
+  assert.ok(resolveMounted([url])[url],
+    `${url} is not served by static_mounts.py — the fabric census panel would be silently absent on atlas-world`);
 });

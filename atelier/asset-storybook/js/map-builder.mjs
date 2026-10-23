@@ -19,6 +19,9 @@ import {
   historyRows,
   rerunChains,
   logTailUrl,
+  defaultApiBase,
+  defaultFileBase,
+  sheetUrl,
 } from "./map-builder-model.mjs";
 
 /**
@@ -40,10 +43,8 @@ import {
  * to watch, not disappear).
  */
 
-const apiBase = "/api";
-// Draft jobs page, fetched identically on initial mount, poll fallback, and
-// every SSE "open" resync — the query never varies, only who's asking.
-const JOBS_URL = apiBase + "/jobs?kind=draft&limit=50";
+// apiBase is a mountMapBuilder() option (see defaultApiBase in map-builder-model.mjs): "/api"
+// when the service serves this UI itself, "/api/map-builder" behind the observatory proxy.
 const HEALTH_TIMEOUT_MS = 2000;
 // config.json's pollMs is a server-side value — this module runs in the
 // browser and has no route to read it, so the interval is hard-coded here.
@@ -59,9 +60,8 @@ const POLL_MS = 2000;
 const GENERATE_TARGET_MS = 6000;
 const GENERATE_FAIL_MS = 12000;
 // History (Task 19): every kind, not just drafts — the Start table's page
-// stays draft-only (Phase 1 contract), this wider page is fetched when the
+// stays draft-only (Phase 1 contract), the wider all-kinds page is fetched when the
 // History screen opens and on every resync while it is showing.
-const HISTORY_URL = apiBase + "/jobs?limit=200";
 // Only a draft has a documented duration target (budgets.json generate
 // row, see GENERATE_TARGET_MS); the other kinds show their plain duration.
 const HISTORY_TARGETS = { draft: GENERATE_TARGET_MS };
@@ -70,7 +70,7 @@ const HISTORY_STATUSES = ["queued", "running", "succeeded", "failed", "cancelled
 const LOG_TAIL_LINES = 200;
 const LOG_POLL_MS = 1000;
 
-async function checkHealth() {
+async function checkHealth(apiBase) {
   try {
     const res = await fetch(apiBase + "/health", {
       signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS),
@@ -171,11 +171,12 @@ function renderReadOnly(section) {
   section.appendChild(p);
 }
 
-function updateBadge(jobs) {
+function updateBadge(jobs, onBadge) {
   const count = badgeCount(jobs);
   initHealth(MAP_BUILDER_CLASS, count);
   bumpHealth(MAP_BUILDER_CLASS, { ok: count });
   renderSidebarBadge(MAP_BUILDER_CLASS);
+  onBadge?.(count);
 }
 
 /** Sidebar entry. Mirrors mountForgeNav/mountMapsNav — placeholder count of
@@ -189,7 +190,24 @@ export function mountMapBuilderNav(sidebarNav) {
   renderSidebarBadge(MAP_BUILDER_CLASS);
 }
 
-export async function mountMapBuilder(main) {
+/**
+ * options (all optional; the legacy storybook calls this with none):
+ *   apiBase    API prefix, default per defaultApiBase(location)
+ *   fileBase   prefix for root-absolute /build/ draft sheets, default per defaultFileBase
+ *   onBadge    called with the drafts-awaiting-review count on every render
+ *   onOpenMaps called by the Publish screen's "open maps" button
+ *
+ * Resolves to { ready, setActive }. ready=false means the service is down (the read-only notice
+ * is showing). setActive(false) stops the poll/log timers while the panel is hidden.
+ */
+export async function mountMapBuilder(main, options = {}) {
+  const apiBase = options.apiBase ?? defaultApiBase(globalThis.location);
+  const fileBase = options.fileBase ?? defaultFileBase(apiBase);
+  const { onBadge, onOpenMaps } = options;
+  // Draft jobs page, fetched identically on initial mount, poll fallback, and
+  // every SSE "open" resync — the query never varies, only who's asking.
+  const JOBS_URL = apiBase + "/jobs?kind=draft&limit=50";
+  const HISTORY_URL = apiBase + "/jobs?limit=200";
   const section = el("section", {
     className: "kind-section",
     id: "section-" + MAP_BUILDER_CLASS,
@@ -197,11 +215,11 @@ export async function mountMapBuilder(main) {
   section.dataset.kind = MAP_BUILDER_CLASS;
   section.appendChild(el("h2", { text: "Map Builder" }));
 
-  const healthy = await checkHealth();
+  const healthy = await checkHealth(apiBase);
   if (!healthy) {
     renderReadOnly(section);
     main.appendChild(section);
-    return;
+    return { ready: false, setActive() {} };
   }
 
   let world, stepsJson, jobsPage;
@@ -215,7 +233,7 @@ export async function mountMapBuilder(main) {
     console.warn("[asset-storybook] map-builder service answered /api/health but a follow-up fetch failed:", err);
     renderReadOnly(section);
     main.appendChild(section);
-    return;
+    return { ready: false, setActive() {} };
   }
 
   // Shared across both screens (not just the form) — a Stop/cancel/rerun/
@@ -681,8 +699,8 @@ export async function mountMapBuilder(main) {
   function updateReviewViewerSrcs() {
     const sheet = reviewData?.sheets.find((s) => s.id === reviewSelectedSheetId);
     if (!sheet || !sheet.draftSvg) return;
-    draftPanZoom.setSrc(sheet.draftSvg);
-    currentPanZoom.setSrc(sheet.currentSvg);
+    draftPanZoom.setSrc(sheetUrl(sheet.draftSvg, fileBase));
+    currentPanZoom.setSrc(sheetUrl(sheet.currentSvg, fileBase));
     draftPanZoom.reset();
     currentPanZoom.reset();
   }
@@ -974,7 +992,8 @@ export async function mountMapBuilder(main) {
     if (job?.snapshotId) startUndo(publishUndoBtn, job.snapshotId);
   });
   publishOpenMapsBtn.addEventListener("click", () => {
-    document.querySelector('.sidebar-item[data-class="' + MAPS_CLASS + '"]')?.click();
+    if (onOpenMaps) onOpenMaps();
+    else document.querySelector('.sidebar-item[data-class="' + MAPS_CLASS + '"]')?.click();
   });
   // "N snapshots kept" beside Undo (Task 20): publish prunes to snapshotKeep
   // (config.json) after each success, so the count says how far back an undo
@@ -1322,7 +1341,7 @@ export async function mountMapBuilder(main) {
     if (!id) return;
     let text;
     try {
-      const res = await fetch(logTailUrl(id, LOG_TAIL_LINES));
+      const res = await fetch(logTailUrl(id, LOG_TAIL_LINES, apiBase));
       text = res.ok ? await res.text() : "Log unavailable (HTTP " + res.status + ").";
     } catch (err) {
       text = "Log unavailable: " + err.message;
@@ -1383,7 +1402,7 @@ export async function mountMapBuilder(main) {
     patchHistoryScreen();
     patchReviewScreen();
     patchPublishScreen();
-    updateBadge([...state.jobs.values()]);
+    updateBadge([...state.jobs.values()], onBadge);
   }
 
   renderAll();
@@ -1437,8 +1456,9 @@ export async function mountMapBuilder(main) {
   // interval outlives the reconnect and runs forever alongside SSE, double-
   // applying every job event for the rest of the page's life.
   let pollTimer = null;
+  let active = true;
   function startPolling() {
-    if (pollTimer) return;
+    if (pollTimer || !active) return;
     pollTimer = setInterval(() => syncJobsPage("map-builder jobs poll", "poll"), POLL_MS);
   }
   function stopPolling() {
@@ -1491,4 +1511,23 @@ export async function mountMapBuilder(main) {
     apply({ type: "disconnected" });
     startPolling();
   }
+
+  return {
+    ready: true,
+    // A hidden panel keeps its DOM but must not keep hitting the service every 2 s / 1 s.
+    setActive(next) {
+      if (next === active) return;
+      active = next;
+      if (!active) {
+        stopPolling();
+        stopLogTimer();
+        return;
+      }
+      if (!state.connected) {
+        syncJobsPage("map-builder jobs resume", "resume");
+        startPolling();
+      }
+      if (logJobId && logJobActive()) openLog(logJobId);
+    },
+  };
 }

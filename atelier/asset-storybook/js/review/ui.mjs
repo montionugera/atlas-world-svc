@@ -1,15 +1,36 @@
 // Verdict controls, export bar and compare tray (F-038 Phase 4).
 //
 // The DOM half of the review layer; all the rules live in ./store.mjs, which is
-// pure and tested. This module owns localStorage, the export download, and the
-// per-card chrome.
+// pure and tested. This module owns localStorage, persistence, and the per-card
+// chrome.
+//
+// Two hosts, one buffer:
+//  - Inside the observatory (window.ATLAS_PANELS exists) the server owns
+//    content/review-queue.json. initReview() starts the verdict sync, which POSTs
+//    every mark to /api/review-queue/asset-verdicts, and the bar is a persistence
+//    STATUS (no download — there is nothing left to hand-carry).
+//  - The standalone static storybook has no server, so it keeps the original
+//    unsaved-marks bar with Export / Copy.
 
 import { createStore } from "./store.mjs";
+import { startVerdictSync } from "../view/VerdictSync.mjs";
 
 const LS_KEY = "atlas-storybook-review-buffer-v1";
 
 let store = null;
+let sync = null; // hosted mode only
+let saveError = null; // hosted mode: the last failed save, null when saved
 const pinned = new Map(); // key -> { key, thumbUrl }
+
+const hosted = () => typeof window !== "undefined" && !!window.ATLAS_PANELS;
+
+// Overlay chrome must sit under .atlas-panel (panels.css scopes every rule to it).
+function chromeRoot() {
+  return (
+    (typeof window !== "undefined" && window.ATLAS_PANELS?.overlayRoot?.()) ||
+    document.body
+  );
+}
 
 function readLocal() {
   try {
@@ -33,11 +54,43 @@ export function initReview(committed) {
     },
   });
   ensureBar();
+  if (hosted()) startHostedSync(committed);
   return store;
 }
 
 export function getStore() {
   return store;
+}
+
+/** Hosted mode: null when everything is saved, else the visible failure text. */
+export function getSaveError() {
+  return saveError;
+}
+
+function startHostedSync(committed) {
+  if (sync) return;
+  // flush() reads the effective view exactly once, at the start of a send; that
+  // snapshot is what the server has accepted when onStatus(null) fires, so it —
+  // not whatever the user marked while the POST was in flight — becomes the new
+  // committed baseline.
+  let sent = null;
+  sync = startVerdictSync({
+    store: {
+      effective: () => {
+        sent = store.effective();
+        return sent;
+      },
+    },
+    committed: (committed && committed.verdicts) || {},
+    onStatus: (msg) => {
+      saveError = msg;
+      if (msg === null && sent) store.rebase(sent);
+      refreshBar();
+      document.dispatchEvent(new CustomEvent("storybook:verdict-save-status"));
+    },
+  });
+  // Marks left in the buffer by a session where the server was unreachable go out now.
+  sync.flush();
 }
 
 // ---------- per-card verdict chrome ----------
@@ -227,33 +280,46 @@ function refreshTray() {
     pinned.size + " pinned · shift-click a card to pin · click a tile to unpin";
 }
 
-// ---------- export bar ----------
+// ---------- review bar ----------
 
 function ensureBar() {
   if (document.getElementById("review-bar")) return;
+  const host = chromeRoot();
 
   const bar = document.createElement("div");
   bar.id = "review-bar";
   bar.className = "review-bar";
   bar.hidden = true;
-  bar.innerHTML = `
-    <span class="review-count"></span>
-    <button type="button" class="review-btn" data-act="export">Export review-queue.json</button>
-    <button type="button" class="review-btn" data-act="copy">Copy JSON</button>`;
-  document.body.appendChild(bar);
-
-  bar.addEventListener("click", (e) => {
-    const act = e.target.dataset && e.target.dataset.act;
-    if (act === "export") downloadQueue();
-    if (act === "copy") copyQueue();
-  });
+  bar.setAttribute("role", "status");
+  const count = document.createElement("span");
+  count.className = "review-count";
+  bar.appendChild(count);
+  if (!hosted()) {
+    for (const [act, label] of [
+      ["export", "Export review-queue.json"],
+      ["copy", "Copy JSON"],
+    ]) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "review-btn";
+      btn.dataset.act = act;
+      btn.textContent = label;
+      bar.appendChild(btn);
+    }
+    bar.addEventListener("click", (e) => {
+      const act = e.target.dataset && e.target.dataset.act;
+      if (act === "export") downloadQueue();
+      if (act === "copy") copyQueue();
+    });
+  }
+  host.appendChild(bar);
 
   const tray = document.createElement("div");
   tray.id = "compare-tray";
   tray.className = "compare-tray";
   tray.hidden = true;
   tray.innerHTML = `<div class="tray-count"></div><div class="tray-strip"></div>`;
-  document.body.appendChild(tray);
+  host.appendChild(tray);
 
   refreshBar();
 }
@@ -262,9 +328,18 @@ export function refreshBar() {
   const bar = document.getElementById("review-bar");
   if (!bar || !store) return;
   const n = store.unsavedCount();
+  const label = n + (n === 1 ? " unsaved mark" : " unsaved marks");
+  if (hosted()) {
+    // Hidden = everything is in review-queue.json. Visible = a save is in flight or failed.
+    bar.hidden = n === 0 && !saveError;
+    bar.style.borderColor = saveError ? "var(--err)" : "";
+    bar.querySelector(".review-count").textContent = saveError
+      ? "⚠ " + label + " — " + saveError
+      : "Saving " + label + " to review-queue.json…";
+    return;
+  }
   bar.hidden = n === 0;
-  bar.querySelector(".review-count").textContent =
-    n + (n === 1 ? " unsaved mark" : " unsaved marks");
+  bar.querySelector(".review-count").textContent = label;
 }
 
 function downloadQueue() {

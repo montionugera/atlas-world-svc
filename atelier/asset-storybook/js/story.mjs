@@ -102,7 +102,8 @@ function buildOverlay(views) {
   overlayFrame.className = "story-overlay-frame";
   overlay.appendChild(overlayFrame);
 
-  document.body.appendChild(overlay);
+  // Under the observatory, panels.css is scoped to .atlas-panel, so an overlay on bare <body> is unstyled.
+  (window.ATLAS_PANELS?.overlayRoot?.() || document.body).appendChild(overlay);
 }
 
 function selectView(view) {
@@ -235,7 +236,7 @@ export async function mountStory(main) {
   const hint = document.createElement("p");
   hint.className = "art-tabbar-hint";
   hint.textContent =
-    "Views mirror the story-views.json registry order. Adding a view is a registry edit plus its Dockerfile COPY + allowlist lines.";
+    "Views mirror the story-views.json registry order. Adding a view is a registry edit plus its path on the static-mount allowlist (scripts/atlas_world_web/static_mounts.py).";
   section.appendChild(hint);
 
   // I-085: appended last, this landed at ~95% of a ~74,000px page. Anchoring

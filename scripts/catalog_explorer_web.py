@@ -30,6 +30,11 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+try:  # imported as scripts.catalog_explorer_web (tests) ...
+    from scripts.atlas_world_web import review_queue, routes as web_routes
+except ImportError:  # ... or run as a script, where scripts/ is sys.path[0]
+    from atlas_world_web import review_queue, routes as web_routes  # type: ignore
+
 ROOT = Path(__file__).resolve().parent.parent
 BUILD_SCRIPT = ROOT / "scripts" / "build_catalog_db.py"
 DB_PATH = ROOT / "build" / "catalog.sqlite"
@@ -39,7 +44,7 @@ SPECS_DIR = ROOT / "docs" / "superpowers" / "specs"
 CANON_PATH = ROOT / "content" / "story" / "canon.md"
 THUMBS_DIR = ROOT / "game-client" / "assets" / ".thumbs"
 GROUND_PALETTES_PATH = ROOT / "content" / "ground_palettes.json"
-REVIEW_QUEUE_PATH = ROOT / "content" / "review-queue.json"
+# content/review-queue.json is owned by atlas_world_web.review_queue (single locked writer).
 CLIENT_MANIFEST_PATH = ROOT / "game-client" / "assets" / "manifest.json"
 STUDIO_SNAPSHOTS_DIR = ROOT / "build" / "studio-snapshots"
 STUDIO_DIR = ROOT / "content" / "studio"
@@ -678,7 +683,7 @@ def build_full_bundle() -> dict:
         )
 
     ground_palettes = load_json_file(GROUND_PALETTES_PATH) or {}
-    review_queue = load_json_file(REVIEW_QUEUE_PATH) or {"version": 1, "verdicts": {}, "workOrders": [], "proposals": []}
+    review_queue_doc = review_queue.load()
     asset_scene_thumbs: dict[str, str] = {}
     for _, pal in ground_palettes.items():
         for _, rule in (pal.get("scatter") or {}).items():
@@ -686,7 +691,7 @@ def build_full_bundle() -> dict:
                 turl = thumb_url_for_scene(sp)
                 if turl:
                     asset_scene_thumbs[sp] = turl
-    for prop in review_queue.get("proposals") or []:
+    for prop in review_queue_doc.get("proposals") or []:
         eid = prop.get("targetId", "")
         if eid and thumb_url_for_entity(eid):
             prop["thumbUrl"] = thumb_url_for_entity(eid)
@@ -709,7 +714,7 @@ def build_full_bundle() -> dict:
         "summary": summary,
         "docs": docs,
         "groundPalettes": ground_palettes,
-        "reviewQueue": review_queue,
+        "reviewQueue": review_queue_doc,
         "assetSceneThumbs": asset_scene_thumbs,
         "studioSnapshots": list_studio_snapshots(),
         "worldSpine": load_world_spine_bundle(),
@@ -740,8 +745,9 @@ def create_studio_snapshot(label: str, rel_files: list[str], created_files: list
     saved_files = []
     all_targets = list(dict.fromkeys(rel_files + ["content/review-queue.json"]))
     for rel in all_targets:
-        src_p = (ROOT / rel).resolve()
-        if src_p.exists() and ROOT in src_p.parents:
+        is_queue = rel == "content/review-queue.json"
+        src_p = (review_queue.queue_path() if is_queue else ROOT / rel).resolve()
+        if src_p.exists() and (is_queue or ROOT in src_p.parents):
             dst_p = snap_dir / rel.replace("/", "__")
             shutil.copy2(src_p, dst_p)
             saved_files.append(rel)
@@ -766,7 +772,10 @@ def undo_latest_snapshot() -> dict:
     for rel in latest.get("files", []):
         backup_p = snap_dir / rel.replace("/", "__")
         dst_p = (ROOT / rel).resolve()
-        if backup_p.exists() and ROOT in dst_p.parents:
+        if backup_p.exists() and rel == "content/review-queue.json":
+            review_queue.restore_from(backup_p)  # locked + atomic, like every other queue write
+            restored.append(rel)
+        elif backup_p.exists() and ROOT in dst_p.parents:
             shutil.copy2(backup_p, dst_p)
             restored.append(rel)
     removed = []
@@ -1091,19 +1100,27 @@ def record_ai_agent_log(rq: dict, entry: dict) -> None:
 
 
 def apply_review_verdict(payload: dict) -> dict:
+    with review_queue.transaction() as tx:
+        result = _apply_review_verdict(payload, tx)
+    if result.pop("_rebuild", False):  # a catalog rebuild must not hold the queue lock
+        subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
+    return result
+
+
+def _apply_review_verdict(payload: dict, tx) -> dict:
     import time
     prop_id = str(payload.get("id") or "")
     verdict = str(payload.get("verdict") or "approve").lower()
     take_idx = int(payload.get("selectedTakeIdx") or 0)
     feedback_text = str(payload.get("feedbackText") or "").strip()
 
-    rq = load_json_file(REVIEW_QUEUE_PATH) or {"version": 1, "verdicts": {}, "workOrders": [], "proposals": []}
+    rq = tx.doc
     proposals = rq.get("proposals") or []
     target_prop = next((p for p in proposals if p.get("id") == prop_id), None)
     if not target_prop:
         return {"ok": False, "error": f"Proposal {prop_id} not found"}
 
-    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    now_iso = review_queue.now_iso()
     takes = target_prop.get("takes") or []
     take_idx = max(0, min(take_idx, max(0, len(takes) - 1)))
     target_prop["selectedTakeIdx"] = take_idx
@@ -1202,12 +1219,6 @@ def apply_review_verdict(payload: dict) -> dict:
             target_prop.setdefault("feedbackHistory", []).append(
                 {"timestamp": now_iso, "verdict": "approve", "note": feedback_text, "takeIdx": take_idx}
             )
-        rq.setdefault("verdicts", {})[target_prop.get("targetId", prop_id)] = {
-            "status": "approved",
-            "take": selected_take.get("label", f"Take {take_idx + 1}"),
-            "notes": feedback_text,
-            "updatedAt": now_iso,
-        }
         record_ai_agent_log(
             rq,
             {
@@ -1221,9 +1232,8 @@ def apply_review_verdict(payload: dict) -> dict:
                 "snapshotId": snap_meta.get("id"),
             },
         )
-        REVIEW_QUEUE_PATH.write_text(json.dumps(rq, indent=2) + "\n", encoding="utf-8")
-        subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
-        return {"ok": True, "verdict": "approved", "snapshot": snap_meta, "mutatedFiles": mutated_files}
+        tx.save()
+        return {"ok": True, "verdict": "approved", "snapshot": snap_meta, "mutatedFiles": mutated_files, "_rebuild": True}
 
     if verdict == "feedback":
         snap_meta = create_studio_snapshot(f"feedback_{prop_id}", ["content/review-queue.json"])
@@ -1232,16 +1242,16 @@ def apply_review_verdict(payload: dict) -> dict:
         target_prop.setdefault("feedbackHistory", []).append(
             {"timestamp": now_iso, "verdict": "feedback_reroll", "note": target_prop["lastFeedback"], "takeIdx": take_idx}
         )
-        rq.setdefault("workOrders", []).append(
+        review_queue.append_work_order(
+            rq,
             {
-                "id": f"wo-{len(rq.get('workOrders', [])) + 1:03d}",
+                "kind": "proposal-reroll",
                 "proposalId": prop_id,
                 "targetId": target_prop.get("targetId"),
                 "feedback": target_prop["lastFeedback"],
-                "createdAt": now_iso,
-            }
+            },
         )
-        REVIEW_QUEUE_PATH.write_text(json.dumps(rq, indent=2) + "\n", encoding="utf-8")
+        tx.save()
         return {"ok": True, "verdict": "feedback", "snapshot": snap_meta}
 
     if verdict == "reject":
@@ -1251,12 +1261,15 @@ def apply_review_verdict(payload: dict) -> dict:
             target_prop.setdefault("feedbackHistory", []).append(
                 {"timestamp": now_iso, "verdict": "reject", "note": feedback_text, "takeIdx": take_idx}
             )
-        rq.setdefault("verdicts", {})[target_prop.get("targetId", prop_id)] = {
-            "status": "rejected",
-            "notes": feedback_text,
-            "updatedAt": now_iso,
-        }
-        REVIEW_QUEUE_PATH.write_text(json.dumps(rq, indent=2) + "\n", encoding="utf-8")
+        asset_key = target_prop.get("assetStudioKey")
+        if asset_key:
+            rq.setdefault("verdicts", {})[asset_key] = {
+                "verdict": "reject",
+                "note": feedback_text or f"Rejected in the Review Gate Inbox (proposal {prop_id})",
+                "updatedAt": now_iso,
+                "source": f"proposal:{prop_id}",
+            }
+        tx.save()
         return {"ok": True, "verdict": "rejected", "snapshot": snap_meta}
 
     return {"ok": False, "error": f"Unknown verdict: {verdict}"}
@@ -1304,11 +1317,16 @@ def toggle_palette_asset(payload: dict) -> dict:
 
 
 def update_map_structure(payload: dict) -> dict:
+    with review_queue.transaction() as tx:
+        return _update_map_structure(payload, tx)
+
+
+def _update_map_structure(payload: dict, tx) -> dict:
     import time
-    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    now_iso = review_queue.now_iso()
     map_p = MAPS_DIR / "freja-south-gate.json"
     m_doc = load_json_file(map_p) or {}
-    rq = load_json_file(REVIEW_QUEUE_PATH) or {"version": 1, "verdicts": {}, "workOrders": [], "proposals": []}
+    rq = tx.doc
 
     snap_meta = create_studio_snapshot(
         "map_structure_edit",
@@ -1375,11 +1393,19 @@ def update_map_structure(payload: dict) -> dict:
             "snapshotId": snap_meta.get("id"),
         },
     )
-    REVIEW_QUEUE_PATH.write_text(json.dumps(rq, indent=2) + "\n", encoding="utf-8")
+    tx.save()
     return {"ok": True, "snapshot": snap_meta, "summary": " · ".join(changes)}
 
 
 def apply_ai_studio_edit(payload: dict) -> dict:
+    with review_queue.transaction() as tx:
+        result = _apply_ai_studio_edit(payload, tx)
+    if result.pop("_rebuild", False):  # a catalog rebuild must not hold the queue lock
+        subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
+    return result
+
+
+def _apply_ai_studio_edit(payload: dict, tx) -> dict:
     """
     AI Studio Co-Pilot Edit Agent:
     Wraps natural-language designer intent (or preset commands) across all 3 Pillars:
@@ -1395,7 +1421,7 @@ def apply_ai_studio_edit(payload: dict) -> dict:
     if not prompt:
         return {"ok": False, "error": "Please enter an edit instruction for the AI Studio Agent."}
 
-    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    now_iso = review_queue.now_iso()
     low = prompt.lower()
 
     snap_files = [
@@ -1407,7 +1433,7 @@ def apply_ai_studio_edit(payload: dict) -> dict:
     ]
     snap_meta = create_studio_snapshot(f"ai_agent_{low[:24]}", snap_files)
 
-    rq = load_json_file(REVIEW_QUEUE_PATH) or {"version": 1, "verdicts": {}, "workOrders": [], "proposals": []}
+    rq = tx.doc
     pals = load_json_file(GROUND_PALETTES_PATH) or {}
     map_p = MAPS_DIR / "freja-south-gate.json"
     m_doc = load_json_file(map_p) or {}
@@ -1630,14 +1656,14 @@ def apply_ai_studio_edit(payload: dict) -> dict:
 
     # Fallback if prompt was a general artistic direction note
     if not actions_taken:
-        rq.setdefault("workOrders", []).append(
+        review_queue.append_work_order(
+            rq,
             {
-                "id": f"wo-{len(rq.get('workOrders', [])) + 1:03d}",
+                "kind": "proposal-reroll",
                 "proposalId": "ai-studio-copilot",
                 "targetId": "prontera_south_field",
                 "feedback": prompt,
-                "createdAt": now_iso,
-            }
+            },
         )
         actions_taken.append(f"Queued AI Work Order for prontera_south_field: '{prompt}'")
         mutated_files.append("content/review-queue.json")
@@ -1653,12 +1679,12 @@ def apply_ai_studio_edit(payload: dict) -> dict:
         "snapshotId": snap_meta.get("id"),
     }
     record_ai_agent_log(rq, log_entry)
-    REVIEW_QUEUE_PATH.write_text(json.dumps(rq, indent=2) + "\n", encoding="utf-8")
-    subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
+    tx.save()
     return {
         "ok": True,
         "agentAction": log_entry,
         "snapshot": snap_meta,
+        "_rebuild": True,
     }
 
 
@@ -1740,7 +1766,10 @@ INDEX_HTML = r"""<!DOCTYPE html>
     })();
   </script>
   <title>Atlas World — Joymify Design Observatory (RMS Edition)</title>
+  <link rel="icon" href="data:," />
   <link rel="stylesheet" href="/theme.css" />
+  <link rel="stylesheet" href="/atelier/asset-storybook/css/panels.css" />
+  <script type="module" src="/atelier/asset-storybook/js/panels/registry.mjs"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -1992,6 +2021,12 @@ INDEX_HTML = r"""<!DOCTYPE html>
       flex-direction: column;
       gap: 8px;
     }
+    /* Panel host (SSOT merge): mounted storybook panels live here, never inside #mainContent. */
+    #mainContent[hidden], #panelHost[hidden], #subViewBar[hidden] { display: none !important; }
+    #panelHost { width: 100%; max-width: 100%; margin: 0 auto; padding: 8px 16px 64px; box-sizing: border-box; }
+    #panelHost > [data-panel][hidden] { display: none !important; }
+    .subview-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 16px 0; }
+    @media (max-width: 720px) { #panelHost { padding: 4px; } .subview-bar { padding: 4px; } }
     .studio-split-layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 340px;
@@ -4152,7 +4187,9 @@ INDEX_HTML = r"""<!DOCTYPE html>
     </header>
 
     <div class="scroll-stage" id="scrollStage">
+      <div class="subview-bar" id="subViewBar" role="group" aria-label="View" hidden></div>
       <main class="content-area" id="mainContent"></main>
+      <div id="panelHost" hidden></div>
     </div>
   </div>
 
@@ -4197,6 +4234,15 @@ let MAXION_SELECTED_MOB_ID = 'hunter_fly';
 let MAP_DIR_FILTER = 'all';
 let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute cargo run --bin balance_sim against the live Rust authoritative combat engine.';
 let SIM_RUNNING = false;
+// Panel params (SSOT merge): URL-borne state for mounted panels and the story/review sub-views.
+// Absent in the URL = cleared here, matching the other params (Back/forward never keeps stale state).
+const ATLAS_PARAM_KEYS = ['kind', 'key', 'mode', 'group', 'view', 'verdict'];
+const ATLAS_PARAM_RE = /^[A-Za-z0-9][A-Za-z0-9:_.\/-]{0,119}$/;
+let ATLAS_PARAMS = {};
+const ATLAS_SUBVIEWS = {
+  story:  { dflt: 'nodes',     views: [['nodes', 'Nodes'], ['reader', 'Reader'], ['graph', 'Graph'], ['undertow', 'Undertow']] },
+  review: { dflt: 'proposals', views: [['proposals', 'Proposals'], ['verdicts', 'Asset verdicts']] }
+};
 
 const NAV_GROUPS = [
   {
@@ -4215,6 +4261,8 @@ const NAV_GROUPS = [
     items: [
       { id: 'world', label: '🧭 Interactive World Map', countKey: () => getAllWorldTiles().length + ' Tiles' },
       { id: 'maps',  label: '🗺️ Connected Map Directory', countKey: () => getAllWorldTiles().length + ' Maps' },
+      { id: 'map-sheets',  label: '📐 Map Sheets (mapforge)', panel: true, countKey: () => atlasPanelCount('map-sheets') },
+      { id: 'map-builder', label: '🧱 Map Builder (draft · publish)', panel: true, countKey: () => atlasPanelCount('map-builder') },
       { id: 'mobs',  label: '👾 Monster Detail (mob_db)', countKey: () => getAllMonsters().length + ' Mobs' },
     ]
   },
@@ -4224,13 +4272,24 @@ const NAV_GROUPS = [
       { id: 'gear',     label: '⚔️ Item & Card DB (item_db)', countKey: d => d.items.length + d.cards.length },
       { id: 'jobs',     label: '🛡️ Job & Skill DB (skill_db)', countKey: d => d.jobs.length + d.skills.length },
       { id: 'quests',   label: '📜 Quest Database (quest_db)', countKey: d => d.quests.length },
+      { id: 'story',    label: '📖 Story & Undertow Reader', countKey: d => ((d.worldSpine || {}).storyNodes || []).length },
       { id: 'overview', label: '📊 Database Hub & Matrix', countKey: () => 9 },
+    ]
+  },
+  {
+    section: 'Asset Library',
+    items: [
+      { id: 'assets',   label: '🧊 Asset Classes & 3D Viewer', panel: true, countKey: () => atlasPanelCount('assets') },
+      { id: 'audio',    label: '🔊 SFX & Music Soundboard', panel: true, countKey: () => atlasPanelCount('audio') },
+      { id: 'art',      label: '🎨 Concept Art', panel: true, countKey: () => atlasPanelCount('art') },
+      { id: 'coverage', label: '🧩 Asset Key Coverage', panel: true, countKey: () => atlasPanelCount('coverage') },
     ]
   },
   {
     section: 'AI Asset & Map Studio',
     items: [
       { id: 'review',  label: '✨ Review Gate Inbox (Step 3)', countKey: d => ((d.reviewQueue && d.reviewQueue.proposals) || []).length },
+      { id: 'forge',   label: '🔥 Art Forge Runs & Briefs', panel: true, countKey: () => atlasPanelCount('forge') },
       { id: 'brushes', label: '🌿 Biome Brush & Tag Pools',    countKey: d => Object.keys(d.groundPalettes || {}).length },
     ]
   },
@@ -4240,11 +4299,86 @@ const NAV_GROUPS = [
       { id: 'elements', label: '🔥 Property & Size Chart', countKey: d => (d.elements.elements || []).length },
       { id: 'siege',    label: '🏰 WoE Castle Calculator', countKey: d => d.castles.length },
       { id: 'sql',      label: '🗄️ SQLite Query Studio', countKey: () => 'SQL' },
+      { id: 'combat-lab', label: '🧮 Combat Model Lab (design)', panel: true, countKey: () => atlasPanelCount('combat-lab') },
       { id: 'sim',      label: '⚙️ Rust Balance Simulator', countKey: () => 'RS' },
       { id: 'docs',     label: '📖 Architecture Specs', countKey: d => d.docs.length },
     ]
   }
 ];
+
+// Mounted storybook panels (atelier/asset-storybook/js/panels/registry.mjs) report their own
+// counts once mounted; until then the sidebar shows an ellipsis.
+function atlasPanelCount(id) {
+  const c = window.ATLAS_PANELS && window.ATLAS_PANELS.count ? window.ATLAS_PANELS.count(id) : null;
+  return c === null || c === undefined ? '…' : c;
+}
+
+// Which tab+params the panel host owns. registry.mjs is the authority once loaded; this mirror
+// (checked against the registry by tests) only covers the moment before the module has run.
+function atlasPanelGuess(tab, params) {
+  if (tab === 'story') return ['reader', 'graph', 'undertow'].includes(params.view);
+  if (tab === 'review') return params.view === 'verdicts';
+  return NAV_GROUPS.some(g => g.items.some(it => it.id === tab && it.panel));
+}
+
+// Panels adjust their own URL params (selected asset, mode, ...) without a re-render.
+function atlasSetParams(patch, opts) {
+  Object.keys(patch || {}).forEach(k => {
+    if (!ATLAS_PARAM_KEYS.includes(k)) return;
+    const v = patch[k];
+    // An unrepresentable value clears the param: keeping the old one would leave the URL naming a stale selection.
+    if (v !== null && v !== undefined && v !== '' && ATLAS_PARAM_RE.test(String(v))) ATLAS_PARAMS[k] = String(v);
+    else delete ATLAS_PARAMS[k];
+  });
+  writeUrlState(!!(opts && opts.push));
+}
+window.atlasSetParams = atlasSetParams;
+
+function renderSubViewBar() {
+  const bar = document.getElementById('subViewBar');
+  if (!bar) return;
+  const cfg = ATLAS_SUBVIEWS[CURRENT_TAB];
+  if (!cfg) { bar.hidden = true; bar.innerHTML = ''; return; }
+  const cur = ATLAS_PARAMS.view || cfg.dflt;
+  bar.hidden = false;
+  bar.innerHTML = cfg.views.map(([id, label]) =>
+    `<button type="button" class="joy-button joy-button--sm ${id === cur ? 'joy-button--solid' : 'joy-button--outline'}" data-subview="${id}" aria-pressed="${id === cur}" onclick="setSubView('${id}')">${label}</button>`
+  ).join('');
+}
+
+function setSubView(view) {
+  ATLAS_PARAMS = { view };
+  writeUrlState();
+  render();
+}
+
+function panelDispatch(main) {
+  const host = document.getElementById('panelHost');
+  if (!host) return false;
+  const P = window.ATLAS_PANELS;
+  const claimed = P ? P.claims(CURRENT_TAB, ATLAS_PARAMS) : atlasPanelGuess(CURRENT_TAB, ATLAS_PARAMS);
+  if (!claimed) {
+    if (P) P.hideAll();
+    host.hidden = true;
+    main.hidden = false;
+    return false;
+  }
+  main.hidden = true;
+  host.hidden = false;
+  if (P) P.show(CURRENT_TAB, ATLAS_PARAMS);
+  else if (!host.firstElementChild) {
+    host.innerHTML = '<div data-panel-loading class="empty-state">Loading panels…</div>';
+    // registry.mjs never defined ATLAS_PANELS (404 / syntax error): say so instead of loading forever.
+    setTimeout(() => {
+      const el = document.querySelector('#panelHost [data-panel-loading]');
+      if (el && !window.ATLAS_PANELS) {
+        el.textContent = 'Panels failed to load (/atelier/asset-storybook/js/panels/registry.mjs). See the browser console.';
+        console.error('[atlas-panels] registry.mjs did not define window.ATLAS_PANELS');
+      }
+    }, 8000);
+  }
+  return true;
+}
 
 function buildThumbIndex() {
   THUMB_INDEX = {};
@@ -4446,6 +4580,11 @@ function syncUrlState() {
     ATLAS_3D_STATE.panY = ok3 ? Math.max(-4000, Math.min(4000, py3)) : cam.panY;
   }
   HIGHLIGHT_ENTITY_ID = focus || '';
+  ATLAS_PARAMS = {};
+  ATLAS_PARAM_KEYS.forEach(k => {
+    const v = params.get(k);
+    if (v && ATLAS_PARAM_RE.test(v)) ATLAS_PARAMS[k] = v;
+  });
 }
 
 function writeUrlState(pushHistory = true) {
@@ -4523,6 +4662,7 @@ function writeUrlState(pushHistory = true) {
       }
     }
   }
+  ATLAS_PARAM_KEYS.forEach(k => { if (ATLAS_PARAMS[k]) params.set(k, ATLAS_PARAMS[k]); });
   const newHash = '#' + params.toString();
   const targetUrl = (window.location && window.location.search) ? ('?' + params.toString() + newHash) : newHash;
   if (window.location.hash !== newHash || (window.location.search && window.location.search !== '?' + params.toString())) {
@@ -4542,6 +4682,7 @@ function formatDropPct(chanceBps) {
 }
 
 function jumpToEntity(tab, entityId) {
+  if (tab !== CURRENT_TAB) ATLAS_PARAMS = {};
   CURRENT_TAB = tab;
   SEARCH_QUERY = '';
   HIGHLIGHT_ENTITY_ID = entityId || '';
@@ -4599,6 +4740,9 @@ async function init() {
   syncUrlState();
   window.addEventListener('hashchange', () => { syncUrlState(); renderSidebar(); render(); });
   window.addEventListener('popstate', () => { syncUrlState(); renderSidebar(); render(); });
+  // registry.mjs is a deferred module: it may finish before or after the bundle fetch below.
+  window.addEventListener('atlas-panels-ready', () => { if (DATA) { renderSidebar(); render(); } });
+  window.addEventListener('atlas-panels-updated', () => { if (DATA) renderSidebar(); });
   const res = await fetch('/api/bundle');
   DATA = await res.json();
   buildThumbIndex();
@@ -4641,6 +4785,7 @@ function toggleMobileNavDrawer(forceState) {
 }
 
 function switchTab(id) {
+  if (id !== CURRENT_TAB) ATLAS_PARAMS = {};
   CURRENT_TAB = id;
   HIGHLIGHT_ENTITY_ID = '';
   toggleMobileNavDrawer(false);
@@ -4750,9 +4895,19 @@ function render() {
     maps:     'Map Database & Area Monster Spawns (map_db / areainfo)',
     sql:      'Live Read-Only SQLite Query Studio',
     sim:      'Authoritative Rust Balance Simulator (balance_sim)',
-    docs:     'RO Writings — Architecture Specs & Lore Canon'
+    docs:     'RO Writings — Architecture Specs & Lore Canon',
+    'map-sheets':  'Map Sheets — mapforge world, continent and basin charts',
+    'map-builder': 'Map Builder — draft, review, publish and undo world generation',
+    assets:        'Asset Classes & 3D Viewer',
+    audio:         'SFX & Music Soundboard',
+    art:           'Concept Art',
+    coverage:      'Asset Key Coverage — server type ids with no art binding',
+    forge:         'Art Forge Runs & Briefs',
+    'combat-lab':  'Combat Model Lab — design model (I-028)'
   };
   document.getElementById('topbarTitle').textContent = titleMap[CURRENT_TAB] || 'Observatory';
+  renderSubViewBar();
+  if (panelDispatch(main)) return;
 
   if (CURRENT_TAB === 'studio') {
     STUDIO_POI_REGISTRY = {};
@@ -29352,9 +29507,31 @@ init();
 """
 
 
+class _DiscardWriter:
+    """Swallows a response body (HEAD) once the headers have gone out."""
+
+    def write(self, data: bytes) -> int:
+        return len(data)
+
+    def flush(self) -> None:
+        pass
+
+
+# Paths the original GET chain serves from disk; HEAD replays that chain with the body discarded.
+HEAD_REPLAY_PREFIXES = ("/vendor/", "/studio-maps/", "/thumbs/")
+HEAD_REPLAY_EXACT = ("/", "/index.html", "/theme.css")
+
+
 class ObservatoryHandler(BaseHTTPRequestHandler):
+    _head_only = False
+
     def log_message(self, format: str, *args) -> None:
         return
+
+    def end_headers(self) -> None:
+        super().end_headers()
+        if self._head_only:
+            self.wfile = _DiscardWriter()
 
     def _send_json(self, payload: dict, status: int = 200) -> None:
         raw = json.dumps(payload).encode("utf-8")
@@ -29365,6 +29542,8 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_GET(self) -> None:
+        if web_routes.dispatch(self, "GET"):
+            return
         parsed = urlparse(self.path)
         if parsed.path in ("/", "/index.html"):
             raw = INDEX_HTML.encode("utf-8")
@@ -29387,6 +29566,7 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
         vendor_assets = {
             "/vendor/ol.js": ("ol.js", "application/javascript; charset=utf-8"),
             "/vendor/ol.css": ("ol.css", "text/css; charset=utf-8"),
+            "/vendor/model-viewer.min.js": ("model-viewer.min.js", "text/javascript; charset=utf-8"),
         }
         if parsed.path in vendor_assets:
             file_name, content_type = vendor_assets[parsed.path]
@@ -29400,14 +29580,14 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(raw)
                 return
-            self._send_json({"ok": False, "error": "Vendored OpenLayers asset not found"}, status=404)
+            self._send_json({"ok": False, "error": "Vendored asset not found"}, status=404)
             return
 
         if parsed.path.startswith("/studio-maps/"):
             rel_name = parsed.path.replace("/studio-maps/", "", 1).strip("/")
             target = (ROOT / "content" / "studio" / "maps" / rel_name).resolve()
             maps_dir = (ROOT / "content" / "studio" / "maps").resolve()
-            if str(target).startswith(str(maps_dir)) and target.is_file():
+            if target.is_relative_to(maps_dir) and target.is_file():
                 raw = target.read_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", "image/png")
@@ -29461,7 +29641,31 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
         raw = self.rfile.read(length)
         return json.loads(raw.decode("utf-8"))
 
+    def do_HEAD(self) -> None:
+        if web_routes.dispatch(self, "HEAD"):
+            return
+        path = urlparse(self.path).path
+        if path in HEAD_REPLAY_EXACT or path.startswith(HEAD_REPLAY_PREFIXES):
+            real_wfile = self.wfile
+            self._head_only = True
+            try:
+                self.do_GET()
+            finally:
+                self._head_only = False
+                self.wfile = real_wfile
+            return
+        self.send_response(404)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    def do_DELETE(self) -> None:
+        if web_routes.dispatch(self, "DELETE"):
+            return
+        self._send_json({"ok": False, "error": "Not found"}, status=404)
+
     def do_POST(self) -> None:
+        if web_routes.dispatch(self, "POST"):
+            return
         parsed = urlparse(self.path)
         if parsed.path == "/api/rebuild":
             subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)

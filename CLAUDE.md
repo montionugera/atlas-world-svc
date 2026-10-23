@@ -90,7 +90,7 @@ Jest (ts-jest) under `colyseus-server/src/tests/*.test.ts` (~55 files) plus `src
 - Trunk-based: short-lived `feature/`, `fix/`, `docs/` branches off `main`; **squash-merge only**; conventional commit subjects (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`), kept short.
 - This repo is opted into **ps-release-workflow** (`.release.json` present) — backlog/feature work routes through `/ps-release-workflow:*` skills and `.claude/idea_backlog/` + `.claude/refined_backlog/`.
 - C# Unity client models are generated into `colyseus-server/generated/csharp/` and kept in sync with server schemas.
-- **Every produced artifact (maps, sheets, renders, reports) must be observable in a review surface** — the asset-storybook or equivalent; wiring new artifact types into it is part of the producing feature's acceptance criteria (owner rule, 2026-08-15). The maps parity gate (`atelier/asset-storybook/tests/maps-index.test.mjs`) enforces this for mapforge sheets.
+- **Every produced artifact (maps, sheets, renders, reports) must be observable in a review surface** — the **atlas-world web surface** (`scripts/catalog_explorer_web.py`, `:8788` — the asset storybook's panels live there now; the nginx storybook pod and its `atlas-storybook` hostname are retired, the hostname permanently redirects to `/?tab=assets`); wiring new artifact types into it is part of the producing feature's acceptance criteria (owner rule, 2026-08-15). The maps parity gate (`atelier/asset-storybook/tests/maps-index.test.mjs`) enforces this for mapforge sheets, and `tests/panel-parity.test.mjs` fails if a storybook tab has no atlas-world panel.
 
 ## Further docs
 

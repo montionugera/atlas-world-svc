@@ -132,3 +132,53 @@ test("a malformed committed file degrades to empty rather than throwing", () => 
     assert.equal(s.unsavedCount(), 0);
   }
 });
+
+// SSOT merge W0-5: the observatory's Review Gate Inbox owns proposals,
+// playerScaleAnchor and agentEditLog in the SAME file. An export used to rebuild
+// the document from {version, verdicts, workOrders} only, so committing one
+// deleted all of them.
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { parseQueue, serializeQueue } from "../js/review/store.mjs";
+
+const SHARED = {
+  version: 1,
+  verdicts: {},
+  workOrders: [],
+  playerScaleAnchor: { name: "chibi_toddler", heightRangeM: [0.9, 1.2] },
+  proposals: [
+    { id: "rq-1", status: "pending_review", assetStudioKey: "mob:aggressive" },
+  ],
+  agentEditLog: [{ mode: "AI Co-Pilot Agent" }],
+};
+
+test("parseQueue → serializeQueue keeps every unknown top-level key", () => {
+  const out = JSON.parse(serializeQueue(parseQueue(JSON.stringify(SHARED))));
+  assert.deepEqual(out, SHARED);
+});
+
+test("store.exportJson keeps unknown keys from the committed document", () => {
+  const s = createStore({ committed: SHARED, local: {} });
+  s.set("mob:aggressive", "reject", "off-canon");
+  const out = JSON.parse(s.exportJson());
+  assert.deepEqual(out.proposals, SHARED.proposals);
+  assert.deepEqual(out.playerScaleAnchor, SHARED.playerScaleAnchor);
+  assert.deepEqual(out.agentEditLog, SHARED.agentEditLog);
+  assert.deepEqual(out.verdicts["mob:aggressive"], {
+    verdict: "reject",
+    note: "off-canon",
+  });
+});
+
+test("the real content/review-queue.json survives a round trip with all its keys", () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const raw = readFileSync(
+    join(here, "..", "..", "..", "content", "review-queue.json"),
+    "utf8",
+  );
+  const original = JSON.parse(raw);
+  const out = JSON.parse(serializeQueue(parseQueue(raw)));
+  assert.deepEqual(out, original);
+  assert.deepEqual(Object.keys(out).sort(), Object.keys(original).sort());
+});

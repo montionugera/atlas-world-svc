@@ -47,14 +47,37 @@ export class VirtualGrid {
       this._measure();
       this._render();
     };
-    window.addEventListener("scroll", this._onScroll, { passive: true });
+    // capture:true — scroll does not bubble, and inside the observatory the page
+    // scrolls in an inner .scroll-stage rather than the window. A capturing window
+    // listener hears every scroller, and still hears window scroll when standalone.
+    window.addEventListener("scroll", this._onScroll, {
+      passive: true,
+      capture: true,
+    });
     window.addEventListener("resize", this._onResize);
+    // A grid whose ancestor was display:none reports no box, so setItems()/resize
+    // while hidden is skipped (see _isHidden). The observer repaints it the moment
+    // it becomes visible again — no caller has to remember to refresh().
+    if (typeof ResizeObserver !== "undefined") {
+      this._ro = new ResizeObserver(() => {
+        if (!this.destroyed && !this._isHidden()) this.refresh();
+      });
+      this._ro.observe(this.viewport);
+    }
 
     this._measure();
     this._render();
   }
 
+  // A grid inside a hidden panel has no layout box (clientWidth 0 → one column,
+  // zero rect → nothing "visible"). Measuring then would corrupt the column count,
+  // so a hidden grid does nothing until it is visible again (ResizeObserver below, or refresh()).
+  _isHidden() {
+    return this.viewport.getClientRects().length === 0;
+  }
+
   _measure() {
+    if (this._isHidden()) return;
     const width = this.viewport.clientWidth || this.container.clientWidth || 1;
     this.columns = Math.max(1, Math.floor(width / this.minColumnWidth));
     const rows = Math.ceil(this.items.length / this.columns);
@@ -83,7 +106,7 @@ export class VirtualGrid {
   }
 
   _render() {
-    if (this.destroyed) return;
+    if (this.destroyed || this._isHidden()) return;
     const { start, end } = this._visibleRange();
 
     for (const [index, el] of this.mounted) {
@@ -108,6 +131,12 @@ export class VirtualGrid {
     }
   }
 
+  /** Re-measure and repaint — call when the grid's container becomes visible again. */
+  refresh() {
+    this._measure();
+    this._render();
+  }
+
   setItems(items) {
     this.items = items;
     for (const [, el] of this.mounted) el.remove();
@@ -128,8 +157,9 @@ export class VirtualGrid {
 
   destroy() {
     this.destroyed = true;
-    window.removeEventListener("scroll", this._onScroll);
+    window.removeEventListener("scroll", this._onScroll, { capture: true });
     window.removeEventListener("resize", this._onResize);
+    if (this._ro) this._ro.disconnect();
     this.viewport.remove();
   }
 }

@@ -71,3 +71,62 @@ export function groupEntries(entries, taxonomy) {
   }
   return grouped;
 }
+
+// ---------- kind ids (assets panel deep links) ----------
+//
+// `?tab=assets&kind=<id>` names a taxonomy section ("character") or a section
+// narrowed to one manifest-key prefix ("character:mob" = the character entries
+// whose key starts "mob:"). Section ids never contain ":", so the first colon is
+// the split. A key with no colon ("player", "npc") is its own prefix.
+
+export const ALL_KIND = "all";
+
+export function keyPrefix(key) {
+  const i = String(key).indexOf(":");
+  return i === -1 ? String(key) : String(key).slice(0, i);
+}
+
+function splitKind(kindId) {
+  const i = kindId.indexOf(":");
+  return i === -1
+    ? { section: kindId, prefix: null }
+    : { section: kindId.slice(0, i), prefix: kindId.slice(i + 1) };
+}
+
+/**
+ * The switcher model: one row per non-empty section (registry order), each with
+ * its key-prefix children. Built from the data, so it can't offer a kind that
+ * has no assets.
+ * @returns {Array<{id:string,label:string,count:number,children:Array<{id:string,label:string,count:number}>}>}
+ */
+export function buildKindIndex(entries, taxonomy) {
+  const groups = groupEntries(entries, taxonomy);
+  const out = [];
+  for (const [sid, list] of groups) {
+    const prefixes = new Map();
+    for (const [key] of list) {
+      const p = keyPrefix(key);
+      prefixes.set(p, (prefixes.get(p) || 0) + 1);
+    }
+    out.push({
+      id: sid,
+      label: labelForSection(sid, taxonomy),
+      count: list.length,
+      children: [...prefixes]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([p, count]) => ({ id: sid + ":" + p, label: p, count })),
+    });
+  }
+  return out;
+}
+
+/** Entries matching a kind id; ALL_KIND (or empty) matches everything. */
+export function filterByKind(entries, kindId, taxonomy) {
+  if (!kindId || kindId === ALL_KIND) return entries;
+  const { section, prefix } = splitKind(kindId);
+  return entries.filter(
+    ([key, entry]) =>
+      sectionForEntry(entry, taxonomy) === section &&
+      (prefix === null || keyPrefix(key) === prefix),
+  );
+}

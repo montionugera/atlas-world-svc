@@ -161,7 +161,13 @@ function buildOverlay() {
   stage.appendChild(img);
 
   overlay.appendChild(stage);
-  document.body.appendChild(overlay);
+  // Inside atlas-world the stylesheet is scoped under .atlas-panel, so an overlay
+  // on <body> would be unstyled: ATLAS_PANELS.overlayRoot() is a styled host for it.
+  // Standalone storybook has no registry and keeps <body>.
+  const host =
+    (typeof window !== "undefined" && window.ATLAS_PANELS?.overlayRoot?.()) ||
+    document.body;
+  host.appendChild(overlay);
 
   panZoom = createPanZoom({ stage, img });
 }
@@ -224,9 +230,15 @@ document.addEventListener("storybook:class-change", () => closeMapViewer());
 
 // ---------- the section: grid of sheet cards ----------
 
-export async function mountMaps(main) {
+/**
+ * Builds the whole Map Sheets section (cards, vocabulary, fabric census, places
+ * table) WITHOUT attaching it. Returns {section, count}, or null when
+ * maps-index.json is unusable. Shared by the storybook's mountMaps and the
+ * atlas-world map-sheets panel.
+ */
+export async function buildMapsSection() {
   const sheets = await loadIndex();
-  if (sheets.length === 0) return; // degrade silently — same treatment as a missing story-views.json
+  if (sheets.length === 0) return null; // degrade silently — same treatment as a missing story-views.json
 
   // Plan A Task 10: content/world/render-lock.json is the gate's pinned
   // sha256 per sheet. Showing it here is what makes the lock observable
@@ -351,7 +363,15 @@ export async function mountMaps(main) {
     const table = document.createElement("table");
     table.className = "grid world-table";
     const head = document.createElement("tr");
-    for (const label of ["Landmass", "Register", "Regions", "Towns", "Landmarks", "Dungeons", "Authored prose"]) {
+    for (const label of [
+      "Landmass",
+      "Register",
+      "Regions",
+      "Towns",
+      "Landmarks",
+      "Dungeons",
+      "Authored prose",
+    ]) {
       const th = document.createElement("th");
       th.textContent = label;
       head.appendChild(th);
@@ -362,8 +382,12 @@ export async function mountMaps(main) {
       if (!doc) continue;
       const tr = document.createElement("tr");
       const cells = [
-        row.title, row.register, String(doc.zones.length), String(doc.towns.length),
-        String(doc.landmarks.length), String(doc.dungeons.length),
+        row.title,
+        row.register,
+        String(doc.zones.length),
+        String(doc.towns.length),
+        String(doc.landmarks.length),
+        String(doc.dungeons.length),
         String(doc.landmarks.filter((l) => l.prose === "authored").length),
       ];
       for (const c of cells) {
@@ -376,7 +400,17 @@ export async function mountMaps(main) {
     section.appendChild(table);
   }
 
-  main.appendChild(section);
+  return { section, count: sheets.length };
+}
+
+export async function mountMaps(main) {
+  const built = await buildMapsSection();
+  if (built) main.appendChild(built.section);
+}
+
+/** Closes the viewer if open — the panel's hide() hook. */
+export function closeMapSheetViewer() {
+  closeMapViewer();
 }
 
 /** Sidebar entry for the Maps section. Mirrors mountStoryNav/mountCombatNav. */

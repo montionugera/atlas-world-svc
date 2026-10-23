@@ -73,6 +73,20 @@ spec:
                 name: atlas-world-studio-host
                 port:
                   number: 8788
+---
+# The asset storybook is retired: its panels live in atlas-world now. The old hostname stays
+# alive as a permanent redirect so bookmarks keep working. http (not https) per the local
+# cluster's APP_ORIGIN convention. The backend is never reached; ingress-nginx requires one.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: atlas-storybook-redirect
+  namespace: atlas-world
+  annotations:
+    nginx.ingress.kubernetes.io/permanent-redirect: "http://atlas-world.joymify.local.com/?tab=assets"
+spec:
+  ingressClassName: nginx
+  rules:
     - host: atlas-storybook.joymify.local.com
       http:
         paths:
@@ -80,6 +94,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: asset-storybook
+                name: atlas-world-studio-host
                 port:
-                  number: 6006
+                  number: 8788

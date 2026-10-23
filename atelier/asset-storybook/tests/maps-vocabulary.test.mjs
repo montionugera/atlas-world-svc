@@ -9,17 +9,18 @@
 //   the SUMMARY (buildVocabulary) is pure and tested directly;
 //   the PACKAGING is tested because the panel's failure mode is silent. It
 //   imports draft.mjs and glyphs.mjs from the browser, and both must be
-//   dependency-free and actually present in the document root. In the
-//   container the document root is built by atelier/asset-storybook/Dockerfile,
-//   which did not ship atelier/mapforge/ — so without a rule here the panel
-//   works locally, removes itself in the deployed storybook, and nobody
-//   learns until someone opens it. That is the same omission that shipped a
+//   dependency-free and actually served. On atlas-world the servable set is the
+//   allowlist in scripts/atlas_world_web/static_mounts.py (the old nginx image's
+//   Dockerfile did not ship atelier/mapforge/ — so without a rule here the panel
+//   works locally, removes itself when deployed, and nobody learns until
+//   someone opens it). That is the same omission that shipped a
 //   "NOT LOCKED" card on every sheet in F-046.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveMounted } from "./_mounted.mjs";
 import {
   buildVocabulary,
   repoUrl,
@@ -192,30 +193,20 @@ test("the modules the panel imports from the browser are dependency-free", () =>
   }
 });
 
-test("the storybook image ships the drawing library the panel imports", () => {
-  // The panel resolves atelier/mapforge/lib/* against the document root. The
-  // container's document root is whatever the Dockerfile COPYs, and the
-  // dockerignore is a whitelist — both have to name it or the panel 404s in
-  // the deployed review surface while passing every test here.
-  const dockerfile = readFileSync(join(STORYBOOK_ROOT, "Dockerfile"), "utf8");
-  const ignore = readFileSync(
-    join(STORYBOOK_ROOT, "Dockerfile.dockerignore"),
-    "utf8",
-  );
-  assert.match(
-    dockerfile,
-    /^COPY atelier\/mapforge\/lib atelier\/mapforge\/lib$/m,
-    "atelier/asset-storybook/Dockerfile does not COPY atelier/mapforge/lib — the Maps vocabulary panel will 404 in the container",
-  );
-  assert.match(
-    ignore,
-    /^!atelier\/mapforge\/lib\/\*\**\*$/m,
-    "atelier/asset-storybook/Dockerfile.dockerignore does not whitelist atelier/mapforge/lib — the COPY above has nothing to copy",
-  );
-  // Same for the lexicon the panel fetches. content/world/** already covers
-  // it; assert that rather than assume it.
-  assert.match(dockerfile, /^COPY content\/world content\/world$/m);
-  assert.match(ignore, /^!content\/world\/\*\*$/m);
+test("atlas-world serves the drawing library and lexicon the panel imports", () => {
+  // The panel resolves atelier/mapforge/lib/* against the page root, and the server's static-mount
+  // allowlist (scripts/atlas_world_web/static_mounts.py) decides what exists. Without a rule here
+  // the panel works from a local checkout, removes itself on atlas-world, and nobody learns until
+  // someone opens it. (This used to assert the storybook Dockerfile COPYed these paths.)
+  const urls = [
+    "/atelier/mapforge/lib/draft.mjs",
+    "/atelier/mapforge/lib/glyphs.mjs",
+    "/content/world/lexicon/landforms.json",
+  ];
+  const served = resolveMounted(urls);
+  for (const u of urls) {
+    assert.ok(served[u], `${u} is not served by scripts/atlas_world_web/static_mounts.py — the Maps vocabulary panel will 404`);
+  }
 });
 
 test("every fill in the panel renders a real pattern body", () => {

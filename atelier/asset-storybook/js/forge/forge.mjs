@@ -1,10 +1,14 @@
 // F-050 Task 8 — the Forge tab: art-forge pipeline runs, per-cell
 // status/staleness, and the pending work-orders list.
 //
-// Static page invariants: this module only ever FETCHES committed files
-// (run ledgers, briefs, review-queue.json) and DOWNLOADS an updated queue.
-// It never POSTs to anything and never executes a re-run — a work order is
-// consumed by the next human-run forge session.
+// It never executes a re-run — a work order is consumed by the next human-run
+// forge session. Two hosts:
+//  - Inside the observatory (window.ATLAS_PANELS exists) an issued order is a
+//    DRAFT in the browser buffer until "Save" POSTs it to
+//    /api/review-queue/work-orders (the single writer of content/review-queue.json;
+//    forge/work-orders.mjs). Nothing is downloaded.
+//  - The standalone static storybook has no server: it only FETCHES committed
+//    files and DOWNLOADS an updated queue, as before.
 
 import {
   FORGE_CLASS,
@@ -33,6 +37,7 @@ import {
   WORK_ORDER_CELLS,
 } from "../review/store.mjs";
 import { readOrderBuffer, resolveSessionOrders, writeOrderBuffer } from "../review/workorder-buffer.mjs";
+import { postWorkOrders } from "./work-orders.mjs";
 
 const EMPTY_RUNS_TEXT = "No forge runs recorded yet";
 
@@ -43,6 +48,15 @@ let committedQueue = parseQueue(JSON.stringify({ version: 1, verdicts: {} }));
 let sessionOrders = [];
 // Whether the last buffer write (or read) succeeded — drives the saved label.
 let bufferSaved = true;
+
+// Hosted by the observatory's panel registry (a server owns the queue file).
+const isHosted = () => typeof window !== "undefined" && !!window.ATLAS_PANELS;
+
+// Hosted-mode save state (the Save button + its failure line).
+let saving = false;
+let saveError = null;
+let saveBtn = null;
+let saveMsg = null;
 
 function browserStorage() {
   try {
@@ -345,7 +359,7 @@ function openOrderForm(row, rerunBtn, order) {
   const submit = document.createElement("button");
   submit.type = "button";
   submit.className = "forge-order-submit";
-  submit.textContent = "issue work order";
+  submit.textContent = isHosted() ? "add draft order" : "issue work order";
 
   const cancel = document.createElement("button");
   cancel.type = "button";
@@ -382,7 +396,9 @@ function openOrderForm(row, rerunBtn, order) {
     console.info(
       "[asset-storybook] work order issued:",
       appended.id,
-      "— export it from Pending work orders",
+      isHosted()
+        ? "— a draft until you Save it from Pending work orders"
+        : "— export it from Pending work orders",
     );
     if (refreshOrdersFn) refreshOrdersFn();
   });
@@ -534,13 +550,38 @@ function refreshOrders(listHost, countLabel, savedLabel) {
       ? "none"
       : orders.length + (orders.length === 1 ? " order" : " orders");
   const unsaved = sessionOrders.length > 0 && !bufferSaved;
-  savedLabel.textContent =
-    sessionOrders.length === 0 ? "" : unsaved ? "not saved — browser storage unavailable" : "saved in this browser";
-  savedLabel.classList.toggle("is-unsaved", unsaved);
+  if (isHosted()) {
+    // Every session order is a draft until the server has it; the browser buffer
+    // only protects it from a reload.
+    const n = sessionOrders.length;
+    savedLabel.textContent =
+      n === 0
+        ? ""
+        : n + (n === 1 ? " draft" : " drafts") + " not yet saved to review-queue.json" +
+          (unsaved ? " (browser storage unavailable — a reload loses them)" : "");
+    savedLabel.classList.toggle("is-unsaved", n > 0);
+    if (saveBtn) {
+      saveBtn.disabled = saving || n === 0;
+      saveBtn.textContent = saving
+        ? "Saving…"
+        : n === 0
+          ? "No draft work orders to save"
+          : "Save " + n + (n === 1 ? " draft order" : " draft orders") + " to review-queue.json";
+    }
+    if (saveMsg) {
+      saveMsg.textContent = saveError || "";
+      saveMsg.hidden = !saveError;
+    }
+  } else {
+    savedLabel.textContent =
+      sessionOrders.length === 0 ? "" : unsaved ? "not saved — browser storage unavailable" : "saved in this browser";
+    savedLabel.classList.toggle("is-unsaved", unsaved);
+  }
 
   listHost.innerHTML = "";
   for (const order of orders) {
     const done = isOrderDone(order, attemptsByBrief.get(order.briefId));
+    const draft = isHosted() && sessionOrders.includes(order);
     const item = document.createElement("div");
     item.className = "forge-order" + (done ? " is-done" : "");
 
@@ -553,7 +594,7 @@ function refreshOrders(listHost, countLabel, savedLabel) {
       (order.seed !== undefined ? " s" + order.seed : "") +
       " · ";
     const badge = document.createElement("strong");
-    badge.textContent = done ? "done" : "pending";
+    badge.textContent = done ? "done" : draft ? "draft — not saved" : "pending";
     head.appendChild(badge);
     item.appendChild(head);
 
@@ -577,6 +618,7 @@ function downloadQueue() {
   const store = getStore();
   const verdicts = store ? store.effective() : committedQueue.verdicts;
   const json = serializeQueue({
+    ...committedQueue,
     version: 1,
     verdicts,
     workOrders: allOrders(),
@@ -588,6 +630,31 @@ function downloadQueue() {
   a.download = "review-queue.json";
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/** Hosted mode: POST the buffered drafts; on success the server's queue becomes the committed view. */
+async function saveDrafts() {
+  if (saving || sessionOrders.length === 0) return;
+  saving = true;
+  saveError = null;
+  if (refreshOrdersFn) refreshOrdersFn();
+  const sent = new Set(sessionOrders.map((o) => o.id));
+  try {
+    const result = await postWorkOrders([...sessionOrders]);
+    committedQueue = parseQueue(JSON.stringify(result.queue));
+    // Orders drafted while the POST was in flight stay drafts.
+    sessionOrders = sessionOrders.filter((o) => !sent.has(o.id));
+    bufferSaved = writeOrderBuffer({ storage: browserStorage(), orders: sessionOrders });
+  } catch (err) {
+    console.error("[forge] saving work orders failed:", err);
+    saveError =
+      "Not saved to review-queue.json (" +
+      String(err && err.message ? err.message : err) +
+      "). The drafts are kept in this browser — press Save to retry.";
+  } finally {
+    saving = false;
+    if (refreshOrdersFn) refreshOrdersFn();
+  }
 }
 
 async function loadOrders(sectionEl) {
@@ -629,9 +696,11 @@ async function loadOrders(sectionEl) {
 
   const hint = document.createElement("p");
   hint.className = "art-tabbar-hint";
-  hint.textContent =
-    'Issued from cell re-runs below. Export appends to content/review-queue.json — ' +
-    "commit the downloaded file; the next forge session consumes it. Nothing executes here.";
+  hint.textContent = isHosted()
+    ? "Issued from cell re-runs below as drafts. Save writes them to content/review-queue.json " +
+      "on the server; the next forge session consumes them. Nothing executes here."
+    : "Issued from cell re-runs below. Export appends to content/review-queue.json — " +
+      "commit the downloaded file; the next forge session consumes it. Nothing executes here.";
   sectionEl.appendChild(hint);
 
   const listHost = document.createElement("div");
@@ -641,9 +710,20 @@ async function loadOrders(sectionEl) {
   const exportBtn = document.createElement("button");
   exportBtn.type = "button";
   exportBtn.className = "forge-export-btn";
-  exportBtn.textContent = "Export work orders (review-queue.json)";
-  exportBtn.addEventListener("click", downloadQueue);
-  sectionEl.appendChild(exportBtn);
+  if (isHosted()) {
+    exportBtn.dataset.act = "save-work-orders";
+    exportBtn.addEventListener("click", saveDrafts);
+    saveBtn = exportBtn;
+    saveMsg = document.createElement("p");
+    saveMsg.className = "forge-order-error";
+    saveMsg.setAttribute("role", "status");
+    saveMsg.hidden = true;
+    sectionEl.append(exportBtn, saveMsg);
+  } else {
+    exportBtn.textContent = "Export work orders (review-queue.json)";
+    exportBtn.addEventListener("click", downloadQueue);
+    sectionEl.appendChild(exportBtn);
+  }
 
   refreshOrders(listHost, countLabel, savedLabel);
   refreshOrdersFn = () => refreshOrders(listHost, countLabel, savedLabel);

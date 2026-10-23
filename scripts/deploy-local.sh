@@ -8,7 +8,10 @@ set -e
 #   cockroachdb      StatefulSet + PVC  (Nakama's database)
 #   nakama           Deployment + migrate initContainer
 #   server-rs        Deployment         (authoritative game sim)
-#   asset-storybook  nginx Deployment   (asset/combat-lab review page)
+#
+# The asset storybook is no longer a cluster workload: its panels are served by atlas-world
+# (scripts/catalog_explorer_web.py on the Mac host, :8788). The old atlas-storybook hostname is a
+# permanent redirect to it (k8s/local/ingress.yaml).
 #
 # Invoked automatically by ps-release-workflow `ship` after a feature merges into
 # release/<v> — treat merge-to-release like an MR merge that triggers a staging
@@ -16,7 +19,7 @@ set -e
 #
 # Usage:
 #   ./scripts/deploy-local.sh                     # full stack
-#   ./scripts/deploy-local.sh --skip-storybook    # skip the 261 MB asset image
+#   ./scripts/deploy-local.sh --skip-storybook    # deprecated no-op (the storybook image is retired)
 #   ./scripts/deploy-local.sh --skip-meta         # skip nakama + cockroachdb
 #   ./scripts/deploy-local.sh --skip-server       # skip server-rs
 #   LOCAL_CTX_PATTERN=mylocal ./scripts/deploy-local.sh   # custom local ctx name
@@ -46,12 +49,11 @@ verify_local_ctx() {
 }
 
 # --- Flags --------------------------------------------------------------------
-DO_STORYBOOK=1
 DO_META=1
 DO_SERVER=1
 for arg in "$@"; do
   case "$arg" in
-    --skip-storybook) DO_STORYBOOK=0 ;;
+    --skip-storybook) echo "⚠ --skip-storybook is deprecated and ignored: the storybook image is retired (its panels are served by atlas-world on :8788)." ;;
     --skip-meta)      DO_META=0 ;;
     --skip-server)    DO_SERVER=0 ;;
     -h|--help)
@@ -75,12 +77,11 @@ echo "📂 Working tree: $REPO_ROOT"
 NAMESPACE="atlas-world"
 SERVER_RS_IMAGE="atlas-world-server-rs:local"
 NAKAMA_IMAGE="atlas-world-nakama:local"
-STORYBOOK_IMAGE="atlas-world-storybook:local"
 
-# The storybook and nakama images rely on their own <dockerfile>.dockerignore,
-# which only BuildKit honours. Without BuildKit the build silently falls back to
-# the root .dockerignore — a whitelist scoped to the colyseus build — and produces
-# an asset-less storybook. Force it on rather than trusting the daemon default.
+# The nakama image relies on its own <dockerfile>.dockerignore, which only
+# BuildKit honours. Without BuildKit the build silently falls back to the root
+# .dockerignore — a whitelist scoped to the colyseus build — and produces a
+# broken image. Force it on rather than trusting the daemon default.
 export DOCKER_BUILDKIT=1
 
 GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo dev)"
@@ -92,8 +93,7 @@ echo "======================================"
 
 # --- Build --------------------------------------------------------------------
 # Build context is the REPO ROOT for every image: this is a pnpm workspace whose
-# packages depend on @atlas/contracts via `workspace:*`, and the storybook's asset
-# paths escape its own directory.
+# packages depend on @atlas/contracts via `workspace:*`.
 
 if [ "$DO_SERVER" -eq 1 ]; then
   echo ""
@@ -108,15 +108,6 @@ if [ "$DO_META" -eq 1 ]; then
   echo "▶ Building nakama image ($NAKAMA_IMAGE)..."
   docker build -t "$NAKAMA_IMAGE" \
     -f "$REPO_ROOT/nakama/Dockerfile" "$REPO_ROOT"
-  echo "  ✓ built"
-fi
-
-if [ "$DO_STORYBOOK" -eq 1 ]; then
-  echo ""
-  echo "▶ Building storybook image ($STORYBOOK_IMAGE)..."
-  echo "  (~261 MB of assets — the first build is slow; later ones reuse the layer)"
-  docker build -t "$STORYBOOK_IMAGE" \
-    -f "$REPO_ROOT/atelier/asset-storybook/Dockerfile" "$REPO_ROOT"
   echo "  ✓ built"
 fi
 
@@ -137,8 +128,17 @@ if [ "$DO_SERVER" -eq 1 ]; then
     kubectl -n "$NAMESPACE" set env deployment/server-rs NAKAMA_URL- NAKAMA_HTTP_KEY-
   fi
 fi
-[ "$DO_STORYBOOK" -eq 1 ] && kubectl apply -f "$REPO_ROOT/k8s/local/storybook.yaml"
-[ -f "$REPO_ROOT/k8s/local/ingress.yaml" ] && kubectl apply -f "$REPO_ROOT/k8s/local/ingress.yaml"
+# `apply` never removes what a manifest stopped declaring, so retire the old storybook workload
+# explicitly (a no-op once it is gone).
+verify_local_ctx
+kubectl -n "$NAMESPACE" delete deployment/asset-storybook service/asset-storybook --ignore-not-found >/dev/null 2>&1 || true
+if [ -f "$REPO_ROOT/k8s/local/ingress.yaml" ]; then
+  # The admission webhook rejects the atlas-storybook-redirect Ingress while the old
+  # atlas-world-local Ingress still claims that host. The first pass drops the host from
+  # atlas-world-local; the second creates the redirect. Both are idempotent.
+  kubectl apply -f "$REPO_ROOT/k8s/local/ingress.yaml" >/dev/null 2>&1 || true
+  kubectl apply -f "$REPO_ROOT/k8s/local/ingress.yaml"
+fi
 
 # --- Roll out -----------------------------------------------------------------
 # imagePullPolicy:Never + a stable :local tag means the manifests are unchanged
@@ -164,7 +164,16 @@ if [ "$DO_META" -eq 1 ]; then
   roll deployment  nakama      180s
 fi
 [ "$DO_SERVER" -eq 1 ]    && roll deployment server-rs 120s
-[ "$DO_STORYBOOK" -eq 1 ] && roll deployment asset-storybook 120s
+
+# --- Atlas World host process -------------------------------------------------
+# atlas-world (the studio + the asset panels) is a Mac host process, not a pod; the cluster only
+# routes to it. A missing server is a notice, never a deploy failure.
+if ! curl -fsS --max-time 3 http://127.0.0.1:8788/healthz >/dev/null 2>&1; then
+  echo ""
+  echo "⚠ atlas-world is not running on :8788, so atlas-world.joymify.local.com (and the"
+  echo "  atlas-storybook redirect) will show a bad gateway. Start it from this checkout:"
+  echo "    python3 $REPO_ROOT/scripts/catalog_explorer_web.py --port 8788"
+fi
 
 # --- Summary ------------------------------------------------------------------
 echo ""
@@ -176,8 +185,7 @@ if [ "$DO_SERVER" -eq 1 ]; then
   echo " Server-RS WS  : ws://localhost:2567?token=<jwt>"
   echo " Server-RS Pod : deployment/server-rs (port 2567)"
 fi
-[ "$DO_STORYBOOK" -eq 1 ] && \
-  echo " Storybook     : http://atlas-storybook.joymify.local.com/ (or http://localhost:6006/)"
+echo " Asset panels  : http://atlas-world.joymify.local.com/?tab=assets (old atlas-storybook host redirects here)"
 if [ "$DO_META" -eq 1 ]; then
   echo " Nakama API    : http://localhost:7350       (health: /healthcheck)"
   echo " Nakama console: http://localhost:7351       (admin/password)"
@@ -185,6 +193,5 @@ fi
 echo ""
 echo " No LoadBalancer (e.g. kind)? Port-forward instead:"
 [ "$DO_SERVER" -eq 1 ]    && echo "   kubectl -n $NAMESPACE port-forward deployment/server-rs 2567:2567"
-[ "$DO_STORYBOOK" -eq 1 ] && echo "   kubectl -n $NAMESPACE port-forward deployment/asset-storybook 6006:80"
 [ "$DO_META" -eq 1 ]      && echo "   kubectl -n $NAMESPACE port-forward deployment/nakama 7350:7350 7351:7351"
 echo "======================================"

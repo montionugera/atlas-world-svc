@@ -11,7 +11,8 @@ cd atelier/combat-lab && python3 -m http.server 8421
 ```
 
 `fetch()` is blocked over `file://`, so it has to be served — same as
-`atelier/asset-storybook`.
+`atelier/asset-storybook`. It is also embedded in atlas-world as the **Combat Model Lab** tab (`/?tab=combat-lab`),
+next to the Rust Balance Simulator it is deliberately kept apart from.
 
 ## Why it is built this way
 

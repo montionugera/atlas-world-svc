@@ -19,9 +19,9 @@ import { REPO_ROOT_REL } from "./state.mjs";
  *
  * DEGRADATION. Everything is loaded lazily and every failure removes the
  * PANEL, never the tab — same contract as loadIndex()/loadLock() in maps.mjs.
- * That is not theoretical: atelier/mapforge/ is NOT copied into the storybook
- * container by default, so the imports below 404 unless the Dockerfile ships
- * lib/ (it now does — see atelier/asset-storybook/Dockerfile).
+ * That is not theoretical: the imports below 404 unless atlas-world's static-mount
+ * allowlist serves atelier/mapforge/lib/ (it does — scripts/atlas_world_web/static_mounts.py;
+ * tests/static-mounts.test.mjs and maps-vocabulary.test.mjs fail if it stops).
  */
 
 /**

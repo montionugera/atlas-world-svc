@@ -11,7 +11,10 @@ import { ART_CLASS, artTabState } from "./state.mjs";
 // every group at once (filtered by title/tags), and clearing it
 // restores the active tab.
 
-export function buildArtTabBar(tabs) {
+// `opts.onSelect(tabId)` runs after a tab click (the atlas-world panel syncs the
+// URL with it). Filtering is scoped to the bar's own container, so two mounted
+// surfaces can never toggle each other's sections.
+export function buildArtTabBar(tabs, opts = {}) {
   const section = document.createElement("section");
   section.className = "kind-section";
   section.id = "section-" + ART_CLASS;
@@ -24,6 +27,7 @@ export function buildArtTabBar(tabs) {
 
   const filterRow = document.createElement("div");
   filterRow.className = "art-filter-row";
+  const scope = () => section.parentElement || document;
   const filterInput = document.createElement("input");
   filterInput.type = "search";
   filterInput.className = "art-filter-input";
@@ -31,7 +35,7 @@ export function buildArtTabBar(tabs) {
   filterInput.setAttribute("aria-label", "Filter concept art by title or tag");
   filterInput.addEventListener("input", () => {
     artTabState.artFilterText = filterInput.value;
-    applyArtTabFilter();
+    applyArtTabFilter(scope());
   });
   filterRow.appendChild(filterInput);
   section.appendChild(filterRow);
@@ -48,7 +52,8 @@ export function buildArtTabBar(tabs) {
       artTabState.activeArtTab = tab.id;
       filterInput.value = "";
       artTabState.artFilterText = "";
-      applyArtTabFilter();
+      applyArtTabFilter(scope());
+      if (opts.onSelect) opts.onSelect(tab.id);
     });
     tabRow.appendChild(btn);
   }
@@ -98,15 +103,20 @@ export function observeCardForPromotion(card) {
 // (set once by initHealth in init()) are never touched here, so the
 // aggregate "Concept Art" dot stays the sum of every group's whether
 // or not that group is currently hidden by the tab/filter.
-export function applyArtTabFilter() {
+// A tab with id ART_ALL_TAB shows every group (the atlas-world panel's "All").
+export const ART_ALL_TAB = "all";
+
+export function applyArtTabFilter(root = document) {
   const term = artTabState.artFilterText.trim().toLowerCase();
   const filtering = term.length > 0;
 
-  document
+  root
     .querySelectorAll("section.kind-section[data-art-group-id]")
     .forEach((sec) => {
       const showGroup =
-        filtering || sec.dataset.artGroupId === artTabState.activeArtTab;
+        filtering ||
+        artTabState.activeArtTab === ART_ALL_TAB ||
+        sec.dataset.artGroupId === artTabState.activeArtTab;
       sec.style.display = showGroup ? "" : "none";
       sec.querySelectorAll(".card").forEach((card) => {
         const hay = card.dataset.artSearch || "";
@@ -126,10 +136,9 @@ export function applyArtTabFilter() {
       });
     });
 
-  document.querySelectorAll(".art-tab").forEach((btn) => {
-    btn.classList.toggle(
-      "active",
-      btn.dataset.artTab === artTabState.activeArtTab,
-    );
+  root.querySelectorAll(".art-tab").forEach((btn) => {
+    const active = btn.dataset.artTab === artTabState.activeArtTab;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-pressed", String(active));
   });
 }

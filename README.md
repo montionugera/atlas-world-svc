@@ -246,6 +246,7 @@ xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.clie
 | **Dashboards (Grafana)** | `http://localhost:3000` | Analytics dashboards (admin/admin) |
 | **React Interface** | `http://localhost:3001` | Browser-based generic client |
 | **World Studio & Semantic-Zoom Atlas** | `http://localhost:8788` | Interactive 4-Layer World Studio, 15 Town Street Blueprints & 16 Multi-Floor Dungeon Sub-Maps |
+| **Asset Library (ex-asset-storybook)** | `http://localhost:8788/?tab=assets` | 3D/2D asset classes, SFX & music, concept art, coverage, map sheets, Map Builder, review verdicts. `atlas-storybook.joymify.local.com` redirects here; the nginx storybook pod is retired |
 
 ---
 

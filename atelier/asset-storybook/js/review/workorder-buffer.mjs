@@ -38,8 +38,14 @@ export function writeOrderBuffer({ storage, orders }) {
 
 /** @param {{ committed: {workOrders?: object[]}, buffered: object[] }} opts */
 export function pendingBufferedOrders({ committed, buffered }) {
-  const committedIds = new Set((committed.workOrders || []).map((o) => o.id));
-  return buffered.filter((o) => !committedIds.has(o.id));
+  // A draft is "in" the committed file under its own id (legacy export) OR as the
+  // clientId the server stored when it assigned the real `wo-NNNN` id.
+  const committedIds = new Set();
+  for (const o of committed.workOrders || []) {
+    committedIds.add(o.id);
+    if (o.clientId) committedIds.add(o.clientId);
+  }
+  return buffered.filter((o) => !committedIds.has(o.clientId || o.id));
 }
 
 /**
