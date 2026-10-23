@@ -711,6 +711,42 @@ true;`;
     && junk.from === 'zone-town-lantern-hollow' && junk.route === false,
     JSON.stringify({ zoom: junk.zoom, yaw: junk.yaw, pitch: junk.pitch, pan: [junk.panX, junk.panY], from: junk.from, route: junk.route }));
 
+  // ---------------------------------------------------------------- 7. F-158 3D blockout is the 2D map in 3D
+  phase = 'f158-3d';
+  const f158 = await cdp.eval(`(async () => {
+    setAtlasEngineMode('3d_map3d'); setAtlas3dOption('contextOverride', 'overland'); await new Promise(r => setTimeout(r, 500));
+    if (typeof svgTo3dWorld !== 'function') return { hasProjection: false };
+    const scene = buildAtlas3dBlockoutScene();
+    const top = m => m.y + m.h / 2;
+    const lms = ATLAS_OVERLAND_LANDMARK_ANCHORS.map(a => {
+      const parts = scene.meshes.filter(m => m.landmarkId === a.landmarkId);
+      const prim = parts.find(m => m.landmarkPrimary);
+      const e = svgTo3dWorld(a.x, a.y);
+      const foot = parts.reduce((s, m) => Math.max(s, Math.max(m.w, m.d)), 0);
+      const maxTop = parts.reduce((s, m) => Math.max(s, top(m)), -Infinity);
+      return { id: a.landmarkId, kind: prim ? prim.landmarkKind : null, d: prim ? Math.hypot(prim.x - e.x, prim.z - e.z) : null,
+        aspect: prim ? (maxTop - prim.baseY) / foot : null, roles: Array.from(new Set(parts.map(m => m.part))).sort().join('+') };
+    });
+    const grp = k => lms.filter(l => k.includes(l.kind));
+    const sig = rs => new Set(rs.map(r => r.roles));
+    const comp = grp(['town', 'castle', 'fortress']), tow = grp(['tower']), cry = grp(['catacomb', 'lair']);
+    const overlap = (a, b) => [...a].some(x => b.has(x));
+    return { hasProjection: true, lms, nComp: comp.length, nTower: tow.length, nCrypt: cry.length,
+      sigsDistinct: !overlap(sig(comp), sig(tow)) && !overlap(sig(comp), sig(cry)) && !overlap(sig(tow), sig(cry)),
+      aspectOk: comp.every(l => l.aspect <= 1.0) && tow.every(l => l.aspect >= 1.8) && cry.every(l => l.aspect < 0.6),
+      sea: scene.meshes.filter(m => /^Sea_/.test(m.name)).length, mountains: scene.meshes.filter(m => m.part === 'mountain').length,
+      continents: scene.meshes.filter(m => m.part === 'continent' && m.pts && m.pts.length >= 4).length, meshCount: scene.meshes.length };
+  })()`);
+  result.f158 = f158;
+  const f158Bad = (f158.lms || []).filter(l => l.d === null || l.d >= 0.5).map(l => `${l.id}:${l.d === null ? 'missing' : l.d.toFixed(2)}`);
+  assert('F-158: svgTo3dWorld exists and all 13 landmarks sit within 0.5 units of their projected 2D anchor', f158.hasProjection === true && (f158.lms || []).length === 13 && f158Bad.length === 0,
+    f158.hasProjection ? (f158Bad.join(', ') || 'max delta ok') : 'svgTo3dWorld missing');
+  assert('F-158: castle/town, tower and dungeon/catacomb landmarks have three distinct geometry signatures', f158.hasProjection === true && f158.nComp >= 6 && f158.nTower === 2 && f158.nCrypt === 2 && f158.sigsDistinct && f158.aspectOk,
+    JSON.stringify({ nComp: f158.nComp, nTower: f158.nTower, nCrypt: f158.nCrypt, distinct: f158.sigsDistinct, aspect: f158.aspectOk }));
+  assert('F-158: sea plane, polygon-extruded continents and mountain meshes are present', f158.hasProjection === true && f158.sea >= 1 && f158.continents >= 3 && f158.mountains >= 5,
+    JSON.stringify({ sea: f158.sea, continents: f158.continents, mountains: f158.mountains }));
+  await cdp.eval(`(async () => { setAtlas3dOption('contextOverride', ''); setAtlasEngineMode('2d_svg'); zoomStudioMap(0, true); return true; })()`);
+
   // ---------------------------------------------------------------- 4. console
   await sleep(300);
   result.consoleErrors = consoleErrors;
