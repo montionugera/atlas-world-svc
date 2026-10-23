@@ -1490,7 +1490,7 @@
     "id": "I-237",
     "title": "Atlas explorer phone/touch audit fixes B1-B7: 375px search input 0px wide, search sheet won't close, 460px min-height clips OL/3D toolbars, 3D 1:1 reset keeps TOWN scene, 3D touchcancel selects mesh, OL two-finger rotate; commit audit script + wire probes into precheck",
     "created_at": "2026-10-23T06:08:37.021299+00:00",
-    "promoted_to": null
+    "promoted_to": "F-156"
   },
   {
     "id": "I-238",
