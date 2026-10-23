@@ -1509,5 +1509,11 @@
     "title": "Atlas explorer layout + sidebar: clip map frame (raster plate bleed), persona lens bar buttons truncated, toggleable app sidebar and inspector drawer for max map area",
     "created_at": "2026-10-23T09:44:55.338546+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-241",
+    "title": "Atlas 3D blockout 1:1 with 2D map: svgTo3dWorld projection, real continent polygon extrusions, sea plane, mountains, roads, distinct town/tower/dungeon silhouettes",
+    "created_at": "2026-10-23T09:44:55.753455+00:00",
+    "promoted_to": null
   }
 ]
