@@ -3757,6 +3757,8 @@ INDEX_HTML = r"""<!DOCTYPE html>
         min-height: 360px;
         height: calc(100dvh - 320px);
       }
+      /* the 3D toolbar wraps to 2-3 rows below 1180px; lift it clear of the legend instead of covering it */
+      #atlasMap3dToolbarPanel { bottom: 104px !important; }
     }
     /* Not on landscape phones (<=480px tall): there the F-156 B4 canvas math assumes a single-row 160px chrome. */
     @media (min-width: 768px) and (min-height: 481px) {
