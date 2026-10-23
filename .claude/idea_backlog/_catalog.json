@@ -1467,5 +1467,11 @@
     "title": "Atlas unified spatial engine UX-8..UX-14 (OL vendored, 3D picking, town-only shops)",
     "created_at": "2026-10-22T17:29:13.933178+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-234",
+    "title": "Atlas zoom-invariant pins and cursor-anchored zoom across SVG/OL/3D",
+    "created_at": "2026-10-23T02:12:46.487142+00:00",
+    "promoted_to": null
   }
 ]
