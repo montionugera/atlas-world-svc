@@ -2090,8 +2090,9 @@
     "title": "Atlas explorer phone: map legend overlay covers most of the map at 390px; make it collapsible or compact",
     "from_idea": "I-242",
     "created_at": "2026-10-24T23:09:58.972790+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-24T23:10:35.943762+00:00"
   }
 ]
