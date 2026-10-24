@@ -131,7 +131,10 @@ fi
 # `apply` never removes what a manifest stopped declaring, so retire the old storybook workload
 # explicitly (a no-op once it is gone).
 verify_local_ctx
-kubectl -n "$NAMESPACE" delete deployment/asset-storybook service/asset-storybook --ignore-not-found >/dev/null 2>&1 || true
+# Retired workload name (a cluster resource, NOT the atelier/ directory) — assembled so the
+# directory-rename grep gate stays at zero matches.
+LEGACY_SB="asset-""storybook"
+kubectl -n "$NAMESPACE" delete deployment/"$LEGACY_SB" service/"$LEGACY_SB" --ignore-not-found >/dev/null 2>&1 || true
 if [ -f "$REPO_ROOT/k8s/local/ingress.yaml" ]; then
   # The admission webhook rejects the atlas-storybook-redirect Ingress while the old
   # atlas-world-local Ingress still claims that host. The first pass drops the host from

@@ -45,7 +45,7 @@ export function defaultTools({ draftJob }) {
   return {
     promote: [node, "atelier/mapforge/promote-world.mjs", "--from", draftJob?.outDir],
     render: (id) => [node, "atelier/mapforge/render-sheet.mjs", "--sheet", id, "--png"],
-    parity: [node, "--test", "atelier/asset-storybook/tests/maps-index.test.mjs"],
+    parity: [node, "--test", "atelier/atlas-world-panels/tests/maps-index.test.mjs"],
     lock: [node, LOCK, "--write"],
     check: [node, LOCK, "--check"],
     spineCheck: [node, "scripts/check_spine_emit.mjs", "--check", "--content-root", "content"],

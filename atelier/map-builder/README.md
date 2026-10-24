@@ -142,7 +142,7 @@ convention); publish copies it into `content/` and `game-client/assets/art/maps/
 
 ```bash
 node --test atelier/map-builder/tests/*.test.mjs                        # unit + API (fake repo, fake tools)
-node --test atelier/asset-storybook/tests/map-builder-model.test.mjs     # the tab's view-model
+node --test atelier/atlas-world-panels/tests/map-builder-model.test.mjs     # the tab's view-model
 REPO_ROOT=$PWD bash atelier/map-builder/tests/e2e/publish-undo.sh        # real draft → publish → undo
 ```
 

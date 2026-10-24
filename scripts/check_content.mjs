@@ -3727,7 +3727,7 @@ function patternRectAreaRatio(svg) {
 // in the gate and not only in a test — and it is measured from the COMMITTED
 // BYTES, which is why it can live here at all: no rsvg-convert, no librsvg,
 // deterministic on every box. The same three floors are asserted against the
-// sheet ROSTER in atelier/asset-storybook/tests/maps-index.test.mjs (Gate 1 and
+// sheet ROSTER in atelier/atlas-world-panels/tests/maps-index.test.mjs (Gate 1 and
 // CI); this one arms on whatever PNGs are on disk, which is what catches a
 // file nobody remembered to index.
 //

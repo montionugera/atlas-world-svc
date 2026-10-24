@@ -236,7 +236,7 @@ jobs:
       # thumb-index join, verdict store. No DOM, so node --test covers it.
       # Without this step the storybook's tests only ever ran on a laptop.
       - name: Asset storybook data-layer tests
-        run: node --test atelier/asset-storybook/tests/*.test.mjs
+        run: node --test atelier/atlas-world-panels/tests/*.test.mjs
 
       # F-053: headless Forge smoke (system Chrome over the DevTools pipe, no
       # npm deps). STORYBOOK_SMOKE_REQUIRED turns "no Chrome" into exit 2, so
@@ -244,7 +244,7 @@ jobs:
       - name: Asset storybook headless smoke
         env:
           STORYBOOK_SMOKE_REQUIRED: "1"
-        run: node atelier/asset-storybook/tests/smoke/run.mjs
+        run: node atelier/atlas-world-panels/tests/smoke/run.mjs
 
       # Map builder (F-052): the ONLY Node 18 run of this suite — Gate 1/2
       # (scripts/precheck.sh) run it locally on whatever Node the dev has.

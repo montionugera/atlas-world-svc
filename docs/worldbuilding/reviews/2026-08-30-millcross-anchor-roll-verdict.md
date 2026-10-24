@@ -32,7 +32,7 @@ rope-brown / tallow-yellow); `content/world/town-criteria.json` (`walled-core` :
 **Machine gates run this review:** `node scripts/check_content.mjs` → **exit 0, 0 failures** (34 warnings,
 same count as every prior review); `node tools/art-forge/generate/prompt-lint.mjs` → **exit 0**; supporting
 tests: `blockin.test.mjs` **19/19**, `env-graph.test.mjs` **39/39**, storybook `node --test
-"tools/asset-storybook/tests/*.test.mjs"` **93/93** (the bare-directory invocation fails spuriously — use the
+"tools/atlas-world-panels/tests/*.test.mjs"` **93/93** (the bare-directory invocation fails spuriously — use the
 glob). All session-reported counts reproduce exactly.
 
 **Registers:** CANON = A1/style.md/canon.md as cited. INVENTED = brief positive additions and town-criteria

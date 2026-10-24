@@ -28,7 +28,7 @@ ground truth (content/towns/*.json, A1/A3 canon)
         └─ REJECT → minimal change set (data/wording only) → next roll
 ```
 
-Each artifact lands in the storybook (`atelier/asset-storybook/env-index.json`, parity-gated) —
+Each artifact lands in the storybook (`atelier/atlas-world-panels/env-index.json`, parity-gated) —
 the 2026-08-15 owner rule that every produced artifact is observable in a review surface.
 
 ## Measured findings (do not re-learn these)

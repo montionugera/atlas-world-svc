@@ -109,11 +109,11 @@ temp/
 # Nakama specific
 data/
 # ...but `data/` above is UNANCHORED, so it matches a directory named `data`
-# at ANY depth — including source directories. atelier/asset-storybook/js/data/
+# at ANY depth — including source directories. atelier/atlas-world-panels/js/data/
 # is the storybook's pure (no-DOM, node-testable) layer and must be tracked.
 # Negating the directory itself is required: git does not descend into an
 # excluded directory, so negating only the files inside would not work.
-!atelier/asset-storybook/js/data/
+!atelier/atlas-world-panels/js/data/
 !client/react-client/src/data/
 # ps-release-workflow (gitignored state)
 .claude/state/

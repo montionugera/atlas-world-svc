@@ -122,7 +122,7 @@ test("the overlay sheet carries a per-continent area-delta table with BOTH sides
   // not a before/after of two worlds — which is worth keeping, because a
   // non-1.00 row here is a trunk that has stopped matching its own fabric.
   // These are the numbers the sheet prints; the review surfaces quote the same
-  // ones (atelier/asset-storybook/maps-index.json, art-manifest.json).
+  // ones (atelier/atlas-world-panels/maps-index.json, art-manifest.json).
   assert.match(svg, /c02 {2}12099\.3 {2}-&gt; {2}12101\.3 km² {3}x1\.00/,
     "c02 is n-cluster1, the one landmass whose node id survives the redraw, so its row is the join " +
     "working end to end: the committed polygon on the left, the generated gross land on the right");
@@ -153,7 +153,7 @@ test("the trunk's own gross land is the number the overlay sheet prints", () => 
 });
 
 test("the sea:land ratio the REVIEW SURFACES publish is the one the gate measures", () => {
-  // CITATION ROT, fifth occurrence in this repo. atelier/asset-storybook/maps-index.json
+  // CITATION ROT, fifth occurrence in this repo. atelier/atlas-world-panels/maps-index.json
   // and game-client/assets/art/art-manifest.json both published a hand-typed
   // "24.68 : 1" while `G-SEALAND` on the same tree printed "trunk 24.63 : 1" —
   // and scripts/lib/world.mjs carried BOTH figures eleven lines apart. The
@@ -187,7 +187,7 @@ test("the sea:land ratio the REVIEW SURFACES publish is the one the gate measure
   assert.ok(Number(ratio) >= 1.2 && Number(ratio) <= 1.8,
     `the redrawn trunk measures ${ratio} : 1, outside G-SEALAND's committed 1.20-1.80 target band`);
   assert.equal(ratio, "1.44", "the committed trunk's sea:land ratio moved — re-derive both review surfaces");
-  for (const rel of ["atelier/asset-storybook/maps-index.json", "game-client/assets/art/art-manifest.json"]) {
+  for (const rel of ["atelier/atlas-world-panels/maps-index.json", "game-client/assets/art/art-manifest.json"]) {
     const text = readFileSync(join(ROOT, rel), "utf8");
     const quoted = [...text.matchAll(/sea[- ]to[- ]land ratio going (\d+\.\d+) : 1|sea:land (\d+\.\d+) : 1/g)]
       .map((m) => m[1] ?? m[2]);

@@ -29,7 +29,7 @@ not generators): `tools/art-forge/tests/blockin.test.mjs` → **16/16 pass**, in
 rect in the real Millcross brief is normalised 0..1"; `tools/art-forge/tests/env-graph.test.mjs` → **39/39
 pass**, including both `mustCompose` tests.
 **Correction of record (s040 sheet):** rail 4 (storybook wiring) landed while that review ran —
-`tools/asset-storybook/env-index.json` now indexes art-forge env renders (verified: A1-ART-02 and all three v3
+`tools/atlas-world-panels/env-index.json` now indexes art-forge env renders (verified: A1-ART-02 and all three v3
 dev filenames present; this sheet's filename pre-referenced). The s040 statement "still no entry" is
 superseded.
 
@@ -179,7 +179,7 @@ remains with evidence behind it; everything past it is the owner's recipe decisi
   filename family with no model field — a `model` field would have made the misroute self-documenting instead
   of assignment-stated. Same concrete diff as s040: add `"model"` and `"guidance"` to the render ledger entry.
 - **Rail 4 (storybook wiring) — LANDED** (during the s040 review). Verified this review:
-  `tools/asset-storybook/env-index.json` indexes the art-forge env renders including all three v3 cells and
+  `tools/atlas-world-panels/env-index.json` indexes the art-forge env renders including all three v3 cells and
   pre-references this sheet's filename. The s040 "still no entry" statement is corrected; no further action.
 - **New caveat worth one rail note (no action proposed):** `blockin.test.mjs` warns the two `wall-flank-*`
   masses have 0 separation under `SEGMENT_MIN_SEPARATION` — harmless on the depth path used here, but if a

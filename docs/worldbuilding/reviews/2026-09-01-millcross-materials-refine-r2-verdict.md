@@ -48,7 +48,7 @@ segment-strength test now pins the measured 0.45 (`forge-config.test.mjs:52-56`)
 **Machine gates run this review (exit codes):** `node scripts/check_content.mjs` → **exit 0, 0 failures, 34
 warnings** (warning count unchanged — the two new reviewer-worded criteria entries did not shift the count);
 `node tools/art-forge/generate/prompt-lint.mjs` → **exit 0**; `node --test
-tools/asset-storybook/tests/env-index.test.mjs` → **7/7 PASS, exit 0** — the r2 row was indexed pre-review
+tools/atlas-world-panels/tests/env-index.test.mjs` → **7/7 PASS, exit 0** — the r2 row was indexed pre-review
 with this sheet's filename pre-referenced in its `reviews` array and the verdict-pending note recording the
 rail-3 landing; `cd tools/art-forge && node --test tests/*.test.mjs` → **233 tests, 226 pass, 0 fail, 7
 skipped (GPU-gated), exit 0** — env-graph **43/43** including `ledgerSamplerFields` and the `--denoise`

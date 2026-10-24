@@ -64,7 +64,7 @@ class TestSafeResolve(unittest.TestCase):
             "/content/asset-taxonomy.json",
             "/content/review-queue.json",
             "/content/generated/asset-keys.json",
-            "/atelier/asset-storybook/js/audio.mjs",
+            "/atelier/atlas-world-panels/js/audio.mjs",
             "/atelier/combat-lab/index.html",
         ):
             with self.subTest(url=url):
@@ -83,9 +83,9 @@ class TestSafeResolve(unittest.TestCase):
             "/game-client/assets/../../.git/config",
             "/game-client/assets/%2e%2e/%2e%2e/.git/config",
             "/game-client/assets/%2e%2e%2f%2e%2e%2f.git%2fconfig",
-            "/atelier/asset-storybook/../../scripts/catalog_explorer_web.py",
-            "/atelier/asset-storybook/node_modules/x.js",
-            "/atelier/asset-storybook/.claude/settings.json",
+            "/atelier/atlas-world-panels/../../scripts/catalog_explorer_web.py",
+            "/atelier/atlas-world-panels/node_modules/x.js",
+            "/atelier/atlas-world-panels/.claude/settings.json",
             "/game-client/assets/audio/chime_bright.ogg%00.png",
             "/game-client/assets/%5c..%5c.git/config",
             "/scripts/catalog_explorer_web.py",
@@ -311,7 +311,7 @@ class TestHttpSurface(HttpCase):
 
     def test_mime_cache_and_head_for_static_files(self) -> None:
         cases = {
-            "/atelier/asset-storybook/js/audio.mjs": ("text/javascript", "no-store"),
+            "/atelier/atlas-world-panels/js/audio.mjs": ("text/javascript", "no-store"),
             "/game-client/assets/manifest.json": ("application/json", "no-store"),
             "/game-client/assets/audio/chime_bright.ogg": ("audio/ogg", "no-cache"),
             "/vendor/model-viewer.min.js": ("text/javascript", None),
@@ -561,8 +561,8 @@ class TestPanelHostContract(unittest.TestCase):
     def test_index_html_carries_the_panel_host_and_final_nav(self) -> None:
         html = web.INDEX_HTML
         self.assertRegex(html, r'<main class="content-area" id="mainContent"></main>\s*<div id="panelHost" hidden></div>')
-        self.assertIn('src="/atelier/asset-storybook/js/panels/registry.mjs"', html)
-        self.assertIn('href="/atelier/asset-storybook/css/panels.css"', html)
+        self.assertIn('src="/atelier/atlas-world-panels/js/panels/registry.mjs"', html)
+        self.assertIn('href="/atelier/atlas-world-panels/css/panels.css"', html)
         for tab in ("map-sheets", "map-builder", "story", "assets", "audio", "art", "coverage", "forge", "combat-lab"):
             self.assertRegex(html, r"\{ id: '%s',\s+label:" % re.escape(tab))
         self.assertIn("section: 'Asset Library'", html)
@@ -579,20 +579,20 @@ class TestPanelHostContract(unittest.TestCase):
 
     def test_nav_panel_flags_match_the_registry(self) -> None:
         nav_ids = set(re.findall(r"\{ id: '([a-z-]+)',[^\n]*panel: true", web.INDEX_HTML))
-        registry = (ROOT / "atelier" / "asset-storybook" / "js" / "panels" / "registry.mjs").read_text(encoding="utf-8")
+        registry = (ROOT / "atelier" / "atlas-world-panels" / "js" / "panels" / "registry.mjs").read_text(encoding="utf-8")
         block = re.search(r"const PANEL_TABS = \[(.*?)\];", registry, re.S).group(1)
         registry_ids = set(re.findall(r'"([a-z-]+)"', block))
         self.assertEqual(nav_ids, registry_ids)
 
     def test_story_and_review_view_claims_match_the_inline_guess(self) -> None:
-        registry = (ROOT / "atelier" / "asset-storybook" / "js" / "panels" / "registry.mjs").read_text(encoding="utf-8")
+        registry = (ROOT / "atelier" / "atlas-world-panels" / "js" / "panels" / "registry.mjs").read_text(encoding="utf-8")
         self.assertRegex(registry, r'story: \{ views: \["reader", "graph", "undertow"\]')
         self.assertRegex(registry, r'review: \{ views: \["verdicts"\]')
         self.assertIn("['reader', 'graph', 'undertow'].includes(params.view)", web.INDEX_HTML)
         self.assertIn("params.view === 'verdicts'", web.INDEX_HTML)
 
     def test_every_panel_id_has_a_module_that_registers_itself(self) -> None:
-        panels = ROOT / "atelier" / "asset-storybook" / "js" / "panels"
+        panels = ROOT / "atelier" / "atlas-world-panels" / "js" / "panels"
         registry = (panels / "registry.mjs").read_text(encoding="utf-8")
         tabs = re.findall(r'"([a-z-]+)"', re.search(r"const PANEL_TABS = \[(.*?)\];", registry, re.S).group(1))
         sub_panels = re.findall(r'panel: "([a-z-]+)"', registry)
@@ -603,8 +603,8 @@ class TestPanelHostContract(unittest.TestCase):
                 self.assertRegex(src, r'register(Placeholder)?\(\s*"%s"' % re.escape(pid), "the module must register its own id")
 
     def test_state_mjs_uses_sb_base_and_the_real_asset_keys_path(self) -> None:
-        state = (ROOT / "atelier" / "asset-storybook" / "js" / "state.mjs").read_text(encoding="utf-8")
-        self.assertIn('export const SB_BASE = "/atelier/asset-storybook/";', state)
+        state = (ROOT / "atelier" / "atlas-world-panels" / "js" / "state.mjs").read_text(encoding="utf-8")
+        self.assertIn('export const SB_BASE = "/atelier/atlas-world-panels/";', state)
         self.assertIn('ASSET_KEYS_URL = "../../content/generated/asset-keys.json"', state)
         self.assertNotIn("colyseus-server/generated", state)
         for const in ("AUDIO_INDEX_URL", "MAPS_INDEX_URL", "WORLD_INDEX_URL", "FORGE_BRIEFS_INDEX_URL", "STORY_VIEWS_URL"):

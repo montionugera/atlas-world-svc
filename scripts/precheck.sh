@@ -261,7 +261,7 @@ art_forge_tests() {
 # count. Gitignored generated inputs (e.g. the asset thumbs) are invisible to
 # git diff, so a change only to those skips here; CI still covers it.
 # ATLAS_FORCE_STORYBOOK_SMOKE=1 always runs it.
-STORYBOOK_SMOKE_PATHS='^(atelier/asset-storybook/|atelier/art-forge/|atelier/mapforge/|atelier/map-builder/|content/|game-client/assets/|colyseus-server/generated/|scripts/lib/|scripts/catalog_explorer_web\.py$|scripts/atlas_world_web/|tools/mac-observatory/vendor/|scripts/precheck\.sh$)'
+STORYBOOK_SMOKE_PATHS='^(atelier/atlas-world-panels/|atelier/art-forge/|atelier/mapforge/|atelier/map-builder/|content/|game-client/assets/|colyseus-server/generated/|scripts/lib/|scripts/catalog_explorer_web\.py$|scripts/atlas_world_web/|tools/mac-observatory/vendor/|scripts/precheck\.sh$)'
 storybook_smoke_skip_reason() {
   [ "${ATLAS_FORCE_STORYBOOK_SMOKE:-0}" = "1" ] && return 1
   local base="${PSRW_GATE_BASE:-}" rel changed
@@ -290,9 +290,9 @@ storybook_tests() {
   # F-038: taxonomy resolution, thumb-index join, verdict store. Pure modules,
   # so they run here with no browser and no Blender.
   # F-053: plus the headless Forge smoke (skips loudly, exit 0, with no Chrome).
-  ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/asset-storybook/tests/*.test.mjs ) || return 1
+  ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/atlas-world-panels/tests/*.test.mjs ) || return 1
   ( cd "$REPO_ROOT" && storybook_smoke_skip_reason ) && return 0
-  ( cd "$REPO_ROOT" && node atelier/asset-storybook/tests/smoke/run.mjs )
+  ( cd "$REPO_ROOT" && node atelier/atlas-world-panels/tests/smoke/run.mjs )
 }
 
 map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/map-builder/tests/*.test.mjs ) }
@@ -303,7 +303,7 @@ map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLA
 # (fails closed to RUN when the diff cannot be computed); ATLAS_FORCE_EXPLORER_PROBES=1 always runs them.
 # The two Chrome probes SKIP loudly (exit 0) when Chrome is absent (CI runners without it; set CHROME_BIN or
 # install Chrome to enable) - the Python probe and tests/test_studio_web_perspectives.py still run.
-EXPLORER_PROBE_PATHS='^(scripts/catalog_explorer_web\.py|scripts/atlas_world_web/|atelier/asset-storybook/|scripts/studio_|scripts/probes/atlas_|tests/test_studio_web_perspectives\.py|scripts/precheck\.sh$)'
+EXPLORER_PROBE_PATHS='^(scripts/catalog_explorer_web\.py|scripts/atlas_world_web/|atelier/atlas-world-panels/|scripts/studio_|scripts/probes/atlas_|tests/test_studio_web_perspectives\.py|scripts/precheck\.sh$)'
 explorer_probes_skip_reason() {
   [ "${ATLAS_FORCE_EXPLORER_PROBES:-0}" = "1" ] && return 1
   local base="${PSRW_GATE_BASE:-}" rel changed
@@ -384,7 +384,7 @@ run_section "nakama: jest suite"            nakama_tests
 run_section "client: react-client suite"    client_tests
 run_section "system deps: binary check (scripts/system-deps.json)" system_deps_check
 run_section "art-forge: node --test suite"  art_forge_tests
-run_section "asset-storybook: node --test suite" storybook_tests
+run_section "atlas-world-panels: node --test suite" storybook_tests
 run_section "map-builder: node --test suite" map_builder_tests
 run_section "atlas explorer: UX + touch probes (F-156)" explorer_probes
 run_section "combat-lab: model gates"       combat_lab

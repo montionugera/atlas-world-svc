@@ -60,7 +60,7 @@ CAUSES its subjects); segment pin + measured note `forge.config.json:89-95`.
 **Machine gates run this review:** `node scripts/check_content.mjs` → **exit 0, 0 failures, 34 warnings**
 (same warning count as every prior review); `node tools/art-forge/generate/prompt-lint.mjs` → **exit 0**
 (the reworded prompt is negation-free and token-clean); `node --test
-tools/asset-storybook/tests/env-index.test.mjs` → **6/7 — NEW FAILURE: the probe render has no env-index
+tools/atlas-world-panels/tests/env-index.test.mjs` → **6/7 — NEW FAILURE: the probe render has no env-index
 row** ("a render cannot hide"; the index update is owed, see rail changes — a bookkeeping gap, not a render
 defect); `node --test tools/art-forge/tests/env-graph.test.mjs` → **all green** (rail-7 coverage included).
 

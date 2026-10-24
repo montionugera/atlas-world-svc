@@ -42,7 +42,7 @@ test("snapshotSet on the real repo names the known families and every path exist
     "content/spine/edges.json",
     "content/spine/derived.json",
     "content/world/render-lock.json",
-    "atelier/asset-storybook/maps-index.json",
+    "atelier/atlas-world-panels/maps-index.json",
   ];
   for (const w of want) assert.ok(files.includes(w), `missing ${w}`);
   assert.ok(files.some((f) => /^game-client\/assets\/art\/maps\/.*\.svg$/.test(f)), "no maps svg found");

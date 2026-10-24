@@ -8,7 +8,7 @@
     "version": { "const": 1 },
     "verdicts": {
       "type": "object",
-      "description": "Keyed by asset-storybook key (e.g. mob:aggressive). A verdict is a work order for the art pipeline, so the note is mandatory.",
+      "description": "Keyed by asset key (e.g. mob:aggressive). A verdict is a work order for the art pipeline, so the note is mandatory.",
       "propertyNames": { "pattern": "^\\S{1,200}$" },
       "additionalProperties": {
         "type": "object",

@@ -11,13 +11,13 @@ cd atelier/combat-lab && python3 -m http.server 8421
 ```
 
 `fetch()` is blocked over `file://`, so it has to be served — same as
-`atelier/asset-storybook`. It is also embedded in atlas-world as the **Combat Model Lab** tab (`/?tab=combat-lab`),
+`atelier/atlas-world-panels`. It is also embedded in atlas-world as the **Combat Model Lab** tab (`/?tab=combat-lab`),
 next to the Rust Balance Simulator it is deliberately kept apart from.
 
 ## Why it is built this way
 
 Single static HTML, no build step, no dependencies — matching
-`atelier/asset-storybook` and `atelier/story-explorer`. The data pipeline follows
+`atelier/atlas-world-panels` and `atelier/story-explorer`. The data pipeline follows
 `scripts/gen_audio_index.mjs`: a generator reads the real thing on disk and
 writes JSON; the page only renders.
 

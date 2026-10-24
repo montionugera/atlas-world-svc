@@ -38,7 +38,7 @@ no ControlNet (`env-graph.test.mjs:342` asserts exactly this shape). Sampler fie
 
 **Machine gates run this review (exit codes):** `node scripts/check_content.mjs` → **exit 0, 0 failures, 34
 warnings** (same warning count as every prior review); `node tools/art-forge/generate/prompt-lint.mjs` →
-**exit 0**; `node --test tools/asset-storybook/tests/env-index.test.mjs` → **7/7 PASS** — the refine row was
+**exit 0**; `node --test tools/atlas-world-panels/tests/env-index.test.mjs` → **7/7 PASS** — the refine row was
 indexed pre-review with this sheet's filename pre-referenced in its `reviews` array and a verdict-pending note;
 `node --test tools/art-forge/tests/env-graph.test.mjs` → **41/41 PASS**, including the two new `--refine` tests
 (anchor-recipe assertions `:342`; schnell + rolltag guards `:367`); `cd tools/art-forge && node --test

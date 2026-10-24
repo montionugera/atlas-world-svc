@@ -59,7 +59,7 @@ list still cites `content/towns/town-criteria.json` for the real `content/world/
 doc fix).
 **Machine gates run this review:** `node scripts/check_content.mjs` → **exit 0, 0 failures, 34 warnings**
 (same warning count as every prior review); `node tools/art-forforge/generate/prompt-lint.mjs` → **exit 0**
-(run as `tools/art-forge/generate/prompt-lint.mjs`); `node --test tools/asset-storybook/tests/env-index.test.mjs`
+(run as `tools/art-forge/generate/prompt-lint.mjs`); `node --test tools/atlas-world-panels/tests/env-index.test.mjs`
 → **7/7 pass**. The env-index already pins this sheet's filename on the 42424/10001 rows (`env-index.json:431-454`);
 the 12345 row still points at the ladder verdict with note "Awaiting ladder verdict" (`:269-281`) — stale, see
 rail changes.

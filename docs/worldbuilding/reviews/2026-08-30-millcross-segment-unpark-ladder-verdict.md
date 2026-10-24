@@ -61,7 +61,7 @@ window-discipline precedents. Note: the persona's reading list cites `content/to
 file is `content/world/town-criteria.json` (flagged in rail changes).
 **Machine gates run this review:** `node scripts/check_content.mjs` → **exit 0, 0 failures, 34 warnings** (same
 warning count as every prior review); `node tools/art-forge/generate/prompt-lint.mjs` → **exit 0**;
-`node --test tools/asset-storybook/tests/env-index.test.mjs` → **7/7 pass** (run before this sheet existed — the
+`node --test tools/atlas-world-panels/tests/env-index.test.mjs` → **7/7 pass** (run before this sheet existed — the
 index already references this filename and its provenance test passes against the run log including the three
 segment rows).
 

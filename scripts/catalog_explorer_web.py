@@ -1768,8 +1768,8 @@ INDEX_HTML = r"""<!DOCTYPE html>
   <title>Atlas World — Joymify Design Observatory (RMS Edition)</title>
   <link rel="icon" href="data:," />
   <link rel="stylesheet" href="/theme.css" />
-  <link rel="stylesheet" href="/atelier/asset-storybook/css/panels.css" />
-  <script type="module" src="/atelier/asset-storybook/js/panels/registry.mjs"></script>
+  <link rel="stylesheet" href="/atelier/atlas-world-panels/css/panels.css" />
+  <script type="module" src="/atelier/atlas-world-panels/js/panels/registry.mjs"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -4355,7 +4355,7 @@ const NAV_GROUPS = [
   }
 ];
 
-// Mounted storybook panels (atelier/asset-storybook/js/panels/registry.mjs) report their own
+// Mounted storybook panels (atelier/atlas-world-panels/js/panels/registry.mjs) report their own
 // counts once mounted; until then the sidebar shows an ellipsis.
 function atlasPanelCount(id) {
   const c = window.ATLAS_PANELS && window.ATLAS_PANELS.count ? window.ATLAS_PANELS.count(id) : null;
@@ -4421,7 +4421,7 @@ function panelDispatch(main) {
     setTimeout(() => {
       const el = document.querySelector('#panelHost [data-panel-loading]');
       if (el && !window.ATLAS_PANELS) {
-        el.textContent = 'Panels failed to load (/atelier/asset-storybook/js/panels/registry.mjs). See the browser console.';
+        el.textContent = 'Panels failed to load (/atelier/atlas-world-panels/js/panels/registry.mjs). See the browser console.';
         console.error('[atlas-panels] registry.mjs did not define window.ATLAS_PANELS');
       }
     }, 8000);

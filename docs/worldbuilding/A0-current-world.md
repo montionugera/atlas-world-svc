@@ -291,7 +291,7 @@ Two disconnected populations.
 | `race`  | 8     | dwarf, immortal, human, demon, elf, ogre, dragon, beastkin. `art:race-human` deliberately **reuses** `concept/cast-crossroads-man-sheet.png`, recorded explicitly "so a 7-of-8 race group can never again be mistaken for an omission" |
 | `class` | 64    | 8 races × 8 classes. Note: "RO-proportion x Genshin-detail class artwork"                                                                                                                                                              |
 
-The only consumer is `tools/asset-storybook/index.html:782`, at runtime. **Nothing validates the manifest** (`2026-08-01-art-forge-foundation-design.md` §1).
+The only consumer is `tools/atlas-world-panels/index.html:782`, at runtime. **Nothing validates the manifest** (`2026-08-01-art-forge-foundation-design.md` §1).
 
 **The illustrated edition** — `docs/story/undertow/novel-illustrated-edition.html`, 103 KB, Thai, titled `The Undertow — คลื่นใต้น้ำ · ฉบับไลท์โนเวล`. **Zero `<img>` tags**; **12 hand-authored inline SVGs**, fully self-contained: cover art (the Widow on the hill watching the caravan burn), the six-town land map, six character silhouettes (Widow, Crossroads Man, Quartermaster, Broker, Iron Regent, Ash Prophet), the send-off morning, the burning caravan with the colourless rider, the Twin-Strike attack, and a closing emblem (crossed banners over a Bellfaith wax seal). It covers **the prologue and chapter 1 only**, ending on `โปรดติดตามบทที่ ๒`.
 

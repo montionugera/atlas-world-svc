@@ -36,7 +36,7 @@ brief-check ──→ map-derive ──→ generate ≤5 cells ──→ reviewe
    her definition inlined, writes only `docs/worldbuilding/reviews/**`). She runs the machine
    gates herself, judges per criterion with citations, rules per cell, issues a minimal change
    set or closes the lever, and returns ≤15 lines. Every verdict sheet is committed and wired
-   into `atelier/asset-storybook/env-index.json` (a render cannot hide; the parity gate enforces
+   into `atelier/atlas-world-panels/env-index.json` (a render cannot hide; the parity gate enforces
    the row).
 5. **Owner decision.** ACCEPT → sign-off. ACCEPT-WITH-REFINEMENT → the named refinement lever
    gets ONE cell, then re-review. REJECT with levers remaining → next change-set cell. Levers
@@ -83,12 +83,12 @@ and the mill control-map emphasis cell are **owner decisions**, per the criteria
 # gates (all must be green before/after any change)
 node scripts/check_content.mjs && npm test --prefix scripts
 (cd atelier/art-forge && node --test tests/*.test.mjs)
-node --test atelier/asset-storybook/tests/env-index.test.mjs
+node --test atelier/atlas-world-panels/tests/env-index.test.mjs
 
 # roll a carrier cell (GPU: ssh -f -N -L 8188:127.0.0.1:8188 mont@100.66.190.100 first)
 (cd atelier/art-forge && node generate/env.mjs --brief A1-ART-02 --seed 12345 \
   --model dev --control segment --strength 0.45 --rolltag <tag>)
 
 # review surface
-nohup python3 -m http.server 6007 --bind 127.0.0.1 &   # → atelier/asset-storybook/index.html
+nohup python3 -m http.server 6007 --bind 127.0.0.1 &   # → atelier/atlas-world-panels/index.html
 ```

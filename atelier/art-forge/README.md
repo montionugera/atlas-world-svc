@@ -241,7 +241,7 @@ After any manual ledger surgery, regenerate the storybook-facing index:
 node ledger-index.mjs   # rebuilds runs/_index.json ({ v: 1, briefs: [...] })
 ```
 
-The asset-storybook **Forge** tab reads these ledgers plus `briefs/` to
+The atlas-world-panels **Forge** tab reads these ledgers plus `briefs/` to
 render per-brief pipeline rows with per-cell status/staleness. Re-runs are
 requested as **work orders** in `content/review-queue.json`
 (`workOrders[]`: `{ id, briefId, cell, reason, seed?, createdAt }`) — the

@@ -1,7 +1,7 @@
 // Guards the story registry against the web surface that serves it.
 //
-// The story panel (atelier/asset-storybook/js/panels/story.mjs) iframes the pages named in
-// atelier/asset-storybook/story-views.json, resolved to root-absolute URLs. atlas-world
+// The story panel (atelier/atlas-world-panels/js/panels/story.mjs) iframes the pages named in
+// atelier/atlas-world-panels/story-views.json, resolved to root-absolute URLs. atlas-world
 // (scripts/catalog_explorer_web.py) only serves repo paths on the static-mount allowlist in
 // scripts/atlas_world_web/static_mounts.py. A registry entry whose page is not mounted still
 // works under any dev server that serves the whole repo, and silently 404s in the iframe on the
@@ -15,9 +15,9 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const STORYBOOK_DIR = join(ROOT, "atelier/asset-storybook");
+const STORYBOOK_DIR = join(ROOT, "atelier/atlas-world-panels");
 const REGISTRY = join(STORYBOOK_DIR, "story-views.json");
-const STORY_VIEWS_URL = "/atelier/asset-storybook/story-views.json"; // SB_BASE + "story-views.json" in state.mjs
+const STORY_VIEWS_URL = "/atelier/atlas-world-panels/story-views.json"; // SB_BASE + "story-views.json" in state.mjs
 
 // URL path -> served file path, or null, exactly as the server decides it.
 function resolveMounted(urlPaths) {

@@ -1,7 +1,7 @@
 """Read-only static mounts: repo paths served at their own URL path.
 
 Every storybook module fetches `../../<repo path>` relative to
-`/atelier/asset-storybook/index.html`; from the explorer page at `/` those URLs clamp to
+`/atelier/atlas-world-panels/index.html`; from the explorer page at `/` those URLs clamp to
 `/<repo path>`, so mounting a repo path at the same URL path needs no module change.
 
 `safe_resolve` is the only door: it decodes, rejects dot segments and blocklisted
@@ -23,7 +23,7 @@ MOUNT_DIRS: tuple[str, ...] = (
     "content/generated",
     "content/world",
     "content/story",
-    "atelier/asset-storybook",
+    "atelier/atlas-world-panels",
     "atelier/mapforge/lib",
     "atelier/art-forge/runs",
     "atelier/art-forge/briefs",

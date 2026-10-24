@@ -167,7 +167,7 @@ decision — open question 1.
 - Render intake: the ledger now records `control`/`strength`/`briefHash`/`seed` per render (verified this roll)
   but not `model` or `guidance` — add both (DR-002 tagging rule, ABP-flux-dev-and-anchor.md:352-353). Carried
   from s0.30 rail 2, partially landed.
-- Review surface: wire A1-ART-02 (and art-forge env renders generally) into `tools/asset-storybook/world-index.json`
+- Review surface: wire A1-ART-02 (and art-forge env renders generally) into `tools/atlas-world-panels/world-index.json`
   — re-verified this roll: still no entry (2026-08-15 owner rule).
 
 ## Open questions for the owner

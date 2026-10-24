@@ -41,10 +41,10 @@ led animals); `content/world/town-criteria.json` — `materials-by-economy` :183
 
 **Machine gates run this review (exit codes):** `node scripts/check_content.mjs` → **exit 0, 0 failures,
 34 warnings** (counts unchanged from #16); `node tools/art-forge/generate/prompt-lint.mjs` → **exit 0**;
-`node --test tools/asset-storybook/tests/env-index.test.mjs` → **FAIL** — the served env index ends at
+`node --test tools/atlas-world-panels/tests/env-index.test.mjs` → **FAIL** — the served env index ends at
 `…segment-mill-emphasis-r2-seed12345-s0.45` and does **not** contain
 `A1-ART-02-segment-mill-emphasis-r3-seed42424-s0.45` (the r2 entry is still missing too): **the r3 cell was
-not indexed into the asset-storybook review surface — the #15/#16 process-gate break, third occurrence.**
+not indexed into the atlas-world-panels review surface — the #15/#16 process-gate break, third occurrence.**
 
 ---
 
@@ -99,7 +99,7 @@ The #16 condition for replacing the subject-probe cell — clear every carried f
 - **Storybook index — re-index BOTH mill-emphasis cells (blocking bookkeeping fix, not a test change).**
   Third occurrence: restore the pre-roll indexing step for rolltags `mill-emphasis-r2` and
   `mill-emphasis-r3` (verdict-pending notes referencing #16 and this sheet), re-run
-  `node --test tools/asset-storybook/tests/env-index.test.mjs` to pass.
+  `node --test tools/atlas-world-panels/tests/env-index.test.mjs` to pass.
 - **Seed lever — mark SPENT AND INERT for register fails** in `millcross-materials-lever-ledger` :71
   (data diff: append "seed change SPENT 2026-09-01 (r3, verdict #17): colour manifests moved
   (tan-stone→charcoal slab, housing crenellation cleared) but timber register, fachwerk and

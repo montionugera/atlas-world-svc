@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// Generates atelier/asset-storybook/audio-index.json — a flat listing of the
+// Generates atelier/atlas-world-panels/audio-index.json — a flat listing of the
 // baked SFX the game ships, under game-client/assets/audio/.
 //
-// The atlas-world audio panel (atelier/asset-storybook/js/panels/audio.mjs) fetches this file at
+// The atlas-world audio panel (atelier/atlas-world-panels/js/panels/audio.mjs) fetches this file at
 // runtime to render the soundboard, then cross-references audio-manifest.json
 // to badge each tile with its sfx:* event key. It exists so the page never has
 // to guess or hand-invent the file list: this script reads the real directory
@@ -24,7 +24,7 @@ const REPO_ROOT = resolve(__dirname, "..");
 
 const SOURCE_DIR_REL = "game-client/assets/audio";
 const SOURCE_DIR = join(REPO_ROOT, SOURCE_DIR_REL);
-const OUT_PATH = join(REPO_ROOT, "atelier/asset-storybook/audio-index.json");
+const OUT_PATH = join(REPO_ROOT, "atelier/atlas-world-panels/audio-index.json");
 
 function main() {
   const entries = readdirSync(SOURCE_DIR, { withFileTypes: true });

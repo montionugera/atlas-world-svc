@@ -55,7 +55,7 @@
         </mxCell>
 
         <!-- 8. View -->
-        <mxCell id="n8" value="8. View&#10;asset-storybook Maps tab&#10;atelier/asset-storybook/js/maps.mjs&#10;pan/zoom PNG viewer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
+        <mxCell id="n8" value="8. View&#10;atlas-world-panels Maps tab&#10;atelier/atlas-world-panels/js/maps.mjs&#10;pan/zoom PNG viewer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
           <mxGeometry x="1810" y="80" width="200" height="90" as="geometry" />
         </mxCell>
 

@@ -71,7 +71,7 @@ segment pin + measured note `forge.config.json:89-95` (0.45 OPERATING, window 0.
 **Machine gates run this review (exit codes):** `node scripts/check_content.mjs` → **exit 0, 0 failures, 34
 warnings** (same warning count as every prior review); `node tools/art-forge/generate/prompt-lint.mjs` →
 **exit 0** (the reworded prompt is negation-free and token-clean); `node --test
-tools/asset-storybook/tests/env-index.test.mjs` → **7/7 PASS** — the probe row was indexed **pre-roll** with
+tools/atlas-world-panels/tests/env-index.test.mjs` → **7/7 PASS** — the probe row was indexed **pre-roll** with
 this sheet's filename pre-referenced and the note recording verdict-pending (the #11 bookkeeping gap is fixed;
 the confirmed-cell row note now records the ladder overwrite history and is wired); `node --test
 tools/art-forge/tests/env-graph.test.mjs` → **39/39 PASS, all green** (rail-7 coverage included).

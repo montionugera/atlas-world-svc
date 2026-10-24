@@ -53,9 +53,9 @@ Millcross palette :129; `forge.config.json` styleGuard era clause + segment pin 
 
 **Machine gates run this review (exit codes):** `node scripts/check_content.mjs` → **exit 0, 0 failures, 34
 warnings** (count unchanged); `node tools/art-forge/generate/prompt-lint.mjs` → **exit 0**; `node --test
-tools/asset-storybook/tests/env-index.test.mjs` → **6/7 PASS, 1 FAIL** — the index's expected cell list
+tools/atlas-world-panels/tests/env-index.test.mjs` → **6/7 PASS, 1 FAIL** — the index's expected cell list
 contains `A1-ART-02-mill-emphasis-seed12345-s0.45` and the served env index does **not**: **the mill-emphasis
-cell was not indexed into the asset-storybook review surface** (the pre-roll indexing step that held at
+cell was not indexed into the atlas-world-panels review surface** (the pre-roll indexing step that held at
 #12/#14 was skipped for this cell — a process-gate break against the owner rule that every produced artifact
 is observable in a review surface, not an image-content fail).
 
@@ -126,7 +126,7 @@ Bar test: not every remaining fail moved, and a new veto-class fail exists — *
 - **Storybook index — re-index the mill-emphasis cell (blocking bookkeeping fix, not a test change).** The
   env-index test expects `A1-ART-02-mill-emphasis-seed12345-s0.45`; the index lacks it. Restore the pre-roll
   indexing step for this rolltag (with verdict-pending note referencing this sheet), re-run
-  `node --test tools/asset-storybook/tests/env-index.test.mjs` to 7/7.
+  `node --test tools/atlas-world-panels/tests/env-index.test.mjs` to 7/7.
 - **NEW RAIL — crenellation/battlement class.** The tower rendered crenellations + arched belfry openings at
   the mill slot; `referencePolicy` forbids belfries/pinnacles but not battlements. Diff proposal: extend
   `referencePolicy.value.forbiddenCharacteristics` (:276-277) with "crenellations, battlements and
