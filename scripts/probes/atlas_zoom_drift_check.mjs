@@ -241,6 +241,31 @@ function tierName(st, baseline) {
   return 'overland';
 }
 
+// Per-zoom core-label audit (shared by the 1440 run and the F-159 768/375 viewport runs). Page-context source.
+const OL_LABEL_ROWS_FN = `async (m, v, k, c0) => {
+    const rows = [];
+    for (const s of [1, 1.5, 2.2, 3.2, 4.5]) {
+      v.setCenter(c0); v.setResolution(1 / (k * s));
+      await new Promise(r => { m.once('rendercomplete', r); m.render(); });
+      const size = m.getSize(); const F = buildAtlasspatialFeaturesList();
+      const row = { s, inView: 0, pinsHit: 0, coreInView: [], coreLabeled: [] };
+      F.forEach(f => {
+        const p = m.getPixelFromCoordinate([f.x, 500 - f.y]);
+        if (!p || p[0] < 10 || p[1] < 10 || p[0] > size[0] - 10 || p[1] > size[1] - 30) return;
+        row.inView++;
+        let pin = false; m.forEachFeatureAtPixel(p, ft => { const z = ft.get('zoneMeta'); if (z && z.id === f.id) pin = true; }, { hitTolerance: 1 });
+        if (pin) row.pinsHit++;
+        if (f.actionType === 'town' || f.actionType === 'dungeon' || f.actionType === 'fortress') {
+          row.coreInView.push(f.id);
+          let lab = false; m.forEachFeatureAtPixel([p[0], p[1] + 14], ft => { const z = ft.get('labelMeta') || ft.get('zoneMeta'); if (z && z.id === f.id) lab = true; }, { hitTolerance: 2 });
+          if (lab) row.coreLabeled.push(f.id);
+        }
+      });
+      rows.push(row);
+    }
+    return rows;
+  }`;
+
 async function main() {
   const port = await freePort();
   const profile = mkdtempSync(join(tmpdir(), 'atlas-qa-'));
@@ -514,26 +539,7 @@ true;`;
     const m = window.__ATLAS_OL_MAP_INSTANCE; const v = m.getView();
     const k = getAtlasOlCameraFromApp(m.getTargetElement()).k;
     const c0 = v.getCenter();
-    const rows = [];
-    for (const s of [1, 1.5, 2.2, 3.2, 4.5]) {
-      v.setCenter(c0); v.setResolution(1 / (k * s));
-      await new Promise(r => { m.once('rendercomplete', r); m.render(); });
-      const size = m.getSize(); const F = buildAtlasspatialFeaturesList();
-      const row = { s, inView: 0, pinsHit: 0, coreInView: [], coreLabeled: [] };
-      F.forEach(f => {
-        const p = m.getPixelFromCoordinate([f.x, 500 - f.y]);
-        if (!p || p[0] < 10 || p[1] < 10 || p[0] > size[0] - 10 || p[1] > size[1] - 30) return;
-        row.inView++;
-        let pin = false; m.forEachFeatureAtPixel(p, ft => { const z = ft.get('zoneMeta'); if (z && z.id === f.id) pin = true; }, { hitTolerance: 1 });
-        if (pin) row.pinsHit++;
-        if (f.actionType === 'town' || f.actionType === 'dungeon' || f.actionType === 'fortress') {
-          row.coreInView.push(f.id);
-          let lab = false; m.forEachFeatureAtPixel([p[0], p[1] + 14], ft => { const z = ft.get('labelMeta') || ft.get('zoneMeta'); if (z && z.id === f.id) lab = true; }, { hitTolerance: 2 });
-          if (lab) row.coreLabeled.push(f.id);
-        }
-      });
-      rows.push(row);
-    }
+    const rows = await (${OL_LABEL_ROWS_FN})(m, v, k, c0);
     v.setResolution(1e-6); await new Promise(r => setTimeout(r, 200));
     const maxZoom = +(1 / (v.getResolution() * k)).toFixed(3);
     v.setCenter(c0); v.setResolution(1 / k);
@@ -604,6 +610,24 @@ true;`;
   }
   assert('OL: core landmark labels never vanish while zooming in (monotonic 1x→4.5x)', lostCore.length === 0 && olAudit.rows[0].coreLabeled.length > 0,
     lostCore.length ? lostCore.slice(0, 6) : olAudit.rows.map(r => `${r.s}x ${r.coreLabeled.length}/${r.coreInView.length}`).join('; '));
+  // F-159: the same monotonic label check at tablet and phone widths (it used to run at 1440 only).
+  for (const [vw, vh] of [[1440, 900], [768, 1024], [375, 812]]) {
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: vw, height: vh, deviceScaleFactor: 2, mobile: vw < 600 });
+    const vrows = await cdp.eval(`(async () => { window.dispatchEvent(new Event('resize')); zoomStudioMap(0, true); syncAtlasActiveSpatialEngine(); await __qaWaitOl();
+      const m = window.__ATLAS_OL_MAP_INSTANCE; m.updateSize(); const v = m.getView();
+      const k = getAtlasOlCameraFromApp(m.getTargetElement()).k; const c0 = v.getCenter();
+      const rows = await (${OL_LABEL_ROWS_FN})(m, v, k, c0);
+      v.setCenter(c0); v.setResolution(1 / k); return rows; })()`);
+    const lost = [];
+    for (let i = 1; i < vrows.length; i++) {
+      const prev = vrows[i - 1], cur = vrows[i];
+      prev.coreLabeled.filter(id => cur.coreInView.includes(id) && !cur.coreLabeled.includes(id)).forEach(id => lost.push(`${prev.s}→${cur.s}: ${id}`));
+    }
+    assert(`OL: core landmark labels never vanish while zooming in at ${vw}x${vh}`, lost.length === 0 && vrows[0].coreLabeled.length > 0,
+      lost.length ? lost.slice(0, 8) : vrows.map(r => `${r.s}x ${r.coreLabeled.length}/${r.coreInView.length}`).join('; '));
+  }
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 2, mobile: false });
+  await cdp.eval(`(async () => { window.dispatchEvent(new Event('resize')); zoomStudioMap(0, true); syncAtlasActiveSpatialEngine(); await __qaWaitOl(); window.__ATLAS_OL_MAP_INSTANCE.updateSize(); return true; })()`);
   assert('OL: both ruler markers stay drawn after the 2nd point (start marker not decluttered)', olAudit.rulerHit === true, `markers painted [A,B]=${JSON.stringify(olAudit.rulerMarks)}`);
   assert('OL: two quick ruler clicks = 2 fractional points, no double-click zoom', olAudit.rulerKeptFraction === true && olAudit.dblZoomOk === true,
     JSON.stringify({ ...olAudit.rulerClicks, resBefore: olAudit.resBefore }));

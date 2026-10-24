@@ -8045,6 +8045,31 @@ function mountRealOpenLayersInstance(targetEl, features) {
     const pinFeatures = [];
     const labelFeatures = [];
     const isCoreZone = f => f.actionType === 'town' || f.actionType === 'dungeon' || f.actionType === 'fortress';
+    // F-159: OL's greedy declutter is NOT monotone under zoom-in. A core label H hidden at one zoom by a higher-priority
+    // neighbour H' is revealed once H' drifts away, and (id-ordered) then evicts a lower-priority core label L that was
+    // drawn a step earlier (768px: Star-Heart Nave and Forbidden-Path Orrery evicted Starfall Haven between 1.5x and 2.2x).
+    // Fix at the cause: core labels get a fixed, zoom-independent reveal resolution computed once in priority order.
+    // Two label boxes (fixed px size, centres scale with 1/resolution) overlap iff res > sepRes, so L may show while
+    // res <= min(sepRes(L,E)) over every earlier E that is itself showing at that sepRes. Once a core label is
+    // drawn it stays drawn on zoom-in, and nothing it was drawn beside can later evict it.
+    const labelBoxPx = (() => {
+      let ctx = null;
+      try { ctx = document.createElement('canvas').getContext('2d'); if (ctx) ctx.font = 'bold 10px monospace'; } catch (e) { ctx = null; }
+      return f => {
+        const w = ctx ? ctx.measureText(String(f.name)).width : String(f.name).length * 6.1;
+        return { w: w + 8 + 2 + 4, h: 12 + 4 + 2 + 4 }; // text + padding + stroke + safety margin
+      };
+    })();
+    const coreRevealRes = new Map();
+    features.filter(isCoreZone).slice().sort((a, b) => String(a.id).localeCompare(String(b.id))).forEach(f => {
+      const bf = labelBoxPx(f); let limit = Infinity;
+      coreRevealRes.forEach((rE, idE) => {
+        const e = features.find(x => x.id === idE); const be = labelBoxPx(e);
+        const sepRes = Math.max(Math.abs(f.x - e.x) / ((bf.w + be.w) / 2), Math.abs(f.y - e.y) / ((bf.h + be.h) / 2));
+        if (rE > sepRes && sepRes < limit) limit = sepRes;
+      });
+      coreRevealRes.set(f.id, limit);
+    });
     if (ol.Feature && ol.geom && ol.geom.Point && ol.style && ol.style.Style) {
       features.forEach(f => {
         const col = f.actionType === 'town' ? '#eab308' : (f.actionType === 'dungeon' ? '#a855f7' : '#38bdf8');
@@ -8058,7 +8083,7 @@ function mountRealOpenLayersInstance(targetEl, features) {
         }));
         pinFeatures.push(pf);
         const lf = new ol.Feature({ geometry: new ol.geom.Point([f.x, 500 - f.y]), labelMeta: f, labelRank: isCoreZone(f) ? 0 : 1 });
-        lf.setStyle(new ol.style.Style({
+        const labelStyle = new ol.style.Style({
           text: new ol.style.Text({
             text: f.name,
             offsetY: 14,
@@ -8068,7 +8093,13 @@ function mountRealOpenLayersInstance(targetEl, features) {
             backgroundStroke: new ol.style.Stroke({ color: col, width: 1 }),
             padding: [2, 4, 2, 4]
           })
-        }));
+        });
+        if (coreRevealRes.has(f.id)) {
+          const revealRes = coreRevealRes.get(f.id);
+          lf.setStyle((feat, resolution) => (resolution <= revealRes ? labelStyle : null));
+        } else {
+          lf.setStyle(labelStyle);
+        }
         labelFeatures.push(lf);
       });
     }
