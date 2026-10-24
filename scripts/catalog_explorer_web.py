@@ -3853,6 +3853,44 @@ INDEX_HTML = r"""<!DOCTYPE html>
     }
     /* F-160: the HUD toggle only exists on phones, where the top-left HUD used to cover half the map. */
     .atlas-hud-toggle { display: none; }
+    /* F-161: the map legend (5-6 rows + a keyboard-shortcut line) covered ~55% of the map on phones. On phones / small coarse
+       pointers it collapses to a 44x44 toggle under the HUD toggle (the bottom edge belongs to the OL/3D toolbars); expanded it drops the keys line and is capped at 25% of the map height. */
+    .atlas-legend-toggle { display: none; }
+    @media (max-width: 430px), (pointer: coarse) and (max-width: 767px) {
+      .atlas-legend-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 64px;
+        left: 12px;
+        z-index: 11;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border-radius: 10px;
+        border: 1px solid rgba(212, 175, 55, 0.5);
+        background: rgba(18, 16, 12, 0.92);
+        color: #fde047;
+        font-size: 9px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .atlas-legend-toggle[aria-pressed="true"] { background: #7c5a10; color: #fff7d6; }
+      .joy-spatial-shell[data-legend-collapsed="true"] .atlas-map-legend { display: none !important; }
+      .joy-spatial-shell .atlas-map-legend {
+        top: 116px !important;
+        left: 12px !important;
+        right: 84px !important;
+        bottom: auto !important;
+        z-index: 10;
+        max-height: 25%;
+        overflow-y: auto;
+        pointer-events: auto !important;
+        box-sizing: border-box;
+      }
+      .joy-spatial-shell .atlas-map-legend .atlas-legend-keys { display: none !important; }
+    }
     @media (max-width: 430px) {
       .atlas-hud-toggle {
         display: flex;
@@ -7428,6 +7466,12 @@ let ATLAS_HUD_HIDDEN = (() => {
   try { const v = localStorage.getItem('atlas-hud-hidden'); if (v === '0' || v === '1') return v === '1'; } catch (e) {}
   return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 430px)').matches;
 })();
+// F-161: phones start with the map legend collapsed to a toggle; a stored choice wins. Same query as the .atlas-legend-toggle CSS.
+const ATLAS_LEGEND_PHONE_QUERY = '(max-width: 430px), (pointer: coarse) and (max-width: 767px)';
+let ATLAS_LEGEND_COLLAPSED = (() => {
+  try { const v = localStorage.getItem('atlas-legend-collapsed'); if (v === '0' || v === '1') return v === '1'; } catch (e) {}
+  return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(ATLAS_LEGEND_PHONE_QUERY).matches;
+})();
 let APP_SIDEBAR_COLLAPSED = (() => { try { return localStorage.getItem('atlas-sidebar-collapsed') === '1'; } catch (e) { return false; } })();
 let ATLAS_THEATER_MODE = false;
 let ATLAS_ENTITY_MATRIX_OPEN = false;
@@ -10000,6 +10044,15 @@ function toggleAtlasHud(forceHidden) {
   if (btn) btn.setAttribute('aria-pressed', ATLAS_HUD_HIDDEN ? 'false' : 'true');
 }
 
+function toggleAtlasLegend(forceCollapsed) {
+  ATLAS_LEGEND_COLLAPSED = typeof forceCollapsed === 'boolean' ? forceCollapsed : !ATLAS_LEGEND_COLLAPSED;
+  try { localStorage.setItem('atlas-legend-collapsed', ATLAS_LEGEND_COLLAPSED ? '1' : '0'); } catch (e) {}
+  const shell = document.querySelector('.joy-spatial-shell');
+  if (shell) shell.setAttribute('data-legend-collapsed', ATLAS_LEGEND_COLLAPSED ? 'true' : 'false');
+  const btn = document.getElementById('atlasLegendToggleBtn');
+  if (btn) btn.setAttribute('aria-pressed', ATLAS_LEGEND_COLLAPSED ? 'false' : 'true');
+}
+
 // F-157: one control hands the map the whole screen width (sidebar + inspector drawer), a second press restores the sidebar.
 function toggleAtlasMaximizeMap() {
   const maximized = APP_SIDEBAR_COLLAPSED && !ATLAS_LEFT_DRAWER_OPEN;
@@ -10913,7 +10966,7 @@ function renderCartoShellHtml({
   const placeDrawerHtml = buildStudioPlaceDrawerHtml(poi);
 
   return `
-    <div class="joy-spatial-shell" data-engine="${getAtlasEffectiveEngineMode()}" data-carto-theme="${isL2 ? 'l2hub' : 'google'}" data-left-open="${ATLAS_LEFT_DRAWER_OPEN ? 'true' : 'false'}" data-bottom-open="${!ATLAS_THEATER_MODE ? 'true' : 'false'}" data-theater="${ATLAS_THEATER_MODE ? 'true' : 'false'}" data-hud-hidden="${ATLAS_HUD_HIDDEN ? 'true' : 'false'}">
+    <div class="joy-spatial-shell" data-engine="${getAtlasEffectiveEngineMode()}" data-carto-theme="${isL2 ? 'l2hub' : 'google'}" data-left-open="${ATLAS_LEFT_DRAWER_OPEN ? 'true' : 'false'}" data-bottom-open="${!ATLAS_THEATER_MODE ? 'true' : 'false'}" data-theater="${ATLAS_THEATER_MODE ? 'true' : 'false'}" data-hud-hidden="${ATLAS_HUD_HIDDEN ? 'true' : 'false'}" data-legend-collapsed="${ATLAS_LEGEND_COLLAPSED ? 'true' : 'false'}">
       <div class="joy-spatial-shell__chrome">
         ${filterBarHtml || renderAtlasFilterBarHtml(0)}
       </div>
@@ -11043,6 +11096,7 @@ function renderCartoShellHtml({
           ${getAtlasEffectiveEngineMode() !== '2d_svg' ? `<div id="atlasAdvancedEngineMount" data-engine-mode="${escapeHtml(ATLAS_ENGINE_MODE)}" style="position:relative;width:100%;height:100%;min-height:min(460px,100%);background:#090f1a;overflow:hidden"></div>` : ''}
 
           <!-- Bottom Cartographic Scale Bar & Legend -->
+          <button type="button" id="atlasLegendToggleBtn" class="atlas-legend-toggle" onclick="toggleAtlasLegend()" aria-pressed="${ATLAS_LEGEND_COLLAPSED ? 'false' : 'true'}" aria-label="Show or hide the map legend" title="Show or hide the map legend">Legend</button>
           <div class="atlas-map-legend" style="position:absolute;bottom:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(15,13,10,0.92);border:1px solid rgba(212,175,55,0.28);font-size:11px;color:#e7e5e4;pointer-events:none">
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
               ${(legendItems || []).map(item => `
@@ -11052,7 +11106,7 @@ function renderCartoShellHtml({
                 </span>
               `).join('')}
             </div>
-            <div class="mono" style="font-size:10px;color:#fde68a">⌨️ Keys: [+/−] Semantic Zoom · [Arrows] Pan · [1–3/PgUp/PgDn] Floor · [Esc] Exit Sub-Map</div>
+            <div class="mono atlas-legend-keys" style="font-size:10px;color:#fde68a">⌨️ Keys: [+/−] Semantic Zoom · [Arrows] Pan · [1–3/PgUp/PgDn] Floor · [Esc] Exit Sub-Map</div>
           </div>
         </div>
       </div>
