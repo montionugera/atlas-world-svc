@@ -28,7 +28,7 @@ The full pipeline (spec: "Authoring workflow" diagram):
 2. **GATE** — `check_content.mjs` green
 3. **FORGE** (F-003) — Visual Brief → kitbash/rig → bake → validate → intake; `status: forged`
 4. **GATE (re-run)** — tier/status × manifest cross-check
-5. **VERIFY** — storybook eyeball (idle + walk + attack) + headless probes
+5. **VERIFY** — atlas-world Asset Library eyeball (`/?tab=assets`: idle + walk + attack) + headless probes
 6. **SHIP** — ps-release-workflow ship; `status: shipped`
 
 Authoring a sheet in detail:

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Thumbnail bake (F-038).
 //
-// atelier/asset-storybook renders EVERY card from a baked thumbnail — that is
+// atelier/atlas-world-panels renders EVERY card from a baked thumbnail — that is
 // what makes 742 heterogeneous assets uniformly reviewable and uniformly
 // cheap. Before this, the page mounted 643 <model-viewer> elements and pulled
 // 16.4 MB at rest; a thumbnail spine replaces both with one small image per

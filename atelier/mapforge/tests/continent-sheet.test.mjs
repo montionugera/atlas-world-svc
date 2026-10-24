@@ -25,7 +25,7 @@ import { SHEETS } from "../render-sheet.mjs";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../../..");
 const CONTENT = join(ROOT, "content");
-const idx = () => JSON.parse(readFileSync(join(ROOT, "atelier/asset-storybook/maps-index.json"), "utf8"));
+const idx = () => JSON.parse(readFileSync(join(ROOT, "atelier/atlas-world-panels/maps-index.json"), "utf8"));
 const budgets = () => JSON.parse(readFileSync(join(CONTENT, "world/budgets.json"), "utf8"));
 const resolvedDoc = (nn) => JSON.parse(readFileSync(join(CONTENT, `world/resolved/continent-${nn}.json`), "utf8"));
 const fabricDoc = (nn) => JSON.parse(readFileSync(join(CONTENT, `world/fabric/continent-${nn}.json`), "utf8"));

@@ -62,7 +62,7 @@ export function snapshotSet({ repoRoot }) {
   for (const rel of lockExtraPaths({ repoRoot })) addIfExists(files, repoRoot, rel);
   for (const f of listFiles(join(repoRoot, "game-client/assets/art/maps")))
     files.add(`game-client/assets/art/maps/${f}`);
-  addIfExists(files, repoRoot, "atelier/asset-storybook/maps-index.json");
+  addIfExists(files, repoRoot, "atelier/atlas-world-panels/maps-index.json");
   return [...files].filter((f) => existsSync(join(repoRoot, f))).sort();
 }
 

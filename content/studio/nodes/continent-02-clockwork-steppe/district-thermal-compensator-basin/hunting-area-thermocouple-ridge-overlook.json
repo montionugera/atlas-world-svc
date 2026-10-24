@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "hunting-area-thermocouple-ridge-overlook",
+  "name": "Thermocouple-Ridge Overlook",
+  "map_id": null,
+  "parent_district_id": "district-thermal-compensator-basin",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "hunting_area",
+  "status": "mystery",
+  "core_rationale": "Northern copper-constantan thermocouple cliff of Thermal Compensator Basin at [1, 0] where Krono's voltage-sensing ridge-probes convert desert heat gradients into clockwork governing pulses.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    0
+  ],
+  "floor_index": 0,
+  "level_range": [
+    30,
+    30
+  ],
+  "mystery_hook": {
+    "in_world_rumor": "Engineers in Mercury-Bellows Hub warn that the braided copper-constantan spires on Thermocouple-Ridge Overlook arc with golden static whenever noon clouds cross the sun.",
+    "visual_silhouette": "Twin braided metal sensor-spires and silver barometer tubes crowning the northern cliff above Mercury-Bellows Hub.",
+    "unanswered_question": "What forgotten eastern relay receives the millivolt timing pulses transmitted from Thermocouple-Ridge Overlook?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Extends north from Mercury-Bellows Hub at [1, 0] along scar-brass-faultline."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Twin braided metal sensor-spires and silver barometer tubes crowning the northern cliff."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: terrain tile and prop kit metrics for 1.05m characters will be bound when promoted to Canon."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved at [1, 0] north of Mercury-Bellows Hub with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Maintains map_id: null and complete mystery_hook behind the Mercury-Bellows Hub North Fog of Lore gate."
+    }
+  }
+}

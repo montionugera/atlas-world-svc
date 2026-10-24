@@ -32,11 +32,11 @@ const get = (port, urlPath, headers = {}) => new Promise((resolve, reject) => {
   req.end();
 });
 
-test("GET / redirects to the storybook index", async () => {
+test("GET / redirects to the observatory's Map Builder panel", async () => {
   await withServer(async (port) => {
     const res = await get(port, "/");
     assert.equal(res.status, 302);
-    assert.equal(res.headers.location, "/atelier/asset-storybook/index.html");
+    assert.equal(res.headers.location, "http://127.0.0.1:8788/?tab=map-builder");
   });
 });
 
@@ -50,7 +50,7 @@ test("GET /healthz returns ok", async () => {
 
 test("serves the storybook index with text/html", async () => {
   await withServer(async (port) => {
-    const res = await get(port, "/atelier/asset-storybook/index.html");
+    const res = await get(port, "/atelier/atlas-world-panels/index.html");
     assert.equal(res.status, 200);
     assert.equal(res.headers["content-type"], "text/html");
   });
@@ -58,7 +58,7 @@ test("serves the storybook index with text/html", async () => {
 
 test("json manifests get no-store", async () => {
   await withServer(async (port) => {
-    const res = await get(port, "/atelier/asset-storybook/maps-index.json");
+    const res = await get(port, "/atelier/atlas-world-panels/maps-index.json");
     assert.equal(res.status, 200);
     assert.equal(res.headers["content-type"], "application/json");
     assert.equal(res.headers["cache-control"], "no-store");
@@ -118,7 +118,7 @@ test("a file that cannot be opened returns 404 and the server survives the next 
 // tab-completion appends one) must not blank the whole storybook.
 test("a root with a trailing slash still serves files", async () => {
   await withServer(async (port) => {
-    const res = await get(port, "/atelier/asset-storybook/index.html");
+    const res = await get(port, "/atelier/atlas-world-panels/index.html");
     assert.equal(res.status, 200);
     assert.equal(res.headers["content-type"], "text/html");
   }, { root: REPO + "/" });

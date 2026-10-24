@@ -1,7 +1,7 @@
 # map-builder — seed → generate → review → publish → undo
 
 A small local HTTP service that drives the mapforge world generator from the
-asset-storybook's **Map Builder** tab: type (or roll) a seed, watch the draft
+atlas-world's **Map Builder** panel (`?tab=map-builder`): type (or roll) a seed, watch the draft
 build stage by stage, review the draft against the current world, publish it
 (with an automatic snapshot), and undo. Nothing here touches git — see
 "Snapshot / undo contract" below.
@@ -14,18 +14,19 @@ Spec: [`.claude/refined_backlog/F-052-map-builder-service-seed-generate-review/s
 ```bash
 node atelier/map-builder/server.mjs            # from the repo root
 # then open
-open http://127.0.0.1:6016/atelier/asset-storybook/index.html
+python3 scripts/catalog_explorer_web.py --port 8788   # the UI; it proxies /api/map-builder/* to this service
+open http://127.0.0.1:8788/?tab=map-builder
 ```
 
-`GET /` redirects to the storybook; `GET /api/health` reports the version, pid,
+`GET /` redirects to the atlas-world panel; `GET /api/health` reports the version, pid,
 repo root and branch. Flags: `--port <n>`, `--bind <host>` (default
 `127.0.0.1`, loopback only — non-loopback binds are opt-in), `--repo-root <dir>`,
 `--data-dir <dir>`, `--concurrency <n>`. Defaults live in `config.json`
 (`port`, `bind`, `concurrency`, `maxConcurrency`, `snapshotKeep`,
 `killGraceMs`, `pollMs`). There is no root `package.json` script for it.
 
-The service serves the storybook's static files itself (`lib/static.mjs`),
-so one process gives you both the UI and the API on the same origin.
+The service still serves repo files for the review screen (`lib/static.mjs`); the UI itself is the atlas-world panel,
+which reaches this service through `/api/map-builder/*` (503 `MAP_BUILDER_DOWN` while it is not running).
 
 ## Job model
 
@@ -141,7 +142,7 @@ convention); publish copies it into `content/` and `game-client/assets/art/maps/
 
 ```bash
 node --test atelier/map-builder/tests/*.test.mjs                        # unit + API (fake repo, fake tools)
-node --test atelier/asset-storybook/tests/map-builder-model.test.mjs     # the tab's view-model
+node --test atelier/atlas-world-panels/tests/map-builder-model.test.mjs     # the tab's view-model
 REPO_ROOT=$PWD bash atelier/map-builder/tests/e2e/publish-undo.sh        # real draft → publish → undo
 ```
 

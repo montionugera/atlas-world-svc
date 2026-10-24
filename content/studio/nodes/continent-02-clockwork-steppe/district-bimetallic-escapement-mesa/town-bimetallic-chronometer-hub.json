@@ -49,7 +49,24 @@
       }
     },
     "South": null,
-    "East": null,
+    "East": {
+      "portal_id": "portal-chronometer-hub-east-radiator-span",
+      "direction": "East",
+      "target_node_id": "hunting-area-radiator-manifold-span",
+      "target_map_id": "radiator-manifold-span",
+      "target_direction": "West",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 3800.0,
+        "y": 2000.0
+      }
+    },
     "West": {
       "portal_id": "portal-chronometer-hub-west-bimetallic-span",
       "direction": "West",
@@ -149,7 +166,7 @@
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
-      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, Dungeon, and North (fog_of_lore) portals."
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, East, Dungeon, and North (fog_of_lore) portals."
     },
     "intentional_mystery_discipline": {
       "verified": true,

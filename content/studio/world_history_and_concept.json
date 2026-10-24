@@ -1,10 +1,31 @@
 {
   "schema_version": "1.0.0",
   "id": "world-history-cradle-of-embers",
-  "name": "World History and Concept — The Clockspring Sundering",
-  "world_title": "Aethelgard: The Clockspring Nursery",
+  "name": "The Cradle of Sealed Gods & Six Races",
   "status": "canon",
-  "core_rationale": "Giant Primordial Artisans shattered during the Clockspring War, leaving behind a continent-sized nursery of living relics where 90 to 120 centimeter Star-Kindled children awaken to mend the broken world-mechanisms.",
+  "core_rationale": "Establishes the Multi-Race & Sealed-God cosmology across four canonical chapters (1.1 Creation, 1.2 Age Of The Gods, 1.3 The God Wars, 1.4 God Seal Magic by The Architect), binding six playable/mob races to racial home towns with dedicated hunting and farming loops, six monster-only ecology races, neutral Adventure Guild & Blacksmith Clan hubs, and the strict God > MVP (God Subordinate) > Raid Boss hierarchy.",
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "All four history chapters (1.1 Creation -> 1.2 Age Of The Gods -> 1.3 The God Wars -> 1.4 God Seal Magic by The Architect) trace directly into the 3 Continents, 6 Racial Home Towns, and the God > MVP > Raid Boss hierarchy."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Every continent is anchored by a sealed God-Tier entity and a Great War scar: Hearthbloom Basin glazed kiln caldera, the Clockwork Steppe giant brass faultline, and the Shattered Halo inverted-gravity sky islands."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "Enforces the 0.90 to 1.20 meter chibi/miniature proportion standard (1.05m reference height, 2.0x1.5m doors, <=0.15m stairs, <=0.35m grass, >=3.5m roads, 0.55-0.65m counters) across all 6 racial home towns."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Players begin in their chosen Race Home Town with a race-specific story, open-portal adjacent hunting ground, and resource farming loop, then converge through the Neutral Adventure Guild and Blacksmith Clan."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "The Architect final God Seal Vaults and the awakening of each Sealed God top-tier MVP Apostle remain locked behind fog-of-lore catacombs and multi-race Main Quest keys."
+    }
+  },
   "character_scale_law": {
     "height_range_meters": [
       0.9,
@@ -37,54 +58,199 @@
     }
   },
   "player_arrival_premise": {
-    "player_identity": "Star-Kindled Sprouts — 90 to 120 centimeter spirit-children condensed from fallen Hearth-Sparks.",
-    "why_enter_world": "Only small, nimble hands can crawl inside the fractured Titan Reliquaries and relight the World-Lanterns without triggering giant-scale defense wards.",
-    "inciting_phenomenon": "The Great Lantern Eclipse — outer continents are freezing into Fog of Lore, drawing newly condensed Sprouts into the warm Hearthbloom Basin."
+    "player_identity": "A newly awakened scion of one of the Six Mortal Races\u2014Human/Demi-Human, Lunar, Ogre/Orc, Dark-Lunar, Dwarf, or Furral\u2014bearing a resonant fragment of The Architect's God Seal.",
+    "why_enter_world": "Each adventurer begins in their race's ancestral Home Town to master their racial craft, hunt encroaching monsters, farm regional alloys, and register with the Neutral Adventure Guild.",
+    "inciting_phenomenon": "Hairline fractures have appeared across the God Seals forged by The Architect in Chapter 1.4, awakening top-tier MVP Apostles (direct subordinates of the Sealed Gods) and lesser Raid Boss wardens across all three continents."
   },
   "primordial_gods": [
     {
-      "id": "god-sola-hearth-weaver",
-      "name": "Sola, the Hearth-Weaver",
-      "domain": "Warmth, ceramic pottery, eternal embers, and shelter",
+      "id": "god-the-architect",
+      "name": "Aethelgard, The Architect",
+      "title": "The Mortal Woman Who Sealed Every God",
+      "god_archetype": "the_architect",
+      "seal_status": "architect_originator",
+      "mvp_apostle_title": "First Seal-Scribe Automaton, Prime Keeper",
       "status": "canon",
-      "core_rationale": "Provides a safe, warm, low-altitude cradle for new players to spawn and learn basic mechanics.",
-      "geographical_scar": "Fell curled around the central inland sea, baking the surrounding clay basin into permanently warm, fertile terraced meadows.",
-      "architectural_imprint": "Rounded kiln-baked cottage domes, low 0.60 meter hearth-counters, and lantern-lined cobblestone lanes."
+      "core_rationale": "A mortal human woman of unmatched geometric and runic genius who ended the devastating God Wars (Chapter 1.3) by forging the nationwide array of God Seal Magic (Chapter 1.4), binding every deity\u2014Angel, Demon, Legendary Beast, Leviathan, and the Three-Element Legendary Dragon\u2014beneath the world's continents.",
+      "domain": "God Seal Magic, Sacred Geometry, and Mortal Sovereignty",
+      "geographical_scar": "The Prime Seal Meridians that link Lantern Hollow, Inductor Switchyard, and Starfall Haven into a planetary containment lattice",
+      "architectural_imprint": "Octagonal seal-keystones, runic obelisks, and 0.60-meter calibration pedestals found in every racial starter town"
+    },
+    {
+      "id": "god-angel",
+      "name": "Seraphiel of the Zenith Choir",
+      "title": "The Sealed Celestial Arbiter (Angel)",
+      "god_archetype": "angel",
+      "seal_status": "sealed_by_the_architect",
+      "mvp_apostle_title": "Arch-Valkyrie Caelia (MVP \u2014 Direct Angel Subordinate)",
+      "status": "canon",
+      "core_rationale": "Commander of the high-altitude celestial hosts during the Age of the Gods; sealed by The Architect inside the prism-bells of the Shattered Halo after judging mortal cities unworthy of free will.",
+      "domain": "Radiant Law, Starlight Judgement, and Harmonic Bells",
+      "geographical_scar": "The Inverted Belfry and luminous prism reefs of Continent 03 where celestial feathers calcified into starlight glass",
+      "architectural_imprint": "Winged alabaster archways, suspended chime-spires, and Lunar starlight sanctums"
+    },
+    {
+      "id": "god-demon",
+      "name": "Malphas of the Abyssal Crucible",
+      "title": "The Sealed Cinder Tyrant (Demon)",
+      "god_archetype": "demon",
+      "seal_status": "sealed_by_the_architect",
+      "mvp_apostle_title": "Dread-Lord Ignisazar (MVP \u2014 Direct Demon Subordinate)",
+      "status": "canon",
+      "core_rationale": "Lord of the abyssal slag-fiends who clashed with Seraphiel during the God Wars; bound by The Architect's chains beneath the deepest kiln-trenches and shadow refraction crypts.",
+      "domain": "Abyssal Hellfire, Blood-Obsidian, and Shadow Refraction",
+      "geographical_scar": "The umbral obsidian fissures beneath Kilnwatch Bastion and the Shadow Refraction Crypts",
+      "architectural_imprint": "Basalt horn-buttresses, dark-prism containment seals, and Ogre crucible bastions"
+    },
+    {
+      "id": "god-legendary-beast",
+      "name": "fenrir-kael, The World-Prowler",
+      "title": "The Sealed Sovereign of Fang & Root (Legendary Beast)",
+      "god_archetype": "legendary_beast",
+      "seal_status": "sealed_by_the_architect",
+      "mvp_apostle_title": "Alpha Electro-Stalker Raijin-Vex (MVP \u2014 Direct Beast Subordinate)",
+      "status": "canon",
+      "core_rationale": "Progenitor of all wild fauna and patron totem of the Furral warrior tribes; sealed by The Architect within the amber-root and thunder-coil ley canyons so its primal roar would no longer shatter continents.",
+      "domain": "Primal Savagery, Bio-Static Pulse, and World-Root Canopies",
+      "geographical_scar": "The giant claw-cut canyons of the Amber-Root Hollows and Thunder-Coil Basin",
+      "architectural_imprint": "Fang-arch totems, braided root-bridges, and Furral copper-inductor arenas"
+    },
+    {
+      "id": "god-leviathan",
+      "name": "Thalassor the Trench-Swallower",
+      "title": "The Sealed Abyssal Tidemaster (Leviathan)",
+      "god_archetype": "leviathan",
+      "seal_status": "sealed_by_the_architect",
+      "mvp_apostle_title": "Tide-Herald Pelagios (MVP \u2014 Direct Leviathan Subordinate)",
+      "status": "canon",
+      "core_rationale": "Colossal serpent of the primordial ocean whose thrashing during the God Wars tore whole archipelagos into the sky; sealed by The Architect beneath the upward waterfalls of the Perigee Abyss.",
+      "domain": "Crushing Abyssal Tides, Upward Maelstroms, and Pelagic Bioluminescence",
+      "geographical_scar": "The inverted whirlpool and upward-falling ocean cascades of the Shattered Halo",
+      "architectural_imprint": "Barnacle-clad brass diving bells, coral lock-gates, and siphon aqueducts"
+    },
+    {
+      "id": "god-legendary-dragon",
+      "name": "Bahamut-Triad, The Threefold Wyrm",
+      "title": "The Sealed Dragon of Earth, Fire & Thunder",
+      "god_archetype": "legendary_dragon",
+      "seal_status": "sealed_by_the_architect",
+      "mvp_apostle_title": "Tri-Scale Wyrm-Marshal Volcanor (MVP \u2014 Direct Dragon Subordinate)",
+      "status": "canon",
+      "core_rationale": "Three-headed primordial dragon embodying tectonic Earth, kiln Fire, and galvanic Thunder; sealed by The Architect across the tri-continental faultlines where the Blacksmith Clan now taps its dormant elemental breath.",
+      "domain": "Tectonic Earth, Crucible Fire, and Galvanic Thunder",
+      "geographical_scar": "The tri-elemental vein network feeding Hearthbloom's kilns, the Clockwork Steppe's thunder-coils, and the Blacksmith Clan's master anvils",
+      "architectural_imprint": "Dragon-jaw forge flues, triple-alloy anvils, and grounded lightning spires"
+    },
+    {
+      "id": "god-sola-hearth-weaver",
+      "name": "Sola the Hearth-Weaver",
+      "title": "Sealed Earth-Fire Aspect of the Kiln Basin",
+      "god_archetype": "regional_aspect",
+      "seal_status": "sealed_regional_aspect",
+      "mvp_apostle_title": "Kiln-Saint Pyraea (MVP \u2014 Direct Hearth-Weaver Subordinate)",
+      "status": "canon",
+      "core_rationale": "Regional Earth-and-Fire aspect sealed inside Hearthbloom Basin's central ceramic caldera; her dormant warmth keeps Continent 01 at perpetual spring for Human and Dwarf starter towns.",
+      "domain": "Warm Clay, Perpetual Spring, and Hearth-Fires",
+      "geographical_scar": "The Great Glazed Caldera of Hearthbloom Basin (scar-kiln-basin)",
+      "architectural_imprint": "Rounded terracotta domes, chimney-spire lanterns, and glazed brick bridges"
     },
     {
       "id": "god-krono-brass-titan",
-      "name": "Krono, the Brass Titan",
-      "domain": "Wind, gears, locomotion, and timekeeping",
+      "name": "Krono the Brass Titan",
+      "title": "Sealed Thunder-Forge Aspect of the Steppe",
+      "god_archetype": "regional_aspect",
+      "seal_status": "sealed_regional_aspect",
+      "mvp_apostle_title": "Chrono-Vanguard Aegis-IX (MVP \u2014 Direct Brass Titan Subordinate)",
       "status": "canon",
-      "core_rationale": "Justifies mid-level mechanical biomes, wind-trains, and airship transit between continents.",
-      "geographical_scar": "His shattered gearbox ribs jut out across the eastern plateau, creating perpetual gale-force wind canyons.",
-      "architectural_imprint": "Brass wind-vane towers, cog-wheel elevators with 0.15 meter toddler step-risers, and copper viaducts."
+      "core_rationale": "Colossal clockwork colossus of the God Wars sealed by The Architect along the Brass Faultline of Continent 02, powering wind-tinker hubs and Furral inductor switchyards.",
+      "domain": "Wind-Gears, Galvanic Springs, and Perpetual Motion",
+      "geographical_scar": "The Brass Faultline (scar-brass-faultline) across the Clockwork Steppe",
+      "architectural_imprint": "Interlocking copper gear-plazas, wind-vane towers, and railway viaducts"
     },
     {
       "id": "god-vesper-dream-eater",
-      "name": "Vesper, the Dream-Eater",
-      "domain": "Gravity, starlight, and silence",
+      "name": "Vesper the Dream-Eater",
+      "title": "Sealed Astral-Tide Aspect of the Halo",
+      "god_archetype": "regional_aspect",
+      "seal_status": "sealed_regional_aspect",
+      "mvp_apostle_title": "Eclipse-Cantor Nocturne (MVP \u2014 Direct Dream-Eater Subordinate)",
       "status": "canon",
-      "core_rationale": "Anchors the late-game northern anomaly and explains why the northern sea floats upward into storm clouds across The Shattered Halo.",
-      "geographical_scar": "Cracked the planetary crust into inverted floating islands shrouded in violet static.",
-      "architectural_imprint": "Inverted basalt spires, 0.15 meter basalt risers, and weightless 12.0 meter wide starlight tether-bridges.",
-      "mystery_hook": {
-        "in_world_rumor": "Sailors swear compasses spin backward north of the Brass Strait, pointing up at the clouds instead of the horizon.",
-        "visual_silhouette": "A ring of levitating black monoliths suspended inside a permanent aurora borealis.",
-        "unanswered_question": "Is Vesper dead like the other Primordial Gods, or dreaming inside the floating core?",
-        "discovery_trigger_hint": "Unlocked after restoring Krono's Great Mainspring in Continent 02."
-      }
+      "core_rationale": "Astral-and-Leviathan aspect sealed inside the inverted-gravity crater of Continent 03, where Lunar and Dark-Lunar citadels harvest starlight and umbral refraction.",
+      "domain": "Starlight Tides, Inverted Gravity, and Memory Glass",
+      "geographical_scar": "The Shattered Halo (scar-vesper-crater) suspended above the northern whirlpool",
+      "architectural_imprint": "Tethered floating piers, stained-glass astrolabes, and upside-down waterfalls"
     }
   ],
   "historical_epochs": [
     {
-      "id": "epoch-clockspring-war",
-      "name": "The Clockspring War",
-      "kind": "great_war",
+      "id": "epoch-1-1-creation",
+      "chapter_code": "1.1",
       "era_order": 1,
+      "name": "1.1 Creation \u2014 The Primordial Crucible & Birth of the Twelve Lineages",
+      "kind": "creation",
       "status": "canon",
-      "core_rationale": "The foundational conflict between Sola, Krono, and Vesper that split the supercontinent into distinct climate and level-band Continents.",
+      "core_rationale": "Out of the primordial elemental crucible emerged the landmasses, oceans, and the twelve living lineages: six sentient mortal races (Human/Demi-Human, Lunar, Ogre/Orc, Dark-Lunar, miniature high-strength Dwarf, and electro-warrior Furral) alongside six wild monster ecologies (Beast/Brute, Robotic cores, Undead husks, Fish, Insect/Arachnia, and sentient Plant flora).",
       "involved_god_ids": [
+        "god-legendary-dragon",
+        "god-legendary-beast",
+        "god-leviathan",
+        "god-sola-hearth-weaver"
+      ],
+      "world_scars": [
+        {
+          "scar_id": "scar-primordial-root-veins",
+          "name": "The Primordial Amber & Elemental Veins",
+          "description": "Deep subterranean veins of earth-clay, thunder-amber, and star-quartz formed at Creation, later tapped by the six racial home towns and the Blacksmith Clan.",
+          "spawned_continent_ids": [
+            "continent-01-hearthbloom-basin",
+            "continent-02-clockwork-steppe",
+            "continent-03-shattered-halo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "epoch-1-2-age-of-the-gods",
+      "chapter_code": "1.2",
+      "era_order": 2,
+      "name": "1.2 Age Of The Gods \u2014 Dominion of the Five Divine Orders",
+      "kind": "awakening",
+      "status": "canon",
+      "core_rationale": "Before mortal self-rule, the five divine orders\u2014Angel (Seraphiel), Demon (Malphas), Legendary Beast (Fenrir-Kael), Leviathan (Thalassor), and the Threefold Legendary Dragon (Earth, Fire, Thunder)\u2014claimed absolute dominion over the skies, seas, and faultlines, elevating chosen Apostles as top-tier MVP commanders over the mortal races.",
+      "involved_god_ids": [
+        "god-angel",
+        "god-demon",
+        "god-legendary-beast",
+        "god-leviathan",
+        "god-legendary-dragon"
+      ],
+      "world_scars": [
+        {
+          "scar_id": "scar-divine-citadel-pillars",
+          "name": "The Five Divine Citadel Foundations",
+          "description": "Monumental divine thrones and elemental conduits raised during the Age of the Gods, now serving as high-level MVP Boss sanctums.",
+          "spawned_continent_ids": [
+            "continent-01-hearthbloom-basin",
+            "continent-02-clockwork-steppe",
+            "continent-03-shattered-halo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "epoch-1-3-the-god-wars",
+      "chapter_code": "1.3",
+      "era_order": 3,
+      "name": "1.3 The God Wars \u2014 Clash of Pantheons & Shattering of the Continents",
+      "kind": "great_war",
+      "status": "canon",
+      "core_rationale": "Total war erupted between Angel, Demon, Legendary Beast, Leviathan, and the Three-Element Legendary Dragon (alongside regional aspects Sola, Krono, and Vesper). Their cataclysmic weapons fractured the world into three continents, spawning war-construct Raid Bosses and threatening to annihilate all six mortal races.",
+      "involved_god_ids": [
+        "god-angel",
+        "god-demon",
+        "god-legendary-beast",
+        "god-leviathan",
+        "god-legendary-dragon",
         "god-sola-hearth-weaver",
         "god-krono-brass-titan",
         "god-vesper-dream-eater"
@@ -92,61 +258,1585 @@
       "world_scars": [
         {
           "scar_id": "scar-kiln-basin",
-          "name": "The Kiln-Basin Caldera",
-          "description": "Sola's fallen ceramic shield formed a sheltered, sunlit caldera immune to winter.",
+          "name": "The Great Glazed Caldera",
+          "description": "Where Sola's ceramic shield and the Earth-Fire Dragon's breath fused the western valley into warm terracotta terraces and boiling sap cisterns.",
           "spawned_continent_ids": [
             "continent-01-hearthbloom-basin"
           ]
         },
         {
           "scar_id": "scar-brass-faultline",
-          "name": "The Uncoiled Mainspring Faultline",
-          "description": "Krono's severed mainspring uncoiled across the eastern plains, carving deep canyon trenches.",
+          "name": "The Brass Faultline",
+          "description": "A 400-kilometer canyon of giant exposed clockwork gears, thunder-coils, and ticking copper ribs across the eastern steppe.",
           "spawned_continent_ids": [
             "continent-02-clockwork-steppe"
           ]
         },
         {
           "scar_id": "scar-vesper-crater",
-          "name": "The Inverted Gravity Crater",
-          "description": "Where Vesper's tear struck the northern ocean, gravity inverted and froze the archipelago in time.",
+          "name": "The Shattered Halo",
+          "description": "An inverted-gravity archipelago of basalt and coral islands suspended above a glowing maelstrom where Angel, Demon, and Leviathan clashed.",
           "spawned_continent_ids": [
+            "continent-03-shattered-halo"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "epoch-1-4-god-seal-magic",
+      "chapter_code": "1.4",
+      "era_order": 4,
+      "name": "1.4 God Seal Magic \u2014 Every God Sealed by The Architect",
+      "kind": "accord",
+      "status": "canon",
+      "core_rationale": "Rising from the ashes of the God Wars, a mortal human woman known as The Architect (Aethelgard) wove the supreme God Seal Magic. She bound every single God\u2014Angel, Demon, Legendary Beast, Leviathan, and the Legendary Dragon\u2014into slumbering vaults beneath the world, allowing the six mortal races to build their Racial Home Towns, establish the Neutral Adventure Guild, and unite the Blacksmith Clan.",
+      "involved_god_ids": [
+        "god-the-architect",
+        "god-angel",
+        "god-demon",
+        "god-legendary-beast",
+        "god-leviathan",
+        "god-legendary-dragon",
+        "god-sola-hearth-weaver",
+        "god-krono-brass-titan",
+        "god-vesper-dream-eater"
+      ],
+      "world_scars": [
+        {
+          "scar_id": "scar-architect-seal-lattice",
+          "name": "The Architect's Planetary Seal Lattice",
+          "description": "A network of runic seal-anchors beneath every racial home town and catacomb dungeon; while the Gods remain sealed, their direct MVP subordinates and lesser Raid Boss wardens now strain against the locks.",
+          "spawned_continent_ids": [
+            "continent-01-hearthbloom-basin",
+            "continent-02-clockwork-steppe",
             "continent-03-shattered-halo"
           ]
         }
       ]
     }
   ],
+  "race_taxonomy": {
+    "playable_and_mob_races": [
+      {
+        "id": "race-human-demi-human",
+        "race_key": "human_demi_human",
+        "name": "Human / Demi-Human",
+        "icon": "\ud83e\uddec",
+        "archetype_reference": "Versatile heirs of The Architect runic geometry and adaptive Demi-Human kin",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "starter_level_band": [
+          1,
+          10
+        ],
+        "home_town_id": "town-lantern-hollow",
+        "home_town_name": "Lantern Hollow",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-teacup-meadows",
+        "hunting_area_id": "hunting-area-clover-south-gate",
+        "farming_area_id": "hunting-area-kiln-east-orchard",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-torque-balance-citadel",
+        "farming_resources": [
+          "Terracotta Seal-Clay",
+          "Ember-Clover Nectar",
+          "Glazed Kiln-Timber"
+        ],
+        "niched_story": "Awakening in Lantern Hollow (Lv.1-10), Human and Demi-Human initiates defend the First Meridian Keystone before marching east through Kiln East Orchard at Lv.10 to join all six races at Kilnwatch Bastion for guilding and party quests.",
+        "combat_trait": "Balanced Seal-Resonance: +10% adaptability to all weapon classes and Job Quest mastery."
+      },
+      {
+        "id": "race-dwarf",
+        "race_key": "dwarf",
+        "name": "Dwarf (Tontatta-Lineage Micro-Titans)",
+        "icon": "\ud83d\udd28",
+        "archetype_reference": "One Piece Tontatta-inspired miniature craftsmen with explosive superhuman strength and botanical-mechanical mastery",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "starter_level_band": [
+          1,
+          10
+        ],
+        "home_town_id": "town-root-train-roundhouse",
+        "home_town_name": "Root-Train Roundhouse",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-amber-root-hollows",
+        "hunting_area_id": "hunting-area-cobalt-sandbar-ford",
+        "farming_area_id": "hunting-area-resin-arch-tunnel",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-escapement-anvil",
+        "farming_resources": [
+          "Fossilized Amber-Resin",
+          "Deep-Root Iron Ore",
+          "High-Density Micro-Springs"
+        ],
+        "niched_story": "Tiny, super-strong Dwarf smith-scouts start in Root-Train Roundhouse (Lv.1-10) clearing insectoid swarms from the banyan root-railways, then ride the resin-arch line to Kilnwatch Bastion at Lv.10-20 to forge multi-race guild gear.",
+        "combat_trait": "Tontatta Mighty Impact: Miniature hitbox with colossal hammer/axe knockdown force and +15% Blacksmith forging yield."
+      },
+      {
+        "id": "race-ogre-orc",
+        "race_key": "ogre_orc",
+        "name": "Ogre / Orc",
+        "icon": "\ud83d\udd25",
+        "archetype_reference": "Crucible-hardened Ogre and Orc vanguard clans sworn to contain the subterranean Demon and Dragon vents",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "starter_level_band": [
+          1,
+          10
+        ],
+        "home_town_id": "town-draft-kiln-post",
+        "home_town_name": "Draft-Kiln Post",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-ash-bellows-trench",
+        "hunting_area_id": "hunting-area-firebrick-duct",
+        "farming_area_id": "hunting-area-celadon-causeway",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-bellows-hearth",
+        "farming_resources": [
+          "Dragon-Cinder Slag",
+          "Crucible Basalt Plates",
+          "Firebrick Marrow"
+        ],
+        "niched_story": "Ogre and Orc vanguard initiates temper their resolve at Draft-Kiln Post (Lv.1-10) in the Ash-Bellows Trench before ascending Firebrick Duct at Lv.10-20 to serve as front-line tanks for multi-race parties in Kilnwatch Bastion.",
+        "combat_trait": "Crucible Blood-Fury: High thermal/physical fortitude and heavy cleave damage that scales as HP drops."
+      },
+      {
+        "id": "race-furral",
+        "race_key": "furral",
+        "name": "Furral (Electro-Beastfolk Tribe)",
+        "icon": "\u26a1",
+        "archetype_reference": "One Piece Mink-inspired agile beastfolk warriors who channel bio-static Electro through fur and brass conductors",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "starter_level_band": [
+          1,
+          10
+        ],
+        "home_town_id": "town-cinnamon-mill-haven",
+        "home_town_name": "Cinnamon-Mill Haven",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-cinnamon-bellows-bluff",
+        "hunting_area_id": "hunting-area-ginger-aqueduct-bridge",
+        "farming_area_id": "hunting-area-cinnamon-bark-viaduct",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-inductor-switchyard",
+        "farming_resources": [
+          "Galvanic Storm-Amber",
+          "Wind-Mill Copper Coils",
+          "Static Beast-Pelts"
+        ],
+        "niched_story": "Young Furral electro-warriors train atop the wind-turbines of Cinnamon-Mill Haven (Lv.1-10), harvesting static amber before converging at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to form guilds bound for their ancestral Inductor Switchyard.",
+        "combat_trait": "Electro Claw & Sulong Surge: Imbues melee/dash strikes with chain-lightning shock and high evasion."
+      },
+      {
+        "id": "race-lunar",
+        "race_key": "lunar",
+        "name": "Lunar (Astral High-Elven Lineage)",
+        "icon": "\ud83c\udf19",
+        "archetype_reference": "Elf-like celestial navigators and starlight weavers dwelling in porcelain-mirror sanctuaries",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "starter_level_band": [
+          1,
+          10
+        ],
+        "home_town_id": "town-porcelain-loom-sanctuary",
+        "home_town_name": "Porcelain Loom Sanctuary",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-porcelain-cradle",
+        "hunting_area_id": "hunting-area-celadon-causeway",
+        "farming_area_id": "hunting-area-resin-arch-tunnel",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-starfall-haven",
+        "farming_resources": [
+          "Luminous Star-Silk",
+          "Celadon Mirror-Quartz",
+          "Astral Loom Dew"
+        ],
+        "niched_story": "Lunar star-weavers begin their pilgrimage in Porcelain Loom Sanctuary (Lv.1-10), weaving starlight wards across Celadon Causeway before uniting with all six races at Kilnwatch Bastion (Lv.10-20) to prepare for the sky-ascension to Starfall Haven.",
+        "combat_trait": "Astral Grace & Bow/Spell Precision: Extended ranged/spell reach and low-gravity aerial step."
+      },
+      {
+        "id": "race-dark-lunar",
+        "race_key": "dark_lunar",
+        "name": "Dark-Lunar (Umbral Eclipse Lineage)",
+        "icon": "\ud83c\udf11",
+        "archetype_reference": "Dark-Elf-like shadow-refraction scholars and acoustic seal-watchers of the twilight belfries",
+        "can_be_player": true,
+        "can_be_mob": true,
+        "starter_level_band": [
+          1,
+          10
+        ],
+        "home_town_id": "town-carillon-hearth-belfry",
+        "home_town_name": "Carillon Hearth Belfry",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "district_id": "district-terracotta-wind-chimes",
+        "hunting_area_id": "hunting-area-apricot-aqueduct-terrace",
+        "farming_area_id": "hunting-area-chime-pipe-colonnade",
+        "convergence_hub_town_id": "town-kilnwatch-bastion",
+        "ancestral_expedition_citadel_id": "town-umbrage-focal-sanctum",
+        "farming_resources": [
+          "Umbral Prism Shards",
+          "Resonant Chime-Obsidian",
+          "Eclipse Night-Nectar"
+        ],
+        "niched_story": "Dark-Lunar shadow-scholars keep vigil in Carillon Hearth Belfry (Lv.1-10) listening for Demon-seal tremors in the wind-chime canyons, then join multi-race guilds at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to unlock the Umbrage Prism Atolls.",
+        "combat_trait": "Umbral Refraction: Critical backstab/shadow-arts amplification and resistance to abyssal corruption."
+      }
+    ],
+    "monster_ecology_races": [
+      {
+        "id": "mob-race-beast-animal-brute",
+        "race_key": "beast_animal_brute",
+        "name": "Beast / Animal / Brute",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Wild territorial predators, glaze-shell badgers, copper-horned steppelings, and primal brutes mutated by the Sealed Legendary Beast's aura.",
+        "signature_drops": [
+          "Primal Beast Hide",
+          "Brute Marrow Bone",
+          "Feral Fang Catalyst"
+        ],
+        "primary_continents": [
+          "continent-01-hearthbloom-basin",
+          "continent-02-clockwork-steppe"
+        ]
+      },
+      {
+        "id": "mob-race-robotic",
+        "race_key": "robotic",
+        "name": "Robotic / Clockwork Automaton",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Autonomous brass sentinels, runaway escapement drones, and God War siege constructs still executing ancient directives along the Brass Faultline.",
+        "signature_drops": [
+          "Precision Brass Pinion",
+          "Galvanic Core Capacitor",
+          "Invar Balance Spring"
+        ],
+        "primary_continents": [
+          "continent-02-clockwork-steppe",
+          "continent-01-hearthbloom-basin"
+        ]
+      },
+      {
+        "id": "mob-race-undead",
+        "race_key": "undead",
+        "name": "Undead / Seal-Wraith",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Hollowed soldiers of the God Wars, porcelain-bound crypt specters, and shadow-refracted revenants haunting catacombs near Demon and Leviathan seals.",
+        "signature_drops": [
+          "Ectoplasmic Seal-Wax",
+          "Ancient War-Emblem",
+          "Calcified Soul-Shard"
+        ],
+        "primary_continents": [
+          "continent-01-hearthbloom-basin",
+          "continent-03-shattered-halo"
+        ]
+      },
+      {
+        "id": "mob-race-fish",
+        "race_key": "fish",
+        "name": "Fish / Pelagic & Sky-Tide Fauna",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Glaze-river armored carp, abyssal trench leviathan-spawn, and flying starlight rays swimming through the upward waterfalls of the Shattered Halo.",
+        "signature_drops": [
+          "Iridescent Pelagic Scale",
+          "Abyssal Swim-Bladder",
+          "Star-Tide Pearl"
+        ],
+        "primary_continents": [
+          "continent-03-shattered-halo",
+          "continent-01-hearthbloom-basin"
+        ]
+      },
+      {
+        "id": "mob-race-insect-arachnia",
+        "race_key": "insect_arachnia",
+        "name": "Insect / Arachnia",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Amber-resin tunnel weavers, porcelain-carapace beetles, and copper-eating spark-spiders nesting inside root-trains and gear trenches.",
+        "signature_drops": [
+          "Resin-Hardened Chitin",
+          "Conductive Silk Thread",
+          "Venomous Mandible"
+        ],
+        "primary_continents": [
+          "continent-01-hearthbloom-basin",
+          "continent-02-clockwork-steppe"
+        ]
+      },
+      {
+        "id": "mob-race-plant",
+        "race_key": "plant",
+        "name": "Plant / Sentient Flora",
+        "can_be_player": false,
+        "can_be_mob": true,
+        "ecological_niche": "Spore-puffing lantern treants, spice-orchard mandrakes, and bioluminescent kelp-hydras fed by leaking God Seal mana.",
+        "signature_drops": [
+          "Living Hearth-Sap",
+          "Glowing Spore-Cluster",
+          "Ironwood Fiber"
+        ],
+        "primary_continents": [
+          "continent-01-hearthbloom-basin",
+          "continent-03-shattered-halo"
+        ]
+      }
+    ],
+    "god_tier_entities": [
+      {
+        "id": "god-angel",
+        "entity_key": "angel",
+        "name": "Angel (Seraphiel of the Zenith Choir)",
+        "elements": [
+          "Holy",
+          "Starlight",
+          "Wind"
+        ],
+        "seal_state": "sealed_by_god_seal_magic",
+        "sealed_by": "god-the-architect",
+        "seal_location_continent_id": "continent-03-shattered-halo",
+        "direct_mvp_subordinate": "Arch-Valkyrie Caelia (MVP Top-Tier Boss)",
+        "lore_summary": "Sealed inside the Inverted Belfry of the Shattered Halo; commands celestial MVP Apostle Caelia and lesser choir Raid Bosses."
+      },
+      {
+        "id": "god-demon",
+        "entity_key": "demon",
+        "name": "Demon (Malphas of the Abyssal Crucible)",
+        "elements": [
+          "Dark",
+          "Hellfire",
+          "Chaos"
+        ],
+        "seal_state": "sealed_by_god_seal_magic",
+        "sealed_by": "god-the-architect",
+        "seal_location_continent_id": "continent-01-hearthbloom-basin",
+        "direct_mvp_subordinate": "Dread-Lord Ignisazar (MVP Top-Tier Boss)",
+        "lore_summary": "Sealed beneath the deepest kiln-trenches and umbral crypts; his direct subordinate Dread-Lord Ignisazar reigns as a top-tier MVP Boss above dungeon Raid Bosses."
+      },
+      {
+        "id": "god-legendary-beast",
+        "entity_key": "legendary_beast",
+        "name": "Legendary Beast (Fenrir-Kael the World-Prowler)",
+        "elements": [
+          "Earth",
+          "Thunder",
+          "Feral"
+        ],
+        "seal_state": "sealed_by_god_seal_magic",
+        "sealed_by": "god-the-architect",
+        "seal_location_continent_id": "continent-02-clockwork-steppe",
+        "direct_mvp_subordinate": "Alpha Electro-Stalker Raijin-Vex (MVP Top-Tier Boss)",
+        "lore_summary": "Sealed beneath the Amber-Root and Thunder-Coil faultlines; revered by the Furral and served by MVP Apostle Raijin-Vex."
+      },
+      {
+        "id": "god-leviathan",
+        "entity_key": "leviathan",
+        "name": "Leviathan (Thalassor the Trench-Swallower)",
+        "elements": [
+          "Water",
+          "Ice",
+          "Abyssal Pressure"
+        ],
+        "seal_state": "sealed_by_god_seal_magic",
+        "sealed_by": "god-the-architect",
+        "seal_location_continent_id": "continent-03-shattered-halo",
+        "direct_mvp_subordinate": "Tide-Herald Pelagios (MVP Top-Tier Boss)",
+        "lore_summary": "Sealed beneath the Perigee Abyss maelstrom; its direct subordinate Tide-Herald Pelagios commands pelagic Raid Bosses across the sky-seas."
+      },
+      {
+        "id": "god-legendary-dragon",
+        "entity_key": "legendary_dragon",
+        "name": "Legendary Dragon (Bahamut-Triad of Earth, Fire & Thunder)",
+        "elements": [
+          "Earth",
+          "Fire",
+          "Thunder"
+        ],
+        "seal_state": "sealed_by_god_seal_magic",
+        "sealed_by": "god-the-architect",
+        "seal_location_continent_id": "continent-02-clockwork-steppe",
+        "direct_mvp_subordinate": "Tri-Scale Wyrm-Marshal Volcanor (MVP Top-Tier Boss)",
+        "lore_summary": "Three-headed elemental dragon of Earth, Fire, and Thunder sealed across the tri-continental meridian; its breath heats the Blacksmith Clan's master forges."
+      },
+      {
+        "id": "god-the-architect",
+        "entity_key": "the_architect",
+        "name": "The Architect (Aethelgard, Mortal Seal-Weaver)",
+        "elements": [
+          "God Seal Magic",
+          "Runic Geometry",
+          "Mortal Will"
+        ],
+        "seal_state": "wielder_of_god_seal_magic",
+        "sealed_by": "Self-Transcended into the Planetary Seal Lattice",
+        "seal_location_continent_id": "continent-01-hearthbloom-basin",
+        "direct_mvp_subordinate": "First Seal-Scribe Automaton, Prime Keeper (MVP Trial Arbiter)",
+        "lore_summary": "The human woman who ended the God Wars in Chapter 1.4 by sealing every God with God Seal Magic and gifting the six mortal races their sovereign home towns."
+      }
+    ]
+  },
+  "shared_world_systems": {
+    "blacksmith_clan": {
+      "id": "faction-blacksmith-clan",
+      "name": "The Sovereign Blacksmith Clan (Six-Anvil Covenant)",
+      "allegiance": "Cross-Racial Craft Covenant (Found in all 6 Racial Home Towns)",
+      "core_role": "Transforms raw materials farmed from racial hunting/farming grounds and boss drops into weapons, armor, and God-Seal socketed gear on 0.60m chibi-scale anvils.",
+      "forging_systems": [
+        "Racial Alloy Smelting (combining Human terracotta-steel, Dwarf root-iron, Ogre dragon-cinder, Furral storm-brass, and Lunar/Dark-Lunar star-glass)",
+        "Boss Core Awakening (socketing Raid Boss & MVP Apostle cores into endgame equipment)",
+        "Equipment Refinement, Durability Repair & Job-Weapon Promotion"
+      ],
+      "racial_anvil_branches": [
+        "Hearth-Kiln Anvil (Lantern Hollow & Kilnwatch Bastion)",
+        "Tontatta Micro-Press Foundry (Root-Train Roundhouse)",
+        "Galvanic Induction Forge (Inductor Switchyard)",
+        "Astral & Umbral Prism-Kiln (Starfall Haven & Umbrage Focal Sanctum)"
+      ]
+    },
+    "adventure_guild": {
+      "id": "faction-adventure-guild",
+      "name": "The Accord Adventure Guild",
+      "allegiance": "neutral_no_side",
+      "neutrality_charter": "Strictly neutral ('No Side') across all six playable races and all three continents. Every racial Home Town hosts an Adventure Guild hall where players trade quests, form cross-race parties, and claim bounties.",
+      "core_services": [
+        "Quest Trading & Commission Board (brokering Side Quests, Material Requests, and Bounty Contracts between players and NPCs)",
+        "Cross-Race Party & Raid Matchmaking for Catacomb Raid Bosses and field MVP Apostles",
+        "Hunter Rank Licensing, Monster Compendium Registration, and Fast-Travel Charter Passes"
+      ]
+    },
+    "quest_progression_loop": {
+      "progression_philosophy": "Players progress by weaving together three distinct quest tracks\u2014grinding levels, farming regional materials, advancing their combat Job, and uncovering the fracturing God Seals.",
+      "tracks": [
+        {
+          "track_key": "main_quest",
+          "name": "Main Quests (The Fracturing God Seals)",
+          "purpose": "Begins in the player's Racial Home Town with a race-specific crisis, then converges at the Neutral Adventure Guild to investigate the weakening of The Architect's Chapter 1.4 God Seals across all three continents.",
+          "reward_focus": "Continent Travel Unlocks, Seal-Resonance Relics, and Catacomb Gate Keys"
+        },
+        {
+          "track_key": "job_quest",
+          "name": "Job Quests (Class Mastery & Blacksmith Trials)",
+          "purpose": "Issued jointly by class mentors and the Blacksmith Clan to test combat proficiency, unlock racial/class skills, and forge signature Job weapons.",
+          "reward_focus": "Job Class Promotions, Signature Skill Books, and Blacksmith Masterwork Blueprints"
+        },
+        {
+          "track_key": "side_quest",
+          "name": "Side Quests (Home Town Stories, Hunting & Farming Commissions)",
+          "purpose": "Traded freely at the Neutral Adventure Guild counter\u2014covering local racial home town stories, monster culling in adjacent hunting areas, and resource farming runs.",
+          "reward_focus": "EXP Grind Efficiency, Crafting Materials, Guild Tokens, and Regional Reputation"
+        }
+      ]
+    },
+    "boss_power_hierarchy": {
+      "strict_order_law": "GOD_SEALED > MVP_GOD_SUBORDINATE > RAID_BOSS > MINI_BOSS > NORMAL_MOB",
+      "tiers": [
+        {
+          "rank": 1,
+          "tier_key": "god_tier",
+          "name": "God Tier (Sealed by The Architect)",
+          "cosmic_role": "The 5 Sealed Gods (Angel, Demon, Legendary Beast, Leviathan, Legendary Dragon of Earth/Fire/Thunder) plus The Architect who sealed them in Chapter 1.4.",
+          "power_relationship": "Transcendent cosmic entities immobilized by God Seal Magic; they cannot roam the surface directly and instead project power through their direct MVP subordinates.",
+          "loot_tier": "Mythic Seal-Shards & World-Epoch Relics (Echo Trial / Seal Defense rewards)"
+        },
+        {
+          "rank": 2,
+          "tier_key": "mvp_boss",
+          "name": "MVP Boss (Top-Tier Active Sovereign \u2014 Direct Subordinate of a God)",
+          "cosmic_role": "The supreme active combat threat in the world. Every MVP Boss is the direct Apostle/Subordinate of one of the Sealed Gods (e.g., Arch-Valkyrie Caelia for Angel, Dread-Lord Ignisazar for Demon, Tri-Scale Volcanor for Legendary Dragon).",
+          "power_relationship": "Strictly higher than any Raid Boss (MVP > Raid Boss). Announces spawn server-wide, commands multi-phase divine mechanics, and requires elite coordinated hunters.",
+          "loot_tier": "MVP God-Apostle Cards, Divine Weapon Cores, and Crown Cosmetics"
+        },
+        {
+          "rank": 3,
+          "tier_key": "raid_boss",
+          "name": "Raid Boss (Lower Tier than MVP \u2014 Dungeon Warden / Great War Construct)",
+          "cosmic_role": "Catacomb B1 seal-wardens, runaway God War siege engines, and mutated regional apex monsters guarding dungeon vaults.",
+          "power_relationship": "Strictly subordinate in power and authority to MVP Bosses (Raid Boss < MVP Boss), serving as structured multi-party dungeon milestones.",
+          "loot_tier": "Raid Set Armor Materials, Blacksmith Alloy Ingots, and Dungeon Seal Keys"
+        },
+        {
+          "rank": 4,
+          "tier_key": "field_mob",
+          "name": "Mini-Boss, Elite & Normal Monsters (12-Race Ecology)",
+          "cosmic_role": "Field leaders and everyday monsters belonging to either the 6 Playable/Mob races (renegade Ogres, Dark-Lunar exiles, etc.) or the 6 Monster-only ecology races (Beast/Brute, Robotic, Undead, Fish, Insect/Arachnia, Plant).",
+          "power_relationship": "Found across every Hunting Area and Farming Zone adjacent to Racial Home Towns for solo/small-party EXP and material grinding.",
+          "loot_tier": "Everyday Crafting Materials, Monster Cards, Consumables, and Quest Turn-Ins"
+        }
+      ]
+    },
+    "cross_race_convergence_hubs": {
+      "target_level_band": [
+        10,
+        20
+      ],
+      "convergence_rule": "All 6 Playable Races spawn on Continent 01 (Lv.1-10) in their own Racial Home Town District and are guided by Main, Job, and Side Quests at Level 10-20 to converge at Kilnwatch Bastion (and Glaze-Barge Quay / Pinion Terminus) to form cross-race Guilds (gilding), matchmake parties, trade quests at the Neutral Adventure Guild, and smelt combined racial alloys at the Blacksmith Clan Six-Anvil Foundry.",
+      "primary_hub_town_id": "town-kilnwatch-bastion",
+      "hubs": [
+        {
+          "town_node_id": "town-kilnwatch-bastion",
+          "town_name": "Kilnwatch Bastion (Primary Lv.10-20 All-Race Guild & Party Citadel)",
+          "continent_id": "continent-01-hearthbloom-basin",
+          "district_id": "district-kilnfire-terraces",
+          "level_band": [
+            10,
+            20
+          ],
+          "hub_role": "Central Continent 01 fortress where all 6 races meet at Level 10-15 to register Guilds (gilding), form multi-race 6-player parties, trade quests at the Neutral Adventure Guild Grand Hall, and combine all 6 racial farming materials at the Sovereign Blacksmith Clan Six-Anvil Foundry.",
+          "guilding_and_party_features": [
+            "Accord Guild Registration Charter (Lv.10+ Cross-Race Guild Creation, Emblem & Guild Hall)",
+            "Neutral Adventure Guild Grand Exchange (Party Finder, Bounty Board & Multi-Race Quest Trading)",
+            "Blacksmith Clan Six-Anvil Master Foundry (Requires alloys farmed from all 6 Racial Home Towns)",
+            "Direct Portal Access to Lv.10-20 Party Grinding & Catacomb Raid Bosses"
+          ],
+          "shared_hunting_and_dungeon_nodes": [
+            "hunting-area-kiln-east-orchard",
+            "hunting-area-firebrick-duct",
+            "hunting-area-cinder-apron",
+            "dungeon-kiln-cellar",
+            "dungeon-ember-bellows-chamber"
+          ]
+        },
+        {
+          "town_node_id": "town-glaze-barge-quay",
+          "town_name": "Glaze-Barge Quay (Lv.15-20 Multi-Race River Guild Port)",
+          "continent_id": "continent-01-hearthbloom-basin",
+          "district_id": "district-glaze-river-delta",
+          "level_band": [
+            15,
+            20
+          ],
+          "hub_role": "Secondary Level 15-20 port city where Dwarf, Lunar, Dark-Lunar, and Furral river-routes merge with Human and Ogre parties for the Sunken Potter Hold Raid Boss.",
+          "guilding_and_party_features": [
+            "Guild Barge Convoy Escorts & River Delta Party Commissions (Lv.15-20)",
+            "Adventure Guild Maritime Brokerage & Cross-Race Material Market",
+            "Sunken Potter Hold B1 Catacomb Raid Staging Dock"
+          ],
+          "shared_hunting_and_dungeon_nodes": [
+            "hunting-area-cobalt-sandbar-ford",
+            "hunting-area-chime-pipe-colonnade",
+            "dungeon-sunken-potter-hold"
+          ]
+        },
+        {
+          "town_node_id": "town-pinion-terminus",
+          "town_name": "Pinion Terminus (Lv.15-22 Cross-Continent Guild Expedition Gateway)",
+          "continent_id": "continent-02-clockwork-steppe",
+          "district_id": "district-rustcog-downs",
+          "level_band": [
+            15,
+            22
+          ],
+          "hub_role": "Eastern gateway terminus connected directly to Kilnwatch Bastion via Cinder Apron (Lv.12-20), where united Level 15-20 Guilds graduate from Continent 01 into the Clockwork Steppe.",
+          "guilding_and_party_features": [
+            "Continent 01 -> Continent 02 Guild Expedition Charter & Root-Train Boarding",
+            "Pendulum Shaft B1 Multi-Race Party Raid Gate",
+            "Cross-Continental Blacksmith Alloy Calibration Counter"
+          ],
+          "shared_hunting_and_dungeon_nodes": [
+            "hunting-area-cinder-apron",
+            "hunting-area-brass-spur-ridge",
+            "dungeon-pendulum-shaft"
+          ]
+        }
+      ]
+    },
+    "level_growth_path": {
+      "priority_focus_band": [
+        1,
+        25
+      ],
+      "path_formula": "Early: 1-[A]-10-[B]-20-[C]-25-[D]-30 | Middle: 30-[E]-40-[F]-45-[G]-50-[H]-60 | Late: 60-[I]-70-[J]-80-[K]-90-[L]-99",
+      "phases": [
+        {
+          "phase_key": "early",
+          "name": "Early Growth Phase (Lv. 1\u201330 \u00b7 Priority Focus: Lv. 1\u201325)",
+          "level_band": [
+            1,
+            30
+          ],
+          "segments": [
+            {
+              "segment_code": "A",
+              "level_range": [
+                1,
+                10
+              ],
+              "priority_focus": true,
+              "title": "Stage A (Lv. 1\u201310) \u00b7 Learning Period in Racial Home Towns",
+              "class_milestone": "Novice / Racial Initiate (Basic Skill Usage & System Equip Tutorial)",
+              "adventure_quest_tier": "F-Tier Adventure Quests (Home Town Tutorial & Local Culling/Farming)",
+              "equipment_unlock": "Starter System Equip (Lv. 1) -> Forged Equipment + Weapon (Lv. 10) at Home Town Blacksmith Anvil",
+              "skill_unlocks": "Basic Attack Combo, Racial Innate Trait, and Lv. 5/10 Novice Active Skill",
+              "consumable_unlocks": "Minor Hearth-Herb Potion, Sweet Clover Sap (SP), Novice Warp Feather",
+              "boss_milestone": "Field Leader / Mini-Boss Tutorial (Lv. 8\u201310 Gatekeeper in adjacent Hunting Area)",
+              "bound_town_and_hunting_nodes": [
+                "town-lantern-hollow",
+                "hunting-area-clover-south-gate",
+                "town-root-train-roundhouse",
+                "hunting-area-resin-arch-tunnel",
+                "town-draft-kiln-post",
+                "hunting-area-firebrick-duct",
+                "town-cinnamon-mill-haven",
+                "hunting-area-cinnamon-bark-viaduct",
+                "town-porcelain-loom-sanctuary",
+                "hunting-area-celadon-causeway",
+                "town-carillon-hearth-belfry",
+                "hunting-area-chime-pipe-colonnade"
+              ]
+            },
+            {
+              "segment_code": "B",
+              "level_range": [
+                10,
+                20
+              ],
+              "priority_focus": true,
+              "title": "Stage B (Lv. 10\u201320) \u00b7 Change 1st Class & All-Race Convergence Guilding",
+              "class_milestone": "Change 1st Class at Lv. 10 (Swordman, Mage, Archer, Acolyte, Thief/Scout, Tinker-Smith) via Job Quest",
+              "adventure_quest_tier": "E-Tier Adventure Quests (Cross-Race Party Commissions & Guild Registration at Kilnwatch Bastion)",
+              "equipment_unlock": "1st-Class Job Armor Set & Refined Lv. 15 Alloy Gear at the Six-Anvil Foundry",
+              "skill_unlocks": "Core 1st-Class Job Skills (Power Strike, Fireball, Double Strafe, Heal/Blessing, Shadow Step, Hammer Smash)",
+              "consumable_unlocks": "Medium Glaze-Draft Potion, Panacea Antidote, Party Campfire Ration, Elemental Whetstones",
+              "boss_milestone": "Elite Field Sub-Bosses & Early Catacomb Gatekeepers (Kiln Cellar B1 &Medallion Heart Vault B1)",
+              "bound_town_and_hunting_nodes": [
+                "town-kilnwatch-bastion",
+                "hunting-area-kiln-east-orchard",
+                "hunting-area-firebrick-duct",
+                "hunting-area-cinder-apron",
+                "dungeon-kiln-cellar",
+                "dungeon-medallion-heart-vault"
+              ]
+            },
+            {
+              "segment_code": "C",
+              "level_range": [
+                20,
+                25
+              ],
+              "priority_focus": true,
+              "title": "Stage C (Lv. 20\u201325) \u00b7 First Major Dungeon Raid Boss & D-Tier Quests",
+              "class_milestone": "1st-Class Mastery Peak (Unlocking 6-Player Party Synergy Combos)",
+              "adventure_quest_tier": "D-Tier Adventure Quests (Multi-Race Catacomb Bounties & Continent 01->02 Escort Charters)",
+              "equipment_unlock": "New Equipment + Weapon (Lv. 20) forged from combined 6-race materials & First Raid Boss Cores",
+              "skill_unlocks": "Advanced 1st-Class AoE, Crowd-Control & Party Buff Skills",
+              "consumable_unlocks": "Concentrated Kiln-Tonic, Boss Resistance Draught, Guild Banner Scroll",
+              "boss_milestone": "First Major Raid Bosses (Rank 3 Catacomb Wardens in Sunken Potter Hold B1, Ember Bellows B1, Pendulum Shaft B1)",
+              "bound_town_and_hunting_nodes": [
+                "town-glaze-barge-quay",
+                "dungeon-sunken-potter-hold",
+                "dungeon-ember-bellows-chamber",
+                "town-pinion-terminus",
+                "hunting-area-brass-spur-ridge",
+                "dungeon-pendulum-shaft"
+              ]
+            },
+            {
+              "segment_code": "D",
+              "level_range": [
+                25,
+                30
+              ],
+              "priority_focus": false,
+              "title": "Stage D (Lv. 25\u201330) \u00b7 Prepare Change 2nd Class [Learn & Try] + Speed/Magic Boosters",
+              "class_milestone": "Prepare Change 2nd Class [Learn & Try Trial Mode] \u2014 sample 2nd-Class specializations before committing at Lv. 30",
+              "adventure_quest_tier": "D+ Trial Commissions (Clockwork Steppe Frontier & Pre-2nd Job Trials)",
+              "equipment_unlock": "Pre-Promotion Trial Relics & Lv. 25 Calibration Sub-Gear",
+              "skill_unlocks": "2nd-Class Preview Stance Skills & Stamina/Cast-Rhythm Passives",
+              "consumable_unlocks": "Magic Booster (MATK/Flux), ASPD Booster (Clock-Spring Draught), Quick-Step Elixir",
+              "boss_milestone": "Clockwork Steppe Trial Wardens (Chronometer Foundry B1 & Ash-Valve Vault B1)",
+              "bound_town_and_hunting_nodes": [
+                "town-escapement-anvil",
+                "town-bellows-hearth",
+                "town-patina-lock",
+                "dungeon-chronometer-foundry",
+                "dungeon-ash-valve-vault"
+              ]
+            }
+          ]
+        },
+        {
+          "phase_key": "middle",
+          "name": "Middle Growth Phase (Lv. 30\u201360 \u00b7 2nd Class, First MVP & Team Skills)",
+          "level_band": [
+            30,
+            60
+          ],
+          "segments": [
+            {
+              "segment_code": "E",
+              "level_range": [
+                30,
+                40
+              ],
+              "priority_focus": false,
+              "title": "Stage E (Lv. 30\u201340) \u00b7 Change 2nd Class & Lv. 30 Weapon",
+              "class_milestone": "Change 2nd Class (Knight/Crusader, Wizard/Sage, Hunter/Bard, Priest/Monk, Assassin/Rogue, Alchemist/Blacksmith)",
+              "adventure_quest_tier": "E-Tier (2nd-Rank Guild Tier) Adventure Quests across Continent 02 & Lower Continent 03",
+              "equipment_unlock": "New Weapon (Lv. 30) \u2014 2nd-Class Signature Arms",
+              "skill_unlocks": "Core 2nd-Class Specialization Skills",
+              "consumable_unlocks": "Galvanic Mana Cell, High-Grade Recovery Draught",
+              "boss_milestone": "Continent 02 Regional Raid Bosses (Faraday Dynamo Vault B1 & Worm-Drive Gearbox B1)",
+              "bound_town_and_hunting_nodes": [
+                "town-inductor-switchyard",
+                "town-metronome-pivot-citadel",
+                "dungeon-faraday-dynamo-vault",
+                "town-starfall-haven"
+              ]
+            },
+            {
+              "segment_code": "F",
+              "level_range": [
+                40,
+                45
+              ],
+              "priority_focus": false,
+              "title": "Stage F (Lv. 40\u201345) \u00b7 Boss + 1st MVP (Lowest-Rank MVP Entry) & Team Skills",
+              "class_milestone": "Guild Raid Squad Certification (Coordinated Party Formation)",
+              "adventure_quest_tier": "D-Tier (2nd-Rank Guild Tier) High-Risk MVP & Raid Bounties",
+              "equipment_unlock": "MVP-Shard Socketed Sub-Armor & Seal-Ward Accessories",
+              "skill_unlocks": "New Team Skills (Synchronized Party Auras, Link-Shields & Combo Finishers)",
+              "consumable_unlocks": "Seal-Ward Barrier Scroll, Group Resurrection Chime",
+              "boss_milestone": "Raid Boss + 1st MVP Boss (Lowest-Rank God Apostle that Lv. 40\u201345 parties can damage and contest)",
+              "bound_town_and_hunting_nodes": [
+                "town-prism-zenith",
+                "dungeon-pendulum-sanctum",
+                "town-undertide-sanctuary",
+                "dungeon-vesper-cradle"
+              ]
+            },
+            {
+              "segment_code": "G",
+              "level_range": [
+                45,
+                50
+              ],
+              "priority_focus": false,
+              "title": "Stage G (Lv. 45\u201350) \u00b7 New Skills & Equipment + Weapon (Lv. 50)",
+              "class_milestone": "Upper 2nd-Class Mastery",
+              "adventure_quest_tier": "Shattered Halo Apex Guild Commissions",
+              "equipment_unlock": "New Equipment + Weapon (Lv. 50) \u2014 Star-Steel & Umbral-Prism Tier",
+              "skill_unlocks": "High-Tier 2nd-Class Ultimate AoE & Control Skills",
+              "consumable_unlocks": "Astral Gravity Tonic, Starlight Focus Elixir",
+              "boss_milestone": "Shattered Halo Catacomb Raid Bosses & Mid-Rank MVP Apostles",
+              "bound_town_and_hunting_nodes": [
+                "town-crown-beacon-citadel",
+                "town-umbrage-focal-sanctum",
+                "dungeon-star-heart-nave",
+                "dungeon-shadow-refraction-crypt"
+              ]
+            },
+            {
+              "segment_code": "H",
+              "level_range": [
+                50,
+                60
+              ],
+              "priority_focus": false,
+              "title": "Stage H (Lv. 50\u201360) \u00b7 Cast Speed / ATK Boosters & Equipment + Weapon (Lv. 60)",
+              "class_milestone": "Veteran 2nd-Class Peak",
+              "adventure_quest_tier": "Continental Seal-Defense Operations",
+              "equipment_unlock": "New Equipment + Weapon (Lv. 60)",
+              "skill_unlocks": "New Veteran Class Skills & Seal-Resonance Passives",
+              "consumable_unlocks": "Magic Cast Speed Booster, ATK Booster, Overcharge Tonic",
+              "boss_milestone": "High-Tier Regional Raid Bosses & Continental MVP Apostles",
+              "bound_town_and_hunting_nodes": [
+                "town-aphelion-buoy-haven",
+                "town-celestial-astrolabe-sanctuary",
+                "dungeon-comet-core-geode",
+                "dungeon-starlight-orrery-nave"
+              ]
+            }
+          ]
+        },
+        {
+          "phase_key": "late",
+          "name": "Late / Endgame Growth Phase (Lv. 60\u201399 \u00b7 Accessories, Team & Unique Skills)",
+          "level_band": [
+            60,
+            99
+          ],
+          "segments": [
+            {
+              "segment_code": "I",
+              "level_range": [
+                60,
+                70
+              ],
+              "priority_focus": false,
+              "title": "Stage I (Lv. 60\u201370) \u00b7 New Accessories (Lv. 60) & New Team Skill",
+              "class_milestone": "Transcendent Seal-Bearer Preparation",
+              "adventure_quest_tier": "Master Guild Seal Expeditions",
+              "equipment_unlock": "New Accessories (Lv. 60) \u2014 God-Seal Relic Rings & Amulets",
+              "skill_unlocks": "New Team Skill (Multi-Party Raid Link Formation)",
+              "consumable_unlocks": "High-Purity Seal Ambrosia",
+              "boss_milestone": "Elder Catacomb Raid Bosses & Sealed-God Apostle MVPs",
+              "bound_town_and_hunting_nodes": [
+                "town-libration-balance-haven",
+                "dungeon-sunken-syzygy-dome"
+              ]
+            },
+            {
+              "segment_code": "J",
+              "level_range": [
+                70,
+                80
+              ],
+              "priority_focus": false,
+              "title": "Stage J (Lv. 70\u201380) \u00b7 New Unique Skill & Awakened Lv. 50+ Relic Equipment/Weapon",
+              "class_milestone": "Awakened Class Lineage",
+              "adventure_quest_tier": "Grand Seal Vault Bounties",
+              "equipment_unlock": "Awakened Relic Equipment + Weapon (Refined Lv. 50 Base -> Mythic Awakening)",
+              "skill_unlocks": "New Unique Skill (Signature Class Awakening Technique)",
+              "consumable_unlocks": "Dragon-Marrow Elixir",
+              "boss_milestone": "Top-Tier MVP Apostles (Arch-Valkyrie Caelia, Dread-Lord Ignisazar)",
+              "bound_town_and_hunting_nodes": [
+                "town-aurora-bell-sanctuary",
+                "dungeon-stalactite-carillon-nave"
+              ]
+            },
+            {
+              "segment_code": "K",
+              "level_range": [
+                80,
+                90
+              ],
+              "priority_focus": false,
+              "title": "Stage K (Lv. 80\u201390) \u00b7 Awakened Accessories (Lv. 60+) & New Team Skill",
+              "class_milestone": "Sovereign Guild Commander",
+              "adventure_quest_tier": "Architect Meridian Defense Charters",
+              "equipment_unlock": "Awakened Seal Accessories (Lv. 60 Base -> Sovereign Set)",
+              "skill_unlocks": "New Team Skill (Guild-Wide Domain Resonance)",
+              "consumable_unlocks": "Architect Runic Panacea",
+              "boss_milestone": "Prime MVP Apostles (Raijin-Vex, Pelagios, Volcanor)",
+              "bound_town_and_hunting_nodes": [
+                "town-penumbra-prism-haven",
+                "dungeon-twilight-coral-crypt"
+              ]
+            },
+            {
+              "segment_code": "L",
+              "level_range": [
+                90,
+                99
+              ],
+              "priority_focus": false,
+              "title": "Stage L (Lv. 90\u201399) \u00b7 Final Unique Skill & Architect Seal Aura",
+              "class_milestone": "Level 99 Sovereign (Maximum Mortal Resonance)",
+              "adventure_quest_tier": "S-Rank Planetary Seal Defense",
+              "equipment_unlock": "Endgame God-Seal Socketed Masterworks",
+              "skill_unlocks": "Final Unique Skill (Level 99 Capstone Ultimate)",
+              "consumable_unlocks": "Aethelgard Sovereign Draught",
+              "boss_milestone": "First Seal-Scribe Automaton & Echoes of the 5 Sealed Gods",
+              "bound_town_and_hunting_nodes": [
+                "town-perigee-diving-station",
+                "dungeon-submerged-orrery-keel"
+              ]
+            }
+          ]
+        }
+      ],
+      "early_focus_1_to_25_deep_dive": {
+        "summary": "Primary playable production focus covering Levels 1 to 25 (Stages A, B, and C, plus the Stage D Lv. 25\u201330 2nd-Class Trial bridge). Every race starts in their own Continent 01 Home Town (Lv. 1\u201310, Stage A), converges at Kilnwatch Bastion at Lv. 10 for 1st Class Change and Guilding (Lv. 10\u201320, Stage B), and tackles the first major Dungeon Raid Bosses and Lv. 20 Weapons at Lv. 20\u201325 (Stage C).",
+        "stage_a_1_to_10": {
+          "level_range": [
+            1,
+            10
+          ],
+          "core_experience": "Learning Period: players learn basic movement, basic skill usage, System Equip tutorial, consumable item hotkeys, and complete F-Tier Adventure Quests around their race Home Town before forging their Lv. 10 Equipment + Weapon.",
+          "adventure_quest_rank": "F-Tier Adventure Quest (Issued at each Racial Home Town Neutral Adventure Guild desk)",
+          "equipment_and_weapon_tier": "Lv. 1 Starter System Equip -> Lv. 10 Racial Apprentice Weapon + Equipment Set",
+          "consumables": [
+            "Minor Hearth-Herb Potion (HP Recovery)",
+            "Sweet Clover Sap (SP Recovery)",
+            "Novice Fly-Wing / Home Town Return Feather"
+          ],
+          "skills": [
+            "Basic 3-Hit Combo & Dodge Step",
+            "First Aid & Campfire Rest",
+            "Racial Innate Passive + Lv. 10 Novice Capstone Skill"
+          ],
+          "racial_starter_routes": [
+            {
+              "race_key": "human_demi_human",
+              "home_town_id": "town-lantern-hollow",
+              "hunting_area_id": "hunting-area-clover-south-gate",
+              "farming_area_id": "hunting-area-kiln-east-orchard",
+              "lv10_weapon_forged": "Lv.10 Terracotta Seal-Blade / Kiln-Ash Staff"
+            },
+            {
+              "race_key": "dwarf",
+              "home_town_id": "town-root-train-roundhouse",
+              "hunting_area_id": "hunting-area-cobalt-sandbar-ford",
+              "farming_area_id": "hunting-area-resin-arch-tunnel",
+              "lv10_weapon_forged": "Lv.10 Tontatta Root-Iron Hammer / Micro-Spring Axe"
+            },
+            {
+              "race_key": "ogre_orc",
+              "home_town_id": "town-draft-kiln-post",
+              "hunting_area_id": "hunting-area-firebrick-duct",
+              "farming_area_id": "hunting-area-celadon-causeway",
+              "lv10_weapon_forged": "Lv.10 Crucible Cinder-Cleaver / Basalt Greatclub"
+            },
+            {
+              "race_key": "furral",
+              "home_town_id": "town-cinnamon-mill-haven",
+              "hunting_area_id": "hunting-area-ginger-aqueduct-bridge",
+              "farming_area_id": "hunting-area-cinnamon-bark-viaduct",
+              "lv10_weapon_forged": "Lv.10 Electro-Amber Claw / Wind-Coil Katar"
+            },
+            {
+              "race_key": "lunar",
+              "home_town_id": "town-porcelain-loom-sanctuary",
+              "hunting_area_id": "hunting-area-celadon-causeway",
+              "farming_area_id": "hunting-area-resin-arch-tunnel",
+              "lv10_weapon_forged": "Lv.10 Celadon Star-Bow / Loom-Quartz Wand"
+            },
+            {
+              "race_key": "dark_lunar",
+              "home_town_id": "town-carillon-hearth-belfry",
+              "hunting_area_id": "hunting-area-apricot-aqueduct-terrace",
+              "farming_area_id": "hunting-area-chime-pipe-colonnade",
+              "lv10_weapon_forged": "Lv.10 Umbral Chime-Daggers / Eclipse Prism Scythe"
+            }
+          ]
+        },
+        "stage_b_10_to_20": {
+          "level_range": [
+            10,
+            20
+          ],
+          "core_experience": "Change 1st Class & All-Race Convergence: at Level 10, all 6 races travel along open highways to Kilnwatch Bastion (D06) to complete their 1st Class Change Job Quest, form cross-race Guilds (gilding), and party up for E-Tier Adventure Quests.",
+          "first_class_change_options": [
+            "Swordman (Vanguard Tank & Melee Cleave)",
+            "Mage (Elemental Burst & Area Control)",
+            "Archer (Ranged Precision & Trap Kiting)",
+            "Acolyte (Party Healer, Barrier & Seal-Buffs)",
+            "Thief / Scout (High-Evasion Dual-Blade & Poison/Shadow)",
+            "Tinker-Smith (Blacksmith Clan Combat Forger & Turret/Hammer)"
+          ],
+          "adventure_quest_rank": "E-Tier Adventure Quest (Unlocked at Lv. 10 upon registering at Kilnwatch Bastion Grand Guild Hall)",
+          "convergence_guild_hub_id": "town-kilnwatch-bastion",
+          "equipment_and_weapon_tier": "Lv. 10\u201315 1st-Class Job Uniform + Multi-Race Alloy Sub-Equipment",
+          "consumables": [
+            "Medium Glaze-Draft Potion",
+            "Blue Mana-Resin Syrup",
+            "Panacea Herb (Cures Poison/Silence)",
+            "Party Campfire Kit (Shared HP/SP Regen)"
+          ],
+          "skills": [
+            "Swordman: Bash, Provoke, Iron Skin",
+            "Mage: Fire Bolt, Cold Bolt, Lightning Bolt",
+            "Archer: Owl Eye, Vulture Eye, Double Strafe",
+            "Acolyte: Heal, Increase AGI, Blessing",
+            "Thief/Scout: Double Attack, Improve Dodge, Envenom",
+            "Tinker-Smith: Mammonite Smash, Ore Discovery, Temper Weapon"
+          ],
+          "party_hunting_and_dungeon_nodes": [
+            "town-kilnwatch-bastion",
+            "hunting-area-kiln-east-orchard",
+            "hunting-area-firebrick-duct",
+            "hunting-area-cinder-apron",
+            "dungeon-kiln-cellar",
+            "dungeon-medallion-heart-vault"
+          ]
+        },
+        "stage_c_20_to_25": {
+          "level_range": [
+            20,
+            25
+          ],
+          "core_experience": "First Major Boss & Lv. 20 Equipment Spike: 6-player cross-race parties take on D-Tier Adventure Quests, challenge their first full Catacomb Raid Bosses (Rank 3 Wardens), and forge Lv. 20 Weapons + Equipment sets before bridging into Continent 02.",
+          "adventure_quest_rank": "D-Tier Adventure Quest (Party Boss Bounties & Glaze-Barge / Pinion Terminus Escorts)",
+          "boss_encounters": [
+            "Kiln-Crag Siege Golem (Raid Boss \u00b7 dungeon-ember-bellows-chamber Lv. 20)",
+            "Drowned Ceramic Leviathan-Spawn (Raid Boss \u00b7 dungeon-sunken-potter-hold Lv. 20)",
+            "Runaway Escapement Warden (Raid Boss \u00b7 dungeon-pendulum-shaft Lv. 22\u201325)"
+          ],
+          "equipment_and_weapon_tier": "New Equipment + Weapon (Lv. 20) \u2014 Boss-Core Socketed Weapons & 4-Piece Dungeon Armor Sets",
+          "skills": [
+            "Swordman: Magnum Break (Fire AoE) & Endure",
+            "Mage: Fireball (AoE), Frost Diver & Soul Strike",
+            "Archer: Arrow Shower (AoE) & Charge Arrow",
+            "Acolyte: Pneuma / Kyrie Barrier & Ruwach",
+            "Thief/Scout: Hiding, Ambush Backstab & Detoxify",
+            "Tinker-Smith: Cart Revolution (AoE Knockback) & Overthrust Party Buff"
+          ],
+          "expedition_hub_and_dungeon_nodes": [
+            "town-glaze-barge-quay",
+            "dungeon-sunken-potter-hold",
+            "dungeon-ember-bellows-chamber",
+            "town-pinion-terminus",
+            "hunting-area-brass-spur-ridge",
+            "dungeon-pendulum-shaft"
+          ]
+        },
+        "stage_d_25_to_30_bridge": {
+          "level_range": [
+            25,
+            30
+          ],
+          "core_experience": "Prepare Change 2nd Class [Learn & Try]: players test-drive 2nd-Class trial stances in the Clockwork Steppe frontier and unlock their first Speed/Magic Booster consumables ahead of the Lv. 30 2nd-Class promotion.",
+          "second_class_trial_preview": "Interactive Mentor Trial Arena in Escapement Anvil & Bellows Hearth allowing players to test both 2nd-Class branches (e.g. Knight vs Crusader, Wizard vs Sage) before locking in at Level 30.",
+          "booster_consumables": [
+            "Magic Booster (Amplifies MATK & Elemental Resonance for 15m)",
+            "ASPD Booster (Awakening Clock-Spring Potion \u00b7 +15% Attack Speed for 15m)"
+          ],
+          "skills": [
+            "Trial Stance Preview Skill (Temporary 2nd-Class Signature Skill usable during Job Trial Quests)",
+            "Job Mastery Passive (Lv. 25 Capstone)"
+          ],
+          "transition_nodes": [
+            "town-escapement-anvil",
+            "town-bellows-hearth",
+            "town-patina-lock",
+            "dungeon-chronometer-foundry"
+          ]
+        }
+      }
+    },
+    "world_continent_map_chain": {
+      "chain_architecture_law": "Hub-and-Spoke Radial Convergence on Continent 01 (Stages A->B->C, Lv.1\u201325) transitioning via Cinder Apron & Pinion Terminus into the Continent 02 Linear Gear-Highway (Stages D->E, Lv.25\u201340), and ascending via the Astrolabe Rift into the Continent 03 Vertical Sky-Archipelago Ring (Stages F->L, Lv.40\u201399).",
+      "early_focus_hub_and_spoke_1_to_25": {
+        "stage_a_spokes_1_to_10": [
+          {
+            "spoke_id": "spoke-01-human-teacup",
+            "race_key": "human_demi_human",
+            "race_name": "Human / Demi-Human",
+            "district_id": "district-teacup-meadows",
+            "home_town_id": "town-lantern-hollow",
+            "hunting_node_id": "hunting-area-clover-south-gate",
+            "farming_node_id": "hunting-area-kiln-east-orchard",
+            "tutorial_catacomb_id": "dungeon-kiln-cellar",
+            "portal_chain_to_kilnwatch": [
+              "town-lantern-hollow",
+              "hunting-area-kiln-east-orchard",
+              "town-kilnwatch-bastion"
+            ]
+          },
+          {
+            "spoke_id": "spoke-02-ogre-ash-bellows",
+            "race_key": "ogre_orc",
+            "race_name": "Ogre / Orc",
+            "district_id": "district-ash-bellows-trench",
+            "home_town_id": "town-draft-kiln-post",
+            "hunting_node_id": "hunting-area-firebrick-duct",
+            "farming_node_id": "hunting-area-celadon-causeway",
+            "tutorial_catacomb_id": "dungeon-ember-bellows-chamber",
+            "portal_chain_to_kilnwatch": [
+              "town-draft-kiln-post",
+              "hunting-area-firebrick-duct",
+              "town-kilnwatch-bastion"
+            ]
+          },
+          {
+            "spoke_id": "spoke-03-lunar-porcelain",
+            "race_key": "lunar",
+            "race_name": "Lunar (Astral High-Elf)",
+            "district_id": "district-porcelain-cradle",
+            "home_town_id": "town-porcelain-loom-sanctuary",
+            "hunting_node_id": "hunting-area-celadon-causeway",
+            "farming_node_id": "hunting-area-resin-arch-tunnel",
+            "tutorial_catacomb_id": "dungeon-medallion-heart-vault",
+            "portal_chain_to_kilnwatch": [
+              "town-porcelain-loom-sanctuary",
+              "hunting-area-celadon-causeway",
+              "town-draft-kiln-post",
+              "hunting-area-firebrick-duct",
+              "town-kilnwatch-bastion"
+            ]
+          },
+          {
+            "spoke_id": "spoke-04-dwarf-amber-root",
+            "race_key": "dwarf",
+            "race_name": "Dwarf (Tontatta Micro-Titans)",
+            "district_id": "district-amber-root-hollows",
+            "home_town_id": "town-root-train-roundhouse",
+            "hunting_node_id": "hunting-area-cobalt-sandbar-ford",
+            "farming_node_id": "hunting-area-resin-arch-tunnel",
+            "tutorial_catacomb_id": "dungeon-sap-heart-cistern",
+            "portal_chain_to_kilnwatch": [
+              "town-root-train-roundhouse",
+              "hunting-area-resin-arch-tunnel",
+              "town-porcelain-loom-sanctuary",
+              "hunting-area-celadon-causeway",
+              "town-draft-kiln-post",
+              "hunting-area-firebrick-duct",
+              "town-kilnwatch-bastion"
+            ]
+          },
+          {
+            "spoke_id": "spoke-05-dark-lunar-chimes",
+            "race_key": "dark_lunar",
+            "race_name": "Dark-Lunar (Umbral Eclipse)",
+            "district_id": "district-terracotta-wind-chimes",
+            "home_town_id": "town-carillon-hearth-belfry",
+            "hunting_node_id": "hunting-area-apricot-aqueduct-terrace",
+            "farming_node_id": "hunting-area-chime-pipe-colonnade",
+            "tutorial_catacomb_id": "dungeon-ceramic-resonator-crypt",
+            "portal_chain_to_kilnwatch": [
+              "town-carillon-hearth-belfry",
+              "hunting-area-chime-pipe-colonnade",
+              "town-glaze-barge-quay",
+              "hunting-area-cobalt-sandbar-ford",
+              "town-root-train-roundhouse",
+              "hunting-area-resin-arch-tunnel",
+              "town-porcelain-loom-sanctuary",
+              "hunting-area-celadon-causeway",
+              "town-draft-kiln-post",
+              "hunting-area-firebrick-duct",
+              "town-kilnwatch-bastion"
+            ]
+          },
+          {
+            "spoke_id": "spoke-06-furral-cinnamon",
+            "race_key": "furral",
+            "race_name": "Furral (Electro-Beastfolk)",
+            "district_id": "district-cinnamon-bellows-bluff",
+            "home_town_id": "town-cinnamon-mill-haven",
+            "hunting_node_id": "hunting-area-ginger-aqueduct-bridge",
+            "farming_node_id": "hunting-area-cinnamon-bark-viaduct",
+            "tutorial_catacomb_id": "dungeon-spice-kiln-cellar",
+            "portal_chain_to_kilnwatch": [
+              "town-cinnamon-mill-haven",
+              "hunting-area-cinnamon-bark-viaduct",
+              "town-saffron-press-village",
+              "hunting-area-apricot-aqueduct-terrace",
+              "town-carillon-hearth-belfry",
+              "hunting-area-chime-pipe-colonnade",
+              "town-glaze-barge-quay",
+              "hunting-area-cobalt-sandbar-ford",
+              "town-root-train-roundhouse",
+              "hunting-area-resin-arch-tunnel",
+              "town-porcelain-loom-sanctuary",
+              "hunting-area-celadon-causeway",
+              "town-draft-kiln-post",
+              "hunting-area-firebrick-duct",
+              "town-kilnwatch-bastion"
+            ]
+          }
+        ],
+        "stage_b_convergence_hub_10_to_20": {
+          "hub_town_id": "town-kilnwatch-bastion",
+          "district_id": "district-kilnfire-terraces",
+          "unlocked_systems": [
+            "1st Class Change Job Promotion (Swordman, Mage, Archer, Acolyte, Thief/Scout, Tinker-Smith)",
+            "Cross-Race Guild Registration Charter (Gilding)",
+            "Neutral Adventure Guild E-Tier Party Commissions",
+            "Blacksmith Clan Six-Anvil Combined Racial Alloy Smelting"
+          ],
+          "connected_party_hunting_grounds": [
+            "hunting-area-kiln-east-orchard",
+            "hunting-area-firebrick-duct",
+            "hunting-area-cinder-apron",
+            "hunting-area-celadon-causeway"
+          ],
+          "connected_catacomb_dungeons": [
+            "dungeon-kiln-cellar",
+            "dungeon-medallion-heart-vault",
+            "dungeon-sap-heart-cistern"
+          ]
+        },
+        "stage_c_boss_and_bridge_20_to_25": {
+          "west_river_raid_branch": [
+            "town-kilnwatch-bastion",
+            "hunting-area-firebrick-duct",
+            "town-draft-kiln-post",
+            "dungeon-ember-bellows-chamber",
+            "hunting-area-celadon-causeway",
+            "town-porcelain-loom-sanctuary",
+            "hunting-area-resin-arch-tunnel",
+            "town-root-train-roundhouse",
+            "hunting-area-cobalt-sandbar-ford",
+            "town-glaze-barge-quay",
+            "dungeon-sunken-potter-hold"
+          ],
+          "east_continental_bridge_branch": [
+            "town-kilnwatch-bastion",
+            "hunting-area-cinder-apron",
+            "town-pinion-terminus",
+            "dungeon-pendulum-shaft",
+            "hunting-area-brass-spur-ridge"
+          ],
+          "raid_boss_dungeons": [
+            "dungeon-ember-bellows-chamber",
+            "dungeon-sunken-potter-hold",
+            "dungeon-pendulum-shaft"
+          ]
+        },
+        "stage_d_trial_frontier_25_to_30": {
+          "entry_town_id": "town-escapement-anvil",
+          "portal_chain": [
+            "town-pinion-terminus",
+            "hunting-area-brass-spur-ridge",
+            "hunting-area-caldera-rim",
+            "town-escapement-anvil",
+            "hunting-area-siphon-sluice",
+            "town-patina-lock",
+            "hunting-area-flue-causeway",
+            "town-bellows-hearth"
+          ],
+          "trial_arenas_and_dungeons": [
+            "dungeon-chronometer-foundry",
+            "dungeon-mercury-reservoir",
+            "dungeon-ash-valve-vault"
+          ]
+        }
+      },
+      "continent_chains": [
+        {
+          "continent_id": "continent-01-hearthbloom-basin",
+          "continent_name": "Hearthbloom Basin (Early Game Hub-and-Spoke \u00b7 Stages A, B, C)",
+          "growth_stages": [
+            "A",
+            "B",
+            "C"
+          ],
+          "level_band": [
+            1,
+            25
+          ],
+          "topology_pattern": "6 Racial Starter Spokes (Lv.1\u201310) -> Central Kilnwatch Bastion Convergence Hub (Lv.10\u201320) -> Glaze-Barge & Cinder Apron Raid Exits (Lv.20\u201325)",
+          "ordered_district_chain": [
+            "district-teacup-meadows",
+            "district-kilnfire-terraces",
+            "district-ash-bellows-trench",
+            "district-porcelain-cradle",
+            "district-amber-root-hollows",
+            "district-glaze-river-delta",
+            "district-terracotta-wind-chimes",
+            "district-saffron-kiln-orchards",
+            "district-cinnamon-bellows-bluff",
+            "district-ginger-steam-terraces"
+          ],
+          "ordered_mainline_node_chain": [
+            "hunting-area-clover-south-gate",
+            "town-lantern-hollow",
+            "hunting-area-kiln-east-orchard",
+            "town-kilnwatch-bastion",
+            "hunting-area-firebrick-duct",
+            "town-draft-kiln-post",
+            "hunting-area-celadon-causeway",
+            "town-porcelain-loom-sanctuary",
+            "hunting-area-resin-arch-tunnel",
+            "town-root-train-roundhouse",
+            "hunting-area-cobalt-sandbar-ford",
+            "town-glaze-barge-quay",
+            "hunting-area-chime-pipe-colonnade",
+            "town-carillon-hearth-belfry",
+            "hunting-area-apricot-aqueduct-terrace",
+            "town-saffron-press-village",
+            "hunting-area-cinnamon-bark-viaduct",
+            "town-cinnamon-mill-haven",
+            "hunting-area-ginger-aqueduct-bridge",
+            "town-ginger-bathhouse-haven"
+          ]
+        },
+        {
+          "continent_id": "continent-02-clockwork-steppe",
+          "continent_name": "The Clockwork Steppe (Middle Game Gear-Highway \u00b7 Stages C, D, E)",
+          "growth_stages": [
+            "C",
+            "D",
+            "E"
+          ],
+          "level_band": [
+            20,
+            40
+          ],
+          "topology_pattern": "West-to-East Brass Faultline Railway & Gear-Highway with Northern Astrolabe Rift Branch to Continent 03",
+          "ordered_district_chain": [
+            "district-rustcog-downs",
+            "district-mainspring-caldera",
+            "district-verdigris-siphon",
+            "district-gilded-exhaust",
+            "district-thunder-coil-basin",
+            "district-pendulum-steppe-west",
+            "district-helical-gear-trench",
+            "district-differential-spur-gorge",
+            "district-flywheel-dynamo-canyon",
+            "district-bimetallic-escapement-mesa",
+            "district-thermal-compensator-basin"
+          ],
+          "ordered_mainline_node_chain": [
+            "town-pinion-terminus",
+            "hunting-area-brass-spur-ridge",
+            "hunting-area-caldera-rim",
+            "town-escapement-anvil",
+            "hunting-area-siphon-sluice",
+            "town-patina-lock",
+            "hunting-area-flue-causeway",
+            "town-bellows-hearth",
+            "hunting-area-leyden-causeway",
+            "town-inductor-switchyard",
+            "hunting-area-metronome-bridge",
+            "town-metronome-pivot-citadel",
+            "hunting-area-spiral-wormway-ramp",
+            "town-helical-torque-hub",
+            "hunting-area-planetary-carrier-span",
+            "town-torque-balance-citadel",
+            "hunting-area-centrifugal-gantry-span",
+            "town-flywheel-governor-hub",
+            "hunting-area-bimetallic-expansion-span",
+            "town-bimetallic-chronometer-hub",
+            "hunting-area-radiator-manifold-span",
+            "town-mercury-bellows-hub"
+          ]
+        },
+        {
+          "continent_id": "continent-03-shattered-halo",
+          "continent_name": "The Shattered Halo (Middle-to-Late Sky-Archipelago Ring \u00b7 Stages E..L)",
+          "growth_stages": [
+            "E",
+            "F",
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "L"
+          ],
+          "level_band": [
+            35,
+            99
+          ],
+          "topology_pattern": "Orbital Tether-Bridge Ring ascending from Starfall Haven through Zenith Crown to the Aphelion & Umbrage Endgame Atolls",
+          "ordered_district_chain": [
+            "district-starfall-anchorage",
+            "district-eclipse-observatory",
+            "district-nebula-undertide",
+            "district-zenith-crown",
+            "district-perigee-abyss",
+            "district-aphelion-halo-rim",
+            "district-libration-mirror-shoals",
+            "district-umbrage-prism-atoll",
+            "district-aurora-chime-atoll",
+            "district-penumbra-prism-reef",
+            "district-celestial-astrolabe-atoll"
+          ],
+          "ordered_mainline_node_chain": [
+            "hunting-area-tether-causeway",
+            "town-starfall-haven",
+            "hunting-area-orrery-bridge",
+            "town-prism-zenith",
+            "hunting-area-kelp-spiral-reef",
+            "town-undertide-sanctuary",
+            "hunting-area-aurora-tether",
+            "town-crown-beacon-citadel",
+            "hunting-area-stalactite-plunge",
+            "town-perigee-diving-station",
+            "hunting-area-comet-tether-span",
+            "town-aphelion-buoy-haven",
+            "hunting-area-silver-tide-causeway",
+            "town-libration-balance-haven",
+            "hunting-area-violet-spectrum-span",
+            "town-umbrage-focal-sanctum",
+            "hunting-area-resonance-tether-causeway",
+            "town-aurora-bell-sanctuary",
+            "hunting-area-penumbra-refraction-causeway",
+            "town-penumbra-prism-haven",
+            "hunting-area-armillary-ring-causeway",
+            "town-celestial-astrolabe-sanctuary"
+          ]
+        }
+      ],
+      "inter_continent_bridges": [
+        {
+          "bridge_id": "bridge-c01-to-c02-cinder-viaduct",
+          "name": "Kettle-Whistle Viaduct & Cinder Apron Corridor (Continent 01 \u2794 Continent 02)",
+          "from_continent_id": "continent-01-hearthbloom-basin",
+          "to_continent_id": "continent-02-clockwork-steppe",
+          "unlock_stage": "Stage B -> Stage C (Lv. 15\u201320 Guild Expedition)",
+          "unlock_level": 15,
+          "portal_node_sequence": [
+            "town-kilnwatch-bastion",
+            "hunting-area-cinder-apron",
+            "town-pinion-terminus"
+          ]
+        },
+        {
+          "bridge_id": "bridge-c02-to-c03-astrolabe-rift",
+          "name": "The Astrolabe Dimensional Rift & Tether Causeway (Continent 02 \u2794 Continent 03)",
+          "from_continent_id": "continent-02-clockwork-steppe",
+          "to_continent_id": "continent-03-shattered-halo",
+          "unlock_stage": "Stage E -> Stage F (Lv. 35\u201340 2nd-Class Sky Ascension)",
+          "unlock_level": 35,
+          "portal_node_sequence": [
+            "town-pinion-terminus",
+            "hunting-area-brass-spur-ridge",
+            "hunting-area-astrolabe-rift",
+            "hunting-area-tether-causeway",
+            "town-starfall-haven"
+          ]
+        }
+      ]
+    }
+  },
   "starter_town_bindings": [
     {
-      "town_id": "town-lantern-hollow",
-      "town_name": "Lantern Hollow",
+      "race_id": "race-human-demi-human",
+      "race_name": "Human / Demi-Human",
       "continent_id": "continent-01-hearthbloom-basin",
       "district_id": "district-teacup-meadows",
-      "status": "canon",
-      "spawn_rationale": "Located directly inside Sola's unbroken Ceramic Palm where Hearth-Sparks condense gently; zero lethal weather and 100 percent toddler-scaled cottages."
+      "town_node_id": "town-lantern-hollow",
+      "hunting_area_id": "hunting-area-clover-south-gate",
+      "farming_area_id": "hunting-area-kiln-east-orchard",
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Awakening in Lantern Hollow (Lv.1-10), Human and Demi-Human initiates defend the First Meridian Keystone before marching east through Kiln East Orchard at Lv.10 to join all six races at Kilnwatch Bastion for guilding and party quests."
+    },
+    {
+      "race_id": "race-dwarf",
+      "race_name": "Dwarf (Tontatta-Lineage Micro-Titans)",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-amber-root-hollows",
+      "town_node_id": "town-root-train-roundhouse",
+      "hunting_area_id": "hunting-area-cobalt-sandbar-ford",
+      "farming_area_id": "hunting-area-resin-arch-tunnel",
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Tiny, super-strong Dwarf smith-scouts start in Root-Train Roundhouse (Lv.1-10) clearing insectoid swarms from the banyan root-railways, then ride the resin-arch line to Kilnwatch Bastion at Lv.10-20 to forge multi-race guild gear."
+    },
+    {
+      "race_id": "race-ogre-orc",
+      "race_name": "Ogre / Orc",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-ash-bellows-trench",
+      "town_node_id": "town-draft-kiln-post",
+      "hunting_area_id": "hunting-area-firebrick-duct",
+      "farming_area_id": "hunting-area-celadon-causeway",
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Ogre and Orc vanguard initiates temper their resolve at Draft-Kiln Post (Lv.1-10) in the Ash-Bellows Trench before ascending Firebrick Duct at Lv.10-20 to serve as front-line tanks for multi-race parties in Kilnwatch Bastion."
+    },
+    {
+      "race_id": "race-furral",
+      "race_name": "Furral (Electro-Beastfolk Tribe)",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-cinnamon-bellows-bluff",
+      "town_node_id": "town-cinnamon-mill-haven",
+      "hunting_area_id": "hunting-area-ginger-aqueduct-bridge",
+      "farming_area_id": "hunting-area-cinnamon-bark-viaduct",
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Young Furral electro-warriors train atop the wind-turbines of Cinnamon-Mill Haven (Lv.1-10), harvesting static amber before converging at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to form guilds bound for their ancestral Inductor Switchyard."
+    },
+    {
+      "race_id": "race-lunar",
+      "race_name": "Lunar (Astral High-Elven Lineage)",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-porcelain-cradle",
+      "town_node_id": "town-porcelain-loom-sanctuary",
+      "hunting_area_id": "hunting-area-celadon-causeway",
+      "farming_area_id": "hunting-area-resin-arch-tunnel",
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Lunar star-weavers begin their pilgrimage in Porcelain Loom Sanctuary (Lv.1-10), weaving starlight wards across Celadon Causeway before uniting with all six races at Kilnwatch Bastion (Lv.10-20) to prepare for the sky-ascension to Starfall Haven."
+    },
+    {
+      "race_id": "race-dark-lunar",
+      "race_name": "Dark-Lunar (Umbral Eclipse Lineage)",
+      "continent_id": "continent-01-hearthbloom-basin",
+      "district_id": "district-terracotta-wind-chimes",
+      "town_node_id": "town-carillon-hearth-belfry",
+      "hunting_area_id": "hunting-area-apricot-aqueduct-terrace",
+      "farming_area_id": "hunting-area-chime-pipe-colonnade",
+      "convergence_hub_town_id": "town-kilnwatch-bastion",
+      "arrival_narrative": "Dark-Lunar shadow-scholars keep vigil in Carillon Hearth Belfry (Lv.1-10) listening for Demon-seal tremors in the wind-chime canyons, then join multi-race guilds at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to unlock the Umbrage Prism Atolls."
     }
   ],
-  "quality_checklist": {
-    "causal_continuity": {
+  "long_term_governance_checklist": [
+    {
+      "gate_id": "GOV-01",
+      "category": "race_hometown_matrix",
+      "title": "6 Playable Races -> Canon Home Town + Hunting + Farming Loop",
+      "invariant_rule": "Every playable race (Human/Demi-Human, Lunar, Ogre/Orc, Dark-Lunar, Dwarf, Furral) must bind to an existing canon Town node and valid adjacent Hunting & Farming areas in the same District.",
+      "cli_command": "python3 scripts/studio_world_governance.py --check",
       "verified": true,
-      "evidence": "Every Primordial God and Clockspring War scar directly spawns a named Continent (continent-01, continent-02, continent-03) and binds the Starter Town arrival."
+      "evidence": "All 6 playable races map to verified canon Town nodes (town-lantern-hollow, town-root-train-roundhouse, town-kilnwatch-bastion, town-inductor-switchyard, town-starfall-haven, town-umbrage-focal-sanctum) with open portals to their Hunting and Farming nodes."
     },
-    "fantasy_and_wonder": {
+    {
+      "gate_id": "GOV-02",
+      "category": "monster_ecology_taxonomy",
+      "title": "12-Race Monster Taxonomy (6 Playable/Mob + 6 Monster-Only Ecologies)",
+      "invariant_rule": "All 6 Playable/Mob races (can_be_player=true, can_be_mob=true) and all 6 Monster-Only ecologies (Beast/Animal/Brute, Robotic, Undead, Fish, Insect/Arachnia, Plant with can_be_player=false, can_be_mob=true) must be registered with signature drops and continent habitats.",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-races",
       "verified": true,
-      "evidence": "Establishes the Clockspring Nursery fantasy where 90 to 120 centimeter Star-Kindled children crawl inside shattered Titan reliquaries to relight World-Lanterns."
+      "evidence": "6/6 Playable/Mob races and 6/6 Monster-Only ecology races are defined in race_taxonomy with explicit continent habitats and crafting drops."
     },
-    "character_scale_consistency": {
+    {
+      "gate_id": "GOV-03",
+      "category": "four_chapter_history",
+      "title": "4-Chapter Canonical History & Sealed-God Causality",
+      "invariant_rule": "historical_epochs must contain Chapters 1.1 Creation, 1.2 Age Of The Gods, 1.3 The God Wars, and 1.4 God Seal Magic (where The Architect seals Angel, Demon, Legendary Beast, Leviathan, and the Earth/Fire/Thunder Legendary Dragon).",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-history",
       "verified": true,
-      "evidence": "Locks character height to 0.90 to 1.20 meters (1.05 meter reference) with grass <= 0.35m, bushes <= 0.65m, stair risers <= 0.15m, counters 0.55 to 0.65m, and doorways >= 2.0m."
+      "evidence": "Chapters 1.1, 1.2, 1.3, and 1.4 are canon, ordered 1..4, and link all 6 God-Tier entities and 3 regional aspects to continental scars."
     },
-    "spatial_and_ecological_consistency": {
+    {
+      "gate_id": "GOV-04",
+      "category": "guild_and_blacksmith",
+      "title": "Neutral Adventure Guild ('No Side') & Cross-Racial Blacksmith Clan",
+      "invariant_rule": "shared_world_systems must define the Neutral Adventure Guild (allegiance='neutral_no_side') for quest trading and the Blacksmith Clan across all racial home towns.",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-factions",
       "verified": true,
-      "evidence": "Connects the sheltered Kiln-Basin starter caldera (Levels 1 to 15) outward to the wind-swept Clockwork Steppe (Levels 15 to 30) and northern Shattered Halo (Levels 30 to 50)."
+      "evidence": "Adventure Guild charter enforces 'neutral_no_side' quest trading and Blacksmith Clan covers all 6 racial home town anvil branches."
     },
-    "intentional_mystery_discipline": {
+    {
+      "gate_id": "GOV-05",
+      "category": "quest_progression_tracks",
+      "title": "3-Track Quest Loop (Main Quests + Job Quests + Side Quests)",
+      "invariant_rule": "shared_world_systems.quest_progression_loop must define Main Quests (God Seal narrative), Job Quests (Class & Blacksmith mastery), and Side Quests (Racial Home Town stories, hunting & farming).",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-quests",
       "verified": true,
-      "evidence": "Preserves Vesper's slumbering core unanswered question while promoting all three Primordial Gods to Canon with zero deprecated proof-of-concept lore."
+      "evidence": "All 3 quest tracks (main_quest, job_quest, side_quest) are specified with clear progression roles and reward focuses."
+    },
+    {
+      "gate_id": "GOV-06",
+      "category": "boss_hierarchy_law",
+      "title": "Strict Boss Power Hierarchy (Sealed God > MVP Apostle > Raid Boss > Mob)",
+      "invariant_rule": "Boss hierarchy must enforce GOD_SEALED > MVP_GOD_SUBORDINATE > RAID_BOSS > MINI_BOSS > NORMAL_MOB, where every Sealed God has a named top-tier MVP Subordinate ranked strictly above Dungeon Raid Bosses.",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-bosses",
+      "verified": true,
+      "evidence": "Rank 1 (Sealed Gods) > Rank 2 (MVP Boss \u2014 Direct God Subordinate) > Rank 3 (Raid Boss \u2014 Dungeon Warden) > Rank 4 (Field Mob) is enforced across all 6 God-Tier entities."
+    },
+    {
+      "gate_id": "GOV-07",
+      "category": "level_10_20_convergence_hub",
+      "title": "Lv.1-10 Same-Continent Racial Starts -> Lv.10-20 All-Race Convergence City (Guilding & Party Hub)",
+      "invariant_rule": "All 6 Playable Races must start on Continent 01 (Lv.1-10) in distinct canon Home Towns and have open-portal reachability to the shared Level 10-20 Convergence Hubs (Kilnwatch Bastion, Glaze-Barge Quay, Pinion Terminus) for guilding, party matchmaking, and quest trading.",
+      "cli_command": "python3 scripts/studio_world_governance.py --check",
+      "verified": true,
+      "evidence": "All 6 Playable Races start in canon Continent 01 towns (Lantern Hollow, Root-Train Roundhouse, Draft-Kiln Post, Cinnamon-Mill Haven, Porcelain Loom Sanctuary, Carillon Hearth Belfry) with verified open-portal paths into Kilnwatch Bastion (Lv.10-20 Primary Convergence Hub)."
+    },
+    {
+      "gate_id": "GOV-08",
+      "category": "level_growth_path_1_to_25",
+      "title": "Level 1\u201399 Growth Path (Stages A\u2013L) with Lv. 1\u201325 Early Focus (A: 1\u201310, B: 10\u201320, C: 20\u201325, D: 25\u201330)",
+      "invariant_rule": "shared_world_systems.level_growth_path must define all 12 segments (A..L across Early 1\u201330, Middle 30\u201360, Late 60\u201399) with priority_focus_band=[1, 25] and deep-dive bindings for Stage A (Lv.1\u201310 F-quest + Lv.10 weapon), Stage B (Lv.10\u201320 1st Class + E-quest at Kilnwatch Bastion), Stage C (Lv.20\u201325 Boss + D-quest + Lv.20 weapon), and Stage D (Lv.25\u201330 Prepare 2nd Class + Magic/ASPD Boosters).",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-growth",
+      "verified": true,
+      "evidence": "All 12 growth stages (A..L) are mapped to canon Studio towns, hunting areas, and catacomb dungeons, with full Lv. 1\u201325 deep-dive specifications for all 6 playable races and 6 first-class jobs."
+    },
+    {
+      "gate_id": "GOV-09",
+      "category": "world_continent_map_chain",
+      "title": "End-to-End World Continent Area Map Chain (6 Spokes -> Kilnwatch Hub -> 3-Continent Mainline)",
+      "invariant_rule": "shared_world_systems.world_continent_map_chain must define verified step-by-step open-portal sequences for all 6 Stage A Racial Spokes into Kilnwatch Bastion (Stage B), both Stage C Raid & Bridge branches, the 20-node Continent 01 chain, the 22-node Continent 02 chain, the 22-node Continent 03 chain, and both inter-continental bridges.",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-map-chain",
+      "verified": true,
+      "evidence": "Every single adjacent pair in all 6 racial spoke chains, all 3 continental mainline chains (64 overland nodes), and both inter-continent bridges is verified to have an active open portal in content/studio/nodes/."
+    },
+    {
+      "gate_id": "GOV-10",
+      "category": "t_shaped_world_atlas",
+      "title": "L2J.RU / L2Hub / PMFun Top-Down T-Shaped World Atlas & Zone Database",
+      "invariant_rule": "content/studio/t_shaped_world_atlas.json must validate against t-shaped-world-atlas.schema.json, indexing T-Breadth across all 6 zone categories (Starting Towns, Castle/Hub Towns, Fields, Regular Dungeons, God-Seal Catacombs, Harbors/Clan Halls/Forts) and T-Depth 100% validation on District D01 (Lantern Hollow Village + Clover South-Gate Meadow + Kiln Cellar Ruins + 3 Mob Drop/Spoil Sheets).",
+      "cli_command": "python3 scripts/studio_world_governance.py --audit-t-atlas",
+      "verified": true,
+      "evidence": "T-Breadth indexes 3 continents ([16_10]..[25_25]), 6 starting villages, 10 castle/hub towns, 25 field zones, 12 regular dungeons, 8 God-Seal catacombs, and 9 harbors/clan halls/forts; T-Depth validates Lantern Hollow + Clover South-Gate + Kiln Cellar Ruins + Prairie Keltir (20535) / Kiln Salamander (20109) / Discarded Kiln-Guardian (25372)."
     }
-  }
+  ]
 }

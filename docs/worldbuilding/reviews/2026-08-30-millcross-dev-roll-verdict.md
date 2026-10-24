@@ -87,7 +87,7 @@ contamination — forge.config.json:105 `_note`).
 
 1. **Accept the A8 ruling?** Recommendation: yes — register acceptable-as-concept-style, conditional on the
    medium clause validating on the next roll.
-2. **Storybook surface.** `tools/asset-storybook/world-index.json` contains no `A1-ART-02` entry — these cells
+2. **Storybook surface.** `tools/atlas-world-panels/world-index.json` contains no `A1-ART-02` entry — these cells
    (and the recipe itself) are not observable in a review surface, against the 2026-08-15 owner rule. Wire
    art-forge env renders into the storybook before the next roll.
 3. **Contingency.** If the next roll still cannot hold the wall ring from text + depth 0.40, the structural fix

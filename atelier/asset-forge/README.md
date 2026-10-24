@@ -160,13 +160,46 @@ node atelier/asset-forge/intake.mjs /tmp/<name>.glb --key mob:aggressive --licen
 | `height` | Bounding-box Y ∈ configured range (character: 1.6–2.0u) | Scale not applied, or applied to the wrong object | Re-check step 4 of AUTHOR — apply scale on the whole kitbash, not just the mesh |
 | `pivot` | Feet on ground plane (`\|minY\| ≤ 0.02u`), X/Z centered (`≤ 0.1u`) | Origin not at world origin, or object offset after kitbash edits | Move object origin to feet-center before baking; re-center in Blender |
 | `clips` | Every required state (idle/walk/run/attack/death) maps to an existing clip name | Clip renamed or deleted during editing | Never rename clips (AUTHOR rule 3); check `forge.config.json`'s `defaultClipMap` if using a non-standard mapping |
-| `skeleton` | Bone-name set matches `rig-reference/kenney-mini.bones.json` exactly | Bones added/removed/renamed, or armature modifier changed | Never touch armature bone names/hierarchy (AUTHOR rule 3); diff against the reference joints file |
+| `skeleton` | Bone-name set matches one `rigReference` file exactly (see Skeleton contract) | Bones added/removed/renamed, or armature modifier changed | Never touch armature bone names/hierarchy (AUTHOR rule 3); diff against the reference joints file |
+| `skeleton-core` / `-grammar` / `-topology` / `-cap`, `skin-weights` | Extra bones on `kaykit-core` (see Skeleton contract) | Core joint missing or re-parented, bad extra-bone name, wrong parent, too many extras, bad weights | Fix the bone named in the detail line |
 | `triangles` | ≤ per-kind budget (character: 10 000) | Sculpt/kitbash added too much geometry | Decimate or simplify mesh; budgets live in `forge.config.json` |
 | `textures` | ≤ per-kind max texture size (character: 1024×1024) | New texture exported oversized | Downscale texture before baking |
 | `resources` (warning) | External resource (e.g. a texture URI) resolves on disk | Texture file missing next to the glb | Only relevant for non-embedded exports; BAKE embeds textures by default |
 | `naming` | Filename is `snake_case`, no spaces, `.glb` | `<asset_name>` used spaces/CamelCase | Rename the `.blend` and re-bake to match `^[a-z0-9_]+\.glb$` |
 | `license` | Asset key has a row in `art-source/LICENSES.md` | Ledger entry not added before intake | Add the row (see command block step 4), then re-run |
 | `provenance` (warning) | `asset.extras.atlasForge` stamp present | Glb was hand-exported instead of baked via `bake.sh` | Not a hard failure — but prefer `bake.sh` so provenance is traceable |
+
+## Skeleton contract
+
+`forge.config.json` `rigReference` lists the accepted skeletons:
+`kenney-mini`, `kaykit-adventurer` (41 joints, with IK/control helpers) and
+`kaykit-core` (the same rig minus its 18 `IK-*` / `*IK.*` / `control-*`
+helpers, 23 joints). Each `*.bones.json` holds `joints` and their `parents`
+(nearest ancestor that is a skin joint, `null` at the top); regenerate with
+`node extract-bones.mjs <glb> [--allow-extras]`.
+
+A glb whose joints match any reference exactly passes, as before.
+`kaykit-core` sets `allowExtras: true`: a glb is checked against it instead
+when it is the closest reference (smallest joint-set difference) and the glb
+holds its core joints or carries any `sec_*` / `prop_*` joint. A reference
+without a `parents` map skips the parent checks with a `skeleton-core` warning:
+
+| Rule | Check |
+|---|---|
+| `skeleton-core` | Every core joint present, with the reference parent |
+| `skeleton-grammar` | Each extra matches `sec_<part>_<l\|r\|c>[f\|b]<chain 0-9>_<1-3>` (part: hair, hem, cloth, cape, sleeve, bag, beard, tail, ear, acc) or `prop_<weapon\|shield\|hat\|back\|fx>_<l\|r\|c>` |
+| `skeleton-topology` | `sec_…_1` hangs off `secParents` (`sleeve` also `sleeveParents`); `sec_…_k` hangs off `_(k-1)` of the same chain; `prop_*` hangs off `propParents` |
+| `skeleton-cap` | At most 30 extras |
+| `skin-weights` | Skinned primitives: ≤ 4 influences (`JOINTS_1` warns), no all-zero vertex, weights (`WEIGHTS_0` + `WEIGHTS_1`) sum to 1 ± 1e-3 (normalized u8 ± 2/255, u16 ± 2/65535 per weight set; a non-finite weight fails; `JOINTS_1` without `WEIGHTS_1` warns) |
+
+Anything else keeps the single `skeleton` FAIL naming the closest reference.
+Adding `kaykit-core` also turns six bare 23-joint rigs in the game-client
+manifest (`mob:aggressive`, `mob:balanced`, `mob:defensive`,
+`mob:double_attacker`, `mob:hybrid`, `npc`) from a `skeleton` warning into an
+exact match.
+`normalize-anim` ignores `sec_*` / `prop_*` tracks when it decides whether a rig
+is crushed. `intake.mjs --kind <kind>` (default `character`) picks the
+`forge.config.json` kind.
 
 ## Layout
 
@@ -177,7 +210,7 @@ atelier/asset-forge/
   bake.sh / bake_export.py   # headless Blender export + stamping
   validate.mjs          # structural + game rules
   intake.mjs            # transactional intake
-  rig-reference/kenney-mini.bones.json
+  rig-reference/*.bones.json   # accepted skeletons (see Skeleton contract)
   lib/                  # shared glb/manifest helpers
   tests/                # jest + fixture glbs
 ```

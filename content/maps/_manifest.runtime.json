@@ -251,6 +251,24 @@
       ]
     },
     {
+      "mapId": "mercury-expansion-sump-b1",
+      "nodeId": "dungeon-mercury-expansion-sump",
+      "name": "Mercury Expansion Sump",
+      "districtId": "district-thermal-compensator-basin",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "dungeon",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
       "mapId": "mercury-reservoir-b1",
       "nodeId": "dungeon-mercury-reservoir",
       "name": "The Mercury Reservoir Vault (Floor -1)",
@@ -1007,6 +1025,24 @@
       ]
     },
     {
+      "mapId": "radiator-manifold-span",
+      "nodeId": "hunting-area-radiator-manifold-span",
+      "name": "Radiator Manifold Span",
+      "districtId": "district-thermal-compensator-basin",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "hunting_area",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        0,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
+      ]
+    },
+    {
       "mapId": "resin-arch-tunnel",
       "nodeId": "hunting-area-resin-arch-tunnel",
       "name": "Resin-Arch Tunnel",
@@ -1472,6 +1508,24 @@
       "levelRange": [
         49,
         50
+      ]
+    },
+    {
+      "mapId": "mercury-bellows-hub",
+      "nodeId": "town-mercury-bellows-hub",
+      "name": "Mercury-Bellows Hub",
+      "districtId": "district-thermal-compensator-basin",
+      "continentId": "continent-02-clockwork-steppe",
+      "nodeType": "town",
+      "status": "canon",
+      "isStarterTown": false,
+      "gridCoordinates": [
+        1,
+        1
+      ],
+      "levelRange": [
+        29,
+        30
       ]
     },
     {
@@ -1976,6 +2030,27 @@
         "y": 3820.0,
         "width": 16.0,
         "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 3780.0
+      },
+      "lockMessage": null
+    },
+    "portal-expansion-sump-exit-mercury-hub": {
+      "portalId": "portal-expansion-sump-exit-mercury-hub",
+      "sourceNodeId": "dungeon-mercury-expansion-sump",
+      "sourceMapId": "mercury-expansion-sump-b1",
+      "direction": "Exit",
+      "targetNodeId": "town-mercury-bellows-hub",
+      "targetMapId": "mercury-bellows-hub",
+      "targetDirection": "Dungeon",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 3840.0,
+        "width": 24.0,
+        "height": 12.0
       },
       "arrivalPointMeters": {
         "x": 2000.0,
@@ -3411,6 +3486,48 @@
       },
       "lockMessage": null
     },
+    "portal-radiator-span-east-mercury-hub": {
+      "portalId": "portal-radiator-span-east-mercury-hub",
+      "sourceNodeId": "hunting-area-radiator-manifold-span",
+      "sourceMapId": "radiator-manifold-span",
+      "direction": "East",
+      "targetNodeId": "town-mercury-bellows-hub",
+      "targetMapId": "mercury-bellows-hub",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-radiator-span-west-chronometer-hub": {
+      "portalId": "portal-radiator-span-west-chronometer-hub",
+      "sourceNodeId": "hunting-area-radiator-manifold-span",
+      "sourceMapId": "radiator-manifold-span",
+      "direction": "West",
+      "targetNodeId": "town-bimetallic-chronometer-hub",
+      "targetMapId": "bimetallic-chronometer-hub",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
     "portal-resin-arch-east-roundhouse": {
       "portalId": "portal-resin-arch-east-roundhouse",
       "sourceNodeId": "hunting-area-resin-arch-tunnel",
@@ -4019,6 +4136,27 @@
         "y": 200.0
       },
       "lockMessage": "Concentrated solar-noon thermal expansion across Solar-Coil Overlook warps uncalibrated gear; Chronometer-Master Vane requires the Zero-Expansion Invar Key before opening the northern heliostat gate."
+    },
+    "portal-chronometer-hub-east-radiator-span": {
+      "portalId": "portal-chronometer-hub-east-radiator-span",
+      "sourceNodeId": "town-bimetallic-chronometer-hub",
+      "sourceMapId": "bimetallic-chronometer-hub",
+      "direction": "East",
+      "targetNodeId": "hunting-area-radiator-manifold-span",
+      "targetMapId": "radiator-manifold-span",
+      "targetDirection": "West",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 3840.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 3800.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
     },
     "portal-chronometer-hub-west-bimetallic-span": {
       "portalId": "portal-chronometer-hub-west-bimetallic-span",
@@ -5161,6 +5299,69 @@
       "direction": "Dungeon",
       "targetNodeId": "dungeon-sunken-syzygy-dome",
       "targetMapId": "sunken-syzygy-dome-b1",
+      "targetDirection": "Exit",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrivalPointMeters": {
+        "x": 2150.0,
+        "y": 2140.0
+      },
+      "lockMessage": null
+    },
+    "portal-mercury-hub-north-thermocouple-fog": {
+      "portalId": "portal-mercury-hub-north-thermocouple-fog",
+      "sourceNodeId": "town-mercury-bellows-hub",
+      "sourceMapId": "mercury-bellows-hub",
+      "direction": "North",
+      "targetNodeId": "hunting-area-thermocouple-ridge-overlook",
+      "targetMapId": null,
+      "targetDirection": "South",
+      "gateState": "fog_of_lore",
+      "triggerBoxMeters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrivalPointMeters": {
+        "x": 2000.0,
+        "y": 200.0
+      },
+      "lockMessage": "Extreme thermal-bellows pressure swings across Thermocouple-Ridge Overlook unseat uncalibrated valves; Bellows-Director Quicksilver requires the Mercury Barometer Key before opening the northern manifold gate."
+    },
+    "portal-mercury-hub-west-radiator-span": {
+      "portalId": "portal-mercury-hub-west-radiator-span",
+      "sourceNodeId": "town-mercury-bellows-hub",
+      "sourceMapId": "mercury-bellows-hub",
+      "direction": "West",
+      "targetNodeId": "hunting-area-radiator-manifold-span",
+      "targetMapId": "radiator-manifold-span",
+      "targetDirection": "East",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 2000.0
+      },
+      "lockMessage": null
+    },
+    "portal-mercury-hub-dungeon-expansion-sump": {
+      "portalId": "portal-mercury-hub-dungeon-expansion-sump",
+      "sourceNodeId": "town-mercury-bellows-hub",
+      "sourceMapId": "mercury-bellows-hub",
+      "direction": "Dungeon",
+      "targetNodeId": "dungeon-mercury-expansion-sump",
+      "targetMapId": "mercury-expansion-sump-b1",
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {

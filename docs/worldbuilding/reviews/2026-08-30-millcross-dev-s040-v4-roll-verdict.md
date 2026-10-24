@@ -192,7 +192,7 @@ explicitly closed by finding 2 above.
   entries carry seed/hires/control/strength/briefHash but neither `model` nor `guidance`; the model is
   inferable only from the `dev-` filename convention (the v3-window schnell misroute is the standing argument
   for the field). Same concrete diff as s040/v3: add `"model"` and `"guidance"` to the render ledger entry.
-- **Rail 4 (storybook wiring) — LANDED.** Verified this review: `tools/asset-storybook/env-index.json:180-207`
+- **Rail 4 (storybook wiring) — LANDED.** Verified this review: `tools/atlas-world-panels/env-index.json:180-207`
   indexes all three v4 cells and pre-references this sheet's filename. No further action.
 - **Segment-path caveat (extends the v3 wall-flank note; no action proposed):** the blockin tests now warn
   `"river" and "race-channel"` 0 apart and `"wall-flank-left" and "wall-flank-right"` 0 apart. Both are

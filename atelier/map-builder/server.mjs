@@ -102,7 +102,7 @@ function main() {
     const recovered = store.recoverInterrupted();
     console.log(`map-builder: marked ${recovered.length} interrupted job(s)`);
     const actualPort = server.address().port;
-    console.log(`map-builder: listening on http://${bind}:${actualPort}/  (storybook: /atelier/asset-storybook/index.html, api: /api/health)`);
+    console.log(`map-builder: listening on http://${bind}:${actualPort}/  (storybook: /atelier/atlas-world-panels/index.html, api: /api/health)`);
   });
 
   let shuttingDown = false;

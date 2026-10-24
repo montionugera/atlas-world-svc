@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "id": "district-cardamom-kiln-caldera",
+  "name": "Cardamom-Kiln Caldera",
+  "parent_continent_id": "continent-01-hearthbloom-basin",
+  "status": "mystery",
+  "core_rationale": "Eleventh spice-glaze ceramic caldera of Hearthbloom Basin where Sola's warm mineral springs steep wild cardamom pods inside tiered porcelain drying kilns.",
+  "local_conflict": "Aromatic glaze-wisps and terracotta mortar beetles guard the warm cardamom drying domes.",
+  "level_band_label": "Levels 1 to 20",
+  "level_range": [
+    14,
+    15
+  ],
+  "ecological_monster_families": [
+    "elemental",
+    "carapace"
+  ],
+  "grid_dimensions": {
+    "columns": 2,
+    "rows": 2
+  },
+  "grid_nodes": [],
+  "portal_edges": [],
+  "mystery_hook": {
+    "in_world_rumor": "Bathhouse keepers in Ginger-Bathhouse Haven say the eastern Cardamom-Kiln Caldera simmers with spiced porcelain glaze-springs that glow amber beneath the evening mist.",
+    "visual_silhouette": "Dome-shaped cardamom drying kilns and terraced porcelain glaze-basins rising beyond the eastern rim of Ginger-Steam Terraces.",
+    "unanswered_question": "Which Primordial Kiln-Artisan carved the central spice-glaze crucible of Cardamom-Kiln Caldera?"
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the eastern geothermal rim of Continent 01."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Dome-shaped cardamom drying kilns and terraced porcelain glaze-basins simmering in perpetual spring warmth."
+    },
+    "character_scale_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: porcelain kiln doorway and drying-terrace metrics for 1.05m characters will be verified upon promotion to Draft."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": false,
+      "evidence": "Mystery status: reserved as the eleventh District frontier on Continent 01 with zero filler maps."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Provides complete mystery_hook (in_world_rumor, visual_silhouette, unanswered_question) and empty grid_nodes."
+    }
+  }
+}

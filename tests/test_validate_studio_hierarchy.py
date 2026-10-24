@@ -69,7 +69,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def test_rejects_mystery_node_without_mystery_hook(self) -> None:
         with self._mutated_files(
             {
-                "districts/continent-03-shattered-halo/district-solstice-pendulum-atoll.json": lambda d: d.pop(
+                "districts/continent-01-hearthbloom-basin/district-cardamom-kiln-caldera.json": lambda d: d.pop(
                     "mystery_hook", None
                 )
             }
@@ -222,6 +222,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "kiln-cellar-b1",
                 "kinetic-ballast-vault-b1",
                 "medallion-heart-vault-b1",
+                "mercury-expansion-sump-b1",
                 "mercury-reservoir-b1",
                 "nectar-glaze-vat-b1",
                 "pendulum-sanctum-b1",
@@ -264,6 +265,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "orrery-bridge",
                 "penumbra-refraction-causeway",
                 "planetary-carrier-span",
+                "radiator-manifold-span",
                 "resin-arch-tunnel",
                 "resonance-tether-causeway",
                 "silver-tide-causeway",
@@ -290,6 +292,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 "kilnwatch-bastion",
                 "lantern-hollow",
                 "libration-balance-haven",
+                "mercury-bellows-hub",
                 "metronome-pivot-citadel",
                 "patina-lock",
                 "penumbra-prism-haven",

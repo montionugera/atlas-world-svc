@@ -31,7 +31,7 @@ only the base pass; the anchor render itself re-used the v5 reviewed filenames.*
 0.70–0.78, corner-watermark finding).
 **Machine gates run this review:** `node scripts/check_content.mjs` → **exit 0, 0 failures** (34 warnings —
 same count as every prior review); `node tools/art-forge/generate/prompt-lint.mjs` → **exit 0**;
-`node --test tools/asset-storybook/tests/env-index.test.mjs` → **7/7 pass** (this sheet's filename is pinned
+`node --test tools/atlas-world-panels/tests/env-index.test.mjs` → **7/7 pass** (this sheet's filename is pinned
 at `env-index.test.mjs:208`); supporting: `env-graph.test.mjs` **39/39**.
 
 **Registers:** CANON = A1/style.md/town-criteria ratified entries as cited. INVENTED = brief positive

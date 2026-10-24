@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0.0",
+  "id": "town-mercury-bellows-hub",
+  "name": "Mercury-Bellows Hub",
+  "map_id": "mercury-bellows-hub",
+  "parent_district_id": "district-thermal-compensator-basin",
+  "parent_continent_id": "continent-02-clockwork-steppe",
+  "node_type": "town",
+  "status": "canon",
+  "core_rationale": "Central thermal-compensator sanctuary town of Thermal Compensator Basin at [1, 1] where horologist engineers regulate concentric mercury bellows-towers above the Mercury Expansion Sump.",
+  "is_starter_town": false,
+  "grid_coordinates": [
+    1,
+    1
+  ],
+  "floor_index": 0,
+  "level_range": [
+    29,
+    30
+  ],
+  "terrain_tile": {
+    "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
+    "dimensions_meters": {
+      "width": 4000.0,
+      "height": 4000.0
+    },
+    "biome_palette": "clockwork_mercury_bellows_hub_town",
+    "max_terrace_step_meters": 0.14,
+    "water_feature": "Silver-sheened cooling reflections around the central concentric brass bellows-tower"
+  },
+  "portals": {
+    "North": {
+      "portal_id": "portal-mercury-hub-north-thermocouple-fog",
+      "direction": "North",
+      "target_node_id": "hunting-area-thermocouple-ridge-overlook",
+      "target_map_id": null,
+      "target_direction": "South",
+      "gate_state": "fog_of_lore",
+      "lock_message": "Extreme thermal-bellows pressure swings across Thermocouple-Ridge Overlook unseat uncalibrated valves; Bellows-Director Quicksilver requires the Mercury Barometer Key before opening the northern manifold gate.",
+      "trigger_box_meters": {
+        "x": 2000.0,
+        "y": 160.0,
+        "width": 24.0,
+        "height": 12.0
+      },
+      "arrival_point_meters": {
+        "x": 2000.0,
+        "y": 200.0
+      }
+    },
+    "South": null,
+    "East": null,
+    "West": {
+      "portal_id": "portal-mercury-hub-west-radiator-span",
+      "direction": "West",
+      "target_node_id": "hunting-area-radiator-manifold-span",
+      "target_map_id": "radiator-manifold-span",
+      "target_direction": "East",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 160.0,
+        "y": 2000.0,
+        "width": 12.0,
+        "height": 24.0
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 2000.0
+      }
+    },
+    "Dungeon": {
+      "portal_id": "portal-mercury-hub-dungeon-expansion-sump",
+      "direction": "Dungeon",
+      "target_node_id": "dungeon-mercury-expansion-sump",
+      "target_map_id": "mercury-expansion-sump-b1",
+      "target_direction": "Exit",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 2180.0,
+        "y": 2140.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "arrival_point_meters": {
+        "x": 2150.0,
+        "y": 2140.0
+      }
+    },
+    "Exit": null
+  },
+  "resident_npcs": [
+    {
+      "npc_id": "npc-bellows-director-quicksilver",
+      "name": "Bellows-Director Quicksilver",
+      "role": "Thermal Compensator Chief Engineer",
+      "position_meters": {
+        "x": 1975.0,
+        "y": 2010.0
+      },
+      "counter_height_meters": 0.58,
+      "dialogue_greeting": "Welcome to Mercury-Bellows Hub! Step up to my 0.58 meter barometer console—our concentric brass bellows rise and fall two full meters between dawn and dusk."
+    },
+    {
+      "npc_id": "npc-manifold-tinker-lyra",
+      "name": "Manifold-Tinker Lyra",
+      "role": "Heat-Exchanger Valve Machinist",
+      "position_meters": {
+        "x": 2065.0,
+        "y": 1970.0
+      },
+      "counter_height_meters": 0.6,
+      "dialogue_greeting": "Down in the Mercury Expansion Sump, an over-pressurized thermal colossus holds the Mercury Barometer Key needed to unlock Thermocouple-Ridge Overlook!"
+    }
+  ],
+  "resident_spawns": [],
+  "asset_kit_bindings": {
+    "player_scale_band_meters": [
+      0.9,
+      1.2
+    ],
+    "max_grass_height_meters": 0.18,
+    "max_bush_height_meters": 0.42,
+    "stair_riser_height_meters": 0.14,
+    "shop_counter_height_meters": 0.58,
+    "doorway_clearance_meters": {
+      "height": 2.2,
+      "width": 1.65
+    },
+    "main_road_width_meters": 13.0,
+    "footpath_width_meters": 4.4,
+    "three_dimensional_assets": [
+      "res://assets/buildings/tower_round_roof_a.glb",
+      "res://assets/buildings/wall_arched.glb",
+      "res://assets/props/chest.glb"
+    ]
+  },
+  "quality_checklist": {
+    "causal_continuity": {
+      "verified": true,
+      "evidence": "Anchors Thermal Compensator Basin at [1, 1] directly above Krono's Mercury Expansion Sump and connects west to Radiator Manifold Span."
+    },
+    "fantasy_and_wonder": {
+      "verified": true,
+      "evidence": "Concentric brass bellows-towers and silver barometer columns breathing in rhythm with the desert sun."
+    },
+    "character_scale_consistency": {
+      "verified": true,
+      "evidence": "0.58 to 0.60m barometer consoles, 0.14m brass risers, 2.20m x 1.65m doorways, and 13.0m plazas for 1.05m characters."
+    },
+    "spatial_and_ecological_consistency": {
+      "verified": true,
+      "evidence": "Safe town hub (0 resident_spawns) at [1, 1] with symmetric West, Dungeon, and North (fog_of_lore) portals."
+    },
+    "intentional_mystery_discipline": {
+      "verified": true,
+      "evidence": "Guards the northern Thermocouple-Ridge Overlook behind a Fog of Lore portal with explicit lock_message."
+    }
+  }
+}

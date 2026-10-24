@@ -20,7 +20,7 @@
 //
 // Usage:
 //   node intake.mjs <glb> --key <manifest-key> --license "<text>" [--dry-run]
-//                   [--anims '<json>']
+//                   [--anims '<json>'] [--kind <kind>]   (default: character)
 //
 // Exit 0 on success, 1 on any failure (validation, drift-gate, or thrown
 // error). `--dry-run` reports the actions that would be taken and exits 0
@@ -72,11 +72,11 @@ function defaultDriftGateRunner({ root }) {
 /**
  * Transactional intake of a baked .glb into the game-client asset tree.
  * @param {string} glbPath
- * @param {{key: string, license: string, root: string, dryRun?: boolean, anims?: object|null, driftGate?: (ctx: {root: string, key: string}) => Promise<{ok: boolean}>}} opts
+ * @param {{key: string, license: string, root: string, kind?: string, dryRun?: boolean, anims?: object|null, driftGate?: (ctx: {root: string, key: string}) => Promise<{ok: boolean}>}} opts
  * @returns {Promise<{ok: boolean, actions: string[], failures?: string[]}>}
  */
 export async function intake(glbPath, opts = {}) {
-  const { key, license, root, dryRun = false, anims = null, driftGate } = opts;
+  const { key, license, root, kind = "character", dryRun = false, anims = null, driftGate } = opts;
   if (!key) throw new Error("intake: 'key' is required");
   if (!root) throw new Error("intake: 'root' is required");
 
@@ -89,6 +89,15 @@ export async function intake(glbPath, opts = {}) {
   const destPath = path.join(charactersDir, basename);
   const scene = `res://assets/characters/${name}.glb`;
 
+  const kinds = loadConfig().kinds;
+  if (!Object.hasOwn(kinds, kind)) {
+    return {
+      ok: false,
+      actions,
+      failures: [`kind: unknown kind "${kind}" (expected one of: ${Object.keys(kinds).join(", ")})`],
+    };
+  }
+
   // 0. anims (if given) must be a plain object whose keys are exactly a
   // subset of the "character" kind's requiredStates -- an unknown state key
   // aborts here, before validation/copy, with zero side effects.
@@ -100,7 +109,7 @@ export async function intake(glbPath, opts = {}) {
         failures: ["anims: must be a JSON object mapping state to clip name"],
       };
     }
-    const requiredStates = loadConfig().kinds.character.requiredStates;
+    const requiredStates = kinds[kind].requiredStates;
     const unknown = Object.keys(anims).filter(
       (state) => !requiredStates.includes(state),
     );
@@ -117,7 +126,7 @@ export async function intake(glbPath, opts = {}) {
 
   // 1. Validate -- any failure aborts with zero side effects.
   const validation = await validateGlb(glbPath, {
-    kind: "character",
+    kind,
     tier: "bespoke",
     anims,
     licenseLedger: existsSync(licenseLedgerPath)
@@ -159,7 +168,7 @@ export async function intake(glbPath, opts = {}) {
     source: "internal",
     license,
     tier: "bespoke",
-    kind: "character",
+    kind,
     ...(anims ? { anims } : {}),
   };
 
@@ -268,7 +277,7 @@ export function parseArgs(argv) {
 function printUsageAndExit() {
   console.error(
     'usage: node intake.mjs <glb> --key <manifest-key> --license "<text>" ' +
-      "[--dry-run] [--anims '<json>']",
+      "[--dry-run] [--anims '<json>'] [--kind <kind>]",
   );
   process.exit(1);
 }
@@ -284,6 +293,7 @@ async function main() {
     license: flags.license,
     root,
     dryRun: Boolean(flags["dry-run"]),
+    kind: flags.kind,
     anims: flags.anims ? JSON.parse(flags.anims) : null,
   });
 

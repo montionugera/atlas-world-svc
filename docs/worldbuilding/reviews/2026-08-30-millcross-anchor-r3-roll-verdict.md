@@ -42,7 +42,7 @@ pre-electric", forbidden-token list, medium clause); `ABP-flux-dev-and-anchor.md
 0.70–0.78).
 **Machine gates run this review:** `node scripts/check_content.mjs` → **exit 0, 0 failures, 34 warnings** (same
 warning count as every prior review); `node tools/art-forge/generate/prompt-lint.mjs` → **exit 0**;
-`node --test tools/asset-storybook/tests/env-index.test.mjs` → **7/7 pass** (run before this sheet existed —
+`node --test tools/atlas-world-panels/tests/env-index.test.mjs` → **7/7 pass** (run before this sheet existed —
 the index already referenced this filename; the sheet completes the reference).
 
 **Registers:** CANON = A1 §6/§9, style.md, town-criteria ratified entries as cited. INVENTED = brief masses and

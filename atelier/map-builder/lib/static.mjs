@@ -1,12 +1,14 @@
 import { statSync, createReadStream } from "node:fs";
 import { normalize, resolve, sep, extname } from "node:path";
 
-const REDIRECT_TARGET = "/atelier/asset-storybook/index.html";
+// The UI lives in the atlas-world observatory now (panel "map-builder"); the service keeps only
+// its API and the repo files the review screen reads.
+const REDIRECT_TARGET = "http://127.0.0.1:8788/?tab=map-builder";
 
 // Small extension map, deliberately not exhaustive — anything outside it
 // falls back to application/octet-stream. .json/.mjs are the two the
 // storybook regenerates on every build, so they never get cached (mirrors
-// k8s/local/storybook-nginx.conf's `location ~ \.(json|mjs)$`).
+// scripts/atlas_world_web/static_mounts.py NO_STORE_EXTS).
 const CONTENT_TYPES = {
   ".html": "text/html",
   ".js": "text/javascript",

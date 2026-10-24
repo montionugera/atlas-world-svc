@@ -967,6 +967,14 @@ def validate_studio_directory(studio_dir: Path) -> list[str]:
     # Validate Layer 3 Districts and Layer 4 Nodes (INV-01..INV-07)
     _validate_districts_and_nodes(studio_dir, whc, continents_by_id, errors)
 
+    # Validate Long-Term Multi-Race, 4-Chapter History, Guild/Blacksmith & Boss Hierarchy Gates (GOV-01..GOV-06)
+    try:
+        from scripts.studio_world_governance import validate_world_governance
+    except ImportError:
+        from studio_world_governance import validate_world_governance  # type: ignore
+    gov_errors, _ = validate_world_governance(studio_dir)
+    errors.extend(gov_errors)
+
     return errors
 
 

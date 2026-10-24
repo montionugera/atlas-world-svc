@@ -1443,5 +1443,77 @@
     "title": "Promote district-ginger-steam-terraces to Canon on Continent 01 with 4 leaf nodes and seed district-solstice-pendulum-atoll on Continent 03",
     "created_at": "2026-10-18T17:45:40.152151+00:00",
     "promoted_to": "F-143"
+  },
+  {
+    "id": "I-230",
+    "title": "Observatory 4-Perspective Big-Picture Diagrams and Universal 3D WebP Thumbnail Resolver",
+    "created_at": "2026-10-19T03:26:07.701885+00:00",
+    "promoted_to": "F-151"
+  },
+  {
+    "id": "I-231",
+    "title": "Promote district-thermal-compensator-basin to Canon on Continent 02 with 4 leaf nodes, advance district-solstice-pendulum-atoll to Draft on Continent 03, and seed district-cardamom-kiln-caldera on Continent 01",
+    "created_at": "2026-10-19T07:49:12.633766+00:00",
+    "promoted_to": "F-152"
+  },
+  {
+    "id": "I-232",
+    "title": "Skeleton extension contract: kaykit-core 23-joint reference + sec_/prop_ bone grammar",
+    "created_at": "2026-10-21T06:21:03.487638+00:00",
+    "promoted_to": "F-153"
+  },
+  {
+    "id": "I-233",
+    "title": "Atlas unified spatial engine UX-8..UX-14 (OL vendored, 3D picking, town-only shops)",
+    "created_at": "2026-10-22T17:29:13.933178+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-234",
+    "title": "Atlas zoom-invariant pins and cursor-anchored zoom across SVG/OL/3D",
+    "created_at": "2026-10-23T02:12:46.487142+00:00",
+    "promoted_to": "F-154"
+  },
+  {
+    "id": "I-235",
+    "title": "Atlas engine parity: zone filter counts, Kilnwatch OL/SVG anchor, URL route+3D camera, theater/mobile/OL ruler audit",
+    "created_at": "2026-10-23T02:24:46.048589+00:00",
+    "promoted_to": "F-155"
+  },
+  {
+    "id": "I-236",
+    "title": "Atlas zone loc vs pin mismatch: zone loc projects far from drawn pin (e.g. Lantern Hollow loc->(158,454), pin (432,422)); ruler scale 384.6 m/unit confirmed vs F-045 400km model",
+    "created_at": "2026-10-23T04:26:04.859965+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-237",
+    "title": "Atlas explorer phone/touch audit fixes B1-B7: 375px search input 0px wide, search sheet won't close, 460px min-height clips OL/3D toolbars, 3D 1:1 reset keeps TOWN scene, 3D touchcancel selects mesh, OL two-finger rotate; commit audit script + wire probes into precheck",
+    "created_at": "2026-10-23T06:08:37.021299+00:00",
+    "promoted_to": "F-156"
+  },
+  {
+    "id": "I-238",
+    "title": "Atlas OL core labels vanish while zooming 1x-2.2x at 768px and 375px (passes at 1440); root cause unknown",
+    "created_at": "2026-10-23T06:08:37.420872+00:00",
+    "promoted_to": "F-159"
+  },
+  {
+    "id": "I-239",
+    "title": "Atlas explorer touch targets: phone pins as small as 7px (all <44px), theater exit button 34x24, top-left HUD covers 61% of map at 375px",
+    "created_at": "2026-10-23T06:08:37.765136+00:00",
+    "promoted_to": "F-160"
+  },
+  {
+    "id": "I-240",
+    "title": "Atlas explorer layout + sidebar: clip map frame (raster plate bleed), persona lens bar buttons truncated, toggleable app sidebar and inspector drawer for max map area",
+    "created_at": "2026-10-23T09:44:55.338546+00:00",
+    "promoted_to": "F-157"
+  },
+  {
+    "id": "I-241",
+    "title": "Atlas 3D blockout 1:1 with 2D map: svgTo3dWorld projection, real continent polygon extrusions, sea plane, mountains, roads, distinct town/tower/dungeon silhouettes",
+    "created_at": "2026-10-23T09:44:55.753455+00:00",
+    "promoted_to": "F-158"
   }
 ]

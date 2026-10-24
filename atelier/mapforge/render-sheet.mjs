@@ -55,7 +55,7 @@ const REPO_ROOT = resolve(HERE, "../..");
 // target-density canary alone was 2,534,694 B. The number lives in
 // content/world/budgets.json (sheets.thumbWidthPx / maxThumbBytes) with its
 // reason; this constant is the default that agrees with it, and
-// atelier/asset-storybook/tests/maps-index.test.mjs is what makes them agree.
+// atelier/atlas-world-panels/tests/maps-index.test.mjs is what makes them agree.
 const THUMB_WIDTH = 512;
 
 export const SHEETS = {
@@ -63,7 +63,7 @@ export const SHEETS = {
   // world died with the old trunk; see the header for the full reasoning and
   // for where it comes back. The storybook row, the art:map-cluster1 manifest
   // block and the committed cluster1-world.svg/.png bytes retire in the SAME
-  // commit as this entry, because atelier/asset-storybook/tests/
+  // commit as this entry, because atelier/atlas-world-panels/tests/
   // maps-index.test.mjs asserts the SHEETS <-> index correspondence in BOTH
   // directions and runs in Gate 1 AND CI — a stale row reds as hard as a
   // missing one. Roster arithmetic from the ruling: 5 -> 4 here; Task 8's 13
@@ -99,7 +99,7 @@ export const SHEETS = {
     build: buildSyntheticSheet,
   },
   // Plan C Task 13 — the two REVIEW sheets for the fabric layer. Registering
-  // them here is not cosmetic: atelier/asset-storybook/tests/maps-index.test.mjs
+  // them here is not cosmetic: atelier/atlas-world-panels/tests/maps-index.test.mjs
   // asserts in BOTH directions that every SHEETS id has an index row with
   // byte-matching svg/png paths that exist on disk, and that suite runs in
   // Gate 1 AND CI. That is the owner's every-artifact-observable rule made

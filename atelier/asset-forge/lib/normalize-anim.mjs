@@ -28,7 +28,7 @@ const DEFAULT_THRESHOLD = 0.15; // world units; good rigs drift <=0.04, crushed 
 // CORE bones — excluding IK/control/attachment bones — and only rewrite a file
 // when that count clears MIN_SYSTEMIC. Below it, the file is left untouched.
 const MIN_SYSTEMIC_CORE_BONES = 8;
-const NON_CORE_BONE = /IK|control|handslot|weapon|slot/i;
+const NON_CORE_BONE = /IK|control|handslot|weapon|slot|^(sec_|prop_)/i;
 
 /**
  * Root joints of the document: joints that are not a child of another joint.

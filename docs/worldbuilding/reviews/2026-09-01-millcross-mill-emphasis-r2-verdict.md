@@ -57,10 +57,10 @@ machicolations on non-military structures"), `millcross-materials-lever-ledger` 
 
 **Machine gates run this review (exit codes):** `node scripts/check_content.mjs` → **exit 0, 0 failures,
 34 warnings** (count unchanged); `node tools/art-forge/generate/prompt-lint.mjs` → **exit 0**;
-`node --test tools/asset-storybook/tests/env-index.test.mjs` → **FAIL** — the served env index ends at
+`node --test tools/atlas-world-panels/tests/env-index.test.mjs` → **FAIL** — the served env index ends at
 `…segment-subject-probe-seed12345-s0.45` and does **not** contain
 `A1-ART-02-segment-mill-emphasis-r2-seed12345-s0.45`: **the r2 cell was not indexed into the
-asset-storybook review surface** — the same process-gate break as #15, repeated.
+atlas-world-panels review surface** — the same process-gate break as #15, repeated.
 
 **Pre-roll verification facts (loop-measured, carried into evidence):** segment block-in pixel probes —
 race #56616B served at 3/4 probes + top-14 histogram; queue #241F18 served 2/4 in-canvas probes; housing
@@ -122,7 +122,7 @@ the cell fails it.
 
 - **Storybook index — re-index the r2 cell (blocking bookkeeping fix, not a test change).** Same rail as
   #15: restore the pre-roll indexing step for rolltag `mill-emphasis-r2` (verdict-pending note referencing
-  this sheet), re-run `node --test tools/asset-storybook/tests/env-index.test.mjs` to pass.
+  this sheet), re-run `node --test tools/atlas-world-panels/tests/env-index.test.mjs` to pass.
 - **Housing-lever deadlock — stop re-prescribing values and prompt words (measured exhausted).** The dark
   housing value was served by the block-in on both paths and flipped to light stone by the sampler at s0.45
   in both cells; the "One timber mill-wheel housing…" subject-prompt sentence did not move it. Remaining
