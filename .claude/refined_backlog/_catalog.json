@@ -2066,8 +2066,9 @@
     "title": "Atlas explorer touch targets: phone pins as small as 7px (all <44px), theater exit button 34x24, top-left HUD covers 61% of map at 375px",
     "from_idea": "I-239",
     "created_at": "2026-10-24T01:13:10.828925+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-24T01:14:18.179261+00:00"
   }
 ]
