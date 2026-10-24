@@ -85,6 +85,43 @@ async function main() {
     const rot = await c.eval(`window.__ATLAS_OL_MAP_INSTANCE.getView().getRotation()`);
     const res1 = await c.eval(`window.__ATLAS_OL_MAP_INSTANCE.getView().getResolution()`);
     check('B7 OL two-finger twist leaves rotation 0 and pinch zoom still works', Math.abs(rot) < 1e-6 && res1 < res0 * 0.95, `rotation=${rot.toFixed(3)} rad resolution ${res0.toFixed(4)} -> ${res1.toFixed(4)}`); });
+
+  // F-160 H1: SVG engine - every visible pin has an effective hit area >= 44x44 CSS px on a coarse pointer
+  await with_({ w: 375, h: 812, dpr: 2, mobile: true, touch: true }, async c => {
+    const r = await c.eval(`(()=>{const sv=document.getElementById('dedicatedWorldAtlasSvg'); const sr=sv.getBoundingClientRect(); const pins=[...sv.querySelectorAll('[data-poi-clickable="1"]')].filter(g=>{const b=g.getBoundingClientRect(); const cx=b.left+b.width/2, cy=b.top+b.height/2; return b.width>0 && cx>sr.left && cx<sr.right && cy>sr.top && cy<sr.bottom}); const eff=g=>{const h=g.querySelector('.atlas-pin-hit'); const b=(h||g).getBoundingClientRect(); return {w:b.width,h:b.height}}; const bad=pins.filter(g=>{const e=eff(g); return e.w<43.5||e.h<43.5}); const m=pins.map(eff); return {n:pins.length, bad:bad.length, minW:Math.round(Math.min(...m.map(x=>x.w))), minH:Math.round(Math.min(...m.map(x=>x.h)))}})()`);
+    check('H1 SVG engine: every visible pin hit area >=44x44 @375x812 coarse', r.n > 0 && r.bad === 0, JSON.stringify(r)); });
+
+  // F-160 H2: OL engine - a tap 21px off a pin's centre (corner of a 44x44 box) still selects it. One fresh page per tap:
+  // a successful tap opens the inspector drawer, which resizes the map under the next tap.
+  { const got = []; let id = '';
+    const style = `document.head.appendChild(Object.assign(document.createElement('style'),{textContent:'.joy-spatial-shell__hud--top-left{display:none!important}'})); 0`; // isolate pin hit-testing from the HUD overlay (H4 covers that)
+    for (const [dx, dy] of [[0, 0], [21, 21], [-21, -21], [21, -21], [-21, 21]]) await with_({ w: 375, h: 812, dpr: 2, mobile: true, touch: true }, async c => {
+      await c.eval(`(async()=>{ setAtlasEngineMode('2d_ol'); await new Promise(r=>setTimeout(r,1500)); const m=window.__ATLAS_OL_MAP_INSTANCE; await new Promise(r=>{m.once('rendercomplete',r); m.render();}); })()`);
+      await c.eval(style);
+      // zoom 8x onto a field pin with no other pin within 62px, so 'nearest centre wins' cannot steal the tap
+      const pick = await c.eval(`(async()=>{ const m=window.__ATLAS_OL_MAP_INSTANCE, v=m.getView(); const all=buildAtlasspatialFeaturesList(); const r8=v.getResolution()/8; const f=all.find(f=>f.actionType!=='town'&&f.actionType!=='dungeon'&&f.actionType!=='fortress'&&f.locCoord&&all.every(g=>g===f||Math.hypot(g.x-f.x,g.y-f.y)/r8>62)); v.setResolution(r8); v.setCenter([f.x,500-f.y]); await new Promise(r=>{m.once('rendercomplete',r); m.render();}); const vp=m.getViewport().getBoundingClientRect(); const p=m.getPixelFromCoordinate([f.x,500-f.y]); return {id:f.id,loc:f.locCoord,x:vp.left+p[0],y:vp.top+p[1]}})()`);
+      id = pick.id;
+      await c.eval(`STUDIO_MAP_LOC={x:-9,y:-9}; 0`);
+      await tap(c, pick.x + dx, pick.y + dy); await sleep(500);
+      got.push(await c.eval(`JSON.stringify(STUDIO_MAP_LOC)===JSON.stringify(clampWorldLocCoord(${JSON.stringify(pick.loc)}))`)); });
+    check('H2 OL engine: tap 21px off a pin centre (corners of a 44x44 box) selects it', got.every(Boolean), `pin=${id} centre+corners hit=${JSON.stringify(got)}`); }
+
+  // F-160 H3: theater exit button >=44x44 and topmost at its centre, portrait and landscape
+  { const out = [];
+    for (const [w, h, dpr] of [[375, 812, 2], [812, 375, 3]]) await with_({ w, h, dpr, mobile: true, touch: true }, async c => {
+      await c.eval(`(async()=>{ toggleAtlasTheaterMode(); await new Promise(r=>setTimeout(r,1000)); })()`);
+      const r = await c.eval(`(()=>{const bs=[...document.querySelectorAll('button')].filter(b=>/toggleAtlasTheaterMode/.test(b.getAttribute('onclick')||'')).map(b=>({b,r:b.getBoundingClientRect()})).filter(o=>o.r.width>0&&o.r.height>0); if(!bs.length) return {err:'no exit button'}; const best=bs.find(o=>{const e=document.elementFromPoint(o.r.left+o.r.width/2,o.r.top+o.r.height/2); return e===o.b||o.b.contains(e)}); const o=best||bs[0]; return {w:Math.round(o.r.width),h:Math.round(o.r.height),topmost:!!best}})()`);
+      if (r.err || r.w < 44 || r.h < 44 || !r.topmost) out.push(`${w}x${h}: ${JSON.stringify(r)}`); });
+    check('H3 theater exit button >=44x44 and topmost @375x812 and 812x375', !out.length, out.join(' ; ') || 'ok'); }
+
+  // F-160 H4: top-left HUD covers <=25% of the map at 375x812 by default and a control hides it
+  await with_({ w: 375, h: 812, dpr: 2, mobile: true, touch: true }, async c => {
+    const area = () => c.eval(`(()=>{const cv=document.querySelector('.joy-spatial-shell__canvas').getBoundingClientRect(); const hud=document.querySelector('.joy-spatial-shell__hud--top-left'); const r=hud.getBoundingClientRect(); const vis=getComputedStyle(hud).display!=='none'&&getComputedStyle(hud).visibility!=='hidden'; const a=vis?Math.max(0,Math.min(r.right,cv.right)-Math.max(r.left,cv.left))*Math.max(0,Math.min(r.bottom,cv.bottom)-Math.max(r.top,cv.top)):0; return a/(cv.width*cv.height)})()`);
+    const def = await area();
+    const btn = await rectOf(c, `document.getElementById('atlasHudToggleBtn')`);
+    let after = null;
+    if (btn) { await tap(c, btn.x, btn.y); await sleep(500); after = await area(); }
+    check('H4 HUD <=25% of map by default @375x812 and a control hides/shows it', def <= 0.25 && !!btn && btn.w >= 44 && btn.h >= 44, `default cover=${(def * 100).toFixed(1)}% toggle=${btn ? Math.round(btn.w) + 'x' + Math.round(btn.h) : 'missing'} after-toggle cover=${after === null ? 'n/a' : (after * 100).toFixed(1) + '%'}`); });
 }
 try { await main(); } catch (e) { console.error('SETUP ERROR:', e.message); process.exit(e.message === 'CHROME_MISSING' ? 3 : 2); }
 const failed = results.filter(x => !x).length;

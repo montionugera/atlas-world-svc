@@ -3851,6 +3851,41 @@ INDEX_HTML = r"""<!DOCTYPE html>
     .joy-spatial-shell__hud--top-left {
       right: 64px;
     }
+    /* F-160: the HUD toggle only exists on phones, where the top-left HUD used to cover half the map. */
+    .atlas-hud-toggle { display: none; }
+    @media (max-width: 430px) {
+      .atlas-hud-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 11;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border-radius: 10px;
+        border: 1px solid rgba(212, 175, 55, 0.5);
+        background: rgba(18, 16, 12, 0.92);
+        color: #fde047;
+        font-size: 10px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .atlas-hud-toggle[aria-pressed="true"] { background: #7c5a10; color: #fff7d6; }
+      .joy-spatial-shell__hud--top-left {
+        left: 64px;
+        right: 64px;
+        max-height: 25%;
+        overflow-y: auto;
+      }
+      .joy-spatial-shell[data-hud-hidden="true"] .joy-spatial-shell__hud--top-left { display: none; }
+    }
+    /* F-160: coarse pointers get 44x44 for the theater/exit control. */
+    @media (pointer: coarse) {
+      .atlas-touch-44 { width: 44px !important; height: 44px !important; }
+    }
     .joy-spatial-shell__hud--top-right {
       position: absolute;
       top: 12px;
@@ -4085,6 +4120,20 @@ INDEX_HTML = r"""<!DOCTYPE html>
          same user space as its x/y attributes, so the anchor stays fixed at every zoom. */
       transform-box: view-box;
       transform-origin: 0 0;
+    }
+    /* F-160: coarse pointers get a >=44x44 CSS px transparent hit box per pin; the drawn marker is untouched.
+       --atlas-hit-size is that box in the pin's local (pre-scale) units, set by updateAtlasPinHitSize(). */
+    .atlas-pin-hit {
+      fill: transparent;
+      stroke: none;
+      pointer-events: none;
+      width: var(--atlas-hit-size, 44px);
+      height: var(--atlas-hit-size, 44px);
+      transform-box: fill-box;
+      transform: translate(-50%, -50%);
+    }
+    @media (pointer: coarse) {
+      .atlas-pin-hit { pointer-events: all; }
     }
     /* F-155: zone filter marks stay a constant screen size, pivoting on their own cx,cy. */
     .atlas-zone-mark {
@@ -4914,6 +4963,7 @@ function render() {
     STUDIO_POI_SEQ = 0;
     main.innerHTML = renderTopDownStudio();
     if (typeof positionAtlasOmniTray === 'function') positionAtlasOmniTray();
+    if (typeof updateAtlasPinHitSize === 'function') updateAtlasPinHitSize();
     if (typeof syncAtlasActiveSpatialEngine === 'function') {
       syncAtlasActiveSpatialEngine();
     }
@@ -7251,6 +7301,27 @@ function zoomActiveAtlasEngine(delta, reset = false, targetZoom = null) {
   zoomStudioMap(delta, reset, targetZoom, reset ? null : 520, reset ? null : 250);
 }
 
+// F-160: transparent hit box centred on a pin anchor (x,y); sized in CSS by --atlas-hit-size (coarse pointers only).
+function atlasPinHitRect(x, y) {
+  return `<rect class="atlas-pin-hit" x="${x}" y="${y}" width="44" height="44" aria-hidden="true"/>`;
+}
+
+// F-160: 44 CSS px expressed in a pin's local units = 44 / (svg px-per-unit * map zoom * pin inverse zoom).
+function updateAtlasPinHitSize() {
+  const svgEl = document.getElementById('dedicatedWorldAtlasSvg');
+  if (!svgEl || !svgEl.getBoundingClientRect) return;
+  if (!svgEl.__atlasHitRo && typeof ResizeObserver === 'function') { svgEl.__atlasHitRo = new ResizeObserver(() => updateAtlasPinHitSize()); svgEl.__atlasHitRo.observe(svgEl); }
+  const r = svgEl.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  const unit = Math.min(r.width / 1040, r.height / 500);
+  const eff = getStudioMapEffScale(STUDIO_MAP_ZOOM);
+  const perLocal = unit * eff * (1 / Math.max(1, eff));
+  svgEl.style.setProperty('--atlas-hit-size', `${(44 / Math.max(perLocal, 0.01)).toFixed(3)}px`);
+}
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('resize', () => updateAtlasPinHitSize());
+}
+
 function applyStudioMapTransform() {
   const g = document.getElementById('studioCartoViewport');
   const svgEl = document.getElementById('dedicatedWorldAtlasSvg');
@@ -7261,6 +7332,7 @@ function applyStudioMapTransform() {
   const invZoom = (1 / Math.max(1, effScale)).toFixed(4);
   if (svgEl && svgEl.style && typeof svgEl.style.setProperty === 'function') {
     svgEl.style.setProperty('--atlas-inv-zoom', invZoom);
+    updateAtlasPinHitSize();
   } else if (svgEl && svgEl.style) {
     svgEl.style['--atlas-inv-zoom'] = invZoom;
   }
@@ -7351,6 +7423,11 @@ let ATLAS_PRESET_CHIPS_OPEN = false;
 let ATLAS_OMNI_TRAY_DISMISSED = false;
 let ATLAS_LEFT_DRAWER_OPEN = false;
 // F-157: the app navigation sidebar can be collapsed to give the map the full width (localStorage + ?sidebar=0).
+// F-160: phones start with the top-left HUD hidden (it covered ~50% of the map); a stored choice wins.
+let ATLAS_HUD_HIDDEN = (() => {
+  try { const v = localStorage.getItem('atlas-hud-hidden'); if (v === '0' || v === '1') return v === '1'; } catch (e) {}
+  return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 430px)').matches;
+})();
 let APP_SIDEBAR_COLLAPSED = (() => { try { return localStorage.getItem('atlas-sidebar-collapsed') === '1'; } catch (e) { return false; } })();
 let ATLAS_THEATER_MODE = false;
 let ATLAS_ENTITY_MATRIX_OPEN = false;
@@ -8089,10 +8166,14 @@ function mountRealOpenLayersInstance(targetEl, features) {
         const view = typeof map.getView === 'function' ? map.getView() : null;
         const res = (view && typeof view.getResolution === 'function' && view.getResolution()) || 1;
         let clicked = null;
-        let bestPx = 14;
+        // F-160: a coarse pointer gets a 44x44 px box around each pin (half-side 22); the nearest centre still wins.
+        const coarse = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+        let bestPx = coarse ? Infinity : 14;
         features.forEach(f => {
-          const dPx = Math.hypot(f.x - coord[0], (500 - f.y) - coord[1]) / res;
-          if (dPx <= bestPx) {
+          const dxPx = Math.abs(f.x - coord[0]) / res;
+          const dyPx = Math.abs((500 - f.y) - coord[1]) / res;
+          const dPx = Math.hypot(dxPx, dyPx);
+          if (coarse ? (dxPx <= 22 && dyPx <= 22 && dPx < bestPx) : dPx <= bestPx) {
             bestPx = dPx;
             clicked = f;
           }
@@ -9879,6 +9960,15 @@ function toggleAppSidebar(forceCollapsed) {
   if (CURRENT_TAB === 'studio') render();
 }
 
+function toggleAtlasHud(forceHidden) {
+  ATLAS_HUD_HIDDEN = typeof forceHidden === 'boolean' ? forceHidden : !ATLAS_HUD_HIDDEN;
+  try { localStorage.setItem('atlas-hud-hidden', ATLAS_HUD_HIDDEN ? '1' : '0'); } catch (e) {}
+  const shell = document.querySelector('.joy-spatial-shell');
+  if (shell) shell.setAttribute('data-hud-hidden', ATLAS_HUD_HIDDEN ? 'true' : 'false');
+  const btn = document.getElementById('atlasHudToggleBtn');
+  if (btn) btn.setAttribute('aria-pressed', ATLAS_HUD_HIDDEN ? 'false' : 'true');
+}
+
 // F-157: one control hands the map the whole screen width (sidebar + inspector drawer), a second press restores the sidebar.
 function toggleAtlasMaximizeMap() {
   const maximized = APP_SIDEBAR_COLLAPSED && !ATLAS_LEFT_DRAWER_OPEN;
@@ -10554,6 +10644,7 @@ function drawL2LandmarkSvg({ kind, x, y, label, sublabel, flagColor, isSelected,
   const labelY = y + (kind === 'castle' || kind === 'town' ? 24 : 21);
   return `
     <g ${clickAttr}>
+      ${poiObj ? atlasPinHitRect(x, y) : ''}
       ${selRing}
       ${iconSvg}
       <text x="${x}" y="${labelY}" text-anchor="middle"
@@ -10791,7 +10882,7 @@ function renderCartoShellHtml({
   const placeDrawerHtml = buildStudioPlaceDrawerHtml(poi);
 
   return `
-    <div class="joy-spatial-shell" data-engine="${getAtlasEffectiveEngineMode()}" data-carto-theme="${isL2 ? 'l2hub' : 'google'}" data-left-open="${ATLAS_LEFT_DRAWER_OPEN ? 'true' : 'false'}" data-bottom-open="${!ATLAS_THEATER_MODE ? 'true' : 'false'}" data-theater="${ATLAS_THEATER_MODE ? 'true' : 'false'}">
+    <div class="joy-spatial-shell" data-engine="${getAtlasEffectiveEngineMode()}" data-carto-theme="${isL2 ? 'l2hub' : 'google'}" data-left-open="${ATLAS_LEFT_DRAWER_OPEN ? 'true' : 'false'}" data-bottom-open="${!ATLAS_THEATER_MODE ? 'true' : 'false'}" data-theater="${ATLAS_THEATER_MODE ? 'true' : 'false'}" data-hud-hidden="${ATLAS_HUD_HIDDEN ? 'true' : 'false'}">
       <div class="joy-spatial-shell__chrome">
         ${filterBarHtml || renderAtlasFilterBarHtml(0)}
       </div>
@@ -10801,6 +10892,7 @@ function renderCartoShellHtml({
         ${placeDrawerHtml}
 
         <div class="joy-spatial-shell__canvas">
+          <button type="button" id="atlasHudToggleBtn" class="atlas-hud-toggle" onclick="toggleAtlasHud()" aria-pressed="${ATLAS_HUD_HIDDEN ? 'false' : 'true'}" aria-label="Show or hide the map HUD" title="Show or hide the map HUD (engine, theme and LOD controls)">HUD</button>
           <!-- Top-Left Canvas HUD: Step Label, L2 Loc Readout, Semantic LOD Badge, Carto Theme & Scale Controls -->
           <div class="joy-spatial-shell__hud joy-spatial-shell__hud--top-left">
             <div class="joy-spatial-shell__hud-panel">
@@ -10861,7 +10953,7 @@ function renderCartoShellHtml({
               <button type="button" onclick="zoomActiveAtlasEngine(0, true)" title="Reset Pan & Zoom (1:1 Macro)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(255,255,255,0.14);background:#17140f;color:#fde047;font-size:10px;font-weight:700;cursor:pointer">1:1</button>
               <button type="button" onclick="toggleAtlasLeftDrawer()" title="Toggle Left Inspector Drawer" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(56,189,248,0.45);background:#0f172a;color:#7dd3fc;font-size:10px;font-weight:800;cursor:pointer">${ATLAS_LEFT_DRAWER_OPEN ? '◀' : '▶'}</button>
               <button type="button" onclick="toggleAtlasMaximizeMap()" title="Maximize map: hide the sidebar and the inspector (press again to restore)" aria-label="Maximize map" style="height:24px;padding:0 6px;border-radius:7px;border:1px solid rgba(56,189,248,0.45);background:#0f172a;color:#7dd3fc;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap">Max map</button>
-              <button type="button" onclick="toggleAtlasTheaterMode()" title="Toggle Full-Viewport Theater Mode (Hotkey: F)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(250,204,21,0.45);background:#1c1917;color:#fde047;font-size:10px;font-weight:800;cursor:pointer">⛶</button>
+              <button type="button" class="atlas-touch-44" onclick="toggleAtlasTheaterMode()" title="Toggle Full-Viewport Theater Mode (Hotkey: F)" style="width:34px;height:24px;border-radius:7px;border:1px solid rgba(250,204,21,0.45);background:#1c1917;color:#fde047;font-size:10px;font-weight:800;cursor:pointer">⛶</button>
             </div>
           </div>
 
@@ -21315,6 +21407,7 @@ function renderDedicatedWorldAtlas() {
       const canPlaceWarpBadge = (lm.dungeonWarpId && lodTier >= 2) && tryPlaceAtlasBox({ x1: lm.x - 80, y1: lm.y - 40, x2: lm.x + 80, y2: lm.y - 18 }, lm.x, lm.y);
       const dngWarpPortalBadgeSvg = canPlaceWarpBadge ? `
         <g data-poi-clickable="1" class="atlas-screen-pin" style="cursor:pointer;transform-origin:${lm.x}px ${lm.y}px" onclick="openDungeonSubMap('${escapeHtml(lm.dungeonWarpId)}', '${escapeHtml(lm.dungeonFloorId)}')">
+          ${atlasPinHitRect(lm.x, lm.y - 29)}
           <rect x="${lm.x - 78}" y="${lm.y - 38}" width="156" height="18" rx="9" fill="#581c87" stroke="#fde047" stroke-width="1.5"/>
           <text x="${lm.x}" y="${lm.y - 26}" text-anchor="middle" fill="#fde047" font-size="8.5" font-weight="900" font-family="monospace">
             🕳️ WARP TO SUB-MAP (${escapeHtml(lm.dungeonFloorId)})
@@ -21364,6 +21457,7 @@ function renderDedicatedWorldAtlas() {
     const showMobLabel = (lodTier >= 2 || fFilter !== 'All') && tryPlaceAtlasBox({ x1: mp.x - 64, y1: mp.y - 26, x2: mp.x + 64, y2: mp.y - 8 }, mp.x, mp.y);
     return `
       <g data-poi-clickable="1" tabindex="0" role="button" aria-label="${escapeHtml(poiMob.title)}" class="atlas-screen-pin" style="cursor:pointer;transform-origin:${mp.x}px ${mp.y}px" onclick="selectStudioMapPoi('${encMobPoi}', event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectStudioMapPoi('${encMobPoi}', event);}" filter="url(#cartoDropShadow)">
+        ${atlasPinHitRect(mp.x, mp.y)}
         <circle cx="${mp.x}" cy="${mp.y}" r="${isMvp ? 12 : 10}" fill="${col}" stroke="#ffffff" stroke-width="1.8"/>
         <text x="${mp.x}" y="${mp.y + 3.5}" text-anchor="middle" font-size="${isMvp ? 10.5 : 9}">${icon}</text>
         ${showMobLabel ? `
