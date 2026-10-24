@@ -1496,7 +1496,7 @@
     "id": "I-238",
     "title": "Atlas OL core labels vanish while zooming 1x-2.2x at 768px and 375px (passes at 1440); root cause unknown",
     "created_at": "2026-10-23T06:08:37.420872+00:00",
-    "promoted_to": null
+    "promoted_to": "F-159"
   },
   {
     "id": "I-239",
