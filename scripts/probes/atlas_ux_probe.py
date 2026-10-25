@@ -195,10 +195,15 @@ def inspect_rendered_dom(fragment: str) -> dict:
     }
 
 
-def run_ux_probe() -> dict:
+def run_ux_probe(url: str | None = None) -> dict:
+    import urllib.request
     import catalog_explorer_web as web
 
-    html = web.INDEX_HTML
+    if url:
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            html = resp.read().decode("utf-8")
+    else:
+        html = web.INDEX_HTML
     raw_css = web.load_theme_css()
     theme_css = raw_css.decode("utf-8") if isinstance(raw_css, bytes) else str(raw_css)
     bundle = web.load_studio_perspectives_bundle()
@@ -844,7 +849,57 @@ const v11Report = vm.runInContext(`(() => {
   const hasMaximize = typeof toggleAtlasMaximizeMap === 'function';
   return { clipDef, wrapped, hasSidebarFn, drawerAfterClose, hasMaximize };
 })()`, sandbox);
+// V-13 (F-162): canonical 63-zone coordinate truth + OL zoom control suppression
+const v13Report = vm.runInContext(`(() => {
+  STUDIO_PERSPECTIVE = 'world-history-and-concept';
+  setAtlasEngineMode('2d_svg');
+  render();
+  const tatlas = (DATA && DATA.studioPerspectives && DATA.studioPerspectives.tShapedWorldAtlas) || {};
+  const zones = getAllAtlas63Zones(tatlas);
+  const placed = getAtlasPlacedZonePoints(tatlas, zones);
+  let maxZoneFocusDriftPx = 0;
+  const driftedZones = [];
+  zones.forEach(z => {
+    const p = placed[z.zone_id];
+    const fById = resolveAtlasFocusLoc(z.loc_coord, z.zone_id, z.studio_node_id);
+    const d = p ? Math.hypot((fById.svgX || 0) - p.x, (fById.svgY || 0) - p.y) : 999;
+    if (d > maxZoneFocusDriftPx) maxZoneFocusDriftPx = d;
+    if (d > 0.5) driftedZones.push({ id: z.zone_id, d: Math.round(d) });
+  });
+  let maxRouteHopDriftPx = 0;
+  const driftedHops = [];
+  zones.forEach(z => {
+    const r = computeShortestAtlasZonePath('zone-town-lantern-hollow', z.zone_id, tatlas);
+    (r.hops || []).forEach(h => {
+      const p = placed[h.zoneId];
+      const d = p ? Math.hypot((h.svgX || 0) - p.x, (h.svgY || 0) - p.y) : 999;
+      if (d > maxRouteHopDriftPx) maxRouteHopDriftPx = d;
+      if (d > 0.5) driftedHops.push({ id: h.zoneId, d: Math.round(d) });
+    });
+  });
+  let maxGrowthWaypointDriftPx = 0;
+  const driftedWps = [];
+  ((tatlas && tatlas.race_growth_routes) || []).forEach(rt => {
+    (rt.waypoints || []).forEach(wp => {
+      const p = placed[wp.zone_id];
+      const f = resolveAtlasFocusLoc(wp.loc, wp.zone_id);
+      const d = p ? Math.hypot((f.svgX || 0) - p.x, (f.svgY || 0) - p.y) : 999;
+      if (d > maxGrowthWaypointDriftPx) maxGrowthWaypointDriftPx = d;
+      if (d > 0.5) driftedWps.push({ id: wp.zone_id, d: Math.round(d) });
+    });
+  });
+  return {
+    zoneCount: zones.length,
+    maxZoneFocusDriftPx: Math.round(maxZoneFocusDriftPx * 100) / 100,
+    driftedZonesCount: driftedZones.length,
+    maxRouteHopDriftPx: Math.round(maxRouteHopDriftPx * 100) / 100,
+    driftedHopsCount: driftedHops.length,
+    maxGrowthWaypointDriftPx: Math.round(maxGrowthWaypointDriftPx * 100) / 100,
+    driftedWpsCount: driftedWps.length
+  };
+})()`, sandbox);
 console.log(JSON.stringify({
+  v13Report,
   v12Report,
   v11Report,
   v10Report,
@@ -1107,10 +1162,22 @@ console.log(JSON.stringify({
         and all(v11_css.values())
     )
 
+    v13 = vm_out.get("v13Report") or {}
+    v13_no_dup_anchor_map = "zone-field-clover-south-gate': { x: 468, y: 448 }" not in html
+    v13_ol_zoom_hidden = "controls: []" in html and ".ol-zoom" in html
+    v13_passed = (
+        v13.get("zoneCount") == 63
+        and v13.get("maxZoneFocusDriftPx") == 0
+        and v13.get("maxRouteHopDriftPx") == 0
+        and v13.get("maxGrowthWaypointDriftPx") == 0
+        and v13_no_dup_anchor_map
+        and v13_ol_zoom_hidden
+    )
+
     return {
         "overall_passed": bool(
             v1_passed and v2_passed and v3_passed and v4_passed and v5_passed and v6_passed and v7_passed and v8_passed
-            and v9_passed and v10_passed and v11_passed and v12_passed
+            and v9_passed and v10_passed and v11_passed and v12_passed and v13_passed
         ),
         "gates": {
             "V-1_dom_and_render_budget": {
@@ -1211,15 +1278,27 @@ console.log(JSON.stringify({
                 "glb_ok": v12.get("glbOk"),
                 "glb_index_out_of_range_meshes": v12.get("glbIndexBad"),
             },
+            "V-13_canonical_63_zone_coordinate_truth_and_ol_zoom_hygiene": {
+                "passed": v13_passed,
+                "no_duplicate_anchor_map": v13_no_dup_anchor_map,
+                "ol_zoom_hidden": v13_ol_zoom_hidden,
+                **v13,
+            },
         },
     }
 
 
 def main() -> int:
-    for arg in sys.argv[1:]:
+    url = None
+    args = sys.argv[1:]
+    for idx, arg in enumerate(args):
         if arg.startswith("--simulate-v10="):
             os.environ["ATLAS_V10_SIMULATE"] = arg.split("=", 1)[1]
-    report = run_ux_probe()
+        elif arg == "--url" and idx + 1 < len(args):
+            url = args[idx + 1]
+        elif arg.startswith("--url="):
+            url = arg.split("=", 1)[1]
+    report = run_ux_probe(url=url)
     print(json.dumps(report, indent=2))
     return 0 if report["overall_passed"] else 1
 

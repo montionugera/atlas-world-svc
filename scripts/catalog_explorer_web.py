@@ -3855,6 +3855,10 @@ INDEX_HTML = r"""<!DOCTYPE html>
     .atlas-hud-toggle { display: none; }
     /* F-161: the map legend (5-6 rows + a keyboard-shortcut line) covered ~55% of the map on phones. On phones / small coarse
        pointers it collapses to a 44x44 toggle under the HUD toggle (the bottom edge belongs to the OL/3D toolbars); expanded it drops the keys line and is capped at 25% of the map height. */
+    /* F-162: suppress OpenLayers built-in zoom/rotate/attribution controls so they never overlap the HUD or Legend toggles. */
+    #atlasOlViewportMount .ol-zoom,
+    #atlasOlViewportMount .ol-rotate,
+    #atlasOlViewportMount .ol-attribution { display: none !important; }
     .atlas-legend-toggle { display: none; }
     @media (max-width: 430px), (pointer: coarse) and (max-width: 767px) {
       .atlas-legend-toggle {
@@ -6848,7 +6852,7 @@ function computeShortestAtlasZonePath(fromZoneId, toZoneId, tatlas) {
   const sId = startZone.zone_id;
   const tId = endZone.zone_id;
   if (sId === tId) {
-    const c = clampWorldLocCoord(startZone.loc_coord || '-84120:243500');
+    const c = resolveAtlasFocusLoc(startZone.loc_coord || '-84120:243500', startZone.zone_id, startZone.studio_node_id);
     return {
       origin: startZone,
       destination: endZone,
@@ -6908,7 +6912,7 @@ function computeShortestAtlasZonePath(fromZoneId, toZoneId, tatlas) {
     const z = byId[zid] || startZone;
     const prevZ = idx > 0 ? (byId[pathIds[idx - 1]] || startZone) : null;
     const lvArr = Array.isArray(z.level_band) && z.level_band.length >= 2 ? z.level_band : [1, 20];
-    const c = clampWorldLocCoord(z.loc_coord || '-84120:243500');
+    const c = resolveAtlasFocusLoc(z.loc_coord || '-84120:243500', z.zone_id, z.studio_node_id);
     let travelMode = 'Origin Zone Anchor';
     let adenaFee = 0;
     if (idx > 0) {
@@ -7173,7 +7177,31 @@ function clampStudioMapPan(effScale = getStudioMapEffScale()) {
 
 // Loc-driven focus (route planner, dungeon entrances, quests, siege, deep links): when the target is an
 // overland landmark, aim the crosshair at the landmark pin itself instead of the raw projected loc.
+function ensureAtlasAll63ZonePinAnchors(tatlasOpt) {
+  if (ATLAS_OVERLAND_PIN_ANCHORS.__all63Done && !tatlasOpt) return;
+  const sp = (typeof DATA !== 'undefined' && DATA && DATA.studioPerspectives) || {};
+  const doc = tatlasOpt || sp.tShapedWorldAtlas || {};
+  const zones = getAllAtlas63Zones(doc);
+  if (!zones.length || typeof getAtlasPlacedZonePoints !== 'function') return;
+  const placedById = getAtlasPlacedZonePoints(doc, zones);
+  zones.forEach(z => {
+    const a = placedById[z.zone_id];
+    if (!a) return;
+    ATLAS_OVERLAND_PIN_ANCHORS['id:' + z.zone_id] = a;
+    const bare = String(z.zone_id || '').replace(/^zone-/, '');
+    if (bare && !ATLAS_OVERLAND_PIN_ANCHORS['id:' + bare]) ATLAS_OVERLAND_PIN_ANCHORS['id:' + bare] = a;
+    if (z.studio_node_id && !ATLAS_OVERLAND_PIN_ANCHORS['id:' + z.studio_node_id]) ATLAS_OVERLAND_PIN_ANCHORS['id:' + z.studio_node_id] = a;
+    if (z.loc_coord) {
+      const c = clampWorldLocCoord(z.loc_coord);
+      const lk = 'loc:' + c.x + ':' + c.y;
+      if (!ATLAS_OVERLAND_PIN_ANCHORS[lk]) ATLAS_OVERLAND_PIN_ANCHORS[lk] = a;
+    }
+  });
+  ATLAS_OVERLAND_PIN_ANCHORS.__all63Done = true;
+}
+
 function resolveAtlasFocusLoc(locStrOrObj, ...ids) {
+  ensureAtlasAll63ZonePinAnchors();
   const loc = clampWorldLocCoord(locStrOrObj);
   const hit = ids.map(id => id && ATLAS_OVERLAND_PIN_ANCHORS['id:' + id]).find(Boolean)
     || ATLAS_OVERLAND_PIN_ANCHORS['loc:' + loc.x + ':' + loc.y];
@@ -7212,6 +7240,7 @@ function registerAtlasOverlandPinAnchors(landmarks, tatlas) {
       ATLAS_OVERLAND_PIN_ANCHORS['loc:' + c.x + ':' + c.y] = a;
     });
   });
+  ensureAtlasAll63ZonePinAnchors(tatlas);
 }
 
 // Outer SVG coords -> world (studioCartoViewport content) coords, inverting the viewport transform.
@@ -8204,6 +8233,7 @@ function mountRealOpenLayersInstance(targetEl, features) {
     const resLadder = Array.from({ length: resSteps + 1 }, (_, i) => (i === resSteps ? minRes : maxRes * Math.pow(minRes / maxRes, i / resSteps)));
     const map = new ol.Map({
       target: targetEl,
+      controls: [],
       layers: [baseLayer, pinLayer, labelLayer, rulerLayer],
       view: new ol.View({
         projection: proj,
@@ -21222,30 +21252,14 @@ function renderDedicatedWorldAtlas() {
     ? (raceRoutes.find(r => r.race_label === activeRaceRouteLabel || r.race_key === activeRaceRouteLabel) || null)
     : null;
 
-  // Growth-route waypoints: landmark zones read the shared landmark table (F-155); the rest are route-only anchors.
-  const zoneSvgAnchorMap = {
-    ...getAtlasZoneAnchorLookup(),
-    'zone-field-clover-south-gate': { x: 468, y: 448 },
-    'zone-field-celadon-causeway': { x: 558, y: 382 },
-    'zone-dungeon-medallion-heart-vault': { x: 572, y: 368 },
-    'zone-field-firebrick-duct': { x: 385, y: 422 },
-    'zone-dungeon-ember-bellows-chamber': { x: 418, y: 438 },
-    'zone-field-resin-arch-tunnel': { x: 652, y: 392 },
-    'zone-dungeon-sap-heart-cistern': { x: 628, y: 372 },
-    'zone-field-chime-pipe-colonnade': { x: 442, y: 352 },
-    'zone-dungeon-ceramic-resonator-crypt': { x: 488, y: 356 },
-    'zone-field-cinnamon-bark-viaduct': { x: 295, y: 346 },
-    'zone-dungeon-spice-kiln-cellar': { x: 342, y: 352 },
-    'zone-town-escapement-anvil': { x: 782, y: 255 },
-    'zone-town-inductor-switchyard': { x: 765, y: 175 },
-    'zone-dungeon-star-heart-nave': { x: 785, y: 88 }
-  };
+  // F-162: single 63-zone canonical placement table (getAtlasPlacedZonePoints) shared across SVG, OL, 3D, D9 growth routes, and D17 BFS routes.
+  const zoneSvgAnchorMap = getAtlasPlacedZonePoints(tatlas, getAllAtlas63Zones(tatlas));
 
   let raceGrowthPathSvg = '';
   let bottomRaceGrowthPanelHtml = '';
   if (activeRaceRouteObj && Array.isArray(activeRaceRouteObj.waypoints)) {
     const wps = activeRaceRouteObj.waypoints.map((wp, idx) => {
-      const anchor = zoneSvgAnchorMap[wp.zone_id] || clampWorldLocCoord(wp.loc);
+      const anchor = zoneSvgAnchorMap[wp.zone_id] || resolveAtlasFocusLoc(wp.loc, wp.zone_id);
       const sx = anchor.x !== undefined && anchor.x <= 1040 ? anchor.x : (anchor.svgX || 520);
       const sy = anchor.y !== undefined && anchor.y <= 500 ? anchor.y : (anchor.svgY || 250);
       return { ...wp, sx, sy, idx };
@@ -21297,7 +21311,7 @@ function renderDedicatedWorldAtlas() {
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px">
           ${wps.map(wp => `
-            <div onclick="STUDIO_MAP_LOC=clampWorldLocCoord('${escapeHtml(wp.loc)}'); resolveNearestZoneFromPanAndLoc(STUDIO_MAP_ZOOM, STUDIO_MAP_LOC, 0, 0); render();"
+            <div onclick="STUDIO_MAP_LOC=resolveAtlasFocusLoc('${escapeHtml(wp.loc)}', '${escapeHtml(wp.zone_id)}'); resolveNearestZoneFromPanAndLoc(STUDIO_MAP_ZOOM, STUDIO_MAP_LOC, 0, 0); render();"
                  style="padding:6px 8px;border-radius:6px;background:#1c1917;border-left:3px solid #fde047;cursor:pointer">
               <div style="display:flex;justify-content:space-between;align-items:center;gap:4px">
                 <span class="mono" style="font-size:10px;font-weight:900;color:#fde047">[Stage ${escapeHtml(wp.stage_code)} · #${wp.step_index}] ${escapeHtml(wp.level_range)}</span>
