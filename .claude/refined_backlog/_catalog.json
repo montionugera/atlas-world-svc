@@ -2102,9 +2102,10 @@
     "title": "Atlas zone loc vs pin mismatch: zone loc projects far from drawn pin (e.g. Lantern Hollow loc->(158,454), pin (432,422)); ruler scale 384.6 m/unit confirmed vs F-045 400km model",
     "from_idea": "I-236",
     "created_at": "2026-10-25T09:48:18.501931+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-10-25T09:49:01.804767+00:00"
   },
   {
     "id": "F-163",
