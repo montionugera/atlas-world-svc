@@ -1770,9 +1770,6 @@ INDEX_HTML = r"""<!DOCTYPE html>
   <link rel="stylesheet" href="/theme.css" />
   <link rel="stylesheet" href="/atelier/atlas-world-panels/css/panels.css" />
   <script type="module" src="/atelier/atlas-world-panels/js/panels/registry.mjs"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --sidebar-width: 268px;
@@ -3859,6 +3856,7 @@ INDEX_HTML = r"""<!DOCTYPE html>
     #atlasOlViewportMount .ol-zoom,
     #atlasOlViewportMount .ol-rotate,
     #atlasOlViewportMount .ol-attribution { display: none !important; }
+    .joy-spatial-shell--theater { max-height: 100dvh; padding-bottom: env(safe-area-inset-bottom, 0px); }
     .atlas-legend-toggle { display: none; }
     @media (max-width: 430px), (pointer: coarse) and (max-width: 767px) {
       .atlas-legend-toggle {
@@ -7635,7 +7633,7 @@ function setupHiDpiIsotropicCanvas(canvas) {
   const cssW = Math.max(320, Math.round(rect.width || canvas.clientWidth || 1040));
   const cssH = Math.max(240, Math.round(rect.height || canvas.clientHeight || 500));
   const dpr = (typeof window !== 'undefined' && Number(window.devicePixelRatio) > 0)
-    ? Math.min(3, Number(window.devicePixelRatio))
+    ? Math.min(2, Number(window.devicePixelRatio))
     : 1;
   const targetW = Math.round(cssW * dpr);
   const targetH = Math.round(cssH * dpr);
@@ -8085,6 +8083,117 @@ function syncAtlasOlViewFromApp() {
   map.getView().setResolution(cam.resolution);
 }
 
+function getVisibleAtlasOverlandMobPins() {
+  const fFilter = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'overland').effective;
+  const lensMeta = getAtlasPersonaLensTelemetrySummary({ actionType: 'field', levelRange: [1, 35] });
+  return ATLAS_OVERLAND_MOB_PINS.filter(mp => {
+    if (typeof matchesAtlasLevelBand === 'function' && !matchesAtlasLevelBand(mp.lv)) return false;
+    if (fFilter === 'All') return true;
+    if (['Monster', 'Mini-Boss', 'Raid', 'MVP'].includes(fFilter)) return mp.type === fFilter;
+    return false;
+  }).map(mp => ({
+    ...mp,
+    poi: {
+      title: mp.name,
+      category: `${mp.type} Spawn Pin · Lv.${mp.lv} · ${lensMeta.lensBadge}`,
+      thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+      hoursOrStatus: `${mp.type} · loc=${mp.loc}`,
+      summary: `${mp.type} habitat in ${mp.zone}.`,
+      address: mp.zone,
+      coordinates: `loc=${mp.loc}`,
+      scaleSpecs: 'Spawn marker',
+      locCoord: mp.loc,
+      dungeonWarpId: mp.dungeonWarpId || '',
+      dungeonFloorId: mp.dungeonFloorId || '',
+      inspectId: mp.id,
+      svgX: mp.x,
+      svgY: mp.y
+    }
+  }));
+}
+
+function getActiveAtlasOverlandRouteOverlay(tatlasOpt) {
+  const sp = (typeof DATA !== 'undefined' && DATA && DATA.studioPerspectives) || {};
+  const tatlas = tatlasOpt || sp.tShapedWorldAtlas || {};
+  const zones = getAllAtlas63Zones(tatlas);
+  const placed = typeof getAtlasPlacedZonePoints === 'function' ? getAtlasPlacedZonePoints(tatlas, zones) : {};
+  let bfsRouteHops = [];
+  if (ATLAS_ROUTE_PLANNER_OPEN) {
+    const res = computeShortestAtlasZonePath(
+      ATLAS_ROUTE_FROM_ID || ATLAS_STATE_STORE.routeFromId || 'zone-town-lantern-hollow',
+      ATLAS_ROUTE_TO_ID || ATLAS_STATE_STORE.routeToId || 'zone-dungeon-kiln-cellar',
+      tatlas
+    );
+    const total = (res.hops || []).length;
+    bfsRouteHops = (res.hops || []).map(hop => {
+      const a = placed[hop.zoneId];
+      const sx = a ? a.x : hop.svgX;
+      const sy = a ? a.y : hop.svgY;
+      const act = (hop.zone && hop.zone.actionType) || 'field';
+      return {
+        ...hop,
+        sx,
+        sy,
+        poi: {
+          title: `🧭 Hop #${hop.hopIndex}: ${hop.name}`,
+          category: `${hop.travelMode} · ${hop.levelBand} · Fee: ${hop.adenaFee} Adena`,
+          thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+          hoursOrStatus: `TRAVEL ROUTE HOP ${hop.hopIndex} OF ${total} · loc=${hop.locCoord}`,
+          summary: `L2 Reference: ${hop.l2Analog}. Mode: ${hop.travelMode}.`,
+          address: `${hop.name} (${hop.zoneId})`,
+          coordinates: `loc=${hop.locCoord} · ${hop.levelBand}`,
+          scaleSpecs: `Connected 63-Zone Graph Hop #${hop.hopIndex}`,
+          locCoord: hop.locCoord,
+          townBlueprintId: act === 'town' ? ((hop.zone && hop.zone.studio_node_id) || hop.zoneId) : '',
+          fieldTacticalBlueprintId: act === 'field' || act === 'fortress' ? hop.zoneId : '',
+          dungeonWarpId: act === 'dungeon' ? hop.zoneId : '',
+          dungeonFloorId: act === 'dungeon' ? 'B1' : '',
+          inspectId: (hop.zone && hop.zone.studio_node_id) || hop.zoneId,
+          svgX: sx,
+          svgY: sy
+        }
+      };
+    });
+  }
+  const raceRoutes = tatlas.race_growth_routes || [];
+  const activeRaceRouteLabel = ATLAS_STATE_STORE.raceGrowthRoute || 'All';
+  const raceRouteObj = activeRaceRouteLabel !== 'All'
+    ? (raceRoutes.find(r => r.race_label === activeRaceRouteLabel || r.race_key === activeRaceRouteLabel) || null)
+    : null;
+  let raceRouteWaypoints = [];
+  if (raceRouteObj && Array.isArray(raceRouteObj.waypoints)) {
+    raceRouteWaypoints = raceRouteObj.waypoints.map((wp, idx) => {
+      const a = placed[wp.zone_id] || resolveAtlasFocusLoc(wp.loc, wp.zone_id);
+      const sx = a.x !== undefined && a.x <= 1040 ? a.x : (a.svgX || 520);
+      const sy = a.y !== undefined && a.y <= 500 ? a.y : (a.svgY || 250);
+      return {
+        ...wp,
+        sx,
+        sy,
+        idx,
+        poi: {
+          title: `🛤️ Stage ${wp.stage_code} (Step ${wp.step_index}): ${wp.name}`,
+          category: `${raceRouteObj.race_name} Growth Route · ${wp.level_range} · ${wp.travel_mode}`,
+          thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+          hoursOrStatus: `STAGE ${wp.stage_code} WAYPOINT #${wp.step_index} · Mode: ${String(wp.travel_mode || '').toUpperCase()}`,
+          summary: wp.milestone_goal,
+          address: `${wp.name} (${wp.l2_alias})`,
+          coordinates: `Zone: ${wp.zone_id} · loc=${wp.loc}`,
+          scaleSpecs: `Recommended Level: ${wp.level_range} · Travel Mode: ${wp.travel_mode}`,
+          locCoord: wp.loc,
+          townBlueprintId: String(wp.zone_id || '').startsWith('zone-town-') ? wp.zone_id : '',
+          fieldTacticalBlueprintId: String(wp.zone_id || '').startsWith('zone-field-') ? wp.zone_id : '',
+          dungeonWarpId: String(wp.zone_id || '').startsWith('zone-dungeon-') ? wp.zone_id : '',
+          inspectId: wp.zone_id,
+          svgX: sx,
+          svgY: sy
+        }
+      };
+    });
+  }
+  return { bfsRouteHops, raceRouteWaypoints, raceRouteObj };
+}
+
 function mountRealOpenLayersInstance(targetEl, features) {
   if (!targetEl || typeof window === 'undefined' || !window.ol || !window.ol.Map || !window.ol.View) return false;
   try {
@@ -8211,9 +8320,82 @@ function mountRealOpenLayersInstance(targetEl, features) {
         rulerFeatures.push(rfPt);
       });
     }
+    const visibleMobPins = getVisibleAtlasOverlandMobPins();
+    const mobPinFeatures = [];
+    if (ol.Feature && ol.geom && ol.geom.Point && ol.style && ol.style.Style) {
+      const mobColMap = { Monster: '#2dd4bf', 'Mini-Boss': '#fb923c', Raid: '#f43f5e', MVP: '#fde047' };
+      visibleMobPins.forEach(mp => {
+        const mf = new ol.Feature({ geometry: new ol.geom.Point([mp.x, 500 - mp.y]), mobPinMeta: mp });
+        const mCol = mobColMap[mp.type] || '#2dd4bf';
+        mf.setStyle(new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: mp.type === 'MVP' ? 7 : (mp.type === 'Raid' ? 6 : 5),
+            fill: new ol.style.Fill({ color: mCol }),
+            stroke: new ol.style.Stroke({ color: '#0f172a', width: 2 })
+          })
+        }));
+        mobPinFeatures.push(mf);
+      });
+    }
+    const routeOv = getActiveAtlasOverlandRouteOverlay();
+    const routeFeatures = [];
+    if (ol.Feature && ol.geom && ol.geom.Point && ol.geom.LineString && ol.style && ol.style.Style) {
+      if (routeOv.bfsRouteHops.length >= 2) {
+        const coords = routeOv.bfsRouteHops.map(h => [h.sx, 500 - h.sy]);
+        const bfLine = new ol.Feature({ geometry: new ol.geom.LineString(coords), routeRole: 'bfs_segment' });
+        bfLine.setStyle(new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: '#38bdf8', width: 3.5, lineDash: [9, 5] })
+        }));
+        routeFeatures.push(bfLine);
+        routeOv.bfsRouteHops.forEach(hop => {
+          const hf = new ol.Feature({ geometry: new ol.geom.Point([hop.sx, 500 - hop.sy]), routeHopMeta: hop, routeRole: 'bfs_hop' });
+          hf.setStyle(new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: 8,
+              fill: new ol.style.Fill({ color: '#0284c7' }),
+              stroke: new ol.style.Stroke({ color: '#fde047', width: 2 })
+            }),
+            text: ol.style.Text ? new ol.style.Text({
+              text: String(hop.hopIndex),
+              font: 'bold 9px monospace',
+              fill: new ol.style.Fill({ color: '#ffffff' })
+            }) : undefined
+          }));
+          routeFeatures.push(hf);
+        });
+      }
+      if (routeOv.raceRouteWaypoints.length >= 2) {
+        const coords = routeOv.raceRouteWaypoints.map(wp => [wp.sx, 500 - wp.sy]);
+        const rfLine = new ol.Feature({ geometry: new ol.geom.LineString(coords), routeRole: 'race_segment' });
+        rfLine.setStyle(new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: '#fde047', width: 3.8, lineDash: [10, 6] })
+        }));
+        routeFeatures.push(rfLine);
+        routeOv.raceRouteWaypoints.forEach(wp => {
+          const wf = new ol.Feature({ geometry: new ol.geom.Point([wp.sx, 500 - wp.sy]), routeWaypointMeta: wp, routeRole: 'race_waypoint' });
+          wf.setStyle(new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: 8.5,
+              fill: new ol.style.Fill({ color: '#b45309' }),
+              stroke: new ol.style.Stroke({ color: '#fde047', width: 2 })
+            }),
+            text: ol.style.Text ? new ol.style.Text({
+              text: String(wp.stage_code || ''),
+              font: 'bold 9px monospace',
+              fill: new ol.style.Fill({ color: '#ffffff' })
+            }) : undefined
+          }));
+          routeFeatures.push(wf);
+        });
+      }
+    }
     const baseLayer = new ol.layer.Vector({ source: new ol.source.Vector({ features: [...olFeatures, ...highwayFeatures] }) });
     const pinLayer = new ol.layer.Vector({ source: new ol.source.Vector({ features: pinFeatures }), declutter: false });
     pinLayer.set('atlasRole', 'pins');
+    const mobPinLayer = new ol.layer.Vector({ source: new ol.source.Vector({ features: mobPinFeatures }), declutter: false, zIndex: 6 });
+    mobPinLayer.set('atlasRole', 'mob_pins');
+    const routeLayer = new ol.layer.Vector({ source: new ol.source.Vector({ features: routeFeatures }), declutter: false, zIndex: 8 });
+    routeLayer.set('atlasRole', 'routes');
     const labelLayer = new ol.layer.Vector({
       source: new ol.source.Vector({ features: labelFeatures }),
       declutter: true,
@@ -8234,7 +8416,7 @@ function mountRealOpenLayersInstance(targetEl, features) {
     const map = new ol.Map({
       target: targetEl,
       controls: [],
-      layers: [baseLayer, pinLayer, labelLayer, rulerLayer],
+      layers: [baseLayer, pinLayer, mobPinLayer, routeLayer, labelLayer, rulerLayer],
       view: new ol.View({
         projection: proj,
         center: cam0.center,
@@ -8274,7 +8456,21 @@ function mountRealOpenLayersInstance(targetEl, features) {
         // F-160: a coarse pointer gets a 44x44 px box around each pin (half-side 22); the nearest centre still wins.
         const coarse = typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
         let bestPx = coarse ? Infinity : 14;
-        features.forEach(f => {
+        const clickCandidates = [
+          ...features,
+          ...visibleMobPins.map(mp => ({
+            id: mp.id,
+            name: mp.name,
+            actionType: 'mob_pin',
+            locCoord: mp.loc,
+            dungeonWarpId: mp.dungeonWarpId || '',
+            dungeonFloorId: mp.dungeonFloorId || '',
+            poi: mp.poi,
+            x: mp.x,
+            y: mp.y
+          }))
+        ];
+        clickCandidates.forEach(f => {
           const dxPx = Math.abs(f.x - coord[0]) / res;
           const dyPx = Math.abs((500 - f.y) - coord[1]) / res;
           const dPx = Math.hypot(dxPx, dyPx);
@@ -8597,7 +8793,149 @@ function buildAtlas3dBlockoutScene() {
     return { context: 'dungeon', title: `${dng.name} — 3D Multi-Floor Cutaway`, meshes };
   }
 
-  if (spatialCtx === 'town' || spatialCtx === 'field') {
+  if (spatialCtx === 'field') {
+    const resolvedField = getFieldOrFortressBlueprintData(resolveActiveFieldOrFortEntry() || ATLAS_STATE_STORE.activeFieldOrFortId || 'zone-field-clover-south-gate', tatlas)
+      || getFieldOrFortressBlueprintData('zone-field-clover-south-gate', tatlas);
+    const entry = (resolvedField && resolvedField.entry) || { zone_id: 'zone-field-clover-south-gate', studio_node_id: 'zone-field-clover-south-gate', name: 'Clover South-Gate Meadow' };
+    const bp = (resolvedField && resolvedField.bp) || {};
+    const fFilter = resolveAtlasEffectiveFilter(ATLAS_STATE_STORE.filter, 'field').effective;
+    meshes.push({
+      name: 'Field_Terrain_Ground',
+      part: 'field_ground',
+      x: 0, y: -2, z: 0,
+      w: 240, h: 4, d: 140,
+      color: '#14261c',
+      alpha: 0.82,
+      label: ''
+    });
+    (bp.patrol_trails || []).forEach((tr, tIdx) => {
+      const pts = tr.path_pct || [];
+      if (pts.length >= 2) {
+        const p0 = pts[0], pN = pts[pts.length - 1];
+        const x0 = ((p0[0] || 50) - 50) * 1.9, z0 = ((p0[1] || 50) - 50) * 1.15;
+        const x1 = ((pN[0] || 50) - 50) * 1.9, z1 = ((pN[1] || 50) - 50) * 1.15;
+        const trailName = `Trail_${tIdx + 1}_${(tr.name || 'Patrol_Path').replace(/[^a-zA-Z0-9]+/g, '_')}`;
+        meshes.push({
+          name: trailName,
+          part: 'patrol_trail',
+          x: (x0 + x1) / 2, y: 0.4 * elevMul, z: (z0 + z1) / 2,
+          w: Math.min(200, Math.max(8, Math.abs(x1 - x0) + 10)),
+          h: 0.8 * elevMul,
+          d: Math.min(120, Math.max(8, Math.abs(z1 - z0) + 10)),
+          color: '#78716c',
+          alpha: 0.85,
+          label: '',
+          poi: {
+            title: tr.name || `Patrol Trail #${tIdx + 1}`,
+            category: `Field Patrol Trail · ${entry.name} · ${lensMeta.lensBadge}`,
+            thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+            hoursOrStatus: `PATROL CORRIDOR (${trailName})`,
+            summary: `Hunting patrol trail across ${entry.name}.`,
+            address: entry.name,
+            scaleSpecs: `${tr.width_meters || 9}m Trail Width`,
+            inspectId: entry.studio_node_id || entry.zone_id
+          }
+        });
+      }
+    });
+    (bp.camp_and_shrine_marks || []).filter(() => fFilter === 'All' || fFilter === 'TownMarks').forEach((m, mIdx) => {
+      const mx = ((m.x_pct || 30) - 50) * 1.9;
+      const mz = ((m.y_pct || 30) - 50) * 1.15;
+      const mh = 11 * elevMul;
+      const markName = `CampMark_${(m.mark_id || ('Mark_' + (mIdx + 1))).replace(/[^a-zA-Z0-9]+/g, '_')}`;
+      meshes.push({
+        name: markName,
+        part: 'camp_mark',
+        x: mx, y: mh / 2, z: mz,
+        w: 9, h: mh, d: 9,
+        color: '#10b981',
+        alpha: 0.94,
+        label: `${m.icon || '⛺'} ${(m.label || m.mark_type || 'Camp').slice(0, 14)}`,
+        poi: {
+          title: `${m.icon || '⛺'} ${m.label} (${m.mark_type})`,
+          category: `Field Tactical Mark · ${m.npc_or_node || ''} · ${lensMeta.lensBadge}`,
+          thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+          hoursOrStatus: `ACTIVE ${(m.mark_type || 'CAMP').toUpperCase()} · ${entry.name}`,
+          summary: m.description || 'Field supply camp and wayfarer shrine.',
+          address: `${m.label} · ${entry.name}`,
+          coordinates: `Mark ID: ${m.mark_id}`,
+          scaleSpecs: 'Clearance >= 6.0m',
+          inspectId: entry.studio_node_id || entry.zone_id
+        }
+      });
+    });
+    (bp.spawn_territories || []).filter(st => {
+      if (typeof matchesAtlasLevelBand === 'function' && !matchesAtlasLevelBand(st.level)) return false;
+      if (fFilter === 'All') return true;
+      return st.entity_type === fFilter;
+    }).forEach((st, sIdx) => {
+      const sx = ((st.x_pct || 50) - 50) * 1.9;
+      const sz = ((st.y_pct || 50) - 50) * 1.15;
+      const rad = Math.max(8, (st.radius_pct || 10) * 0.9);
+      const isMvp = st.entity_type === 'MVP';
+      const isRaid = st.entity_type === 'Raid';
+      const isMini = st.entity_type === 'Mini-Boss';
+      const col = isMvp ? '#eab308' : (isRaid ? '#f97316' : (isMini ? '#a855f7' : '#ef4444'));
+      const sh = (isMvp ? 22 : (isRaid ? 18 : (isMini ? 14 : 10))) * elevMul;
+      const spawnName = `Spawn_${(st.territory_id || ('T_' + (sIdx + 1))).replace(/[^a-zA-Z0-9]+/g, '_')}`;
+      const dropsStr = (st.refinement_drops || []).join(' · ');
+      meshes.push(atlas3dMkPrism(`TerritoryRing_${sIdx + 1}`, 'spawn_ring', atlas3dRegPoly(sx, sz, rad), 0, 1.2 * elevMul, col, 0.35, { pickAs: spawnName }));
+      meshes.push({
+        name: spawnName,
+        part: 'spawn_pillar',
+        entityType: st.entity_type,
+        x: sx, y: sh / 2, z: sz,
+        w: isMvp || isRaid ? 10 : 7,
+        h: sh,
+        d: isMvp || isRaid ? 10 : 7,
+        color: col,
+        alpha: 0.96,
+        label: `${(st.mob_name || 'Spawn').slice(0, 14)} (Lv.${st.level})`,
+        poi: {
+          title: `${st.mob_name} (Lv.${st.level} ${st.entity_type})`,
+          category: `${st.entity_type} Spawn Territory · ×${st.count} (${st.respawn}) · ${lensMeta.lensBadge}`,
+          thumb: '/thumbs/creatures/god-sola-hearth-weaver.webp',
+          hoursOrStatus: `3D SPAWN TERRITORY (${spawnName}) · Respawn ${st.respawn}`,
+          summary: `Refinement Drops: ${dropsStr}`,
+          address: `${entry.name} · loc=${st.loc_coord}`,
+          coordinates: `loc=${st.loc_coord} · Radius: ${st.radius_pct}%`,
+          scaleSpecs: `Refinement Drops: ${dropsStr}`,
+          inspectId: entry.studio_node_id || entry.zone_id
+        }
+      });
+    });
+    (bp.dungeon_entrance_warps || []).forEach((dw, dIdx) => {
+      const wx = ((dw.x_pct || 70) - 50) * 1.9;
+      const wz = ((dw.y_pct || 70) - 50) * 1.15;
+      const wh = 16 * elevMul;
+      const portalName = `DungeonPortal_${(dw.dungeon_id || ('D_' + (dIdx + 1))).replace(/[^a-zA-Z0-9]+/g, '_')}`;
+      meshes.push({
+        name: portalName,
+        part: 'dungeon_portal',
+        drillContext3d: 'dungeon',
+        dungeonId: dw.dungeon_id,
+        x: wx, y: wh / 2, z: wz,
+        w: 11, h: wh, d: 11,
+        color: '#a855f7',
+        alpha: 0.95,
+        label: `🕳️ ${(dw.label || dw.dungeon_id || 'Dungeon').slice(0, 16)}`,
+        poi: {
+          title: dw.label || `Dungeon Entrance (${dw.dungeon_id})`,
+          category: `Subterranean Dungeon Warp Portal · ${lensMeta.lensBadge}`,
+          thumb: '/thumbs/buildings/tower_round_roof_a.webp',
+          hoursOrStatus: `DUNGEON PORTAL (${dw.floor_id || 'B1'}) · Double-click to enter`,
+          summary: ` Connects ${entry.name} directly to ${dw.dungeon_id} (${dw.floor_id || 'B1'}).`,
+          address: entry.name,
+          dungeonWarpId: dw.dungeon_id,
+          dungeonFloorId: dw.floor_id || 'B1',
+          inspectId: dw.dungeon_id
+        }
+      });
+    });
+    return { context: 'field', title: `${entry.name} — 3D Tactical Spawn & Territory Blockout`, meshes };
+  }
+
+  if (spatialCtx === 'town') {
     const allTowns = getAllAtlasTownEntries(tatlas);
     const townNode = allTowns.find(t => t.id === ATLAS_STATE_STORE.activeTownId || t.zone_id === ATLAS_STATE_STORE.activeTownId || t.studio_node_id === ATLAS_STATE_STORE.activeTownId) || allTowns[0] || { id: 'town-lantern-hollow', name: 'Lantern Hollow' };
     const bp = getTownBlueprintData(townNode, tatlas);
@@ -9092,24 +9430,69 @@ function atlas3dBuildOverlandScene(lensMeta, E) {
     meshes.push(atlas3dMk(`Pier_${z.zone_id.replace(/[^a-zA-Z0-9]+/g, '_')}`, 'harbor_pier', c.x + best[0] * 3, base + 0.2, c.z + best[1] * 3, along ? 7 : 1.8, 0.6, along ? 1.8 : 7, '#a16207', 0.96, { layer: 8 }));
   });
 
-  // Boss / spawn pins (same table and anchors as the 2D map).
-  ATLAS_OVERLAND_MOB_PINS.forEach(mp => {
+  // Boss / spawn pins (same table, filters, and anchors as the 2D SVG and 2D OL engines).
+  getVisibleAtlasOverlandMobPins().forEach(mp => {
     const c = svgTo3dWorld(mp.x, mp.y);
     const base = terrain.top(c.x, c.z);
     const col = ATLAS_3D_BOSS_PIN_COLORS[mp.type] || '#f8fafc';
     const hgt = (mp.type === 'MVP' ? 5.5 : (mp.type === 'Raid' ? 4.6 : 3.4)) * E;
     const name = `Pin_${mp.id.replace(/[^a-zA-Z0-9]+/g, '_')}`;
-    meshes.push(atlas3dMk(name, 'boss_pin', c.x, base, c.z, 0.9, hgt, 0.9, col, 1, { pinId: mp.id, layer: 8,
-      poi: { title: mp.name, category: `${mp.type} Spawn Pin · Lv.${mp.lv} · ${lensMeta.lensBadge}`, thumb: '/thumbs/buildings/tower_round_roof_a.webp', hoursOrStatus: `${mp.type} · loc=${mp.loc}`,
-        summary: `${mp.type} habitat in ${mp.zone}.`, address: mp.zone, coordinates: `loc=${mp.loc}`, scaleSpecs: 'Spawn marker', dungeonWarpId: mp.dungeonWarpId || '', dungeonFloorId: mp.dungeonFloorId || '', inspectId: mp.id } }));
+    meshes.push(atlas3dMk(name, 'boss_pin', c.x, base, c.z, 0.9, hgt, 0.9, col, 1, { pinId: mp.id, layer: 8, poi: mp.poi }));
     meshes.push(atlas3dMk(`${name}_Cap`, 'boss_pin_cap', c.x, base + hgt, c.z, 1.9, 1.1, 1.9, col, 1, { layer: 8, pickAs: name }));
   });
+
+  // Active D17 BFS travel route & D9 race growth route ribbons and hop/stage beacons in 3D overland.
+  const routeOv3d = getActiveAtlasOverlandRouteOverlay(tatlas);
+  if (routeOv3d.bfsRouteHops.length >= 2) {
+    for (let i = 0; i < routeOv3d.bfsRouteHops.length - 1; i++) {
+      const a = svgTo3dWorld(routeOv3d.bfsRouteHops[i].sx, routeOv3d.bfsRouteHops[i].sy);
+      const b = svgTo3dWorld(routeOv3d.bfsRouteHops[i + 1].sx, routeOv3d.bfsRouteHops[i + 1].sy);
+      const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz) || 1;
+      const nx = -dz / len * 0.9, nz = dx / len * 0.9;
+      const y0 = Math.max(terrain.top(a.x, a.z), terrain.top(b.x, b.z)) + 1.2 * E;
+      const corners = [[a.x + nx, a.z + nz], [b.x + nx, b.z + nz], [b.x - nx, b.z - nz], [a.x - nx, a.z - nz]];
+      meshes.push(atlas3dMkPrism(`RouteSeg_${i + 1}`, 'bfs_route_segment', corners, y0, 0.8 * E, '#38bdf8', 0.92, { layer: 9 }));
+    }
+    routeOv3d.bfsRouteHops.forEach(hop => {
+      const c = svgTo3dWorld(hop.sx, hop.sy);
+      const base = terrain.top(c.x, c.z) + 1.2 * E;
+      meshes.push(atlas3dMk(`RouteHop_${hop.hopIndex}`, 'bfs_route_hop', c.x, base, c.z, 2.2, 4.5 * E, 2.2, '#0284c7', 0.98, {
+        layer: 9,
+        hopIndex: hop.hopIndex,
+        zoneId: hop.zoneId,
+        label: `#${hop.hopIndex} ${String(hop.name || '').slice(0, 12)}`,
+        poi: hop.poi
+      }));
+    });
+  }
+  if (routeOv3d.raceRouteWaypoints.length >= 2) {
+    for (let i = 0; i < routeOv3d.raceRouteWaypoints.length - 1; i++) {
+      const a = svgTo3dWorld(routeOv3d.raceRouteWaypoints[i].sx, routeOv3d.raceRouteWaypoints[i].sy);
+      const b = svgTo3dWorld(routeOv3d.raceRouteWaypoints[i + 1].sx, routeOv3d.raceRouteWaypoints[i + 1].sy);
+      const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz) || 1;
+      const nx = -dz / len * 0.9, nz = dx / len * 0.9;
+      const y0 = Math.max(terrain.top(a.x, a.z), terrain.top(b.x, b.z)) + 1.6 * E;
+      const corners = [[a.x + nx, a.z + nz], [b.x + nx, b.z + nz], [b.x - nx, b.z - nz], [a.x - nx, a.z - nz]];
+      meshes.push(atlas3dMkPrism(`GrowthSeg_${i + 1}`, 'race_route_segment', corners, y0, 0.85 * E, '#fde047', 0.92, { layer: 9 }));
+    }
+    routeOv3d.raceRouteWaypoints.forEach(wp => {
+      const c = svgTo3dWorld(wp.sx, wp.sy);
+      const base = terrain.top(c.x, c.z) + 1.6 * E;
+      meshes.push(atlas3dMk(`GrowthStage_${wp.stage_code}`, 'race_route_waypoint', c.x, base, c.z, 2.2, 4.8 * E, 2.2, '#b45309', 0.98, {
+        layer: 9,
+        stageCode: wp.stage_code,
+        zoneId: wp.zone_id,
+        label: `[${wp.stage_code}] ${String(wp.name || '').slice(0, 12)}`,
+        poi: wp.poi
+      }));
+    });
+  }
 
   return { context: 'overland', title: 'Cradle of Embers — 3D Continental Elevation & Spire Blockout', meshes };
 }
 
 function isAtlas3dGroundMesh(m) {
-  return /^(Town_Plaza_Ground|Road_|Wall_|Floor_.*_Slab|C0\d_|Sea_)/.test(String((m && m.name) || ''));
+  return /^(Town_Plaza_Ground|Field_Terrain_Ground|Trail_|TerritoryRing_|Road_|RouteSeg_|GrowthSeg_|Wall_|Floor_.*_Slab|C0\d_|Sea_)/.test(String((m && m.name) || ''));
 }
 
 function isPointInAtlasPolygon(x, y, poly) {
@@ -9388,9 +9771,9 @@ function initOrUpdateAtlasMap3dEngine() {
         ctx.stroke();
       });
       ctx.globalAlpha = 1.0;
-      if (m.label || (isSelected && pickM === m)) {
+      if (m.label || ((isSelected || isHovered) && pickM === m)) {
         const topPt = project(m.x, m.y + hh + 3, m.z);
-        pendingLabels.push({ m, topPt, depth: isSelected ? depth + 1000 : depth, isSelected });
+        pendingLabels.push({ m, topPt, depth: isSelected ? depth + 1000 : (isHovered ? depth + 500 : depth), isSelected, isHovered });
       }
     });
     // Buildings / spires / rooms rank ahead of ground slabs, roads and walls; nearest first within a rank.
@@ -9398,20 +9781,20 @@ function initOrUpdateAtlasMap3dEngine() {
 
     // Draw 3D labels front-to-back with AABB decluttering so multi-floor dungeon labels never overlap
     const placed3dBoxes = [];
-    pendingLabels.sort((a, b) => b.depth - a.depth).forEach(({ m, topPt, isSelected }) => {
-      const displayTxt = isSelected ? `★ ${m.label || m.name}` : m.label;
+    pendingLabels.sort((a, b) => b.depth - a.depth).forEach(({ m, topPt, isSelected, isHovered }) => {
+      const displayTxt = isSelected ? `★ ${m.label || m.name}` : (isHovered ? `▸ ${m.label || m.name}` : m.label);
       if (!displayTxt) return;
       const tw = displayTxt.length * 5.8 + 10;
       const box = { x1: topPt.sx - tw / 2 - 2, y1: topPt.sy - 13, x2: topPt.sx + tw / 2 + 2, y2: topPt.sy + 3 };
-      const collides = !isSelected && placed3dBoxes.some(pb => !(box.x2 < pb.x1 || box.x1 > pb.x2 || box.y2 < pb.y1 || box.y1 > pb.y2));
+      const collides = !(isSelected || isHovered) && placed3dBoxes.some(pb => !(box.x2 < pb.x1 || box.x1 > pb.x2 || box.y2 < pb.y1 || box.y1 > pb.y2));
       if (collides) return;
       placed3dBoxes.push(box);
-      ctx.fillStyle = isSelected ? 'rgba(133, 77, 14, 0.96)' : 'rgba(9, 13, 22, 0.9)';
+      ctx.fillStyle = isSelected ? 'rgba(133, 77, 14, 0.96)' : (isHovered ? 'rgba(3, 105, 161, 0.95)' : 'rgba(9, 13, 22, 0.9)');
       ctx.fillRect(topPt.sx - tw / 2, topPt.sy - 12, tw, 14);
-      ctx.strokeStyle = isSelected ? '#fde047' : (m.color || '#fde047');
-      ctx.lineWidth = isSelected ? 1.8 : 1;
+      ctx.strokeStyle = isSelected ? '#fde047' : (isHovered ? '#38bdf8' : (m.color || '#fde047'));
+      ctx.lineWidth = isSelected || isHovered ? 1.8 : 1;
       ctx.strokeRect(topPt.sx - tw / 2, topPt.sy - 12, tw, 14);
-      ctx.fillStyle = isSelected ? '#fef08a' : '#f8fafc';
+      ctx.fillStyle = isSelected ? '#fef08a' : (isHovered ? '#e0f2fe' : '#f8fafc');
       ctx.font = 'bold 9.5px monospace';
       ctx.textAlign = 'center';
       ctx.fillText(displayTxt, topPt.sx, topPt.sy - 2);

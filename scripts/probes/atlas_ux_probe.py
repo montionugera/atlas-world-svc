@@ -473,6 +473,7 @@ const v7Report = vm.runInContext(`(() => {
   STUDIO_MAP_SELECTED_POI = townPoi;
   focusFieldTacticalBlueprint('zone-field-clover-south-gate');
   const poiClearedOnField = STUDIO_MAP_SELECTED_POI === null;
+  ATLAS_STATE_STORE.activeFieldOrFortId = '';
 
   const mpu = {};
   for (const c of ['overland', 'town', 'dungeon']) {
@@ -898,7 +899,54 @@ const v13Report = vm.runInContext(`(() => {
     driftedWpsCount: driftedWps.length
   };
 })()`, sandbox);
+// V-14 (F-163): cross-engine parity for mob pins, BFS/race routes, field 3D context, and DPR cap
+const v14Report = vm.runInContext(`(() => {
+  STUDIO_PERSPECTIVE = 'world-history-and-concept';
+  ATLAS_STATE_STORE.activeFieldOrFortId = '';
+  ATLAS_STATE_STORE.levelBand = 'All';
+  setAtlasFilter('All');
+  const allMobPins = typeof getVisibleAtlasOverlandMobPins === 'function' ? getVisibleAtlasOverlandMobPins().length : -1;
+  setAtlasFilter('MVP');
+  const mvpMobPins = typeof getVisibleAtlasOverlandMobPins === 'function' ? getVisibleAtlasOverlandMobPins().length : -1;
+  setAtlasFilter('All');
+  ATLAS_ROUTE_PLANNER_OPEN = true;
+  setAtlasRouteEndpoints('zone-town-lantern-hollow', 'zone-town-kilnwatch-bastion');
+  const firstRace = (((DATA.studioPerspectives.tShapedWorldAtlas || {}).race_growth_routes || [])[0] || {}).race_label || 'Human';
+  ATLAS_STATE_STORE.raceGrowthRoute = firstRace;
+  const routeOverlay = typeof getActiveAtlasOverlandRouteOverlay === 'function' ? getActiveAtlasOverlandRouteOverlay() : {};
+  const bfsHopsCount = (routeOverlay.bfsRouteHops || []).length;
+  const raceWaypointsCount = (routeOverlay.raceRouteWaypoints || []).length;
+  setAtlasEngineMode('3d_map3d');
+  setAtlas3dOption('contextOverride', 'overland');
+  const overlandSceneWithRoute = buildAtlas3dBlockoutScene();
+  const bfs3dSegments = overlandSceneWithRoute.meshes.filter(m => m.part === 'bfs_route_segment').length;
+  const bfs3dHops = overlandSceneWithRoute.meshes.filter(m => m.part === 'bfs_route_hop').length;
+  const race3dSegments = overlandSceneWithRoute.meshes.filter(m => m.part === 'race_route_segment').length;
+  ATLAS_ROUTE_PLANNER_OPEN = false;
+  ATLAS_STATE_STORE.raceGrowthRoute = 'All';
+  setAtlas3dOption('contextOverride', 'field');
+  const fieldScene = buildAtlas3dBlockoutScene();
+  const fieldGround = fieldScene.meshes.some(m => m.name === 'Field_Terrain_Ground');
+  const fieldSpawnPillars = fieldScene.meshes.filter(m => m.part === 'spawn_pillar').length;
+  const fieldPatrolTrails = fieldScene.meshes.filter(m => m.part === 'patrol_trail').length;
+  setAtlas3dOption('contextOverride', '');
+  setAtlasEngineMode('2d_svg');
+  return {
+    allMobPins,
+    mvpMobPins,
+    bfsHopsCount,
+    raceWaypointsCount,
+    bfs3dSegments,
+    bfs3dHops,
+    race3dSegments,
+    fieldSceneContext: fieldScene.context,
+    fieldGround,
+    fieldSpawnPillars,
+    fieldPatrolTrails
+  };
+})()`, sandbox);
 console.log(JSON.stringify({
+  v14Report,
   v13Report,
   v12Report,
   v11Report,
@@ -1173,11 +1221,28 @@ console.log(JSON.stringify({
         and v13_no_dup_anchor_map
         and v13_ol_zoom_hidden
     )
+    v14 = vm_out.get("v14Report") or {}
+    v14_ol_has_mob_and_route_layers = "mobPinLayer.set('atlasRole', 'mob_pins')" in html and "routeLayer.set('atlasRole', 'routes')" in html
+    v14_dpr_capped = "Math.min(2, Number(window.devicePixelRatio)" in html
+    v14_passed = (
+        v14.get("allMobPins") == 10
+        and v14.get("mvpMobPins") == 4
+        and (v14.get("bfsHopsCount") or 0) >= 2
+        and v14.get("bfs3dSegments") == (v14.get("bfsHopsCount") or 0) - 1
+        and v14.get("bfs3dHops") == v14.get("bfsHopsCount")
+        and (v14.get("race3dSegments") or 0) > 0
+        and v14.get("fieldSceneContext") == "field"
+        and bool(v14.get("fieldGround"))
+        and (v14.get("fieldSpawnPillars") or 0) >= 3
+        and (v14.get("fieldPatrolTrails") or 0) >= 2
+        and v14_ol_has_mob_and_route_layers
+        and v14_dpr_capped
+    )
 
     return {
         "overall_passed": bool(
             v1_passed and v2_passed and v3_passed and v4_passed and v5_passed and v6_passed and v7_passed and v8_passed
-            and v9_passed and v10_passed and v11_passed and v12_passed and v13_passed
+            and v9_passed and v10_passed and v11_passed and v12_passed and v13_passed and v14_passed
         ),
         "gates": {
             "V-1_dom_and_render_budget": {
@@ -1283,6 +1348,12 @@ console.log(JSON.stringify({
                 "no_duplicate_anchor_map": v13_no_dup_anchor_map,
                 "ol_zoom_hidden": v13_ol_zoom_hidden,
                 **v13,
+            },
+            "V-14_cross_engine_parity_routes_mob_pins_field3d": {
+                "passed": v14_passed,
+                "ol_has_mob_and_route_layers": v14_ol_has_mob_and_route_layers,
+                "dpr_capped": v14_dpr_capped,
+                **v14,
             },
         },
     }
