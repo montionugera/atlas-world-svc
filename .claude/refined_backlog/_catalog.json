@@ -2105,5 +2105,14 @@
     "claimed_by": null,
     "status": "open",
     "release_version": null
+  },
+  {
+    "id": "F-163",
+    "title": "Atlas unified spatial engine UX-8..UX-14 (OL vendored, 3D picking, town-only shops)",
+    "from_idea": "I-233",
+    "created_at": "2026-10-25T09:48:19.284006+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
