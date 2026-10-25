@@ -2091,11 +2091,12 @@
     "from_idea": "I-242",
     "created_at": "2026-10-24T23:09:58.972790+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.17",
     "claimed_at": "2026-10-24T23:10:35.943762+00:00",
     "shipped_at": "2026-10-25T00:12:09.030866+00:00",
-    "shipped_sha": "99e2c436f90c25f5fb36f617fff1f10d3522474d"
+    "shipped_sha": "99e2c436f90c25f5fb36f617fff1f10d3522474d",
+    "promoted_at": "2026-10-25T12:06:47.101626+00:00"
   },
   {
     "id": "F-162",
@@ -2103,11 +2104,12 @@
     "from_idea": "I-236",
     "created_at": "2026-10-25T09:48:18.501931+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.17",
     "claimed_at": "2026-10-25T09:49:01.804767+00:00",
     "shipped_at": "2026-10-25T11:13:26.855236+00:00",
-    "shipped_sha": "4772e6220dd4bf21b4cf7170560a957cd3e2c79a"
+    "shipped_sha": "4772e6220dd4bf21b4cf7170560a957cd3e2c79a",
+    "promoted_at": "2026-10-25T12:07:23.885260+00:00"
   },
   {
     "id": "F-163",

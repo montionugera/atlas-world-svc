@@ -1,0 +1,113 @@
+{
+ "blocked": false,
+ "blocked_by": [],
+ "defect_sweeps_standing": [],
+ "defect_sweeps_unconfirmed_by_v2": [],
+ "gate_fires": false,
+ "heldout_tally": {
+  "losses": 1,
+  "ties": 4,
+  "wins": 1
+ },
+ "insample_tally": {
+  "losses": 2,
+  "ties": 16,
+  "wins": 4
+ },
+ "install_decision": {
+  "all_five_clauses_hold": true,
+  "blocked_overrides": false,
+  "clauses": {
+   "1_no_sweep_of_either_kind_in_heldout_or_insample": true,
+   "2_insample_losses_le_wins": true,
+   "3_heldout_losses_le_wins": true,
+   "4_zero_regression_flags": true,
+   "5_no_uncleared_vslive_defect_sweep": true
+  },
+  "counterfactual_excluding_e2_pairs": {
+   "clauses": {
+    "1_no_sweep_of_either_kind_in_heldout_or_insample": true,
+    "2_insample_losses_le_wins": true,
+    "3_heldout_losses_le_wins": true,
+    "4_zero_regression_flags": true,
+    "5_no_uncleared_vslive_defect_sweep": true
+   },
+   "insample_tally": {
+    "losses": 2,
+    "ties": 15,
+    "wins": 3
+   },
+   "install": true,
+   "live_after": "it10"
+  },
+  "e2_wins": [
+   {
+    "counted_toward_install": true,
+    "label": "A-targeted, seen comparator",
+    "pair": "e2_p1"
+   }
+  ],
+  "e2_wins_counted": true,
+  "fa6": "pass",
+  "heldout_tally": {
+   "losses": 1,
+   "ties": 4,
+   "wins": 1
+  },
+  "insample_tally_all_pairs": {
+   "losses": 2,
+   "ties": 16,
+   "wins": 4
+  },
+  "insample_tally_for_install": {
+   "losses": 2,
+   "ties": 16,
+   "wins": 4
+  },
+  "install": true,
+  "live_after": "it10",
+  "vslive_defect_sweeps": [],
+  "vslive_veto_cleared_by_v2": [],
+  "vslive_veto_makes_blocked": false,
+  "vslive_veto_uncleared": []
+ },
+ "loop": {
+  "done": {
+   "done": null,
+   "evaluated": false,
+   "plateau_condition_9_pairs": null,
+   "targeted_gain_guard": null
+  },
+  "iteration": 10,
+  "not_a_stop_signal": "BLOCKED streaks (P(BLOCKED) ~ 0.48 per round at equal arms)",
+  "stop_cap": {
+   "at_or_past_cap": false,
+   "closed_no_measured_gain": false,
+   "closure_text": null,
+   "installs_it10_to_it12": [
+    10
+   ],
+   "last_iteration": 12,
+   "stage2_round_after_cap_allowed_it13": false
+  },
+  "stop_cost": [],
+  "stop_cost_triggered": false,
+  "stop_plateau": {
+   "stage2_design": "S frozen = this candidate vs REVERT, M only, R1-R3 n=3 (9 pairs) + targeted set (candidate vs fresh REVERT x2 on the evals its S edits targeted); hits not carried; it9 not re-scored",
+   "stage2_in_iteration": 11,
+   "triggered": true
+  }
+ },
+ "plateau_condition_met": true,
+ "regression_flags": 0,
+ "style_sweeps": [],
+ "verdict": "PROVISIONAL PLATEAU",
+ "vslive": {
+  "vslive_v1": {
+   "losses": 2,
+   "ties": 1,
+   "wins": 1
+  }
+ },
+ "vslive_pairs_total": 4
+}
