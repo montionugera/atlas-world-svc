@@ -2115,8 +2115,10 @@
     "from_idea": "I-233",
     "created_at": "2026-10-25T09:48:19.284006+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
+    "status": "shipped",
     "release_version": null,
-    "claimed_at": "2026-10-25T11:13:26.855236+00:00"
+    "claimed_at": "2026-10-25T11:13:26.855236+00:00",
+    "release": "1.17",
+    "shipped_at": "2026-10-25"
   }
 ]
