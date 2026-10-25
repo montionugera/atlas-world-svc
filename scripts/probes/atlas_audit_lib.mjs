@@ -58,7 +58,7 @@ async function ensureSharedBrowser() {
     '--no-default-browser-check',
     '--disable-extensions',
     '--disable-background-networking',
-    '--host-resolver-rules=MAP fonts.googleapis.com 127.0.0.1:1,MAP fonts.gstatic.com 127.0.0.1:1',
+    '--host-resolver-rules=MAP fonts.googleapis.com ~NOTFOUND,MAP fonts.gstatic.com ~NOTFOUND',
     '--disable-gpu',
     'about:blank'
   ], { stdio: 'ignore', detached: true });
@@ -82,8 +82,16 @@ async function ensureSharedBrowser() {
 }
 
 export async function launch({ w, h, dpr = 1, mobile = false, touch = false, url }) {
-  const browser = await ensureSharedBrowser();
-  const page = await (await fetch(`http://127.0.0.1:${browser.port}/json/new?about:blank`, { method: 'PUT' })).json();
+  let browser = await ensureSharedBrowser();
+  let page;
+  try {
+    page = await (await fetch(`http://127.0.0.1:${browser.port}/json/new?about:blank`, { method: 'PUT', signal: AbortSignal.timeout(5000) })).json();
+  } catch {
+    try { browser.cleanup(); } catch {}
+    _sharedBrowser = null;
+    browser = await ensureSharedBrowser();
+    page = await (await fetch(`http://127.0.0.1:${browser.port}/json/new?about:blank`, { method: 'PUT', signal: AbortSignal.timeout(5000) })).json();
+  }
   const cdp = new Cdp(page.webSocketDebuggerUrl);
   await cdp.open();
   cdp.errors = [];
@@ -104,7 +112,7 @@ export async function launch({ w, h, dpr = 1, mobile = false, touch = false, url
   cdp.kill = async () => {
     try { await cdp.eval(`try{localStorage.clear()}catch(_e){}`, 1000); } catch {}
     try { cdp?.ws?.close(); } catch {}
-    await fetch(`http://127.0.0.1:${browser.port}/json/close/${page.id}`).catch(() => {});
+    await fetch(`http://127.0.0.1:${browser.port}/json/close/${page.id}`, { signal: AbortSignal.timeout(3000) }).catch(() => {});
   };
   cdp.shot = async (path) => { const r = await cdp.send('Page.captureScreenshot', { format: 'png' }); writeFileSync(path, Buffer.from(r.data, 'base64')); };
   return cdp;
