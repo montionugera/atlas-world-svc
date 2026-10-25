@@ -11,7 +11,7 @@ if (!chromeAvailable()) { console.error('SKIP: Chrome not found (set CHROME_BIN)
 
 const results = [];
 const check = (name, ok, detail) => { results.push(ok); console.log(`${ok ? 'PASS' : 'FAIL'} ${name} | ${detail}`); };
-const with_ = async (opts, fn) => { const c = await launch({ ...opts, url: URL0 }); try { return await fn(c); } finally { c.kill(); } };
+const with_ = async (opts, fn) => { const c = await launch({ ...opts, url: URL0 }); try { return await fn(c); } finally { await c.kill(); } };
 const to3d = (c, theater) => c.eval(`(async()=>{ setAtlasEngineMode('3d_map3d'); await new Promise(r=>setTimeout(r,800)); ${theater ? 'toggleAtlasTheaterMode();' : ''} await new Promise(r=>setTimeout(r,800)); })()`);
 const key = (c, k, code) => Promise.all(['keyDown', 'keyUp'].map(type => c.send('Input.dispatchKeyEvent', { type, key: k, code, windowsVirtualKeyCode: 27 })));
 const rectOf = (c, sel) => c.eval(`(()=>{const e=${sel}; if(!e) return null; const r=e.getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height}})()`);
@@ -137,16 +137,16 @@ async function main() {
     const okOpen = open.legendVisible && open.legendH <= open.frameH * 0.25 + 0.5 && !open.keys && open.pressed === 'true';
     await lgTap(c); const closed = await lgState(c);
     check('L2a toggle expands legend to <=25% of map height without keys line, and collapses again', okOpen && !closed.legendVisible, `open=${JSON.stringify(open)} closed.legendVisible=${closed.legendVisible}`);
-    await lgTap(c); await c.send('Page.reload'); await sleep(2500); for (let i = 0; i < 40 && !(await c.eval(`!!document.getElementById('atlasLegendToggleBtn')`).catch(() => false)); i++) await sleep(250);
+    await lgTap(c); await c.send('Page.reload'); await sleep(2500); for (let i = 0; i < 40 && !(await c.eval(`!!document.getElementById('atlasLegendToggleBtn')`, 3000).catch(() => false)); i++) await sleep(250);
     const re = await lgState(c);
     check('L2b expanded choice survives a reload (localStorage)', re.legendVisible && re.pressed === 'true', JSON.stringify(re)); });
   { const c = await launch({ w: 390, h: 844, dpr: 2, mobile: true, touch: true, url: 'about:blank' });
     try {
       await c.send('Page.addScriptToEvaluateOnNewDocument', { source: `Storage.prototype.getItem=function(){throw new Error('x')}; Storage.prototype.setItem=function(){throw new Error('x')};` });
-      await c.send('Page.navigate', { url: URL0 }); await sleep(1500); for (let i = 0; i < 60 && !(await c.eval(`!!document.getElementById('atlasLegendToggleBtn')`).catch(() => false)); i++) await sleep(250);
+      await c.send('Page.navigate', { url: URL0 }); await sleep(1500); for (let i = 0; i < 60 && !(await c.eval(`!!document.getElementById('atlasLegendToggleBtn')`, 3000).catch(() => false)); i++) await sleep(250);
       const a = await lgState(c); await lgTap(c); const b = await lgState(c);
       check('L2c page and legend toggle still work when storage throws', !!a.btn && !a.legendVisible && b.legendVisible && c.errors.length === 0, `collapsed=${!a.legendVisible} expanded=${b.legendVisible} errors=${JSON.stringify(c.errors)}`);
-    } finally { c.kill(); } }
+    } finally { await c.kill(); } }
   { const base = { '1280x800 2d_svg': [281, 696.8, 975, 86], '1280x800 2d_ol': [293, 611, 951, 87], '1280x800 3d_map3d': [293, 611, 951, 87], '1440x900 2d_svg': [281, 729.7, 1135, 56], '1440x900 2d_ol': [293, 887, 1111, 57], '1440x900 3d_map3d': [293, 887, 1111, 57] };
     const bad = [];
     for (const [w, h] of [[1280, 800], [1440, 900]]) for (const eng of ['2d_svg', '2d_ol', '3d_map3d']) await with_({ w, h, dpr: 1 }, async c => {
@@ -161,6 +161,13 @@ async function main() {
       const a = await probe(); await lgTap(c); const b = await probe();
       if (a.hit.length || b.hit.length || !a.n) bad.push(`${eng}: collapsed=${JSON.stringify(a)} expanded=${JSON.stringify(b)}`); });
     check('L4 legend (collapsed or expanded) overlaps no map toolbar button in 2d_svg, 2d_ol, 3d_map3d @375x812', !bad.length, bad.join(' ; ') || 'ok'); }
+  // F-162 L5: in 2d_ol on phones, built-in .ol-zoom must not overlap #atlasHudToggleBtn or #atlasLegendToggleBtn
+  { const bad = [];
+    for (const [w, h] of [[375, 812], [390, 844]]) await with_({ w, h, dpr: 2, mobile: true, touch: true }, async c => {
+      await c.eval(`(async()=>{ setAtlasEngineMode('2d_ol'); await new Promise(r=>setTimeout(r,1200)); })()`);
+      const r = await c.eval(`(()=>{ const vis=${lgVisible}; const oz=vis(document.querySelector('.ol-zoom')); const btns=[document.getElementById('atlasHudToggleBtn'), document.getElementById('atlasLegendToggleBtn')].map(vis).filter(Boolean); const hit=[]; if(oz) for(const b of btns) if(oz.left<b.right&&b.left<oz.right&&oz.top<b.bottom&&b.top<oz.bottom) hit.push({oz,b}); return {oz:!!oz, hit:hit.length}})()`);
+      if (r.oz || r.hit) bad.push(`${w}x${h}: ${JSON.stringify(r)}`); });
+    check('L5 OL engine: no built-in .ol-zoom overlap with phone HUD/Legend toggles @375x812 and 390x844', !bad.length, bad.join(' ; ') || 'ok'); }
 }
 try { await main(); } catch (e) { console.error('SETUP ERROR:', e.message); process.exit(e.message === 'CHROME_MISSING' ? 3 : 2); }
 const failed = results.filter(x => !x).length;
