@@ -2084,5 +2084,41 @@
     "shipped_at": "2026-10-24T01:55:20.453345+00:00",
     "shipped_sha": "e610299325c4dbd1a3b149c821f2bb2bd09f8b6d",
     "promoted_at": "2026-10-24T05:59:53.865414+00:00"
+  },
+  {
+    "id": "F-161",
+    "title": "Atlas explorer phone: map legend overlay covers most of the map at 390px; make it collapsible or compact",
+    "from_idea": "I-242",
+    "created_at": "2026-10-24T23:09:58.972790+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.17",
+    "claimed_at": "2026-10-24T23:10:35.943762+00:00",
+    "shipped_at": "2026-10-25T00:12:09.030866+00:00",
+    "shipped_sha": "99e2c436f90c25f5fb36f617fff1f10d3522474d"
+  },
+  {
+    "id": "F-162",
+    "title": "Atlas zone loc vs pin mismatch: zone loc projects far from drawn pin (e.g. Lantern Hollow loc->(158,454), pin (432,422)); ruler scale 384.6 m/unit confirmed vs F-045 400km model",
+    "from_idea": "I-236",
+    "created_at": "2026-10-25T09:48:18.501931+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.17",
+    "claimed_at": "2026-10-25T09:49:01.804767+00:00",
+    "shipped_at": "2026-10-25T11:13:26.855236+00:00",
+    "shipped_sha": "4772e6220dd4bf21b4cf7170560a957cd3e2c79a"
+  },
+  {
+    "id": "F-163",
+    "title": "Atlas unified spatial engine UX-8..UX-14 (OL vendored, 3D picking, town-only shops)",
+    "from_idea": "I-233",
+    "created_at": "2026-10-25T09:48:19.284006+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": null,
+    "claimed_at": "2026-10-25T11:13:26.855236+00:00",
+    "release": "1.17",
+    "shipped_at": "2026-10-25"
   }
 ]

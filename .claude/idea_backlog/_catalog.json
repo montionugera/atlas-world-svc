@@ -1466,7 +1466,7 @@
     "id": "I-233",
     "title": "Atlas unified spatial engine UX-8..UX-14 (OL vendored, 3D picking, town-only shops)",
     "created_at": "2026-10-22T17:29:13.933178+00:00",
-    "promoted_to": null
+    "promoted_to": "F-163"
   },
   {
     "id": "I-234",
@@ -1484,7 +1484,7 @@
     "id": "I-236",
     "title": "Atlas zone loc vs pin mismatch: zone loc projects far from drawn pin (e.g. Lantern Hollow loc->(158,454), pin (432,422)); ruler scale 384.6 m/unit confirmed vs F-045 400km model",
     "created_at": "2026-10-23T04:26:04.859965+00:00",
-    "promoted_to": null
+    "promoted_to": "F-162"
   },
   {
     "id": "I-237",
@@ -1515,5 +1515,11 @@
     "title": "Atlas 3D blockout 1:1 with 2D map: svgTo3dWorld projection, real continent polygon extrusions, sea plane, mountains, roads, distinct town/tower/dungeon silhouettes",
     "created_at": "2026-10-23T09:44:55.753455+00:00",
     "promoted_to": "F-158"
+  },
+  {
+    "id": "I-242",
+    "title": "Atlas explorer phone: map legend overlay covers most of the map at 390px; make it collapsible or compact",
+    "created_at": "2026-10-24T07:53:56.781912+00:00",
+    "promoted_to": "F-161"
   }
 ]

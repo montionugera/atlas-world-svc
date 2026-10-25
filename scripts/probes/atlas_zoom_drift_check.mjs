@@ -74,6 +74,14 @@ class Cdp {
         this.pending.delete(m.id);
         m.error ? rej(new Error(JSON.stringify(m.error))) : res(m.result);
       } else if (m.method) {
+        if (m.method === "Runtime.executionContextsCleared" || m.method === "Runtime.executionContextDestroyed") {
+          for (const [k, p] of this.pending.entries()) {
+            if (p.method === "Runtime.evaluate") {
+              this.pending.delete(k);
+              p.rej(new Error("Execution context cleared during navigation"));
+            }
+          }
+        }
         this.listeners.forEach(fn => fn(m));
       }
     };
@@ -87,7 +95,11 @@ class Cdp {
   send(method, params = {}) {
     const id = ++this.id;
     this.ws.send(JSON.stringify({ id, method, params }));
-    return new Promise((res, rej) => this.pending.set(id, { res, rej }));
+    return new Promise((res, rej) => {
+      const t = setTimeout(() => { if (this.pending.delete(id)) rej(new Error(`CDP timeout: ${method}`)); }, 45000);
+      t.unref?.();
+      this.pending.set(id, { method, res: v => { clearTimeout(t); res(v); }, rej: e => { clearTimeout(t); rej(e); } });
+    });
   }
   on(fn) {
     this.listeners.push(fn);
@@ -272,9 +284,13 @@ async function main() {
   const chrome = spawn(CHROME, [
     '--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
     '--window-size=1440,900', '--force-device-scale-factor=2', '--no-first-run',
-    '--no-default-browser-check', '--disable-gpu', 'about:blank'
-  ], { stdio: 'ignore' });
+    '--no-default-browser-check', '--disable-extensions', '--disable-background-networking',
+    '--host-resolver-rules=MAP fonts.googleapis.com ~NOTFOUND,MAP fonts.gstatic.com ~NOTFOUND',
+    '--disable-gpu', 'about:blank'
+  ], { stdio: 'ignore', detached: true });
+  chrome.unref();
   const cleanup = () => {
+    try { process.kill(-chrome.pid, 'SIGKILL'); } catch {}
     try { chrome.kill('SIGKILL'); } catch {}
     try { rmSync(profile, { recursive: true, force: true }); } catch {}
   };
@@ -337,7 +353,7 @@ async function main() {
   await cdp.eval(PAGE_HELPERS); // re-install if render() replaced nothing global (idempotent)
 
   const result = { url: URL_ARG, simulateFix: SIMULATE_FIX, simulateBug: SIMULATE_BUG, tolerancePx: TOL, viewport: '1440x900@2x', zoomRuns: [], wheel: null, assertions: [] };
-  const assert = (name, pass, detail) => result.assertions.push({ name, status: pass ? 'PASS' : 'FAIL', detail });
+  const tStart = Date.now(); const assert = (name, pass, detail) => { console.error(((Date.now()-tStart)/1000).toFixed(1)+"s", pass ? 'PASS' : 'FAIL', name); result.assertions.push({ name, status: pass ? 'PASS' : 'FAIL', detail }); };
   const skip = (name, detail) => result.assertions.push({ name, status: 'SKIP', detail });
 
   // ---------------------------------------------------------------- 1+2. drift per zoom
@@ -852,6 +868,61 @@ true;`;
       }
     }
     assert('F-158 bottom legend bar is fully inside the viewport (no scroll) at 1080x810 and 1024x768, sidebar open, in 2d_svg and 3d_map3d', legBad.length === 0, legBad.join(' | ') || 'ok');
+    const f162 = await cdp.eval(`(()=>{
+      const tatlas = (DATA && DATA.studioPerspectives && DATA.studioPerspectives.tShapedWorldAtlas) || {};
+      const zones = getAllAtlas63Zones(tatlas);
+      const placed = getAtlasPlacedZonePoints(tatlas, zones);
+      let maxDrift = 0;
+      zones.forEach(z => {
+        const p = placed[z.zone_id];
+        const f = resolveAtlasFocusLoc(z.loc_coord, z.zone_id, z.studio_node_id);
+        const d = p ? Math.hypot((f.svgX || 0) - p.x, (f.svgY || 0) - p.y) : 999;
+        if (d > maxDrift) maxDrift = d;
+        const r = computeShortestAtlasZonePath('zone-town-lantern-hollow', z.zone_id, tatlas);
+        (r.hops || []).forEach(h => {
+          const hp = placed[h.zoneId];
+          const hd = hp ? Math.hypot((h.svgX || 0) - hp.x, (h.svgY || 0) - hp.y) : 999;
+          if (hd > maxDrift) maxDrift = hd;
+        });
+      });
+      return { zones: zones.length, maxDrift: Math.round(maxDrift * 100) / 100 };
+    })()`);
+    assert('F-162 all 63 zones have 0px drift between getAtlasPlacedZonePoints, resolveAtlasFocusLoc, and computeShortestAtlasZonePath hops', f162.zones === 63 && f162.maxDrift === 0, JSON.stringify(f162));
+    const f163 = await cdp.eval(`(async () => {
+      const tatlas = (DATA && DATA.studioPerspectives && DATA.studioPerspectives.tShapedWorldAtlas) || {};
+      const firstRace = ((tatlas.race_growth_routes || [])[0] || {}).race_label || 'Human';
+      ATLAS_STATE_STORE.activeFieldOrFortId = '';
+      ATLAS_STATE_STORE.levelBand = 'All';
+      setAtlasFilter('All');
+      ATLAS_ROUTE_PLANNER_OPEN = true;
+      setAtlasRouteEndpoints('zone-town-lantern-hollow', 'zone-town-kilnwatch-bastion');
+      ATLAS_STATE_STORE.raceGrowthRoute = firstRace;
+      setAtlasEngineMode('2d_ol');
+      render();
+      for (let i = 0; i < 60; i++) { if (window.__ATLAS_OL_MAP_INSTANCE && window.__ATLAS_OL_MAP_INSTANCE.getLayers) break; await new Promise(r => setTimeout(r, 50)); }
+      const m = window.__ATLAS_OL_MAP_INSTANCE;
+      const layers = m ? m.getLayers().getArray() : [];
+      const mobLayer = layers.find(l => l.get && l.get('atlasRole') === 'mob_pins');
+      const routeLayer = layers.find(l => l.get && l.get('atlasRole') === 'routes');
+      const olMobCount = mobLayer && mobLayer.getSource ? mobLayer.getSource().getFeatures().length : 0;
+      const olRouteFeatures = routeLayer && routeLayer.getSource ? routeLayer.getSource().getFeatures().length : 0;
+      setAtlasEngineMode('3d_map3d');
+      setAtlas3dOption('contextOverride', 'overland');
+      const overlandScene = buildAtlas3dBlockoutScene();
+      const bfs3d = overlandScene.meshes.filter(x => x.part === 'bfs_route_segment').length;
+      const race3d = overlandScene.meshes.filter(x => x.part === 'race_route_segment').length;
+      setAtlas3dOption('contextOverride', 'field');
+      const fieldScene = buildAtlas3dBlockoutScene();
+      const fieldGround = fieldScene.meshes.some(x => x.name === 'Field_Terrain_Ground');
+      const fieldPillars = fieldScene.meshes.filter(x => x.part === 'spawn_pillar').length;
+      ATLAS_ROUTE_PLANNER_OPEN = false;
+      ATLAS_STATE_STORE.raceGrowthRoute = 'All';
+      setAtlas3dOption('contextOverride', '');
+      return { olMobCount, olRouteFeatures, bfs3d, race3d, fieldGround, fieldPillars };
+    })()`);
+    assert('F-163 cross-engine parity: 2d_ol renders mob_pins + routes layers, 3d_map3d renders overland routes + dedicated field tactical scene',
+      f163.olMobCount === 10 && f163.olRouteFeatures >= 4 && f163.bfs3d >= 2 && f163.race3d > 0 && f163.fieldGround === true && f163.fieldPillars >= 3,
+      JSON.stringify(f163));
     await cdp.eval(`(()=>{ setAtlasEngineMode('2d_svg'); render(); return 1; })()`);
     await metrics(1440, 900); await sleep(300);
   }
