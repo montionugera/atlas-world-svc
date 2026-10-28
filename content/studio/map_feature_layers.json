@@ -1,0 +1,1680 @@
+{
+  "schema_version": "1.0",
+  "id": "atlas-composable-map-feature-layers",
+  "title": "Composable 6-Layer Vector & Terrain Feature Pipeline (Incremental Edit Without Full Map Rebuild)",
+  "design_rationale": "Separates top-down cartography into 6 independent, hash-keyed scene-graph layers inspired by Lineage II Freya/Interlude official maps (l2sanctum.net) and Google Maps GIS. Editing a single walkway spline, river bend, highland contour, or tree cluster hot-patches only its target SVG/Canvas <g data-feature-layer='...'> group in <15ms without regenerating the base elevation raster plate.",
+  "scale_bar_calibration": {
+    "overland_world_span_meters": 400000,
+    "overland_regional_view_meters": 10400,
+    "field_tactical_span_meters": 2080,
+    "town_street_span_meters": 1040,
+    "dungeon_floor_span_meters": 624,
+    "svg_canvas_width_px": 1040,
+    "svg_canvas_height_px": 500,
+    "google_scale_steps_meters": [
+      20,
+      50,
+      100,
+      200,
+      500,
+      1000,
+      2000,
+      5000,
+      10000,
+      20000,
+      50000
+    ]
+  },
+  "pipeline_layers": [
+    {
+      "layer_id": "layer_0_base_elevation_dem",
+      "order": 0,
+      "name": "Base Elevation DEM & Biome Relief",
+      "rebuild_scope": "cached_static_plate",
+      "description": "2080x1000 2x Retina hypsometric tint, bathymetry, and hillshade raster base. Never rebuilt when editing roads, rivers, or foliage."
+    },
+    {
+      "layer_id": "layer_1_hydrology_splines",
+      "order": 1,
+      "name": "Rivers, Canals, Sandbanks & Bridges",
+      "rebuild_scope": "incremental_vector_spline",
+      "description": "Meandering river ribbons with outer shallow sandbank/cerulean strokes, deep water core, rapids, and stone/timber bridge crossings."
+    },
+    {
+      "layer_id": "layer_2_topography_cliffs_and_highlands",
+      "order": 2,
+      "name": "Highland Plateaus, Cliff Hachures, Snow Peaks & Lava Craters",
+      "rebuild_scope": "incremental_contour_polygon",
+      "description": "Multi-tiered elevation ledges with directional NW->SE drop shadows, cliff-face hachure ticks, alpine snowcaps, and volcanic calderas."
+    },
+    {
+      "layer_id": "layer_3_road_and_walkway_network",
+      "order": 3,
+      "name": "Arterial Highways (12m+), Patrol Roads (8m) & Small Walkways (3.5m-4.5m)",
+      "rebuild_scope": "incremental_polyline_graph",
+      "description": "Three-tier road hierarchy: paved arterial highways (>=12m), secondary gravel patrol trails (8m), and small winding dirt footpaths (3.5m-4.5m) branching to shrines, camps, and quest targets."
+    },
+    {
+      "layer_id": "layer_4_foliage_and_canopy_scatters",
+      "order": 4,
+      "name": "Top-Down Tree Canopy Clusters, Swamp Reeds & Rock Outcrops",
+      "rebuild_scope": "incremental_poisson_scatter",
+      "description": "Seeded multi-crown tree clusters with ground shadows and biome-specific canopy tints. Enforces 1.05m chibi scale law (ground grass <=0.35m, bushes <=0.65m)."
+    },
+    {
+      "layer_id": "layer_5_architectural_compounds_and_quest_rings",
+      "order": 5,
+      "name": "Top-Down Walled Compounds, Coliseums, Ruins & L2Sanctum Quest Rings",
+      "rebuild_scope": "incremental_poi_overlay",
+      "description": "Baked top-down stone compounds (circular coliseums, giant bone basins, watchtower ruins) and l2sanctum-style golden double-ring quest target markers."
+    }
+  ],
+  "overland_regional_features": {
+    "hydrology_splines": [
+      {
+        "id": "river-hearthbloom-meander",
+        "name": "Hearthbloom Emerald Meander (Execution Grounds / Giran River Ref)",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "width_px": 7.5,
+        "shallow_bank_px": 12.5,
+        "water_hex": "#2b6e7d",
+        "bank_hex": "#7ca982",
+        "path_d": "M 235,315 C 268,348 242,388 288,412 C 334,436 368,382 415,405 C 462,428 455,462 482,478",
+        "bridges": [
+          {
+            "x": 288,
+            "y": 412,
+            "angle": -18,
+            "label": "Lantern Ford Bridge"
+          },
+          {
+            "x": 415,
+            "y": 405,
+            "angle": 22,
+            "label": "Kilnwatch Stone Bridge"
+          }
+        ]
+      },
+      {
+        "id": "river-porcelain-estuary",
+        "name": "Porcelain Mirror Lake & Twin-Bridge Canal (Innadril / Heine Ref)",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "width_px": 8.0,
+        "shallow_bank_px": 13.5,
+        "water_hex": "#327a8d",
+        "bank_hex": "#8fb996",
+        "path_d": "M 512,318 C 538,345 520,378 558,398 C 596,418 638,385 675,418 C 702,442 695,465 712,474",
+        "bridges": [
+          {
+            "x": 558,
+            "y": 398,
+            "angle": 15,
+            "label": "Iris Causeway"
+          },
+          {
+            "x": 675,
+            "y": 418,
+            "angle": -25,
+            "label": "Dwarven Sluice Bridge"
+          }
+        ]
+      },
+      {
+        "id": "river-clockwork-mercury-canal",
+        "name": "Verdigris Mercury Sluiceway (Oren / Hot Springs Meltwater Ref)",
+        "continent_id": "continent-02-clockwork-steppe",
+        "width_px": 6.8,
+        "shallow_bank_px": 11.0,
+        "water_hex": "#388596",
+        "bank_hex": "#94a398",
+        "path_d": "M 658,195 C 695,218 682,258 728,272 C 774,286 815,248 858,278 C 888,298 895,318 912,326",
+        "bridges": [
+          {
+            "x": 728,
+            "y": 272,
+            "angle": 12,
+            "label": "Pinion Aqueduct Lock"
+          }
+        ]
+      }
+    ],
+    "topography_cliffs_and_highlands": [
+      {
+        "id": "highland-c01-canyon-terraces",
+        "name": "Tanor / Antharas Labyrinth Terraced Canyon Ridges",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "style": "terraced_canyon",
+        "outer_pts": [
+          [
+            182,
+            355
+          ],
+          [
+            248,
+            332
+          ],
+          [
+            312,
+            352
+          ],
+          [
+            338,
+            395
+          ],
+          [
+            275,
+            428
+          ],
+          [
+            195,
+            408
+          ]
+        ],
+        "inner_pts": [
+          [
+            205,
+            365
+          ],
+          [
+            248,
+            348
+          ],
+          [
+            295,
+            362
+          ],
+          [
+            312,
+            390
+          ],
+          [
+            268,
+            412
+          ],
+          [
+            212,
+            396
+          ]
+        ],
+        "fill_outer": "rgba(74, 65, 42, 0.65)",
+        "fill_inner": "rgba(96, 84, 56, 0.78)",
+        "ridge_stroke": "#282114"
+      },
+      {
+        "id": "highland-c01-emerald-plateau",
+        "name": "Timak / Enchanted Valley Highland Plateau",
+        "continent_id": "continent-01-hearthbloom-basin",
+        "style": "emerald_highland",
+        "outer_pts": [
+          [
+            425,
+            318
+          ],
+          [
+            518,
+            308
+          ],
+          [
+            562,
+            345
+          ],
+          [
+            538,
+            382
+          ],
+          [
+            445,
+            378
+          ],
+          [
+            412,
+            348
+          ]
+        ],
+        "inner_pts": [
+          [
+            445,
+            328
+          ],
+          [
+            508,
+            320
+          ],
+          [
+            542,
+            346
+          ],
+          [
+            522,
+            370
+          ],
+          [
+            455,
+            368
+          ],
+          [
+            432,
+            346
+          ]
+        ],
+        "fill_outer": "rgba(58, 88, 44, 0.62)",
+        "fill_inner": "rgba(84, 122, 58, 0.74)",
+        "ridge_stroke": "#1e3218"
+      },
+      {
+        "id": "highland-c02-schuttgart-snowpeaks",
+        "name": "Frozen Labyrinth & Hot Springs Snow-Capped Massif",
+        "continent_id": "continent-02-clockwork-steppe",
+        "style": "alpine_snow",
+        "outer_pts": [
+          [
+            688,
+            175
+          ],
+          [
+            795,
+            165
+          ],
+          [
+            848,
+            198
+          ],
+          [
+            822,
+            242
+          ],
+          [
+            725,
+            238
+          ],
+          [
+            675,
+            208
+          ]
+        ],
+        "inner_pts": [
+          [
+            712,
+            186
+          ],
+          [
+            785,
+            178
+          ],
+          [
+            825,
+            202
+          ],
+          [
+            804,
+            230
+          ],
+          [
+            735,
+            226
+          ],
+          [
+            698,
+            205
+          ]
+        ],
+        "fill_outer": "rgba(186, 198, 212, 0.72)",
+        "fill_inner": "rgba(232, 240, 248, 0.88)",
+        "ridge_stroke": "#475569"
+      },
+      {
+        "id": "highland-c02-blazing-caldera",
+        "name": "Forge of the Gods / Blazing Swamp Volcanic Crater",
+        "continent_id": "continent-02-clockwork-steppe",
+        "style": "volcano_caldera",
+        "cx": 885,
+        "cy": 258,
+        "rx": 34,
+        "ry": 24,
+        "fill_outer": "rgba(56, 38, 32, 0.85)",
+        "fill_inner": "#ea580c",
+        "ridge_stroke": "#f97316"
+      }
+    ],
+    "secondary_walkways": [
+      {
+        "id": "walkway-c01-west",
+        "pts": [
+          [
+            215,
+            332
+          ],
+          [
+            252,
+            368
+          ],
+          [
+            305,
+            418
+          ],
+          [
+            352,
+            442
+          ],
+          [
+            432,
+            422
+          ]
+        ]
+      },
+      {
+        "id": "walkway-c01-central",
+        "pts": [
+          [
+            382,
+            338
+          ],
+          [
+            428,
+            368
+          ],
+          [
+            472,
+            395
+          ],
+          [
+            515,
+            468
+          ]
+        ]
+      },
+      {
+        "id": "walkway-c01-east",
+        "pts": [
+          [
+            545,
+            404
+          ],
+          [
+            585,
+            362
+          ],
+          [
+            618,
+            318
+          ],
+          [
+            668,
+            368
+          ],
+          [
+            712,
+            418
+          ]
+        ]
+      },
+      {
+        "id": "walkway-c02-steppe",
+        "pts": [
+          [
+            665,
+            252
+          ],
+          [
+            705,
+            232
+          ],
+          [
+            745,
+            288
+          ],
+          [
+            798,
+            255
+          ],
+          [
+            845,
+            215
+          ],
+          [
+            885,
+            258
+          ]
+        ]
+      },
+      {
+        "id": "walkway-c03-halo",
+        "pts": [
+          [
+            565,
+            122
+          ],
+          [
+            628,
+            98
+          ],
+          [
+            695,
+            112
+          ],
+          [
+            785,
+            88
+          ]
+        ]
+      }
+    ],
+    "architectural_compounds": [
+      {
+        "id": "comp-giant-root-fossil",
+        "kind": "fossil_basin",
+        "x": 342,
+        "y": 398,
+        "r": 22,
+        "label": "Ancient Root Basin"
+      },
+      {
+        "id": "comp-coliseum-ring",
+        "kind": "coliseum",
+        "x": 648,
+        "y": 362,
+        "r": 18,
+        "label": "Grand Coliseum Ring"
+      },
+      {
+        "id": "comp-ivory-crater",
+        "kind": "ivory_crater",
+        "x": 488,
+        "y": 352,
+        "r": 20,
+        "label": "Star-Spire Crater"
+      }
+    ]
+  },
+  "zone_biome_assignments": {
+    "zone-field-clover-south-gate": {
+      "biome_id": "grassland",
+      "l2sanctum_reference": "Talking Island Eastern Territory / Plain of Dion",
+      "hydrology_style": "clear_meadow_brook_with_stone_ford",
+      "highland_style": "rolling_clover_downs_and_dry_stone_ledges",
+      "canopy_style": "broadleaf_oak_and_windmill_hedgerows"
+    },
+    "zone-field-kiln-east-orchard": {
+      "biome_id": "grassland",
+      "l2sanctum_reference": "Talking Island Northern Territory / Windmill Hill",
+      "hydrology_style": "irrigated_terrace_canal_and_millpond",
+      "highland_style": "stepped_orchard_knolls",
+      "canopy_style": "glaze_blossom_orchard_rosettes"
+    },
+    "zone-field-celadon-causeway": {
+      "biome_id": "rainforest",
+      "l2sanctum_reference": "Elven Forest / The Neutral Zone",
+      "hydrology_style": "mirror_celadon_estuary_and_lily_cascades",
+      "highland_style": "moss_draped_porcelain_limestone_bluffs",
+      "canopy_style": "luminous_banyan_and_silver_willow_crowns"
+    },
+    "zone-field-firebrick-duct": {
+      "biome_id": "canyon",
+      "l2sanctum_reference": "Valley of Heroes / Immortal Plateau",
+      "hydrology_style": "warm_slag_runoff_flume_and_flash_wash",
+      "highland_style": "terraced_redbrick_mesa_cliffs",
+      "canopy_style": "scrub_acacia_and_charred_ironwood_clumps"
+    },
+    "zone-field-resin-arch-tunnel": {
+      "biome_id": "underground_cave",
+      "l2sanctum_reference": "Western Mining Zone / Ant Nest Root Caverns",
+      "hydrology_style": "subterranean_amber_seep_and_aqueduct_trough",
+      "highland_style": "vaulted_root_buttress_and_slate_pillars",
+      "canopy_style": "bioluminescent_root_tendrils_and_cave_fungi"
+    },
+    "zone-field-cobalt-sandbar-ford": {
+      "biome_id": "sea_cave",
+      "l2sanctum_reference": "Fellmere Harvesting Grounds / Innadril Tidal Shoals",
+      "hydrology_style": "braided_cobalt_tidal_sandbars_and_grotto_inlets",
+      "highland_style": "sea_carved_limestone_stacks_and_karst_arches",
+      "canopy_style": "coastal_mangrove_and_salt_cedar_clusters"
+    },
+    "zone-field-chime-pipe-colonnade": {
+      "biome_id": "swamp",
+      "l2sanctum_reference": "Swampland (Dark Forest) / Spider Nest",
+      "hydrology_style": "stagnant_teal_peat_pools_and_reed_channels",
+      "highland_style": "sunken_terracotta_kiln_mounds",
+      "canopy_style": "weeping_cypress_and_spore_willow_thickets"
+    },
+    "zone-field-apricot-aqueduct-terrace": {
+      "biome_id": "grassland",
+      "l2sanctum_reference": "Floran Agricultural Area / Dion Hills",
+      "hydrology_style": "elevated_roman_aqueduct_and_pasture_sluice",
+      "highland_style": "sunny_saffron_terraces_and_chalk_downs",
+      "canopy_style": "apricot_grove_and_golden_poplar_lines"
+    },
+    "zone-field-cinnamon-bark-viaduct": {
+      "biome_id": "rainforest",
+      "l2sanctum_reference": "Mimir's Forest / Primeval Isle Spice Canopy",
+      "hydrology_style": "monsoon_river_delta_and_stone_ford",
+      "highland_style": "vine_wrapped_ziggurat_escarpments",
+      "canopy_style": "giant_cinnamon_laurel_and_emerald_fern_canopy"
+    },
+    "zone-field-ginger-aqueduct-bridge": {
+      "biome_id": "valley",
+      "l2sanctum_reference": "Hot Springs / Plunderous Plains Ravine",
+      "hydrology_style": "steaming_sulfur_hot_springs_and_geyser_brook",
+      "highland_style": "twin_ridge_mineral_gorge_walls",
+      "canopy_style": "mist_pine_and_ginger_bamboo_alcoves"
+    },
+    "zone-field-cinder-apron": {
+      "biome_id": "swamp",
+      "l2sanctum_reference": "Cruma Marshlands / Ruins of Despair",
+      "hydrology_style": "ash_silt_fen_and_bubbling_bog_channels",
+      "highland_style": "shattered_viaduct_piers_and_peat_hummocks",
+      "canopy_style": "deadwood_snags_and_glowing_marsh_reeds"
+    },
+    "zone-field-brass-spur-ridge": {
+      "biome_id": "canyon",
+      "l2sanctum_reference": "Execution Grounds / Death Pass",
+      "hydrology_style": "deep_gorge_dry_arroyo_and_rust_culvert",
+      "highland_style": "jagged_ochre_canyon_spurs_and_gear_ledges",
+      "canopy_style": "windswept_thorn_scrub_and_canyon_juniper"
+    },
+    "zone-field-caldera-rim": {
+      "biome_id": "volcano_cave",
+      "l2sanctum_reference": "Forge of the Gods / Blazing Swamp Rim",
+      "hydrology_style": "incandescent_magma_veins_and_slag_channels",
+      "highland_style": "hexagonal_basalt_caldera_crater_walls",
+      "canopy_style": "obsidian_fumarole_spires_and_cinder_vents"
+    },
+    "zone-field-leyden-causeway": {
+      "biome_id": "valley",
+      "l2sanctum_reference": "Dragon Valley / Pavel Ruins",
+      "hydrology_style": "sunken_limestone_alkali_stream",
+      "highland_style": "colossal_rib_arch_valley_walls_and_alcoves",
+      "canopy_style": "amber_steppe_larch_and_static_scrub"
+    },
+    "zone-field-tether-causeway": {
+      "biome_id": "god_valley",
+      "l2sanctum_reference": "Valley of Saints / Wall of Argos",
+      "hydrology_style": "luminous_astral_leyline_conduits",
+      "highland_style": "stepped_celestial_marble_monolith_terraces",
+      "canopy_style": "gilded_starlight_cypress_and_halo_laurels"
+    },
+    "zone-field-aurora-tether": {
+      "biome_id": "volcano_cave",
+      "l2sanctum_reference": "Blazing Swamp Caldera / Antharas Magma Approach",
+      "hydrology_style": "solar_plasma_lava_rivers_and_crucible_falls",
+      "highland_style": "vitrified_obsidian_crown_crater",
+      "canopy_style": "crystallized_sulfur_clusters_and_ash_plumes"
+    },
+    "zone-field-whispering-mire": {
+      "biome_id": "swamp",
+      "l2sanctum_reference": "Swamp of Screams / Cruma Marshlands",
+      "hydrology_style": "dark_mirror_bayou_and_submerged_causeways",
+      "highland_style": "mossy_teapot_kiln_ruin_islands",
+      "canopy_style": "twisted_mangrove_roots_and_spore_canopy"
+    },
+    "zone-field-slag-chasm": {
+      "biome_id": "canyon",
+      "l2sanctum_reference": "Tanor Canyon / Ruins of Agony",
+      "hydrology_style": "vitrified_glass_trench_and_mineral_trickle",
+      "highland_style": "sheer_terracotta_badland_buttes",
+      "canopy_style": "sparse_iron_thistle_and_dry_brush"
+    },
+    "zone-field-astrolabe-rift": {
+      "biome_id": "giant_tower",
+      "l2sanctum_reference": "Cruma Tower Surroundings / Tower of Insolence Base",
+      "hydrology_style": "concentric_coolant_moat_and_mercury_weirs",
+      "highland_style": "octagonal_brass_buttress_rings_and_rift_scarps",
+      "canopy_style": "trimmed_clockwork_topiary_and_pillar_ivy"
+    },
+    "zone-field-siphon-sluice": {
+      "biome_id": "rainforest",
+      "l2sanctum_reference": "Alligator Island / Breka's Stronghold",
+      "hydrology_style": "verdigris_canal_locks_and_tropical_lagoon",
+      "highland_style": "overgrown_sluice_bastions_and_jungle_bluffs",
+      "canopy_style": "dense_emerald_palm_and_strangler_fig_rosettes"
+    },
+    "zone-field-metronome-bridge": {
+      "biome_id": "valley",
+      "l2sanctum_reference": "Death Pass / Enchanted Valley Approach",
+      "hydrology_style": "deep_gorge_meltwater_torrent_below_suspension_span",
+      "highland_style": "twin_pendulum_escarpment_ridges",
+      "canopy_style": "highland_hemlock_and_golden_aspen_belts"
+    },
+    "zone-field-spiral-wormway-ramp": {
+      "biome_id": "underground_cave",
+      "l2sanctum_reference": "Mithril Mines / Giant's Cave Lower Quarry",
+      "hydrology_style": "helical_drainage_aqueduct_and_cyan_sump",
+      "highland_style": "carved_subterranean_quarry_benches_and_crypt_walls",
+      "canopy_style": "crystal_geode_outcrops_and_glowworm_moss"
+    },
+    "zone-field-orrery-bridge": {
+      "biome_id": "god_valley",
+      "l2sanctum_reference": "Imperial Tomb / Shrine of Loyalty",
+      "hydrology_style": "starlight_ether_cascades_and_reflecting_basins",
+      "highland_style": "cyclopean_armillary_plinths_and_sanctum_cliffs",
+      "canopy_style": "astral_violet_wisteria_and_sacred_cedars"
+    },
+    "zone-field-kelp-spiral-reef": {
+      "biome_id": "sea_cave",
+      "l2sanctum_reference": "Eva's Underwater Garden / Field of Whispers",
+      "hydrology_style": "bioluminescent_tidal_whirlpools_and_reef_lagoons",
+      "highland_style": "submerged_coral_atoll_shelves_and_grotto_arches",
+      "canopy_style": "giant_spiral_kelp_crowns_and_anemone_fans"
+    },
+    "zone-harbor-lantern-ferry-pier": {
+      "biome_id": "sea_cave",
+      "l2sanctum_reference": "Talking Island Harbor / Pirate's Tunnel Quay",
+      "hydrology_style": "deep_harbor_breakwater_and_smuggler_sea_grotto",
+      "highland_style": "coastal_granite_headlands_and_lighthouse_bluff",
+      "canopy_style": "windswept_coastal_pines_and_sea_grape"
+    },
+    "zone-harbor-glaze-barge-airship-dock": {
+      "biome_id": "sea_cave",
+      "l2sanctum_reference": "Gludin Harbor / Gludio Airship Dock",
+      "hydrology_style": "estuary_ship_channel_and_subterranean_barge_cavern",
+      "highland_style": "tiered_harbor_seawalls_and_mooring_promontories",
+      "canopy_style": "delta_palm_clusters_and_saltmarsh_reeds"
+    },
+    "zone-clanhall-kilnwatch-accord": {
+      "biome_id": "giant_tower",
+      "l2sanctum_reference": "Ivory Tower / Giran Accord Spire Quarters",
+      "hydrology_style": "octagonal_reflecting_moat_and_aqueduct_ring",
+      "highland_style": "concentric_citadel_terrace_colonnades",
+      "canopy_style": "formal_imperial_cypress_and_courtyard_oaks"
+    },
+    "zone-clanhall-inductor-conclave": {
+      "biome_id": "volcano_cave",
+      "l2sanctum_reference": "Goddard / Schuttgart Forge Clan Halls",
+      "hydrology_style": "molten_foundry_slag_moat_and_steam_vents",
+      "highland_style": "basalt_crucible_bastion_and_anvil_ledges",
+      "canopy_style": "scorched_ironwood_and_ember_brazier_pylons"
+    },
+    "zone-fortress-shanty-kiln": {
+      "biome_id": "canyon",
+      "l2sanctum_reference": "Shanty Fortress / Southern Borderland Fortress",
+      "hydrology_style": "seasonal_canyon_moat_and_culvert",
+      "highland_style": "fortified_sandstone_mesa_redoubt",
+      "canopy_style": "arid_mesa_scrub_and_palisade_bramble"
+    },
+    "zone-fortress-floran-saffron": {
+      "biome_id": "grassland",
+      "l2sanctum_reference": "Floran Fortress / Dion Agricultural Keep",
+      "hydrology_style": "millstream_moat_and_stone_weir",
+      "highland_style": "gentle_pasture_hill_and_keep_earthworks",
+      "canopy_style": "meadow_elm_and_saffron_hedgerow_belts"
+    },
+    "zone-fortress-dragonspine-cog": {
+      "biome_id": "valley",
+      "l2sanctum_reference": "Dragonspine Fortress / Antharas Fortress",
+      "hydrology_style": "mountain_tarn_and_gorge_cataract",
+      "highland_style": "serrated_dragon_rib_ridge_and_watchtower_crags",
+      "canopy_style": "subalpine_fir_and_wind_twisted_larch"
+    },
+    "zone-fortress-cloud-halo": {
+      "biome_id": "god_valley",
+      "l2sanctum_reference": "Cloud Mountain Fortress / Monastic Fortress",
+      "hydrology_style": "celestial_fountain_plaza_and_cloud_spillways",
+      "highland_style": "floating_astral_marble_acropolis",
+      "canopy_style": "sacred_golden_ginkgo_and_starlight_pines"
+    }
+  },
+  "biome_composable_palettes": {
+    "grassland": {
+      "base_fill": "#a8a276",
+      "turf_fill": "#8fa368",
+      "river_outer": "#7ca982",
+      "river_inner": "#2b6e7d",
+      "river_ripple": "#67b7c9",
+      "highland_outer": "rgba(92, 83, 50, 0.62)",
+      "highland_inner": "rgba(194, 184, 142, 0.78)",
+      "walkway_fill": "#d6c59a",
+      "tree_c1": "#3b6e38",
+      "tree_c2": "#4d8a47",
+      "tree_hi": "#7ccf6a",
+      "special_landmark_label": "Windmill Meadow Obelisk"
+    },
+    "swamp": {
+      "base_fill": "#687660",
+      "turf_fill": "#4c5e52",
+      "river_outer": "#527364",
+      "river_inner": "#1f4e48",
+      "river_ripple": "#2dd4bf",
+      "highland_outer": "rgba(45, 74, 67, 0.68)",
+      "highland_inner": "rgba(76, 94, 82, 0.82)",
+      "walkway_fill": "#8c7a5b",
+      "tree_c1": "#26473c",
+      "tree_c2": "#356151",
+      "tree_hi": "#5eead4",
+      "special_landmark_label": "Spore-Fen Boardwalk"
+    },
+    "canyon": {
+      "base_fill": "#ac805e",
+      "turf_fill": "#966544",
+      "river_outer": "#b58969",
+      "river_inner": "#3b6978",
+      "river_ripple": "#7dd3fc",
+      "highland_outer": "rgba(92, 45, 22, 0.68)",
+      "highland_inner": "rgba(134, 88, 62, 0.82)",
+      "walkway_fill": "#d9a77c",
+      "tree_c1": "#5c4d2c",
+      "tree_c2": "#78643a",
+      "tree_hi": "#fb923c",
+      "special_landmark_label": "Terraced Mesa Archway"
+    },
+    "rainforest": {
+      "base_fill": "#60865c",
+      "turf_fill": "#4a7348",
+      "river_outer": "#72a37e",
+      "river_inner": "#1e6b68",
+      "river_ripple": "#5eead4",
+      "highland_outer": "rgba(30, 63, 36, 0.66)",
+      "highland_inner": "rgba(122, 156, 104, 0.80)",
+      "walkway_fill": "#a3b18a",
+      "tree_c1": "#1b4d27",
+      "tree_c2": "#286e37",
+      "tree_hi": "#4ade80",
+      "special_landmark_label": "Primeval Banyan Ziggurat"
+    },
+    "valley": {
+      "base_fill": "#8a7e62",
+      "turf_fill": "#786d52",
+      "river_outer": "#94a398",
+      "river_inner": "#388596",
+      "river_ripple": "#99f6e4",
+      "highland_outer": "rgba(63, 54, 36, 0.66)",
+      "highland_inner": "rgba(166, 152, 120, 0.82)",
+      "walkway_fill": "#c9b991",
+      "tree_c1": "#4a5d36",
+      "tree_c2": "#627848",
+      "tree_hi": "#eab308",
+      "special_landmark_label": "Sulfur Hot Spring Basin"
+    },
+    "volcano_cave": {
+      "base_fill": "#5c403a",
+      "turf_fill": "#472f2a",
+      "river_outer": "#9a3412",
+      "river_inner": "#ea580c",
+      "river_ripple": "#fde047",
+      "highland_outer": "rgba(56, 38, 32, 0.85)",
+      "highland_inner": "rgba(138, 72, 48, 0.88)",
+      "walkway_fill": "#78716c",
+      "tree_c1": "#3b231e",
+      "tree_c2": "#573229",
+      "tree_hi": "#f97316",
+      "special_landmark_label": "Magma Caldera Vent"
+    },
+    "god_valley": {
+      "base_fill": "#9a8ea8",
+      "turf_fill": "#867896",
+      "river_outer": "#a78bfa",
+      "river_inner": "#4c1d95",
+      "river_ripple": "#e9d5ff",
+      "highland_outer": "rgba(76, 29, 149, 0.62)",
+      "highland_inner": "rgba(196, 184, 212, 0.84)",
+      "walkway_fill": "#e2d9f3",
+      "tree_c1": "#4c3575",
+      "tree_c2": "#6b4c9a",
+      "tree_hi": "#c084fc",
+      "special_landmark_label": "Astral Crater Obelisk"
+    },
+    "sea_cave": {
+      "base_fill": "#487280",
+      "turf_fill": "#3b616e",
+      "river_outer": "#6292a2",
+      "river_inner": "#0c4a6e",
+      "river_ripple": "#38bdf8",
+      "highland_outer": "rgba(12, 74, 110, 0.68)",
+      "highland_inner": "rgba(98, 146, 162, 0.82)",
+      "walkway_fill": "#94b8c4",
+      "tree_c1": "#164e63",
+      "tree_c2": "#155e75",
+      "tree_hi": "#22d3ee",
+      "special_landmark_label": "Tidal Smuggler Grotto"
+    },
+    "underground_cave": {
+      "base_fill": "#3e6062",
+      "turf_fill": "#2f4d4f",
+      "river_outer": "#4d7c7a",
+      "river_inner": "#134e4a",
+      "river_ripple": "#5eead4",
+      "highland_outer": "rgba(19, 78, 74, 0.72)",
+      "highland_inner": "rgba(88, 128, 126, 0.84)",
+      "walkway_fill": "#739694",
+      "tree_c1": "#1f3f42",
+      "tree_c2": "#2d595c",
+      "tree_hi": "#a855f7",
+      "special_landmark_label": "Runic Catacomb Seal Dais"
+    },
+    "giant_tower": {
+      "base_fill": "#3a4c6c",
+      "turf_fill": "#2f3f5c",
+      "river_outer": "#64748b",
+      "river_inner": "#1e3a8a",
+      "river_ripple": "#60a5fa",
+      "highland_outer": "rgba(30, 58, 138, 0.68)",
+      "highland_inner": "rgba(86, 112, 152, 0.84)",
+      "walkway_fill": "#94a3b8",
+      "tree_c1": "#1e3a5f",
+      "tree_c2": "#2b5282",
+      "tree_hi": "#93c5fd",
+      "special_landmark_label": "Octagonal Telemetry Core"
+    }
+  },
+  "persisted_custom_features": {
+    "walkways": [],
+    "rivers": [],
+    "trees": [],
+    "quest_rings": []
+  },
+  "town_to_town_scale_law": {
+    "target_run_minutes": 30,
+    "overland_meters_per_svg_px": 62.5,
+    "road_tortuosity_factor": 1.45,
+    "player_run_speed_mps": 4.4,
+    "average_town_to_town_euclidean_km": 5.5,
+    "average_town_to_town_road_km": 8.0,
+    "design_note": "Recalibrated so adjacent towns (~88-92 SVG px apart) span ~5.5 km Euclidean and ~8.0 km along winding 1.45x terrain roads, requiring ~30 minutes on foot at 4.4 m/s."
+  },
+  "town_footprint_catalog": {
+    "zone-town-kilnwatch-bastion": {
+      "name": "Kilnwatch Bastion (Aden / Dion Capital Hub)",
+      "footprint_archetype": "imperial_pentagon_citadel",
+      "size_scale": 2.2,
+      "wall_shape": "Pentagonal Double-Wall Royal Citadel + Cathedral Keep",
+      "ro_l2_aion_ref": "Lineage II Aden Castle Town / RO Prontera",
+      "x": 618,
+      "y": 318
+    },
+    "zone-town-starfall-haven": {
+      "name": "Starfall Haven (Rune / Gracia Sky-Harbor)",
+      "footprint_archetype": "cliff_keep_and_harbor",
+      "size_scale": 1.85,
+      "wall_shape": "Two-Tier Split Cliff-Citadel + Lower Sky-Harbor Piers",
+      "ro_l2_aion_ref": "Lineage II Rune Township / Aion Sanctum Dock",
+      "x": 565,
+      "y": 122
+    },
+    "zone-town-pinion-terminus": {
+      "name": "Pinion Terminus (Oren / Geffen Spire)",
+      "footprint_archetype": "radial_moat_spire",
+      "size_scale": 1.65,
+      "wall_shape": "Octagonal Radial Moat + Central Clockwork Spire",
+      "ro_l2_aion_ref": "RO Geffen Central Tower / L2 Oren Ivory Spire",
+      "x": 745,
+      "y": 288
+    },
+    "zone-town-brass-bell-keep": {
+      "name": "Brass-Bell Keep (Goddard Highland Bastion)",
+      "footprint_archetype": "trapezoid_highland_fort",
+      "size_scale": 1.55,
+      "wall_shape": "Stepped Trapezoidal Volcano-Rim Fortress",
+      "ro_l2_aion_ref": "Lineage II Goddard Castle Town",
+      "x": 812,
+      "y": 262
+    },
+    "zone-town-wick-market-commons": {
+      "name": "Wick-Market Commons (Giran Trade Hub)",
+      "footprint_archetype": "diamond_bazaar",
+      "size_scale": 1.45,
+      "wall_shape": "Diamond Trade-Bazaar + Twin River Bridges",
+      "ro_l2_aion_ref": "Lineage II Giran Castle Town / RO Morroc Bazaar",
+      "x": 502,
+      "y": 372
+    },
+    "zone-town-lantern-hollow": {
+      "name": "Lantern Hollow (Gludin / Talking Island Port)",
+      "footprint_archetype": "walled_harbor_pier",
+      "size_scale": 1.35,
+      "wall_shape": "L-Shaped Walled Sea-Port + Twin Breakwater Piers",
+      "ro_l2_aion_ref": "Lineage II Gludin Harbor / RO Izlude Port",
+      "x": 432,
+      "y": 422
+    },
+    "zone-town-glass-mire-sanctuary": {
+      "name": "Glass-Mire Sanctuary (Heine Canal City)",
+      "footprint_archetype": "canal_octagon",
+      "size_scale": 1.25,
+      "wall_shape": "Venetian Water-Canal Island Octagon + Causeways",
+      "ro_l2_aion_ref": "Lineage II Heine Water City / RO Comodo",
+      "x": 648,
+      "y": 442
+    },
+    "zone-town-draft-kiln-post": {
+      "name": "Draft-Kiln Post (Orc Village)",
+      "footprint_archetype": "spiked_war_palisade",
+      "size_scale": 1.15,
+      "wall_shape": "Hexagonal Spiked Timber War-Palisade + Totem Arena",
+      "ro_l2_aion_ref": "Lineage II Orc Village / Ketra War-Camp",
+      "x": 305,
+      "y": 418
+    },
+    "zone-town-root-train-roundhouse": {
+      "name": "Root-Train Roundhouse (Dwarven Village)",
+      "footprint_archetype": "terraced_quarry_ring",
+      "size_scale": 1.15,
+      "wall_shape": "Terraced Strip-Mine Rail Loop + Blast Foundry",
+      "ro_l2_aion_ref": "Lineage II Dwarven Village / RO Einbroch",
+      "x": 712,
+      "y": 418
+    },
+    "zone-town-porcelain-loom": {
+      "name": "Porcelain Loom (Elven Village)",
+      "footprint_archetype": "crescent_canopy_lagoon",
+      "size_scale": 1.05,
+      "wall_shape": "Organic Crescent Lagoon + Mother-Tree Island Sanctuary",
+      "ro_l2_aion_ref": "Lineage II Elven Village / RO Payon",
+      "x": 545,
+      "y": 404
+    },
+    "zone-town-carillon-belfry": {
+      "name": "Carillon Belfry (Dark Elven Village)",
+      "footprint_archetype": "sunken_gorge_temple",
+      "size_scale": 1.05,
+      "wall_shape": "Crescent Gorge Cavern-Mouth + Spired Bell Sanctuary",
+      "ro_l2_aion_ref": "Lineage II Dark Elven Village / Shilen Temple",
+      "x": 382,
+      "y": 338
+    },
+    "zone-town-cinnamon-mill": {
+      "name": "Cinnamon-Mill Haven (Kamael / Floran Village)",
+      "footprint_archetype": "windmill_bluff_terrace",
+      "size_scale": 0.95,
+      "wall_shape": "Unwalled Triangular Windmill Bluff + Waterwheel Terrace",
+      "ro_l2_aion_ref": "Lineage II Floran Agricultural Village / Kamael Village",
+      "x": 215,
+      "y": 332
+    }
+  },
+  "mob_farm_sub_structures": {
+    "zone-field-clover-south-gate": {
+      "kind": "outpost",
+      "label": "South-Gate Guard Outpost",
+      "l2_ref": "Talking Island Guard Post",
+      "level_band": [
+        1,
+        10
+      ],
+      "raid_levels": [],
+      "buildings": [
+        "#1 Guard Cmd Tent",
+        "#2 Recruit Barracks",
+        "#3 Timber Watchtower",
+        "#4 Ration Depot"
+      ],
+      "territory_scale": 0.76,
+      "aspect_x": 1.05,
+      "aspect_y": 0.92,
+      "territory_shape_tag": "compact_outpost_meadow"
+    },
+    "zone-field-kiln-east-orchard": {
+      "kind": "village",
+      "label": "Old Orchard Farmstead Village",
+      "l2_ref": "Floran Agricultural Hamlet",
+      "level_band": [
+        5,
+        12
+      ],
+      "raid_levels": [
+        10
+      ],
+      "buildings": [
+        "#1 Orchard Farmhouse",
+        "#2 Cider Mill Barn",
+        "#3 Granary Silo",
+        "#4 Village Well"
+      ],
+      "territory_scale": 0.94,
+      "aspect_x": 1.18,
+      "aspect_y": 0.88,
+      "territory_shape_tag": "terraced_orchard_valley"
+    },
+    "zone-field-celadon-causeway": {
+      "kind": "tower",
+      "label": "Elven Frontier Watchtower",
+      "l2_ref": "Neutral Zone Watchtower",
+      "level_band": [
+        1,
+        10
+      ],
+      "raid_levels": [],
+      "buildings": [
+        "#1 Sentinel Spire",
+        "#2 Warden Quarters",
+        "#3 Signal Brazier",
+        "#4 Wayfarer Shrine"
+      ],
+      "territory_scale": 0.86,
+      "aspect_x": 1.32,
+      "aspect_y": 0.78,
+      "territory_shape_tag": "elongated_forest_causeway"
+    },
+    "zone-field-firebrick-duct": {
+      "kind": "outpost",
+      "label": "Firebrick Raider Outpost",
+      "l2_ref": "Ketra Orc Outpost",
+      "level_band": [
+        1,
+        10
+      ],
+      "raid_levels": [],
+      "buildings": [
+        "#1 Chieftain War-Tent",
+        "#2 Bellows Stockade",
+        "#3 War-Drum Tower",
+        "#4 Trophy Rack"
+      ],
+      "territory_scale": 0.92,
+      "aspect_x": 0.88,
+      "aspect_y": 1.24,
+      "territory_shape_tag": "northern_plateau_gorge"
+    },
+    "zone-field-resin-arch-tunnel": {
+      "kind": "cave",
+      "label": "Resin-Vein Cave Maw",
+      "l2_ref": "Mithril Mines / Ant Tunnel",
+      "level_band": [
+        6,
+        13
+      ],
+      "raid_levels": [
+        12
+      ],
+      "buildings": [
+        "#1 Amber Cavern Maw",
+        "#2 Miners' Shanty",
+        "#3 Ore Cart Hoist",
+        "#4 Lantern Post"
+      ],
+      "territory_scale": 0.82,
+      "aspect_x": 1.25,
+      "aspect_y": 0.82,
+      "territory_shape_tag": "mining_trench_corridor"
+    },
+    "zone-field-cobalt-sandbar-ford": {
+      "kind": "village",
+      "label": "Stilt-Fisher Pirate Village",
+      "l2_ref": "Alligator Beach Village",
+      "level_band": [
+        6,
+        13
+      ],
+      "raid_levels": [
+        13
+      ],
+      "buildings": [
+        "#1 Stilt Longhouse",
+        "#2 Net-Drying Pier",
+        "#3 Smuggler Boathouse",
+        "#4 Tide Shrine"
+      ],
+      "territory_scale": 1.08,
+      "aspect_x": 1.35,
+      "aspect_y": 0.84,
+      "territory_shape_tag": "braided_river_delta"
+    },
+    "zone-field-chime-pipe-colonnade": {
+      "kind": "tower",
+      "label": "Sunken Chime Obelisk Tower",
+      "l2_ref": "Cruma Marsh Watch-Spire",
+      "level_band": [
+        1,
+        10
+      ],
+      "raid_levels": [],
+      "buildings": [
+        "#1 Resonance Obelisk",
+        "#2 Chime Sanctum",
+        "#3 Acolyte Cell",
+        "#4 Echo Pavilion"
+      ],
+      "territory_scale": 1.16,
+      "aspect_x": 1.22,
+      "aspect_y": 1.05,
+      "territory_shape_tag": "dark_forest_swampland"
+    },
+    "zone-field-apricot-aqueduct-terrace": {
+      "kind": "stronghold",
+      "label": "Bandit Stronghold Keep",
+      "l2_ref": "Bandit Stronghold",
+      "level_band": [
+        6,
+        13
+      ],
+      "raid_levels": [
+        12
+      ],
+      "buildings": [
+        "#1 Brigand Keep",
+        "#2 Loot Vault",
+        "#3 Palisade Gatehouse",
+        "#4 Mercenary Tavern"
+      ],
+      "territory_scale": 1.02,
+      "aspect_x": 1.28,
+      "aspect_y": 0.86,
+      "territory_shape_tag": "dion_hills_aqueduct"
+    },
+    "zone-field-cinnamon-bark-viaduct": {
+      "kind": "outpost",
+      "label": "Varka-Style Silenos Outpost",
+      "l2_ref": "Varka Silenos Outpost",
+      "level_band": [
+        6,
+        14
+      ],
+      "raid_levels": [
+        14
+      ],
+      "buildings": [
+        "#1 Outrider Command",
+        "#2 Wind-Scout Tent",
+        "#3 Viaduct Toll Gate",
+        "#4 Supply Wagon Yard"
+      ],
+      "territory_scale": 0.88,
+      "aspect_x": 1.3,
+      "aspect_y": 0.8,
+      "territory_shape_tag": "isle_of_souls_viaduct"
+    },
+    "zone-field-ginger-aqueduct-bridge": {
+      "kind": "beast_farm",
+      "label": "Highland Beast Farm Corral",
+      "l2_ref": "Beast Farm",
+      "level_band": [
+        7,
+        14
+      ],
+      "raid_levels": [
+        14
+      ],
+      "buildings": [
+        "#1 Tamer Timber Barn",
+        "#2 Feed Silo",
+        "#3 Kookaburra Corral",
+        "#4 Herder Cabin"
+      ],
+      "territory_scale": 1.12,
+      "aspect_x": 1.15,
+      "aspect_y": 1.08,
+      "territory_shape_tag": "beast_farm_pasture_basin"
+    },
+    "zone-field-cinder-apron": {
+      "kind": "village",
+      "label": "Cursed Ash-Fen Village",
+      "l2_ref": "Cursed Village (Forest of the Dead)",
+      "level_band": [
+        12,
+        18
+      ],
+      "raid_levels": [
+        16
+      ],
+      "buildings": [
+        "#1 Charred Manor",
+        "#2 Ruined Chapel",
+        "#3 Ash-Pit Forge",
+        "#4 Gravekeeper Hut"
+      ],
+      "territory_scale": 1.42,
+      "aspect_x": 1.34,
+      "aspect_y": 1.12,
+      "territory_shape_tag": "cruma_marshlands_expanse"
+    },
+    "zone-field-brass-spur-ridge": {
+      "kind": "stronghold",
+      "label": "Breka Mercenary Stronghold",
+      "l2_ref": "Breka's Stronghold",
+      "level_band": [
+        13,
+        19
+      ],
+      "raid_levels": [
+        18
+      ],
+      "buildings": [
+        "#1 Breka Warlord Hall",
+        "#2 Iron Armory",
+        "#3 Ridge Bastion",
+        "#4 Prisoner Stockade"
+      ],
+      "territory_scale": 1.28,
+      "aspect_x": 1.44,
+      "aspect_y": 0.82,
+      "territory_shape_tag": "death_pass_canyon_corridor"
+    },
+    "zone-field-caldera-rim": {
+      "kind": "caldera",
+      "label": "Blazing Magma Caldera",
+      "l2_ref": "Blazing Swamp",
+      "level_band": [
+        22,
+        28
+      ],
+      "raid_levels": [
+        26
+      ],
+      "buildings": [
+        "#1 Magma Vent Altar",
+        "#2 Smelter Rig",
+        "#3 Slag Watch-Post",
+        "#4 Obsidian Bunker"
+      ],
+      "territory_scale": 1.58,
+      "aspect_x": 1.18,
+      "aspect_y": 1.18,
+      "territory_shape_tag": "blazing_swamp_caldera"
+    },
+    "zone-field-leyden-causeway": {
+      "kind": "cave",
+      "label": "Dragon-Rib Cavern Lair",
+      "l2_ref": "Antharas Lair Approach",
+      "level_band": [
+        24,
+        30
+      ],
+      "raid_levels": [
+        28
+      ],
+      "buildings": [
+        "#1 Dragon-Rib Grotto",
+        "#2 Scale-Hunter Camp",
+        "#3 Leyden Condenser",
+        "#4 Wyrm Altar"
+      ],
+      "territory_scale": 1.68,
+      "aspect_x": 1.48,
+      "aspect_y": 0.94,
+      "territory_shape_tag": "dragon_valley_expanse"
+    },
+    "zone-field-tether-causeway": {
+      "kind": "tower",
+      "label": "Wall of Argos Eye-Shrine",
+      "l2_ref": "Wall of Argos",
+      "level_band": [
+        28,
+        34
+      ],
+      "raid_levels": [
+        33
+      ],
+      "buildings": [
+        "#1 Argos Eye-Spire",
+        "#2 Monolith Cloister",
+        "#3 Anchor Pylon",
+        "#4 Pilgrim Rotunda"
+      ],
+      "territory_scale": 1.36,
+      "aspect_x": 1.26,
+      "aspect_y": 1.06,
+      "territory_shape_tag": "valley_of_saints_sanctum"
+    },
+    "zone-field-aurora-tether": {
+      "kind": "caldera",
+      "label": "Forge of the Gods Caldera",
+      "l2_ref": "Forge of the Gods",
+      "level_band": [
+        32,
+        38
+      ],
+      "raid_levels": [
+        37
+      ],
+      "buildings": [
+        "#1 Crucible Foundry",
+        "#2 Ember Anvil Hall",
+        "#3 Lava Sluice Gate",
+        "#4 Flame Shrine"
+      ],
+      "territory_scale": 1.72,
+      "aspect_x": 1.32,
+      "aspect_y": 1.22,
+      "territory_shape_tag": "forge_of_the_gods_crater"
+    },
+    "zone-field-whispering-mire": {
+      "kind": "outpost",
+      "label": "Stakato Spike-Nest Outpost",
+      "l2_ref": "Swamp of Screams",
+      "level_band": [
+        20,
+        26
+      ],
+      "raid_levels": [
+        24
+      ],
+      "buildings": [
+        "#1 Mire Ranger Post",
+        "#2 Boardwalk Duckblind",
+        "#3 Spore Lab Tent",
+        "#4 Reed Watchtower"
+      ],
+      "territory_scale": 1.48,
+      "aspect_x": 1.36,
+      "aspect_y": 1.14,
+      "territory_shape_tag": "swamp_of_screams_bayou"
+    },
+    "zone-field-slag-chasm": {
+      "kind": "cave",
+      "label": "Giant Quarry Chasm Cave",
+      "l2_ref": "The Giants Cave",
+      "level_band": [
+        22,
+        29
+      ],
+      "raid_levels": [
+        27
+      ],
+      "buildings": [
+        "#1 Titan Chasm Portal",
+        "#2 Excavation Crane",
+        "#3 Relic Sorting Shed",
+        "#4 Deep Lift"
+      ],
+      "territory_scale": 1.18,
+      "aspect_x": 1.42,
+      "aspect_y": 0.78,
+      "territory_shape_tag": "tanor_canyon_badlands"
+    },
+    "zone-field-astrolabe-rift": {
+      "kind": "tower",
+      "label": "Insolence Outer Ring Spire",
+      "l2_ref": "Tower of Insolence Outer Ring",
+      "level_band": [
+        30,
+        36
+      ],
+      "raid_levels": [
+        35
+      ],
+      "buildings": [
+        "#1 Astrolabe Observatory",
+        "#2 Star-Chart Hall",
+        "#3 Rift Beacon",
+        "#4 Scholar Quarters"
+      ],
+      "territory_scale": 1.34,
+      "aspect_x": 1.16,
+      "aspect_y": 1.16,
+      "territory_shape_tag": "sea_of_spores_ring"
+    },
+    "zone-field-siphon-sluice": {
+      "kind": "stronghold",
+      "label": "Timak Sluice Stronghold",
+      "l2_ref": "Timak Outpost",
+      "level_band": [
+        26,
+        33
+      ],
+      "raid_levels": [
+        31
+      ],
+      "buildings": [
+        "#1 Sluice Gate Keep",
+        "#2 Pump-House Bastion",
+        "#3 Garrison Barracks",
+        "#4 Canal Watchtower"
+      ],
+      "territory_scale": 1.06,
+      "aspect_x": 0.92,
+      "aspect_y": 1.28,
+      "territory_shape_tag": "alligator_island_lagoon"
+    },
+    "zone-field-metronome-bridge": {
+      "kind": "outpost",
+      "label": "Northern Border Outpost",
+      "l2_ref": "Border Outpost",
+      "level_band": [
+        40,
+        48
+      ],
+      "raid_levels": [
+        45
+      ],
+      "buildings": [
+        "#1 Metronome Gatehouse",
+        "#2 Pendulum Guardhouse",
+        "#3 Customs Depot",
+        "#4 Bridge Turret"
+      ],
+      "territory_scale": 0.72,
+      "aspect_x": 1.46,
+      "aspect_y": 0.68,
+      "territory_shape_tag": "narrow_chokepoint_bridge"
+    },
+    "zone-field-spiral-wormway-ramp": {
+      "kind": "sepulcher",
+      "label": "The Four Sepulchers Crypt",
+      "l2_ref": "Four Sepulchers",
+      "level_band": [
+        45,
+        55
+      ],
+      "raid_levels": [
+        52
+      ],
+      "buildings": [
+        "#1 Conquerors Mausoleum",
+        "#2 Rulers Crypt",
+        "#3 Great Sages Hall",
+        "#4 Judges Sepulcher"
+      ],
+      "territory_scale": 1.22,
+      "aspect_x": 1.08,
+      "aspect_y": 1.24,
+      "territory_shape_tag": "mithril_quarry_spiral"
+    },
+    "zone-field-orrery-bridge": {
+      "kind": "sepulcher",
+      "label": "Imperial Tomb Mausoleum",
+      "l2_ref": "Imperial Tomb",
+      "level_band": [
+        52,
+        62
+      ],
+      "raid_levels": [
+        58
+      ],
+      "buildings": [
+        "#1 Imperial Nave",
+        "#2 Astral Orrery Dome",
+        "#3 Royal Ossuary",
+        "#4 Pilgrim Gate"
+      ],
+      "territory_scale": 1.52,
+      "aspect_x": 1.38,
+      "aspect_y": 1.04,
+      "territory_shape_tag": "imperial_tomb_necropolis"
+    },
+    "zone-field-kelp-spiral-reef": {
+      "kind": "cave",
+      "label": "Submerged Reef Grotto",
+      "l2_ref": "Eva's Underwater Garden",
+      "level_band": [
+        60,
+        72
+      ],
+      "raid_levels": [
+        70
+      ],
+      "buildings": [
+        "#1 Coral Grotto Dome",
+        "#2 Diving Bell Pier",
+        "#3 Pearl Vault",
+        "#4 Abyssal Vent"
+      ],
+      "territory_scale": 1.44,
+      "aspect_x": 1.28,
+      "aspect_y": 1.12,
+      "territory_shape_tag": "field_of_whispers_shoals"
+    },
+    "zone-harbor-lantern-ferry-pier": {
+      "kind": "outpost",
+      "label": "Pirate Breakwater Outpost",
+      "l2_ref": "Giran / Gludin Harbor Pier",
+      "level_band": [
+        1,
+        30
+      ],
+      "raid_levels": [
+        18
+      ],
+      "buildings": [
+        "#1 Harbor Master House",
+        "#2 Drydock Warehouse",
+        "#3 Lighthouse Tower",
+        "#4 Ferry Ticket Pier"
+      ],
+      "territory_scale": 0.68,
+      "aspect_x": 1.32,
+      "aspect_y": 0.76,
+      "territory_shape_tag": "talking_island_harbor_pier"
+    },
+    "zone-harbor-glaze-barge-airship-dock": {
+      "kind": "tower",
+      "label": "Airship Beacon Tower",
+      "l2_ref": "Gludio / Keucereus Airship Field",
+      "level_band": [
+        38,
+        99
+      ],
+      "raid_levels": [
+        42
+      ],
+      "buildings": [
+        "#1 Sky-Mooring Pylon",
+        "#2 Aether Fuel Tank",
+        "#3 Passenger Concourse",
+        "#4 Wind-Vane Spire"
+      ],
+      "territory_scale": 0.84,
+      "aspect_x": 1.28,
+      "aspect_y": 0.84,
+      "territory_shape_tag": "gludin_airship_harbor"
+    },
+    "zone-clanhall-kilnwatch-accord": {
+      "kind": "stronghold",
+      "label": "Devastated Castle Stronghold",
+      "l2_ref": "Devastated Castle",
+      "level_band": [
+        15,
+        45
+      ],
+      "raid_levels": [
+        20
+      ],
+      "buildings": [
+        "#1 Clan Accord Hall",
+        "#2 Banquet Great-Room",
+        "#3 Siege Vault",
+        "#4 Courtyard Teleport"
+      ],
+      "territory_scale": 0.96,
+      "aspect_x": 1.12,
+      "aspect_y": 1.06,
+      "territory_shape_tag": "devastated_castle_enclave"
+    },
+    "zone-clanhall-inductor-conclave": {
+      "kind": "caldera",
+      "label": "Crucible Clan Stronghold",
+      "l2_ref": "Fortress of the Dead",
+      "level_band": [
+        25,
+        60
+      ],
+      "raid_levels": [
+        34
+      ],
+      "buildings": [
+        "#1 Conclave Reactor Hall",
+        "#2 Brass Forge",
+        "#3 Clan Trophy Gallery",
+        "#4 Dynamo Gate"
+      ],
+      "territory_scale": 1.04,
+      "aspect_x": 1.16,
+      "aspect_y": 1.08,
+      "territory_shape_tag": "rainbow_springs_conclave"
+    },
+    "zone-fortress-shanty-kiln": {
+      "kind": "stronghold",
+      "label": "Southern Border Fortress",
+      "l2_ref": "Shanty Fortress",
+      "level_band": [
+        20,
+        45
+      ],
+      "raid_levels": [
+        22
+      ],
+      "buildings": [
+        "#1 Central Flag Keep",
+        "#2 West Ballista Tower",
+        "#3 East Guard Barracks",
+        "#4 Inner Gatehouse"
+      ],
+      "territory_scale": 0.88,
+      "aspect_x": 1.18,
+      "aspect_y": 0.92,
+      "territory_shape_tag": "southern_border_fortress"
+    },
+    "zone-fortress-floran-saffron": {
+      "kind": "beast_farm",
+      "label": "Floran Frontier Keep",
+      "l2_ref": "Southern / Valley Fortress",
+      "level_band": [
+        20,
+        45
+      ],
+      "raid_levels": [
+        24
+      ],
+      "buildings": [
+        "#1 Saffron Command Keep",
+        "#2 War-Mount Stables",
+        "#3 Granary Bastion",
+        "#4 South Watchtower"
+      ],
+      "territory_scale": 0.92,
+      "aspect_x": 1.22,
+      "aspect_y": 0.9,
+      "territory_shape_tag": "floran_agricultural_fort"
+    },
+    "zone-fortress-dragonspine-cog": {
+      "kind": "tower",
+      "label": "Dragonspine Ridge Bastion",
+      "l2_ref": "Antharas / Western Fortress",
+      "level_band": [
+        28,
+        55
+      ],
+      "raid_levels": [
+        38
+      ],
+      "buildings": [
+        "#1 Dragonspine Citadel",
+        "#2 Harpoon Battery",
+        "#3 Cogwheel Hoist",
+        "#4 Ridge Gate"
+      ],
+      "territory_scale": 1.14,
+      "aspect_x": 1.36,
+      "aspect_y": 0.86,
+      "territory_shape_tag": "antharas_dragonspine_fort"
+    },
+    "zone-fortress-cloud-halo": {
+      "kind": "sepulcher",
+      "label": "Monastery of Silence Keep",
+      "l2_ref": "Monastery of Silence / Cloud Mountain",
+      "level_band": [
+        48,
+        85
+      ],
+      "raid_levels": [
+        68
+      ],
+      "buildings": [
+        "#1 Silent Sanctum Keep",
+        "#2 Celestial Bell-Tower",
+        "#3 Scriptorium",
+        "#4 Sky-Bridge Gate"
+      ],
+      "territory_scale": 1.26,
+      "aspect_x": 1.2,
+      "aspect_y": 1.12,
+      "territory_shape_tag": "monastery_of_silence_citadel"
+    }
+  }
+}

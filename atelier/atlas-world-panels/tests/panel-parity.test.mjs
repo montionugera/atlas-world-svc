@@ -22,7 +22,8 @@ const PANELS = join(SB, "js/panels");
 
 const read = (p) => readFileSync(p, "utf8");
 const STATE_SRC = read(join(SB, "js/state.mjs"));
-const EXPLORER_SRC = read(join(REPO, "scripts/catalog_explorer_web.py"));
+const MODULAR_FRONTEND = join(REPO, "scripts/atlas_world_web/frontend/02_state_and_composable_layers.js");
+const EXPLORER_SRC = existsSync(MODULAR_FRONTEND) ? read(MODULAR_FRONTEND) : read(join(REPO, "scripts/catalog_explorer_web.py"));
 const REGISTRY_SRC = read(join(PANELS, "registry.mjs"));
 
 // storybook tab id → atlas-world destination (plan §2.1 table).

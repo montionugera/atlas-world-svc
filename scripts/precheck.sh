@@ -326,6 +326,8 @@ explorer_probes_skip_reason() {
 
 explorer_probes() {
   ( cd "$REPO_ROOT" && explorer_probes_skip_reason ) && return 0
+  python3 "$REPO_ROOT/scripts/lint_file_size.py" >/dev/null || { echo "lint_file_size.py FAILED"; return 1; }
+  echo "lint_file_size.py ok"
   python3 "$REPO_ROOT/scripts/probes/atlas_ux_probe.py" >/dev/null || { echo "atlas_ux_probe.py FAILED"; return 1; }
   echo "atlas_ux_probe.py ok"
   local chrome="${CHROME_BIN:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}" c

@@ -611,5 +611,52 @@ class TestPanelHostContract(unittest.TestCase):
             self.assertRegex(state, r"export const %s = SB_BASE \+ " % const)
 
 
+
+class TestLineage2ScaleAndGeometricVariation(unittest.TestCase):
+    """Verifies the 30%-60%+ Lineage 2 scale & geometric variation across all 15 Towns,
+    24 Field Hunting Areas, 8 Fortresses, and 16 Multi-Floor Dungeons (65 floors)."""
+
+    @staticmethod
+    def _poly_area(pts: list) -> float:
+        n = len(pts)
+        if n < 3:
+            return 0.0
+        area = 0.0
+        for i in range(n):
+            x1, y1 = pts[i]
+            x2, y2 = pts[(i + 1) % n]
+            area += x1 * y2 - x2 * y1
+        return abs(area) * 0.5
+
+    def test_towns_and_hunting_zones_differ_by_30_to_60_pct_plus(self) -> None:
+        atlas = json.loads((ROOT / "content" / "studio" / "t_shaped_world_atlas.json").read_text(encoding="utf-8"))
+        layers = json.loads((ROOT / "content" / "studio" / "map_feature_layers.json").read_text(encoding="utf-8"))
+        zdir = atlas["t_breadth_zone_directory"]
+
+        all_towns = zdir["starting_towns"] + zdir["other_castle_and_hub_towns"]
+        self.assertEqual(len(all_towns), 15)
+        town_areas = [self._poly_area(t["town_blueprint"]["wall_polygon_pct"]) for t in all_towns]
+        town_walls = {tuple(tuple(pt) for pt in t["town_blueprint"]["wall_polygon_pct"]) for t in all_towns}
+        self.assertEqual(len(town_walls), 15, "All 15 towns must have distinct wall_polygon_pct geometries")
+        self.assertGreaterEqual(max(town_areas) / min(town_areas), 2.0, "Town polygon areas must span >= 2.0x (+100%)")
+
+        fields = zdir["fields_and_hunting_areas"]
+        self.assertEqual(len(fields), 24)
+        field_areas = [self._poly_area(f["field_tactical_blueprint"]["terrain_perimeter_pct"]) for f in fields]
+        field_perims = {tuple(tuple(pt) for pt in f["field_tactical_blueprint"]["terrain_perimeter_pct"]) for f in fields}
+        self.assertEqual(len(field_perims), 24, "All 24 field hunting areas must have distinct perimeter polygons")
+        self.assertGreaterEqual(max(field_areas) / min(field_areas), 1.8, "Field perimeter areas must span >= 1.8x (+80%)")
+
+        sub_structs = layers["mob_farm_sub_structures"]
+        scales = [v["territory_scale"] for v in sub_structs.values() if "territory_scale" in v]
+        self.assertEqual(len(scales), 32)
+        self.assertGreaterEqual(max(scales) / min(scales), 2.4, "32 hunting territory scales must span >= 2.4x (+140%)")
+
+        dungeons = atlas["multi_floor_dungeons"]
+        self.assertEqual(len(dungeons), 16)
+        total_floors = sum(len(d["floors"]) for d in dungeons)
+        self.assertEqual(total_floors, 65)
+
+
 if __name__ == "__main__":
     unittest.main()

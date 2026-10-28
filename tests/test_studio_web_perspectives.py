@@ -438,7 +438,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(summary["omniSearchIndexedZonesCount"], 63)
         self.assertEqual(summary["omniSearchIndexedTownNpcsCount"], 180)
         self.assertEqual(summary["omniSearchIndexedServiceMarksCount"], 105)
-        self.assertEqual(summary["omniSearchIndexedDungeonFloorsCount"], 48)
+        self.assertEqual(summary["omniSearchIndexedDungeonFloorsCount"], 65)
         self.assertEqual(summary["dungeonAndFieldSpawnRefinementDropsCount"], 40)
 
         html = web.INDEX_HTML
@@ -472,7 +472,7 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(d13["indexed_zones"], 63)
         self.assertEqual(d13["indexed_town_npcs"], 180)
         self.assertEqual(d13["indexed_service_marks"], 105)
-        self.assertEqual(d13["indexed_dungeon_floors"], 48)
+        self.assertEqual(d13["indexed_dungeon_floors"], 65)
 
         d14 = audit["dimensions"]["D14_spawn_and_refinement_spoil_matrix"]
         self.assertEqual(d14["score"], 100.0)
@@ -480,7 +480,12 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertEqual(d14["verified_fields"], 24)
 
         for dng in atlas["multi_floor_dungeons"]:
-            self.assertEqual(len(dng["floors"]), 3)
+            expected_floors = {
+                "zone-dungeon-star-heart-nave": 14,
+                "zone-dungeon-chronometer-foundry": 7,
+                "zone-catacomb-forbidden-path-orrery": 5,
+            }.get(dng["dungeon_id"], 3)
+            self.assertEqual(len(dng["floors"]), expected_floors)
             for fl in dng["floors"]:
                 tiers_found = set()
                 for sp in fl["spawns"]:
@@ -5367,6 +5372,131 @@ console.log(JSON.stringify(sandbox.__TEST_OUT));
         self.assertIn("canvas.onmouseup(cancelled ? null :", html)
         # B7: no OL rotation.
         self.assertIn("enableRotation: false", html)
+
+    def test_google_scale_bar_zero_shift_zoom_out_and_composable_layers(self) -> None:
+        """V-15 guardrail: Google Maps live metric scale bar (50m..2km), zero position shift on zoom-out / sub-map exit, and 6-layer composable zero-rebuild pipeline."""
+        from probes.atlas_ux_probe import run_ux_probe
+
+        bundle = web.load_studio_perspectives_bundle()
+        self.assertIn("mapFeatureLayers", bundle)
+        layers_doc = bundle["mapFeatureLayers"]
+        self.assertEqual(layers_doc.get("schema_version"), "1.0")
+        self.assertEqual(len(layers_doc.get("pipeline_layers", [])), 6)
+
+        html = web.INDEX_HTML
+        self.assertIn('id="studioGoogleScaleBarWidget"', html)
+        self.assertIn("function computeAtlasGoogleScaleBarSpec(", html)
+        self.assertIn("function anchorOverlandCameraOnCurrentZone(", html)
+        self.assertIn("function stepOutSubMapToOverlandRegional(", html)
+        self.assertIn("function patchSingleComposableLayerInPlace(", html)
+        self.assertIn("layer_0_base_elevation_dem", html)
+        self.assertIn("layer_1_hydrology_splines", html)
+        self.assertIn("layer_2_topography_cliffs_and_highlands", html)
+        self.assertIn("layer_3_road_and_walkway_network", html)
+        self.assertIn("layer_4_foliage_and_canopy_scatters", html)
+        self.assertIn("layer_5_architectural_compounds_and_quest_rings", html)
+
+        report = run_ux_probe()
+        self.assertTrue(report["overall_passed"], report)
+        v15 = report["gates"]["V-15_zoom_roundtrip_and_submap_exit_zero_shift"]
+        self.assertTrue(v15["passed"], v15)
+        self.assertEqual(v15["roundTripPivotDriftPx"], 0)
+        self.assertEqual(v15["peakPivotDriftPx"], 0)
+        self.assertEqual(v15["townExitCenterErrPx"], 0)
+        self.assertEqual(v15["fieldExitCenterErrPx"], 0)
+        self.assertEqual(v15["dungeonExitCenterErrPx"], 0)
+        self.assertEqual(v15["composableLayersCount"], 6)
+        self.assertTrue(v15["hasL2SanctumQuestRing"])
+        self.assertTrue(v15["hasGoogleScaleBar"])
+        self.assertEqual(v15["patchDelta"], 3)
+        self.assertEqual(v15["rebuildDelta"], 0)
+        self.assertTrue(v15["monotonic_scale"])
+
+        # V-16 Epic Phases A-D (Per-Biome 32-zone signatures, Save/Undo persistence, 2D-to-3D composable parity, Quest Ring + Transition)
+        v16 = report["gates"]["V-16_epic_biome_signatures_persistence_3d_parity_and_quest_pins"]
+        self.assertTrue(v16["passed"], v16)
+        self.assertEqual(v16["totalFieldAndFortZones"], 32)
+        self.assertEqual(v16["distinctBiomesResolved"], 10)
+        self.assertTrue(v16["hasBiomeAttr"])
+        self.assertTrue(v16["undoWorked"])
+        self.assertTrue(v16["saveWorked"])
+        self.assertTrue(v16["hasComposable3dParity"])
+        self.assertTrue(v16["questPoiOpened"])
+        self.assertTrue(v16["transitionIncremented"])
+
+        # Verify Python disk persistence helper round-trip
+        res = web.save_studio_map_feature_layers_patch({"persisted_custom_features": {"walkways": [], "rivers": [], "trees": [], "quest_rings": []}})
+        self.assertTrue(res.get("ok"))
+
+    def test_world_scale_30min_town_shapes_irregular_zones_and_mob_farm_structures(self) -> None:
+        """Verify 30-min town-to-town scale (~8.0km road), 12+ distinct town shapes/sizes (0.95x-2.20x), irregular watershed polygons, Aion 2 sub-biome pockets, and 32 mob-farm sub-structures + L2Hub blue raid level pins."""
+        import json
+        from pathlib import Path
+        from scripts import catalog_explorer_web as web
+
+        layers_doc = json.loads(Path("content/studio/map_feature_layers.json").read_text())
+        self.assertEqual(layers_doc["town_to_town_scale_law"]["target_run_minutes"], 30)
+        self.assertEqual(layers_doc["town_to_town_scale_law"]["overland_meters_per_svg_px"], 62.5)
+        self.assertEqual(len(layers_doc["town_footprint_catalog"]), 12)
+        self.assertEqual(len(layers_doc["mob_farm_sub_structures"]), 32)
+
+        html = web.INDEX_HTML
+        for token in (
+            "const ATLAS_TOWN_FOOTPRINT_SPECS =",
+            "const ATLAS_MOB_FARM_SUB_STRUCTURES =",
+            "function buildTownBespokeWallPathD(",
+            "function computeIrregularZonePolygonPoints(",
+            "function buildMobFarmSubStructurePathD(",
+            "data-subbiome-mosaic=\"violet_spore_fen\"",
+            "data-subbiome-mosaic=\"sakura_gold_canopy\"",
+            "data-subbiome-mosaic=\"crimson_magma_caldera\"",
+            "data-irregular-territory=\"1\"",
+            "data-l2hub-raid-badges=\"1\"",
+            "~30 min Town-to-Town (~8.0 km road)",
+        ):
+            self.assertIn(token, html)
+
+
+    def test_expanded_world_map_mountain_chokepoints_calibrated_raids_compounds_and_modular_file_size_lint(self) -> None:
+        """Verify modular file-size lint rule, full-canvas continent expansion, mountain range chokepoints, level-matched raid bosses, and multi-building compounds."""
+        import json
+        from pathlib import Path
+        from scripts import catalog_explorer_web as web
+        from scripts.lint_file_size import check_file_size_budgets
+
+        # 1. File-size lint rule must pass with 0 violations
+        lint_report = check_file_size_budgets()
+        self.assertTrue(lint_report["ok"], f"File-size lint violations: {lint_report['violations']}")
+        self.assertGreaterEqual(lint_report["checked_count"], 9)
+
+        # 2. Verify calibrated raid boss levels strictly match zone level_band (0 in Lv.1-10 starter meadows, <= 1 per zone)
+        layers_doc = json.loads(Path("content/studio/map_feature_layers.json").read_text(encoding="utf-8"))
+        sub_structs = layers_doc["mob_farm_sub_structures"]
+        self.assertEqual(len(sub_structs), 32)
+        total_raids = 0
+        for zid, spec in sub_structs.items():
+            raids = spec.get("raid_levels", [])
+            lv_band = spec.get("level_band", [1, 99])
+            self.assertLessEqual(len(raids), 1, f"{zid} has too many raid bosses: {raids}")
+            for r_lv in raids:
+                self.assertGreaterEqual(r_lv, lv_band[0], f"{zid} raid Lv.{r_lv} below zone min {lv_band[0]}")
+                self.assertLessEqual(r_lv, lv_band[1], f"{zid} raid Lv.{r_lv} above zone max {lv_band[1]}")
+            total_raids += len(raids)
+            buildings = spec.get("buildings", [])
+            self.assertGreaterEqual(len(buildings), 4, f"{zid} compound must define >= 4 interior buildings")
+        self.assertEqual(sub_structs["zone-field-clover-south-gate"]["raid_levels"], [])
+        self.assertLessEqual(total_raids, 28)
+
+        # 3. Verify expanded continent coordinates, mountain chokepoints, and compound building markers in INDEX_HTML
+        html = web.INDEX_HTML
+        for token in (
+            "const ATLAS_EXPANDED_ZONE_SPREAD_TABLE =",
+            'data-mountain-chokepoints="1"',
+            'data-mob-farm-compound="1"',
+            'data-compound-buildings="4"',
+            "getCalibratedZoneRaidLevel",
+        ):
+            self.assertIn(token, html)
 
 
 if __name__ == "__main__":
