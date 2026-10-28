@@ -1,0 +1,441 @@
+{
+  "schema_version": "1.0.0",
+  "title": "Atlas World Canonical Area Biome Themes Catalog (Lineage II Chronicle 3 / Interlude Standard)",
+  "character_scale_law": {
+    "target_character_height_centimeters": 105,
+    "target_character_height_range_centimeters": [90, 120],
+    "max_grass_blade_height_meters": 0.35,
+    "max_shrub_and_bush_height_meters": 0.65,
+    "min_arterial_road_width_meters": 12.0,
+    "min_dungeon_corridor_width_meters": 6.0,
+    "min_dungeon_ceiling_height_meters": 4.5,
+    "shop_counter_height_meters": 0.58,
+    "step_riser_height_meters": 0.14
+  },
+  "directional_progression_law": {
+    "south_to_north_axis": "Elevation and monster level rise from Southern Coastal Basins (Lv. 1-20) through Central Industrial Steppe & Canyons (Lv. 20-52) to Northern Celestial Calderas & Sky-Spire Towers (Lv. 50-99).",
+    "west_to_east_axis": "Western Starter Islands & Harbors transition eastward into Heartland Convergence Castles, Dragon Valleys, and Forbidden Sovereign Lairs."
+  },
+  "biome_themes": [
+    {
+      "biome_theme_id": "grassland",
+      "display_name": "Grassland",
+      "lineage2_reference_archetypes": [
+        "Talking Island Plains",
+        "Dion Hills",
+        "Floran Agricultural Area",
+        "Plains of Dion"
+      ],
+      "level_band_affinity": [1, 24],
+      "cartographic_2d_shader": {
+        "parchment_base_rgb": [168, 162, 118],
+        "parchment_high_rgb": [194, 184, 142],
+        "contour_stroke_hex": "#5c5332",
+        "accent_hex": "#4ade80",
+        "surface_pattern": "rolling_meadow_hachures_and_hedgerows",
+        "road_style": "warm_ochre_cobblestone"
+      },
+      "environment_3d_kit": {
+        "ground_palette_id": "palette_clover_pasture",
+        "max_grass_height_meters": 0.32,
+        "max_bush_height_meters": 0.58,
+        "min_road_width_meters": 12.5,
+        "signature_props": [
+          "low_dry_stone_wall_0_55m",
+          "wooden_windmill_tower",
+          "clover_wildflower_patch",
+          "wayfarer_milestone_obelisk"
+        ],
+        "lighting_and_weather": "Warm golden morning sun, soft cumulus shadows, gentle meadow breeze"
+      },
+      "exemplar_zones": [
+        "zone-town-lantern-hollow",
+        "zone-field-clover-south-gate",
+        "zone-field-floran-saffron-terraces"
+      ]
+    },
+    {
+      "biome_theme_id": "swamp",
+      "display_name": "Swamp",
+      "lineage2_reference_archetypes": [
+        "Cruma Marshlands",
+        "Swampland (Dark Elven)",
+        "Swamp of Screams"
+      ],
+      "level_band_affinity": [8, 45],
+      "cartographic_2d_shader": {
+        "parchment_base_rgb": [104, 118, 96],
+        "parchment_high_rgb": [76, 94, 82],
+        "contour_stroke_hex": "#2d4a43",
+        "accent_hex": "#2dd4bf",
+        "surface_pattern": "marsh_reed_stipple_and_stagnant_pools",
+        "road_style": "timber_boardwalk_causeway"
+      },
+      "environment_3d_kit": {
+        "ground_palette_id": "palette_cruma_marsh",
+        "max_grass_height_meters": 0.35,
+        "max_bush_height_meters": 0.62,
+        "min_road_width_meters": 12.0,
+        "signature_props": [
+          "elevated_timber_boardwalk_6m",
+          "arching_mangrove_root_4m_clearance",
+          "shallow_ankle_water_pool_0_15m",
+          "sunken_kiln_chimney_ruin"
+        ],
+        "lighting_and_weather": "Teal-amber ground mist, firefly spore particles, overcast reflections"
+      },
+      "exemplar_zones": [
+        "zone-field-cruma-sunken-marsh",
+        "zone-field-dark-chime-swampland",
+        "zone-field-screaming-tether-fen"
+      ]
+    },
+    {
+      "biome_theme_id": "canyon",
+      "display_name": "Canyon",
+      "lineage2_reference_archetypes": [
+        "Tanor Canyon",
+        "Death Pass",
+        "Windawood Gorge"
+      ],
+      "level_band_affinity": [14, 48],
+      "cartographic_2d_shader": {
+        "parchment_base_rgb": [172, 128, 94],
+        "parchment_high_rgb": [134, 88, 62],
+        "contour_stroke_hex": "#5c2d16",
+        "accent_hex": "#fb923c",
+        "surface_pattern": "terraced_mesa_cliff_hachures",
+        "road_style": "carved_sandstone_defile"
+      },
+      "environment_3d_kit": {
+        "ground_palette_id": "palette_terracotta_canyon",
+        "max_grass_height_meters": 0.25,
+        "max_bush_height_meters": 0.50,
+        "min_road_width_meters": 12.0,
+        "signature_props": [
+          "stepped_redbrick_mesa_wall_12m",
+          "canyon_rope_suspension_bridge_8m",
+          "bandit_ barricade_palisade_0_65m",
+          "wind_carved_sandstone_arch"
+        ],
+        "lighting_and_weather": "Crisp ochre zenith sun, deep gorge cast shadows, warm dust devils"
+      },
+      "exemplar_zones": [
+        "zone-field-tanor-bellows-canyon",
+        "zone-field-death-pass-viaduct",
+        "zone-town-draft-kiln-post"
+      ]
+    },
+    {
+      "biome_theme_id": "rainforest",
+      "display_name": "Rainforest",
+      "lineage2_reference_archetypes": [
+        "Primeval Isle",
+        "Elven Forest Canopy",
+        "Alligator Island Jungle"
+      ],
+      "level_band_affinity": [15, 78],
+      "cartographic_2d_shader": {
+        "parchment_base_rgb": [96, 134, 92],
+        "parchment_high_rgb": [122, 156, 104],
+        "contour_stroke_hex": "#1e3f24",
+        "accent_hex": "#22c55e",
+        "surface_pattern": "dense_canopy_rosettes_and_river_deltas",
+        "road_style": "mossy_flagstone_temple_path"
+      },
+      "environment_3d_kit": {
+        "ground_palette_id": "palette_emerald_jungle",
+        "max_grass_height_meters": 0.34,
+        "max_bush_height_meters": 0.64,
+        "min_road_width_meters": 12.0,
+        "signature_props": [
+          "high_canopy_banyan_trunk_5m_clearance",
+          "vine_wrapped_ziggurat_steps",
+          "bioluminescent_fern_cluster_0_55m",
+          "river_delta_stone_ford"
+        ],
+        "lighting_and_weather": "Dappled emerald god-rays, tropical sun-shower mist, vibrant canopy contrast"
+      },
+      "exemplar_zones": [
+        "zone-town-porcelain-loom",
+        "zone-field-alligator-glaze-delta",
+        "zone-field-primeval-canopy-isle"
+      ]
+    },
+    {
+      "biome_theme_id": "valley",
+      "display_name": "Valley",
+      "lineage2_reference_archetypes": [
+        "Dragon Valley",
+        "The Enchanted Valley",
+        "Silent Valley"
+      ],
+      "level_band_affinity": [20, 65],
+      "cartographic_2d_shader": {
+        "parchment_base_rgb": [138, 126, 98],
+        "parchment_high_rgb": [166, 152, 120],
+        "contour_stroke_hex": "#3f3624",
+        "accent_hex": "#eab308",
+        "surface_pattern": "twin_ridge_basin_and_winding_gorge",
+        "road_style": "sunken_basin_caravan_trail"
+      },
+      "environment_3d_kit": {
+        "ground_palette_id": "palette_dragon_valley_basin",
+        "max_grass_height_meters": 0.30,
+        "max_bush_height_meters": 0.60,
+        "min_road_width_meters": 13.0,
+        "signature_props": [
+          "colossal_dragon_rib_arch_9m",
+          "recessed_alcove_hunting_camp",
+          "sunken_limestone_stream_bed",
+          "ancient_watchtower_plinth"
+        ],
+        "lighting_and_weather": "Dramatic rim-lit ridge silhouettes, valley wind currents, high-visibility basin floor"
+      },
+      "exemplar_zones": [
+        "zone-field-brass-spur-dragon-valley",
+        "zone-field-enchanted-porcelain-valley",
+        "zone-town-root-train-roundhouse"
+      ]
+    },
+    {
+      "biome_theme_id": "volcano_cave",
+      "display_name": "Volcano Cave",
+      "lineage2_reference_archetypes": [
+        "Forge of the Gods",
+        "Blazing Swamp Caldera",
+        "Antharas' Lair Magma Approach"
+      ],
+      "level_band_affinity": [35, 85],
+      "cartographic_2d_shader": {
+        "parchment_base_rgb": [92, 64, 58],
+        "parchment_high_rgb": [138, 72, 48],
+        "contour_stroke_hex": "#451a03",
+        "accent_hex": "#f97316",
+        "surface_pattern": "obsidian_caldera_and_magma_veins",
+        "road_style": "basalt_crucible_viaduct"
+      },
+      "environment_3d_kit": {
+        "ground_palette_id": "palette_obsidian_magma",
+        "max_grass_height_meters": 0.20,
+        "max_bush_height_meters": 0.45,
+        "min_road_width_meters": 12.0,
+        "signature_props": [
+          "hexagonal_basalt_column_cluster",
+          "recessed_magma_channel_with_0_6m_curb",
+          "dwarven_crucible_bridge_8m",
+          "smoldering_slag_brazier"
+        ],
+        "lighting_and_weather": "Warm under-lit magma glow, floating ember motes, obsidian specular highlights"
+      },
+      "exemplar_zones": [
+        "zone-field-mainspring-caldera-rim",
+        "zone-field-galvanic-leyden-forge",
+        "zone-dungeon-forge-of-the-architects"
+      ]
+    },
+    {
+      "biome_theme_id": "god_valley",
+      "display_name": "God Valley",
+      "lineage2_reference_archetypes": [
+        "Imperial Tomb",
+        "Shrine of Loyalty",
+        "The Giants' Cave",
+        "Wall of Argos"
+      ],
+      "level_band_affinity": [45, 99],
+      "cartographic_2d_shader": {
+        "parchment_base_rgb": [154, 142, 168],
+        "parchment_high_rgb": [196, 184, 212],
+        "contour_stroke_hex": "#4c1d95",
+        "accent_hex": "#c084fc",
+        "surface_pattern": "sacred_leyline_rings_and_monolith_avenues",
+        "road_style": "gilt_marble_processional_highway"
+      },
+      "environment_3d_kit": {
+        "ground_palette_id": "palette_celestial_marble",
+        "max_grass_height_meters": 0.28,
+        "max_bush_height_meters": 0.55,
+        "min_road_width_meters": 14.0,
+        "signature_props": [
+          "cyclopean_god_statue_plinth_10m",
+          "astronomical_brass_armillary_ring",
+          "stepped_marble_processional_terrace",
+          "sealed_apostle_runic_obelisk"
+        ],
+        "lighting_and_weather": "Astral violet-gold twilight, luminous ley-line floor inlays, crisp horizon sightlines"
+      },
+      "exemplar_zones": [
+        "zone-town-starfall-haven",
+        "zone-town-crown-beacon",
+        "zone-field-forbidden-architect-path"
+      ]
+    },
+    {
+      "biome_theme_id": "sea_cave",
+      "display_name": "Sea Cave",
+      "lineage2_reference_archetypes": [
+        "Pirate's Tunnel (Zaken)",
+        "Eva's Underwater Garden",
+        "Devil's Isle Grotto"
+      ],
+      "level_band_affinity": [18, 68],
+      "cartographic_2d_shader": {
+        "parchment_base_rgb": [72, 114, 128],
+        "parchment_high_rgb": [98, 146, 162],
+        "contour_stroke_hex": "#0c4a6e",
+        "accent_hex": "#38bdf8",
+        "surface_pattern": "tidal_grotto_chambers_and_subterranean_quays",
+        "road_style": "limestone_sea_jetty"
+      },
+      "environment_3d_kit": {
+        "ground_palette_id": "palette_abyssal_limestone",
+        "max_grass_height_meters": 0.28,
+        "max_bush_height_meters": 0.55,
+        "min_road_width_meters": 8.0,
+        "signature_props": [
+          "subterranean_stone_smuggler_pier_7m",
+          "bioluminescent_coral_stalagmite_0_55m",
+          "wrecked_galleon_rib_timber",
+          "tidal_whirlpool_drain_basin"
+        ],
+        "lighting_and_weather": "Caustic cyan water reflections, sea-spray fog, lantern-lit smuggler quays"
+      },
+      "exemplar_zones": [
+        "zone-harbor-glaze-barge-port",
+        "zone-dungeon-pirate-smuggler-tunnel",
+        "zone-town-cinnamon-mill"
+      ]
+    },
+    {
+      "biome_theme_id": "underground_cave",
+      "display_name": "Underground Cave",
+      "lineage2_reference_archetypes": [
+        "Elven Ruins",
+        "The Ant Nest",
+        "Seven Signs Catacombs & Necropolises"
+      ],
+      "level_band_affinity": [9, 80],
+      "cartographic_2d_shader": {
+        "parchment_base_rgb": [62, 96, 98],
+        "parchment_high_rgb": [88, 128, 126],
+        "contour_stroke_hex": "#134e4a",
+        "accent_hex": "#a855f7",
+        "surface_pattern": "l2j_runic_cyan_slate_rectilinear_labyrinth",
+        "road_style": "bevelled_catacomb_stone_corridor"
+      },
+      "environment_3d_kit": {
+        "ground_palette_id": "palette_runic_catacomb_slate",
+        "max_grass_height_meters": 0.15,
+        "max_bush_height_meters": 0.40,
+        "min_road_width_meters": 7.5,
+        "signature_props": [
+          "cruciform_stone_pillar_plus_profile",
+          "stepped_crypt_threshold_0_14m_riser",
+          "recessed_aqueduct_water_channel",
+          "seven_signs_dusk_dawn_portal_arch"
+        ],
+        "lighting_and_weather": "L2J verdigris-cyan ambient slate light, warm torch sconces, unobstructed 4.8m ceiling clearance"
+      },
+      "exemplar_zones": [
+        "zone-dungeon-kiln-cellar",
+        "zone-dungeon-heretic-kiln-catacomb",
+        "zone-dungeon-apostate-dynamo-necropolis"
+      ]
+    },
+    {
+      "biome_theme_id": "giant_tower",
+      "display_name": "Giant Tower",
+      "lineage2_reference_archetypes": [
+        "Cruma Tower (1F-3F)",
+        "Tower of Insolence (1F-14F)",
+        "Ivory Tower"
+      ],
+      "level_band_affinity": [20, 88],
+      "cartographic_2d_shader": {
+        "parchment_base_rgb": [58, 76, 108],
+        "parchment_high_rgb": [86, 112, 152],
+        "contour_stroke_hex": "#1e3a8a",
+        "accent_hex": "#60a5fa",
+        "surface_pattern": "concentric_octagonal_ring_galleries_and_core_shaft",
+        "road_style": "brass_inlaid_ring_colonnade"
+      },
+      "environment_3d_kit": {
+        "ground_palette_id": "palette_astrolabe_tower_stone",
+        "max_grass_height_meters": 0.10,
+        "max_bush_height_meters": 0.35,
+        "min_road_width_meters": 8.5,
+        "signature_props": [
+          "central_elevator_telemetry_shaft",
+          "concentric_ring_colonnade_pillar",
+          "inter_floor_spiral_ramp_8m",
+          "governor_core_sanctum_pedestal"
+        ],
+        "lighting_and_weather": "High-altitude azure shaft light, rotating brass gear shadows, vertical floor cutaway clarity"
+      },
+      "exemplar_zones": [
+        "zone-dungeon-pendulum-shaft",
+        "zone-dungeon-chronometer-foundry",
+        "zone-dungeon-star-heart-nave"
+      ]
+    }
+  ],
+  "starter_library_quests": [
+    {
+      "quest_id": "quest-lh-01-kiln-shards",
+      "title": "Letters of the First Meridian",
+      "lineage2_analog": "Letters of Love (Lv. 2 Talking Island)",
+      "start_level": 1,
+      "max_visible_level_gap": 6,
+      "repeatable": false,
+      "town_node_id": "town-lantern-hollow",
+      "start_npc_number": 1,
+      "start_npc_name": "Darin of the Meridian Plaza",
+      "target_zone_id": "zone-town-lantern-hollow",
+      "target_description": "Deliver the warm porcelain seal between Plaza Guide Darin (#1), Temple High Priestess Roxxy (#5), and Potter Baulro (#4).",
+      "reward_items": ["Apprentice Tunic", "Novice Healing Potion x10", "650 Adena"]
+    },
+    {
+      "quest_id": "quest-lh-02-keltir-fangs",
+      "title": "Cull the Clover-Dew Keltirs",
+      "lineage2_analog": "Please Take Me Too / Fox Fur (Lv. 3 Talking Island)",
+      "start_level": 2,
+      "max_visible_level_gap": 6,
+      "repeatable": true,
+      "town_node_id": "town-lantern-hollow",
+      "start_npc_number": 10,
+      "start_npc_name": "South-Gate Captain Arnold",
+      "target_zone_id": "zone-field-clover-south-gate",
+      "target_description": "Hunt Clover-Dew Pups and Prairie Keltirs in Clover South-Gate Meadow (Grassland) and collect 15 Keltir Dew-Pelts.",
+      "reward_items": ["Soulshot (No-Grade) x200", "Soft Suede Material x4", "1,200 Adena"]
+    },
+    {
+      "quest_id": "quest-lh-03-glaze-orchard-spoil",
+      "title": "Anvil Flux for Blacksmith Alltran",
+      "lineage2_analog": "Spirit of the Craftsman (Lv. 5)",
+      "start_level": 5,
+      "max_visible_level_gap": 6,
+      "repeatable": true,
+      "town_node_id": "town-lantern-hollow",
+      "start_npc_number": 3,
+      "start_npc_name": "Master Blacksmith Alltran",
+      "target_zone_id": "zone-field-clover-south-gate",
+      "target_description": "Harvest Cracked-Glaze Golem Cores along the eastern irrigation ditch to fuel the +1..+15 Refinement Anvil.",
+      "reward_items": ["Scroll: Enchant Weapon (No-Grade)", "High-Grade Iron Ore x3", "2,400 Adena"]
+    },
+    {
+      "quest_id": "quest-lh-04-kiln-cellar-expedition",
+      "title": "Into the Kiln Cellar Labyrinth",
+      "lineage2_analog": "Skirmish with the Orcs / Elven Ruins Expedition (Lv. 9-15)",
+      "start_level": 9,
+      "max_visible_level_gap": 6,
+      "repeatable": false,
+      "town_node_id": "town-lantern-hollow",
+      "start_npc_number": 2,
+      "start_npc_name": "Grand Master Roien",
+      "target_zone_id": "zone-dungeon-kiln-cellar",
+      "target_description": "Descend into Kiln Cellar Ruins (B1 -> B2 -> B3 Underground Cave), defeat Tunath Orc Marksmen in Room 3, and recover the Discarded Kiln-Guardian Core in Room 8.",
+      "reward_items": ["meridian_sword_ng_plus3", "Scroll of Escape: Kilnwatch Bastion (Dion Hub)", "8,500 Adena"]
+    }
+  ]
+}

@@ -26,6 +26,13 @@ import json
 from pathlib import Path
 from typing import Any
 
+from tall_dungeon_expansion import expand_tall_dungeons
+
+try:
+    from scripts.atlas_world_web.frontend_loader import load_modular_index_html
+except ImportError:
+    from atlas_world_web.frontend_loader import load_modular_index_html  # type: ignore
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STUDIO_DIR = REPO_ROOT / "content" / "studio"
 WHC_PATH = STUDIO_DIR / "world_history_and_concept.json"
@@ -16050,7 +16057,7 @@ def _build_two_ring_studio_80d_signoff_matrix(atlas: dict[str, Any]) -> list[dic
             "",
             "111400:219300",
             ["D13_omni_search_and_quick_jump", "D15_archetype_raster_plates", "D17_travel_route_and_gatekeeper_calculator", "D18_dungeon_room_inspector_and_telemetry", "D30_intercontinental_transit_network", "D49_warehouse_clan_vault_and_freight_network"],
-            "CERTIFIED 100.0/100: All 63 zones, 180 NPCs, 105 service marks, and 48 dungeon floors are 1-click searchable and BFS-routable across all 3 continents.",
+            "CERTIFIED 100.0/100: All 63 zones, 180 NPCs, 105 service marks, and 65 dungeon floors are 1-click searchable and BFS-routable across all 3 continents.",
         ),
         # --- Ring B: 5-Role Platform & Tools Squad (10 records = 2 per role) ---
         (
@@ -18926,7 +18933,7 @@ def _build_automated_qa_smoke_suites(atlas: dict[str, Any]) -> list[dict[str, An
             534,
             290,
             "#22c55e",
-            "Teleports headless probes across all 63 zones and 48 dungeon floors, verifying Escape Scroll nearest-town mapping.",
+            "Teleports headless probes across all 63 zones and 65 dungeon floors, verifying Escape Scroll nearest-town mapping.",
         ),
         (
             "qa-suite-15-warehouse-private-clan-freight-atomic-transfer",
@@ -25639,6 +25646,9 @@ def expand_next_wave(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, An
             actions.append(f"expanded_multi_floor_dungeon:{did}")
             break
 
+    # 3b. Tall dungeons (Star-Heart 14F, Chronometer 7F, Forbidden-Path B1..B5) keep their expanded floors
+    actions.extend(expand_tall_dungeons(atlas))
+
     # 4. Ensure existing multi-floor dungeon floors and deep validation slice have all 4 filterable tiers
     deep_slice = atlas.get("t_deep_validation_slice") or {}
     for dkey, base_id, base_lv in (("deep_field_zone", 29500, 12), ("deep_dungeon", 29600, 22)):
@@ -26206,7 +26216,8 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     for d in mf_dungeons:
         floors = d.get("floors") or []
         f_ids = [f.get("floor_id") for f in floors if isinstance(f, dict)]
-        if f_ids in (["B1", "B2", "B3"], ["1F", "2F", "3F"]) and all(
+        n_fl = len(f_ids)
+        if n_fl >= 3 and f_ids in ([f"B{k}" for k in range(1, n_fl + 1)], [f"{k}F" for k in range(1, n_fl + 1)]) and all(
             len(f.get("rooms") or []) >= 2 and len(f.get("warp_points") or []) >= 2 for f in floors
         ):
             valid_mf += 1
@@ -26382,7 +26393,7 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
         min(1.0, indexed_zones / 63.0)
         + min(1.0, indexed_town_npcs / 180.0)
         + min(1.0, indexed_service_marks / 105.0)
-        + min(1.0, indexed_dungeon_floors / 48.0)
+        + min(1.0, indexed_dungeon_floors / 65.0)
     ) / 4.0
     d13_score = round(d13_ratio * 100.0, 1)
 
@@ -26456,7 +26467,7 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
     }
     d16_verified_zones = sum(d16_groups.values())
     web_script = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-    web_txt = web_script.read_text(encoding="utf-8") if web_script.is_file() else ""
+    web_txt = (web_script.read_text(encoding="utf-8") if web_script.is_file() else "") + "\n" + load_modular_index_html()
     has_d16_ui = all(
         tok in web_txt
         for tok in (
@@ -31206,7 +31217,7 @@ def audit_world_atlas(whc: dict[str, Any], atlas: dict[str, Any]) -> dict[str, A
                 "indexed_service_marks": indexed_service_marks,
                 "target_service_marks": 105,
                 "indexed_dungeon_floors": indexed_dungeon_floors,
-                "target_dungeon_floors": 48,
+                "target_dungeon_floors": 65,
                 "verified": indexed_zones + indexed_town_npcs + indexed_service_marks + indexed_dungeon_floors,
                 "target": 63 + 180 + 105 + 48,
             },
@@ -31934,7 +31945,7 @@ def score_d107_tavern_social_hubs(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "Bardic Concert & Rhythm Buff Stage",
@@ -32041,7 +32052,7 @@ def score_d108_churn_sentiment_interventions(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_triggers = {
         "3x Consecutive Boss Wipe Frustration",
@@ -32145,7 +32156,7 @@ def score_d103_archaeological_lore_codices(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "Giant's Era Technological Blueprint",
@@ -32244,7 +32255,7 @@ def score_d104_destructible_physics_biomes(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_tiers = {
         "Voronoi Siege Wall Fracture",
@@ -32340,7 +32351,7 @@ def score_d105_bounty_manhunt_contracts(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "Chaotic Player PK Warrant",
@@ -32428,7 +32439,7 @@ def score_d106_disaster_recovery_pitr_drills(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_faults = {
         "Primary Postgres Node Kill During Siege",
@@ -32516,7 +32527,7 @@ def score_d101_nocturnal_weather_affix_spawns(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_triggers = {
         "Midnight 00:00-04:00 Game-Time + Blood Fog",
@@ -32626,7 +32637,7 @@ def score_d102_deterministic_combat_replays(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_scopes = {
         "Olympiad 1v1 Frame-Exact Audit",
@@ -32715,7 +32726,7 @@ def score_d99_cross_tool_hot_reload_bridges(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_channels = {
         "Web-to-Godot @tool Scene Live-Patch",
@@ -32808,7 +32819,7 @@ def score_d100_centennial_100d_studio_charters(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_rings = {
         "Ring A: Creative Council",
@@ -32925,7 +32936,7 @@ def score_d97_caravan_trade_routes(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "Armored Bullion Wagon",
@@ -33024,7 +33035,7 @@ def score_d98_localization_voiceover_banks(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_registers = {
         "Royal High Aden Court",
@@ -33124,7 +33135,7 @@ def score_d95_player_housing_trophy_estates(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "Solo Instanced Homestead",
@@ -33211,7 +33222,7 @@ def score_d96_global_cdn_webrtc_relays(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_regions = {
         "AP-Southeast-Bangkok",
@@ -33320,7 +33331,7 @@ def score_d93_world_invasion_incursions(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "3-Phase Zone Public Quest",
@@ -33417,7 +33428,7 @@ def score_d94_clan_treasury_payroll_ledgers(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_tiers = {
         "Sovereign Castle Tax Vault",
@@ -33520,7 +33531,7 @@ def score_d91_faction_reputation_dispositions(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "Mutual-Exclusivity Tribal War",
@@ -33615,7 +33626,7 @@ def score_d92_cross_realm_auction_escrows(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_tiers = {
         "Continental Central Clearinghouse",
@@ -33722,7 +33733,7 @@ def score_d83_anti_bot_economy_sentinels(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "Macro Pathing Entropy",
@@ -33819,7 +33830,7 @@ def score_d84_godot_storybook_prefab_nodes(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "Town Plaza & Fountain",
@@ -33925,7 +33936,7 @@ def score_d85_navmesh_obstacle_sectors(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_types = {
         "Dynamic Siege Gate Obstacle",
@@ -34013,7 +34024,7 @@ def score_d86_liveops_event_flag_nodes(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "Seasonal World Festival",
@@ -34116,7 +34127,7 @@ def score_d87_cinematic_camera_rails(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "Raid Boss Awakening Intro",
@@ -34216,7 +34227,7 @@ def score_d88_client_gpu_vram_budgets(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_tiers = {
         "200-Player Siege Ultra Crowd",
@@ -34319,7 +34330,7 @@ def score_d89_automated_qa_smoke_suites(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_categories = {
         "CI Pre-Merge Headless Playtest",
@@ -34407,7 +34418,7 @@ def score_d90_studio_90d_master_ledger(
         }
     if web_txt is None:
         web_path = REPO_ROOT / "scripts" / "catalog_explorer_web.py"
-        web_txt = web_path.read_text(encoding="utf-8") if web_path.exists() else ""
+        web_txt = (web_path.read_text(encoding="utf-8") if web_path.exists() else "") + "\n" + load_modular_index_html()
 
     expected_rings = {
         "Ring A: Creative Council",
@@ -34565,7 +34576,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  D10 (Shop & +1..+15 Refine) : {dims['D10_shop_and_refinement_catalogs']['score']}/100 ({dims['D10_shop_and_refinement_catalogs']['verified']}/{dims['D10_shop_and_refinement_catalogs']['target']})")
         print(f"  D11 (4 Town Archetypes)     : {dims['D11_town_layout_archetypes']['score']}/100 ({dims['D11_town_layout_archetypes']['verified']}/{dims['D11_town_layout_archetypes']['target']})")
         print(f"  D12 (Dungeon Cutaway Elev)  : {dims['D12_dungeon_vertical_cutaways']['score']}/100 ({dims['D12_dungeon_vertical_cutaways']['verified']}/{dims['D12_dungeon_vertical_cutaways']['target']})")
-        print(f"  D13 (Omni-Search & Jump)    : {dims['D13_omni_search_and_quick_jump']['score']}/100 ({dims['D13_omni_search_and_quick_jump']['indexed_zones']}/63 zones · {dims['D13_omni_search_and_quick_jump']['indexed_town_npcs']}/180 NPCs · {dims['D13_omni_search_and_quick_jump']['indexed_service_marks']}/105 marks · {dims['D13_omni_search_and_quick_jump']['indexed_dungeon_floors']}/48 floors)")
+        print(f"  D13 (Omni-Search & Jump)    : {dims['D13_omni_search_and_quick_jump']['score']}/100 ({dims['D13_omni_search_and_quick_jump']['indexed_zones']}/63 zones · {dims['D13_omni_search_and_quick_jump']['indexed_town_npcs']}/180 NPCs · {dims['D13_omni_search_and_quick_jump']['indexed_service_marks']}/105 marks · {dims['D13_omni_search_and_quick_jump']['indexed_dungeon_floors']}/65 floors)")
         print(f"  D14 (Spawn & Spoil Matrix)  : {dims['D14_spawn_and_refinement_spoil_matrix']['score']}/100 ({dims['D14_spawn_and_refinement_spoil_matrix']['verified_dungeons']}/{dims['D14_spawn_and_refinement_spoil_matrix']['target_dungeons']} dungeons · {dims['D14_spawn_and_refinement_spoil_matrix']['verified_fields']}/{dims['D14_spawn_and_refinement_spoil_matrix']['target_fields']} fields)")
         print(f"  D15 (Archetype Raster Maps) : {dims['D15_archetype_raster_plates']['score']}/100 ({dims['D15_archetype_raster_plates']['verified']}/{dims['D15_archetype_raster_plates']['target']} raster plates)")
         print(f"  D16 (63-Zone Map Directory) : {dims['D16_unified_connected_map_directory']['score']}/100 ({dims['D16_unified_connected_map_directory']['verified']}/{dims['D16_unified_connected_map_directory']['target']} zones)")

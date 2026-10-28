@@ -945,7 +945,140 @@ const v14Report = vm.runInContext(`(() => {
     fieldPatrolTrails
   };
 })()`, sandbox);
+// V-15: Zoom-out position invariance (< 0.05px drift), sub-map exit zero-shift centering (< 1.0px),
+// Google Maps live metric scale bar (50m..10km), and 6-layer composable zero-rebuild patching.
+const v15Report = vm.runInContext(`(() => {
+  STUDIO_PERSPECTIVE = 'world-history-and-concept';
+  setAtlasEngineMode('2d_svg');
+  zoomStudioMap(0, true);
+  render();
+  // 1. Off-center pivot zoom-in + zoom-out round-trip drift check (pivot at eastern steppe 780, 185)
+  const pivX = 780, pivY = 185;
+  const wpStart = atlasSvgToWorldPoint(pivX, pivY);
+  const deltas = [0.35, 0.35, 0.35, 0.35, 0.65, 0.65];
+  deltas.forEach(d => zoomStudioMap(d, false, null, pivX, pivY));
+  const wpPeak = atlasSvgToWorldPoint(pivX, pivY);
+  [...deltas].reverse().forEach(d => zoomStudioMap(-d, false, null, pivX, pivY));
+  const wpEnd = atlasSvgToWorldPoint(pivX, pivY);
+  const roundTripPivotDriftPx = +Math.hypot(wpEnd.x - wpStart.x, wpEnd.y - wpStart.y).toFixed(4);
+  const peakPivotDriftPx = +Math.hypot(wpPeak.x - wpStart.x, wpPeak.y - wpStart.y).toFixed(4);
+
+  // 2. Town interior zoom-out below 4.5x keeps the exited town centered at (520, 250)
+  focusTownStreetBlueprint('town-pinion-terminus');
+  const townTarget = resolveAtlasFocusLoc(STUDIO_MAP_LOC, 'town-pinion-terminus');
+  zoomStudioMap(0, false, 2.6);
+  const wpAfterTownExit = atlasSvgToWorldPoint(520, 250);
+  const townExitCenterErrPx = +Math.hypot(wpAfterTownExit.x - townTarget.svgX, wpAfterTownExit.y - townTarget.svgY).toFixed(3);
+
+  // 3. Field hunting blueprint step-out keeps the exited field centered at (520, 250)
+  focusFieldTacticalBlueprint('zone-field-siphon-sluice');
+  const fieldHtml = document.getElementById('mainContent').innerHTML;
+  const composableLayersCount = (fieldHtml.match(/class="atlas-composable-layer"/g) || []).length;
+  const hasL2SanctumQuestRing = fieldHtml.includes('atlas-l2sanctum-quest-ring');
+  const hasGoogleScaleBar = fieldHtml.includes('id="studioGoogleScaleBarWidget"');
+  const patchBefore = ATLAS_INCREMENTAL_LAYER_PATCH_COUNT;
+  const rebuildBefore = ATLAS_FULL_MAP_REBUILD_COUNT;
+  addIncrementalComposableFeature('walkways');
+  addIncrementalComposableFeature('rivers');
+  addIncrementalComposableFeature('trees');
+  const patchDelta = ATLAS_INCREMENTAL_LAYER_PATCH_COUNT - patchBefore;
+  const rebuildDelta = ATLAS_FULL_MAP_REBUILD_COUNT - rebuildBefore;
+
+  const fieldTarget = resolveAtlasFocusLoc(STUDIO_MAP_LOC, 'zone-field-siphon-sluice');
+  stepOutSubMapToOverlandRegional(2.6);
+  const wpAfterFieldExit = atlasSvgToWorldPoint(520, 250);
+  const fieldExitCenterErrPx = +Math.hypot(wpAfterFieldExit.x - fieldTarget.svgX, wpAfterFieldExit.y - fieldTarget.svgY).toFixed(3);
+
+  // 4. Dungeon exit keeps the exited dungeon entrance centered at (520, 250)
+  openDungeonSubMap('zone-dungeon-pendulum-shaft', '1F');
+  const dngTarget = resolveAtlasFocusLoc(STUDIO_MAP_LOC, 'zone-dungeon-pendulum-shaft');
+  exitDungeonSubMap();
+  const wpAfterDngExit = atlasSvgToWorldPoint(520, 250);
+  const dungeonExitCenterErrPx = +Math.hypot(wpAfterDngExit.x - dngTarget.svgX, wpAfterDngExit.y - dngTarget.svgY).toFixed(3);
+
+  // 5. Google Maps live metric scale bar progression across zoom levels and spatial contexts
+  const sbOverland1x = computeAtlasGoogleScaleBarSpec(1.0, 'overland');
+  const sbOverland28x = computeAtlasGoogleScaleBarSpec(2.8, 'overland');
+  const sbField48x = computeAtlasGoogleScaleBarSpec(4.8, 'field');
+  const sbTown6x = computeAtlasGoogleScaleBarSpec(6.0, 'town');
+  const sbDungeon8x = computeAtlasGoogleScaleBarSpec(8.0, 'dungeon');
+  zoomStudioMap(0, true);
+  return {
+    roundTripPivotDriftPx,
+    peakPivotDriftPx,
+    townExitCenterErrPx,
+    fieldExitCenterErrPx,
+    dungeonExitCenterErrPx,
+    composableLayersCount,
+    hasL2SanctumQuestRing,
+    hasGoogleScaleBar,
+    patchDelta,
+    rebuildDelta,
+    scaleProgressionMeters: [sbOverland1x.meters, sbOverland28x.meters, sbField48x.meters, sbTown6x.meters, sbDungeon8x.meters],
+    scaleProgressionLabels: [sbOverland1x.label, sbOverland28x.label, sbField48x.label, sbTown6x.label, sbDungeon8x.label],
+    scaleWidthsValid: [sbOverland1x, sbOverland28x, sbField48x, sbTown6x, sbDungeon8x].every(s => s.barWidthPx >= 54 && s.barWidthPx <= 152)
+  };
+})()`, sandbox);
+// V-16: Epic Phases A-D (Per-Biome 32-zone signatures, Save/Undo layer persistence, 2D-to-3D composable meshes, and Quest Pin + Smooth Transition)
+const v16Report = vm.runInContext(`(() => {
+  STUDIO_PERSPECTIVE = 'world-history-and-concept';
+  setAtlasEngineMode('2d_svg');
+  ATLAS_BIOME_USER_OVERRIDE = false;
+  const tatlas = (DATA && DATA.studioPerspectives && DATA.studioPerspectives.tShapedWorldAtlas) || {};
+  const allFields = getAllAtlasFieldEntries(tatlas);
+  const allForts = getAllAtlasFortressEntries(tatlas);
+  const all32 = [...allFields, ...allForts];
+  const resolvedBiomes = new Set();
+  all32.forEach(entry => {
+    const b = resolveFieldZoneBiomeId(entry);
+    if (b && b.biomeId) resolvedBiomes.add(b.biomeId);
+  });
+
+  // Phase A: verify distinct biome rendering on Field Blueprint
+  focusFieldTacticalBlueprint('zone-field-caldera-rim');
+  const volcanoHtml = document.getElementById('mainContent').innerHTML;
+  const hasBiomeAttr = volcanoHtml.includes('data-biome-id="');
+
+  // Phase B: Undo & Save Incremental Composable Features
+  const wBefore = (ATLAS_INCREMENTAL_CUSTOM_FEATURES.walkways || []).length;
+  addIncrementalComposableFeature('walkways');
+  const wAfterAdd = (ATLAS_INCREMENTAL_CUSTOM_FEATURES.walkways || []).length;
+  undoLastIncrementalComposableFeature();
+  const wAfterUndo = (ATLAS_INCREMENTAL_CUSTOM_FEATURES.walkways || []).length;
+  addIncrementalComposableFeature('quest_rings');
+  const saveRes = saveIncrementalComposableFeaturesToDisk();
+
+  // Phase C: 2D-to-3D Composable Layer Parity in buildAtlas3dBlockoutScene('field')
+  setAtlasEngineMode('3d_map3d');
+  setAtlas3dOption('contextOverride', 'field');
+  const field3d = buildAtlas3dBlockoutScene();
+  const parts3d = new Set((field3d.meshes || []).map(m => m.part));
+  const hasComposable3dParity = ['composable_river', 'composable_bridge', 'composable_highland', 'composable_walkway', 'composable_tree', 'composable_ruin'].every(k => parts3d.has(k));
+  setAtlas3dOption('contextOverride', '');
+  setAtlasEngineMode('2d_svg');
+
+  // Phase D: Clickable l2sanctum Quest Ring & Smooth Sub-Map Transition sequence
+  const qRes = selectAtlasQuestPin('quest-l2-01-kelp-spores');
+  const questPoiOpened = Boolean(qRes && qRes.questId && STUDIO_MAP_SELECTED_POI && STUDIO_MAP_SELECTED_POI.questId === qRes.questId);
+  const seqBefore = ATLAS_SUBMAP_TRANSITION_SEQ || 0;
+  stepOutSubMapToOverlandRegional(2.6);
+  const seqAfter = ATLAS_SUBMAP_TRANSITION_SEQ || 0;
+  zoomStudioMap(0, true);
+
+  return {
+    totalFieldAndFortZones: all32.length,
+    distinctBiomesResolved: resolvedBiomes.size,
+    hasBiomeAttr,
+    undoWorked: (wAfterAdd === wBefore + 1) && (wAfterUndo === wBefore),
+    saveWorked: Boolean(saveRes && saveRes.saved),
+    hasComposable3dParity,
+    questPoiOpened,
+    transitionIncremented: seqAfter > seqBefore
+  };
+})()`, sandbox);
 console.log(JSON.stringify({
+  v16Report,
+  v15Report,
   v14Report,
   v13Report,
   v12Report,
@@ -1239,10 +1372,40 @@ console.log(JSON.stringify({
         and v14_dpr_capped
     )
 
+    v15 = vm_out.get("v15Report") or {}
+    prog = v15.get("scaleProgressionMeters") or []
+    v15_monotonic_scale = len(prog) == 5 and all(prog[i] >= prog[i + 1] for i in range(len(prog) - 1)) and prog[0] >= 1000 and prog[-1] <= 200
+    v15_passed = (
+        v15.get("roundTripPivotDriftPx", 99) < 0.05
+        and v15.get("peakPivotDriftPx", 99) < 0.05
+        and v15.get("townExitCenterErrPx", 99) < 1.0
+        and v15.get("fieldExitCenterErrPx", 99) < 1.0
+        and v15.get("dungeonExitCenterErrPx", 99) < 1.0
+        and v15.get("composableLayersCount", 0) >= 6
+        and v15.get("hasL2SanctumQuestRing") is True
+        and v15.get("hasGoogleScaleBar") is True
+        and v15.get("patchDelta") == 3
+        and v15.get("rebuildDelta") == 0
+        and v15.get("scaleWidthsValid") is True
+        and v15_monotonic_scale
+    )
+
+    v16 = vm_out.get("v16Report") or {}
+    v16_passed = (
+        v16.get("totalFieldAndFortZones") == 32
+        and v16.get("distinctBiomesResolved") == 10
+        and v16.get("hasBiomeAttr") is True
+        and v16.get("undoWorked") is True
+        and v16.get("saveWorked") is True
+        and v16.get("hasComposable3dParity") is True
+        and v16.get("questPoiOpened") is True
+        and v16.get("transitionIncremented") is True
+    )
+
     return {
         "overall_passed": bool(
             v1_passed and v2_passed and v3_passed and v4_passed and v5_passed and v6_passed and v7_passed and v8_passed
-            and v9_passed and v10_passed and v11_passed and v12_passed and v13_passed and v14_passed
+            and v9_passed and v10_passed and v11_passed and v12_passed and v13_passed and v14_passed and v15_passed and v16_passed
         ),
         "gates": {
             "V-1_dom_and_render_budget": {
@@ -1354,6 +1517,15 @@ console.log(JSON.stringify({
                 "ol_has_mob_and_route_layers": v14_ol_has_mob_and_route_layers,
                 "dpr_capped": v14_dpr_capped,
                 **v14,
+            },
+            "V-15_zoom_roundtrip_and_submap_exit_zero_shift": {
+                "passed": v15_passed,
+                **v15,
+                "monotonic_scale": v15_monotonic_scale,
+            },
+            "V-16_epic_biome_signatures_persistence_3d_parity_and_quest_pins": {
+                "passed": v16_passed,
+                **v16,
             },
         },
     }

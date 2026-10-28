@@ -1,0 +1,2558 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-palette="classic">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    (function () {
+      var theme = 'dark';
+      try { theme = localStorage.getItem('joy-theme') || 'dark'; } catch (e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+      var palette = 'classic';
+      try { palette = localStorage.getItem('joy-palette') || 'classic'; } catch (e) {}
+      document.documentElement.setAttribute('data-palette', palette);
+    })();
+  </script>
+  <title>Atlas World — Joymify Design Observatory (RMS Edition)</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/theme.css" />
+  <link rel="stylesheet" href="/atelier/atlas-world-panels/css/panels.css" />
+  <script type="module" src="/atelier/atlas-world-panels/js/panels/registry.mjs"></script>
+  <style>
+    :root {
+      --sidebar-width: 268px;
+      --hub-sidebar-bg: var(--joy-surface-card);
+      --hub-topbar-bg: var(--joy-surface-card);
+      --hub-chrome-border: var(--joy-border-default);
+    }
+    [data-theme="dark"] {
+      --hub-sidebar-bg: var(--joy-surface-card);
+      --hub-topbar-bg: var(--joy-surface-card);
+      --hub-chrome-border: var(--joy-border-strong);
+    }
+    * { box-sizing: border-box; min-width: 0; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      font-family: var(--joy-font-family-sans, 'Inter', -apple-system, sans-serif);
+      background-color: var(--joy-surface-canvas);
+      color: var(--joy-text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+    body { display: flex; }
+
+    * { scrollbar-width: thin; scrollbar-color: var(--joy-border-default) transparent; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background-color: var(--joy-border-default); border-radius: var(--joy-radius-pill); }
+    ::-webkit-scrollbar-thumb:hover { background-color: var(--joy-border-strong); }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--hub-sidebar-bg);
+      border-right: 1px solid var(--hub-chrome-border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      height: 100%;
+      user-select: none;
+    }
+    .brand {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--joy-border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-info h2 {
+      margin: 0;
+      font-size: var(--joy-font-size-md);
+      font-weight: 700;
+      color: var(--joy-text-primary);
+      letter-spacing: -0.01em;
+    }
+    .brand-info span {
+      display: block;
+      font-size: var(--joy-font-size-xs);
+      color: var(--joy-accent-text);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .sidebar-search {
+      padding: 12px 12px 6px;
+      flex-shrink: 0;
+    }
+    .sidebar-search__inner {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: var(--joy-surface-sunken);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-control);
+    }
+    .sidebar-search__inner:focus-within {
+      border-color: var(--joy-border-focus);
+      box-shadow: 0 0 0 2px var(--joy-focus-ring);
+    }
+    .sidebar-search__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-left: 10px;
+      color: var(--joy-text-secondary);
+      pointer-events: none;
+    }
+    .sidebar-search__input {
+      flex: 1;
+      width: 100%;
+      height: 34px;
+      padding: 0 8px;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: var(--joy-font-size-sm);
+      font-family: inherit;
+      color: var(--joy-text-primary);
+    }
+    .sidebar-search__kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      margin-right: 8px;
+      font-size: 11px;
+      font-family: var(--joy-font-family-mono);
+      font-weight: 600;
+      color: var(--joy-text-secondary);
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-default);
+      border-radius: 4px;
+    }
+    .nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 10px 16px;
+    }
+    .nav-section {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--joy-text-muted);
+      padding: 12px 10px 5px;
+      margin-top: 2px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: var(--joy-radius-control);
+      font-size: var(--joy-font-size-sm);
+      font-weight: 500;
+      color: var(--joy-text-secondary);
+      cursor: pointer;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover {
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-primary);
+    }
+    .nav-item.active {
+      background: var(--joy-accent-subtle);
+      color: var(--joy-accent-text);
+      font-weight: 600;
+    }
+    .nav-section-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1px 7px;
+      font-size: 11px;
+      font-family: var(--joy-font-family-mono);
+      font-weight: 600;
+      border-radius: var(--joy-radius-pill);
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-secondary);
+      border: 1px solid var(--joy-border-subtle);
+    }
+    .sidebar-footer {
+      padding: 10px 14px;
+      border-top: 1px solid var(--joy-border-subtle);
+      font-size: var(--joy-font-size-xs);
+      color: var(--joy-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Main Workspace */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+    .topbar {
+      min-height: 52px;
+      border-bottom: 1px solid var(--hub-chrome-border);
+      background: var(--hub-topbar-bg);
+      padding: 6px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .topbar__start {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+    .topbar__end {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .topbar__title {
+      font-size: var(--joy-font-size-md);
+      font-weight: 600;
+      color: var(--joy-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      flex: 0 1 auto;
+    }
+    /* F-158: the status pill never truncates - the long title shrinks/ellipsizes instead. */
+    #topbarStatus {
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: clip;
+      max-width: none;
+    }
+    .scroll-stage {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    .content-area {
+      max-width: 100%;
+      width: 100%;
+      margin: 0 auto;
+      padding: 8px 16px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    /* Panel host (SSOT merge): mounted storybook panels live here, never inside #mainContent. */
+    #mainContent[hidden], #panelHost[hidden], #subViewBar[hidden] { display: none !important; }
+    #panelHost { width: 100%; max-width: 100%; margin: 0 auto; padding: 8px 16px 64px; box-sizing: border-box; }
+    #panelHost > [data-panel][hidden] { display: none !important; }
+    .subview-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 16px 0; }
+    @media (max-width: 720px) { #panelHost { padding: 4px; } .subview-bar { padding: 4px; } }
+    .studio-split-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 1220px) {
+      .studio-split-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Editorial Page Header */
+    .page-hero {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--joy-space-4);
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--joy-border-subtle);
+    }
+    .page-hero__eyebrow {
+      font-family: var(--joy-font-family-mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--joy-accent-text);
+      margin-bottom: 4px;
+    }
+    .page-hero__title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2rem;
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--joy-text-primary);
+      margin: 0 0 4px 0;
+    }
+    .page-hero__sub {
+      font-size: var(--joy-font-size-sm);
+      color: var(--joy-text-secondary);
+      margin: 0;
+      max-width: 780px;
+      line-height: 1.45;
+    }
+
+    /* RateMyServer (RMS) 2D Datasheet Table + Meaningful 3D Asset Thumbnail Showcase */
+    .rms-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .rms-sheet {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-strong);
+      border-radius: var(--joy-radius-card);
+      overflow: hidden;
+      box-shadow: var(--joy-elevation-1);
+      font-size: 13px;
+      transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .rms-sheet.rms-highlight {
+      border-color: var(--joy-accent-primary);
+      box-shadow: 0 0 0 3px var(--joy-focus-ring), var(--joy-elevation-2);
+    }
+    .rms-sheet__head {
+      background: var(--joy-accent-subtle);
+      border-bottom: 1px solid var(--joy-border-strong);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .rms-sheet__head-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .rms-thumb-chip {
+      width: 34px;
+      height: 34px;
+      border-radius: 7px;
+      background: radial-gradient(circle at 30% 30%, rgba(212, 175, 55, 0.26), rgba(12, 19, 34, 0.92));
+      border: 1px solid var(--joy-border-strong);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.12);
+    }
+    .rms-thumb-chip img, .rms-thumb-chip svg {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+      display: block;
+    }
+    .rms-artwork-cell {
+      width: 142px;
+      min-width: 142px;
+      background: radial-gradient(circle at 50% 38%, rgba(212, 175, 55, 0.16), var(--joy-surface-sunken) 78%);
+      text-align: center !important;
+      vertical-align: middle !important;
+      padding: 12px 10px !important;
+    }
+    .rms-artwork-stage {
+      width: 104px;
+      height: 104px;
+      margin: 0 auto 6px auto;
+      border-radius: 10px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(0,0,0,0.28));
+      border: 1px solid var(--joy-border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--joy-elevation-1);
+    }
+    .rms-artwork-stage img {
+      width: 92px;
+      height: 92px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.45));
+      transition: transform 0.2s ease;
+    }
+    .rms-sheet:hover .rms-artwork-stage img {
+      transform: scale(1.07);
+    }
+    .rms-artwork-caption {
+      font-family: var(--joy-font-family-mono);
+      font-size: 10px;
+      color: var(--joy-text-muted);
+      line-height: 1.25;
+      word-break: break-all;
+    }
+    .rms-card-portrait {
+      width: 104px;
+      height: 126px;
+      margin: 0 auto 6px auto;
+      border-radius: 8px;
+      background: linear-gradient(165deg, #2a2112 0%, #121824 60%, #231a0d 100%);
+      border: 2px solid #d4af37;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.45), inset 0 0 12px rgba(212,175,55,0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px;
+      position: relative;
+    }
+    .rms-card-portrait__header {
+      width: 100%;
+      font-family: var(--joy-font-family-mono);
+      font-size: 8.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #ffd166;
+      background: rgba(0,0,0,0.45);
+      border-radius: 3px;
+      padding: 2px 4px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+    .rms-card-portrait img {
+      width: 76px;
+      height: 76px;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
+    }
+    .rms-card-portrait__footer {
+      width: 100%;
+      font-family: var(--joy-font-family-mono);
+      font-size: 8px;
+      color: #e6c875;
+      border-top: 1px solid rgba(212,175,55,0.35);
+      padding-top: 2px;
+      text-align: center;
+    }
+    .rms-sheet__title {
+      font-weight: 700;
+      font-size: 14.5px;
+      color: var(--joy-text-primary);
+    }
+    .rms-sheet__id {
+      font-family: var(--joy-font-family-mono);
+      font-size: 12px;
+      color: var(--joy-text-secondary);
+    }
+    .rms-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .rms-table th, .rms-table td {
+      border: 1px solid var(--joy-border-subtle);
+      padding: 7px 11px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .rms-table th {
+      background: var(--joy-surface-sunken);
+      color: var(--joy-accent-text);
+      font-weight: 600;
+      font-size: 12px;
+      width: 122px;
+      white-space: nowrap;
+    }
+    .rms-table td {
+      color: var(--joy-text-primary);
+      font-size: 13px;
+    }
+    .rms-script-code {
+      display: block;
+      font-family: var(--joy-font-family-mono);
+      font-size: 12px;
+      background: var(--joy-surface-sunken);
+      border: 1px dashed var(--joy-border-default);
+      padding: 6px 10px;
+      border-radius: 4px;
+      color: var(--joy-accent-text);
+      overflow-x: auto;
+    }
+
+    /* Bidirectional RMS Entity Links with Inline Mini-Thumbnails */
+    .rms-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px 2px 4px;
+      border-radius: 5px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--joy-accent-text);
+      background: var(--joy-accent-subtle);
+      border: 1px solid var(--joy-border-default);
+      cursor: pointer;
+      text-decoration: none;
+      margin: 2px 4px 2px 0;
+      transition: transform 0.1s ease, border-color 0.15s ease;
+    }
+    .rms-link:hover {
+      border-color: var(--joy-accent-primary);
+      transform: translateY(-1px);
+    }
+    .rms-link__thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--joy-border-subtle);
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    .rms-link__arrow {
+      font-size: 10px;
+      opacity: 0.8;
+      padding-left: 2px;
+    }
+    .rms-link__rate {
+      font-family: var(--joy-font-family-mono);
+      font-size: 11px;
+      color: var(--joy-text-secondary);
+    }
+
+    /* RMS 3-Column Reference Hub */
+    .rms-hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .rms-hub-box {
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-card);
+      padding: 14px 16px;
+      box-shadow: var(--joy-elevation-1);
+    }
+    .rms-hub-box h4 {
+      margin: 0 0 8px 0;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--joy-accent-text);
+      border-bottom: 1px solid var(--joy-border-subtle);
+      padding-bottom: 6px;
+    }
+    .rms-hub-links {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 13px;
+    }
+    .rms-branch-portraits {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 8px;
+      background: var(--joy-surface-sunken);
+      border: 1px solid var(--joy-border-subtle);
+    }
+    .rms-branch-portraits img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--joy-border-default);
+    }
+
+    /* RMS AreaInfo Map + Spawn Split Layout */
+    .rms-map-split {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 0;
+    }
+    @media (max-width: 860px) {
+      .rms-map-split { grid-template-columns: 1fr; }
+    }
+    .rms-minimap-cell {
+      padding: 14px;
+      background: var(--joy-surface-sunken);
+      border-right: 1px solid var(--joy-border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .rms-spawn-cell {
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Grids & Cards */
+    .observatory-card {
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-card);
+      padding: var(--joy-space-5);
+      box-shadow: var(--joy-elevation-1);
+      display: flex;
+      flex-direction: column;
+      gap: var(--joy-space-3);
+    }
+    .observatory-card__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--joy-space-3);
+      padding-bottom: var(--joy-space-3);
+      border-bottom: 1px solid var(--joy-border-subtle);
+    }
+    .observatory-card__title {
+      font-size: var(--joy-font-size-md);
+      font-weight: 600;
+      color: var(--joy-text-primary);
+      margin: 0;
+    }
+    .observatory-card__meta {
+      font-family: var(--joy-font-family-mono);
+      font-size: var(--joy-font-size-xs);
+      color: var(--joy-text-muted);
+      margin-top: 3px;
+    }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .mono { font-family: var(--joy-font-family-mono); font-variant-numeric: tabular-nums; }
+
+    .controls-panel {
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-card);
+      padding: 12px 16px;
+      box-shadow: var(--joy-elevation-1);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+    }
+    .control-field { display: flex; flex-direction: column; gap: 4px; }
+    .control-field label {
+      font-size: var(--joy-font-size-xs);
+      font-weight: 600;
+      color: var(--joy-text-secondary);
+    }
+
+    .sql-editor {
+      width: 100%;
+      min-height: 96px;
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-primary);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-control);
+      padding: 12px 14px;
+      font-family: var(--joy-font-family-mono);
+      font-size: 0.84rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+    }
+
+    .inspector-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 18, 31, 0.62);
+      z-index: var(--joy-z-backdrop);
+      display: none;
+    }
+    .inspector-backdrop.open { display: block; }
+    .inspector-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(560px, 92vw);
+      background: var(--joy-surface-card);
+      border-left: 1px solid var(--joy-border-strong);
+      box-shadow: var(--joy-elevation-3);
+      z-index: var(--joy-z-drawer);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform var(--joy-duration-normal) var(--joy-ease-out-quint);
+    }
+    .inspector-drawer.open { transform: translateX(0); }
+    .inspector-drawer__head {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--joy-border-default);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .inspector-drawer__body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .elem-cell--pos {
+      color: var(--joy-status-success-fg);
+      background: var(--joy-status-success-bg);
+      font-weight: 700;
+    }
+    .elem-cell--neg {
+      color: var(--joy-status-danger-fg);
+      background: var(--joy-status-danger-bg);
+    }
+    /* AI Asset & Map Studio — 3-Column Review Gate & Biome Brush Tag Pool */
+    .studio-pipeline-banner {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.14), rgba(45, 114, 210, 0.10));
+      border: 1px solid var(--joy-border-strong);
+      border-radius: var(--joy-radius-card);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .review-3col-grid {
+      display: grid;
+      grid-template-columns: 310px 300px 1fr;
+      gap: 0;
+      border-top: 1px solid var(--joy-border-default);
+    }
+    @media (max-width: 1120px) {
+      .review-3col-grid { grid-template-columns: 1fr; }
+    }
+    .review-col {
+      padding: 14px 16px;
+      border-right: 1px solid var(--joy-border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .review-col:last-child { border-right: none; }
+    .review-col__head {
+      font-family: var(--joy-font-family-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--joy-accent-text);
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--joy-border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .gate-pill-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 9px;
+      border-radius: 6px;
+      background: var(--joy-surface-sunken);
+      border: 1px solid var(--joy-border-subtle);
+      font-size: 12px;
+    }
+    .take-selector-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .take-btn {
+      padding: 6px 11px;
+      border-radius: 6px;
+      border: 1px solid var(--joy-border-default);
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-primary);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: var(--joy-font-family-mono);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .take-btn.active {
+      border-color: var(--joy-accent-primary);
+      background: var(--joy-accent-subtle);
+      color: var(--joy-accent-text);
+      font-weight: 700;
+    }
+    .tag-pool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+      gap: 8px;
+    }
+    .tag-asset-card {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 10px;
+      border-radius: 7px;
+      background: var(--joy-surface-sunken);
+      border: 1px solid var(--joy-border-default);
+      cursor: pointer;
+      user-select: none;
+      font-size: 12px;
+    }
+    .tag-asset-card.disabled {
+      opacity: 0.48;
+      border-style: dashed;
+    }
+    .tag-asset-card img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      border-radius: 5px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--joy-border-subtle);
+      flex-shrink: 0;
+    }
+
+    .elem-cell--zero {
+      color: var(--joy-text-muted);
+      opacity: 0.55;
+    }
+  
+    /* =========================================================================
+     * ROLTH MAXION WORLD MAP + MONSTER/1035 + LINEAGE MAP ATLAS STYLES
+     * ======================================================================= */
+    .maxion-world-shell {
+      display: grid;
+      grid-template-columns: 375px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 1180px) {
+      .maxion-world-shell { grid-template-columns: 1fr; }
+    }
+    .maxion-sidebar {
+      background: #0d1119;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+    }
+    .maxion-sidebar__top {
+      padding: 14px 14px 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: linear-gradient(180deg, rgba(255, 209, 102, 0.06), transparent);
+    }
+    .maxion-sidebar__title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 15px;
+      color: #f8fafc;
+    }
+    .maxion-cat-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .maxion-cat-btn {
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #161c28;
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .maxion-cat-btn:hover {
+      border-color: rgba(255, 209, 102, 0.55);
+      color: #fff;
+    }
+    .maxion-cat-btn.active {
+      background: linear-gradient(135deg, rgba(255, 209, 102, 0.22), rgba(212, 175, 55, 0.12));
+      border-color: #ffd166;
+      color: #ffd166;
+      box-shadow: 0 0 12px rgba(255, 209, 102, 0.18);
+    }
+    .maxion-sidebar__body {
+      display: grid;
+      grid-template-columns: 74px 1fr;
+      min-height: 610px;
+      max-height: 700px;
+    }
+    .maxion-lvl-rail {
+      background: #090d14;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+    }
+    .maxion-lvl-btn {
+      padding: 13px 6px;
+      border: none;
+      border-left: 3px solid transparent;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: transparent;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      line-height: 1.3;
+      transition: all 0.15s ease;
+    }
+    .maxion-lvl-btn:hover {
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .maxion-lvl-btn.active {
+      border-left-color: #eab308;
+      background: rgba(234, 179, 8, 0.13);
+      color: #fef08a;
+    }
+    .maxion-mob-grid {
+      padding: 10px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      align-content: start;
+      background: #101520;
+    }
+    .maxion-mob-tile {
+      position: relative;
+      background: #182030;
+      border: 1.5px solid rgba(255, 255, 255, 0.09);
+      border-radius: 10px;
+      padding: 8px 6px 7px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      user-select: none;
+    }
+    .maxion-mob-tile:hover {
+      transform: translateY(-2px);
+      border-color: rgba(125, 211, 252, 0.65);
+      background: #1e293b;
+    }
+    .maxion-mob-tile.pinned {
+      border-color: #eab308;
+      background: linear-gradient(180deg, rgba(234, 179, 8, 0.22), rgba(24, 32, 48, 0.95));
+      box-shadow: 0 0 14px rgba(234, 179, 8, 0.32);
+    }
+    .maxion-mob-tile__pin {
+      position: absolute;
+      top: 4px;
+      left: 5px;
+      font-size: 11px;
+    }
+    .maxion-mob-tile__mvp {
+      position: absolute;
+      top: 4px;
+      right: 5px;
+      font-size: 10px;
+      background: rgba(234, 179, 8, 0.25);
+      border: 1px solid #eab308;
+      color: #fde047;
+      border-radius: 4px;
+      padding: 0 4px;
+      font-weight: 800;
+    }
+    .maxion-mob-tile__img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+    }
+    .maxion-mob-tile__lvl {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: rgba(9, 13, 20, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-family: var(--joy-font-family-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .maxion-mob-tile__name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #e2e8f0;
+      text-align: center;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* World Map Tile Matrix Stage */
+    .maxion-map-stage {
+      background: radial-gradient(circle at 50% 42%, #1a2e26 0%, #0d1b2a 62%, #070d16 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 16px;
+      position: relative;
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.6);
+      overflow-x: auto;
+    }
+    .maxion-grid-matrix {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(126px, 1fr));
+      gap: 12px;
+      min-width: 780px;
+      padding: 8px 4px;
+      position: relative;
+    }
+    .maxion-grid-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .maxion-grid-cell--ocean {
+      border: 1px dashed rgba(56, 189, 248, 0.08);
+      background: radial-gradient(circle, rgba(14, 38, 64, 0.28), rgba(7, 15, 26, 0.15));
+      pointer-events: none;
+    }
+    .maxion-tile-card {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      background: #111c17;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+    }
+    .maxion-tile-card:hover {
+      transform: scale(1.045);
+      z-index: 6;
+      border-color: #fde047;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.75), 0 0 16px rgba(250, 204, 21, 0.35);
+    }
+    .maxion-tile-card.selected {
+      border: 2.5px solid #fde047;
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.28), 0 12px 28px rgba(0, 0, 0, 0.8);
+      z-index: 5;
+    }
+    .maxion-tile-card.mob-pinned {
+      border: 2.5px dashed #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.32), 0 0 22px rgba(56, 189, 248, 0.55);
+      z-index: 7;
+      animation: maxionPulse 1.8s infinite ease-in-out;
+    }
+    @keyframes maxionPulse {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35), 0 0 18px rgba(56, 189, 248, 0.45); }
+      50% { box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.55), 0 0 26px rgba(56, 189, 248, 0.75); }
+    }
+    .maxion-tile-overlay-pin {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(15, 23, 42, 0.58) 0%, rgba(15, 23, 42, 0.18) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      pointer-events: none;
+    }
+    .maxion-tile-overlay-pin img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.85));
+    }
+    .maxion-tile-overlay-pin span {
+      background: rgba(9, 13, 22, 0.92);
+      border: 1px solid #38bdf8;
+      color: #e0f2fe;
+      font-family: var(--joy-font-family-mono);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 99px;
+    }
+    .maxion-tile-label {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 4px 5px 3px 5px;
+      background: linear-gradient(180deg, transparent, rgba(7, 11, 18, 0.94) 42%);
+      color: #f8fafc;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      pointer-events: none;
+    }
+    .maxion-tile-code {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(7, 11, 18, 0.84);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #cbd5e1;
+      font-family: var(--joy-font-family-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .maxion-tile-kind {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      font-size: 12px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+      pointer-events: none;
+    }
+    /* Bridge connectors between grid tiles */
+    .tile-bridge-e {
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      width: 14px;
+      height: 5px;
+      transform: translateY(-50%);
+      background: linear-gradient(90deg, #facc15, #38bdf8);
+      border-top: 1px solid #090d16;
+      border-bottom: 1px solid #090d16;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .tile-bridge-s {
+      position: absolute;
+      bottom: -14px;
+      left: 50%;
+      width: 5px;
+      height: 14px;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, #facc15, #38bdf8);
+      border-left: 1px solid #090d16;
+      border-right: 1px solid #090d16;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* =========================================================================
+     * MAXION MONSTER/1035 HERO DETAIL SHEET STYLES
+     * ======================================================================= */
+    .maxion-monster-hero {
+      background: radial-gradient(circle at 80% 20%, rgba(34, 62, 46, 0.42) 0%, rgba(11, 15, 23, 0.97) 68%);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 16px;
+      padding: 26px 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .maxion-monster-top {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+    .maxion-portrait-box {
+      width: 192px;
+      height: 192px;
+      border-radius: 16px;
+      background: radial-gradient(circle at 50% 50%, rgba(250, 204, 21, 0.18) 0%, rgba(17, 24, 39, 0.95) 75%);
+      border: 1.5px solid rgba(250, 204, 21, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.65);
+      flex-shrink: 0;
+    }
+    .maxion-portrait-box img {
+      width: 148px;
+      height: 148px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.75));
+    }
+    .maxion-monster-title {
+      font-size: 2.35rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin: 0 0 10px 0;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .maxion-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .maxion-pill {
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: #262b36;
+      color: #f1f5f9;
+    }
+    .maxion-pill--rank {
+      background: rgba(30, 58, 138, 0.45);
+      border-color: rgba(96, 165, 250, 0.55);
+      color: #93c5fd;
+    }
+    .maxion-pill--mvp {
+      background: rgba(161, 98, 7, 0.45);
+      border-color: #facc15;
+      color: #fef08a;
+    }
+    .maxion-stat-boxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .maxion-stat-box {
+      min-width: 138px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: rgba(24, 30, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .maxion-stat-box__label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+    .maxion-stat-box__val {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+    }
+    .maxion-section-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.09);
+    }
+    .maxion-section-head::before {
+      content: "";
+      display: inline-block;
+      width: 18px;
+      height: 3px;
+      border-radius: 2px;
+      background: #eab308;
+    }
+    .maxion-elem-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 980px) {
+      .maxion-elem-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .maxion-elem-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #0c1018;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .maxion-elem-pill--weak {
+      border-color: rgba(74, 222, 128, 0.45);
+      background: linear-gradient(90deg, rgba(22, 101, 52, 0.25), #0c1018);
+    }
+    .maxion-elem-pill--resist {
+      opacity: 0.62;
+    }
+    .maxion-drop-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .maxion-drop-card {
+      width: 122px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: transform 0.14s ease;
+    }
+    .maxion-drop-card:hover {
+      transform: translateY(-4px);
+    }
+    .maxion-drop-card__frame {
+      width: 122px;
+      height: 138px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.08), #121621 75%);
+      border: 1.5px solid #f97316;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 8px 8px 8px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    }
+    .maxion-drop-card__frame--purple { border-color: #a855f7; }
+    .maxion-drop-card__frame--common { border-color: rgba(148, 163, 184, 0.45); }
+    .maxion-drop-card__img {
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.65));
+    }
+    .maxion-drop-card__rate {
+      width: 100%;
+      text-align: center;
+      padding: 3px 0;
+      border-radius: 6px;
+      background: rgba(7, 10, 16, 0.9);
+      font-family: var(--joy-font-family-mono);
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .maxion-drop-card__name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+
+    /* =========================================================================
+     * CONNECTED MAP DIRECTORY (.lineage-*) + WORLD BOARD (.maxion-*) BOUNDED CSS
+     * ======================================================================= */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #e2e8f0;
+    }
+    .pill--cyan {
+      background: rgba(56, 189, 248, 0.14);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #7dd3fc;
+    }
+    .pill--gold {
+      background: rgba(250, 204, 21, 0.16);
+      border-color: rgba(250, 204, 21, 0.45);
+      color: #fde047;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #161e2e;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #e2e8f0;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      border-color: #ffd166;
+      color: #ffffff;
+      background: #1e293b;
+    }
+    .btn--primary {
+      background: linear-gradient(135deg, rgba(255, 209, 102, 0.24), rgba(212, 175, 55, 0.14));
+      border-color: #ffd166;
+      color: #ffd166;
+    }
+    .lineage-map-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+    @media (max-width: 960px) {
+      .lineage-map-grid { grid-template-columns: 1fr; }
+    }
+    .lineage-map-card {
+      background: #101724;
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+    }
+    .lineage-map-card__top {
+      display: grid;
+      grid-template-columns: 148px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    .lineage-map-card__preview {
+      width: 148px;
+      height: 148px;
+      min-width: 148px;
+      max-width: 148px;
+      min-height: 148px;
+      max-height: 148px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1.5px solid rgba(255, 209, 102, 0.45);
+      background: #0c121d;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .lineage-map-card__preview svg,
+    .lineage-map-card__preview img {
+      width: 148px !important;
+      height: 148px !important;
+      max-width: 148px !important;
+      max-height: 148px !important;
+      display: block;
+      object-fit: cover;
+    }
+    .lineage-map-card__meta {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .lineage-neighbors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 5px;
+    }
+    .lineage-nb-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #bae6fd;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .lineage-nb-chip:hover {
+      border-color: #fde047;
+      color: #fde047;
+      background: rgba(250, 204, 21, 0.14);
+    }
+    .lineage-spawns-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .lineage-spawn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px 4px 6px;
+      border-radius: 8px;
+      background: #182132;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease;
+    }
+    .lineage-spawn-pill:hover {
+      transform: translateY(-1px);
+      border-color: #ffd166;
+    }
+    .lineage-spawn-pill img {
+      width: 32px !important;
+      height: 32px !important;
+      max-width: 32px !important;
+      max-height: 32px !important;
+      object-fit: contain;
+      border-radius: 6px;
+      background: #0c1018;
+      padding: 2px;
+      flex-shrink: 0;
+    }
+    .maxion-mob-tile__avatar {
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .maxion-mob-tile__avatar img {
+      width: 48px !important;
+      height: 48px !important;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+    }
+    .maxion-mob-tile__pin-icon {
+      position: absolute;
+      top: 4px;
+      left: 5px;
+      font-size: 10px;
+      opacity: 0.75;
+    }
+    .maxion-canvas-card {
+      background: #0d131f;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    }
+    .maxion-canvas-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.65);
+    }
+    .maxion-world-board {
+      padding: 16px;
+      background: radial-gradient(circle at 50% 42%, #1a2e26 0%, #0d1b2a 62%, #070d16 100%);
+      overflow-x: auto;
+    }
+    .maxion-tile-matrix {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(124px, 1fr));
+      gap: 12px;
+      min-width: 780px;
+    }
+    .maxion-map-cell {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      max-height: 168px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: #111c17;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+      transition: transform 0.14s ease, border-color 0.14s ease;
+    }
+    .maxion-map-cell:hover {
+      transform: scale(1.03);
+      border-color: #fde047;
+      z-index: 4;
+    }
+    .maxion-map-cell svg {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+    .maxion-map-cell.selected-tile {
+      border-color: #fde047;
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.32), 0 10px 24px rgba(0, 0, 0, 0.75);
+    }
+    .maxion-map-cell.pinned-spawn {
+      border: 2.5px dashed #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35), 0 0 22px rgba(56, 189, 248, 0.55);
+    }
+    .maxion-map-cell__code {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(7, 11, 18, 0.86);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #e2e8f0;
+      font-family: var(--joy-font-family-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .maxion-map-cell__lv {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(7, 11, 18, 0.86);
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      color: #fde047;
+      font-family: var(--joy-font-family-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .maxion-map-cell__pin {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(15, 23, 42, 0.65) 0%, rgba(15, 23, 42, 0.2) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .maxion-map-cell__pin img {
+      width: 46px !important;
+      height: 46px !important;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.85));
+    }
+    .maxion-map-cell__pin-count {
+      background: rgba(9, 13, 22, 0.92);
+      border: 1px solid #38bdf8;
+      color: #e0f2fe;
+      font-family: var(--joy-font-family-mono);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 99px;
+    }
+    .maxion-map-cell__name {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 5px 6px 4px;
+      background: linear-gradient(180deg, transparent, rgba(7, 11, 18, 0.95) 40%);
+      color: #f8fafc;
+      font-size: 10.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+    .maxion-mob-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .maxion-mob-hero {
+      background: radial-gradient(circle at 80% 20%, rgba(34, 62, 46, 0.42) 0%, rgba(11, 15, 23, 0.97) 68%);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 16px;
+      padding: 22px 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .maxion-mob-portrait-box {
+      width: 176px;
+      height: 176px;
+      border-radius: 14px;
+      background: radial-gradient(circle at 50% 50%, rgba(250, 204, 21, 0.18) 0%, rgba(17, 24, 39, 0.95) 75%);
+      border: 1.5px solid rgba(250, 204, 21, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .maxion-mob-portrait-box img {
+      width: 136px !important;
+      height: 136px !important;
+      object-fit: contain;
+    }
+    .maxion-mob-title {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin: 0 0 8px 0;
+    }
+    .maxion-prop-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .maxion-prop-pill {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: #262b36;
+      color: #f1f5f9;
+    }
+    .maxion-elem-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #0c1018;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .maxion-elem-card__icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 15px;
+    }
+    .maxion-elem-card__name {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+    .maxion-elem-card__pct {
+      font-size: 14px;
+      font-weight: 900;
+      color: #f8fafc;
+      font-family: var(--joy-font-family-mono);
+    }
+    .maxion-elem-card__pct--weak { color: #4ade80; }
+    .maxion-elem-card__pct--resist { color: #f87171; }
+    .maxion-drops-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .maxion-drop-card__art {
+      width: 112px;
+      height: 112px;
+      border-radius: 12px;
+      background: #141b29;
+      border: 1.5px solid rgba(255, 209, 102, 0.35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 6px 6px;
+    }
+    .maxion-drop-card__art img {
+      width: 60px !important;
+      height: 60px !important;
+      object-fit: contain;
+    }
+
+    /* =========================================================================
+     * F-086 SPATIAL SHELL & MOBILE VIEWPORT OVERFLOW GUARDS (LA-05 / LA-09 / LA-12)
+     * ======================================================================= */
+    .topbar {
+      min-height: 44px;
+      max-height: 52px;
+      padding: 4px 16px;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    .topbar__end {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      flex-shrink: 0;
+    }
+    .topbar__end .joy-select,
+    .joy-context-filter-bar .joy-select,
+    .joy-spatial-shell .joy-select {
+      width: auto;
+      min-width: 0;
+      flex: 0 1 auto;
+      height: 30px;
+      padding: 0 24px 0 8px;
+      font-size: 11.5px;
+    }
+    .topbar__end .joy-button,
+    .joy-spatial-shell .joy-button {
+      width: auto;
+      flex: 0 0 auto;
+      height: 28px;
+      padding: 0 10px;
+      font-size: 11.5px;
+    }
+    .topbar-mobile-nav-btn {
+      display: none;
+    }
+    .mobile-nav-scrim {
+      display: none;
+    }
+    .content-area {
+      padding: 4px 12px 48px;
+      gap: 4px;
+    }
+    .joy-spatial-shell {
+      --joy-spatial-min-canvas: 730px;
+      --joy-spatial-chrome-h: 130px;
+      --joy-spatial-bottom-h: 0px;
+      margin-bottom: 10px;
+      border-radius: 14px;
+      background: #0d1624;
+      border: 1px solid rgba(218, 179, 98, 0.45);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.65);
+      overflow: hidden;
+    }
+    .joy-spatial-shell[data-carto-theme="google"] {
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+    #studioGooglePlaceDrawer.joy-spatial-shell__left {
+      background: #161f2c;
+    }
+    #joySpatialViewportShell.joy-spatial-shell__body,
+    .joy-spatial-shell__canvas {
+      background: #2b3d41;
+    }
+    .joy-spatial-shell__canvas {
+      min-height: clamp(560px, calc(100dvh - 140px), 86dvh);
+      height: clamp(560px, calc(100dvh - 140px), 86dvh);
+    }
+    /* F-155: Back/Forward never shrink under the title (they were squeezed to ~28px with text overflowing). */
+    .topbar__history,
+    .topbar__history .joy-button {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .topbar__start {
+      min-width: 0;
+    }
+    #topbarTitle {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    /* F-155/F-157: tablet and small-laptop widths (up to 1180px, an iPad in landscape) - the place drawer overlays
+       the map instead of taking a grid column (the map kept ~134px at 768px with the nav + drawer side by side). */
+    @media (max-width: 1180px) and (min-width: 768px) {
+      .joy-spatial-shell[data-left-open="true"] .joy-spatial-shell__body {
+        grid-template-columns: minmax(0, 1fr);
+        position: relative;
+      }
+      .joy-spatial-shell[data-left-open="true"] .joy-spatial-shell__left {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-start: 0;
+        width: min(340px, 72%);
+        z-index: 500;
+        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.55);
+      }
+    }
+    /* F-155: phones - canvas sized to the world aspect (plus room for the zoom HUD) instead of a 730px column
+       of letterbox, map toolbars pinned on-screen, header history buttons icon-only. */
+    @media (max-width: 767px) {
+      .joy-spatial-shell .joy-spatial-shell__canvas,
+      .joy-spatial-shell[data-bottom-open="true"] .joy-spatial-shell__canvas {
+        min-height: 0;
+        height: min(70dvh, max(320px, calc(100vw * 0.48 + 150px)));
+      }
+      #atlasOlToolbarPanel,
+      #atlasMap3dToolbarPanel {
+        bottom: 6px !important;
+        left: 6px !important;
+        right: 6px;
+        max-height: 34%;
+        overflow-y: auto;
+        gap: 4px !important;
+        padding: 4px 6px !important;
+      }
+      #atlasOlPersonaTelemetryPill,
+      #atlasMap3dPersonaTelemetryPill {
+        display: none;
+      }
+      .topbar__history-label {
+        display: none;
+      }
+      .topbar__start {
+        min-width: 0;
+      }
+    }
+    /* F-155: theater fills the viewport exactly - no page strip from margin-bottom, no 1px border overflow. */
+    .joy-spatial-shell[data-theater="true"] {
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      height: 100dvh;
+    }
+    .joy-spatial-shell[data-theater="true"] .joy-spatial-shell__body {
+      height: 100%;
+    }
+    /* F-156 B4: landscape phones (>=768px wide, <=480px tall) are wider than the phone breakpoint but too short
+       for the 560px canvas, which pushed the OL/3D toolbars below the fold. Fit the canvas under the chrome. */
+    @media (max-height: 480px) and (min-width: 768px) {
+      .joy-spatial-shell:not([data-theater="true"]) .joy-spatial-shell__canvas {
+        min-height: 0;
+        height: max(200px, calc(100dvh - 160px));
+      }
+      /* The top-left HUD (map style buttons) is taller than the short canvas leaves free; keep the engine
+         toolbar above it so its buttons stay reachable. */
+      #atlasOlToolbarPanel,
+      #atlasMap3dToolbarPanel {
+        z-index: 200 !important;
+      }
+    }
+    .joy-spatial-shell[data-theater="true"] .joy-spatial-shell__canvas {
+      min-height: 0;
+      height: 100%;
+    }
+    /* F-157: collapsible app sidebar. Width 0 (not display:none) keeps the layout a plain flex row. */
+    .app-sidebar-reopen {
+      display: none;
+    }
+    body[data-sidebar-collapsed="true"] .sidebar {
+      width: 0;
+      min-width: 0;
+      border-right: 0;
+      overflow: hidden;
+      visibility: hidden;
+    }
+    body[data-sidebar-collapsed="true"] .app-sidebar-reopen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      left: 0;
+      top: 96px;
+      width: 22px;
+      height: 44px;
+      padding: 0;
+      z-index: 900;
+      border: 1px solid var(--hub-chrome-border);
+      border-left: 0;
+      border-radius: 0 10px 10px 0;
+      background: var(--hub-sidebar-bg);
+      color: #fde047;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 4px 0 14px rgba(0, 0, 0, 0.45);
+    }
+    @media (max-width: 767px) {
+      .topbar__sidebar-toggle,
+      body[data-sidebar-collapsed="true"] .app-sidebar-reopen {
+        display: none !important;
+      }
+    }
+    /* F-157: >=768px - the 2D Crisp Vector canvas takes the world's 1040:500 aspect (no dead sea-blue below the
+       map, legend bar directly under it); it is capped so a short window never pushes the legend off-screen.
+       2D OpenLayers and 3D keep the tall canvas. */
+    @media (min-width: 768px) {
+      .joy-spatial-shell[data-engine="2d_svg"]:not([data-theater="true"]) .joy-spatial-shell__canvas,
+      .joy-spatial-shell[data-engine="2d_svg"][data-bottom-open="true"]:not([data-theater="true"]) .joy-spatial-shell__canvas {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 0;
+      }
+      .joy-spatial-shell[data-engine="2d_svg"]:not([data-theater="true"]) .joy-spatial-shell__canvas > #dedicatedWorldAtlasSvg {
+        flex: 0 0 auto;
+        height: auto !important;
+        aspect-ratio: 1040 / 500;
+        max-height: calc(100dvh - 250px);
+      }
+      #dedicatedWorldAtlasSvg.atlas-submap-smooth-transition {
+        transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1), transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .joy-spatial-shell[data-engine="2d_svg"]:not([data-theater="true"]) .atlas-map-legend {
+        position: static !important;
+        flex: 0 0 auto;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border-width: 1px 0 0 !important;
+      }
+    }
+    /* F-158: on short desktop/tablet windows (<=860px tall, e.g. 1080x810, 1024x768) the 3D / OpenLayers canvas is capped
+       so its bottom legend bar stays inside the viewport without scrolling. 1440x900 and taller keep the F-156 sizing. */
+    @media (min-width: 768px) and (min-height: 481px) and (max-height: 860px) {
+      body .joy-spatial-shell:not([data-engine="2d_svg"]):not([data-theater="true"]) .joy-spatial-shell__canvas,
+      body .joy-spatial-shell:not([data-engine="2d_svg"])[data-bottom-open="true"]:not([data-theater="true"]) .joy-spatial-shell__canvas {
+        min-height: 360px;
+        height: calc(100dvh - 320px);
+      }
+      /* the 3D toolbar wraps to 2-3 rows below 1180px; lift it clear of the legend instead of covering it */
+      #atlasMap3dToolbarPanel { bottom: 104px !important; }
+    }
+    /* Not on landscape phones (<=480px tall): there the F-156 B4 canvas math assumes a single-row 160px chrome. */
+    @media (min-width: 768px) and (min-height: 481px) {
+      body .joy-lens-bar {
+        flex-wrap: wrap;
+        max-height: none;
+        overflow: visible;
+        row-gap: 4px;
+      }
+      body .joy-lens-bar__tabs {
+        flex: 0 1 auto;
+        flex-wrap: wrap;
+        max-width: 100%;
+        overflow: visible;
+      }
+      body .joy-lens-bar__trailing {
+        flex: 1 1 560px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        row-gap: 4px;
+      }
+      body .joy-lens-bar__trailing .joy-omni-command-bar {
+        flex: 1 1 220px;
+        min-width: 180px;
+      }
+      body .joy-lens-bar .joy-spatial-shell__toggle,
+      body .joy-lens-bar__tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+      body .topbar {
+        flex-wrap: wrap;
+        max-height: none;
+        overflow: visible;
+      }
+      body .topbar__end {
+        flex-wrap: wrap;
+        flex-shrink: 1;
+      }
+      body .topbar__start {
+        flex: 1 1 340px;
+        min-width: 260px;
+      }
+    }
+    /* F-157: the 1-5 hotkey hints on the lens tabs cost ~20px each; drop them where the bar is tight. */
+    @media (min-width: 768px) and (max-width: 1560px) {
+      .joy-lens-bar__kbd {
+        display: none;
+      }
+    }
+    .joy-spatial-shell[data-carto-theme="google"] #joySpatialViewportShell.joy-spatial-shell__body,
+    .joy-spatial-shell[data-carto-theme="google"] .joy-spatial-shell__canvas {
+      background: #193452;
+    }
+    .joy-spatial-shell__hud--top-left {
+      right: 64px;
+    }
+    /* F-160: the HUD toggle only exists on phones, where the top-left HUD used to cover half the map. */
+    .atlas-hud-toggle { display: none; }
+    /* F-161: the map legend (5-6 rows + a keyboard-shortcut line) covered ~55% of the map on phones. On phones / small coarse
+       pointers it collapses to a 44x44 toggle under the HUD toggle (the bottom edge belongs to the OL/3D toolbars); expanded it drops the keys line and is capped at 25% of the map height. */
+    /* F-162: suppress OpenLayers built-in zoom/rotate/attribution controls so they never overlap the HUD or Legend toggles. */
+    #atlasOlViewportMount .ol-zoom,
+    #atlasOlViewportMount .ol-rotate,
+    #atlasOlViewportMount .ol-attribution { display: none !important; }
+    .joy-spatial-shell--theater { max-height: 100dvh; padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .atlas-legend-toggle { display: none; }
+    @media (max-width: 430px), (pointer: coarse) and (max-width: 767px) {
+      .atlas-legend-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 64px;
+        left: 12px;
+        z-index: 11;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border-radius: 10px;
+        border: 1px solid rgba(212, 175, 55, 0.5);
+        background: rgba(18, 16, 12, 0.92);
+        color: #fde047;
+        font-size: 9px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .atlas-legend-toggle[aria-pressed="true"] { background: #7c5a10; color: #fff7d6; }
+      .joy-spatial-shell[data-legend-collapsed="true"] .atlas-map-legend { display: none !important; }
+      .joy-spatial-shell .atlas-map-legend {
+        top: 116px !important;
+        left: 12px !important;
+        right: 84px !important;
+        bottom: auto !important;
+        z-index: 10;
+        max-height: 25%;
+        overflow-y: auto;
+        pointer-events: auto !important;
+        box-sizing: border-box;
+      }
+      .joy-spatial-shell .atlas-map-legend .atlas-legend-keys { display: none !important; }
+    }
+    @media (max-width: 430px) {
+      .atlas-hud-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 11;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border-radius: 10px;
+        border: 1px solid rgba(212, 175, 55, 0.5);
+        background: rgba(18, 16, 12, 0.92);
+        color: #fde047;
+        font-size: 10px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .atlas-hud-toggle[aria-pressed="true"] { background: #7c5a10; color: #fff7d6; }
+      .joy-spatial-shell__hud--top-left {
+        left: 64px;
+        right: 64px;
+        max-height: 25%;
+        overflow-y: auto;
+      }
+      .joy-spatial-shell[data-hud-hidden="true"] .joy-spatial-shell__hud--top-left { display: none; }
+    }
+    /* F-160: coarse pointers get 44x44 for the theater/exit control. */
+    @media (pointer: coarse) {
+      .atlas-touch-44 { width: 44px !important; height: 44px !important; }
+    }
+    .joy-spatial-shell__hud--top-right {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      left: auto;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      pointer-events: none;
+    }
+    .joy-spatial-shell__hud-panel {
+      flex-wrap: wrap;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.88);
+      padding: 4px 10px;
+      border: 1px solid rgba(218, 179, 98, 0.35);
+    }
+    .joy-spatial-shell__hud-panel--zoom {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: rgba(18, 16, 12, 0.92);
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+      pointer-events: auto;
+    }
+    .joy-spatial-shell__bottom {
+      max-height: none;
+    }
+    .joy-lens-bar {
+      min-height: 42px;
+      max-height: 48px;
+      padding: 3px 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .joy-context-filter-bar {
+      min-height: 38px;
+      max-height: 42px;
+      padding: 3px 8px;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .joy-context-filter-bar__chips {
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+    }
+    .joy-context-filter-bar__notice {
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 2px 8px;
+      font-size: 11px;
+    }
+    .joy-context-filter-bar__select {
+      height: 26px;
+      padding: 0 8px;
+      border-radius: var(--joy-radius-pill, 999px);
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-primary);
+      border: 1px solid var(--joy-border-default);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .joy-omni-command-bar__btn {
+      background: transparent;
+      border: none;
+      color: var(--joy-text-secondary);
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0 4px;
+      /* F-156 B1: flex-shrunk to 8px on phones; keep a tappable box. */
+      flex: 0 0 auto;
+      min-width: 32px;
+      min-height: 32px;
+    }
+    .joy-omni-command-bar__close {
+      display: none;
+      float: right;
+      width: 36px;
+      height: 36px;
+      margin: 0 0 4px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--joy-border-default);
+      background: var(--joy-surface-sunken);
+      color: var(--joy-text-primary);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .joy-omni-command-bar__chips-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid var(--joy-border-subtle);
+    }
+    .joy-omni-command-bar__action {
+      margin-left: auto;
+      font-size: 10px;
+      color: #fde047;
+    }
+    @media (max-width: 767px) {
+      .sidebar {
+        display: none !important;
+        width: 0 !important;
+      }
+      body[data-mobile-nav-open="true"] .sidebar {
+        display: flex !important;
+        position: fixed !important;
+        inset: 0 auto 0 0 !important;
+        width: 268px !important;
+        max-width: 82vw !important;
+        height: 100dvh !important;
+        z-index: 950 !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
+      }
+      body[data-mobile-nav-open="true"] .mobile-nav-scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.65);
+        z-index: 940;
+      }
+      .topbar {
+        min-height: 36px;
+        max-height: 44px;
+        padding: 4px 8px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+      }
+      .topbar-mobile-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 6px;
+        border: 1px solid var(--joy-border-strong);
+        background: var(--joy-surface-sunken);
+        color: var(--joy-text-primary);
+        font-size: 11.5px;
+        font-weight: 700;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .topbar__end {
+        display: none !important;
+      }
+      .main,
+      .scroll-stage {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
+      .content-area {
+        width: 100%;
+        max-width: 100%;
+        padding: 4px;
+        margin: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
+      #perspectiveBar,
+      .joy-spatial-shell {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
+      .joy-lens-bar {
+        max-height: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        padding: 4px 6px;
+        overflow-x: hidden;
+      }
+      .joy-lens-bar__tabs,
+      .joy-lens-bar__trailing {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+      }
+      /* F-156 B1: the omni bar owns its own full-width row; otherwise the content-sized flex item
+         collapsed the input (width:0) to nothing. B2: phone sheet gets a close control. */
+      .joy-lens-bar__trailing {
+        flex-wrap: wrap;
+      }
+      .joy-lens-bar__trailing .joy-omni-command-bar {
+        flex: 1 1 100%;
+        min-width: 0;
+      }
+      .joy-omni-command-bar__close {
+        display: block;
+      }
+      .joy-spatial-shell__canvas {
+        min-height: clamp(360px, calc(100dvh - 180px), 75dvh);
+        height: clamp(360px, calc(100dvh - 180px), 75dvh);
+      }
+    }
+    /* The lens bar scrolls horizontally (overflow-x:auto clips absolute children), so on desktop the
+       omni-search tray is fixed-positioned under the input (vars set by positionAtlasOmniTray). */
+    @media (min-width: 768px) {
+      .joy-lens-bar .joy-omni-command-bar__tray {
+        position: fixed;
+        inset-inline: auto;
+        left: var(--atlas-omni-tray-left, 16px);
+        top: var(--atlas-omni-tray-top, 96px);
+        width: var(--atlas-omni-tray-width, 560px);
+      }
+    }
+    .atlas-screen-pin {
+      transform: scale(var(--atlas-inv-zoom, 1));
+      /* view-box: each pin's inline transform-origin (its world anchor x,y) resolves in the
+         same user space as its x/y attributes, so the anchor stays fixed at every zoom. */
+      transform-box: view-box;
+      transform-origin: 0 0;
+    }
+    /* F-160: coarse pointers get a >=44x44 CSS px transparent hit box per pin; the drawn marker is untouched.
+       --atlas-hit-size is that box in the pin's local (pre-scale) units, set by updateAtlasPinHitSize(). */
+    .atlas-pin-hit {
+      fill: transparent;
+      stroke: none;
+      pointer-events: none;
+      width: var(--atlas-hit-size, 44px);
+      height: var(--atlas-hit-size, 44px);
+      transform-box: fill-box;
+      transform: translate(-50%, -50%);
+    }
+    @media (pointer: coarse) {
+      .atlas-pin-hit { pointer-events: all; }
+    }
+    /* F-155: zone filter marks stay a constant screen size, pivoting on their own cx,cy. */
+    .atlas-zone-mark {
+      transform: scale(var(--atlas-inv-zoom, 1));
+      transform-box: view-box;
+    }
+    [id="studioCartoViewport"] path,
+    [id="studioCartoViewport"] line,
+    [id="studioCartoViewport"] polyline {
+      vector-effect: non-scaling-stroke;
+    }
+    /* World-space cartography (rivers, roads, lakes, coastlines, mountain ridges) scales naturally with zoom! */
+    #atlasCleanVectorContinentRelief path,
+    #atlasCleanVectorContinentRelief line,
+    #atlasCleanVectorContinentRelief polyline,
+    [id^="atlasFieldComposable_"] path,
+    [id^="atlasFieldComposable_"] line,
+    [id^="atlasFieldComposable_"] polyline {
+      vector-effect: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" aria-label="Observatory navigation">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" class="joy-brand-mark">
+          <rect width="32" height="32" rx="6" fill="var(--joy-brand-tile)"/>
+          <path d="M16 4 28 16 16 28 4 16Z" fill="none" stroke="var(--joy-brand-mark-on-tile)" stroke-width="1.6"/>
+          <path d="M16 9 23 16 16 23 9 16Z" fill="var(--joy-brand-mark-on-tile)"/>
+          <circle cx="16" cy="16" r="1.6" fill="var(--joy-brand-mark-contrast)"/>
+        </svg>
+      </div>
+      <div class="brand-info">
+        <h2>Atlas World DB</h2>
+        <span>Joymify Design · RMS Edition</span>
+      </div>
+    </div>
+
+    <div class="sidebar-search" role="search">
+      <div class="sidebar-search__inner">
+        <span class="sidebar-search__icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </span>
+        <input
+          type="search"
+          id="globalSearch"
+          class="sidebar-search__input"
+          placeholder="Search items, mobs, skills..."
+          autocomplete="off"
+        />
+        <kbd class="sidebar-search__kbd">⌘K</kbd>
+      </div>
+    </div>
+
+    <nav class="nav" id="sidebarNav"></nav>
+
+    <div class="sidebar-footer">
+      <span>Web Studio (:8788)</span>
+      <span class="joy-badge joy-badge--brand joy-badge--sm">joy-design</span>
+    </div>
+  </aside>
+  <div id="mobileNavScrim" class="mobile-nav-scrim" onclick="toggleMobileNavDrawer(false)"></div>
+  <button id="appSidebarReopenTab" type="button" class="app-sidebar-reopen" onclick="toggleAppSidebar(false)" title="Show the navigation sidebar (hotkey [)" aria-label="Show navigation sidebar" aria-expanded="false">&#9656;</button>
+
+  <!-- Main Workspace -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__start">
+        <button id="mobileNavMenuBtn" type="button" class="topbar-mobile-nav-btn" aria-label="Toggle Navigation Menu" aria-expanded="false" onclick="toggleMobileNavDrawer()">Menu</button>
+        <div class="topbar__history" style="display:inline-flex;gap:4px;margin-right:6px">
+          <button id="appSidebarToggleBtn" type="button" class="joy-button joy-button--outline joy-button--sm topbar__sidebar-toggle" onclick="toggleAppSidebar()" title="Hide or show the navigation sidebar (hotkey [)" aria-label="Toggle navigation sidebar" aria-expanded="true">&#9776;</button>
+          <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="window.history.back()" title="Browser Back" aria-label="Browser Back">←<span class="topbar__history-label"> Back</span></button>
+          <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="window.history.forward()" title="Browser Forward" aria-label="Browser Forward"><span class="topbar__history-label">Forward </span>→</button>
+        </div>
+        <span class="topbar__title" id="topbarTitle">Interactive World Map &amp; Monster Atlas</span>
+        <span class="joy-badge joy-badge--neutral joy-badge--sm" id="topbarStatus">Ready</span>
+      </div>
+      <div class="topbar__end">
+        <select id="dropRateSelect" class="joy-select" aria-label="Item Drop Rate Multiplier" onchange="setDropRate(this.value)">
+          <option value="1">⚙️ Drop Rate: 1x (Official)</option>
+          <option value="3">⚙️ Drop Rate: 3x</option>
+          <option value="5">⚙️ Drop Rate: 5x</option>
+          <option value="10">⚙️ Drop Rate: 10x</option>
+        </select>
+
+        <select id="paletteSelect" class="joy-select" aria-label="Color palette" onchange="setPalette(this.value)">
+          <option value="classic">Palette: Classic Gold &amp; Navy</option>
+          <option value="clay-court">Palette: Clay Court</option>
+          <option value="verdant-lawn">Palette: Verdant Lawn</option>
+          <option value="nordic-slate">Palette: Nordic Slate</option>
+          <option value="bauhaus-primary">Palette: Bauhaus Primary</option>
+          <option value="outdoor">Palette: High-Contrast Outdoor</option>
+        </select>
+
+        <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="toggleTheme()" id="themeToggleBtn">
+          Theme: Dark
+        </button>
+
+        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="rebuildDb()">
+          Rebuild SQLite
+        </button>
+
+        <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="switchTab('sim'); triggerBalanceSim();">
+          Run Balance Sim
+        </button>
+      </div>
+    </header>
+
+    <div class="scroll-stage" id="scrollStage">
+      <div class="subview-bar" id="subViewBar" role="group" aria-label="View" hidden></div>
+      <main class="content-area" id="mainContent"></main>
+      <div id="panelHost" hidden></div>
+    </div>
+  </div>
+
+  <!-- Slide-Over Entity Inspector Drawer -->
+  <div class="inspector-backdrop" id="inspectorBackdrop" onclick="closeInspector()"></div>
+  <aside class="inspector-drawer" id="inspectorDrawer" aria-label="Entity Contract Inspector">
+    <div class="inspector-drawer__head">
+      <div>
+        <div class="page-hero__eyebrow" id="inspectorKind">CONTRACT INSPECTOR</div>
+        <h3 style="margin:0;font-size:1.15rem" id="inspectorTitle">Entity</h3>
+      </div>
+      <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="closeInspector()">Close (Esc)</button>
+    </div>
+    <div class="inspector-drawer__body" id="inspectorBody"></div>
+  </aside>
+
+<script>

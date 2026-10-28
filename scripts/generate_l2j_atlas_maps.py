@@ -4,7 +4,7 @@ Deterministic L2J.RU / L2Hub / PMFun Cartographic Map Plate Generator.
 
 Generates 12 high-resolution top-down raster map plates in `content/studio/maps/` (11 canonical plates + dual strips):
 1. `all_interlaced_world_grid.png` (960x768) — Master 17x16 `[10.10]..[26.25]` interlaced satellite terrain & polygon zone map (`all_interlaced.jpg` standard)
-2. `c3_continent_parchment_relief.png` (1120x920) — Illustrated antique parchment relief map with 50+ named towns, castles, harbors, dungeons, catacombs & roads (`c3_aden.jpg` standard)
+2. `c3_continent_parchment_relief.png` (2080x1000) — Coordinate-locked antique parchment relief map aligned 1:1 with the 1040x500 SVG/OpenLayers continents (`C01`, `C02`, `C03`), 10 biome surface shaders, rivers, and roads, with ZERO colliding baked text (`c3_aden.jpg` standard)
 3. `d01_field_common_map.png` (520x420) — Enlarged parchment zone map for `Clover South-Gate Meadow: lvl.1 [1-12]` with red zone boundary & 185 red spawn pins (`zone_map_enlarged.php` standard)
 4. `d01_field_radar_map.png` (520x420) — Enlarged top-down orthographic 3D terrain radar map for `Clover South-Gate Meadow: lvl.1 [1-12]` (`zone_map_enlarged_radar.php` standard)
 5. `d01_dungeon_common_map.png` (913x200) & `d01_dungeon_radar_map.png` (913x340) — Enlarged dual parchment + underground multi-room stone labyrinth radar map for `Kiln Cellar Ruins: lvl.9 [9-22]` (`Elven Ruins id=53` standard)
@@ -12,7 +12,7 @@ Generates 12 high-resolution top-down raster map plates in `content/studio/maps/
 7. `town_radial_moat_parchment.png` (1040x500) — Screenshot 3 style: antique parchment with concentric water moat, 4 bridges, central octagonal plaza & building roofs
 8. `town_polygonal_keep_parchment.png` (1040x500) — Screenshot 4 style: antique parchment with pentagonal/hexagonal stone curtain wall, river crossing bridge & north temple
 9. `town_oren_schematic_plate.png` (1040x500) — Screenshot 5 style: crisp white/navy Oren by Cheese architectural floorplan with numbered rooms `1..12` & compass rose
-10. `dungeon_underground_b1_b3_radar.png` (1040x500) — Subterranean Ant Nest / Catacomb stone chambers & glowing warp shafts
+10. `dungeon_underground_b1_b3_radar.png` (1040x500) — Authentic L2J Catacomb / Elven Ruins cyan-verdigris stone slate blueprint with rectilinear chambers, `+` cruciform pillars, stepped thresholds, runic margins & compass rose
 11. `dungeon_vertical_tower_1f_3f_radar.png` (1040x500) — Concentric circular Cruma / Insolence Tower floor ring & central elevator core
 """
 
@@ -21,7 +21,7 @@ from __future__ import annotations
 import math
 import random
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "content" / "studio" / "maps"
@@ -111,64 +111,115 @@ def _draw_halo_text(
     draw.text((x, y), text, font=font, fill=fill, anchor=anchor)
 
 
+def _point_in_poly(x: float, y: float, poly: list[tuple[float, float]]) -> bool:
+    inside = False
+    n = len(poly)
+    j = n - 1
+    for i in range(n):
+        xi, yi = poly[i]
+        xj, yj = poly[j]
+        if ((yi > y) != (yj > y)) and (x < (xj - xi) * (y - yi) / ((yj - yi) or 1e-9) + xi):
+            inside = not inside
+        j = i
+    return inside
+
+
+def _dist_to_poly_edge(x: float, y: float, poly: list[tuple[float, float]]) -> float:
+    best = 1e9
+    n = len(poly)
+    for i in range(n):
+        ax, ay = poly[i]
+        bx, by = poly[(i + 1) % n]
+        dx = bx - ax
+        dy = by - ay
+        l2 = dx * dx + dy * dy
+        t = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / l2)) if l2 > 0 else 0.0
+        qx = ax + t * dx
+        qy = ay + t * dy
+        d = math.hypot(x - qx, y - qy)
+        if d < best:
+            best = d
+    return best
+
+
+# Canonical continent polygons in 1040x500 SVG coordinates (y down), 100% locked to getAtlasContinentPolygons()
+CANON_C01_POLY_SVG: list[tuple[float, float]] = [
+    (28.0, 486.0),
+    (22.0, 345.0),
+    (46.0, 235.0),
+    (235.0, 218.0),
+    (435.0, 232.0),
+    (585.0, 268.0),
+    (642.0, 305.0),
+    (648.0, 338.0),
+    (778.0, 362.0),
+    (785.0, 462.0),
+    (695.0, 486.0),
+    (380.0, 488.0),
+]
+
+CANON_C02_POLY_SVG: list[tuple[float, float]] = [
+    (655.0, 322.0),
+    (612.0, 258.0),
+    (615.0, 202.0),
+    (705.0, 164.0),
+    (858.0, 156.0),
+    (1008.0, 182.0),
+    (1014.0, 312.0),
+    (945.0, 354.0),
+    (805.0, 348.0),
+]
+
+CANON_C03_POLY_SVG: list[tuple[float, float]] = [
+    (68.0, 188.0),
+    (58.0, 62.0),
+    (195.0, 20.0),
+    (525.0, 16.0),
+    (865.0, 22.0),
+    (968.0, 72.0),
+    (928.0, 144.0),
+    (685.0, 152.0),
+    (415.0, 182.0),
+]
+
+
+def _canon_svg_elevation(sx: float, sy: float) -> tuple[float, str]:
+    """
+    Coordinate-locked elevation & continent code at SVG coordinates (sx in 0..1040, sy in 0..500).
+    Uses the exact C01/C02/C03 continent polygons + organic coastline fbm perturbation so every
+    town, castle, dungeon, and hunting area sits accurately inside its continent relief!
+    """
+    nx = sx / 1040.0
+    ny = sy / 500.0
+    n_coast = (_fbm(nx * 18.0, ny * 18.0, octaves=4, seed=401) - 0.5) * 14.0
+    n_macro = _fbm(nx * 8.5, ny * 8.5, octaves=5, seed=709)
+    n_ridge = 1.0 - abs(2.0 * _fbm(nx * 14.0, ny * 14.0, octaves=4, seed=911) - 1.0)
+
+    best_elev = -0.35
+    best_code = "SEA"
+
+    for code, poly in (("C01", CANON_C01_POLY_SVG), ("C02", CANON_C02_POLY_SVG), ("C03", CANON_C03_POLY_SVG)):
+        inside = _point_in_poly(sx, sy, poly)
+        edge_d = _dist_to_poly_edge(sx, sy, poly)
+        signed_d = (edge_d if inside else -edge_d) + n_coast
+        if signed_d > -28.0:
+            base_e = max(-0.35, min(0.65, signed_d / 52.0))
+            if base_e > 0.0:
+                # Add mountain ridges along continent rims & interior highlands
+                base_e += (n_macro - 0.42) * 0.28 + n_ridge * 0.22
+                # Carve inland lakes (Iris Lake in C01, Caldera Lake in C02, Astral Basin in C03)
+                lake_c01 = math.exp(-(((sx - 505.0) / 26.0) ** 2 + ((sy - 375.0) / 16.0) ** 2)) * 0.42
+                lake_c02 = math.exp(-(((sx - 785.0) / 24.0) ** 2 + ((sy - 235.0) / 15.0) ** 2)) * 0.38
+                base_e -= lake_c01 + lake_c02
+            if base_e > best_elev:
+                best_elev = base_e
+                best_code = code
+
+    return best_elev, best_code
+
+
 def _world_elevation(nx: float, ny: float) -> float:
-    """
-    Deterministic elevation field matching L2J `all_interlaced.jpg` continental layout:
-    - West (nx < 0.34): Western Continent (Gracia / Astral Reach) + Isle of Souls (0.27, 0.71) + Talking Island (0.38, 0.88)
-    - East (nx >= 0.36): Massive contiguous Mainland (Aden + Elmore / Hearthbloom + Clockwork + High-Halo)
-    """
-    n_macro = _fbm(nx * 5.2, ny * 5.2, octaves=5, seed=401)
-    n_detail = _fbm(nx * 18.0, ny * 18.0, octaves=4, seed=911)
-    n_ridge = 1.0 - abs(2.0 * _fbm(nx * 9.5, ny * 9.5, octaves=4, seed=709) - 1.0)
-
-    elev = -0.35
-
-    # 1. Main Eastern Supercontinent (Cols 16..26, Rows 10..25 -> nx 0.37..0.96, ny 0.06..0.93)
-    cx, cy = 0.67, 0.49
-    dx = (nx - cx) / 0.31
-    dy = (ny - cy) / 0.43
-    main_mask = 1.0 - (dx * dx * 0.85 + dy * dy * 0.92)
-    # Carve inland sea / bays & southern fjords
-    bay_south = math.exp(-((nx - 0.56) ** 2 / 0.006 + (ny - 0.84) ** 2 / 0.005)) * 0.65
-    bay_west = math.exp(-((nx - 0.40) ** 2 / 0.005 + (ny - 0.52) ** 2 / 0.008)) * 0.55
-    bay_east = math.exp(-((nx - 0.91) ** 2 / 0.004 + (ny - 0.66) ** 2 / 0.007)) * 0.55
-    inland_lake = math.exp(-((nx - 0.58) ** 2 / 0.0018 + (ny - 0.68) ** 2 / 0.0012)) * 0.52
-    north_lake = math.exp(-((nx - 0.72) ** 2 / 0.0015 + (ny - 0.32) ** 2 / 0.0010)) * 0.48
-
-    main_elev = main_mask + (n_macro - 0.48) * 0.72 + (n_detail - 0.5) * 0.22 - bay_south - bay_west - bay_east - inland_lake - north_lake
-    elev = max(elev, main_elev)
-
-    # 2. Western Continent (Gracia / Shattered Halo West Wing: Cols 10..14, Rows 12..21 -> nx 0.05..0.28, ny 0.16..0.72)
-    w_dx = (nx - 0.15) / 0.13
-    w_dy = (ny - 0.45) / 0.25
-    west_elev = (1.0 - (w_dx * w_dx + w_dy * w_dy)) * 0.82 + (n_macro - 0.48) * 0.65 + (n_detail - 0.5) * 0.2
-    elev = max(elev, west_elev)
-
-    # 3. Teacup Starter Island / Talking Island [17_24..18_25] (nx 0.43, ny 0.89)
-    ti_d = ((nx - 0.435) / 0.058) ** 2 + ((ny - 0.885) / 0.048) ** 2
-    ti_elev = (1.0 - ti_d) * 0.72 + (n_detail - 0.48) * 0.28
-    elev = max(elev, ti_elev)
-
-    # 4. Cinnamon-Mill Isle / Isle of Souls [15_20..16_21] (nx 0.33, ny 0.67)
-    ios_d = ((nx - 0.335) / 0.055) ** 2 + ((ny - 0.665) / 0.048) ** 2
-    ios_elev = (1.0 - ios_d) * 0.74 + (n_detail - 0.48) * 0.26
-    elev = max(elev, ios_elev)
-
-    # 5. Glaze-Barge Archipelago / Heine & Devil's Isle [20_24..21_25] (nx 0.63, ny 0.90)
-    hei_d = ((nx - 0.635) / 0.065) ** 2 + ((ny - 0.895) / 0.045) ** 2
-    hei_elev = (1.0 - hei_d) * 0.68 + (n_detail - 0.48) * 0.26
-    elev = max(elev, hei_elev)
-
-    # 6. Cinder Key / Hellbound [15_24] (nx 0.31, ny 0.90)
-    hb_d = ((nx - 0.31) / 0.048) ** 2 + ((ny - 0.89) / 0.042) ** 2
-    hb_elev = (1.0 - hb_d) * 0.66 + (n_detail - 0.48) * 0.25
-    elev = max(elev, hb_elev)
-
-    # Add mountain spines across Northern Halo (ny < 0.26) & Central Spine
-    if elev > 0.05:
-        spine = math.exp(-((ny - 0.22) ** 2) / 0.008) * 0.35 + math.exp(-((nx - 0.68) ** 2) / 0.012) * 0.22
-        elev += spine * (0.4 + 0.6 * n_ridge)
-
+    elev, _ = _canon_svg_elevation(nx * 1040.0, ny * 500.0)
     return elev
 
 
@@ -178,15 +229,18 @@ def generate_all_interlaced_world_grid() -> Path:
     """
     w, h = 960, 768
     cols, rows = 17, 16  # 10..26 (17 cols), 10..25 (16 rows)
-    Scale = 2  # compute heightmap at 480x384 then bilinear upscale + crisp vector text
+    Scale = 2
     hw, hh = w // Scale, h // Scale
 
     elev_grid = [[0.0] * hw for _ in range(hh)]
+    code_grid = [["SEA"] * hw for _ in range(hh)]
     for y in range(hh):
-        ny = y / float(hh - 1)
+        sy = (y / float(hh - 1)) * 500.0
         for x in range(hw):
-            nx = x / float(hw - 1)
-            elev_grid[y][x] = _world_elevation(nx, ny)
+            sx = (x / float(hw - 1)) * 1040.0
+            e, code = _canon_svg_elevation(sx, sy)
+            elev_grid[y][x] = e
+            code_grid[y][x] = code
 
     base_small = Image.new("RGB", (hw, hh))
     px = base_small.load()
@@ -196,53 +250,34 @@ def generate_all_interlaced_world_grid() -> Path:
         for x in range(hw):
             nx = x / float(hw - 1)
             e = elev_grid[y][x]
-            # Directional hillshading from NW
+            code = code_grid[y][x]
             ex = elev_grid[y][min(hw - 1, x + 1)] - elev_grid[y][max(0, x - 1)]
             ey = elev_grid[min(hh - 1, y + 1)][x] - elev_grid[max(0, y - 1)][x]
             shade = max(-0.28, min(0.28, (-ex * 5.8 - ey * 5.8)))
 
-            if e < -0.14:
-                # Deep ocean (#7D89B8 -> #8390BF)
-                t = max(0.0, min(1.0, (e + 0.45) / 0.31))
-                col = _lerp_color((112, 122, 172), (138, 156, 204), t)
+            if e < -0.12:
+                t = max(0.0, min(1.0, (e + 0.35) / 0.23))
+                col = _lerp_color((24, 44, 68), (42, 74, 108), t)
             elif e < 0.0:
-                # Shallow shelf (#97D2F3 -> #A8DBFF)
-                t = (e + 0.14) / 0.14
-                col = _lerp_color((138, 156, 204), (165, 220, 252), t)
-            elif e < 0.05:
-                # Coastal sandbar (#D2AD7A)
-                col = _lerp_color((198, 178, 134), (134, 152, 102), (e / 0.05))
+                t = (e + 0.12) / 0.12
+                col = _lerp_color((42, 74, 108), (78, 136, 168), t)
+            elif e < 0.035:
+                col = _lerp_color((194, 174, 132), (126, 148, 98), e / 0.035)
             else:
-                # Land biomes based on latitude (ny) & longitude (nx) & elevation (e)
-                moisture = _fbm(nx * 8.0 + 3.1, ny * 8.0 + 1.7, octaves=3, seed=555)
-                if ny < 0.24 or e > 0.62:
-                    # Alpine / Schuttgart / High-Halo snow & slate (#806958 -> #D9D4D9 -> #F5FBFF)
-                    t = min(1.0, max(0.0, (e - 0.35) / 0.38 + (0.24 - ny) * 1.4))
-                    if t < 0.5:
-                        col = _lerp_color((118, 102, 86), (195, 188, 182), t * 2.0)
+                moisture = _fbm(nx * 10.0 + 3.1, ny * 10.0 + 1.7, octaves=3, seed=555)
+                if code == "C03":
+                    col = _lerp_color((118, 106, 142), (212, 206, 228), min(1.0, e * 1.4))
+                elif code == "C02":
+                    if moisture < 0.45:
+                        col = _lerp_color((172, 128, 92), (138, 92, 64), moisture / 0.45)
                     else:
-                        col = _lerp_color((195, 188, 182), (246, 250, 255), (t - 0.5) * 2.0)
-                elif nx > 0.66 and 0.26 <= ny <= 0.62:
-                    # Clockwork Steppe / Oren-Goddard-Aden basalt & amber plains (#806958, #C89D70, #C3816B)
-                    if e > 0.38:
-                        col = _lerp_color((118, 92, 68), (168, 132, 104), (e - 0.38) / 0.25)
-                    elif moisture < 0.45:
-                        col = _lerp_color((195, 148, 108), (168, 138, 96), moisture / 0.45)
-                    else:
-                        col = _lerp_color((116, 132, 82), (153, 144, 106), (moisture - 0.45) / 0.55)
-                elif nx < 0.30:
-                    # Western Gracia / Crimson-Violet & Ochre plateau (#BDA777, #C3816B, #7C74B1)
-                    col = _lerp_color((168, 132, 112), (198, 168, 122), min(1.0, e * 1.8))
+                        col = _lerp_color((136, 124, 94), (108, 96, 74), (moisture - 0.45) / 0.55)
                 else:
-                    # Hearthbloom Basin / Talking Island / Elven / Dion / Giran lush valleys (#55635A, #778451, #99906A)
-                    if e > 0.36:
-                        col = _lerp_color((102, 106, 68), (138, 120, 98), (e - 0.36) / 0.25)
-                    elif moisture > 0.52:
-                        col = _lerp_color((72, 112, 74), (108, 134, 82), (moisture - 0.52) / 0.48)
+                    if moisture > 0.55:
+                        col = _lerp_color((76, 118, 82), (104, 138, 88), (moisture - 0.55) / 0.45)
                     else:
-                        col = _lerp_color((138, 142, 92), (186, 166, 118), (0.52 - moisture) / 0.52)
+                        col = _lerp_color((138, 146, 96), (176, 164, 118), moisture / 0.55)
 
-            # Apply hillshade
             r = max(0, min(255, int(col[0] * (1.0 + shade))))
             g = max(0, min(255, int(col[1] * (1.0 + shade))))
             b = max(0, min(255, int(col[2] * (1.0 + shade))))
@@ -255,101 +290,32 @@ def generate_all_interlaced_world_grid() -> Path:
     cw = w / float(cols)
     ch = h / float(rows)
 
-    # Helper to convert grid coordinate (gx in 10..27, gy in 10..26) to pixel (x, y)
-    def g2p(gx: float, gy: float) -> tuple[float, float]:
-        return ((gx - 10.0) * cw, (gy - 10.0) * ch)
-
-    # 2. Draw Tessellated Hunting Zone & Town Polygons over the Continents (matching `all_interlaced.jpg`)
-    zones = [
-        # (code, name, [(gx, gy), ...], border_rgba, fill_rgba)
-        ("243", "Cinnamon-Mill / Isle of Souls", [(15.1, 20.1), (16.4, 20.0), (16.5, 21.4), (15.0, 21.3)], (255, 245, 157, 220), (234, 179, 8, 42)),
-        ("101", "Lantern Hollow [18_24]", [(17.0, 23.6), (18.4, 23.5), (18.5, 24.8), (16.9, 24.7)], (253, 224, 71, 245), (16, 185, 129, 68)),
-        ("102", "Clover South-Gate", [(18.4, 23.5), (19.5, 23.6), (19.4, 24.8), (18.5, 24.8)], (74, 222, 128, 235), (16, 185, 129, 52)),
-        ("53", "Kiln Cellar Ruins", [(17.1, 24.7), (18.5, 24.8), (18.4, 25.6), (17.0, 25.5)], (248, 113, 113, 235), (239, 68, 68, 52)),
-        ("104", "Glaze-Barge Port", [(19.5, 23.6), (21.2, 23.5), (21.1, 24.9), (19.4, 24.8)], (56, 189, 248, 225), (14, 165, 233, 44)),
-        ("105", "Carillon Belfry (Dark-Lunar)", [(17.2, 21.2), (18.8, 21.1), (18.7, 22.4), (17.1, 22.4)], (216, 180, 254, 220), (168, 85, 247, 38)),
-        ("106", "Porcelain Loom (Elven)", [(18.8, 21.1), (20.2, 21.2), (20.1, 22.5), (18.7, 22.4)], (134, 239, 172, 220), (34, 197, 94, 38)),
-        ("107", "Draft-Kiln Post (Ogre)", [(18.6, 22.4), (19.9, 22.5), (19.8, 23.6), (18.4, 23.5)], (253, 186, 116, 220), (249, 115, 22, 38)),
-        ("108", "Kilnwatch Bastion (Hub)", [(19.9, 22.5), (21.6, 22.4), (21.5, 23.6), (19.8, 23.6)], (253, 224, 71, 255), (234, 179, 8, 64)),
-        ("109", "Root-Train Roundhouse", [(20.2, 21.2), (21.8, 21.1), (21.6, 22.4), (20.1, 22.5)], (253, 224, 71, 220), (202, 138, 4, 38)),
-        ("110", "Sunken Potter Cruma", [(18.7, 19.8), (20.3, 19.9), (20.2, 21.2), (18.8, 21.1)], (248, 113, 113, 220), (239, 68, 68, 38)),
-        ("111", "Saffron-Press Floran", [(17.3, 19.8), (18.7, 19.8), (18.8, 21.1), (17.2, 21.2)], (167, 243, 208, 210), (16, 185, 129, 32)),
-        ("112", "Cinder Execution Grounds", [(20.3, 19.9), (21.9, 19.8), (21.8, 21.1), (20.2, 21.2)], (252, 165, 165, 215), (220, 38, 38, 34)),
-        ("201", "Pinion Terminus [21_20]", [(21.9, 19.4), (23.6, 19.3), (23.5, 20.9), (21.8, 21.1)], (56, 189, 248, 235), (2, 132, 199, 48)),
-        ("202", "Pendulum Ant Nest", [(21.8, 21.1), (23.5, 20.9), (23.4, 22.4), (21.6, 22.4)], (248, 113, 113, 220), (220, 38, 38, 38)),
-        ("203", "Brass-Spur Ridge", [(23.6, 19.3), (25.4, 19.5), (25.2, 21.2), (23.5, 20.9)], (251, 191, 36, 210), (217, 119, 6, 34)),
-        ("204", "Escapement Anvil (Oren)", [(21.6, 17.6), (23.6, 17.5), (23.6, 19.3), (21.9, 19.4)], (56, 189, 248, 230), (14, 165, 233, 42)),
-        ("205", "Mainspring Caldera", [(23.6, 17.5), (25.6, 17.6), (25.4, 19.5), (23.6, 19.3)], (251, 146, 60, 215), (234, 88, 12, 36)),
-        ("206", "Chronometer Labyrinth", [(19.8, 17.6), (21.6, 17.6), (21.9, 19.4), (20.3, 19.9)], (192, 132, 252, 215), (147, 51, 234, 36)),
-        ("207", "Inductor Switchyard (Goddard)", [(21.8, 15.5), (24.2, 15.4), (23.6, 17.5), (21.6, 17.6)], (253, 224, 71, 230), (202, 138, 4, 42)),
-        ("208", "Galvanic Leyden Forge", [(24.2, 15.4), (26.1, 15.6), (25.6, 17.6), (23.6, 17.5)], (248, 113, 113, 215), (220, 38, 38, 36)),
-        ("301", "Starfall Haven (Rune)", [(18.2, 13.5), (20.4, 13.4), (20.2, 15.5), (18.0, 15.4)], (56, 189, 248, 235), (2, 132, 199, 45)),
-        ("302", "Star-Tether Causeway", [(20.4, 13.4), (22.2, 13.5), (21.8, 15.5), (20.2, 15.5)], (192, 132, 252, 220), (147, 51, 234, 38)),
-        ("303", "Crown-Beacon Citadel (Aden)", [(22.2, 12.2), (24.6, 12.3), (24.2, 15.4), (21.8, 15.5)], (253, 224, 71, 245), (234, 179, 8, 52)),
-        ("304", "Tower of Insolence Spire", [(20.2, 11.4), (22.2, 11.5), (22.2, 13.5), (20.4, 13.4)], (248, 113, 113, 235), (239, 68, 68, 48)),
-        ("305", "High-Halo Alpine Reach", [(17.8, 11.2), (20.2, 11.4), (20.4, 13.4), (18.2, 13.5)], (226, 232, 240, 220), (148, 163, 184, 38)),
-        ("306", "Forbidden Architect Path", [(24.6, 11.8), (26.2, 12.0), (26.1, 15.6), (24.2, 15.4)], (216, 180, 254, 225), (126, 34, 206, 42)),
-        ("401", "Gracia Astral Union Base", [(11.2, 15.2), (13.8, 15.0), (13.9, 17.8), (11.1, 17.9)], (192, 132, 252, 220), (147, 51, 234, 42)),
-        ("402", "Seed of Infinity / West", [(10.8, 12.6), (13.4, 12.5), (13.8, 15.0), (11.2, 15.2)], (248, 113, 113, 215), (220, 38, 38, 36)),
-        ("403", "Seed of Destruction", [(11.1, 17.9), (13.9, 17.8), (13.6, 20.4), (11.0, 20.2)], (251, 191, 36, 215), (217, 119, 6, 36)),
-        ("404", "Cinder Key (Hellbound)", [(14.6, 23.8), (16.1, 23.8), (16.0, 25.1), (14.5, 25.0)], (248, 113, 113, 220), (220, 38, 38, 42)),
-    ]
-
     font_grid = _load_font(10, bold=True)
-    font_zone = _load_font(9, bold=True)
     font_title = _load_font(12, bold=True)
 
-    for code, zname, pts, stroke_c, fill_c in zones:
-        poly_px = [g2p(gx, gy) for gx, gy in pts]
-        draw.polygon(poly_px, fill=fill_c, outline=stroke_c, width=2)
-        cx = sum(p[0] for p in poly_px) / len(poly_px)
-        cy = sum(p[1] for p in poly_px) / len(poly_px)
-        # Draw red/gold center pin
-        draw.ellipse((cx - 3, cy - 3, cx + 3, cy + 3), fill=(251, 36, 0, 255), outline=(255, 255, 255, 240))
-        _draw_halo_text(
-            draw,
-            (cx, cy - 8),
-            f"[{code}]",
-            font=font_zone,
-            fill=(253, 224, 71),
-            halo=(10, 10, 14),
-            anchor="mm",
-        )
-        _draw_halo_text(
-            draw,
-            (cx, cy + 4),
-            zname,
-            font=font_zone,
-            fill=(255, 255, 255),
-            halo=(10, 10, 14),
-            anchor="mm",
-        )
-
-    # 3. Draw 17x16 Interlaced Server Grid Lines & [X.Y] Coordinate Labels in EVERY Cell (10.10 .. 26.25)
+    # Draw 17x16 Interlaced Server Grid Lines & [X.Y] Coordinate Labels in EVERY Cell (10.10 .. 26.25)
     for c_idx in range(cols):
         gx = 10 + c_idx
         x0 = int(c_idx * cw)
-        draw.line([(x0, 0), (x0, h)], fill=(255, 255, 255, 95), width=1)
+        draw.line([(x0, 0), (x0, h)], fill=(255, 255, 255, 80), width=1)
         for r_idx in range(rows):
             gy = 10 + r_idx
             y0 = int(r_idx * ch)
             if c_idx == 0:
-                draw.line([(0, y0), (w, y0)], fill=(255, 255, 255, 95), width=1)
-            # Highlight T-Deep cell [18.24]
+                draw.line([(0, y0), (w, y0)], fill=(255, 255, 255, 80), width=1)
             if gx == 18 and gy == 24:
-                draw.rectangle((x0 + 1, y0 + 1, int((c_idx + 1) * cw) - 1, int((r_idx + 1) * ch) - 1), outline=(16, 185, 129, 255), width=2)
-            label_col = (253, 224, 71) if (gx == 18 and gy == 24) else (240, 246, 255)
+                draw.rectangle((x0 + 1, y0 + 1, int((c_idx + 1) * cw) - 1, int((r_idx + 1) * ch) - 1), outline=(16, 185, 129, 220), width=2)
+            label_col = (253, 224, 71) if (gx == 18 and gy == 24) else (226, 232, 240)
             _draw_halo_text(
                 draw,
                 (x0 + 3, y0 + 2),
                 f"{gx}.{gy}",
                 font=font_grid,
                 fill=label_col,
-                halo=(18, 20, 28),
+                halo=(15, 20, 28),
                 halo_px=1,
             )
 
-    # Watermark / Corner Legend matching L2J `base.l2j.ru`
     draw.rectangle((8, h - 28, 430, h - 6), fill=(15, 23, 42, 210), outline=(253, 224, 71, 180))
     _draw_halo_text(
         draw,
@@ -369,20 +335,80 @@ def generate_all_interlaced_world_grid() -> Path:
 
 def generate_c3_continent_parchment_relief() -> Path:
     """
-    2. Generates `c3_continent_parchment_relief.png` (1120x920) matching `https://l2j.ru/graciafinal/img/maps/c3_aden.jpg`.
+    2. Generates `c3_continent_parchment_relief.png` (2080x1000 — exact 2x Retina of 1040x500 SVG viewport)
+    matching `https://legacy-lineage2.com/images/maps/AdenAndElmore.jpg` hand-painted sepia/olive relief:
+    - Weathered slate-parchment sea (`#6d7a78` -> `#828e8a`) with dark sepia-ink shoreline and shallow coastal shoals
+    - Rich mottled olive-sepia lowlands (`#595e3e`, `#6e6847`), warm tan-ochre plains (`#8c7d56`),
+      dark forest groves (`#3a4226`), weathered umber canyons (`#705b3e`), and highland ridges (`#8f8266`)
+    - 10 carved inland lakes, marshlands, and coastal island archipelagos (Iris Lake, Narsell Lake,
+      Cruma Marshlands, Alligator Island archipelago, Isle of Prayer lagoons, Floran Delta)
+    - 850+ hand-sketched 3/4 mountain peak hachures (`/\\` with lit NW slope & dark SE shadow) + cliff terraces
+    - Zero baked geometric wheels, bullseyes, or straight ruler pipes!
     """
-    w, h = 1120, 920
+    w, h = 2080, 1000
     Scale = 2
-    hw, hh = w // Scale, h // Scale
+    hw, hh = w // Scale, h // Scale  # 1040 x 500
+
+    # Lakes & Coastal Lagoon basins (sx, sy, rx, ry, depth)
+    lakes = [
+        (362.0, 316.0, 32.0, 18.0, 0.46),  # Cruma Marshlands / Iris Lake
+        (458.0, 378.0, 22.0, 13.0, 0.38),  # Dion / Floran River Confluence
+        (668.0, 438.0, 36.0, 22.0, 0.48),  # Alligator Island & Innadril Lagoon Archipelago
+        (742.0, 456.0, 26.0, 16.0, 0.44),  # Isle of Prayer Coral Lagoon
+        (782.0, 228.0, 24.0, 14.0, 0.42),  # Narsell Lake (Oren / Hunters Valley)
+        (118.0, 412.0, 18.0, 12.0, 0.36),  # Talking Island Inland Lake
+        (292.0, 272.0, 20.0, 12.0, 0.36),  # Swampland Dark Elven Fen
+        (565.0, 88.0,  26.0, 14.0, 0.40),  # Hot Springs / Goddard Alpine Lake
+        (248.0, 96.0,  24.0, 14.0, 0.38),  # Schuttgart Frozen Tarn
+    ]
+
+    # Coastal Archipelago Islands (sx, sy, rx, ry, boost)
+    islands = [
+        (658.0, 442.0, 11.0, 7.5, 0.32),
+        (678.0, 432.0, 8.5, 6.0, 0.28),
+        (684.0, 448.0, 7.0, 5.5, 0.26),
+        (736.0, 458.0, 9.5, 6.5, 0.30),
+        (752.0, 452.0, 8.0, 5.5, 0.28),
+        (354.0, 314.0, 8.5, 5.5, 0.25),
+        (370.0, 320.0, 7.0, 5.0, 0.24),
+    ]
 
     elev_grid = [[0.0] * hw for _ in range(hh)]
+    code_grid = [["SEA"] * hw for _ in range(hh)]
     for y in range(hh):
         ny = y / float(hh - 1)
         for x in range(hw):
-            # Focus on the main continent & starter islands (nx 0.28..0.96 of world)
-            wx = 0.28 + nx_unit(x, hw) * 0.68
-            wy = 0.06 + ny * 0.90
-            elev_grid[y][x] = _world_elevation(wx, wy)
+            nx = x / float(hw - 1)
+            e, code = _canon_svg_elevation(float(x), float(y))
+            # Add finer coastline fractal detail (peninsulas, coves, fjords)
+            coast_detail = (_fbm(nx * 36.0 + 1.7, ny * 36.0 + 2.3, octaves=4, seed=619) - 0.5) * 0.16
+            e += coast_detail
+            for lx, ly, lrx, lry, ldepth in lakes:
+                d2 = ((x - lx) / lrx) ** 2 + ((y - ly) / lry) ** 2
+                if d2 < 2.2:
+                    e -= math.exp(-d2 * 1.35) * ldepth
+            for ix_i, iy_i, irx, iry, iboost in islands:
+                d2 = ((x - ix_i) / irx) ** 2 + ((y - iy_i) / iry) ** 2
+                if d2 < 1.8:
+                    e += math.exp(-d2 * 1.6) * iboost
+                    if e > 0.0 and code == "SEA":
+                        code = "C01"
+            elev_grid[y][x] = e
+            code_grid[y][x] = code
+
+    # Earthy AdenAndElmore.jpg Biome Anchors (Warm Sepia, Olive Moss, Tan Ochre, Umber Canyon, Slate Highland)
+    biome_anchors = [
+        (432.0, 422.0, 130.0, (86, 94, 58), (118, 114, 76)),     # Dion / Plains Olive-Tan
+        (362.0, 318.0, 105.0, (66, 78, 56), (94, 102, 74)),      # Cruma Marshlands Moss-Slate
+        (195.0, 385.0, 115.0, (104, 88, 60), (138, 118, 82)),    # Gludio / Wasteland Warm Ochre
+        (565.0, 412.0, 115.0, (74, 86, 52), (108, 112, 72)),     # Giran / Execution Grounds Olive-Sepia
+        (725.0, 225.0, 120.0, (98, 92, 70), (136, 126, 96)),     # Oren / Timak Steppe Sepia
+        (885.0, 258.0, 110.0, (82, 62, 46), (118, 88, 64)),      # Blazing Swamp / Caldera Umber
+        (785.0, 88.0,  140.0, (108, 102, 84), (148, 140, 118)),  # Aden / Goddard Highland Stone
+        (165.0, 278.0, 105.0, (68, 76, 54), (98, 104, 74)),      # Elven / Swampland Deep Olive
+        (675.0, 435.0, 95.0,  (76, 92, 68), (112, 122, 88)),     # Innadril / Alligator Island Wetland
+        (245.0, 88.0,  135.0, (92, 88, 74), (132, 126, 108)),    # Schuttgart / Rune Northern Crags
+    ]
 
     base_small = Image.new("RGB", (hw, hh))
     px = base_small.load()
@@ -394,219 +420,122 @@ def generate_c3_continent_parchment_relief() -> Path:
             e = elev_grid[y][x]
             ex = elev_grid[y][min(hw - 1, x + 1)] - elev_grid[y][max(0, x - 1)]
             ey = elev_grid[min(hh - 1, y + 1)][x] - elev_grid[max(0, y - 1)][x]
-            shade = max(-0.26, min(0.26, (-ex * 6.5 - ey * 6.5)))
-            grain = (_fbm(nx * 45.0, ny * 45.0, octaves=3, seed=808) - 0.5) * 14.0
+            shade = max(-0.36, min(0.36, (-ex * 12.0 - ey * 12.0)))
+            grain = (_fbm(nx * 64.0, ny * 64.0, octaves=3, seed=808) - 0.5) * 12.0
 
             if e < 0.0:
-                # Warm antique parchment sea (#E8E2D3 -> #D8D1C1) with shoreline ripple rings
+                # AdenAndElmore.jpg Weathered Slate-Parchment Water & Coastal Shelf
                 dist_shore = abs(e)
-                ripple = math.sin(dist_shore * 160.0)
-                base_sea = _lerp_color((216, 209, 193), (233, 227, 212), min(1.0, dist_shore * 4.5))
-                if dist_shore < 0.055 and ripple > 0.65:
-                    base_sea = _lerp_color(base_sea, (165, 155, 132), 0.45)
-                r = int(max(0, min(255, base_sea[0] + grain)))
-                g = int(max(0, min(255, base_sea[1] + grain)))
-                b = int(max(0, min(255, base_sea[2] + grain)))
-                px[x, y] = (r, g, b)
-            elif e < 0.022:
-                # Dark ink coastline stroke (#4A3E2D)
-                px[x, y] = (78, 66, 48)
-            else:
-                # Parchment relief landmass (#C0B399, #A1966C, #8E8E6E, #7A6A46, snow peaks #EFECE6)
-                forest = _fbm(nx * 14.0 + 2.0, ny * 14.0 + 5.0, octaves=3, seed=313)
-                if e > 0.52 or (ny < 0.22 and e > 0.32):
-                    col = _lerp_color((128, 116, 94), (235, 231, 221), min(1.0, (e - 0.32) / 0.38))
-                elif e > 0.30:
-                    col = _lerp_color((152, 138, 104), (118, 102, 72), (e - 0.30) / 0.22)
-                elif forest > 0.54:
-                    col = _lerp_color((148, 146, 112), (114, 118, 84), (forest - 0.54) / 0.46)
+                if dist_shore < 0.032:
+                    t_sh = dist_shore / 0.032
+                    base_sea = _lerp_color((136, 146, 138), (108, 122, 118), t_sh)
                 else:
-                    col = _lerp_color((196, 184, 154), (168, 154, 118), min(1.0, e / 0.30))
+                    base_sea = _lerp_color((108, 122, 118), (82, 96, 96), min(1.0, (dist_shore - 0.032) * 3.2))
+                r = int(max(0, min(255, base_sea[0] + grain * 0.45)))
+                g = int(max(0, min(255, base_sea[1] + grain * 0.45)))
+                b = int(max(0, min(255, base_sea[2] + grain * 0.45)))
+                px[x, y] = (r, g, b)
+            elif e < 0.016:
+                # Dark Sepia-Ink Shoreline Contour (matching AdenAndElmore.jpg coastlines!)
+                px[x, y] = _lerp_color((46, 38, 26), (92, 86, 62), e / 0.016)
+            else:
+                forest = _fbm(nx * 24.0 + 2.0, ny * 24.0 + 5.0, octaves=4, seed=313)
+                micro = _fbm(nx * 48.0 + 1.1, ny * 48.0 + 3.7, octaves=3, seed=919)
+                col = _lerp_color((82, 88, 56), (118, 112, 76), forest)
+                if micro > 0.56:
+                    col = _lerp_color(col, (58, 64, 38), (micro - 0.56) * 1.7)
+                for bx, by, brad, b_low, b_high in biome_anchors:
+                    d = math.hypot(x - bx, y - by)
+                    if d < brad:
+                        w_b = (1.0 - d / brad) ** 1.4
+                        b_col = _lerp_color(b_low, b_high, forest)
+                        col = _lerp_color(col, b_col, w_b * 0.85)
+                if e > 0.30:
+                    col = _lerp_color(col, (132, 118, 92), min(1.0, (e - 0.30) / 0.22))
+                if e > 0.46:
+                    col = _lerp_color(col, (168, 158, 136), min(1.0, (e - 0.46) / 0.20))
 
                 r = int(max(0, min(255, col[0] * (1.0 + shade) + grain)))
                 g = int(max(0, min(255, col[1] * (1.0 + shade) + grain)))
                 b = int(max(0, min(255, col[2] * (1.0 + shade) + grain)))
                 px[x, y] = (r, g, b)
 
-    img = base_small.resize((w, h), resample=Image.Resampling.BILINEAR)
+    img = base_small.resize((w, h), resample=Image.Resampling.BICUBIC)
     overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
-    # Subtle parchment coordinate grid & ornate double border
-    for gx in range(80, w, 100):
-        draw.line([(gx, 16), (gx, h - 16)], fill=(120, 105, 80, 48), width=1)
-    for gy in range(80, h, 100):
-        draw.line([(16, gy), (w - 16, gy)], fill=(120, 105, 80, 48), width=1)
-    draw.rectangle((8, 8, w - 8, h - 8), outline=(92, 64, 40, 230), width=3)
-    draw.rectangle((14, 14, w - 14, h - 14), outline=(140, 112, 78, 190), width=1)
+    def s2p(sx: float, sy: float) -> tuple[float, float]:
+        return (sx * 2.0, sy * 2.0)
 
-    # Dashed Kingdom Territory Borders (`c3_aden.jpg` style)
-    territory_lines = [
-        [(230, 620), (420, 610), (590, 635), (780, 620)],
-        [(310, 430), (540, 445), (760, 420), (960, 435)],
-        [(280, 250), (560, 265), (840, 240)],
-        [(540, 140), (555, 445), (585, 635), (565, 810)],
+    rng_over = random.Random(202610)
+
+    # 1. Hand-Sketched 3/4 Mountain Peak Hachures (/\ with NW lit face & SE dark shadow face, matching Image 4 Death Pass!)
+    mountain_belts = [
+        # (x0, y0, x1, y1, spread, count)
+        (135, 250, 175, 385, 18.0, 55),  # Gludio / Orc Border Range
+        (240, 345, 355, 372, 14.0, 48),  # Wasteland / Ant Nest Rim
+        (430, 245, 485, 368, 16.0, 62),  # Death Pass / Dragonspine Ridge (Image 4!)
+        (540, 325, 645, 368, 15.0, 58),  # Dragon Valley / Antharas Range
+        (635, 372, 695, 445, 14.0, 42),  # Chromatic Highlands Ridge
+        (715, 175, 785, 265, 16.0, 56),  # Oren / Timak Mountain Chain
+        (815, 235, 945, 278, 18.0, 64),  # Blazing Swamp / Caldera Rim
+        (215, 38,  295, 145, 18.0, 58),  # Schuttgart / Spine Mountains
+        (485, 35,  555, 142, 18.0, 58),  # Elmore Central Alps
+        (705, 35,  778, 138, 18.0, 58),  # Forge of the Gods / Goddard Peaks
+        (62,  355, 105, 435, 12.0, 32),  # Talking Island Northern Cliffs (Image 7!)
     ]
-    for line in territory_lines:
-        draw.line(line, fill=(138, 42, 28, 145), width=2)
+    for mx0, my0, mx1, my1, mspread, mcount in mountain_belts:
+        for i in range(mcount):
+            t = i / float(max(1, mcount - 1))
+            bx = mx0 + (mx1 - mx0) * t + rng_over.gauss(0, mspread * 0.45)
+            by = my0 + (my1 - my0) * t + rng_over.gauss(0, mspread * 0.45)
+            ix_g = max(0, min(hw - 1, int(bx)))
+            iy_g = max(0, min(hh - 1, int(by)))
+            if elev_grid[iy_g][ix_g] <= 0.02:
+                continue
+            px_m, py_m = s2p(bx, by)
+            pw = rng_over.uniform(9.0, 16.0)
+            ph = rng_over.uniform(7.0, 13.0)
+            # Lit NW slope
+            draw.polygon(
+                [(px_m - pw, py_m + ph * 0.5), (px_m, py_m - ph), (px_m + pw * 0.1, py_m + ph * 0.6)],
+                fill=(156, 142, 108, 165),
+            )
+            # Shaded SE slope
+            draw.polygon(
+                [(px_m, py_m - ph), (px_m + pw, py_m + ph * 0.5), (px_m + pw * 0.1, py_m + ph * 0.6)],
+                fill=(54, 44, 30, 185),
+            )
+            # Crisp dark sepia ridge strokes (/\)
+            draw.line(
+                [(px_m - pw, py_m + ph * 0.5), (px_m, py_m - ph), (px_m + pw, py_m + ph * 0.5)],
+                fill=(32, 24, 15, 215),
+                width=2,
+            )
+            draw.line(
+                [(px_m, py_m - ph), (px_m + pw * 0.15, py_m + ph * 0.55)],
+                fill=(42, 32, 20, 175),
+                width=1,
+            )
 
-    # Road network connecting Towns, Castles, Dungeons & Fields
-    roads = [
-        # Teacup Island [18_24] roads
-        [(225, 815), (185, 785), (155, 805)],
-        [(225, 815), (245, 775), (285, 790)],
-        [(225, 815), (210, 855)],
-        # Mainland South (Hearthbloom Basin)
-        [(395, 645), (495, 650), (595, 675), (525, 795)],
-        [(395, 645), (345, 555), (465, 540), (595, 675)],
-        [(465, 540), (625, 535), (745, 555), (595, 675)],
-        # Mainland Central (Clockwork Steppe)
-        [(595, 675), (715, 475), (745, 365), (885, 385)],
-        [(715, 475), (555, 455), (465, 540)],
-        [(745, 365), (775, 255), (905, 265)],
-        # Mainland North (Shattered Halo / Aden-Rune-Schuttgart)
-        [(775, 255), (615, 235), (425, 235)],
-        [(615, 235), (645, 145), (815, 165), (775, 255)],
-    ]
-    for r_pts in roads:
-        draw.line(r_pts, fill=(92, 52, 28, 210), width=4)
-        draw.line(r_pts, fill=(212, 128, 72, 220), width=2)
-
-    # 48 Named Landmarks across the Parchment Map (matching `c3_aden.jpg` density & style)
-    # kind: 'town' | 'castle' | 'dungeon' | 'catacomb' | 'field' | 'harbor'
-    landmarks = [
-        # Teacup Meadows / Talking Island [18_24] (T-Deep Slice)
-        ("town", 225, 815, "Lantern Hollow Village [1-10]", True),
-        ("field", 190, 778, "Obelisk of the First Meridian", False),
-        ("dungeon", 150, 802, "Kiln Cellar Ruins [9-22]", True),
-        ("field", 258, 782, "Clover South-Gate Meadow [1-12]", True),
-        ("field", 295, 812, "Kiln-East Glaze Orchard [5-14]", False),
-        ("harbor", 198, 862, "Clarissa's Talking Harbor", False),
-        ("field", 268, 845, "Cedric's Training Hall", False),
-        # Cinnamon-Mill Isle / Isle of Souls [16_21]
-        ("town", 118, 605, "Cinnamon-Mill Haven (Kamael) [1-10]", False),
-        ("dungeon", 95, 562, "Spice-Kiln Nornil's Cave [9-20]", False),
-        ("field", 158, 575, "Cinnamon-Bark Viaduct [1-12]", False),
-        ("field", 142, 642, "Hills of Gold / Dystopia [1-13]", False),
-        # Western Mainland (Dark-Lunar, Lunar, Gludin/Gludio)
-        ("town", 345, 555, "Carillon Hearth Belfry (Dark Elf) [1-10]", False),
-        ("dungeon", 292, 522, "School of Dark Arts [9-20]", False),
-        ("field", 365, 512, "Swampland & Chime-Pipe [1-12]", False),
-        ("catacomb", 322, 478, "Catacomb of Dark Omens [28-40]", False),
-        ("town", 465, 540, "Porcelain Loom Sanctuary (Elven) [1-10]", False),
-        ("dungeon", 432, 578, "Medallion-Heart Elven Fortress [9-20]", False),
-        ("field", 505, 572, "Iris Glaze Lake & Causeway [1-12]", False),
-        ("town", 395, 645, "Draft-Kiln Post (Ogre/Orc) [1-10]", False),
-        ("dungeon", 348, 678, "Ember-Bellows Cave of Trials [9-22]", False),
-        ("field", 435, 685, "Firebrick Bellows Valley [1-15]", False),
-        # Central Convergence Basin (Kilnwatch Bastion / Gludio-Dion-Giran)
-        ("castle", 595, 675, "Town of Kilnwatch Bastion [10-20 Hub]", True),
-        ("castle", 625, 645, "Kilnwatch Shared Castle", False),
-        ("dungeon", 535, 612, "Sunken Potter Cruma Tower [15-25]", False),
-        ("catacomb", 568, 635, "Heretic Kiln Catacomb [20-30]", False),
-        ("town", 495, 715, "Saffron-Press Floran Village [10-18]", False),
-        ("field", 662, 688, "Cinder Apron Execution Ground [12-22]", False),
-        ("catacomb", 645, 725, "Branded Bellows Catacomb [28-40]", False),
-        ("town", 525, 795, "Glaze-Barge Port Town (Heine) [12-25]", False),
-        ("harbor", 462, 785, "Glaze-Barge Deepwater Harbor", False),
-        ("town", 655, 535, "Root-Train Roundhouse (Dwarf) [1-10]", False),
-        ("dungeon", 715, 558, "Sap-Heart Coal Mines [9-20]", False),
-        # Clockwork Steppe (Oren / Hardin / Goddard)
-        ("town", 715, 475, "Pinion Terminus Town [18-25]", False),
-        ("dungeon", 635, 468, "Pendulum Shaft Ant Nest [20-26]", False),
-        ("field", 795, 495, "Brass-Spur Dragon Valley [20-26]", False),
-        ("catacomb", 755, 435, "Dynamo Necropolis of Worship [35-45]", False),
-        ("castle", 745, 365, "Town of Escapement Anvil (Oren) [25-30]", False),
-        ("dungeon", 648, 355, "Chronometer Foundry Labyrinth [25-32]", False),
-        ("field", 875, 385, "Mainspring Caldera Rim [25-30]", False),
-        ("town", 845, 435, "Hunters Cog-Village [24-32]", False),
-        ("castle", 775, 255, "Town of Inductor Switchyard (Goddard) [30-40]", False),
-        ("field", 905, 265, "Galvanic Leyden Hot Springs [30-38]", False),
-        # Northern High-Halo Reach (Rune / Schuttgart / Aden)
-        ("castle", 425, 235, "Starfall Haven Township (Rune) [38-50]", False),
-        ("field", 535, 255, "Star-Tether Swamp of Screams [35-45]", False),
-        ("catacomb", 485, 195, "Astral Witch Catacomb [40-52]", False),
-        ("castle", 815, 165, "Town of Crown-Beacon Citadel (Aden) [50-75]", False),
-        ("dungeon", 695, 175, "Star-Heart Tower of Insolence [50-85]", False),
-        ("catacomb", 615, 145, "Necropolis of Deep Devotion [50-65]", False),
-        ("catacomb", 915, 155, "Forbidden Architect Path [70-99]", False),
-    ]
-
-    font_lbl = _load_font(11, bold=True)
-    font_sub = _load_font(10, bold=False)
-    font_header = _load_font(16, bold=True)
-
-    for kind, x, y, label, is_highlight in landmarks:
-        if kind == "castle":
-            draw.rectangle((x - 6, y - 6, x + 6, y + 6), fill=(220, 38, 38, 255), outline=(255, 248, 220, 255), width=2)
-            draw.rectangle((x - 3, y - 3, x + 3, y + 3), fill=(253, 224, 71, 255))
-        elif kind == "town":
-            r = 6 if is_highlight else 5
-            draw.ellipse((x - r, y - r, x + r, y + r), fill=(234, 179, 8, 255), outline=(45, 28, 12, 255), width=2)
-            draw.ellipse((x - 2, y - 2, x + 2, y + 2), fill=(255, 255, 255, 255))
-        elif kind == "dungeon":
-            draw.polygon([(x, y - 6), (x + 6, y), (x, y + 6), (x - 6, y)], fill=(239, 68, 68, 255), outline=(255, 255, 255, 240))
-        elif kind == "catacomb":
-            draw.polygon([(x, y - 6), (x + 5, y + 5), (x - 5, y + 5)], fill=(168, 85, 247, 255), outline=(255, 255, 255, 240))
-        elif kind == "harbor":
-            draw.ellipse((x - 4, y - 4, x + 4, y + 4), fill=(14, 165, 233, 255), outline=(255, 255, 255, 240))
-        else:
-            draw.ellipse((x - 3, y - 3, x + 3, y + 3), fill=(185, 28, 28, 255), outline=(255, 245, 230, 220))
-
-        text_color = (165, 22, 12) if is_highlight else (32, 22, 12)
-        halo_color = (248, 242, 226)
-        _draw_halo_text(
-            draw,
-            (x, y - 11),
-            label,
-            font=font_lbl if is_highlight else font_sub,
-            fill=text_color,
-            halo=halo_color,
-            anchor="mm",
-            halo_px=2,
-        )
-
-    # Highlight Subtle Compass & Archetype Legend (Zero cluttered district debug frames)
-    _draw_halo_text(
-        draw,
-        (230, 742),
-        "★ D01 TEACUP MEADOWS: Lantern Hollow (Gludin) & Kiln Cellar (The Ant Nest B1-B3)",
-        font=font_lbl,
-        fill=(165, 22, 12),
-        halo=(248, 242, 226),
-        anchor="mm",
-        halo_px=2,
-    )
-
-    # Parchment Cartouche Title Box (Top-Left)
-    draw.rectangle((24, 24, 470, 78), fill=(236, 228, 208, 235), outline=(92, 64, 40, 240), width=2)
-    _draw_halo_text(
-        draw,
-        (36, 40),
-        "CRADLE OF EMBERS — CONTINENTAL PARCHMENT ATLAS",
-        font=font_header,
-        fill=(68, 42, 22),
-        halo=(248, 242, 226),
-        anchor="lm",
-    )
-    _draw_halo_text(
-        draw,
-        (36, 61),
-        "L2J.RU c3_aden.jpg & PMFun Relief Standard · 48 Towns, Dungeons, Catacombs & Hunting Grounds",
-        font=font_sub,
-        fill=(98, 72, 46),
-        halo=(248, 242, 226),
-        anchor="lm",
-    )
+    # 2. 900+ Subtle Olive-Sepia Forest Canopy Clusters
+    for _ in range(920):
+        tx = rng_over.uniform(25.0, 1010.0)
+        ty = rng_over.uniform(20.0, 480.0)
+        ix_g = max(0, min(hw - 1, int(tx)))
+        iy_g = max(0, min(hh - 1, int(ty)))
+        e_t = elev_grid[iy_g][ix_g]
+        if 0.03 < e_t < 0.36:
+            px_t, py_t = s2p(tx, ty)
+            rad_t = rng_over.uniform(3.2, 6.2)
+            draw.ellipse((px_t - rad_t + 1.5, py_t - rad_t + 1.5, px_t + rad_t + 1.5, py_t + rad_t + 1.5), fill=(22, 20, 12, 125))
+            draw.ellipse((px_t - rad_t, py_t - rad_t, px_t + rad_t, py_t + rad_t), fill=(62, 72, 42, 185), outline=(32, 36, 20, 180))
+            draw.ellipse((px_t - rad_t * 0.45, py_t - rad_t * 0.45, px_t + rad_t * 0.2, py_t + rad_t * 0.2), fill=(94, 104, 62, 165))
 
     out = Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
     out_path = OUT_DIR / "c3_continent_parchment_relief.png"
     out.save(out_path, optimize=True)
     return out_path
-
-
-def nx_unit(x: int, hw: int) -> float:
-    return x / float(hw - 1)
 
 
 def _generate_d01_spawn_points() -> list[tuple[float, float, int]]:
@@ -713,53 +642,60 @@ def generate_d01_field_dual_maps() -> tuple[Path, Path]:
     common_path = OUT_DIR / "d01_field_common_map.png"
     common_img.save(common_path, optimize=True)
 
-    # --- B. TOP-DOWN ORTHOGRAPHIC RADAR MAP (`d01_field_radar_map.png`) ---
-    radar_img = Image.new("RGB", (w, h))
+    # --- B. TOP-DOWN ORTHOGRAPHIC SATELLITE TERRAIN MAP (`d01_field_radar_map.png` 1040x500) ---
+    rw_f, rh_f = 1040, 500
+    radar_img = Image.new("RGB", (rw_f, rh_f))
     r_px = radar_img.load()
-    for y in range(h):
-        ny = y / float(h - 1)
-        for x in range(w):
-            nx = x / float(w - 1)
-            dist = ((nx - 0.50) / 0.43) ** 2 + ((ny - 0.52) / 0.43) ** 2
-            n1 = _fbm(nx * 7.5, ny * 7.5, octaves=4, seed=1824)
-            n2 = _fbm(nx * 28.0, ny * 28.0, octaves=4, seed=2418)
-            elev = (1.0 - dist) * 0.65 + (n1 - 0.48) * 0.45 + (n2 - 0.5) * 0.16
-            if elev < 0.0:
-                # Exact L2J radar water (`#677873` -> `#708283`)
-                r_px[x, y] = _lerp_color((103, 120, 115), (114, 133, 132), min(1.0, abs(elev) * 3.2))
+    for y in range(rh_f):
+        ny = y / float(rh_f - 1)
+        for x in range(rw_f):
+            nx = x / float(rw_f - 1)
+            n1 = _fbm(nx * 9.5 + 1.3, ny * 9.5 + 2.1, octaves=4, seed=1824)
+            n2 = _fbm(nx * 28.0 + 4.2, ny * 28.0 + 0.7, octaves=4, seed=2418)
+            n_slope = _fbm((nx + 0.006) * 24.0, (ny + 0.006) * 24.0, octaves=3, seed=901) - n2
+            # Winding S-curve river distance across field
+            riv_y = 0.22 + 0.56 * nx + 0.12 * math.sin(nx * math.pi * 2.4)
+            d_riv = abs(ny - riv_y)
+            if d_riv < 0.032:
+                # Turquoise-slate river channel
+                t_r = d_riv / 0.032
+                r_px[x, y] = _lerp_color((42, 98, 114), (74, 142, 156), 1.0 - t_r)
+            elif d_riv < 0.048:
+                # Sandy riverbank shoal
+                t_b = (d_riv - 0.032) / 0.016
+                r_px[x, y] = _lerp_color((176, 158, 114), (78, 108, 52), t_b)
             else:
-                # Exact L2J radar 3D heightmap (`#3E3E34`, `#5D5A52`, `#55635A`, `#2E2E2E` cliff shadows)
-                n_slope = _fbm((nx + 0.008) * 22.0, (ny + 0.008) * 22.0, octaves=3, seed=901) - n2
-                if elev > 0.36:
-                    base = _lerp_color((62, 62, 52), (98, 94, 84), min(1.0, (elev - 0.36) / 0.3))
+                elev = n1 * 0.68 + n2 * 0.32
+                if elev > 0.62:
+                    # Terraced highland limestone cliff & ridge
+                    base = _lerp_color((108, 104, 82), (156, 148, 126), min(1.0, (elev - 0.62) / 0.28))
                 else:
-                    base = _lerp_color((72, 86, 74), (93, 90, 82), min(1.0, elev / 0.36))
-                mult = 1.0 + max(-0.38, min(0.38, n_slope * 2.6))
+                    # Lush olive-emerald pasture & forest floor
+                    base = _lerp_color((56, 86, 36), (108, 134, 62), min(1.0, elev / 0.62))
+                mult = 1.0 + max(-0.36, min(0.36, n_slope * 2.8))
                 r_px[x, y] = (
                     max(0, min(255, int(base[0] * mult))),
                     max(0, min(255, int(base[1] * mult))),
                     max(0, min(255, int(base[2] * mult))),
                 )
 
-    r_draw = ImageDraw.Draw(radar_img)
-    # Stone roads & terracotta structures on Radar Map (`#7C493C`, `#9C8D7F`)
-    r_draw.line([(225, 95), (245, 165), (265, 245), (235, 325), (165, 340)], fill=(124, 73, 60), width=4)
-    r_draw.line([(245, 165), (375, 195)], fill=(124, 73, 60), width=3)
-    # Town & Ruin roof footprints on radar
-    for rx, ry, rw, rh in [(215, 70, 22, 18), (238, 76, 16, 14), (152, 332, 24, 20), (355, 275, 20, 16)]:
-        r_draw.rectangle((rx, ry, rx + rw, ry + rh), fill=(134, 78, 62), outline=(46, 46, 46))
+    r_ov = Image.new("RGBA", (rw_f, rh_f), (0, 0, 0, 0))
+    r_draw = ImageDraw.Draw(r_ov)
+    rng_f = random.Random(4801)
+    # 180 top-down tree canopy crowns baked into the field relief plate
+    for _ in range(180):
+        tx = rng_f.uniform(40, rw_f - 40)
+        ty = rng_f.uniform(35, rh_f - 35)
+        riv_y_px = (0.22 + 0.56 * (tx / rw_f) + 0.12 * math.sin((tx / rw_f) * math.pi * 2.4)) * rh_f
+        if abs(ty - riv_y_px) > 34:
+            rad_c = rng_f.uniform(6.0, 12.0)
+            r_draw.ellipse((tx - rad_c + 3, ty - rad_c + 3, tx + rad_c + 3, ty + rad_c + 3), fill=(14, 24, 12, 140))
+            r_draw.ellipse((tx - rad_c, ty - rad_c, tx + rad_c, ty + rad_c), fill=(38, 72, 28, 215), outline=(22, 42, 16, 220))
+            r_draw.ellipse((tx - rad_c * 0.5, ty - rad_c * 0.5, tx + rad_c * 0.2, ty + rad_c * 0.2), fill=(88, 132, 58, 195))
 
-    # Red zone boundary contour on radar
-    r_draw.polygon(zone_poly_px, outline=(165, 42, 32), width=2)
-
-    # 185 bright red `#FB2600` spawn dots on Radar Map
-    for u, v, _grp in spawns:
-        sx, sy = int(u * w), int(v * h)
-        r_draw.rectangle((sx - 2, sy - 2, sx + 2, sy + 2), fill=(251, 38, 0))
-        r_draw.point((sx, sy), fill=(255, 200, 190))
-
+    radar_out = Image.alpha_composite(radar_img.convert("RGBA"), r_ov).convert("RGB")
     radar_path = OUT_DIR / "d01_field_radar_map.png"
-    radar_img.save(radar_path, optimize=True)
+    radar_out.save(radar_path, optimize=True)
     return common_path, radar_path
 
 
@@ -1191,7 +1127,9 @@ def generate_town_oren_schematic_plate() -> Path:
 def generate_dungeon_underground_b1_b3_radar() -> Path:
     """
     10. Generates `dungeon_underground_b1_b3_radar.png` (1040x500):
-    Subterranean Ant Nest / Catacomb stone chambers & glowing warp shafts.
+    Authentic Lineage II (`base.l2j.ru` Catacomb / Necropolis / Elven Ruins) cyan-verdigris stone-slate
+    rectilinear architectural floorplan with double-bevel stone walls, internal `+` cruciform pillars,
+    stepped thresholds, flooded moat channels, faint runic parchment margin, and gothic compass rose.
     """
     w, h = 1040, 500
     img = Image.new("RGB", (w, h))
@@ -1200,38 +1138,109 @@ def generate_dungeon_underground_b1_b3_radar() -> Path:
         ny = y / float(h - 1)
         for x in range(w):
             nx = x / float(w - 1)
-            n = _fbm(nx * 20.0, ny * 12.0, octaves=4, seed=601)
-            px[x, y] = _lerp_color((28, 18, 42), (52, 34, 74), n)
+            n1 = _fbm(nx * 18.0, ny * 10.0, octaves=4, seed=601)
+            n2 = _fbm(nx * 54.0, ny * 32.0, octaves=2, seed=619)
+            # Weathered cyan-verdigris stone slate (`#2C4C52` -> `#476D70`) with dark vignette at edges
+            vig = math.hypot((nx - 0.42) * 1.15, (ny - 0.50) * 1.25)
+            t = max(0.0, min(1.0, n1 * 0.72 + n2 * 0.28 - vig * 0.22))
+            col = _lerp_color((32, 54, 58), (74, 114, 116), t)
+            # Faint ancient runic horizontal script bands on left & right margins (matching base.l2j.ru Screenshot 3)
+            if (x < 145 or x > 695) and (y % 14 in (3, 4, 5)) and ((x * 7 + y * 13) % 11 < 6):
+                col = _lerp_color(col, (22, 38, 42), 0.35)
+            px[x, y] = col
 
     draw = ImageDraw.Draw(img)
-    # Subterranean stone labyrinth corridors & B1->B2->B3 chambers
+
+    # Helper to draw a cruciform `+` stone pillar (signature L2J Catacomb / Ruins architectural motif)
+    def _draw_cruciform_pillar(cx_p: int, cy_p: int, r_arm: int = 5) -> None:
+        pts = [
+            (cx_p - 2, cy_p - r_arm), (cx_p + 2, cy_p - r_arm),
+            (cx_p + 2, cy_p - 2), (cx_p + r_arm, cy_p - 2),
+            (cx_p + r_arm, cy_p + 2), (cx_p + 2, cy_p + 2),
+            (cx_p + 2, cy_p + r_arm), (cx_p - 2, cy_p + r_arm),
+            (cx_p - 2, cy_p + 2), (cx_p - r_arm, cy_p + 2),
+            (cx_p - r_arm, cy_p - 2), (cx_p - 2, cy_p - 2),
+        ]
+        draw.polygon(pts, fill=(96, 136, 134), outline=(24, 38, 40))
+
+    # Helper to draw double-walled L2J rectilinear stone chamber
+    def _draw_stone_chamber(x0: int, y0: int, x1: int, y1: int, *, is_sanctum: bool = False, is_flooded: bool = False, pillars: list[tuple[int, int]] = ()) -> None:
+        # Outer dark shadow trench
+        draw.rectangle((x0 - 3, y0 - 3, x1 + 3, y1 + 3), fill=(20, 34, 38))
+        # Stone wall masonry band
+        wall_fill = (114, 158, 154) if not is_sanctum else (132, 174, 168)
+        floor_fill = (52, 86, 88) if is_Flooded_or_Sanctum(is_sanctum, is_flooded) == "flooded" else ((68, 108, 106) if is_sanctum else (62, 98, 98))
+        draw.rectangle((x0, y0, x1, y1), fill=floor_fill, outline=(24, 40, 42), width=2)
+        draw.rectangle((x0 + 3, y0 + 3, x1 - 3, y1 - 3), outline=wall_fill, width=2)
+        draw.rectangle((x0 + 6, y0 + 6, x1 - 6, y1 - 6), outline=(38, 62, 64), width=1)
+        # Subtle ashlar stone floor grid lines
+        for gx in range(x0 + 16, x1 - 8, 16):
+            draw.line([(gx, y0 + 7), (gx, y1 - 7)], fill=(52, 84, 86), width=1)
+        for gy in range(y0 + 16, y1 - 8, 16):
+            draw.line([(x0 + 7, gy), (x1 - 7, gy)], fill=(52, 84, 86), width=1)
+        if is_sanctum:
+            mx, my = (x0 + x1) // 2, (y0 + y1) // 2
+            draw.rectangle((x0 + 16, y0 + 16, x1 - 16, y1 - 16), outline=(146, 188, 182), width=2)
+            draw.polygon([(mx, y0 + 22), (x1 - 22, my), (mx, y1 - 22), (x0 + 22, my)], fill=(54, 88, 90), outline=(164, 206, 198))
+        for px_c, py_c in pillars:
+            _draw_cruciform_pillar(px_c, py_c, 5)
+
+    def is_Flooded_or_Sanctum(s: bool, f: bool) -> str:
+        return "flooded" if f else ("sanctum" if s else "normal")
+
+    # 1. Orthogonal Stone Corridors (double-bevel rectilinear conduits with stepped thresholds)
     corridors = [
-        (90, 236, 690, 264),
-        (210, 95, 238, 405),
-        (410, 95, 438, 405),
-        (610, 95, 638, 405),
-        (210, 102, 638, 126),
-        (210, 374, 638, 398),
+        (140, 238, 675, 262),  # Main West-to-East axial spine
+        (218, 64, 240, 436),   # West N-S colonnade
+        (338, 92, 358, 408),   # Inner-West ring corridor
+        (482, 92, 502, 408),   # Inner-East ring corridor
+        (612, 64, 634, 436),   # East N-S colonnade
+        (218, 64, 634, 84),    # North perimeter gallery
+        (218, 416, 634, 436),  # South perimeter gallery
+        (338, 148, 502, 166),  # North inner sanctum moat bridge
+        (338, 334, 502, 352),  # South inner sanctum moat bridge
     ]
     for x0, y0, x1, y1 in corridors:
-        draw.rectangle((x0, y0, x1, y1), fill=(58, 42, 82), outline=(147, 51, 234), width=2)
+        draw.rectangle((x0 - 2, y0 - 2, x1 + 2, y1 + 2), fill=(22, 36, 40))
+        draw.rectangle((x0, y0, x1, y1), fill=(56, 90, 92), outline=(108, 150, 148), width=2)
+        # Stepped stone threshold ticks at corridor ends
+        if (x1 - x0) > (y1 - y0):
+            for tx in range(x0 + 12, x1 - 12, 36):
+                draw.line([(tx, y0 + 2), (tx, y1 - 2)], fill=(42, 68, 70), width=1)
+        else:
+            for ty in range(y0 + 12, y1 - 12, 36):
+                draw.line([(x0 + 2, ty), (x1 - 2, ty)], fill=(42, 68, 70), width=1)
 
+    # 2. Rectilinear L2J Stone Chambers with internal `+` cruciform pillars
     chambers = [
-        (72, 195, 185, 305, (74, 48, 104)),
-        (175, 62, 285, 152, (68, 44, 96)),
-        (175, 348, 285, 438, (68, 44, 96)),
-        (365, 185, 485, 315, (86, 52, 118)),
-        (565, 62, 685, 156, (78, 46, 108)),
-        (565, 344, 685, 438, (78, 46, 108)),
-        (555, 188, 715, 312, (112, 42, 68)),
+        # (x0, y0, x1, y1, is_sanctum, is_flooded, pillars)
+        (88, 206, 168, 294, False, False, [(112, 228), (144, 228), (112, 272), (144, 272)]),
+        (188, 44, 272, 114, False, False, [(212, 68), (248, 68), (212, 92), (248, 92)]),
+        (188, 168, 272, 228, False, True, [(212, 198), (248, 198)]),
+        (188, 272, 272, 332, False, True, [(212, 302), (248, 302)]),
+        (188, 386, 272, 456, False, False, [(212, 410), (248, 410), (212, 434), (248, 434)]),
+        (308, 44, 392, 114, False, False, [(332, 78), (368, 78)]),
+        (448, 44, 532, 114, False, False, [(472, 78), (508, 78)]),
+        (308, 386, 392, 456, False, False, [(332, 420), (368, 420)]),
+        (448, 386, 532, 456, False, False, [(472, 420), (508, 420)]),
+        (366, 184, 474, 316, True, False, [(386, 204), (454, 204), (386, 296), (454, 296)]),
+        (580, 44, 666, 116, False, False, [(604, 68), (642, 68), (604, 94), (642, 94)]),
+        (580, 384, 666, 456, False, False, [(604, 408), (642, 408), (604, 434), (642, 434)]),
+        (572, 188, 692, 312, True, False, [(596, 212), (668, 212), (596, 288), (668, 288)]),
     ]
-    for x0, y0, x1, y1, fcol in chambers:
-        draw.rectangle((x0, y0, x1, y1), fill=fcol, outline=(192, 132, 252), width=2)
-        draw.rectangle((x0 + 5, y0 + 5, x1 - 5, y1 - 5), outline=(42, 24, 64), width=1)
+    for x0, y0, x1, y1, is_s, is_f, p_list in chambers:
+        _draw_stone_chamber(x0, y0, x1, y1, is_sanctum=is_s, is_flooded=is_f, pillars=p_list)
 
-    # Glowing subterranean warp shafts
-    for wx, wy in ((128, 250), (425, 250), (635, 250)):
-        draw.ellipse((wx - 18, wy - 18, wx + 18, wy + 18), fill=(14, 116, 144), outline=(56, 189, 248), width=2)
+    # 3. Gothic 8-Pointed Filigree Compass Rose in Top-Left (matching base.l2j.ru Screenshot 3)
+    cx_r, cy_r = 76, 82
+    for r_ring in (42, 34, 18):
+        draw.ellipse((cx_r - r_ring, cy_r - r_ring, cx_r + r_ring, cy_r + r_ring), outline=(24, 42, 44), width=2)
+    draw.line([(cx_r, cy_r - 54), (cx_r, cy_r + 54)], fill=(22, 38, 40), width=2)
+    draw.line([(cx_r - 54, cy_r), (cx_r + 54, cy_r)], fill=(22, 38, 40), width=2)
+    draw.line([(cx_r - 36, cy_r - 36), (cx_r + 36, cy_r + 36)], fill=(32, 54, 56), width=1)
+    draw.line([(cx_r - 36, cy_r + 36), (cx_r + 36, cy_r - 36)], fill=(32, 54, 56), width=1)
+    draw.polygon([(cx_r, cy_r - 48), (cx_r - 7, cy_r), (cx_r, cy_r - 12), (cx_r + 7, cy_r)], fill=(124, 168, 164), outline=(20, 34, 36))
+    draw.polygon([(cx_r, cy_r + 48), (cx_r - 7, cy_r), (cx_r, cy_r + 12), (cx_r + 7, cy_r)], fill=(62, 98, 98), outline=(20, 34, 36))
 
     out_path = OUT_DIR / "dungeon_underground_b1_b3_radar.png"
     img.save(out_path, optimize=True)

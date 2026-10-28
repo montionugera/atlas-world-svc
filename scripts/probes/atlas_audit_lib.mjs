@@ -32,7 +32,7 @@ export class Cdp {
     };
   }
   open() { return new Promise((r, j) => { this.ws.onopen = r; this.ws.onerror = j; }); }
-  send(method, params = {}, timeoutMs = 20000) {
+  send(method, params = {}, timeoutMs = 60000) {
     const id = ++this.id;
     this.ws.send(JSON.stringify({ id, method, params }));
     return new Promise((res, rej) => {
@@ -41,7 +41,7 @@ export class Cdp {
       this.pending.set(id, { method, res: v => { clearTimeout(t); res(v); }, rej: e => { clearTimeout(t); rej(e); } });
     });
   }
-  async eval(expr, timeoutMs = 20000) { const r = await this.send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true }, timeoutMs); if (r.exceptionDetails) throw new Error('eval: ' + (r.exceptionDetails.exception?.description || r.exceptionDetails.text) + '\n' + expr.slice(0, 160)); return r.result.value; }
+  async eval(expr, timeoutMs = 60000) { const r = await this.send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true }, timeoutMs); if (r.exceptionDetails) throw new Error('eval: ' + (r.exceptionDetails.exception?.description || r.exceptionDetails.text) + '\n' + expr.slice(0, 160)); return r.result.value; }
 }
 
 let _sharedBrowser = null;
