@@ -1,0 +1,17 @@
+VERDICT: PROVISIONAL PLATEAU
+  defect sweeps standing: none; defect sweeps not confirmed by V2: none; style sweeps: none
+  held-out tally (counts only): {'wins': 1, 'losses': 1, 'ties': 4}; in-sample (all pairs): {'wins': 4, 'losses': 2, 'ties': 16}; regression flags: 0; e2 gate fires: False; plateau condition: True
+INSTALL: True -> live = it10
+  clause 1_no_sweep_of_either_kind_in_heldout_or_insample: ok
+  clause 2_insample_losses_le_wins: ok
+  clause 3_heldout_losses_le_wins: ok
+  clause 4_zero_regression_flags: ok
+  clause 5_no_uncleared_vslive_defect_sweep: ok
+  in-sample tally used for install (F-A6 pass: e2 wins counted): {'wins': 4, 'losses': 2, 'ties': 16}
+  e2 win e2_p1: A-targeted, seen comparator (counted: True)
+  vs-live defect sweeps: none; veto uncleared: none; cleared by V2: none (the veto never makes BLOCKED)
+  counterfactual excluding e2's pairs: install True (in-sample {'wins': 3, 'losses': 2, 'ties': 15}; failing clauses: none)
+LOOP (it10): STOP-PLATEAU triggered True -> stage 2 in it11
+  DONE: not evaluated (no stage-2 data)
+  STOP-CAP: last iteration it12; installs in it10-it12: [10]; closed with no measured gain: False; it13 stage-2 round allowed: False
+  STOP-COST triggered: False
