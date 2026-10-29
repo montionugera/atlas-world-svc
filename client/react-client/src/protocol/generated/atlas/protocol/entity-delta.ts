@@ -4,8 +4,10 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { EntityType } from './entity-type';
-import { Vec2 } from './vec2';
+import { EnchantVisualGlow } from '../../atlas/protocol/enchant-visual-glow.js';
+import { EntityType } from '../../atlas/protocol/entity-type.js';
+import { Race } from '../../atlas/protocol/race.js';
+import { Vec2 } from '../../atlas/protocol/vec2.js';
 
 
 export class EntityDelta {
@@ -83,8 +85,28 @@ inputAck():number {
   return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
 }
 
+level():number {
+  const offset = this.bb!.__offset(this.bb_pos, 26);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
+xp():number {
+  const offset = this.bb!.__offset(this.bb_pos, 28);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+}
+
+race():Race {
+  const offset = this.bb!.__offset(this.bb_pos, 30);
+  return offset ? this.bb!.readInt8(this.bb_pos + offset) : Race.HumanDemiHuman;
+}
+
+enchantGlow():EnchantVisualGlow {
+  const offset = this.bb!.__offset(this.bb_pos, 32);
+  return offset ? this.bb!.readInt8(this.bb_pos + offset) : EnchantVisualGlow.None;
+}
+
 static startEntityDelta(builder:flatbuffers.Builder) {
-  builder.startObject(11);
+  builder.startObject(15);
 }
 
 static addId(builder:flatbuffers.Builder, id:number) {
@@ -129,6 +151,22 @@ static addOwnerId(builder:flatbuffers.Builder, ownerId:number) {
 
 static addInputAck(builder:flatbuffers.Builder, inputAck:number) {
   builder.addFieldInt32(10, inputAck, 0);
+}
+
+static addLevel(builder:flatbuffers.Builder, level:number) {
+  builder.addFieldInt32(11, level, 0);
+}
+
+static addXp(builder:flatbuffers.Builder, xp:number) {
+  builder.addFieldInt32(12, xp, 0);
+}
+
+static addRace(builder:flatbuffers.Builder, race:Race) {
+  builder.addFieldInt8(13, race, Race.HumanDemiHuman);
+}
+
+static addEnchantGlow(builder:flatbuffers.Builder, enchantGlow:EnchantVisualGlow) {
+  builder.addFieldInt8(14, enchantGlow, EnchantVisualGlow.None);
 }
 
 static endEntityDelta(builder:flatbuffers.Builder):flatbuffers.Offset {

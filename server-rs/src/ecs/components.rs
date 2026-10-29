@@ -16,6 +16,18 @@ impl RaceComponent {
     }
 }
 
+/// Weapon enchantment visual glow aura component for paperdoll / replication.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct WeaponGlowComponent {
+    pub glow: crate::content::EnchantVisualGlow,
+}
+
+impl WeaponGlowComponent {
+    pub fn new(glow: crate::content::EnchantVisualGlow) -> Self {
+        Self { glow }
+    }
+}
+
 #[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Position {
     pub x: f32,

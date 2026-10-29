@@ -1074,11 +1074,26 @@ impl AtlasSimulation {
             Option<&ThreatTable>,
             Option<&PlayerInputState>,
             Option<&PlayerProgression>,
+            Option<&crate::ecs::components::RaceComponent>,
+            Option<&crate::ecs::components::WeaponGlowComponent>,
         ), Or<(With<PlayerTag>, With<MobTag>)>>();
         let mut entities: Vec<(String, EntitySnapshotData)> = query
             .iter(&self.world)
             .map(
-                |(id, pos, vel, health, is_player, bot, anchor, threat, input, prog)| {
+                |(
+                    id,
+                    pos,
+                    vel,
+                    health,
+                    is_player,
+                    bot,
+                    anchor,
+                    threat,
+                    input,
+                    prog,
+                    race_comp,
+                    glow_comp,
+                )| {
                     let mut flags = 0;
                     if health.is_alive {
                         flags |= STATE_FLAG_ALIVE;
@@ -1115,6 +1130,12 @@ impl AtlasSimulation {
                             input_ack: input.map_or(0, |i| i.client_tick),
                             level: prog.map_or(0, |p| p.level),
                             xp: prog.map_or(0, |p| p.xp),
+                            race: race_comp
+                                .map(|r| r.race.into())
+                                .unwrap_or(crate::protocol::Race::HumanDemiHuman),
+                            enchant_glow: glow_comp
+                                .map(|g| g.glow.into())
+                                .unwrap_or(crate::protocol::EnchantVisualGlow::None),
                         },
                     )
                 },
@@ -1164,6 +1185,8 @@ impl AtlasSimulation {
                         input_ack: 0,
                         level: 0,
                         xp: 0,
+                        race: crate::protocol::Race::HumanDemiHuman,
+                        enchant_glow: crate::protocol::EnchantVisualGlow::None,
                     },
                 )
             })
@@ -1369,6 +1392,7 @@ impl AtlasSimulation {
             DashState::default(),
             crate::ecs::components::ParryState::default(),
             crate::ecs::components::RaceComponent::new(race_enum),
+            crate::ecs::components::WeaponGlowComponent::default(),
             crate::combat::BuffContainer::default(),
         ));
         entity

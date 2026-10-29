@@ -1,11 +1,13 @@
-import * as flatbuffers from 'flatbuffers';
-import { WorldSnapshot } from './generated/atlas/protocol/world-snapshot';
-import { EntityDelta } from './generated/atlas/protocol/entity-delta';
-import { EntityType } from './generated/atlas/protocol/entity-type';
-import { GameEvent } from './generated/atlas/protocol/game-event';
-import { GameEventKind } from './generated/atlas/protocol/game-event-kind';
+import * as flatbuffers from "flatbuffers";
+import { WorldSnapshot } from "./generated/atlas/protocol/world-snapshot";
+import { EntityDelta } from "./generated/atlas/protocol/entity-delta";
+import { EntityType } from "./generated/atlas/protocol/entity-type";
+import { GameEvent } from "./generated/atlas/protocol/game-event";
+import { GameEventKind } from "./generated/atlas/protocol/game-event-kind";
+import { Race } from "./generated/atlas/protocol/race";
+import { EnchantVisualGlow } from "./generated/atlas/protocol/enchant-visual-glow";
 
-export { EntityType, GameEventKind };
+export { EntityType, GameEventKind, Race, EnchantVisualGlow };
 
 /** `state_flags` bit: the entity is alive. */
 export const STATE_FLAG_ALIVE = 1;
@@ -29,6 +31,14 @@ export interface DecodedEntityDelta {
   ownerId: number;
   /** `client_tick` of the last input a player's tick ran on; 0: none / older server. */
   inputAck: number;
+  /** Player level (0 for non-players / uninitialized). */
+  level: number;
+  /** Player experience within current level. */
+  xp: number;
+  /** Canonical race affiliation. */
+  race: Race;
+  /** Visual weapon glow tier. */
+  enchantGlow: EnchantVisualGlow;
 }
 
 export interface DecodedGameEvent {
@@ -54,7 +64,10 @@ export class BinaryDeltaDecoder {
    * @returns Clean parsed DecodedSnapshot
    */
   static decode(buffer: Uint8Array | ArrayBufferLike): DecodedSnapshot {
-    const uint8 = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer as ArrayBuffer);
+    const uint8 =
+      buffer instanceof Uint8Array
+        ? buffer
+        : new Uint8Array(buffer as ArrayBuffer);
     const bb = new flatbuffers.ByteBuffer(uint8);
     const snapshot = WorldSnapshot.getRootAsWorldSnapshot(bb);
 
@@ -82,9 +95,13 @@ export class BinaryDeltaDecoder {
         maxHealth: entity.maxHealth(),
         stateFlags: entity.stateFlags(),
         targetId: entity.targetId(),
-        mobType: entity.mobType() ?? '',
+        mobType: entity.mobType() ?? "",
         ownerId: entity.ownerId(),
         inputAck: entity.inputAck(),
+        level: entity.level(),
+        xp: entity.xp(),
+        race: entity.race(),
+        enchantGlow: entity.enchantGlow(),
       };
     }
 
@@ -125,6 +142,8 @@ export class BinaryDeltaDecoder {
   }
 }
 
-export function decodeSnapshot(buffer: Uint8Array | ArrayBufferLike): DecodedSnapshot {
+export function decodeSnapshot(
+  buffer: Uint8Array | ArrayBufferLike,
+): DecodedSnapshot {
   return BinaryDeltaDecoder.decode(buffer);
 }

@@ -56,7 +56,8 @@ fn test_simulation_spawns_avatar_with_canonical_race_component() {
             ..Default::default()
         };
 
-        let entity = sim.spawn_player_avatar_with_loadout(&session_id, 200.0, 200.0, Some(&loadout));
+        let entity =
+            sim.spawn_player_avatar_with_loadout(&session_id, 200.0, 200.0, Some(&loadout));
 
         // 1. Verify RaceComponent attached
         let race_comp = sim
@@ -82,10 +83,26 @@ fn test_simulation_spawns_avatar_with_canonical_race_component() {
 fn test_derived_stats_racial_traits_and_luk_influence() {
     let base_stats = PrimaryStats::new(35, 35, 35, 35, 35, 35);
 
-    let dwarf_stats = derived_stats_with_race(10, &base_stats, Some("basic_sword"), Some(AtlasRace::Dwarf));
-    let human_stats = derived_stats_with_race(10, &base_stats, Some("basic_sword"), Some(AtlasRace::HumanDemiHuman));
-    let furral_stats = derived_stats_with_race(10, &base_stats, Some("basic_sword"), Some(AtlasRace::Furral));
-    let dark_lunar_stats = derived_stats_with_race(10, &base_stats, Some("basic_sword"), Some(AtlasRace::DarkLunar));
+    let dwarf_stats =
+        derived_stats_with_race(10, &base_stats, Some("basic_sword"), Some(AtlasRace::Dwarf));
+    let human_stats = derived_stats_with_race(
+        10,
+        &base_stats,
+        Some("basic_sword"),
+        Some(AtlasRace::HumanDemiHuman),
+    );
+    let furral_stats = derived_stats_with_race(
+        10,
+        &base_stats,
+        Some("basic_sword"),
+        Some(AtlasRace::Furral),
+    );
+    let dark_lunar_stats = derived_stats_with_race(
+        10,
+        &base_stats,
+        Some("basic_sword"),
+        Some(AtlasRace::DarkLunar),
+    );
 
     // Dwarf gets extra 1000 carry weight
     assert_eq!(dwarf_stats.max_weight, human_stats.max_weight + 1000);

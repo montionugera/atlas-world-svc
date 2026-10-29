@@ -83,12 +83,7 @@ fn test_buff_container_stat_aggregation_and_slot_caps() {
     }
 
     // Exceeding standard slot cap fails
-    let excess_buff = ActiveBuff::new(
-        "excess_buff",
-        "Excess Buff",
-        BuffCategory::Offensive,
-        60.0,
-    );
+    let excess_buff = ActiveBuff::new("excess_buff", "Excess Buff", BuffCategory::Offensive, 60.0);
     assert!(
         !container.apply_buff(excess_buff),
         "Should reject buffs exceeding standard slot cap"

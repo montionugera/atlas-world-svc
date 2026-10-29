@@ -228,10 +228,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let heartbeat = HeartbeatTask::start(agones.clone(), 2);
     info!("Agones 2-second heartbeat loop initiated");
 
+    // Instanced Dungeon Registry
+    let dungeons = Arc::new(server_rs::fleet::DungeonRegistry::new());
+
     // 4. WebSocket Server
     let mut ws_server_inner = WsServer::bind(&bind_addr, auth_guard)
         .await
-        .map_err(std::io::Error::other)?;
+        .map_err(std::io::Error::other)?
+        .with_dungeons(dungeons.clone())
+        .with_agones(agones.clone());
     if let Some(ref client) = nakama_client {
         ws_server_inner = ws_server_inner.with_nakama(client.clone());
     } else if let Some(ref engine) = in_process_meta {

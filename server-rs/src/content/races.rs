@@ -265,7 +265,10 @@ mod tests {
 
         let dwarf = AtlasRace::Dwarf.profile();
         assert_eq!(dwarf.home_town_id, "town-root-train-roundhouse");
-        assert!(dwarf.hitbox_height_m < 1.5, "Dwarves have miniature hitboxes");
+        assert!(
+            dwarf.hitbox_height_m < 1.5,
+            "Dwarves have miniature hitboxes"
+        );
         assert_eq!(dwarf.bonus_carry_weight, 1000);
 
         let orc = AtlasRace::OgreOrc.profile();

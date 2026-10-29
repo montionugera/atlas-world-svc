@@ -53,7 +53,7 @@ fn test_pure_rust_meta_engine_enchant_and_socketing_rpc_flow() {
         )
         .expect("enchant_equipment should succeed");
 
-    assert_eq!(enchant_1["ok"].as_bool().unwrap(), true);
+    assert!(enchant_1["ok"].as_bool().unwrap());
     assert_eq!(enchant_1["newTier"].as_u64().unwrap(), 1);
     assert_eq!(enchant_1["glow"].as_str().unwrap(), "none");
 

@@ -3,9 +3,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
 
 export { ClientInput } from './protocol/client-input.js';
+export { EnchantVisualGlow } from './protocol/enchant-visual-glow.js';
 export { EntityDelta } from './protocol/entity-delta.js';
 export { EntityType } from './protocol/entity-type.js';
 export { GameEvent } from './protocol/game-event.js';
 export { GameEventKind } from './protocol/game-event-kind.js';
+export { Race } from './protocol/race.js';
 export { Vec2 } from './protocol/vec2.js';
 export { WorldSnapshot } from './protocol/world-snapshot.js';

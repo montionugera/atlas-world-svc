@@ -53,9 +53,9 @@ pub use ecs::{
     AiAgent, AiState, AttackFacingCone, BotAgent, CastingState, CombatStats, CooldownTracker,
     DashState, DeadMobTracker, ElementalAttributes, EntityId, EquippedWeapon, Health, Mass, MobAi,
     MobSpawnAnchor, MobTag, MobWindupConfig, Parried, ParryState, PlayerInputState, PlayerTag,
-    Position, Projectile, RaceComponent, StatusEffects, Velocity, WeaponKind, MAX_PARRY_CHARGES,
-    MAX_PARRY_HOLD_WINDOW_SEC, MOB_FACING_CONE_HALF_ANGLE_COS, MOB_WINDUP_DURATION_SEC,
-    PARRY_COOLDOWN_SEC, PARRY_REFLECT_STAGGER_SEC,
+    Position, Projectile, RaceComponent, StatusEffects, Velocity, WeaponGlowComponent, WeaponKind,
+    MAX_PARRY_CHARGES, MAX_PARRY_HOLD_WINDOW_SEC, MOB_FACING_CONE_HALF_ANGLE_COS,
+    MOB_WINDUP_DURATION_SEC, PARRY_COOLDOWN_SEC, PARRY_REFLECT_STAGGER_SEC,
 };
 pub use physics::{PhysicsWorld, RapierBodyHandle, RapierColliderHandle};
 pub use protocol::{

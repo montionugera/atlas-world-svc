@@ -110,6 +110,226 @@ pub mod atlas {
             since = "2.0.0",
             note = "Use associated constants instead. This will no longer be generated in 2021."
         )]
+        pub const ENUM_MIN_RACE: i8 = 0;
+        #[deprecated(
+            since = "2.0.0",
+            note = "Use associated constants instead. This will no longer be generated in 2021."
+        )]
+        pub const ENUM_MAX_RACE: i8 = 5;
+        #[deprecated(
+            since = "2.0.0",
+            note = "Use associated constants instead. This will no longer be generated in 2021."
+        )]
+        #[allow(non_camel_case_types)]
+        pub const ENUM_VALUES_RACE: [Race; 6] = [
+            Race::HumanDemiHuman,
+            Race::Dwarf,
+            Race::OgreOrc,
+            Race::Furral,
+            Race::Lunar,
+            Race::DarkLunar,
+        ];
+
+        #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+        #[repr(transparent)]
+        pub struct Race(pub i8);
+        #[allow(non_upper_case_globals)]
+        impl Race {
+            pub const HumanDemiHuman: Self = Self(0);
+            pub const Dwarf: Self = Self(1);
+            pub const OgreOrc: Self = Self(2);
+            pub const Furral: Self = Self(3);
+            pub const Lunar: Self = Self(4);
+            pub const DarkLunar: Self = Self(5);
+
+            pub const ENUM_MIN: i8 = 0;
+            pub const ENUM_MAX: i8 = 5;
+            pub const ENUM_VALUES: &'static [Self] = &[
+                Self::HumanDemiHuman,
+                Self::Dwarf,
+                Self::OgreOrc,
+                Self::Furral,
+                Self::Lunar,
+                Self::DarkLunar,
+            ];
+            /// Returns the variant's name or "" if unknown.
+            pub fn variant_name(self) -> Option<&'static str> {
+                match self {
+                    Self::HumanDemiHuman => Some("HumanDemiHuman"),
+                    Self::Dwarf => Some("Dwarf"),
+                    Self::OgreOrc => Some("OgreOrc"),
+                    Self::Furral => Some("Furral"),
+                    Self::Lunar => Some("Lunar"),
+                    Self::DarkLunar => Some("DarkLunar"),
+                    _ => None,
+                }
+            }
+        }
+        impl ::core::fmt::Debug for Race {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
+                if let Some(name) = self.variant_name() {
+                    f.write_str(name)
+                } else {
+                    f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+                }
+            }
+        }
+        impl<'a> ::flatbuffers::Follow<'a> for Race {
+            type Inner = Self;
+            #[inline]
+            unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+                let b = unsafe { ::flatbuffers::read_scalar_at::<i8>(buf, loc) };
+                Self(b)
+            }
+        }
+
+        impl ::flatbuffers::Push for Race {
+            type Output = Race;
+            #[inline]
+            unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
+                unsafe { ::flatbuffers::emplace_scalar::<i8>(dst, self.0) };
+            }
+        }
+
+        impl ::flatbuffers::EndianScalar for Race {
+            type Scalar = i8;
+            #[inline]
+            fn to_little_endian(self) -> i8 {
+                self.0.to_le()
+            }
+            #[inline]
+            #[allow(clippy::wrong_self_convention)]
+            fn from_little_endian(v: i8) -> Self {
+                let b = i8::from_le(v);
+                Self(b)
+            }
+        }
+
+        impl<'a> ::flatbuffers::Verifiable for Race {
+            #[inline]
+            fn run_verifier(
+                v: &mut ::flatbuffers::Verifier,
+                pos: usize,
+            ) -> Result<(), ::flatbuffers::InvalidFlatbuffer> {
+                i8::run_verifier(v, pos)
+            }
+        }
+
+        impl ::flatbuffers::SimpleToVerifyInSlice for Race {}
+        #[deprecated(
+            since = "2.0.0",
+            note = "Use associated constants instead. This will no longer be generated in 2021."
+        )]
+        pub const ENUM_MIN_ENCHANT_VISUAL_GLOW: i8 = 0;
+        #[deprecated(
+            since = "2.0.0",
+            note = "Use associated constants instead. This will no longer be generated in 2021."
+        )]
+        pub const ENUM_MAX_ENCHANT_VISUAL_GLOW: i8 = 5;
+        #[deprecated(
+            since = "2.0.0",
+            note = "Use associated constants instead. This will no longer be generated in 2021."
+        )]
+        #[allow(non_camel_case_types)]
+        pub const ENUM_VALUES_ENCHANT_VISUAL_GLOW: [EnchantVisualGlow; 6] = [
+            EnchantVisualGlow::None,
+            EnchantVisualGlow::FaintWhite,
+            EnchantVisualGlow::LuminescentBlue,
+            EnchantVisualGlow::RadiantRed,
+            EnchantVisualGlow::AbyssalPurple,
+            EnchantVisualGlow::CelestialGold,
+        ];
+
+        #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+        #[repr(transparent)]
+        pub struct EnchantVisualGlow(pub i8);
+        #[allow(non_upper_case_globals)]
+        impl EnchantVisualGlow {
+            pub const None: Self = Self(0);
+            pub const FaintWhite: Self = Self(1);
+            pub const LuminescentBlue: Self = Self(2);
+            pub const RadiantRed: Self = Self(3);
+            pub const AbyssalPurple: Self = Self(4);
+            pub const CelestialGold: Self = Self(5);
+
+            pub const ENUM_MIN: i8 = 0;
+            pub const ENUM_MAX: i8 = 5;
+            pub const ENUM_VALUES: &'static [Self] = &[
+                Self::None,
+                Self::FaintWhite,
+                Self::LuminescentBlue,
+                Self::RadiantRed,
+                Self::AbyssalPurple,
+                Self::CelestialGold,
+            ];
+            /// Returns the variant's name or "" if unknown.
+            pub fn variant_name(self) -> Option<&'static str> {
+                match self {
+                    Self::None => Some("None"),
+                    Self::FaintWhite => Some("FaintWhite"),
+                    Self::LuminescentBlue => Some("LuminescentBlue"),
+                    Self::RadiantRed => Some("RadiantRed"),
+                    Self::AbyssalPurple => Some("AbyssalPurple"),
+                    Self::CelestialGold => Some("CelestialGold"),
+                    _ => None,
+                }
+            }
+        }
+        impl ::core::fmt::Debug for EnchantVisualGlow {
+            fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
+                if let Some(name) = self.variant_name() {
+                    f.write_str(name)
+                } else {
+                    f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+                }
+            }
+        }
+        impl<'a> ::flatbuffers::Follow<'a> for EnchantVisualGlow {
+            type Inner = Self;
+            #[inline]
+            unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+                let b = unsafe { ::flatbuffers::read_scalar_at::<i8>(buf, loc) };
+                Self(b)
+            }
+        }
+
+        impl ::flatbuffers::Push for EnchantVisualGlow {
+            type Output = EnchantVisualGlow;
+            #[inline]
+            unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
+                unsafe { ::flatbuffers::emplace_scalar::<i8>(dst, self.0) };
+            }
+        }
+
+        impl ::flatbuffers::EndianScalar for EnchantVisualGlow {
+            type Scalar = i8;
+            #[inline]
+            fn to_little_endian(self) -> i8 {
+                self.0.to_le()
+            }
+            #[inline]
+            #[allow(clippy::wrong_self_convention)]
+            fn from_little_endian(v: i8) -> Self {
+                let b = i8::from_le(v);
+                Self(b)
+            }
+        }
+
+        impl<'a> ::flatbuffers::Verifiable for EnchantVisualGlow {
+            #[inline]
+            fn run_verifier(
+                v: &mut ::flatbuffers::Verifier,
+                pos: usize,
+            ) -> Result<(), ::flatbuffers::InvalidFlatbuffer> {
+                i8::run_verifier(v, pos)
+            }
+        }
+
+        impl ::flatbuffers::SimpleToVerifyInSlice for EnchantVisualGlow {}
+        #[deprecated(
+            since = "2.0.0",
+            note = "Use associated constants instead. This will no longer be generated in 2021."
+        )]
         pub const ENUM_MIN_GAME_EVENT_KIND: u8 = 0;
         #[deprecated(
             since = "2.0.0",
@@ -359,6 +579,8 @@ pub mod atlas {
             pub const VT_INPUT_ACK: ::flatbuffers::VOffsetT = 24;
             pub const VT_LEVEL: ::flatbuffers::VOffsetT = 26;
             pub const VT_XP: ::flatbuffers::VOffsetT = 28;
+            pub const VT_RACE: ::flatbuffers::VOffsetT = 30;
+            pub const VT_ENCHANT_GLOW: ::flatbuffers::VOffsetT = 32;
 
             #[inline]
             pub unsafe fn init_from_table(table: ::flatbuffers::Table<'a>) -> Self {
@@ -393,6 +615,8 @@ pub mod atlas {
                 }
                 builder.add_id(args.id);
                 builder.add_state_flags(args.state_flags);
+                builder.add_enchant_glow(args.enchant_glow);
+                builder.add_race(args.race);
                 builder.add_entity_type(args.entity_type);
                 builder.finish()
             }
@@ -523,6 +747,31 @@ pub mod atlas {
                 // which contains a valid value in this slot
                 unsafe { self._tab.get::<u32>(EntityDelta::VT_XP, Some(0)).unwrap() }
             }
+            #[inline]
+            pub fn race(&self) -> Race {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<Race>(EntityDelta::VT_RACE, Some(Race::HumanDemiHuman))
+                        .unwrap()
+                }
+            }
+            #[inline]
+            pub fn enchant_glow(&self) -> EnchantVisualGlow {
+                // Safety:
+                // Created from valid Table for this object
+                // which contains a valid value in this slot
+                unsafe {
+                    self._tab
+                        .get::<EnchantVisualGlow>(
+                            EntityDelta::VT_ENCHANT_GLOW,
+                            Some(EnchantVisualGlow::None),
+                        )
+                        .unwrap()
+                }
+            }
         }
 
         impl ::flatbuffers::Verifiable for EntityDelta<'_> {
@@ -549,6 +798,8 @@ pub mod atlas {
                     .visit_field::<u32>("input_ack", Self::VT_INPUT_ACK, false)?
                     .visit_field::<u32>("level", Self::VT_LEVEL, false)?
                     .visit_field::<u32>("xp", Self::VT_XP, false)?
+                    .visit_field::<Race>("race", Self::VT_RACE, false)?
+                    .visit_field::<EnchantVisualGlow>("enchant_glow", Self::VT_ENCHANT_GLOW, false)?
                     .finish();
                 Ok(())
             }
@@ -567,6 +818,8 @@ pub mod atlas {
             pub input_ack: u32,
             pub level: u32,
             pub xp: u32,
+            pub race: Race,
+            pub enchant_glow: EnchantVisualGlow,
         }
         impl<'a> Default for EntityDeltaArgs<'a> {
             #[inline]
@@ -585,6 +838,8 @@ pub mod atlas {
                     input_ack: 0,
                     level: 0,
                     xp: 0,
+                    race: Race::HumanDemiHuman,
+                    enchant_glow: EnchantVisualGlow::None,
                 }
             }
         }
@@ -662,6 +917,19 @@ pub mod atlas {
                 self.fbb_.push_slot::<u32>(EntityDelta::VT_XP, xp, 0);
             }
             #[inline]
+            pub fn add_race(&mut self, race: Race) {
+                self.fbb_
+                    .push_slot::<Race>(EntityDelta::VT_RACE, race, Race::HumanDemiHuman);
+            }
+            #[inline]
+            pub fn add_enchant_glow(&mut self, enchant_glow: EnchantVisualGlow) {
+                self.fbb_.push_slot::<EnchantVisualGlow>(
+                    EntityDelta::VT_ENCHANT_GLOW,
+                    enchant_glow,
+                    EnchantVisualGlow::None,
+                );
+            }
+            #[inline]
             pub fn new(
                 _fbb: &'b mut ::flatbuffers::FlatBufferBuilder<'a, A>,
             ) -> EntityDeltaBuilder<'a, 'b, A> {
@@ -694,6 +962,8 @@ pub mod atlas {
                 ds.field("input_ack", &self.input_ack());
                 ds.field("level", &self.level());
                 ds.field("xp", &self.xp());
+                ds.field("race", &self.race());
+                ds.field("enchant_glow", &self.enchant_glow());
                 ds.finish()
             }
         }

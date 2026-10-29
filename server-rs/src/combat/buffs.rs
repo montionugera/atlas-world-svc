@@ -48,7 +48,12 @@ fn default_mult_one() -> f32 {
 }
 
 impl ActiveBuff {
-    pub fn new(id: impl Into<String>, name: impl Into<String>, category: BuffCategory, duration_sec: f32) -> Self {
+    pub fn new(
+        id: impl Into<String>,
+        name: impl Into<String>,
+        category: BuffCategory,
+        duration_sec: f32,
+    ) -> Self {
         Self {
             id: id.into(),
             name: name.into(),
@@ -146,7 +151,9 @@ impl BuffContainer {
     }
 
     pub fn has_buff(&self, buff_id: &str) -> bool {
-        self.buffs.iter().any(|b| b.id == buff_id && b.remaining_sec > 0.0)
+        self.buffs
+            .iter()
+            .any(|b| b.id == buff_id && b.remaining_sec > 0.0)
     }
 
     /// Advances timers and removes expired buffs. Returns IDs of expired buffs.
@@ -193,7 +200,12 @@ pub struct AuraEmitter {
 }
 
 impl AuraEmitter {
-    pub fn new(aura_buff: ActiveBuff, radius_m: f32, pulse_interval_sec: f32, affects_allies: bool) -> Self {
+    pub fn new(
+        aura_buff: ActiveBuff,
+        radius_m: f32,
+        pulse_interval_sec: f32,
+        affects_allies: bool,
+    ) -> Self {
         Self {
             aura_buff,
             radius_m,
@@ -236,7 +248,12 @@ mod tests {
         might.p_atk_mult = 1.15;
         container.apply_buff(might);
 
-        let mut dance = ActiveBuff::new("dance_warrior", "Dance of the Warrior", BuffCategory::SongDance, 120.0);
+        let mut dance = ActiveBuff::new(
+            "dance_warrior",
+            "Dance of the Warrior",
+            BuffCategory::SongDance,
+            120.0,
+        );
         dance.p_atk_mult = 1.12;
         dance.crit_rate_bonus = 10.0;
         container.apply_buff(dance);

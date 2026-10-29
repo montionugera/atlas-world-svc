@@ -76,15 +76,27 @@ pub fn derived_stats_with_race(
     let def = BASE_DEF * grow * def_mag;
 
     let race_profile = race.map(|r| r.profile());
-    let race_speed_bonus = race_profile.as_ref().map(|p| p.base_move_speed_bonus).unwrap_or(0.0);
-    let race_crit_bonus = race_profile.as_ref().map(|p| p.innate_crit_rate_bonus_pct).unwrap_or(0.0);
-    let race_weight_bonus = race_profile.as_ref().map(|p| p.bonus_carry_weight).unwrap_or(0);
+    let race_speed_bonus = race_profile
+        .as_ref()
+        .map(|p| p.base_move_speed_bonus)
+        .unwrap_or(0.0);
+    let race_crit_bonus = race_profile
+        .as_ref()
+        .map(|p| p.innate_crit_rate_bonus_pct)
+        .unwrap_or(0.0);
+    let race_weight_bonus = race_profile
+        .as_ref()
+        .map(|p| p.bonus_carry_weight)
+        .unwrap_or(0);
 
     let aspd = (1.0 + (allocated.agi as f32) * 0.02 + (allocated.dex as f32) * 0.005).min(5.0);
-    let cast_time_reduction_pct = (((allocated.dex as f32) * 0.6 + (allocated.int as f32) * 0.4) / 1.5).min(80.0);
+    let cast_time_reduction_pct =
+        (((allocated.dex as f32) * 0.6 + (allocated.int as f32) * 0.4) / 1.5).min(80.0);
     let crit_rate_pct = (5.0 + (allocated.luk as f32) * 0.3 + race_crit_bonus).min(100.0);
-    let hit_rate = 100.0 + (level as f32) + (allocated.dex as f32) * 1.0 + (allocated.luk as f32) * 0.2;
-    let flee_rate = 100.0 + (level as f32) + (allocated.agi as f32) * 1.0 + (allocated.luk as f32) * 0.2;
+    let hit_rate =
+        100.0 + (level as f32) + (allocated.dex as f32) * 1.0 + (allocated.luk as f32) * 0.2;
+    let flee_rate =
+        100.0 + (level as f32) + (allocated.agi as f32) * 1.0 + (allocated.luk as f32) * 0.2;
     let max_weight = 2000 + (allocated.vit * 30) + (allocated.str * 20) + race_weight_bonus;
 
     DerivedStats {
@@ -199,15 +211,35 @@ mod tests {
     #[test]
     fn test_derived_stats_with_race_modifications() {
         let stats = PrimaryStats::new(40, 30, 20, 30, 25, 20);
-        let human = derived_stats_with_race(10, &stats, Some("basic_sword"), Some(AtlasRace::HumanDemiHuman));
-        let dwarf = derived_stats_with_race(10, &stats, Some("basic_sword"), Some(AtlasRace::Dwarf));
-        let furral = derived_stats_with_race(10, &stats, Some("basic_sword"), Some(AtlasRace::Furral));
-        let dark_lunar = derived_stats_with_race(10, &stats, Some("basic_sword"), Some(AtlasRace::DarkLunar));
+        let human = derived_stats_with_race(
+            10,
+            &stats,
+            Some("basic_sword"),
+            Some(AtlasRace::HumanDemiHuman),
+        );
+        let dwarf =
+            derived_stats_with_race(10, &stats, Some("basic_sword"), Some(AtlasRace::Dwarf));
+        let furral =
+            derived_stats_with_race(10, &stats, Some("basic_sword"), Some(AtlasRace::Furral));
+        let dark_lunar =
+            derived_stats_with_race(10, &stats, Some("basic_sword"), Some(AtlasRace::DarkLunar));
 
-        assert!(dwarf.max_weight > human.max_weight, "Dwarf bonus carry weight active");
-        assert!(furral.max_move_speed > human.max_move_speed, "Furral sprint bonus active");
-        assert!(dark_lunar.crit_rate_pct > human.crit_rate_pct, "Dark-Lunar umbral crit bonus active");
+        assert!(
+            dwarf.max_weight > human.max_weight,
+            "Dwarf bonus carry weight active"
+        );
+        assert!(
+            furral.max_move_speed > human.max_move_speed,
+            "Furral sprint bonus active"
+        );
+        assert!(
+            dark_lunar.crit_rate_pct > human.crit_rate_pct,
+            "Dark-Lunar umbral crit bonus active"
+        );
         assert!(human.aspd > 1.0, "ASPD scales with AGI & DEX");
-        assert!(human.hit_rate > 100.0, "Hit rate scales with level, DEX, LUK");
+        assert!(
+            human.hit_rate > 100.0,
+            "Hit rate scales with level, DEX, LUK"
+        );
     }
 }

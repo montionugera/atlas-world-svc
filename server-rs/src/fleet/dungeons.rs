@@ -157,7 +157,7 @@ impl DungeonRegistry {
             .collect();
 
         // Sort descending by score
-        scored.sort_by(|a, b| b.1.cmp(&a.1));
+        scored.sort_by_key(|a| std::cmp::Reverse(a.1));
 
         scored
             .into_iter()
@@ -178,6 +178,18 @@ impl DungeonRegistry {
                 }
             })
             .collect()
+    }
+
+    /// Retrieves a cloned snapshot of a dungeon instance if it exists.
+    pub fn get_instance(&self, instance_id: &str) -> Option<DungeonInstance> {
+        let lock = self.instances.read().unwrap();
+        lock.get(instance_id).cloned()
+    }
+
+    /// Lists all active dungeon instances.
+    pub fn list_instances(&self) -> Vec<DungeonInstance> {
+        let lock = self.instances.read().unwrap();
+        lock.values().cloned().collect()
     }
 
     /// Destroys a finished dungeon instance.

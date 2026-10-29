@@ -1,5 +1,6 @@
 use crate::auth::AuthGuard;
 use crate::debug::{DebugCommand, DebugCommandBody, MAX_COMMANDS_PER_TICK};
+use crate::fleet::{AgonesClient, DungeonInstance, DungeonRegistry, FleetLifecycle};
 use futures_util::{SinkExt, StreamExt};
 use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
@@ -263,6 +264,8 @@ pub struct WsServer {
     storage_ref: SharedStorageRef,
     meta_http_ref: SharedMetaHttpRef,
     non_uuid_skip_logs: Arc<AtomicUsize>,
+    pub dungeon_registry: Arc<DungeonRegistry>,
+    pub agones_client: Arc<std::sync::RwLock<Option<Arc<AgonesClient>>>>,
     debug_enabled: Arc<AtomicBool>,
     debug_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<DebugRequest>>>,
     ready: Arc<AtomicBool>,
@@ -319,6 +322,9 @@ impl WsServer {
             max_players_per_room: Arc::new(AtomicUsize::new(env_max_players_per_room)),
         };
 
+        let dungeon_registry = Arc::new(DungeonRegistry::new());
+        let agones_client = Arc::new(std::sync::RwLock::new(None));
+
         let server = Self {
             local_addr,
             connections: connections.clone(),
@@ -334,6 +340,8 @@ impl WsServer {
             storage_ref: storage_ref.clone(),
             meta_http_ref: meta_http_ref.clone(),
             non_uuid_skip_logs: non_uuid_skip_logs.clone(),
+            dungeon_registry: dungeon_registry.clone(),
+            agones_client: agones_client.clone(),
             debug_enabled: debug_enabled.clone(),
             debug_rx: Arc::new(tokio::sync::Mutex::new(debug_rx)),
             ready: ready.clone(),
@@ -354,6 +362,8 @@ impl WsServer {
             storage_ref,
             meta_http_ref,
             non_uuid_skip_logs,
+            dungeon_registry,
+            agones_client,
             DebugGate {
                 enabled: debug_enabled,
                 tx: debug_tx,
@@ -543,6 +553,77 @@ impl WsServer {
         let cfg = crate::meta::MetaHttpConfig::from_env(engine, self.auth_guard.clone());
         *self.meta_http_ref.write().unwrap() = Some(cfg);
         self
+    }
+
+    /// Attaches an instanced dungeon registry to the WebSocket server.
+    pub fn with_dungeons(mut self, registry: Arc<DungeonRegistry>) -> Self {
+        self.dungeon_registry = registry;
+        self
+    }
+
+    /// Attaches an Agones client for dynamic match allocation on dungeon entry.
+    pub fn with_agones(self, agones: Arc<AgonesClient>) -> Self {
+        *self.agones_client.write().unwrap() = Some(agones);
+        self
+    }
+
+    /// Handles a party entering a dungeon portal trigger.
+    /// Allocates an instanced dungeon in the DungeonRegistry, triggers Agones dynamic match allocation,
+    /// and transitions the party player session connections into the instanced dungeon room.
+    pub async fn handle_dungeon_portal_entry(
+        &self,
+        party_id: &str,
+        dungeon_template_id: &str,
+        mvp_boss_id: &str,
+        player_session_ids: &[String],
+    ) -> Result<DungeonInstance, String> {
+        let now_secs = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        let instance_id = format!(
+            "{}-{}-{:08x}",
+            dungeon_template_id,
+            party_id,
+            rand::random::<u32>()
+        );
+        let time_limit_secs = 3600;
+
+        let instance = self.dungeon_registry.allocate_dungeon(
+            instance_id.clone(),
+            party_id,
+            dungeon_template_id,
+            mvp_boss_id,
+            time_limit_secs,
+            now_secs,
+        );
+
+        // Agones Dynamic Match Allocation: notify sidecar of state transition
+        let agones_opt = self.agones_client.read().unwrap().clone();
+        if let Some(agones) = agones_opt {
+            if let Err(e) = agones.allocate().await {
+                warn!(
+                    "Agones dynamic match allocation failed ({}). Fallback maintained.",
+                    e
+                );
+            } else {
+                info!(
+                    "Agones marked Allocated for instanced dungeon {} (party {})",
+                    instance_id, party_id
+                );
+            }
+        }
+
+        // Reassign all participating party members' WebSocket connections to the dungeon instance room
+        for sid in player_session_ids {
+            let moved = self.reassign_session_room(sid, &instance_id).await;
+            info!(
+                "Reassigned party player {} to dungeon room {} ({} sockets moved)",
+                sid, instance_id, moved
+            );
+        }
+
+        Ok(instance)
     }
 
     pub fn local_addr(&self) -> SocketAddr {
@@ -862,6 +943,8 @@ impl WsServer {
         storage_ref: SharedStorageRef,
         meta_http_ref: SharedMetaHttpRef,
         non_uuid_skip_logs: Arc<AtomicUsize>,
+        dungeon_registry: Arc<DungeonRegistry>,
+        agones_client: Arc<std::sync::RwLock<Option<Arc<AgonesClient>>>>,
         debug: DebugGate,
         ready: Arc<AtomicBool>,
         limits: ConnectionLimits,
@@ -887,6 +970,8 @@ impl WsServer {
             let storage = storage_ref.clone();
             let meta_http = meta_http_ref.clone();
             let skip_logs = non_uuid_skip_logs.clone();
+            let dungeons = dungeon_registry.clone();
+            let agones = agones_client.clone();
             let debug = debug.clone();
             let ready = ready.clone();
             let limits = limits.clone();
@@ -913,6 +998,10 @@ impl WsServer {
                         crate::meta::serve_meta_http(stream, cfg).await;
                         return;
                     }
+                }
+                if is_dungeon_http(&stream).await {
+                    serve_dungeon_http(stream, dungeons, agones, rooms).await;
+                    return;
                 }
                 Self::handle_connection(
                     stream, peer_addr, conn_seq, conns, rooms, loadouts, lo_tx, auth, in_tx, dc_tx,
@@ -1665,6 +1754,165 @@ async fn serve_debug_http(mut stream: TcpStream, peer: IpAddr, debug: DebugGate)
     let response = format!(
         "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\
          {cors}Connection: close\r\n\r\n{payload}",
+        payload.len()
+    );
+    let _ = stream.write_all(response.as_bytes()).await;
+    let _ = stream.shutdown().await;
+}
+
+/// True when the connection is requesting instanced dungeon operations.
+async fn is_dungeon_http(stream: &TcpStream) -> bool {
+    let mut head = [0u8; 16];
+    let n = stream.peek(&mut head).await.unwrap_or(0);
+    [
+        &b"POST /dungeon/"[..],
+        &b"GET /dungeon/"[..],
+        &b"POST /portal/"[..],
+    ]
+    .iter()
+    .any(|prefix| head[..n].starts_with(prefix))
+}
+
+/// Serves instanced dungeon allocations and portal entry requests.
+async fn serve_dungeon_http(
+    mut stream: TcpStream,
+    dungeons: Arc<DungeonRegistry>,
+    agones: Arc<std::sync::RwLock<Option<Arc<AgonesClient>>>>,
+    session_rooms: Arc<RwLock<HashMap<String, String>>>,
+) {
+    let mut raw = Vec::new();
+    let mut chunk = [0u8; 1024];
+    let head_end = loop {
+        if let Some(head_end) = raw.windows(4).position(|w| w == b"\r\n\r\n") {
+            break head_end;
+        }
+        match stream.read(&mut chunk).await {
+            Ok(n) if n > 0 && raw.len() < 16 * 1024 => raw.extend_from_slice(&chunk[..n]),
+            _ => return,
+        }
+    };
+    let head = String::from_utf8_lossy(&raw[..head_end]).into_owned();
+    let mut request_line = head.lines().next().unwrap_or("").split(' ');
+    let method = request_line.next().unwrap_or("");
+    let target = request_line.next().unwrap_or("");
+    let (path, _) = target.split_once('?').unwrap_or((target, ""));
+
+    let content_len = head
+        .lines()
+        .skip(1)
+        .find_map(|l| {
+            let (k, v) = l.split_once(':')?;
+            if k.trim().eq_ignore_ascii_case("content-length") {
+                v.trim().parse::<usize>().ok()
+            } else {
+                None
+            }
+        })
+        .unwrap_or(0);
+
+    let body_start = head_end + 4;
+    while raw.len() < body_start + content_len {
+        match stream.read(&mut chunk).await {
+            Ok(n) if n > 0 => raw.extend_from_slice(&chunk[..n]),
+            _ => break,
+        }
+    }
+    let body = &raw[body_start..(body_start + content_len).min(raw.len())];
+
+    let (status, payload) = match (method, path) {
+        ("POST", "/dungeon/portal/enter" | "/dungeon/enter") => {
+            let parsed: Result<serde_json::Value, _> = serde_json::from_slice(body);
+            match parsed {
+                Ok(json) => {
+                    let party_id = json
+                        .get("partyId")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("default_party");
+                    let dungeon_template_id = json
+                        .get("dungeonTemplateId")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("dungeon_vesper_crater");
+                    let mvp_boss_id = json
+                        .get("mvpBossId")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("mvp_vesper_archon");
+                    let session_ids: Vec<String> = json
+                        .get("playerSessionIds")
+                        .and_then(|v| v.as_array())
+                        .map(|arr| {
+                            arr.iter()
+                                .filter_map(|s| s.as_str().map(|s| s.to_string()))
+                                .collect()
+                        })
+                        .unwrap_or_default();
+
+                    let now_secs = std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .map(|d| d.as_secs())
+                        .unwrap_or(0);
+                    let instance_id = format!(
+                        "{}-{}-{:08x}",
+                        dungeon_template_id,
+                        party_id,
+                        rand::random::<u32>()
+                    );
+                    let instance = dungeons.allocate_dungeon(
+                        instance_id.clone(),
+                        party_id,
+                        dungeon_template_id,
+                        mvp_boss_id,
+                        3600,
+                        now_secs,
+                    );
+
+                    let agones_opt = agones.read().unwrap().clone();
+                    if let Some(agones_cli) = agones_opt {
+                        let _ = agones_cli.allocate().await;
+                    }
+
+                    let mut rooms = session_rooms.write().await;
+                    for sid in session_ids {
+                        for (conn_key, room) in rooms.iter_mut() {
+                            if conn_key.rsplit_once('#').is_some_and(|(s, _)| s == sid) {
+                                *room = instance_id.clone();
+                            }
+                        }
+                    }
+
+                    (
+                        "200 OK",
+                        serde_json::json!({ "ok": true, "instance": instance }).to_string(),
+                    )
+                }
+                Err(e) => (
+                    "400 Bad Request",
+                    serde_json::json!({ "ok": false, "error": e.to_string() }).to_string(),
+                ),
+            }
+        }
+        ("GET", p) if p.starts_with("/dungeon/instance/") => {
+            let id = p.trim_start_matches("/dungeon/instance/");
+            if let Some(inst) = dungeons.get_instance(id) {
+                (
+                    "200 OK",
+                    serde_json::json!({ "ok": true, "instance": inst }).to_string(),
+                )
+            } else {
+                (
+                    "404 Not Found",
+                    serde_json::json!({ "ok": false, "error": "Dungeon instance not found" })
+                        .to_string(),
+                )
+            }
+        }
+        _ => (
+            "404 Not Found",
+            serde_json::json!({ "ok": false, "error": "Not found" }).to_string(),
+        ),
+    };
+
+    let response = format!(
+        "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{payload}",
         payload.len()
     );
     let _ = stream.write_all(response.as_bytes()).await;

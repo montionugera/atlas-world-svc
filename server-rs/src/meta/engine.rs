@@ -957,7 +957,10 @@ impl RustMetaEngine {
             .filter(|s| !s.trim().is_empty())
             .ok_or_else(|| MetaError::BadRequest("Missing instanceId".to_string()))?;
 
-        let is_blessed = body.get("isBlessed").and_then(|v| v.as_bool()).unwrap_or(false);
+        let is_blessed = body
+            .get("isBlessed")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
         let has_protection_stone = body
             .get("hasProtectionStone")
             .and_then(|v| v.as_bool())
@@ -980,22 +983,25 @@ impl RustMetaEngine {
                 .uniques
                 .iter()
                 .find(|u| u.instance_id == instance_id)
-                .ok_or_else(|| MetaError::BadRequest("Item instance not found in inventory".to_string()))?;
+                .ok_or_else(|| {
+                    MetaError::BadRequest("Item instance not found in inventory".to_string())
+                })?;
 
-            let (current_tier, doc_version) = match self.store.read_doc(user_id, "item_enchant", instance_id)? {
-                Some(stored) => {
-                    let tier = stored.value.get("tier").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
-                    (tier, stored.version)
-                }
-                None => (0, "*".to_string()),
-            };
+            let (current_tier, doc_version) =
+                match self.store.read_doc(user_id, "item_enchant", instance_id)? {
+                    Some(stored) => {
+                        let tier = stored
+                            .value
+                            .get("tier")
+                            .and_then(|v| v.as_u64())
+                            .unwrap_or(0) as u32;
+                        (tier, stored.version)
+                    }
+                    None => (0, "*".to_string()),
+                };
 
-            let outcome = attempt_high_tier_enchant(
-                current_tier,
-                roll_bps,
-                is_blessed,
-                has_protection_stone,
-            );
+            let outcome =
+                attempt_high_tier_enchant(current_tier, roll_bps, is_blessed, has_protection_stone);
 
             let new_val = json!({
                 "instanceId": instance_id,
@@ -1054,15 +1060,19 @@ impl RustMetaEngine {
                 .uniques
                 .iter()
                 .find(|u| u.instance_id == instance_id)
-                .ok_or_else(|| MetaError::BadRequest("Item instance not found in inventory".to_string()))?;
+                .ok_or_else(|| {
+                    MetaError::BadRequest("Item instance not found in inventory".to_string())
+                })?;
 
-            let (mut socket_state, doc_version) = match self.store.read_doc(user_id, "item_sockets", instance_id)? {
-                Some(stored) => {
-                    let st: ItemSocketState = serde_json::from_value(stored.value).unwrap_or_default();
-                    (st, stored.version)
-                }
-                None => (ItemSocketState::with_max_sockets(3), "*".to_string()),
-            };
+            let (mut socket_state, doc_version) =
+                match self.store.read_doc(user_id, "item_sockets", instance_id)? {
+                    Some(stored) => {
+                        let st: ItemSocketState =
+                            serde_json::from_value(stored.value).unwrap_or_default();
+                        (st, stored.version)
+                    }
+                    None => (ItemSocketState::with_max_sockets(3), "*".to_string()),
+                };
 
             socket_state
                 .insert_card(card_id)

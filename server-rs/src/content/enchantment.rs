@@ -7,15 +7,16 @@ pub const MAX_ENCHANT_TIER: u32 = 20;
 pub const SAFE_ENCHANT_TIER: u32 = 4;
 
 /// Visual glow tier of an enchanted weapon/armor.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum EnchantVisualGlow {
+    #[default]
     None,
-    FaintWhite,       // +4
-    LuminescentBlue,  // +5..=+8
-    RadiantRed,       // +9..=+12
-    AbyssalPurple,    // +13..=+15
-    CelestialGold,    // +16..=+20
+    FaintWhite,      // +4
+    LuminescentBlue, // +5..=+8
+    RadiantRed,      // +9..=+12
+    AbyssalPurple,   // +13..=+15
+    CelestialGold,   // +16..=+20
 }
 
 impl EnchantVisualGlow {
@@ -38,7 +39,7 @@ impl EnchantVisualGlow {
 pub enum SpecialAbility {
     Focus,        // +15% Critical Chance
     Health,       // +20% Maximum HP
-    VampiricRage,// 6% Damage leeched as HP
+    VampiricRage, // 6% Damage leeched as HP
     Haste,        // +12% Attack Speed (ASPD)
     Acumen,       // +25% Cast Speed
     CriticalStun, // 8% chance to stun on hit
@@ -87,22 +88,22 @@ pub struct HighTierEnchantOutcome {
 pub fn enchant_success_rate_bps(tier: u32) -> u32 {
     match tier {
         0..=3 => 10_000, // 100% safe
-        4 => 7_000,     // 70%
-        5 => 6_500,     // 65%
-        6 => 6_000,     // 60%
-        7 => 5_000,     // 50%
-        8 => 4_500,     // 45%
-        9 => 4_000,     // 40%
-        10 => 3_500,    // 35%
-        11 => 3_000,    // 30%
-        12 => 2_500,    // 25%
-        13 => 2_000,    // 20%
-        14 => 1_500,    // 15%
-        15 => 1_200,    // 12%
-        16 => 1_000,    // 10%
-        17 => 800,      // 8%
-        18 => 600,      // 6%
-        19 => 400,      // 4%
+        4 => 7_000,      // 70%
+        5 => 6_500,      // 65%
+        6 => 6_000,      // 60%
+        7 => 5_000,      // 50%
+        8 => 4_500,      // 45%
+        9 => 4_000,      // 40%
+        10 => 3_500,     // 35%
+        11 => 3_000,     // 30%
+        12 => 2_500,     // 25%
+        13 => 2_000,     // 20%
+        14 => 1_500,     // 15%
+        15 => 1_200,     // 12%
+        16 => 1_000,     // 10%
+        17 => 800,       // 8%
+        18 => 600,       // 6%
+        19 => 400,       // 4%
         _ => 0,
     }
 }
@@ -136,7 +137,11 @@ pub fn attempt_high_tier_enchant(
             new_tier,
             glow: EnchantVisualGlow::from_tier(new_tier),
             crystals_yielded: 0,
-            consume_scroll_id: if is_blessed { "scroll_enchant_blessed".to_string() } else { "scroll_enchant_standard".to_string() },
+            consume_scroll_id: if is_blessed {
+                "scroll_enchant_blessed".to_string()
+            } else {
+                "scroll_enchant_standard".to_string()
+            },
         }
     } else {
         // Failure branch
@@ -300,11 +305,26 @@ mod tests {
     #[test]
     fn test_visual_glow_transitions_correctly() {
         assert_eq!(EnchantVisualGlow::from_tier(0), EnchantVisualGlow::None);
-        assert_eq!(EnchantVisualGlow::from_tier(4), EnchantVisualGlow::FaintWhite);
-        assert_eq!(EnchantVisualGlow::from_tier(7), EnchantVisualGlow::LuminescentBlue);
-        assert_eq!(EnchantVisualGlow::from_tier(10), EnchantVisualGlow::RadiantRed);
-        assert_eq!(EnchantVisualGlow::from_tier(14), EnchantVisualGlow::AbyssalPurple);
-        assert_eq!(EnchantVisualGlow::from_tier(18), EnchantVisualGlow::CelestialGold);
+        assert_eq!(
+            EnchantVisualGlow::from_tier(4),
+            EnchantVisualGlow::FaintWhite
+        );
+        assert_eq!(
+            EnchantVisualGlow::from_tier(7),
+            EnchantVisualGlow::LuminescentBlue
+        );
+        assert_eq!(
+            EnchantVisualGlow::from_tier(10),
+            EnchantVisualGlow::RadiantRed
+        );
+        assert_eq!(
+            EnchantVisualGlow::from_tier(14),
+            EnchantVisualGlow::AbyssalPurple
+        );
+        assert_eq!(
+            EnchantVisualGlow::from_tier(18),
+            EnchantVisualGlow::CelestialGold
+        );
     }
 
     #[test]
@@ -313,7 +333,10 @@ mod tests {
         assert!(sockets.insert_card("card_orc_hero").is_ok());
         assert!(sockets.insert_card("card_baphomet").is_ok());
         assert!(sockets.insert_card("card_valkyrie").is_ok());
-        assert!(sockets.insert_card("card_extra").is_err(), "Exceeds max sockets");
+        assert!(
+            sockets.insert_card("card_extra").is_err(),
+            "Exceeds max sockets"
+        );
 
         sockets.set_special_ability(SpecialAbility::Focus);
         assert_eq!(sockets.special_ability, Some(SpecialAbility::Focus));

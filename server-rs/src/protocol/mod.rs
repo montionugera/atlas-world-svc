@@ -41,6 +41,10 @@ pub struct EntitySnapshotData {
     pub level: u32,
     /// Player current XP within the current level (0 for non-players).
     pub xp: u32,
+    /// Canonical Race of the entity (players / humanoid NPCs).
+    pub race: Race,
+    /// Weapon enchantment visual glow aura (+4..=+20).
+    pub enchant_glow: EnchantVisualGlow,
 }
 
 impl Default for EntitySnapshotData {
@@ -61,6 +65,66 @@ impl Default for EntitySnapshotData {
             input_ack: 0,
             level: 0,
             xp: 0,
+            race: Race::HumanDemiHuman,
+            enchant_glow: EnchantVisualGlow::None,
+        }
+    }
+}
+
+impl From<crate::content::AtlasRace> for Race {
+    fn from(r: crate::content::AtlasRace) -> Self {
+        match r {
+            crate::content::AtlasRace::HumanDemiHuman => Race::HumanDemiHuman,
+            crate::content::AtlasRace::Dwarf => Race::Dwarf,
+            crate::content::AtlasRace::OgreOrc => Race::OgreOrc,
+            crate::content::AtlasRace::Furral => Race::Furral,
+            crate::content::AtlasRace::Lunar => Race::Lunar,
+            crate::content::AtlasRace::DarkLunar => Race::DarkLunar,
+        }
+    }
+}
+
+impl From<Race> for crate::content::AtlasRace {
+    fn from(r: Race) -> Self {
+        match r {
+            Race::HumanDemiHuman => crate::content::AtlasRace::HumanDemiHuman,
+            Race::Dwarf => crate::content::AtlasRace::Dwarf,
+            Race::OgreOrc => crate::content::AtlasRace::OgreOrc,
+            Race::Furral => crate::content::AtlasRace::Furral,
+            Race::Lunar => crate::content::AtlasRace::Lunar,
+            Race::DarkLunar => crate::content::AtlasRace::DarkLunar,
+            _ => crate::content::AtlasRace::HumanDemiHuman,
+        }
+    }
+}
+
+impl From<crate::content::EnchantVisualGlow> for EnchantVisualGlow {
+    fn from(g: crate::content::EnchantVisualGlow) -> Self {
+        match g {
+            crate::content::EnchantVisualGlow::None => EnchantVisualGlow::None,
+            crate::content::EnchantVisualGlow::FaintWhite => EnchantVisualGlow::FaintWhite,
+            crate::content::EnchantVisualGlow::LuminescentBlue => {
+                EnchantVisualGlow::LuminescentBlue
+            }
+            crate::content::EnchantVisualGlow::RadiantRed => EnchantVisualGlow::RadiantRed,
+            crate::content::EnchantVisualGlow::AbyssalPurple => EnchantVisualGlow::AbyssalPurple,
+            crate::content::EnchantVisualGlow::CelestialGold => EnchantVisualGlow::CelestialGold,
+        }
+    }
+}
+
+impl From<EnchantVisualGlow> for crate::content::EnchantVisualGlow {
+    fn from(g: EnchantVisualGlow) -> Self {
+        match g {
+            EnchantVisualGlow::None => crate::content::EnchantVisualGlow::None,
+            EnchantVisualGlow::FaintWhite => crate::content::EnchantVisualGlow::FaintWhite,
+            EnchantVisualGlow::LuminescentBlue => {
+                crate::content::EnchantVisualGlow::LuminescentBlue
+            }
+            EnchantVisualGlow::RadiantRed => crate::content::EnchantVisualGlow::RadiantRed,
+            EnchantVisualGlow::AbyssalPurple => crate::content::EnchantVisualGlow::AbyssalPurple,
+            EnchantVisualGlow::CelestialGold => crate::content::EnchantVisualGlow::CelestialGold,
+            _ => crate::content::EnchantVisualGlow::None,
         }
     }
 }
@@ -169,6 +233,8 @@ impl SnapshotBuilder {
                     input_ack: e.input_ack,
                     level: e.level,
                     xp: e.xp,
+                    race: e.race,
+                    enchant_glow: e.enchant_glow,
                 },
             );
             self.delta_offsets.push(delta);
@@ -434,5 +500,26 @@ mod tests {
         assert_eq!(snapshot.server_time_ms(), 1000);
         assert!(snapshot.entities().is_none());
         assert_eq!(snapshot.removed_ids().unwrap().get(0), 99);
+    }
+
+    #[test]
+    fn test_race_and_enchant_glow_roundtrip() {
+        let entities = vec![EntitySnapshotData {
+            id: 777,
+            entity_type: EntityType::Player,
+            level: 80,
+            xp: 45000,
+            race: Race::DarkLunar,
+            enchant_glow: EnchantVisualGlow::CelestialGold,
+            ..Default::default()
+        }];
+        let bytes = serialize_snapshot(100, 1728005000, &entities, &[]);
+        let snapshot = root_as_world_snapshot(&bytes).unwrap();
+        let decoded = snapshot.entities().unwrap().get(0);
+        assert_eq!(decoded.id(), 777);
+        assert_eq!(decoded.race(), Race::DarkLunar);
+        assert_eq!(decoded.enchant_glow(), EnchantVisualGlow::CelestialGold);
+        assert_eq!(decoded.level(), 80);
+        assert_eq!(decoded.xp(), 45000);
     }
 }

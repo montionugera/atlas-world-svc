@@ -1,15 +1,12 @@
-import * as flatbuffers from 'flatbuffers';
+import * as flatbuffers from "flatbuffers";
 import {
   BinaryDeltaDecoder,
   decodeSnapshot,
   DecodedEntityDelta,
-} from './BinaryDeltaDecoder';
-import {
-  WorldSnapshot,
-  EntityDelta,
-  EntityType,
-  Vec2,
-} from './index';
+  Race,
+  EnchantVisualGlow,
+} from "./BinaryDeltaDecoder";
+import { WorldSnapshot, EntityDelta, EntityType, Vec2 } from "./index";
 
 function createSyntheticSnapshot(
   tick: number,
@@ -26,7 +23,7 @@ function createSyntheticSnapshot(
     stateFlags: number;
     targetId: number;
   }>,
-  removedIds: number[]
+  removedIds: number[],
 ): Uint8Array {
   const builder = new flatbuffers.Builder(1024);
 
@@ -47,13 +44,15 @@ function createSyntheticSnapshot(
     entityOffsets.push(offset);
   }
 
-  const entitiesVec = entities.length > 0
-    ? WorldSnapshot.createEntitiesVector(builder, entityOffsets)
-    : 0;
+  const entitiesVec =
+    entities.length > 0
+      ? WorldSnapshot.createEntitiesVector(builder, entityOffsets)
+      : 0;
 
-  const removedVec = removedIds.length > 0
-    ? WorldSnapshot.createRemovedIdsVector(builder, removedIds)
-    : 0;
+  const removedVec =
+    removedIds.length > 0
+      ? WorldSnapshot.createRemovedIdsVector(builder, removedIds)
+      : 0;
 
   WorldSnapshot.startWorldSnapshot(builder);
   WorldSnapshot.addTick(builder, tick);
@@ -70,8 +69,8 @@ function createSyntheticSnapshot(
   return builder.asUint8Array();
 }
 
-describe('BinaryDeltaDecoder', () => {
-  it('decodes an empty snapshot with no entities or removed IDs', () => {
+describe("BinaryDeltaDecoder", () => {
+  it("decodes an empty snapshot with no entities or removed IDs", () => {
     const buffer = createSyntheticSnapshot(1, 1000, [], []);
     const decoded = BinaryDeltaDecoder.decode(buffer);
 
@@ -81,7 +80,7 @@ describe('BinaryDeltaDecoder', () => {
     expect(decoded.removedIds).toEqual([]);
   });
 
-  it('decodes entities with full field parity and precision', () => {
+  it("decodes entities with full field parity and precision", () => {
     const testEntities = [
       {
         id: 10,
@@ -122,7 +121,12 @@ describe('BinaryDeltaDecoder', () => {
     ];
     const testRemoved = [99, 100, 101];
 
-    const buffer = createSyntheticSnapshot(128, 1728000500, testEntities, testRemoved);
+    const buffer = createSyntheticSnapshot(
+      128,
+      1728000500,
+      testEntities,
+      testRemoved,
+    );
     const decoded = BinaryDeltaDecoder.decode(buffer);
 
     expect(decoded.tick).toBe(128);
@@ -153,11 +157,11 @@ describe('BinaryDeltaDecoder', () => {
     expect(decoded.removedIds).toEqual([99, 100, 101]);
   });
 
-  it('accepts ArrayBuffer directly as input', () => {
+  it("accepts ArrayBuffer directly as input", () => {
     const uint8 = createSyntheticSnapshot(5, 500, [], [7]);
     const arrayBuffer = uint8.buffer.slice(
       uint8.byteOffset,
-      uint8.byteOffset + uint8.byteLength
+      uint8.byteOffset + uint8.byteLength,
     );
 
     const decoded = BinaryDeltaDecoder.decode(arrayBuffer);
@@ -165,7 +169,7 @@ describe('BinaryDeltaDecoder', () => {
     expect(decoded.removedIds).toEqual([7]);
   });
 
-  it('works via helper function decodeSnapshot and instance decode()', () => {
+  it("works via helper function decodeSnapshot and instance decode()", () => {
     const buffer = createSyntheticSnapshot(9, 9000, [], []);
 
     const viaHelper = decodeSnapshot(buffer);
@@ -174,5 +178,38 @@ describe('BinaryDeltaDecoder', () => {
     const decoderInstance = new BinaryDeltaDecoder();
     const viaInstance = decoderInstance.decode(buffer);
     expect(viaInstance.tick).toBe(9);
+  });
+
+  it("decodes race taxonomy and weapon enchantment visual glow", () => {
+    const builder = new flatbuffers.Builder(256);
+    EntityDelta.startEntityDelta(builder);
+    EntityDelta.addId(builder, 999);
+    EntityDelta.addEntityType(builder, EntityType.Player);
+    EntityDelta.addLevel(builder, 75);
+    EntityDelta.addXp(builder, 120000);
+    EntityDelta.addRace(builder, Race.DarkLunar);
+    EntityDelta.addEnchantGlow(builder, EnchantVisualGlow.CelestialGold);
+    const entityOffset = EntityDelta.endEntityDelta(builder);
+
+    const entitiesVec = WorldSnapshot.createEntitiesVector(builder, [
+      entityOffset,
+    ]);
+    WorldSnapshot.startWorldSnapshot(builder);
+    WorldSnapshot.addTick(builder, 10);
+    WorldSnapshot.addServerTimeMs(builder, BigInt(2000));
+    WorldSnapshot.addEntities(builder, entitiesVec);
+    const root = WorldSnapshot.endWorldSnapshot(builder);
+    WorldSnapshot.finishWorldSnapshotBuffer(builder, root);
+
+    const buffer = builder.asUint8Array();
+    const decoded = BinaryDeltaDecoder.decode(buffer);
+
+    expect(decoded.entities.length).toBe(1);
+    const entity = decoded.entities[0];
+    expect(entity.id).toBe(999);
+    expect(entity.level).toBe(75);
+    expect(entity.xp).toBe(120000);
+    expect(entity.race).toBe(Race.DarkLunar);
+    expect(entity.enchantGlow).toBe(EnchantVisualGlow.CelestialGold);
   });
 });
