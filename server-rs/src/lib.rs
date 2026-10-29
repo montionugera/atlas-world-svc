@@ -31,7 +31,10 @@ pub use content::{
     BASE_HP, BASE_MOB_ATK, BESTIARY_JSON, GEAR_REFERENCE, GROWTH, MAX_ENCHANT_TIER,
     SAFE_ENCHANT_TIER, STAT_COEF, STAT_MAX, UNARMED_GEAR,
 };
-pub use fleet::{AgonesClient, FleetLifecycle, FleetState, HeartbeatTask, MockFleetClient};
+pub use fleet::{
+    AgonesClient, DungeonInstance, DungeonRegistry, DungeonState, FleetLifecycle, FleetState,
+    HeartbeatTask, MockFleetClient, MvpRewardDistribution,
+};
 pub use load_harness::{
     measure_tier, run_capacity_sweep, CapacitySweepReport, CapacityTierReport,
     DEFAULT_CAPACITY_TIERS,
