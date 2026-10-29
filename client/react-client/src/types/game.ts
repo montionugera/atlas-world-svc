@@ -111,6 +111,10 @@ export interface Player {
   heading?: number;
   isAttacking?: boolean;
   attackRange?: number;
+  level?: number;
+  xp?: number;
+  race?: number;
+  enchantGlow?: number;
 }
 
 export interface Projectile {

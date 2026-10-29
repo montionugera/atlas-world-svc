@@ -4,8 +4,8 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { EntityDelta } from '../../atlas/protocol/entity-delta.js';
-import { GameEvent } from '../../atlas/protocol/game-event.js';
+import { EntityDelta } from '../../atlas/protocol/entity-delta';
+import { GameEvent } from '../../atlas/protocol/game-event';
 
 
 export class WorldSnapshot {

@@ -668,6 +668,10 @@ export const useServerRsClient = (
                     // Only server-driven BotAgents are bots; other humans are not.
                     isBotMode: (entity.stateFlags & STATE_FLAG_BOT) !== 0,
                     inputAck: entity.inputAck,
+                    level: entity.level,
+                    xp: entity.xp,
+                    race: entity.race,
+                    enchantGlow: entity.enchantGlow,
                     currentAttackTarget: entity.targetId
                       ? String(entity.targetId)
                       : undefined,

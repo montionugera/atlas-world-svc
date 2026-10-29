@@ -4,7 +4,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { GameEventKind } from '../../atlas/protocol/game-event-kind.js';
+import { GameEventKind } from '../../atlas/protocol/game-event-kind';
 
 
 export class GameEvent {

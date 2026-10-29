@@ -1890,6 +1890,107 @@ async fn serve_dungeon_http(
                 ),
             }
         }
+        ("POST", p) if p.starts_with("/dungeon/instance/") && p.ends_with("/boss/damage") => {
+            let instance_id = p
+                .trim_start_matches("/dungeon/instance/")
+                .trim_end_matches("/boss/damage");
+            match serde_json::from_slice::<serde_json::Value>(body) {
+                Ok(json) => {
+                    let player_id = json
+                        .get("playerId")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("unknown_player");
+                    let damage = json
+                        .get("damage")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(0);
+                    let damage_taken = json
+                        .get("damageTaken")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(0);
+                    let now_secs = json
+                        .get("nowSecs")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or_else(|| {
+                            std::time::SystemTime::now()
+                                .duration_since(std::time::UNIX_EPOCH)
+                                .unwrap_or_default()
+                                .as_secs()
+                        });
+
+                    if let Some((encounter, events)) = dungeons.record_boss_damage(
+                        instance_id,
+                        player_id,
+                        damage,
+                        damage_taken,
+                        now_secs,
+                    ) {
+                        (
+                            "200 OK",
+                            serde_json::json!({
+                                "ok": true,
+                                "instanceId": instance_id,
+                                "encounter": encounter,
+                                "events": events,
+                            })
+                            .to_string(),
+                        )
+                    } else {
+                        (
+                            "404 Not Found",
+                            serde_json::json!({ "ok": false, "error": "Dungeon instance not found" })
+                                .to_string(),
+                        )
+                    }
+                }
+                Err(e) => (
+                    "400 Bad Request",
+                    serde_json::json!({ "ok": false, "error": e.to_string() }).to_string(),
+                ),
+            }
+        }
+        ("POST", p) if p.starts_with("/dungeon/instance/") && p.ends_with("/tick") => {
+            let instance_id = p
+                .trim_start_matches("/dungeon/instance/")
+                .trim_end_matches("/tick");
+            match serde_json::from_slice::<serde_json::Value>(body) {
+                Ok(json) => {
+                    let now_secs = json
+                        .get("nowSecs")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or_else(|| {
+                            std::time::SystemTime::now()
+                                .duration_since(std::time::UNIX_EPOCH)
+                                .unwrap_or_default()
+                                .as_secs()
+                        });
+
+                    if let Some(events) = dungeons.tick_dungeon(instance_id, now_secs) {
+                        let inst = dungeons.get_instance(instance_id);
+                        (
+                            "200 OK",
+                            serde_json::json!({
+                                "ok": true,
+                                "instanceId": instance_id,
+                                "events": events,
+                                "instance": inst,
+                            })
+                            .to_string(),
+                        )
+                    } else {
+                        (
+                            "404 Not Found",
+                            serde_json::json!({ "ok": false, "error": "Dungeon instance not found" })
+                                .to_string(),
+                        )
+                    }
+                }
+                Err(e) => (
+                    "400 Bad Request",
+                    serde_json::json!({ "ok": false, "error": e.to_string() }).to_string(),
+                ),
+            }
+        }
         ("GET", p) if p.starts_with("/dungeon/instance/") => {
             let id = p.trim_start_matches("/dungeon/instance/");
             if let Some(inst) = dungeons.get_instance(id) {

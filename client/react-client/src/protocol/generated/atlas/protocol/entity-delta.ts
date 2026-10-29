@@ -4,10 +4,10 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { EnchantVisualGlow } from '../../atlas/protocol/enchant-visual-glow.js';
-import { EntityType } from '../../atlas/protocol/entity-type.js';
-import { Race } from '../../atlas/protocol/race.js';
-import { Vec2 } from '../../atlas/protocol/vec2.js';
+import { EnchantVisualGlow } from '../../atlas/protocol/enchant-visual-glow';
+import { EntityType } from '../../atlas/protocol/entity-type';
+import { Race } from '../../atlas/protocol/race';
+import { Vec2 } from '../../atlas/protocol/vec2';
 
 
 export class EntityDelta {
