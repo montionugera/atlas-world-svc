@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::ai::ThreatTable;
-use crate::content::{derived_stats, BestiaryCatalog, MobTier};
+use crate::content::{derived_stats_with_race, BestiaryCatalog, MobTier};
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
@@ -1307,7 +1307,12 @@ impl AtlasSimulation {
             None => (1, PrimaryStats::default(), Some("basic_sword")),
         };
 
-        let derived = derived_stats(level, &allocated, weapon_id);
+        let race = loadout
+            .and_then(|l| l.profile.race.as_deref())
+            .and_then(crate::content::AtlasRace::from_key);
+        let race_enum = race.unwrap_or(crate::content::AtlasRace::HumanDemiHuman);
+
+        let derived = derived_stats_with_race(level, &allocated, weapon_id, Some(race_enum));
 
         let saved_cs = loadout
             .and_then(|l| l.character_state.as_ref())
@@ -1362,6 +1367,7 @@ impl AtlasSimulation {
         self.world.entity_mut(entity).insert((
             DashState::default(),
             crate::ecs::components::ParryState::default(),
+            crate::ecs::components::RaceComponent::new(race_enum),
         ));
         entity
     }

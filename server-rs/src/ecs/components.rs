@@ -1,7 +1,20 @@
 use crate::combat::{DamageType, Element, SkillEffect};
+use crate::content::races::AtlasRace;
 use bevy_ecs::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+/// Authoritative race affiliation and trait anchor for an entity.
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RaceComponent {
+    pub race: AtlasRace,
+}
+
+impl RaceComponent {
+    pub fn new(race: AtlasRace) -> Self {
+        Self { race }
+    }
+}
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Position {

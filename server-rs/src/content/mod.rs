@@ -1,7 +1,9 @@
 pub mod bestiary;
+pub mod enchantment;
 pub mod item_catalog;
 pub mod map;
 pub mod mmorpg;
+pub mod races;
 pub mod stats;
 pub mod weapons;
 pub mod world_model;
@@ -10,6 +12,11 @@ pub mod world_regions;
 pub use bestiary::{
     derive_mob_stats, BestiaryCatalog, BestiaryEntry, DerivedMobStats, MobTier, BASE_MOB_ATK,
     BESTIARY_JSON, BOSS_ATK_MULTIPLIER, BOSS_HP_MULTIPLIER,
+};
+pub use enchantment::{
+    attempt_high_tier_enchant, compute_enchant_stat_multipliers, enchant_success_rate_bps,
+    EnchantResultKind, EnchantVisualGlow, HighTierEnchantOutcome, ItemSocketState, SpecialAbility,
+    MAX_ENCHANT_TIER, SAFE_ENCHANT_TIER,
 };
 pub use item_catalog::{EquipmentSlot, ItemCatalog, ItemDefinition, LootDropSpec};
 pub use map::{
@@ -22,8 +29,10 @@ pub use mmorpg::{
     DuelSimulationResult, JobCatalogEntry, MmorpgCatalogRegistry, MobCatalogEntry,
     QuestBoardCatalogEntry, SiegeSimulationResult, MMORPG_CATALOG,
 };
+pub use races::{AtlasRace, RaceProfile};
 pub use stats::{
-    derived_stats, DerivedStats, BASE_ATK, BASE_DEF, BASE_HP, GROWTH, STAT_COEF, STAT_MAX,
+    derived_stats, derived_stats_with_race, DerivedStats, BASE_ATK, BASE_DEF, BASE_HP, GROWTH,
+    STAT_COEF, STAT_MAX,
 };
 pub use weapons::{weapon_offence, AtkStat, WeaponOffence, GEAR_REFERENCE, UNARMED_GEAR};
 pub use world_model::{

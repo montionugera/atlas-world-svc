@@ -94,6 +94,8 @@ pub struct PrimaryStats {
     pub vit: u32,
     #[serde(default = "default_stat_one")]
     pub dex: u32,
+    #[serde(default = "default_stat_one")]
+    pub luk: u32,
 }
 
 impl Default for PrimaryStats {
@@ -104,6 +106,20 @@ impl Default for PrimaryStats {
             int: 1,
             vit: 1,
             dex: 1,
+            luk: 1,
+        }
+    }
+}
+
+impl PrimaryStats {
+    pub fn new(str: u32, agi: u32, int: u32, vit: u32, dex: u32, luk: u32) -> Self {
+        Self {
+            str,
+            agi,
+            int,
+            vit,
+            dex,
+            luk,
         }
     }
 }
@@ -119,6 +135,8 @@ pub struct ProfileDoc {
     #[serde(alias = "stat_points")]
     pub stat_points: u32,
     pub allocated: PrimaryStats,
+    #[serde(alias = "race", default, skip_serializing_if = "Option::is_none")]
+    pub race: Option<String>,
 }
 
 impl Default for ProfileDoc {
@@ -129,6 +147,7 @@ impl Default for ProfileDoc {
             xp: 0,
             stat_points: 0,
             allocated: PrimaryStats::default(),
+            race: None,
         }
     }
 }

@@ -670,6 +670,7 @@ pub fn effective_stats_with_job(
         vit: (allocated.vit + ((bonus.vit as f32 * ratio).round() as u32)).min(99),
         int: (allocated.int + ((bonus.int as f32 * ratio).round() as u32)).min(99),
         dex: (allocated.dex + ((bonus.dex as f32 * ratio).round() as u32)).min(99),
+        luk: allocated.luk.min(99),
     }
 }
 
@@ -956,6 +957,7 @@ pub fn simulate_castle_siege(
         vit: 60,
         int: 20,
         dex: 50,
+        luk: 10,
     };
     let knight = derived_stats_for_job(avg_base_level, "knight", 40, &alloc, Some("scythe"), 7);
     let gvg_scale = (castle.pvp_rules.player_damage_scaling_pct as f32) / 100.0;
@@ -1050,6 +1052,7 @@ mod tests {
             vit: 25,
             int: 1,
             dex: 20,
+            luk: 1,
         };
         let novice = derived_stats_for_job(20, "novice", 10, &alloc, Some("basic_sword"), 0);
         let swordman = derived_stats_for_job(20, "swordman", 40, &alloc, Some("basic_sword"), 5);
@@ -1101,6 +1104,7 @@ mod tests {
             vit: 30,
             int: 10,
             dex: 20,
+            luk: 5,
         };
         let boar_duel =
             simulate_job_vs_mob("swordman", 20, 20, &alloc, Some("basic_sword"), 3, "boar")

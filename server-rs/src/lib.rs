@@ -23,9 +23,12 @@ pub use combat::{
     SkillDefinition, SkillEffect, ALL_ELEMENTS, GLOBAL_MAGIC_CD_KEY,
 };
 pub use content::{
-    derive_mob_stats, derived_stats, weapon_offence, AtkStat, BestiaryCatalog, BestiaryEntry,
-    DerivedMobStats, DerivedStats, MobTier, WeaponOffence, BASE_ATK, BASE_DEF, BASE_HP,
-    BASE_MOB_ATK, BESTIARY_JSON, GEAR_REFERENCE, GROWTH, STAT_COEF, STAT_MAX, UNARMED_GEAR,
+    attempt_high_tier_enchant, compute_enchant_stat_multipliers, derive_mob_stats, derived_stats,
+    derived_stats_with_race, weapon_offence, AtkStat, AtlasRace, BestiaryCatalog, BestiaryEntry,
+    DerivedMobStats, DerivedStats, EnchantResultKind, EnchantVisualGlow, HighTierEnchantOutcome,
+    ItemSocketState, MobTier, RaceProfile, SpecialAbility, WeaponOffence, BASE_ATK, BASE_DEF,
+    BASE_HP, BASE_MOB_ATK, BESTIARY_JSON, GEAR_REFERENCE, GROWTH, MAX_ENCHANT_TIER,
+    SAFE_ENCHANT_TIER, STAT_COEF, STAT_MAX, UNARMED_GEAR,
 };
 pub use fleet::{AgonesClient, FleetLifecycle, FleetState, HeartbeatTask, MockFleetClient};
 pub use load_harness::{
@@ -46,7 +49,7 @@ pub use ecs::{
     AiAgent, AiState, AttackFacingCone, BotAgent, CastingState, CombatStats, CooldownTracker,
     DashState, DeadMobTracker, ElementalAttributes, EntityId, EquippedWeapon, Health, Mass, MobAi,
     MobSpawnAnchor, MobTag, MobWindupConfig, Parried, ParryState, PlayerInputState, PlayerTag,
-    Position, Projectile, StatusEffects, Velocity, WeaponKind, MAX_PARRY_CHARGES,
+    Position, Projectile, RaceComponent, StatusEffects, Velocity, WeaponKind, MAX_PARRY_CHARGES,
     MAX_PARRY_HOLD_WINDOW_SEC, MOB_FACING_CONE_HALF_ANGLE_COS, MOB_WINDUP_DURATION_SEC,
     PARRY_COOLDOWN_SEC, PARRY_REFLECT_STAGGER_SEC,
 };
