@@ -14,8 +14,8 @@ pub mod spatial;
 pub mod steering;
 
 pub use combat::{
-    combat_system, cooldown_tick_system, health_regen_system, parry_tick_system,
-    status_effect_tick_system,
+    buff_and_aura_tick_system, combat_system, cooldown_tick_system, health_regen_system,
+    parry_tick_system, status_effect_tick_system,
 };
 pub use companion::{
     companion_combat_system, companion_follow_system, companion_respawn_system, spawn_companion,

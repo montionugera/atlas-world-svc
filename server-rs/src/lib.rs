@@ -19,8 +19,9 @@ pub mod systems;
 pub use ai::{ThreatEntry, ThreatTable, DEFAULT_THREAT_HALF_LIFE};
 pub use auth::{AuthError, AuthGuard, Claims};
 pub use combat::{
-    get_element_multiplier, get_skill, DamageCalculator, DamageOptions, DamageType, Element,
-    SkillDefinition, SkillEffect, ALL_ELEMENTS, GLOBAL_MAGIC_CD_KEY,
+    get_element_multiplier, get_skill, ActiveBuff, AuraEmitter, BuffCategory, BuffContainer,
+    CombinedBuffMultipliers, DamageCalculator, DamageOptions, DamageType, Element, SkillDefinition,
+    SkillEffect, ALL_ELEMENTS, GLOBAL_MAGIC_CD_KEY,
 };
 pub use content::{
     attempt_high_tier_enchant, compute_enchant_stat_multipliers, derive_mob_stats, derived_stats,
@@ -62,8 +63,9 @@ pub use simulation::{
 };
 pub use spatial::{AoiTracker, SpatialGrid};
 pub use systems::{
-    bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system, mob_lifecycle_system,
-    parry_tick_system, physics_step_system, player_input_system, projectile_collision_system,
-    projectile_kinematics_system, separation_system, skill_execution_system,
-    spatial_grid_rebuild_system, status_effect_tick_system, ArenaBounds,
+    bot_steering_system, buff_and_aura_tick_system, combat_system, cooldown_tick_system,
+    mob_ai_system, mob_lifecycle_system, parry_tick_system, physics_step_system,
+    player_input_system, projectile_collision_system, projectile_kinematics_system,
+    separation_system, skill_execution_system, spatial_grid_rebuild_system,
+    status_effect_tick_system, ArenaBounds,
 };

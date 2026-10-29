@@ -21,9 +21,9 @@ use crate::storage::{
     MobStateRecord, PrimaryStats, RegionStateSnapshot, WorldObjectRecord, WorldStateStore,
 };
 use crate::systems::{
-    body_collision_system, bot_steering_system, combat_system, cooldown_tick_system,
-    live_bot_ai_system, mob_ai_system, mob_bundle, mob_lifecycle_system, physics_step_system,
-    player_input_system, player_respawn_system, projectile_collision_system,
+    body_collision_system, bot_steering_system, buff_and_aura_tick_system, combat_system,
+    cooldown_tick_system, live_bot_ai_system, mob_ai_system, mob_bundle, mob_lifecycle_system,
+    physics_step_system, player_input_system, player_respawn_system, projectile_collision_system,
     projectile_kinematics_system, separation_system, skill_execution_system,
     spatial_grid_rebuild_system, status_effect_tick_system, ArenaBounds,
 };
@@ -188,6 +188,7 @@ impl AtlasSimulation {
             (
                 cooldown_tick_system,
                 status_effect_tick_system,
+                buff_and_aura_tick_system,
                 player_input_system,
                 skill_execution_system,
                 bot_steering_system,
@@ -1368,6 +1369,7 @@ impl AtlasSimulation {
             DashState::default(),
             crate::ecs::components::ParryState::default(),
             crate::ecs::components::RaceComponent::new(race_enum),
+            crate::combat::BuffContainer::default(),
         ));
         entity
     }
