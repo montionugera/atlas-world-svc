@@ -1,11 +1,12 @@
-use bevy_ecs::prelude::*;
 use crate::ecs::components::{
     DungeonPortalEntryEvent, DungeonPortalEventQueue, DungeonPortalTrigger, EntityId, Health,
     PlayerProgression, PlayerTag, Position,
 };
+use bevy_ecs::prelude::*;
 
 /// Evaluates player proximity to spatial dungeon portals.
 /// When a player is within `trigger_radius`, pushes a `DungeonPortalEntryEvent` into `DungeonPortalEventQueue`.
+#[allow(clippy::type_complexity)]
 pub fn dungeon_portal_trigger_system(
     portals: Query<(&Position, &DungeonPortalTrigger)>,
     players: Query<

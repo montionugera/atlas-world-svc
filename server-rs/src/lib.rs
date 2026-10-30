@@ -41,7 +41,6 @@ pub use load_harness::{
     DEFAULT_CAPACITY_TIERS,
 };
 pub use net::{ClientPacket, WsServer};
-pub use ws_swarm::{run_swarm, SwarmConfig, SwarmReport};
 pub use storage::{
     normalize_match_event_type, CharacterStateBuffer, CharacterStateSnapshot, EquippedItemIds,
     LoadoutSnapshot, MatchEvent, MatchEventBatch, MatchEventBuffer, MatchEventQueue,
@@ -49,6 +48,7 @@ pub use storage::{
     DEFAULT_CHARACTER_STATE_FLUSH_INTERVAL, DEFAULT_MATCH_EVENT_FLUSH_INTERVAL,
     DEFAULT_NAKAMA_MATCH_ID,
 };
+pub use ws_swarm::{run_swarm, SwarmConfig, SwarmReport};
 
 pub use core::{Lcg, Mulberry32, SimClock};
 pub use ecs::{

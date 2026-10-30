@@ -63,18 +63,36 @@ impl SwarmReport {
         let mut out = String::new();
         out.push_str("| Metric | Value |\n");
         out.push_str("|:---|---:|\n");
-        out.push_str(&format!("| Clients Connected | {} |\n", self.clients_connected));
+        out.push_str(&format!(
+            "| Clients Connected | {} |\n",
+            self.clients_connected
+        ));
         out.push_str(&format!("| Clients Failed | {} |\n", self.clients_failed));
-        out.push_str(&format!("| Clients Panicked | {} |\n", self.clients_panicked));
+        out.push_str(&format!(
+            "| Clients Panicked | {} |\n",
+            self.clients_panicked
+        ));
         out.push_str(&format!("| Clients Starved | {} |\n", self.clients_starved));
-        out.push_str(&format!("| Snapshots Received | {} |\n", self.snapshots_received));
+        out.push_str(&format!(
+            "| Snapshots Received | {} |\n",
+            self.snapshots_received
+        ));
         out.push_str(&format!(
             "| Min Snapshots / Client | {} |\n",
             self.min_snapshots_per_client
         ));
-        out.push_str(&format!("| Inter-Snapshot Gap p50 (ms) | {:.2} |\n", self.p50_ms));
-        out.push_str(&format!("| Inter-Snapshot Gap p95 (ms) | {:.2} |\n", self.p95_ms));
-        out.push_str(&format!("| Inter-Snapshot Gap max (ms) | {:.2} |\n", self.max_ms));
+        out.push_str(&format!(
+            "| Inter-Snapshot Gap p50 (ms) | {:.2} |\n",
+            self.p50_ms
+        ));
+        out.push_str(&format!(
+            "| Inter-Snapshot Gap p95 (ms) | {:.2} |\n",
+            self.p95_ms
+        ));
+        out.push_str(&format!(
+            "| Inter-Snapshot Gap max (ms) | {:.2} |\n",
+            self.max_ms
+        ));
         out.push_str(&format!(
             "| Bandwidth (Bytes/client/sec) | {:.2} |\n",
             self.bytes_per_client_per_sec
@@ -97,9 +115,7 @@ fn build_ws_url(base_addr: &str, client_idx: usize, token_template: &str) -> (St
         token_template.replace("{session_id}", &session_id)
     } else if token_template.contains("{client_idx}") {
         token_template.replace("{client_idx}", &client_idx.to_string())
-    } else if token_template == "dev-token" {
-        format!("dev-token:{}", session_id)
-    } else if token_template.is_empty() {
+    } else if token_template == "dev-token" || token_template.is_empty() {
         format!("dev-token:{}", session_id)
     } else {
         token_template.to_string()
@@ -338,11 +354,7 @@ pub async fn run_swarm(config: SwarmConfig) -> SwarmReport {
         }
     }
 
-    let min_snapshots_per_client = per_client_snapshots
-        .iter()
-        .copied()
-        .min()
-        .unwrap_or(0);
+    let min_snapshots_per_client = per_client_snapshots.iter().copied().min().unwrap_or(0);
 
     all_gaps.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     let (p50_ms, p95_ms, max_ms) = if all_gaps.is_empty() {

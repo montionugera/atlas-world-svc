@@ -16,7 +16,16 @@ fn create_mock_entities(count: usize) -> Vec<EntitySnapshotData> {
             let id = (i + 1) as u32;
             let (entity_type, flags, mob_type, vx, vy, input_ack, level, xp) = if i % 15 == 0 {
                 // Bot (wandering)
-                (EntityType::Player, STATE_FLAG_ALIVE | STATE_FLAG_BOT, "", 0.8, -0.4, 0, 0, 0)
+                (
+                    EntityType::Player,
+                    STATE_FLAG_ALIVE | STATE_FLAG_BOT,
+                    "",
+                    0.8,
+                    -0.4,
+                    0,
+                    0,
+                    0,
+                )
             } else if i % 4 == 0 {
                 // Mob (mostly stationary until engaged, shared bestiary string)
                 (
@@ -155,9 +164,7 @@ fn test_snapshot_bytes_breakdown_50_200_800() {
     println!(
         "| Entity Count | Snapshot Bytes | Per-Entity Bytes | Bandwidth (KB/s @ 20Hz) | Bandwidth (kbps @ 20Hz) |"
     );
-    println!(
-        "|:---:|:---:|:---:|:---:|:---:|"
-    );
+    println!("|:---:|:---:|:---:|:---:|:---:|");
 
     let test_counts = [50, 200, 800];
 
@@ -195,7 +202,10 @@ fn test_snapshot_bytes_breakdown_50_200_800() {
     println!("\n=== 50-CLIENT SWARM (75 ENTITIES) EXACT REPLICATION ===");
     println!("Swarm Snapshot Size: {} bytes", swarm_len);
     println!("Per-Entity Average: {:.2} bytes/entity", swarm_per_entity);
-    println!("Bandwidth @ 20Hz: {:.2} KB/s ({:.2} kbps)", swarm_kb_sec, swarm_kbps);
+    println!(
+        "Bandwidth @ 20Hz: {:.2} KB/s ({:.2} kbps)",
+        swarm_kb_sec, swarm_kbps
+    );
 
     // Incremental field costs
     println!("\n=== PER-FIELD BYTE IMPACT IN FLATBUFFERS ===");
@@ -234,10 +244,25 @@ fn test_snapshot_bytes_breakdown_50_200_800() {
     p_prog[0].xp = 2500;
     let b_prog = builder.build_frame(1, 1000, &p_prog, &[], &[]).len();
 
-    println!("Base Stationary Player (pos, id, health, max_health, flags): {} bytes (incl header)", b_base);
-    println!("+ Velocity Vec2 (vx != 0 || vy != 0): +{} bytes (total: {})", b_vel - b_base, b_vel);
-    println!("+ Input Ack (non-zero u32): +{} bytes (total: {})", b_ack - b_vel, b_ack);
-    println!("+ Level & XP (non-zero u32s): +{} bytes (total: {})", b_prog - b_ack, b_prog);
+    println!(
+        "Base Stationary Player (pos, id, health, max_health, flags): {} bytes (incl header)",
+        b_base
+    );
+    println!(
+        "+ Velocity Vec2 (vx != 0 || vy != 0): +{} bytes (total: {})",
+        b_vel - b_base,
+        b_vel
+    );
+    println!(
+        "+ Input Ack (non-zero u32): +{} bytes (total: {})",
+        b_ack - b_vel,
+        b_ack
+    );
+    println!(
+        "+ Level & XP (non-zero u32s): +{} bytes (total: {})",
+        b_prog - b_ack,
+        b_prog
+    );
 
     println!("=== END SNAPSHOT BYTES BREAKDOWN MEASUREMENT ===\n");
 }

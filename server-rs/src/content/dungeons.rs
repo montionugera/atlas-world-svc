@@ -64,10 +64,7 @@ impl DungeonCatalog {
     }
 
     pub fn for_map(&self, map_id: &str) -> &[DungeonCatalogEntry] {
-        self.by_map
-            .get(map_id)
-            .map(|v| v.as_slice())
-            .unwrap_or(&[])
+        self.by_map.get(map_id).map(|v| v.as_slice()).unwrap_or(&[])
     }
 
     pub fn all_entries(&self) -> impl Iterator<Item = &DungeonCatalogEntry> {

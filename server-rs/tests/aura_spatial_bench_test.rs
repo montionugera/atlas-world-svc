@@ -52,28 +52,37 @@ fn test_aura_correctness_at_n50_hits_exactly_in_radius() {
     let mut mobs = Vec::new();
     for j in 1..=10 {
         let y = 500.0 + (j as f32) * 2.0; // In radius spatially, but is mob
-        let mob_ent = sim.world.spawn((
-            EntityId(format!("mob_in_{}", j)),
-            Position::new(500.0, y),
-            MobTag,
-            BuffContainer::default(),
-        )).id();
+        let mob_ent = sim
+            .world
+            .spawn((
+                EntityId(format!("mob_in_{}", j)),
+                Position::new(500.0, y),
+                MobTag,
+                BuffContainer::default(),
+            ))
+            .id();
         mobs.push(mob_ent);
     }
     for j in 1..=10 {
         let y = 500.0 + 40.0 + (j as f32) * 5.0; // Out of radius spatially
-        let mob_ent = sim.world.spawn((
-            EntityId(format!("mob_out_{}", j)),
-            Position::new(500.0, y),
-            MobTag,
-            BuffContainer::default(),
-        )).id();
+        let mob_ent = sim
+            .world
+            .spawn((
+                EntityId(format!("mob_out_{}", j)),
+                Position::new(500.0, y),
+                MobTag,
+                BuffContainer::default(),
+            ))
+            .id();
         mobs.push(mob_ent);
     }
 
     // Verify entity count is exactly 50
     let total_entities = 1 + in_radius_allies.len() + out_radius_allies.len() + mobs.len();
-    assert_eq!(total_entities, 50, "Test must populate exactly N=50 entities");
+    assert_eq!(
+        total_entities, 50,
+        "Test must populate exactly N=50 entities"
+    );
 
     // Advance clock and run buff_and_aura_tick_system
     let mut schedule = Schedule::default();

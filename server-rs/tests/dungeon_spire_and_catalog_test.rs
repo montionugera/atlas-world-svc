@@ -1,5 +1,7 @@
 use server_rs::content::{DungeonCatalog, MapConfig};
-use server_rs::ecs::components::{DungeonPortalTrigger, EntityId, Health, PlayerProgression, PlayerTag, Position};
+use server_rs::ecs::components::{
+    DungeonPortalTrigger, EntityId, Health, PlayerProgression, PlayerTag, Position,
+};
 use server_rs::fleet::{
     BossEncounterEvent, BossPhase, DungeonFloorEvent, DungeonRegistry, DungeonState,
 };
@@ -8,7 +10,11 @@ use server_rs::simulation::AtlasSimulation;
 #[test]
 fn test_dungeon_catalog_full_integrity() {
     let catalog = DungeonCatalog::new().expect("Failed to initialize DungeonCatalog");
-    assert_eq!(catalog.len(), 60, "Expected all 60 canonical dungeons loaded");
+    assert_eq!(
+        catalog.len(),
+        60,
+        "Expected all 60 canonical dungeons loaded"
+    );
 
     // Ensure every dungeon has non-empty metadata, valid coordinates, and positive boss HP
     for d in catalog.all_entries() {
@@ -18,9 +24,21 @@ fn test_dungeon_catalog_full_integrity() {
         assert!(!d.region_id.is_empty(), "Region ID must not be empty");
         assert!(d.floors >= 1, "Floors must be >= 1 for {}", d.id);
         assert!(d.level_min >= 1, "level_min must be >= 1 for {}", d.id);
-        assert!(d.level_max >= d.level_min, "level_max >= level_min for {}", d.id);
-        assert!(d.portal_radius > 0.0, "Portal radius must be positive for {}", d.id);
-        assert!(!d.mvp_boss_id.is_empty(), "Boss ID must not be empty for {}", d.id);
+        assert!(
+            d.level_max >= d.level_min,
+            "level_max >= level_min for {}",
+            d.id
+        );
+        assert!(
+            d.portal_radius > 0.0,
+            "Portal radius must be positive for {}",
+            d.id
+        );
+        assert!(
+            !d.mvp_boss_id.is_empty(),
+            "Boss ID must not be empty for {}",
+            d.id
+        );
         assert!(d.mvp_boss_hp > 0, "Boss HP must be positive for {}", d.id);
     }
 
@@ -88,7 +106,10 @@ fn test_in_world_regional_portal_spawning_and_simulation_trigger() {
     let entry = &frame.dungeon_portal_events[0];
     assert_eq!(entry.player_id, player_id);
     assert_eq!(entry.portal_id, target_portal.portal_id);
-    assert_eq!(entry.dungeon_template_id, target_portal.target_dungeon_template_id);
+    assert_eq!(
+        entry.dungeon_template_id,
+        target_portal.target_dungeon_template_id
+    );
     assert_eq!(entry.mvp_boss_id, target_portal.target_mvp_boss_id);
 }
 
@@ -132,10 +153,16 @@ fn test_multi_floor_spire_navigation_and_boss_encounter() {
     for current_f in 1..total_floors {
         // Kill required mobs
         let (floor, events) = registry
-            .record_floor_mob_kills(instance_id, mobs_per_floor, now_secs + current_f as u64 * 10)
+            .record_floor_mob_kills(
+                instance_id,
+                mobs_per_floor,
+                now_secs + current_f as u64 * 10,
+            )
             .expect("Kill mobs should succeed");
         assert!(floor.is_floor_cleared);
-        assert!(events.iter().any(|e| matches!(e, DungeonFloorEvent::FloorCleared { floor: f, .. } if *f == current_f)));
+        assert!(events.iter().any(
+            |e| matches!(e, DungeonFloorEvent::FloorCleared { floor: f, .. } if *f == current_f)
+        ));
 
         // Advance to next floor
         let (floor, advance_events) = registry
@@ -146,7 +173,9 @@ fn test_multi_floor_spire_navigation_and_boss_encounter() {
         if current_f + 1 == total_floors {
             // Reached boss floor!
             assert!(floor.is_boss_floor);
-            assert!(advance_events.iter().any(|e| matches!(e, DungeonFloorEvent::BossFloorReached { .. })));
+            assert!(advance_events
+                .iter()
+                .any(|e| matches!(e, DungeonFloorEvent::BossFloorReached { .. })));
         } else {
             assert!(!floor.is_boss_floor);
             assert!(!floor.is_floor_cleared);
@@ -173,7 +202,9 @@ fn test_multi_floor_spire_navigation_and_boss_encounter() {
     assert_eq!(encounter.phase, BossPhase::Phase2Empowered);
     assert_eq!(encounter.atk_multiplier, 1.35);
     assert_eq!(encounter.aspd_multiplier, 1.25);
-    assert!(events.iter().any(|e| matches!(e, BossEncounterEvent::Phase2Transition { .. })));
+    assert!(events
+        .iter()
+        .any(|e| matches!(e, BossEncounterEvent::Phase2Transition { .. })));
 
     // Finisher deals 35k damage (remaining 0 -> Defeated & MVP rewards!)
     let (encounter, events) = registry
@@ -181,7 +212,9 @@ fn test_multi_floor_spire_navigation_and_boss_encounter() {
         .expect("Finisher damage should succeed");
     assert_eq!(encounter.phase, BossPhase::Defeated);
     assert_eq!(encounter.current_hp, 0);
-    assert!(events.iter().any(|e| matches!(e, BossEncounterEvent::BossDefeated { .. })));
+    assert!(events
+        .iter()
+        .any(|e| matches!(e, BossEncounterEvent::BossDefeated { .. })));
 
     // Verify MVP scoring: DPS dealt 35k, Tank took 15k & got first hit, Finisher dealt 35k & got last hit
     let rewards = encounter.mvp_rewards.expect("MVP rewards must be present");

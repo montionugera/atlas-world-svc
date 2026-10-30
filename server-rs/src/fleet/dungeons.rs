@@ -393,6 +393,7 @@ impl DungeonRegistry {
     }
 
     /// Allocates a dedicated dungeon instance with custom boss stats and enrage timer (defaults to single boss floor).
+    #[allow(clippy::too_many_arguments)]
     pub fn allocate_dungeon_with_boss(
         &self,
         instance_id: impl Into<String>,
@@ -419,6 +420,7 @@ impl DungeonRegistry {
     }
 
     /// Allocates a dedicated multi-floor dungeon instance with floor mob requirements.
+    #[allow(clippy::too_many_arguments)]
     pub fn allocate_dungeon_with_floors(
         &self,
         instance_id: impl Into<String>,
@@ -515,7 +517,9 @@ impl DungeonRegistry {
         now_secs: u64,
     ) -> Result<(DungeonFloorState, Vec<DungeonFloorEvent>), &'static str> {
         let mut lock = self.instances.write().unwrap();
-        let inst = lock.get_mut(instance_id).ok_or("Dungeon instance not found")?;
+        let inst = lock
+            .get_mut(instance_id)
+            .ok_or("Dungeon instance not found")?;
         if inst.state != DungeonState::Active && inst.state != DungeonState::BossEnraged {
             return Err("Dungeon is not active");
         }
@@ -608,12 +612,7 @@ impl DungeonRegistry {
     }
 
     /// Records healing done by support classes for fair MVP reward contribution.
-    pub fn record_healing(
-        &self,
-        instance_id: &str,
-        player_id: &str,
-        healing: u64,
-    ) -> bool {
+    pub fn record_healing(&self, instance_id: &str, player_id: &str, healing: u64) -> bool {
         let mut lock = self.instances.write().unwrap();
         if let Some(inst) = lock.get_mut(instance_id) {
             let entry = inst.contributions.entry(player_id.to_string()).or_default();
@@ -660,7 +659,9 @@ impl DungeonRegistry {
         }
 
         let lock = self.instances.read().unwrap();
-        let inst = lock.get(instance_id).ok_or(DungeonEgressError::InstanceNotFound)?;
+        let inst = lock
+            .get(instance_id)
+            .ok_or(DungeonEgressError::InstanceNotFound)?;
 
         if inst.state != DungeonState::Cleared {
             return Err(DungeonEgressError::BossNotDefeated);
@@ -724,15 +725,15 @@ impl DungeonRegistry {
         let mut events = Vec::new();
 
         // 1. Check dungeon total time limit
-        if inst.state == DungeonState::Active || inst.state == DungeonState::BossEnraged {
-            if now_secs.saturating_sub(inst.created_at_secs) >= inst.time_limit_secs {
-                inst.state = DungeonState::Failed;
-                events.push(BossEncounterEvent::DungeonFailed {
-                    reason: "Dungeon time limit expired".to_string(),
-                    at_secs: now_secs,
-                });
-                return Some(events);
-            }
+        if (inst.state == DungeonState::Active || inst.state == DungeonState::BossEnraged)
+            && now_secs.saturating_sub(inst.created_at_secs) >= inst.time_limit_secs
+        {
+            inst.state = DungeonState::Failed;
+            events.push(BossEncounterEvent::DungeonFailed {
+                reason: "Dungeon time limit expired".to_string(),
+                at_secs: now_secs,
+            });
+            return Some(events);
         }
 
         // 2. Tick boss encounter enrage timer
@@ -878,7 +879,10 @@ mod tests {
         // Fast forward time past 300s enrage timer
         let tick_events = registry.tick_dungeon(inst_id, start_time + 305).unwrap();
         assert_eq!(tick_events.len(), 1);
-        assert!(matches!(tick_events[0], BossEncounterEvent::BossEnraged { .. }));
+        assert!(matches!(
+            tick_events[0],
+            BossEncounterEvent::BossEnraged { .. }
+        ));
 
         let inst = registry.get_instance(inst_id).unwrap();
         assert_eq!(inst.state, DungeonState::BossEnraged);
@@ -893,10 +897,14 @@ mod tests {
             .unwrap();
         assert_eq!(state.current_hp, 0);
         assert_eq!(state.phase, BossPhase::Defeated);
-        assert!(events.iter().any(|e| matches!(e, BossEncounterEvent::BossDefeated { .. })));
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, BossEncounterEvent::BossDefeated { .. })));
 
         // Verify MVP rewards automatically attached
-        let rewards = state.mvp_rewards.expect("MVP rewards must be populated upon defeat");
+        let rewards = state
+            .mvp_rewards
+            .expect("MVP rewards must be populated upon defeat");
         assert_eq!(rewards.len(), 3);
 
         // DPS dealt 45,000 out of 100,000, tank took most damage, finisher got last hit
@@ -955,7 +963,9 @@ mod tests {
             .unwrap();
         assert_eq!(floor.mobs_killed, 5);
         assert!(floor.is_floor_cleared);
-        assert!(events.iter().any(|e| matches!(e, DungeonFloorEvent::FloorCleared { floor: 1, .. })));
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, DungeonFloorEvent::FloorCleared { floor: 1, .. })));
 
         // Advance to Floor 2
         let (floor, events) = registry.advance_floor(inst_id, start_time + 35).unwrap();
@@ -964,16 +974,28 @@ mod tests {
         assert_eq!(floor.mobs_required, 5);
         assert!(!floor.is_floor_cleared);
         assert!(!floor.is_boss_floor);
-        assert!(events.iter().any(|e| matches!(e, DungeonFloorEvent::FloorAdvanced { from_floor: 1, to_floor: 2, is_boss_floor: false, .. })));
+        assert!(events.iter().any(|e| matches!(
+            e,
+            DungeonFloorEvent::FloorAdvanced {
+                from_floor: 1,
+                to_floor: 2,
+                is_boss_floor: false,
+                ..
+            }
+        )));
 
         // Clear Floor 2
-        registry.record_floor_mob_kills(inst_id, 5, start_time + 50).unwrap();
+        registry
+            .record_floor_mob_kills(inst_id, 5, start_time + 50)
+            .unwrap();
 
         // Advance to Floor 3 (Boss Floor!)
         let (floor, events) = registry.advance_floor(inst_id, start_time + 60).unwrap();
         assert_eq!(floor.current_floor, 3);
         assert!(floor.is_boss_floor);
-        assert!(events.iter().any(|e| matches!(e, DungeonFloorEvent::BossFloorReached { floor: 3, .. })));
+        assert!(events
+            .iter()
+            .any(|e| matches!(e, DungeonFloorEvent::BossFloorReached { floor: 3, .. })));
 
         // Cannot advance past the final floor
         assert!(registry.advance_floor(inst_id, start_time + 70).is_err());

@@ -1,8 +1,6 @@
 use reqwest::Client;
 use server_rs::auth::AuthGuard;
-use server_rs::fleet::{
-    BossEncounterEvent, BossPhase, DungeonRegistry, DungeonState,
-};
+use server_rs::fleet::{BossEncounterEvent, BossPhase, DungeonRegistry, DungeonState};
 use server_rs::net::WsServer;
 use std::sync::Arc;
 
@@ -66,7 +64,10 @@ async fn test_boss_encounter_phase_transitions_and_mvp_calculation() {
         .tick_dungeon(inst_id, start_time + 205)
         .expect("Tick must succeed");
     assert_eq!(tick_events.len(), 1);
-    assert!(matches!(tick_events[0], BossEncounterEvent::BossEnraged { .. }));
+    assert!(matches!(
+        tick_events[0],
+        BossEncounterEvent::BossEnraged { .. }
+    ));
 
     let inst_enraged = registry.get_instance(inst_id).unwrap();
     assert_eq!(inst_enraged.state, DungeonState::BossEnraged);
@@ -81,10 +82,14 @@ async fn test_boss_encounter_phase_transitions_and_mvp_calculation() {
         .expect("Killing blow must succeed");
     assert_eq!(state.current_hp, 0);
     assert_eq!(state.phase, BossPhase::Defeated);
-    assert!(events.iter().any(|e| matches!(e, BossEncounterEvent::BossDefeated { .. })));
+    assert!(events
+        .iter()
+        .any(|e| matches!(e, BossEncounterEvent::BossDefeated { .. })));
 
     // 6. Verify MVP calculation and reward distribution
-    let rewards = state.mvp_rewards.expect("MVP rewards must be present upon boss defeat");
+    let rewards = state
+        .mvp_rewards
+        .expect("MVP rewards must be present upon boss defeat");
     assert_eq!(rewards.len(), 3);
 
     // player_dps dealt 35k / 80k (43.75% dmg = ~2625 pts), took 2k dmg
@@ -140,7 +145,10 @@ async fn test_boss_encounter_http_endpoints() {
     let created_at = enter_body["instance"]["createdAtSecs"].as_u64().unwrap();
 
     // 2. Deal damage via POST /dungeon/instance/{id}/boss/damage
-    let dmg_url = format!("http://{}/dungeon/instance/{}/boss/damage", addr, instance_id);
+    let dmg_url = format!(
+        "http://{}/dungeon/instance/{}/boss/damage",
+        addr, instance_id
+    );
     let dmg_resp = client
         .post(&dmg_url)
         .json(&serde_json::json!({

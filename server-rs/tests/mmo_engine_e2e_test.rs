@@ -25,9 +25,7 @@ use server_rs::ecs::components::{
     DungeonPortalEventQueue, DungeonPortalTrigger, EntityId, Health, PlayerProgression, PlayerTag,
     Position,
 };
-use server_rs::fleet::{
-    AgonesClient, DungeonRegistry, DungeonState, FleetLifecycle, FleetState,
-};
+use server_rs::fleet::{AgonesClient, DungeonRegistry, DungeonState, FleetLifecycle, FleetState};
 use server_rs::net::WsServer;
 use server_rs::storage::PrimaryStats;
 use server_rs::systems::portal::dungeon_portal_trigger_system;
@@ -76,7 +74,12 @@ async fn test_mmo_engine_full_e2e_multi_epic_pipeline() {
         dex: 70,
         luk: 35,
     };
-    let lunar_derived = derived_stats_with_race(50, &lunar_stats, Some("magic_staff"), Some(AtlasRace::Lunar));
+    let lunar_derived = derived_stats_with_race(
+        50,
+        &lunar_stats,
+        Some("magic_staff"),
+        Some(AtlasRace::Lunar),
+    );
     assert!(lunar_derived.m_atk > 100.0);
     assert!(lunar_derived.cast_time_reduction_pct > 20.0);
 
@@ -167,7 +170,10 @@ async fn test_mmo_engine_full_e2e_multi_epic_pipeline() {
 
     let portal_queue = overworld.resource::<DungeonPortalEventQueue>();
     assert_eq!(portal_queue.pending_entries.len(), 1);
-    assert_eq!(portal_queue.pending_entries[0].player_id, "player_dwarf_leader");
+    assert_eq!(
+        portal_queue.pending_entries[0].player_id,
+        "player_dwarf_leader"
+    );
     assert_eq!(
         portal_queue.pending_entries[0].dungeon_template_id,
         "dungeon_vesper_crater"
@@ -249,7 +255,10 @@ async fn test_mmo_engine_full_e2e_multi_epic_pipeline() {
     );
 
     let http_client = Client::new();
-    let dmg_endpoint = format!("http://{}/dungeon/instance/{}/boss/damage", addr, dungeon_id);
+    let dmg_endpoint = format!(
+        "http://{}/dungeon/instance/{}/boss/damage",
+        addr, dungeon_id
+    );
     let tick_endpoint = format!("http://{}/dungeon/instance/{}/tick", addr, dungeon_id);
 
     // 1. Ogre Tank lands First Hit, takes 15,000 boss damage, deals 5,000 damage
@@ -299,7 +308,9 @@ async fn test_mmo_engine_full_e2e_multi_epic_pipeline() {
     assert_eq!(body3["encounter"]["phase"], "phase2_empowered");
     assert_eq!(body3["encounter"]["atkMultiplier"], 1.35);
     assert_eq!(body3["encounter"]["aspdMultiplier"], 1.25);
-    assert!(body3["encounter"]["empoweredSkillUnlocked"].as_bool().unwrap());
+    assert!(body3["encounter"]["empoweredSkillUnlocked"]
+        .as_bool()
+        .unwrap());
 
     // 4. Tick timer past enrage (start_time + 305s > 300s)
     let resp_tick = http_client

@@ -98,7 +98,9 @@ fn test_dungeon_party_wipe_resets_boss_and_fails_instance() {
     let wiped = registry.check_party_wipe("wipe_test_inst", 0, 1070);
     assert!(wiped, "Party wipe should trigger on 0 alive players");
 
-    let lock = registry.get_instance("wipe_test_inst").expect("instance exists");
+    let lock = registry
+        .get_instance("wipe_test_inst")
+        .expect("instance exists");
     assert_eq!(lock.state, DungeonState::Failed);
     // Boss must be fully restored to max HP and Phase 1
     assert_eq!(lock.boss_encounter.current_hp, 100_000);
