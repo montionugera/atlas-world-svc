@@ -54,7 +54,77 @@ function getNodesLookup() {
     const sp = window.DATA && window.DATA.studioPerspectives;
     if (sp && Array.isArray(sp.nodes)) {
       for (const n of sp.nodes) {
-        if (n && n.id) lookup[n.id] = n;
+        if (n && n.id) {
+          lookup[n.id] = n;
+          if (n.map_id && !lookup[n.map_id]) {
+            lookup[n.map_id] = n;
+          }
+        }
+      }
+    }
+    const tatlas = sp && sp.tShapedWorldAtlas;
+    if (tatlas && typeof tatlas === "object") {
+      const registerBlueprintList = (list, fallbackType) => {
+        if (!Array.isArray(list)) return;
+        for (const entry of list) {
+          if (!entry || typeof entry !== "object") continue;
+          const zid = entry.zone_id || entry.dungeon_id || entry.id;
+          const snid = entry.studio_node_id;
+          const studioNode = (snid && lookup[snid]) || (zid && lookup[zid]) || null;
+          const resolved = studioNode
+            ? { ...studioNode, node_type: studioNode.node_type || fallbackType }
+            : {
+                id: snid || zid,
+                zone_id: zid,
+                studio_node_id: snid,
+                name: entry.name || entry.town_name || formatZoneName(zid || snid),
+                node_type: fallbackType,
+              };
+          if (zid) lookup[zid] = resolved;
+          if (snid && !lookup[snid]) lookup[snid] = resolved;
+        }
+      };
+
+      const zdir = tatlas.t_breadth_zone_directory || {};
+      registerBlueprintList(zdir.starting_towns, "town");
+      registerBlueprintList(zdir.other_castle_and_hub_towns, "town");
+      registerBlueprintList(tatlas.town_blueprints, "town");
+      registerBlueprintList(zdir.fields_and_hunting_areas, "hunting_area");
+      registerBlueprintList(tatlas.field_tactical_blueprints, "hunting_area");
+      registerBlueprintList(zdir.harbors_clanhalls_and_forts, "fortress");
+      registerBlueprintList(tatlas.fortress_blueprints, "fortress");
+      registerBlueprintList(zdir.regular_dungeons, "dungeon");
+      registerBlueprintList(zdir.seven_signs_seal_catacombs, "dungeon");
+      registerBlueprintList(tatlas.multi_floor_dungeons, "dungeon");
+
+      if (Array.isArray(tatlas.multi_floor_dungeons)) {
+        for (const dng of tatlas.multi_floor_dungeons) {
+          if (!dng || !Array.isArray(dng.floors)) continue;
+          for (const fl of dng.floors) {
+            if (!fl || !Array.isArray(fl.rooms)) continue;
+            for (const rm of fl.rooms) {
+              if (rm && rm.room_id) {
+                lookup[rm.room_id] = {
+                  ...rm,
+                  id: rm.room_id,
+                  room_id: rm.room_id,
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+    if (typeof window.getAllWorldTiles === "function") {
+      for (const tile of window.getAllWorldTiles() || []) {
+        if (tile && tile.id && !lookup[tile.id]) {
+          lookup[tile.id] = {
+            id: tile.id,
+            name: tile.name,
+            kind: tile.kind,
+            node_type: tile.kind,
+          };
+        }
       }
     }
   } catch (e) {
@@ -63,11 +133,55 @@ function getNodesLookup() {
   return lookup;
 }
 
+function findNode(lookup, id) {
+  return (
+    lookup[id] ||
+    lookup[id.replace(/^zone-field-/, "hunting-area-")] ||
+    lookup[id.replace(/^zone-/, "")]
+  );
+}
+
+function resolveActiveDungeonRoom(dungeonId, floorId) {
+  if (!dungeonId) return "";
+  const tatlas = window.DATA?.studioPerspectives?.tShapedWorldAtlas;
+  const dng = (tatlas?.multi_floor_dungeons || []).find(
+    (d) =>
+      d &&
+      (d.dungeon_id === dungeonId ||
+        d.studio_node_id === dungeonId ||
+        d.dungeon_id === "zone-" + dungeonId),
+  );
+  const floors = Array.isArray(dng?.floors) ? dng.floors : [];
+
+  // A selected room only counts inside the dungeon that owns it.
+  const poi = window.STUDIO_MAP_SELECTED_POI;
+  const poiRoom =
+    poi?.room_id ||
+    (typeof poi?.address === "string" && poi.address.match(/\(([a-z0-9-]+-r\d+)\)/i)?.[1]);
+  if (poiRoom && floors.some((f) => f?.rooms?.some((r) => r?.room_id === poiRoom))) {
+    return String(poiRoom);
+  }
+
+  // Otherwise a floor plays a room's track only if bgm.json maps a room on that floor.
+  const floor = floors.find(
+    (f) => f && floorId && String(f.floor_id).toUpperCase() === String(floorId).toUpperCase(),
+  );
+  const musicRooms = controller?.config?.rooms || {};
+  const mapped = (floor?.rooms || []).find((r) => r?.room_id && musicRooms[r.room_id]);
+  return mapped ? String(mapped.room_id) : "";
+}
+
 function getActiveZoneInfo() {
   const hash = (window.location && window.location.hash) ? window.location.hash.slice(1) : "";
   const search = (window.location && window.location.search) ? window.location.search.slice(1) : "";
   const hashParams = new URLSearchParams(hash);
   const searchParams = new URLSearchParams(search);
+
+  const explicitRoom =
+    hashParams.get("room") ||
+    searchParams.get("room") ||
+    (window.ATLAS_PARAMS && window.ATLAS_PARAMS.room) ||
+    "";
 
   // 1. Explicit ?zone= or #zone=
   const zoneParam =
@@ -75,7 +189,11 @@ function getActiveZoneInfo() {
     searchParams.get("zone") ||
     (window.ATLAS_PARAMS && window.ATLAS_PARAMS.zone);
   if (zoneParam) {
-    return { id: zoneParam, name: formatZoneName(zoneParam) };
+    return {
+      id: zoneParam,
+      room_id: explicitRoom || undefined,
+      name: formatZoneName(zoneParam),
+    };
   }
 
   // 2. Tab-specific zone resolutions
@@ -85,24 +203,69 @@ function getActiveZoneInfo() {
     window.CURRENT_TAB ||
     "";
 
+  const store = window.ATLAS_STATE_STORE;
+  const activeFloorId =
+    (store && store.activeFloorId) ||
+    hashParams.get("floor") ||
+    searchParams.get("floor") ||
+    "";
+
+  if (tab === "maps") {
+    const tileId =
+      hashParams.get("tile") ||
+      searchParams.get("tile") ||
+      window.MAXION_SELECTED_TILE_ID;
+    if (tileId) {
+      return { id: tileId, name: formatZoneName(tileId) };
+    }
+  }
+
   if (tab === "studio") {
+    const dngParam = hashParams.get("dungeon") || searchParams.get("dungeon");
+    if (dngParam) {
+      const roomId = explicitRoom || resolveActiveDungeonRoom(dngParam, activeFloorId);
+      return {
+        id: dngParam,
+        room_id: roomId || undefined,
+        name: formatZoneName(dngParam),
+      };
+    }
     const node =
       hashParams.get("node") ||
       hashParams.get("map") ||
       searchParams.get("node") ||
       searchParams.get("map") ||
       window.STUDIO_SELECTED_NODE_ID;
-    if (node) return { id: node, name: formatZoneName(node) };
+    if (node) {
+      const roomId =
+        explicitRoom ||
+        (store && store.activeDungeonId
+          ? resolveActiveDungeonRoom(store.activeDungeonId, activeFloorId)
+          : "");
+      return {
+        id: node,
+        room_id: roomId || undefined,
+        name: formatZoneName(node),
+      };
+    }
   }
 
   if (tab === "world" || tab === "maps") {
-    const store = window.ATLAS_STATE_STORE;
+    const pickedId = window.LAST_WORLD_TILE_ID;
+    if (pickedId && findNode(getNodesLookup(), pickedId)) {
+      return { id: pickedId, name: formatZoneName(pickedId) };
+    }
     const dungeonId =
       (store && store.activeDungeonId) ||
       hashParams.get("dungeon") ||
       searchParams.get("dungeon");
     if (dungeonId) {
-      return { id: dungeonId, name: formatZoneName(dungeonId) };
+      const roomId = explicitRoom || resolveActiveDungeonRoom(dungeonId, activeFloorId);
+      return {
+        id: dungeonId,
+        room_id: roomId || undefined,
+        name: formatZoneName(dungeonId),
+      };
     }
     const fieldId =
       (store && store.activeFieldOrFortId) ||
@@ -117,6 +280,13 @@ function getActiveZoneInfo() {
       searchParams.get("town");
     if (townId) {
       return { id: townId, name: formatZoneName(townId) };
+    }
+    const tileId =
+      hashParams.get("tile") ||
+      searchParams.get("tile") ||
+      window.MAXION_SELECTED_TILE_ID;
+    if (tileId) {
+      return { id: tileId, name: formatZoneName(tileId) };
     }
   }
 
@@ -193,7 +363,14 @@ function syncZone() {
   const lookup = getNodesLookup();
   controller.nodesLookup = lookup;
 
-  const targetNode = lookup[info.id] || lookup[info.id.replace(/^zone-/, "")] || info;
+  const baseNode = (info.room_id && lookup[info.room_id]) || findNode(lookup, info.id) || info;
+  const targetNode =
+    info.room_id && baseNode && typeof baseNode === "object" && !baseNode.room_id
+      ? { ...baseNode, room_id: info.room_id }
+      : baseNode;
+  if (targetNode && targetNode.name) {
+    currentZoneName = targetNode.name;
+  }
   controller.requestZone(targetNode);
   updateUi(controller);
 }

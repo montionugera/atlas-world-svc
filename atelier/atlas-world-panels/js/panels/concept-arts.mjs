@@ -72,10 +72,14 @@ function updateParams(patch, opts = {}) {
 async function loadStudioNodes() {
   try {
     const data = await fetchJson(STUDIO_PERSPECTIVES_URL, "studio-perspectives");
-    if (data && Array.isArray(data.nodes)) {
-      for (const node of data.nodes) {
-        if (node && node.id) {
-          studioNodes.set(node.id, node.name || node.id);
+    if (data && typeof data === "object") {
+      for (const list of [data.nodes, data.continents, data.districts]) {
+        if (Array.isArray(list)) {
+          for (const node of list) {
+            if (node && node.id) {
+              studioNodes.set(node.id, node.name || node.id);
+            }
+          }
         }
       }
     }
@@ -84,26 +88,58 @@ async function loadStudioNodes() {
   }
 }
 
-function closeLightbox() {
+function wireCrossLinks(root) {
+  if (!root) return;
+  const links = [
+    ...root.querySelectorAll(".studio-link"),
+    ...root.querySelectorAll(".lore-link"),
+    ...root.querySelectorAll(".concept-studio-link"),
+  ];
+  for (const link of links) {
+    link.addEventListener("click", (e) => {
+      if (e && typeof e.preventDefault === "function") e.preventDefault();
+      if (e && typeof e.stopPropagation === "function") e.stopPropagation();
+      const href = link.getAttribute("href") || link.href || "";
+      const qIdx = href.indexOf("?");
+      const qs = qIdx >= 0 ? href.slice(qIdx + 1) : href;
+      const sp = new URLSearchParams(qs);
+      const patch = {};
+      for (const [k, v] of sp.entries()) patch[k] = v;
+      if (activeLightboxIndex >= 0 || state.activeId) {
+        closeLightbox({ updateUrl: false });
+      }
+      updateParams(patch, { push: true });
+      if (patch.tab && typeof window.switchTab === "function" && typeof window.atlasSetParams !== "function") {
+        window.switchTab(patch.tab);
+      }
+    });
+  }
+}
+
+function closeLightbox({ updateUrl = true } = {}) {
   const overlay = document.getElementById("conceptLightboxOverlay");
   if (overlay) {
     overlay.remove();
   }
   activeLightboxIndex = -1;
   state.activeId = null;
-  updateParams({ id: null });
+  if (updateUrl) {
+    updateParams({ id: null });
+  }
   if (keydownHandler) {
     window.removeEventListener("keydown", keydownHandler);
     keydownHandler = null;
   }
 }
 
-function openLightbox(item) {
+function openLightbox(item, { updateUrl = true } = {}) {
   if (!item) return;
   const index = currentFiltered.findIndex((it) => it.id === item.id);
   activeLightboxIndex = index >= 0 ? index : 0;
   state.activeId = item.id;
-  updateParams({ id: item.id }, { push: true });
+  if (updateUrl) {
+    updateParams({ id: item.id }, { push: true });
+  }
 
   let overlay = document.getElementById("conceptLightboxOverlay");
   if (!overlay) {
@@ -210,6 +246,8 @@ function renderLightboxContent(overlay, item) {
     e.stopPropagation();
     navigateLightbox(1);
   });
+
+  wireCrossLinks(overlay);
 }
 
 function renderGallery() {
@@ -261,6 +299,7 @@ function renderGallery() {
       for (const item of grp.items) {
         grid.appendChild(buildCard(item));
       }
+      wireCrossLinks(section);
       galleryEl.appendChild(section);
     }
   } else {
@@ -280,6 +319,7 @@ function renderGallery() {
       for (const item of grp.items) {
         grid.appendChild(buildCard(item));
       }
+      wireCrossLinks(section);
       galleryEl.appendChild(section);
     }
   }
@@ -353,6 +393,7 @@ function buildHero(heroItem) {
   hero.addEventListener("click", () => {
     openLightbox(heroItem);
   });
+  wireCrossLinks(hero);
   return hero;
 }
 
@@ -436,6 +477,7 @@ function renderUI() {
   const searchInput = toolbar.querySelector(".concept-search-input");
   searchInput?.addEventListener("input", (e) => {
     state.text = e.target.value;
+    updateParams({ search: state.text || null }, { push: false });
     renderGallery();
   });
 
@@ -478,10 +520,10 @@ function renderUI() {
   rootEl.replaceChildren(container);
   renderGallery();
 
-  // If initial activeId was passed in params, open lightbox
+  // If initial activeId was passed in params, open lightbox without pushing duplicate URL history
   if (state.activeId) {
     const item = allItems.find((it) => it.id === state.activeId);
-    if (item) openLightbox(item);
+    if (item) openLightbox(item, { updateUrl: false });
   }
 }
 
@@ -501,10 +543,10 @@ register("concept-arts", {
 
       // Apply initial params
       const parsed = parseConceptArtParams(params);
-      if (parsed.category) state.category = parsed.category;
-      if (parsed.zone) state.zone = parsed.zone;
-      if (parsed.id) state.activeId = parsed.id;
-      if (parsed.search) state.text = parsed.search;
+      state.category = parsed.category || "all";
+      state.zone = parsed.zone || "all";
+      state.activeId = parsed.id || null;
+      state.text = parsed.search || "";
 
       renderUI();
     } catch (err) {
@@ -522,37 +564,42 @@ register("concept-arts", {
   show(params = {}) {
     if (!rootEl || !allItems.length) return;
     const parsed = parseConceptArtParams(params);
+    const nextCategory = parsed.category || "all";
+    const nextZone = parsed.zone || "all";
+    const nextText = parsed.search || "";
+    const nextId = parsed.id || null;
 
     let changed = false;
-    if (parsed.category && parsed.category !== state.category) {
-      state.category = parsed.category;
+    if (nextCategory !== state.category) {
+      state.category = nextCategory;
       changed = true;
     }
-    if (parsed.zone && parsed.zone !== state.zone) {
-      state.zone = parsed.zone;
+    if (nextZone !== state.zone) {
+      state.zone = nextZone;
       changed = true;
     }
-    if (parsed.search && parsed.search !== state.text) {
-      state.text = parsed.search;
+    if (nextText !== state.text) {
+      state.text = nextText;
       changed = true;
     }
+
+    if (!nextId && (activeLightboxIndex >= 0 || state.activeId)) {
+      closeLightbox({ updateUrl: false });
+    }
+    state.activeId = nextId;
 
     if (changed) {
       renderUI();
-    }
-
-    if (parsed.id) {
-      const target = allItems.find((it) => it.id === parsed.id);
-      if (target && state.activeId !== parsed.id) {
-        openLightbox(target);
+    } else if (nextId) {
+      const target = allItems.find((it) => it.id === nextId);
+      if (target && activeLightboxIndex < 0) {
+        openLightbox(target, { updateUrl: false });
       }
-    } else if (activeLightboxIndex >= 0 && !parsed.id) {
-      closeLightbox();
     }
   },
 
   hide() {
-    closeLightbox();
+    closeLightbox({ updateUrl: false });
   },
 
   count() {

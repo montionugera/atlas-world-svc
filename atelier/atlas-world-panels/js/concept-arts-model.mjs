@@ -195,10 +195,8 @@ export function loadStudioNodeIds(studioDir) {
   const path = nodePath;
   if (!fs || !path) return nodes;
 
-  const nodesDir = path.resolve(studioDir, "nodes");
-  if (!fs.existsSync(nodesDir)) return nodes;
-
   function walk(dir) {
+    if (!fs.existsSync(dir)) return;
     const entries = fs.readdirSync(dir);
     for (const entry of entries) {
       const full = path.join(dir, entry);
@@ -218,7 +216,9 @@ export function loadStudioNodeIds(studioDir) {
     }
   }
 
-  walk(nodesDir);
+  walk(path.resolve(studioDir, "nodes"));
+  walk(path.resolve(studioDir, "continents"));
+  walk(path.resolve(studioDir, "districts"));
   return nodes;
 }
 

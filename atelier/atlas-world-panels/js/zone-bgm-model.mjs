@@ -59,6 +59,24 @@ export function resolveZoneKind(nodeOrZone) {
   return "world";
 }
 
+function getZoneIdCandidates(rawId) {
+  if (!rawId) return [];
+  const s = String(rawId);
+  const out = [s];
+  if (s.startsWith("zone-field-")) {
+    out.push("hunting-area-" + s.slice("zone-field-".length));
+  }
+  if (s.startsWith("field-")) {
+    out.push("hunting-area-" + s.slice("field-".length));
+  }
+  if (s.startsWith("zone-")) {
+    out.push(s.slice("zone-".length));
+  } else {
+    out.push("zone-" + s);
+  }
+  return out;
+}
+
 export function resolveTrackForZone(nodeOrZone, bgmConfig, nodesLookup = {}) {
   if (!bgmConfig || !Array.isArray(bgmConfig.tracks)) {
     return null;
@@ -74,15 +92,19 @@ export function resolveTrackForZone(nodeOrZone, bgmConfig, nodesLookup = {}) {
 
   if (typeof nodeOrZone === "string") {
     zoneId = nodeOrZone;
-    targetObj =
-      nodesLookup[zoneId] ||
-      nodesLookup[zoneId.replace(/^zone-/, "")] ||
-      null;
+    for (const cand of getZoneIdCandidates(zoneId)) {
+      if (nodesLookup[cand]) {
+        targetObj = nodesLookup[cand];
+        break;
+      }
+    }
   } else if (nodeOrZone && typeof nodeOrZone === "object") {
     zoneId =
       nodeOrZone.id ||
       nodeOrZone.room_id ||
       nodeOrZone.zone_id ||
+      nodeOrZone.dungeon_id ||
+      nodeOrZone.studio_node_id ||
       nodeOrZone.nodeId ||
       "";
     targetObj = nodeOrZone;
@@ -92,12 +114,35 @@ export function resolveTrackForZone(nodeOrZone, bgmConfig, nodesLookup = {}) {
   const effectiveObj = targetObj || (typeof nodeOrZone === "object" ? nodeOrZone : null);
   const kind = resolveZoneKind(effectiveObj);
 
-  // 2. Exact zone override in bgmConfig.zones
+  // 2a. Dungeon rooms have their own map and take priority over parent dungeon zone overrides
+  const roomId =
+    (typeof nodeOrZone === "object" && nodeOrZone?.room_id) ||
+    (effectiveObj && effectiveObj.room_id) ||
+    zoneId;
+  const roomTrackId = roomId ? bgmConfig.rooms?.[roomId] : undefined;
+  if (roomTrackId && tracksById.has(roomTrackId)) {
+    return {
+      track: tracksById.get(roomTrackId),
+      kind: kind !== "world" ? kind : "boss",
+      reason: "room_override",
+      zoneId: roomId,
+    };
+  }
+
+  // 2b. Exact zone override in bgmConfig.zones
   if (bgmConfig.zones && zoneId) {
-    const overrideId =
-      bgmConfig.zones[zoneId] ||
-      bgmConfig.zones[zoneId.replace(/^zone-/, "")] ||
-      bgmConfig.zones["zone-" + zoneId];
+    const candidates = [
+      ...getZoneIdCandidates(zoneId),
+      ...getZoneIdCandidates(effectiveObj?.id),
+      ...getZoneIdCandidates(effectiveObj?.studio_node_id),
+    ];
+    let overrideId = null;
+    for (const cand of candidates) {
+      if (bgmConfig.zones[cand]) {
+        overrideId = bgmConfig.zones[cand];
+        break;
+      }
+    }
     if (overrideId && tracksById.has(overrideId)) {
       return {
         track: tracksById.get(overrideId),
@@ -106,17 +151,6 @@ export function resolveTrackForZone(nodeOrZone, bgmConfig, nodesLookup = {}) {
         zoneId,
       };
     }
-  }
-
-  // 2b. Dungeon rooms are not studio nodes, so they have their own map
-  const roomTrackId = bgmConfig.rooms?.[nodeOrZone?.room_id];
-  if (roomTrackId && tracksById.has(roomTrackId)) {
-    return {
-      track: tracksById.get(roomTrackId),
-      kind,
-      reason: "room_override",
-      zoneId,
-    };
   }
 
   // 3. Defaults for that zone kind

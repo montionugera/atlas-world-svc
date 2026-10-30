@@ -640,6 +640,9 @@ function getStudioCanonTiles() {
 function getAllWorldTiles() {
   return [...getStudioCanonTiles(), ...MAXION_WORLD_TILES];
 }
+if (typeof window !== 'undefined') {
+  window.getAllWorldTiles = getAllWorldTiles;
+}
 
 function getStudioCanonMonsters() {
   const sp = (DATA && DATA.studioPerspectives) || {};
@@ -874,6 +877,7 @@ function openMonsterDetailPage(mobId) {
 
 function selectWorldTile(tileId) {
   MAXION_SELECTED_TILE_ID = tileId;
+  if (typeof window !== 'undefined') window.LAST_WORLD_TILE_ID = tileId;
   writeUrlState(true);
   render();
 }
@@ -2602,7 +2606,7 @@ function renderMapDirectory() {
                 <div class="lineage-neighbors">
                   ${nbEntries.map(([dir, targetId]) => {
                     const target = getMaxionTile(targetId);
-                    return `<span class="lineage-nb-chip" onclick="MAXION_SELECTED_TILE_ID='${target.id}';const el=document.getElementById('map-card-${target.id}');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});render();"><b>${dir} →</b> ${escapeHtml(target.name)}</span>`;
+                    return `<span class="lineage-nb-chip" onclick="MAXION_SELECTED_TILE_ID='${target.id}';writeUrlState(true);const el=document.getElementById('map-card-${target.id}');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});render();"><b>${dir} →</b> ${escapeHtml(target.name)}</span>`;
                   }).join('')}
                 </div>
               </div>

@@ -604,16 +604,92 @@ test("GATE: fails on invalid tool enum, superseded Undertow/Millcross canon, or 
 test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders hero, cards, and lightbox", async () => {
   const realDoc = JSON.parse(readFileSync(REAL_INDEX_PATH, "utf8"));
 
+  function decodeEntities(str) {
+    return String(str || "")
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
+  }
+
+  const VOID_TAGS = new Set(["IMG", "INPUT", "BR", "HR", "META", "LINK"]);
+
+  function parseHtmlInto(root, html) {
+    const stack = [root];
+    const tokenRe = /<!--[\s\S]*?-->|<\/([A-Za-z0-9-]+)\s*>|<([A-Za-z0-9-]+)((?:\s+[^\s/>=]+(?:=(?:"[^"]*"|'[^']*'|[^\s/>]+))?)*)\s*(\/?)>|([^<]+)/g;
+    let m;
+    while ((m = tokenRe.exec(html)) !== null) {
+      const [, closeTag, openTag, attrStr, selfClose, textNode] = m;
+      if (closeTag) {
+        const upper = closeTag.toUpperCase();
+        for (let i = stack.length - 1; i >= 1; i--) {
+          if (stack[i].tagName === upper) {
+            stack.length = i;
+            break;
+          }
+        }
+      } else if (openTag) {
+        const el = new FakeElement(openTag);
+        if (attrStr) {
+          const attrRe = /([^\s/>=]+)(?:=(?:"([^"]*)"|'([^']*)'|([^\s/>]+)))?/g;
+          let am;
+          while ((am = attrRe.exec(attrStr)) !== null) {
+            const k = am[1];
+            const v = decodeEntities(am[2] ?? am[3] ?? am[4] ?? "");
+            el.setAttribute(k, v);
+          }
+        }
+        stack[stack.length - 1].appendChild(el);
+        if (!selfClose && !VOID_TAGS.has(el.tagName)) {
+          stack.push(el);
+        }
+      } else if (textNode) {
+        const txt = decodeEntities(textNode);
+        if (txt) {
+          const t = new FakeElement("#text");
+          t._textContent = txt;
+          stack[stack.length - 1].appendChild(t);
+        }
+      }
+    }
+  }
+
+  function matchesSingleSelector(node, sel) {
+    if (!node || typeof node !== "object" || node.tagName === "#TEXT") return false;
+    if (sel.startsWith("#")) return node.id === sel.slice(1);
+    if (sel.startsWith("[") && sel.endsWith("]")) {
+      const inner = sel.slice(1, -1);
+      const eqIdx = inner.indexOf("=");
+      if (eqIdx === -1) return inner in node.attributes;
+      const k = inner.slice(0, eqIdx);
+      const v = inner.slice(eqIdx + 1).replace(/^['"]|['"]$/g, "");
+      return node.attributes[k] === v;
+    }
+    if (sel.startsWith(".")) {
+      const reqClasses = sel.split(".").filter(Boolean);
+      const nodeClasses = (node.className || "").split(/\s+/).filter(Boolean);
+      return reqClasses.every((c) => nodeClasses.includes(c));
+    }
+    return (node.tagName || "").toLowerCase() === sel.toLowerCase();
+  }
+
   class FakeElement {
     constructor(tag) {
       this.tagName = String(tag).toUpperCase();
       this.className = "";
       this.id = "";
+      this.value = "";
+      this.href = "";
+      this.src = "";
+      this.alt = "";
+      this.type = "";
       this.hidden = false;
       this.style = {};
       this.dataset = {};
       this.attributes = {};
       this.children = [];
+      this.parentNode = null;
       this.listeners = {};
       this._textContent = "";
       this._innerHTML = "";
@@ -635,6 +711,7 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
           else this.classList.remove(c);
           return next;
         },
+        contains: (c) => this.className.split(/\s+/).filter(Boolean).includes(c),
       };
     }
     get textContent() {
@@ -651,39 +728,48 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
     set innerHTML(val) {
       this._innerHTML = String(val || "");
       this.children = [];
-      if (this._innerHTML.includes('class="concept-grid"')) {
-        const grid = new FakeElement("div");
-        grid.className = "concept-grid";
-        this.children.push(grid);
-      }
-      if (this._innerHTML.includes('class="concept-search-input"')) {
-        const inp = new FakeElement("input");
-        inp.className = "concept-search-input";
-        this.children.push(inp);
-      }
-      if (this._innerHTML.includes('class="concept-zone-select"')) {
-        const sel = new FakeElement("select");
-        sel.className = "concept-zone-select";
-        this.children.push(sel);
-      }
-      if (this._innerHTML.includes('class="concept-shown-count')) {
-        const cnt = new FakeElement("span");
-        cnt.className = "concept-shown-count";
-        this.children.push(cnt);
+      this._textContent = "";
+      if (this._innerHTML) {
+        parseHtmlInto(this, this._innerHTML);
       }
     }
     appendChild(ch) {
-      this.children.push(ch);
+      if (ch && typeof ch === "object") {
+        ch.parentNode = this;
+        this.children.push(ch);
+      }
       return ch;
     }
     replaceChildren(...nodes) {
-      this.children = [...nodes];
+      this.children = [];
       this._textContent = "";
       this._innerHTML = "";
+      for (const n of nodes) this.appendChild(n);
     }
-    remove() {}
+    remove() {
+      if (this.parentNode) {
+        const idx = this.parentNode.children.indexOf(this);
+        if (idx >= 0) this.parentNode.children.splice(idx, 1);
+        this.parentNode = null;
+      }
+    }
     setAttribute(k, v) {
-      this.attributes[k] = String(v);
+      const str = String(v);
+      this.attributes[k] = str;
+      if (k === "class") this.className = str;
+      else if (k === "id") this.id = str;
+      else if (k === "value") this.value = str;
+      else if (k === "href") this.href = str;
+      else if (k === "src") this.src = str;
+      else if (k === "alt") this.alt = str;
+      else if (k === "type") this.type = str;
+      else if (k.startsWith("data-")) {
+        const camel = k.slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        this.dataset[camel] = str;
+      }
+    }
+    getAttribute(k) {
+      return this.attributes[k] ?? null;
     }
     addEventListener(ev, fn) {
       (this.listeners[ev] ||= []).push(fn);
@@ -692,9 +778,7 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
       const out = [];
       const visit = (n) => {
         if (!n || typeof n !== "object") return;
-        if (sel.startsWith(".") && (n.className || "").split(/\s+/).includes(sel.slice(1))) out.push(n);
-        else if (sel.startsWith("#") && n.id === sel.slice(1)) out.push(n);
-        else if (sel.toLowerCase() === (n.tagName || "").toLowerCase()) out.push(n);
+        if (matchesSingleSelector(n, sel)) out.push(n);
         for (const c of n.children || []) visit(c);
       };
       for (const c of this.children || []) visit(c);
@@ -709,6 +793,8 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
   host.id = "panelHost";
   const body = new FakeElement("body");
   body.appendChild(host);
+  const paramCalls = [];
+  const switchedTabs = [];
 
   globalThis.document = {
     body,
@@ -719,14 +805,22 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
     dispatchEvent: () => {},
     addEventListener: () => {},
     removeEventListener: () => {},
-    atlasSetParams: () => {},
+    atlasSetParams: (patch, opts) => paramCalls.push({ patch, opts }),
+    switchTab: (tab) => switchedTabs.push(tab),
   };
   globalThis.fetch = async (url) => {
     if (String(url).includes("concept-art/index.json")) {
       return { ok: true, status: 200, json: async () => realDoc };
     }
     if (String(url).includes("/api/studio/perspectives")) {
-      return { ok: true, status: 200, json: async () => ({ nodes: [{ id: "town-lantern-hollow", name: "Lantern Hollow" }] }) };
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          nodes: [{ id: "town-lantern-hollow", name: "Lantern Hollow" }],
+          continents: [{ id: "continent-01-hearthbloom-basin", name: "Hearthbloom Basin" }],
+        }),
+      };
     }
     return { ok: false, status: 404, json: async () => ({}) };
   };
@@ -738,8 +832,80 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
   assert.equal(panelEl.querySelector(".error-banner"), null, "Must not render error banner when mounting with plain {} params");
   const container = panelEl.querySelector(".concept-arts-container");
   assert.ok(container, "renderUI() must mount .concept-arts-container");
+
+  // Item 7: Hero key-art renders real first key-art item ("key-art-epoch-1-1-creation") with title, caption, image, and links (kills M3)
+  const hero = panelEl.querySelector(".concept-hero");
+  assert.ok(hero, "Must render .concept-hero section");
+  assert.equal(hero.dataset.heroId, "key-art-epoch-1-1-creation", "Hero must render key-art-epoch-1-1-creation");
+  const heroTitle = hero.querySelector(".concept-hero-title");
+  assert.ok(heroTitle && heroTitle.textContent.includes("Epoch 1.1"), "Hero must render title text");
+  assert.ok(hero.querySelector(".lore-link"), "Hero must render .lore-link");
+
+  // Item 7: Grid renders all 24 cards from index.json with titles and badges (kills M3)
   const cards = panelEl.querySelectorAll(".concept-card");
+  assert.equal(cards.length, 24, "Must render all 24 concept cards from index.json");
   assert.equal(cards.length, realDoc.items.length, "Must render a card for every item in index.json");
+  for (const card of cards) {
+    const titleEl = card.querySelector(".concept-card-title");
+    const badgeEl = card.querySelector(".concept-badge");
+    assert.ok(titleEl && titleEl.textContent.length > 0, `Card ${card.dataset.id} must render non-empty .concept-card-title`);
+    assert.ok(badgeEl && badgeEl.textContent.length > 0, `Card ${card.dataset.id} must render non-empty .concept-badge`);
+  }
+
+  // Item 7: Clicking a card opens #conceptLightboxOverlay with title, prompt brief, and links (kills M3)
+  paramCalls.length = 0;
+  cards[0].listeners.click[0]();
+  const overlay = body.querySelector("#conceptLightboxOverlay");
+  assert.ok(overlay, "Clicking a card must open #conceptLightboxOverlay");
+  const lbTitle = overlay.querySelector(".concept-lightbox-title");
+  const lbPrompt = overlay.querySelector(".concept-prompt-body");
+  const lbLoreLink = overlay.querySelector(".lore-link");
+  assert.ok(lbTitle && lbTitle.textContent.length > 0, "Lightbox must render item title");
+  assert.ok(lbPrompt && lbPrompt.textContent.length > 0, "Lightbox must render generation prompt");
+  assert.ok(lbLoreLink, "Lightbox must render .lore-link");
+  assert.equal(paramCalls.length, 1, "User-initiated openLightbox must push id param to URL");
+  assert.equal(paramCalls[0].opts?.push, true);
+
+  // Item 4.5: Clicking cross-link (.lore-link) prevents default full-page reload, closes lightbox, and routes in-app
+  let defaultPrevented = false;
+  lbLoreLink.listeners.click?.[0]?.({
+    preventDefault: () => { defaultPrevented = true; },
+    stopPropagation: () => {},
+  });
+  assert.equal(defaultPrevented, true, "Clicking .lore-link must call e.preventDefault() to prevent full page reload");
+  assert.equal(body.querySelector("#conceptLightboxOverlay"), null, "Clicking .lore-link in lightbox must close lightbox");
+
+  // Item 4.1: Search input syncs URL via updateParams({ search: ... }, { push: false }) (kills M4)
+  paramCalls.length = 0;
+  const searchInput = panelEl.querySelector(".concept-search-input");
+  assert.ok(searchInput, "Must render .concept-search-input");
+  searchInput.listeners.input[0]({ target: { value: "kiln cellar" } });
+  const filteredCards = panelEl.querySelectorAll(".concept-card");
+  assert.ok(filteredCards.length > 0 && filteredCards.length < 24, "Search input 'kiln cellar' must filter cards");
+  assert.ok(
+    paramCalls.some((c) => c.patch.search === "kiln cellar" && c.opts?.push === false),
+    "Search input must call updateParams({ search: 'kiln cellar' }, { push: false })",
+  );
+
+  // Item 4.3 & 4.4: Deep-link show({ category, zone, search, id }) does not duplicate-push history on renderUI, and Back show({}) clears filters & closes lightbox
+  paramCalls.length = 0;
+  await globalThis.window.ATLAS_PANELS.show("concept-arts", {
+    category: "town",
+    zone: "town-lantern-hollow",
+    search: "lantern",
+    id: "town-lantern-hollow-meridian-plaza",
+  });
+  assert.ok(body.querySelector("#conceptLightboxOverlay"), "show({ id }) must open #conceptLightboxOverlay");
+  assert.equal(
+    paramCalls.filter((c) => c.patch.id === "town-lantern-hollow-meridian-plaza" && c.opts?.push === true).length,
+    0,
+    "Programmatic show({ id }) / renderUI() must not push duplicate history entry",
+  );
+
+  // Now simulate browser Back to ?tab=concept-arts (params = {})
+  await globalThis.window.ATLAS_PANELS.show("concept-arts", {});
+  assert.equal(body.querySelector("#conceptLightboxOverlay"), null, "Browser Back show({}) must close open lightbox");
+  assert.equal(panelEl.querySelectorAll(".concept-card").length, 24, "Browser Back show({}) must clear category/zone/search filters and restore all 24 cards");
 });
 
 // Reads real pixel size from the WebP header, so an image saved under the wrong

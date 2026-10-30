@@ -29,6 +29,7 @@ let SIM_RUNNING = false;
 // Absent in the URL = cleared here, matching the other params (Back/forward never keeps stale state).
 const ATLAS_PARAM_KEYS = ['kind', 'key', 'mode', 'group', 'view', 'verdict', 'zone', 'chapter', 'ref', 'category', 'id', 'search'];
 const ATLAS_PARAM_RE = /^[A-Za-z0-9][A-Za-z0-9:_.\/-]{0,119}$/;
+const ATLAS_SEARCH_PARAM_RE = /^[A-Za-z0-9][A-Za-z0-9 :_.\/-]{0,119}$/;
 let ATLAS_PARAMS = {};
 const ATLAS_SUBVIEWS = {
   story:  { dflt: 'nodes',     views: [['nodes', 'Nodes'], ['reader', 'Reader'], ['graph', 'Graph'], ['undertow', 'Undertow']] },
@@ -125,14 +126,28 @@ function atlasPanelGuess(tab, params) {
 
 // Panels adjust their own URL params (selected asset, mode, ...) without a re-render.
 function atlasSetParams(patch, opts) {
+  let tabChanged = false;
+  if (patch && patch.tab && patch.tab !== CURRENT_TAB) {
+    CURRENT_TAB = String(patch.tab);
+    ATLAS_PARAMS = {};
+    tabChanged = true;
+  }
+  if (patch && patch.node && ATLAS_PARAM_RE.test(String(patch.node))) {
+    STUDIO_SELECTED_NODE_ID = String(patch.node);
+  }
   Object.keys(patch || {}).forEach(k => {
     if (!ATLAS_PARAM_KEYS.includes(k)) return;
     const v = patch[k];
+    const re = k === 'search' ? ATLAS_SEARCH_PARAM_RE : ATLAS_PARAM_RE;
     // An unrepresentable value clears the param: keeping the old one would leave the URL naming a stale selection.
-    if (v !== null && v !== undefined && v !== '' && ATLAS_PARAM_RE.test(String(v))) ATLAS_PARAMS[k] = String(v);
+    if (v !== null && v !== undefined && v !== '' && re.test(String(v))) ATLAS_PARAMS[k] = String(v);
     else delete ATLAS_PARAMS[k];
   });
   writeUrlState(!!(opts && opts.push));
+  if (tabChanged) {
+    renderSidebar();
+    render();
+  }
 }
 window.atlasSetParams = atlasSetParams;
 if (typeof window !== 'undefined') {
@@ -140,6 +155,8 @@ if (typeof window !== 'undefined') {
     DATA: { get: () => DATA, configurable: true },
     CURRENT_TAB: { get: () => CURRENT_TAB, configurable: true },
     STUDIO_SELECTED_NODE_ID: { get: () => STUDIO_SELECTED_NODE_ID, configurable: true },
+    STUDIO_MAP_SELECTED_POI: { get: () => STUDIO_MAP_SELECTED_POI, configurable: true },
+    MAXION_SELECTED_TILE_ID: { get: () => MAXION_SELECTED_TILE_ID, configurable: true },
     ATLAS_PARAMS: { get: () => ATLAS_PARAMS, configurable: true },
     ATLAS_STATE_STORE: { get: () => ATLAS_STATE_STORE, configurable: true },
   });
@@ -394,7 +411,8 @@ function syncUrlState() {
   ATLAS_PARAMS = {};
   ATLAS_PARAM_KEYS.forEach(k => {
     const v = params.get(k);
-    if (v && ATLAS_PARAM_RE.test(v)) ATLAS_PARAMS[k] = v;
+    const re = k === 'search' ? ATLAS_SEARCH_PARAM_RE : ATLAS_PARAM_RE;
+    if (v && re.test(v)) ATLAS_PARAMS[k] = v;
   });
 }
 
@@ -551,7 +569,7 @@ async function init() {
 
   syncUrlState();
   window.addEventListener('hashchange', () => { syncUrlState(); renderSidebar(); render(); });
-  window.addEventListener('popstate', () => { syncUrlState(); renderSidebar(); render(); });
+  window.addEventListener('popstate', () => { window.LAST_WORLD_TILE_ID = ''; syncUrlState(); renderSidebar(); render(); });
   // registry.mjs is a deferred module: it may finish before or after the bundle fetch below.
   window.addEventListener('atlas-panels-ready', () => { if (DATA) { renderSidebar(); render(); } });
   window.addEventListener('atlas-panels-updated', () => { if (DATA) renderSidebar(); });

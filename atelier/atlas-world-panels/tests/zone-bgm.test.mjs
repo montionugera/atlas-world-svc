@@ -677,20 +677,38 @@ describe("zone-bgm.mjs Browser Integration & Global Bindings", () => {
       return el;
     };
 
+    const tatlas = JSON.parse(
+      readFileSync(join(REPO, "content/studio/t_shaped_world_atlas.json"), "utf8"),
+    );
+    const kilnPath = join(
+      REPO,
+      "content/studio/nodes/continent-01-hearthbloom-basin/district-teacup-meadows/dungeon-kiln-cellar.json",
+    );
+    const kilnNode = JSON.parse(readFileSync(kilnPath, "utf8"));
+    const lanternPath = join(
+      REPO,
+      "content/studio/nodes/continent-01-hearthbloom-basin/district-teacup-meadows/town-lantern-hollow.json",
+    );
+    const lanternNode = JSON.parse(readFileSync(lanternPath, "utf8"));
+
     globalThis.window = {
       location: { hash: "#tab=studio&node=town-flywheel-governor-hub", search: "?tab=studio" },
       DATA: {
         studioPerspectives: {
-          nodes: [flywheelNode, cloverNode],
+          nodes: [flywheelNode, cloverNode, kilnNode, lanternNode],
+          tShapedWorldAtlas: tatlas,
         },
       },
       CURRENT_TAB: "studio",
       STUDIO_SELECTED_NODE_ID: "town-flywheel-governor-hub",
+      STUDIO_MAP_SELECTED_POI: null,
+      MAXION_SELECTED_TILE_ID: "freja-south-gate",
       ATLAS_PARAMS: {},
       ATLAS_STATE_STORE: {
         activeTownId: "town-lantern-hollow",
-        activeFieldOrFortId: "hunting-area-clover-south-gate",
+        activeFieldOrFortId: "zone-field-clover-south-gate",
         activeDungeonId: "",
+        activeFloorId: "",
       },
       addEventListener: () => {},
     };
@@ -706,6 +724,16 @@ describe("zone-bgm.mjs Browser Integration & Global Bindings", () => {
     assert.ok(globalThis.window.ATLAS_ZONE_BGM, "window.ATLAS_ZONE_BGM must be registered");
     const { controller, syncZone } = globalThis.window.ATLAS_ZONE_BGM;
 
+    // Must mount #zoneBgmContainer with .zone-bgm-player into document.body (kills Mutation M6)
+    const mountedContainer = globalThis.document.getElementById("zoneBgmContainer");
+    assert.ok(mountedContainer, "#zoneBgmContainer must be mounted into document.body");
+    assert.ok(
+      mountedContainer.className.includes("zone-bgm-container"),
+      "#zoneBgmContainer must have zone-bgm-container class",
+    );
+    assert.equal(mountedContainer.children.length, 1, "#zoneBgmContainer must contain .zone-bgm-player");
+    assert.equal(mountedContainer.children[0].className, "zone-bgm-player");
+
     // Must be disabled by default (kills Mutation B3a)
     assert.equal(controller.isEnabled(), false, "BGM controller must be disabled by default on initial load");
 
@@ -716,15 +744,159 @@ describe("zone-bgm.mjs Browser Integration & Global Bindings", () => {
       "town-flywheel-governor-hub must resolve to defaults.town ('town-hero-suite'), not 'world'",
     );
 
-    // Switch to world tab where ATLAS_STATE_STORE.activeFieldOrFortId is hunting-area-clover-south-gate
+    // Switch to world tab where ATLAS_STATE_STORE.activeFieldOrFortId is real browser ID 'zone-field-clover-south-gate'
     globalThis.window.location.hash = "#tab=world";
-    globalThis.window. location.search = "?tab=world";
+    globalThis.window.location.search = "?tab=world";
     globalThis.window.CURRENT_TAB = "world";
     syncZone();
     assert.equal(
       controller.getCurrentTrack()?.id,
       "hunting-clover-south-gate",
-      "world tab with activeFieldOrFortId must switch BGM to field track",
+      "world tab with real activeFieldOrFortId ('zone-field-clover-south-gate') must switch BGM to hunting-clover-south-gate",
+    );
+
+    // Shortened town zone_id (e.g. zone-town-porcelain-loom), fortress/harbor (zone-fortress-shanty-kiln), and catacomb (zone-catacomb-heretic-kiln)
+    globalThis.window.ATLAS_STATE_STORE.activeFieldOrFortId = "";
+    globalThis.window.ATLAS_STATE_STORE.activeTownId = "zone-town-porcelain-loom";
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      config.defaults.town,
+      "shortened town zone_id 'zone-town-porcelain-loom' must resolve to town track, not world",
+    );
+
+    globalThis.window.ATLAS_STATE_STORE.activeFieldOrFortId = "zone-fortress-shanty-kiln";
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      config.defaults.field,
+      "fortress zone_id 'zone-fortress-shanty-kiln' must resolve to field track, not world",
+    );
+
+    globalThis.window.ATLAS_STATE_STORE.activeFieldOrFortId = "";
+    globalThis.window.ATLAS_STATE_STORE.activeDungeonId = "zone-catacomb-heretic-kiln";
+    globalThis.window.ATLAS_STATE_STORE.activeFloorId = "B1";
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      config.defaults.dungeon,
+      "catacomb zone_id 'zone-catacomb-heretic-kiln' must resolve to dungeon track, not world",
+    );
+
+    // Kiln Cellar B1 -> dungeon-kiln-cellar, then B3 / kc-b3-r2 -> boss-kiln
+    globalThis.window.ATLAS_STATE_STORE.activeDungeonId = "zone-dungeon-kiln-cellar";
+    globalThis.window.ATLAS_STATE_STORE.activeFloorId = "B1";
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      "dungeon-kiln-cellar",
+      "Kiln Cellar on floor B1 must resolve to dungeon-kiln-cellar",
+    );
+
+    globalThis.window.ATLAS_STATE_STORE.activeFloorId = "B3";
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      "boss-kiln",
+      "Kiln Cellar on boss floor B3 (kc-b3-r2) must resolve to boss-kiln",
+    );
+
+    // Explicit ?zone=kc-b3-r2 must also resolve to boss-kiln
+    globalThis.window.location.hash = "#zone=kc-b3-r2";
+    globalThis.window.location.search = "?zone=kc-b3-r2";
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      "boss-kiln",
+      "?zone=kc-b3-r2 must resolve to boss-kiln",
+    );
+
+    // ?tab=maps with tile= must resolve tile kind
+    globalThis.window.location.hash = "#tab=maps&tile=town-lantern-hollow";
+    globalThis.window.location.search = "?tab=maps&tile=town-lantern-hollow";
+    globalThis.window.CURRENT_TAB = "maps";
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      "town-lantern-hollow",
+      "?tab=maps&tile=town-lantern-hollow must resolve tile track",
+    );
+
+    // A selection that is not a map zone (e.g. a shop POI) must not hijack the music.
+    const storeForSelection = globalThis.window.ATLAS_STATE_STORE;
+    globalThis.window.location.hash = "#tab=world";
+    globalThis.window.location.search = "?tab=world";
+    globalThis.window.CURRENT_TAB = "world";
+    Object.assign(storeForSelection, {
+      activeDungeonId: "",
+      activeFloorId: "",
+      activeFieldOrFortId: "",
+      activeTownId: "town-lantern-hollow",
+    });
+    globalThis.window.LAST_WORLD_TILE_ID = "shop-not-a-zone";
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      "town-lantern-hollow",
+      "an unknown selection id must fall through to the active town",
+    );
+
+    // A dot picked on the map outranks the town behind it.
+    globalThis.window.LAST_WORLD_TILE_ID = "hunting-area-clover-south-gate";
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      "hunting-clover-south-gate",
+      "the map-dot selection must switch music to Clover",
+    );
+    globalThis.window.LAST_WORLD_TILE_ID = "";
+
+    // A room selected in one dungeon must not carry into another dungeon.
+    const otherDungeon = tatlas.multi_floor_dungeons.find(
+      (d) => d.dungeon_id !== "zone-dungeon-kiln-cellar",
+    );
+    Object.assign(storeForSelection, {
+      activeDungeonId: otherDungeon.dungeon_id,
+      activeFloorId: otherDungeon.floors[0].floor_id,
+    });
+    globalThis.window.STUDIO_MAP_SELECTED_POI = { room_id: "kc-b3-r2" };
+    syncZone();
+    assert.notEqual(
+      controller.getCurrentTrack()?.id,
+      "boss-kiln",
+      "kc-b3-r2 selected earlier must not play boss music in another dungeon",
+    );
+    globalThis.window.STUDIO_MAP_SELECTED_POI = null;
+
+    // Floor-level boss music comes from bgm.json rooms, not from "last room of the floor".
+    const savedRooms = controller.config.rooms;
+    controller.config.rooms = {};
+    Object.assign(storeForSelection, {
+      activeDungeonId: "zone-dungeon-kiln-cellar",
+      activeFloorId: "B3",
+    });
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      "dungeon-kiln-cellar",
+      "with no room mapped in bgm.json, B3 must play the dungeon track",
+    );
+    controller.config.rooms = savedRooms;
+    Object.assign(storeForSelection, { activeDungeonId: "", activeFloorId: "" });
+
+    // Without tShapedWorldAtlas, prefix stripping (replace(/^zone-/, "")) must still resolve zone-town-flywheel-governor-hub (kills Mutation M5)
+    globalThis.window.DATA.studioPerspectives.tShapedWorldAtlas = null;
+    globalThis.window.location.hash = "#tab=world";
+    globalThis.window.location.search = "?tab=world";
+    globalThis.window.CURRENT_TAB = "world";
+    globalThis.window.ATLAS_STATE_STORE.activeDungeonId = "";
+    globalThis.window.ATLAS_STATE_STORE.activeFieldOrFortId = "";
+    globalThis.window.ATLAS_STATE_STORE.activeTownId = "zone-town-flywheel-governor-hub";
+    syncZone();
+    assert.equal(
+      controller.getCurrentTrack()?.id,
+      config.defaults.town,
+      "zone-town-flywheel-governor-hub without tShapedWorldAtlas must resolve via ^zone- prefix stripping",
     );
   });
 
@@ -747,5 +919,18 @@ describe("zone-bgm.mjs Browser Integration & Global Bindings", () => {
         `02_state_and_composable_layers.js must expose live window.${globalProp} getter`,
       );
     }
+    const engines = readFileSync(
+      join(REPO, "scripts/atlas_world_web/frontend/03_engines_ol_and_3d.js"),
+      "utf8",
+    );
+    const body = (name) => engines.slice(engines.indexOf(`function ${name}(`)).split(/\n}\n/)[0];
+    assert.match(body("selectAtlasZoneMark"), /window\.LAST_WORLD_TILE_ID\s*=\s*[^']/);
+    assert.match(body("selectStudioMapPoi"), /window\.LAST_WORLD_TILE_ID\s*=\s*[^']/);
+    assert.match(body("closeStudioMapPoi"), /window\.LAST_WORLD_TILE_ID\s*=\s*''/);
+    assert.match(src, /addEventListener\('popstate',[^\n]*LAST_WORLD_TILE_ID\s*=\s*''/);
+    const searchReMatch = src.match(/ATLAS_SEARCH_PARAM_RE\s*=\s*\/((?:\\.|[^/])+)\//);
+    assert.ok(searchReMatch, "02_state_and_composable_layers.js must define ATLAS_SEARCH_PARAM_RE for multi-word search");
+    const searchRe = new RegExp(searchReMatch[1]);
+    assert.equal(searchRe.test("kiln cellar"), true, "ATLAS_SEARCH_PARAM_RE must allow multi-word search queries with spaces");
   });
 });

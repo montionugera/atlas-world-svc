@@ -135,6 +135,9 @@ function navigateToRef(ref, pushHistory = false) {
   let target = null;
   if (typeof ref === "string" && /^[A-Za-z0-9_-]+$/.test(ref)) {
     target = containerEl?.querySelector(`#lore-ref-${ref}`) || null;
+    if (!target && ref.startsWith("race-")) {
+      target = containerEl?.querySelector(`#lore-ref-${ref.slice(5)}`) || null;
+    }
   }
   if (!target) {
     target = containerEl?.querySelector(`#lore-chapter-${chId}`) || null;
@@ -504,6 +507,10 @@ function buildBossSection(bossLadder) {
   for (const tier of bossLadder.tiers) {
     const stepClass = tier.rank === 1 ? "lore-tier-step--god" : tier.rank === 2 ? "lore-tier-step--mvp" : tier.rank === 3 ? "lore-tier-step--raid" : "lore-tier-step--field";
     const step = el("div", `lore-tier-step ${stepClass}`);
+    step.id =
+      tier.rank === 4 || tier.tierKey === "NORMAL_MOB" || tier.tierKey === "field_mob"
+        ? "lore-ref-beast_animal_brute"
+        : `lore-ref-boss-tier-${tier.rank}`;
 
     const h = el("div", "lore-card-header");
     h.appendChild(el("h3", "lore-card-title", `Rank ${tier.rank}: ${tier.name}`));
@@ -605,6 +612,7 @@ function buildMysteriesSection(mysteries) {
   const grid = el("div", "lore-grid");
   for (const item of mysteries.items) {
     const card = el("article", "lore-card lore-card--highlight");
+    if (item.id) card.id = `lore-ref-${item.id}`;
 
     const cardHeader = el("div", "lore-card-header");
     const titleGroup = el("div", "lore-card-title-group");
@@ -749,9 +757,12 @@ register("lore", {
     if (params.ref) {
       activeRef = params.ref;
       navigateToRef(params.ref, false);
-    } else if (params.chapter && params.chapter !== activeChapterId) {
-      activeRef = "";
-      navigateToChapter(params.chapter, false);
+    } else {
+      const targetChapter = params.chapter || "premise";
+      if (targetChapter !== activeChapterId || activeRef !== "") {
+        activeRef = "";
+        navigateToChapter(targetChapter, false);
+      }
     }
   },
 

@@ -53,6 +53,32 @@ const SORTED_KEYS = Object.keys(NAME_MAP).sort((a, b) => b.length - a.length);
 const ESCAPED_KEYS = SORTED_KEYS.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
 const NAME_MAP_REGEX = new RegExp(`\\b(${ESCAPED_KEYS.join("|")})\\b`, "g");
 
+const CANON_TOKEN_MAP = Object.freeze({
+  catherok: "Brass-Spur",
+  porta: "Gear-Ward",
+  excuro: "Escapement",
+  cruma: "Mainspring",
+  oriharukon: "Hearth-Brass",
+  mink: "Galvanic",
+  sulong: "Storm-Pulse",
+  electro: "Galvanic",
+  sahaguin: "Tide-Stalkers",
+  undertow: "Sunken-Tide",
+  millcross: "Lantern Hollow",
+  cindervast: "Hearthbloom",
+  thornveil: "Brier-Reach",
+  "fenrir-kael": "Fenrir-Kael",
+});
+
+const CANON_TOKEN_KEYS = Object.keys(CANON_TOKEN_MAP).sort((a, b) => b.length - a.length);
+const CANON_TOKEN_REGEX = new RegExp(
+  `\\b(${CANON_TOKEN_KEYS.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`,
+  "gi",
+);
+
+const FRANCHISE_STRIP_REGEX =
+  /\b(?:(?:inspired\s+by|adapted\s+from|from)\s+)?(?:One\s+Piece|Ragnarok(?:\s+Online)?|Lineage\s+(?:II|2)|Genshin(?:\s+Impact)?|World\s+of\s+Warcraft|Final\s+Fantasy)\b/gi;
+
 /**
  * Replaces any renamed Lineage II / legacy name in text with its canonical Atlas World name.
  * Uses word boundaries to avoid partial substring corruption.
@@ -61,25 +87,35 @@ const NAME_MAP_REGEX = new RegExp(`\\b(${ESCAPED_KEYS.join("|")})\\b`, "g");
  */
 export function applyNameMap(text) {
   if (typeof text !== "string") return "";
-  return text
+  const hadLeadingCapital = /^[A-Z]/.test(text.trim());
+  let out = text
+    .replace(FRANCHISE_STRIP_REGEX, "")
     .replace(NAME_MAP_REGEX, (match) => NAME_MAP[match] || match)
-    .replace(/Ash-Brood Matriarch\s+Ash-Brood\b/g, "Ash-Brood Matriarch")
-    .replace(/\bDwarf\s*\(dwarf-Lineage\b/gi, "Dwarf (Root-Forged")
-    .replace(/\bOne Piece\s+dwarf-inspired\b/gi, "Compact root-forged")
-    .replace(/\bOne Piece\s+Mink-inspired\b/gi, "Galvanic")
-    .replace(/\bOne Piece\s+/gi, "")
-    .replace(/\bdwarf-inspired\b/gi, "compact artisan")
-    .replace(/\bMink-inspired\b/gi, "Galvanic")
-    .replace(/\bSulong\b/gi, "Galvanic")
-    .replace(/^dwarf\s+Mighty\b/i, "Dwarven Mighty")
-    .replace(/\bfenrir-kael\b/g, "Fenrir-Kael")
-    .replace(/\(Core\s*—\s*Prime Governor\)/g, "(Prime Escapement Governor)")
-    .replace(/\bCore's Escapement Ring\b/g, "Governor's Escapement Ring")
-    .replace(/\bCatherok\b/gi, "Brass-Spur")
-    .replace(/\bPorta\b/gi, "Gear-Ward")
-    .replace(/\bExcuro\b/gi, "Escapement")
-    .replace(/\bCruma\b/gi, "Mainspring")
-    .replace(/\bOriharukon\b/gi, "Hearth-Brass");
+    .replace(CANON_TOKEN_REGEX, (match) => {
+      const mapped = CANON_TOKEN_MAP[match.toLowerCase()];
+      if (!mapped) return match;
+      if (match === match.toLowerCase() && match !== "fenrir-kael" && !mapped.includes(" ")) {
+        return mapped.toLowerCase();
+      }
+      return mapped;
+    })
+    .replace(/\bdwarf-lineage\b/gi, "Root-Forged")
+    .replace(/\bdwarf-inspired\b/gi, "compact root-forged")
+    .replace(/\bgalvanic-inspired\b/gi, "Galvanic")
+    .replace(/\bdwarf\s+(?=[A-Z])/g, "Dwarven ")
+    .replace(/\bCore's\b/g, "Governor's")
+    // The boss is bare "Core"; compounds such as "Forge Core" or "Core Sanctum" are places and items.
+    .replace(/(?<![-\w])(?<!\S\s*\b[A-Z][\w'-]*\s)\bCore\b(?!-|\s+[A-Z])/g, "Prime Governor")
+    .replace(/\bPrime Governor\s*[—-]\s*Prime Governor\b/g, "Prime Escapement Governor")
+    .replace(/\b(Ash-Brood Matriarch)\s+Ash-Brood\b/g, "$1")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/[ \t]+([.,;:!?)])/g, "$1")
+    .trim();
+
+  if (hadLeadingCapital && /^[a-z]/.test(out)) {
+    out = out.charAt(0).toUpperCase() + out.slice(1);
+  }
+  return out;
 }
 
 /**
@@ -107,13 +143,20 @@ export function sanitize(val) {
  */
 export function matchConceptArt(conceptArtIndex, { loreRef = "", zoneId = "", id = "" } = {}) {
   if (!conceptArtIndex || !Array.isArray(conceptArtIndex.items)) return [];
-  return conceptArtIndex.items.filter((item) => {
-    if (!item) return false;
-    if (loreRef && item.loreRef === loreRef) return true;
-    if (zoneId && item.zoneId === zoneId) return true;
-    if (id && item.id === id) return true;
-    return false;
-  });
+  return conceptArtIndex.items
+    .filter((item) => {
+      if (!item) return false;
+      if (loreRef && item.loreRef === loreRef) return true;
+      if (zoneId && item.zoneId === zoneId) return true;
+      if (id && item.id === id) return true;
+      return false;
+    })
+    .map((item) => ({
+      ...item,
+      title: typeof item.title === "string" ? applyNameMap(item.title) : item.title,
+      caption: typeof item.caption === "string" ? applyNameMap(item.caption) : item.caption,
+      prompt: typeof item.prompt === "string" ? applyNameMap(item.prompt) : item.prompt,
+    }));
 }
 
 export const CHAPTERS = Object.freeze([
@@ -385,7 +428,7 @@ export function buildLoreModel(inputs) {
       mysteryHook,
       arts: matchConceptArt(conceptArtIndex, {
         loreRef: c.id,
-        id: (c.id || "").replace(/^continent-\d+-/, "continent-"),
+        zoneId: c.id,
       }),
     };
   });

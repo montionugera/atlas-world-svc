@@ -294,6 +294,7 @@ function renderDungeonSubMapAtlas(dng, tatlas) {
     const roomMobSummary = roomSpawns.map(sp => `${sp.name} (Lv.${sp.level} ${sp.entity_type} · HP ${sp.hp_multiplier || '1x'})`).join(' · ')
       || (rm.key_mobs || []).join(', ');
     const poiRoom = {
+      room_id: rm.room_id,
       title: `${activeFloor.floor_id} · ${rm.name}`,
       category: `${dng.name} (${dng.l2_archetype_alias || ''}) · ${rm.level_range}`,
       thumb: '/thumbs/buildings/wall_arched.webp',
@@ -341,6 +342,7 @@ function renderDungeonSubMapAtlas(dng, tatlas) {
     const pinIcon = isMvp ? '👑' : (isRaid ? '🔥' : (isMini ? '⚔️' : '👾'));
     const refDrops = sp.refinement_drops || ['Refinement Flux Dust', 'High-Grade Orichalcum'];
     const poiSpawn = {
+      room_id: rm.room_id,
       title: `${pinIcon} ${sp.name} (Lv.${sp.level} ${sp.entity_type})`,
       category: `${sp.race_badge} · HP ${sp.hp_multiplier} · ×${sp.spawn_count} Spawns (${sp.respawn_sec}s)`,
       thumb: '/thumbs/creatures/god-sola-hearth-weaver.webp',

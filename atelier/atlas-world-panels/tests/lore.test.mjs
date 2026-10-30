@@ -289,7 +289,7 @@ test("matchConceptArt matches by loreRef and zoneId and handles empty index", ()
   }
 });
 
-test("Continent cards match their concept art and Human race card excludes Dwarf art", () => {
+test("Continent cards match their concept art and Human/Dwarf race cards exclude town building art", () => {
   const model = buildLoreModel({
     worldHistory,
     atlas,
@@ -297,11 +297,38 @@ test("Continent cards match their concept art and Human race card excludes Dwarf
     conceptArtIndex,
   });
 
+  // Direct loreRef match for each continent without ID-stripping cheat
+  assert.equal(
+    matchConceptArt(conceptArtIndex, { loreRef: "continent-01-hearthbloom-basin" })[0]?.id,
+    "continent-hearthbloom-basin",
+    "continent-hearthbloom-basin in index.json must have loreRef 'continent-01-hearthbloom-basin'",
+  );
+  assert.equal(
+    matchConceptArt(conceptArtIndex, { loreRef: "continent-02-clockwork-steppe" })[0]?.id,
+    "continent-clockwork-steppe",
+    "continent-clockwork-steppe in index.json must have loreRef 'continent-02-clockwork-steppe'",
+  );
+  assert.equal(
+    matchConceptArt(conceptArtIndex, { loreRef: "continent-03-shattered-halo" })[0]?.id,
+    "continent-shattered-halo",
+    "continent-shattered-halo in index.json must have loreRef 'continent-03-shattered-halo'",
+  );
+
   assert.deepEqual(
     model.continents.map((c) => c.arts.length),
     [1, 1, 1],
     "Each of the 3 continents in Chapter 5 must match its continent concept art",
   );
+
+  // God cards must not pull in continent landscape vistas
+  for (const god of model.gods.all) {
+    const godArtIds = god.arts.map((a) => a.id);
+    assert.ok(
+      !godArtIds.some((id) => id.startsWith("continent-")),
+      `God card ${god.id} must not pull in continent landscape art: ${godArtIds.join(", ")}`,
+    );
+  }
+
   const humanArts = model.races[0].arts.map((a) => a.id);
   assert.ok(
     !humanArts.includes("town-lantern-hollow-hearth-forge"),
@@ -310,6 +337,13 @@ test("Continent cards match their concept art and Human race card excludes Dwarf
   assert.ok(
     humanArts.includes("character-race-human-hearth-keeper"),
     "Human race card must include Human Hearth-Keeper portrait",
+  );
+
+  const dwarfArts = model.races[1].arts.map((a) => a.id);
+  assert.deepEqual(
+    dwarfArts,
+    ["character-race-dwarf-kiln-artisan"],
+    "Dwarf race card must only show Dwarf race portrait and not Human town building town-lantern-hollow-hearth-forge",
   );
 });
 
@@ -331,6 +365,9 @@ test("Model contains NO real game/franchise titles, superseded Undertow canon, u
     "genshin",
     "one piece",
     "sulong",
+    "mink",
+    "electro",
+    "sahaguin",
     "world of warcraft",
     "final fantasy",
     "undertow",
@@ -353,7 +390,9 @@ test("Model contains NO real game/franchise titles, superseded Undertow canon, u
   ];
 
   for (const str of allStrings) {
+    const isAssetIdOrPath = /^(?:images\/|thumbs\/)?character-race-furral-electro-scout(?:\.webp)?$/.test(str);
     for (const term of forbiddenCaseInsensitive) {
+      if (term === "electro" && isAssetIdOrPath) continue;
       const regex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\b`, "i");
       assert.ok(
         !regex.test(str),
@@ -367,6 +406,45 @@ test("Model contains NO real game/franchise titles, superseded Undertow canon, u
       );
     }
   }
+
+  // General token normalization edge cases (un-anchored mid-sentence, end-of-string, standalone tokens, concept-art sanitization)
+  assert.ok(!/one piece/i.test(applyNameMap("Warriors inspired by One Piece.")));
+  assert.ok(!/one piece/i.test(applyNameMap("Adapted from One Piece")));
+  assert.equal(applyNameMap("a Tontatta Mighty blow"), "a Dwarven Mighty blow");
+  assert.ok(!/\bmink\b/i.test(applyNameMap("agile Mink scouts")));
+  assert.ok(!/\belectro\b/i.test(applyNameMap("channel bio-static Electro through fur")));
+  assert.ok(!/\bsahaguin\b/i.test(applyNameMap("Pelagic Coral & Undertide Sahaguin")));
+  assert.ok(!/\bcore\b/i.test(applyNameMap("Defeat Core in the inner ring")));
+  for (const compound of [
+    "B3 Core Sanctum",
+    "Octagonal Telemetry Core",
+    "Fortress Forge Core",
+    "the Inner Seal-Core Rotunda",
+    "[Mini-Boss] Core Firewall Praetor",
+  ]) {
+    assert.equal(applyNameMap(compound), compound, `compound name must survive: ${compound}`);
+  }
+  assert.equal(
+    applyNameMap("[MVP] Core — Architect"),
+    "[MVP] Prime Governor — Architect",
+  );
+  assert.equal(applyNameMap("First paragraph.\n\nSecond one."), "First paragraph.\n\nSecond one.");
+
+  const dirtyArt = matchConceptArt(
+    {
+      items: [
+        {
+          id: "art-dirty",
+          loreRef: "epoch-1-1-creation",
+          title: "Prairie Keltir in Gludin",
+          caption: "Inspired by One Piece and Mink tribes.",
+        },
+      ],
+    },
+    { loreRef: "epoch-1-1-creation" },
+  );
+  assert.equal(dirtyArt[0].title, "Clover Cinder-Vixen in Cinderport");
+  assert.ok(!/one piece|mink/i.test(dirtyArt[0].caption));
 });
 
 test("lore.mjs panel mounts DOM, renders stat chips without raw HTML tags, and handles chapter/ref deep-links safely", async () => {
@@ -522,6 +600,39 @@ test("lore.mjs panel mounts DOM, renders stat chips without raw HTML tags, and h
   const dwarfCard = panelEl.querySelector("#lore-ref-dwarf");
   assert.ok(dwarfCard, "must render #lore-ref-dwarf anchor on race card");
   assert.equal(dwarfCard.scrolledIntoView, true, "show({ ref: 'dwarf' }) must scroll to referenced lore card");
+
+  // Item 1: Deep links for beast_animal_brute, mystery-*, and race-* resolve and scroll to specific DOM cards/steps
+  dwarfCard.scrolledIntoView = false;
+  await globalThis.window.ATLAS_PANELS.show("lore", { ref: "race-dwarf" });
+  assert.equal(dwarfCard.scrolledIntoView, true, "show({ ref: 'race-dwarf' }) must resolve #lore-ref-dwarf and scroll into view");
+
+  await globalThis.window.ATLAS_PANELS.show("lore", { ref: "beast_animal_brute" });
+  const beastStep = panelEl.querySelector("#lore-ref-beast_animal_brute");
+  assert.ok(beastStep, "must render #lore-ref-beast_animal_brute on Rank 4 field monster tier step");
+  assert.equal(beastStep.scrolledIntoView, true, "show({ ref: 'beast_animal_brute' }) must scroll to #lore-ref-beast_animal_brute");
+
+  await globalThis.window.ATLAS_PANELS.show("lore", { ref: "mystery-cardamom-caldera" });
+  const mysteryCard = panelEl.querySelector("#lore-ref-mystery-cardamom-caldera");
+  assert.ok(mysteryCard, "must render #lore-ref-mystery-cardamom-caldera on mystery card");
+  assert.equal(mysteryCard.scrolledIntoView, true, "show({ ref: 'mystery-cardamom-caldera' }) must scroll to #lore-ref-mystery-cardamom-caldera");
+
+  // Item 2: Clicking chapter nav button updates URL params via atlasSetParams (kills M1)
+  const navBtns = panelEl.querySelectorAll(".lore-nav-btn");
+  const godsBtn = navBtns.find((b) => b.dataset.chapter === "gods");
+  const premiseBtn = navBtns.find((b) => b.dataset.chapter === "premise");
+  assert.ok(godsBtn && premiseBtn, "must render gods and premise chapter nav buttons");
+  godsBtn.listeners.click[0]();
+  assert.equal(lastParams.length, 1, "clicking chapter nav button must call atlasSetParams");
+  assert.deepEqual(lastParams[0], { tab: "lore", chapter: "gods", ref: null });
+  assert.equal(godsBtn.classList.contains("is-active"), true, "gods button must be active after click");
+
+  // Item 2: Browser Back to ?tab=lore (show("lore", {})) resets activeChapterId to "premise" (kills M2)
+  const premiseSec = panelEl.querySelector("#lore-chapter-premise");
+  premiseSec.scrolledIntoView = false;
+  await globalThis.window.ATLAS_PANELS.show("lore", {});
+  assert.equal(premiseBtn.classList.contains("is-active"), true, "show('lore', {}) must reset active chapter to premise");
+  assert.equal(godsBtn.classList.contains("is-active"), false, "show('lore', {}) must deactivate previous chapter button");
+  assert.equal(premiseSec.scrolledIntoView, true, "show('lore', {}) must scroll back to #lore-chapter-premise");
 });
 
 test("CHAPTERS constant defines sticky navigation tabs", () => {

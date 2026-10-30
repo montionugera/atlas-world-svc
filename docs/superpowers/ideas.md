@@ -5,3 +5,7 @@
 - [RESOLVED 2026-10-30] The `bestiary` tab: Surfaced in NAV_GROUPS with 116 fauna count badge.
 - [RESOLVED 2026-10-30] `resolve_thumb_file`: Added strict audit mode (`allow_fallback=False` / `?strict=1`) returning true 404 for missing thumbnails.
 - Star-Heart Tower (14F) has no overland 3D landmark; adding one to ATLAS_OVERLAND_LANDMARK_ANCHORS breaks the 2D/3D landmark parity gate (landmark_count 13 vs table 14) — needs the 2D renderer to draw it too.
+- atlas-web: `atlasSetParams` accepts any `patch.tab` from content links without an allowlist (02_state_and_composable_layers.js).
+- atlas-web: Concept Arts `show()` keeps the old item if Back lands on another `id` while the lightbox is open.
+- atlas-web: zone-bgm rebuilds `getNodesLookup()` on every sync and its class MutationObserver watches the whole body; memoise if it ever shows in a profile.
+- atlas-web: `applyNameMap` token map still rewrites lowercase "porta"/"mink"/"electro" in any future prose; replace at source via `name-map.json`.
