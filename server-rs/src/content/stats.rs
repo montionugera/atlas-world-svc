@@ -1,3 +1,4 @@
+use crate::content::races::AtlasRace;
 use crate::content::weapons::{weapon_offence, AtkStat};
 use crate::storage::PrimaryStats;
 use serde::{Deserialize, Serialize};
@@ -24,26 +25,35 @@ pub struct DerivedStats {
     pub p_def: f32,
     pub m_def: f32,
     pub max_move_speed: f32,
+    #[serde(default)]
+    pub aspd: f32,
+    #[serde(default)]
+    pub cast_time_reduction_pct: f32,
+    #[serde(default)]
+    pub crit_rate_pct: f32,
+    #[serde(default)]
+    pub hit_rate: f32,
+    #[serde(default)]
+    pub flee_rate: f32,
+    #[serde(default)]
+    pub max_weight: u32,
 }
 
 /// Computes server-authoritative combat stats from level, allocated primary stats, and equipped weapon.
-///
-/// Implements the exact multiplicative formula from contracts/src/meta/derivedStats.ts:
-/// - grow = GROWTH^(max(1, level) - 1)
-/// - share(p) = clamp(p, 1, 99) / 99
-/// - offMagnitude = 1 + 2 * C * share(allocated[weapon.atkStat])
-/// - defMagnitude = 1 + 2 * C * share(vit)
-/// - atk = BASE_ATK * grow * offMagnitude * weapon.gear
-/// - def = BASE_DEF * grow * defMagnitude
-/// - maxHealth = BASE_HP * grow * defMagnitude
-/// - pAtk = atk * 2 * rho
-/// - mAtk = atk * 2 * (1 - rho)
-/// - pDef = mDef = def
-/// - maxMoveSpeed = 20.0 + 0.2 * agi
 pub fn derived_stats(
     level: u32,
     allocated: &PrimaryStats,
     weapon_id: Option<&str>,
+) -> DerivedStats {
+    derived_stats_with_race(level, allocated, weapon_id, None)
+}
+
+/// Computes server-authoritative combat stats with optional racial passive traits and stat modifiers.
+pub fn derived_stats_with_race(
+    level: u32,
+    allocated: &PrimaryStats,
+    weapon_id: Option<&str>,
+    race: Option<AtlasRace>,
 ) -> DerivedStats {
     let weapon = weapon_offence(weapon_id);
     let level_idx = (level.max(1) - 1) as i32;
@@ -65,13 +75,43 @@ pub fn derived_stats(
     let atk = BASE_ATK * grow * off_mag * weapon.gear;
     let def = BASE_DEF * grow * def_mag;
 
+    let race_profile = race.map(|r| r.profile());
+    let race_speed_bonus = race_profile
+        .as_ref()
+        .map(|p| p.base_move_speed_bonus)
+        .unwrap_or(0.0);
+    let race_crit_bonus = race_profile
+        .as_ref()
+        .map(|p| p.innate_crit_rate_bonus_pct)
+        .unwrap_or(0.0);
+    let race_weight_bonus = race_profile
+        .as_ref()
+        .map(|p| p.bonus_carry_weight)
+        .unwrap_or(0);
+
+    let aspd = (1.0 + (allocated.agi as f32) * 0.02 + (allocated.dex as f32) * 0.005).min(5.0);
+    let cast_time_reduction_pct =
+        (((allocated.dex as f32) * 0.6 + (allocated.int as f32) * 0.4) / 1.5).min(80.0);
+    let crit_rate_pct = (5.0 + (allocated.luk as f32) * 0.3 + race_crit_bonus).min(100.0);
+    let hit_rate =
+        100.0 + (level as f32) + (allocated.dex as f32) * 1.0 + (allocated.luk as f32) * 0.2;
+    let flee_rate =
+        100.0 + (level as f32) + (allocated.agi as f32) * 1.0 + (allocated.luk as f32) * 0.2;
+    let max_weight = 2000 + (allocated.vit * 30) + (allocated.str * 20) + race_weight_bonus;
+
     DerivedStats {
         max_health: BASE_HP * grow * def_mag,
         p_atk: atk * 2.0 * weapon.rho,
         m_atk: atk * 2.0 * (1.0 - weapon.rho),
         p_def: def,
         m_def: def,
-        max_move_speed: 20.0 + 0.2 * (allocated.agi as f32),
+        max_move_speed: 20.0 + 0.2 * (allocated.agi as f32) + race_speed_bonus,
+        aspd,
+        cast_time_reduction_pct,
+        crit_rate_pct,
+        hit_rate,
+        flee_rate,
+        max_weight,
     }
 }
 
@@ -138,6 +178,7 @@ mod tests {
             int: 0,
             vit: 0,
             dex: 0,
+            luk: 0,
         };
         let normal = PrimaryStats::default();
         // Clamped at minimum 1 for offence/defense calculation
@@ -152,6 +193,7 @@ mod tests {
             int: 1,
             vit: 1,
             dex: 1,
+            luk: 1,
         };
         let cap = PrimaryStats {
             str: 99,
@@ -159,9 +201,45 @@ mod tests {
             int: 1,
             vit: 1,
             dex: 1,
+            luk: 1,
         };
         let d_high = derived_stats(1, &high, Some("scythe"));
         let d_cap = derived_stats(1, &cap, Some("scythe"));
         assert!((d_high.p_atk - d_cap.p_atk).abs() < 1e-5);
+    }
+
+    #[test]
+    fn test_derived_stats_with_race_modifications() {
+        let stats = PrimaryStats::new(40, 30, 20, 30, 25, 20);
+        let human = derived_stats_with_race(
+            10,
+            &stats,
+            Some("basic_sword"),
+            Some(AtlasRace::HumanDemiHuman),
+        );
+        let dwarf =
+            derived_stats_with_race(10, &stats, Some("basic_sword"), Some(AtlasRace::Dwarf));
+        let furral =
+            derived_stats_with_race(10, &stats, Some("basic_sword"), Some(AtlasRace::Furral));
+        let dark_lunar =
+            derived_stats_with_race(10, &stats, Some("basic_sword"), Some(AtlasRace::DarkLunar));
+
+        assert!(
+            dwarf.max_weight > human.max_weight,
+            "Dwarf bonus carry weight active"
+        );
+        assert!(
+            furral.max_move_speed > human.max_move_speed,
+            "Furral sprint bonus active"
+        );
+        assert!(
+            dark_lunar.crit_rate_pct > human.crit_rate_pct,
+            "Dark-Lunar umbral crit bonus active"
+        );
+        assert!(human.aspd > 1.0, "ASPD scales with AGI & DEX");
+        assert!(
+            human.hit_rate > 100.0,
+            "Hit rate scales with level, DEX, LUK"
+        );
     }
 }

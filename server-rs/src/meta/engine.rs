@@ -1,4 +1,5 @@
 use crate::auth::AuthGuard;
+use crate::content::enchantment::{attempt_high_tier_enchant, ItemSocketState};
 use crate::meta::catalogs::{ItemKind, MetaCatalogs};
 use crate::meta::models::{
     default_character_state_doc, default_equipment_doc, default_inventory_doc, default_profile_doc,
@@ -78,6 +79,7 @@ pub fn apply_xp(profile: &ProfileDoc, amount: u64) -> (ProfileDoc, u32) {
             xp,
             stat_points,
             allocated: profile.allocated,
+            race: profile.race.clone(),
         },
         leveled_up,
     )
@@ -352,6 +354,16 @@ impl RustMetaEngine {
                 let uid = Self::require_client(ctx)?;
                 let body = Self::parse_json_payload(payload_raw)?;
                 self.rpc_claim_quest_reward(uid, &body)
+            }
+            "enchant_equipment" => {
+                let uid = Self::require_client(ctx)?;
+                let body = Self::parse_json_payload(payload_raw)?;
+                self.rpc_enchant_equipment(uid, &body)
+            }
+            "socket_card" => {
+                let uid = Self::require_client(ctx)?;
+                let body = Self::parse_json_payload(payload_raw)?;
+                self.rpc_socket_card(uid, &body)
             }
             other => Err(MetaError::NotFound(format!("Unknown RPC '{}'", other))),
         }
@@ -938,6 +950,163 @@ impl RustMetaEngine {
         }))
     }
 
+    fn rpc_enchant_equipment(&self, user_id: &str, body: &Value) -> Result<Value, MetaError> {
+        let instance_id = body
+            .get("instanceId")
+            .and_then(|v| v.as_str())
+            .filter(|s| !s.trim().is_empty())
+            .ok_or_else(|| MetaError::BadRequest("Missing instanceId".to_string()))?;
+
+        let is_blessed = body
+            .get("isBlessed")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let has_protection_stone = body
+            .get("hasProtectionStone")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+
+        let roll_bps = if let Some(r) = body.get("rollBps").and_then(|v| v.as_u64()) {
+            r as u32
+        } else {
+            let nanos = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map(|d| d.subsec_nanos())
+                .unwrap_or(1337);
+            nanos % 10_000
+        };
+
+        let mut last_err = None;
+        for _ in 0..MAX_OCC_ATTEMPTS {
+            let (inv, _) = self.read_inventory(user_id)?;
+            let _owned = inv
+                .uniques
+                .iter()
+                .find(|u| u.instance_id == instance_id)
+                .ok_or_else(|| {
+                    MetaError::BadRequest("Item instance not found in inventory".to_string())
+                })?;
+
+            let (current_tier, doc_version) =
+                match self.store.read_doc(user_id, "item_enchant", instance_id)? {
+                    Some(stored) => {
+                        let tier = stored
+                            .value
+                            .get("tier")
+                            .and_then(|v| v.as_u64())
+                            .unwrap_or(0) as u32;
+                        (tier, stored.version)
+                    }
+                    None => (0, "*".to_string()),
+                };
+
+            let outcome =
+                attempt_high_tier_enchant(current_tier, roll_bps, is_blessed, has_protection_stone);
+
+            let new_val = json!({
+                "instanceId": instance_id,
+                "tier": outcome.new_tier,
+                "glow": outcome.glow,
+                "crystalsYielded": outcome.crystals_yielded,
+            });
+
+            match self.store.write_batch(&[DocWrite {
+                collection: "item_enchant".to_string(),
+                key: instance_id.to_string(),
+                user_id: user_id.to_string(),
+                value: new_val.clone(),
+                expected_version: Some(doc_version),
+                permission_read: 2,
+                permission_write: 0,
+            }]) {
+                Ok(_) => {
+                    return Ok(json!({
+                        "ok": true,
+                        "instanceId": instance_id,
+                        "result": outcome.result,
+                        "previousTier": outcome.previous_tier,
+                        "newTier": outcome.new_tier,
+                        "glow": outcome.glow,
+                        "crystalsYielded": outcome.crystals_yielded,
+                    }));
+                }
+                Err(e @ MetaError::VersionConflict(_)) => last_err = Some(e),
+                Err(e) => return Err(e),
+            }
+        }
+
+        Err(last_err.unwrap_or_else(|| {
+            MetaError::VersionConflict("enchant_equipment OCC retries exhausted".to_string())
+        }))
+    }
+
+    fn rpc_socket_card(&self, user_id: &str, body: &Value) -> Result<Value, MetaError> {
+        let instance_id = body
+            .get("instanceId")
+            .and_then(|v| v.as_str())
+            .filter(|s| !s.trim().is_empty())
+            .ok_or_else(|| MetaError::BadRequest("Missing instanceId".to_string()))?;
+
+        let card_id = body
+            .get("cardId")
+            .and_then(|v| v.as_str())
+            .filter(|s| !s.trim().is_empty())
+            .ok_or_else(|| MetaError::BadRequest("Missing cardId".to_string()))?;
+
+        let mut last_err = None;
+        for _ in 0..MAX_OCC_ATTEMPTS {
+            let (inv, _) = self.read_inventory(user_id)?;
+            let _owned = inv
+                .uniques
+                .iter()
+                .find(|u| u.instance_id == instance_id)
+                .ok_or_else(|| {
+                    MetaError::BadRequest("Item instance not found in inventory".to_string())
+                })?;
+
+            let (mut socket_state, doc_version) =
+                match self.store.read_doc(user_id, "item_sockets", instance_id)? {
+                    Some(stored) => {
+                        let st: ItemSocketState =
+                            serde_json::from_value(stored.value).unwrap_or_default();
+                        (st, stored.version)
+                    }
+                    None => (ItemSocketState::with_max_sockets(3), "*".to_string()),
+                };
+
+            socket_state
+                .insert_card(card_id)
+                .map_err(|e| MetaError::BadRequest(e.to_string()))?;
+
+            let new_val = serde_json::to_value(&socket_state)
+                .map_err(|e| MetaError::Internal(e.to_string()))?;
+
+            match self.store.write_batch(&[DocWrite {
+                collection: "item_sockets".to_string(),
+                key: instance_id.to_string(),
+                user_id: user_id.to_string(),
+                value: new_val.clone(),
+                expected_version: Some(doc_version),
+                permission_read: 2,
+                permission_write: 0,
+            }]) {
+                Ok(_) => {
+                    return Ok(json!({
+                        "ok": true,
+                        "instanceId": instance_id,
+                        "socketedCardIds": socket_state.socketed_card_ids,
+                    }));
+                }
+                Err(e @ MetaError::VersionConflict(_)) => last_err = Some(e),
+                Err(e) => return Err(e),
+            }
+        }
+
+        Err(last_err.unwrap_or_else(|| {
+            MetaError::VersionConflict("socket_card OCC retries exhausted".to_string())
+        }))
+    }
+
     fn rpc_allocate_stats(&self, user_id: &str, body: &Value) -> Result<Value, MetaError> {
         // Support both Nakama's top-level `{ str, agi, int, vit, dex }` and nested `{ spend: { ... } }`
         let spend = if let Some(s) = body.get("spend").and_then(|v| v.as_object()) {
@@ -974,11 +1143,13 @@ impl RustMetaEngine {
         let d_int = parse_delta("int")?;
         let d_vit = parse_delta("vit")?;
         let d_dex = parse_delta("dex")?;
+        let d_luk = parse_delta("luk")?;
         let total = d_str
             .saturating_add(d_agi)
             .saturating_add(d_int)
             .saturating_add(d_vit)
-            .saturating_add(d_dex);
+            .saturating_add(d_dex)
+            .saturating_add(d_luk);
 
         if total == 0 {
             return Err(MetaError::BadRequest(
@@ -999,6 +1170,7 @@ impl RustMetaEngine {
                 int: profile.allocated.int.saturating_add(d_int),
                 vit: profile.allocated.vit.saturating_add(d_vit),
                 dex: profile.allocated.dex.saturating_add(d_dex),
+                luk: profile.allocated.luk.saturating_add(d_luk),
             };
 
             let val =

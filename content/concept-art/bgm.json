@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "tracks": [
+    {
+      "id": "town-hero-suite",
+      "file": "/game-client/assets/music/town_hero_suite.ogg",
+      "title": "Town Hero Suite",
+      "source": "existing-game-track",
+      "mood": "town"
+    },
+    {
+      "id": "field-treasure-hunter",
+      "file": "/game-client/assets/music/field_treasure_hunter.mp3",
+      "title": "Field Treasure Hunter",
+      "source": "existing-game-track",
+      "mood": "field"
+    },
+    {
+      "id": "dungeon-subspace",
+      "file": "/game-client/assets/music/dungeon_subspace.mp3",
+      "title": "Dungeon Subspace",
+      "source": "existing-game-track",
+      "mood": "dungeon"
+    },
+    {
+      "id": "boss-fantasy-orchestral",
+      "file": "/game-client/assets/music/boss_fantasy_orchestral.ogg",
+      "title": "Boss Fantasy Orchestral",
+      "source": "existing-game-track",
+      "mood": "boss"
+    },
+    {
+      "id": "battle-arrival",
+      "file": "/game-client/assets/music/battle_arrival.mp3",
+      "title": "Battle Arrival",
+      "source": "existing-game-track",
+      "mood": "battle"
+    },
+    {
+      "id": "ambient-once-upon-a-time",
+      "file": "/game-client/assets/music/ambient_once_upon_a_time.mp3",
+      "title": "Once Upon a Time",
+      "source": "existing-game-track",
+      "mood": "world"
+    },
+    {
+      "id": "ambient-last-journey",
+      "file": "/game-client/assets/music/ambient_last_journey.mp3",
+      "title": "Last Journey",
+      "source": "existing-game-track",
+      "mood": "ambient"
+    },
+    {
+      "id": "town-lantern-hollow",
+      "file": "/content/concept-art/bgm/town-lantern-hollow.ogg",
+      "title": "Hearthlight and Willow",
+      "source": "google-ai",
+      "mood": "town"
+    },
+    {
+      "id": "hunting-clover-south-gate",
+      "file": "/content/concept-art/bgm/hunting-clover-south-gate.ogg",
+      "title": "Meadow's First Light",
+      "source": "google-ai",
+      "mood": "field"
+    },
+    {
+      "id": "dungeon-kiln-cellar",
+      "file": "/content/concept-art/bgm/dungeon-kiln-cellar.ogg",
+      "title": "Where Earth Goes Quiet",
+      "source": "google-ai",
+      "mood": "dungeon"
+    },
+    {
+      "id": "boss-kiln",
+      "file": "/content/concept-art/bgm/boss-kiln.ogg",
+      "title": "Kiln Boss Theme",
+      "source": "google-ai",
+      "mood": "boss"
+    }
+  ],
+  "defaults": {
+    "town": "town-hero-suite",
+    "field": "field-treasure-hunter",
+    "dungeon": "dungeon-subspace",
+    "boss": "boss-fantasy-orchestral",
+    "world": "ambient-once-upon-a-time"
+  },
+  "zones": {
+    "town-lantern-hollow": "town-lantern-hollow",
+    "hunting-area-clover-south-gate": "hunting-clover-south-gate",
+    "dungeon-kiln-cellar": "dungeon-kiln-cellar"
+  },
+  "rooms": {
+    "kc-b3-r2": "boss-kiln"
+  }
+}

@@ -23,6 +23,8 @@ MOUNT_DIRS: tuple[str, ...] = (
     "content/generated",
     "content/world",
     "content/story",
+    "content/studio",
+    "content/concept-art",
     "atelier/atlas-world-panels",
     "atelier/mapforge/lib",
     "atelier/art-forge/runs",

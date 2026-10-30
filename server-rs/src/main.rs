@@ -228,10 +228,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let heartbeat = HeartbeatTask::start(agones.clone(), 2);
     info!("Agones 2-second heartbeat loop initiated");
 
+    // Instanced Dungeon Registry
+    let dungeons = Arc::new(server_rs::fleet::DungeonRegistry::new());
+
     // 4. WebSocket Server
     let mut ws_server_inner = WsServer::bind(&bind_addr, auth_guard)
         .await
-        .map_err(std::io::Error::other)?;
+        .map_err(std::io::Error::other)?
+        .with_dungeons(dungeons.clone())
+        .with_agones(agones.clone());
     if let Some(ref client) = nakama_client {
         ws_server_inner = ws_server_inner.with_nakama(client.clone());
     } else if let Some(ref engine) = in_process_meta {
@@ -422,6 +427,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     for (user_id, event) in &frame.match_events {
                         debug!(user_id = %user_id, room = %room_id, event = ?event, "match event");
                         match_event_buffer.record(user_id, event.clone());
+                    }
+
+                    for portal_entry in &frame.dungeon_portal_events {
+                        info!(
+                            user_id = %portal_entry.player_id,
+                            portal_id = %portal_entry.portal_id,
+                            dungeon = %portal_entry.dungeon_template_id,
+                            boss = %portal_entry.mvp_boss_id,
+                            "Player triggered spatial dungeon portal entry"
+                        );
+                        let entry = portal_entry.clone();
+                        let ws = ws_server.clone();
+                        tokio::spawn(async move {
+                            let _ = ws
+                                .handle_dungeon_portal_entry(
+                                    &entry.player_id,
+                                    &entry.dungeon_template_id,
+                                    &entry.mvp_boss_id,
+                                    std::slice::from_ref(&entry.player_id),
+                                )
+                                .await;
+                        });
                     }
 
                     for (user_id, state) in &frame.departed_states {

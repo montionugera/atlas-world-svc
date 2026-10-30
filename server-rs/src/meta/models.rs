@@ -235,6 +235,15 @@ pub fn migrate_profile_value(raw: &Value) -> Option<ProfileDoc> {
     let agi_val = require_u32_field(allocated, "agi")?;
     let int_val = require_u32_field(allocated, "int")?;
     let vit_val = require_u32_field(allocated, "vit")?;
+    let luk_val = allocated
+        .get("luk")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as u32)
+        .unwrap_or(1);
+    let race_val = obj
+        .get("race")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
 
     match ver {
         2 => {
@@ -250,7 +259,9 @@ pub fn migrate_profile_value(raw: &Value) -> Option<ProfileDoc> {
                     int: int_val,
                     vit: vit_val,
                     dex: dex_val,
+                    luk: luk_val,
                 },
+                race: race_val,
             })
         }
         1 => {
@@ -266,7 +277,9 @@ pub fn migrate_profile_value(raw: &Value) -> Option<ProfileDoc> {
                     int: int_val,
                     vit: vit_val,
                     dex: dex_val,
+                    luk: luk_val,
                 },
+                race: race_val,
             })
         }
         _ => None,

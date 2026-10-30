@@ -227,6 +227,9 @@ export interface UseServerRsClientReturn {
   requestLoadout: () => void;
   toggleBotMode: (enabled: boolean) => void;
   respawn: () => void;
+  enterDungeon?: (dungeonTemplateId?: string, partyId?: string) => Promise<any>;
+  advanceDungeonFloor?: () => Promise<any>;
+  egressDungeon?: () => Promise<any>;
   startSimulation: () => void;
   stopSimulation: () => void;
 
@@ -336,6 +339,8 @@ export const useServerRsClient = (
   const lastFpsTimeRef = useRef<number>(performance.now());
   const updateTimesRef = useRef<number[]>([]);
   const currentMapRef = useRef<string>("map-for-play");
+  const sessionNameRef = useRef<string>("dev-player");
+  const currentDungeonIdRef = useRef<string | null>(null);
   const lastSnapshotReceivedTimeRef = useRef<number>(performance.now());
   const snapshotIntervalsRef = useRef<number[]>([]);
   const [latencyMetrics, setLatencyMetrics] = useState<LatencyMetrics>({
@@ -489,6 +494,7 @@ export const useServerRsClient = (
           isConnectingRef.current = true;
           const protocol = config.useSSL ? "wss" : "ws";
           const sessionName = extractTokenUserId(token);
+          sessionNameRef.current = sessionName;
           const localPlayerId = String(fnv1a32(sessionName));
           setPlayerId(localPlayerId);
           const url = `${protocol}://${config.serverHost}:${config.serverPort}?map=${activeMap}&proto=${PROTOCOL_VERSION}`;
@@ -668,6 +674,10 @@ export const useServerRsClient = (
                     // Only server-driven BotAgents are bots; other humans are not.
                     isBotMode: (entity.stateFlags & STATE_FLAG_BOT) !== 0,
                     inputAck: entity.inputAck,
+                    level: entity.level,
+                    xp: entity.xp,
+                    race: entity.race,
+                    enchantGlow: entity.enchantGlow,
                     currentAttackTarget: entity.targetId
                       ? String(entity.targetId)
                       : undefined,
@@ -1132,8 +1142,157 @@ export const useServerRsClient = (
     [sendInput],
   );
 
+  const enterDungeon = useCallback(
+    async (
+      dungeonTemplateId: string = "dungeon_vesper_crater",
+      partyId: string = "party_solo",
+    ) => {
+      const httpProtocol = config.useSSL ? "https" : "http";
+      const url = `${httpProtocol}://${config.serverHost}:${config.serverPort}/dungeon/portal/enter`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          partyId,
+          dungeonTemplateId,
+          playerSessionIds: [sessionNameRef.current],
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to enter dungeon: ${res.statusText}`);
+      }
+      const data = await res.json();
+      if (data.ok && data.instance) {
+        const instanceId = data.instance.instanceId;
+        currentDungeonIdRef.current = instanceId;
+        setRoomId(instanceId);
+        stateRef.current.roomId = instanceId;
+        if (data.instance.floorState) {
+          const dp = {
+            currentFloor: data.instance.floorState.currentFloor,
+            totalFloors: data.instance.floorState.totalFloors,
+            floorCleared: data.instance.floorState.floorCleared,
+            mobsKilled: data.instance.floorState.mobsKilled,
+            mobsRequired: data.instance.floorState.mobsRequired,
+            portalActive: data.instance.floorState.portalActive,
+          };
+          stateRef.current.dungeonProgress = dp;
+          setGameState((prev) => {
+            const base = prev ?? {
+              players: new Map(),
+              mobs: new Map(),
+              tick: 0,
+              mapId: currentMapRef.current,
+              roomId: instanceId,
+              width: stateRef.current.width,
+              height: stateRef.current.height,
+            };
+            const next = { ...base, roomId: instanceId, dungeonProgress: dp };
+            gameStateRef.current = next;
+            return next;
+          });
+        }
+      }
+      return data;
+    },
+    [config.useSSL, config.serverHost, config.serverPort],
+  );
+
+  const advanceDungeonFloor = useCallback(async () => {
+    const instanceId =
+      currentDungeonIdRef.current ||
+      (stateRef.current.roomId?.includes("dungeon_")
+        ? stateRef.current.roomId
+        : null);
+    if (!instanceId) return;
+    const httpProtocol = config.useSSL ? "https" : "http";
+    const url = `${httpProtocol}://${config.serverHost}:${config.serverPort}/dungeon/instance/${instanceId}/floor/advance`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nowSecs: Math.floor(Date.now() / 1000) }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ok && data.floorState) {
+        const dp = {
+          currentFloor: data.floorState.currentFloor,
+          totalFloors: data.floorState.totalFloors,
+          floorCleared: data.floorState.floorCleared,
+          mobsKilled: data.floorState.mobsKilled,
+          mobsRequired: data.floorState.mobsRequired,
+          portalActive: data.floorState.portalActive,
+        };
+        stateRef.current.dungeonProgress = dp;
+        setGameState((prev) => {
+          const base = prev ?? {
+            players: new Map(),
+            mobs: new Map(),
+            tick: 0,
+            mapId: currentMapRef.current,
+            roomId: instanceId,
+            width: stateRef.current.width,
+            height: stateRef.current.height,
+          };
+          const next = { ...base, dungeonProgress: dp };
+          gameStateRef.current = next;
+          return next;
+        });
+      }
+      return data;
+    }
+  }, [config.useSSL, config.serverHost, config.serverPort]);
+
+  const egressDungeon = useCallback(async () => {
+    const instanceId =
+      currentDungeonIdRef.current ||
+      (stateRef.current.roomId?.includes("dungeon_")
+        ? stateRef.current.roomId
+        : null);
+    if (!instanceId) return;
+    const httpProtocol = config.useSSL ? "https" : "http";
+    const url = `${httpProtocol}://${config.serverHost}:${config.serverPort}/dungeon/instance/${instanceId}/egress`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        playerId: sessionNameRef.current,
+        inCombat: false,
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ok && data.egress) {
+        currentDungeonIdRef.current = null;
+        stateRef.current.dungeonProgress = undefined;
+        stateRef.current.bossEncounter = undefined;
+        setGameState((prev) => {
+          if (!prev) return null;
+          const next = {
+            ...prev,
+            dungeonProgress: undefined,
+            bossEncounter: undefined,
+          };
+          gameStateRef.current = next;
+          return next;
+        });
+        const targetMap = data.egress.regionId;
+        await joinRoom(targetMap);
+      }
+      return data;
+    }
+  }, [config.useSSL, config.serverHost, config.serverPort, joinRoom]);
+
   const sendPlayerAction = useCallback(
     (action: string, pressed: boolean, options?: any) => {
+      if (action === "advanceFloor") {
+        advanceDungeonFloor().catch(console.error);
+        return;
+      }
+      if (action === "egressDungeon") {
+        egressDungeon().catch(console.error);
+        return;
+      }
       if (action === "attack") {
         attackHeldRef.current = pressed;
       }
@@ -1155,7 +1314,7 @@ export const useServerRsClient = (
         false,
       );
     },
-    [sendInput],
+    [sendInput, advanceDungeonFloor, egressDungeon],
   );
 
   const switchWeapon = useCallback((weaponId: string) => {
@@ -1252,6 +1411,9 @@ export const useServerRsClient = (
     requestLoadout,
     toggleBotMode,
     respawn,
+    enterDungeon,
+    advanceDungeonFloor,
+    egressDungeon,
     startSimulation,
     stopSimulation,
 

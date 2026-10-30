@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::ai::ThreatTable;
-use crate::content::{derived_stats, BestiaryCatalog, MobTier};
+use crate::content::{derived_stats_with_race, BestiaryCatalog, MobTier};
 use crate::core::clock::SimClock;
 use crate::core::prng::{Lcg, Mulberry32};
 use crate::ecs::components::{
@@ -21,11 +21,12 @@ use crate::storage::{
     MobStateRecord, PrimaryStats, RegionStateSnapshot, WorldObjectRecord, WorldStateStore,
 };
 use crate::systems::{
-    body_collision_system, bot_steering_system, combat_system, cooldown_tick_system,
-    live_bot_ai_system, mob_ai_system, mob_bundle, mob_lifecycle_system, physics_step_system,
-    player_input_system, player_respawn_system, projectile_collision_system,
-    projectile_kinematics_system, separation_system, skill_execution_system,
-    spatial_grid_rebuild_system, status_effect_tick_system, ArenaBounds,
+    body_collision_system, bot_steering_system, buff_and_aura_tick_system, combat_system,
+    cooldown_tick_system, dungeon_portal_trigger_system, live_bot_ai_system, mob_ai_system,
+    mob_bundle, mob_lifecycle_system, physics_step_system, player_input_system,
+    player_respawn_system, projectile_collision_system, projectile_kinematics_system,
+    separation_system, skill_execution_system, spatial_grid_rebuild_system,
+    status_effect_tick_system, ArenaBounds,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -124,6 +125,8 @@ pub struct LiveFrame {
     pub match_events: Vec<(String, MatchEvent)>,
     /// Captured position and health of players who disconnected this tick (before despawn).
     pub departed_states: Vec<(String, CharacterStateSnapshot)>,
+    /// Drained dungeon portal entry events when players step into spatial portals.
+    pub dungeon_portal_events: Vec<crate::ecs::components::DungeonPortalEntryEvent>,
 }
 
 pub struct AtlasSimulation {
@@ -180,6 +183,7 @@ impl AtlasSimulation {
         world.insert_resource(arena_bounds);
         world.insert_resource(BestiaryCatalog::default());
         world.insert_resource(MatchEventQueue::default());
+        world.insert_resource(crate::ecs::components::DungeonPortalEventQueue::default());
 
         let mut schedule = Schedule::default();
         // The systems are fully chained: run them inline rather than through a task pool.
@@ -188,6 +192,7 @@ impl AtlasSimulation {
             (
                 cooldown_tick_system,
                 status_effect_tick_system,
+                buff_and_aura_tick_system,
                 player_input_system,
                 skill_execution_system,
                 bot_steering_system,
@@ -203,6 +208,7 @@ impl AtlasSimulation {
                 combat_system,
                 mob_lifecycle_system,
                 player_respawn_system,
+                dungeon_portal_trigger_system,
             )
                 .chain(),
         );
@@ -351,6 +357,20 @@ impl AtlasSimulation {
                 let center_y = (obs.min_y + obs.max_y) / 2.0;
                 pw.add_static_box(center_x, center_y, half_w, half_h);
             }
+        }
+
+        // Spawn authoritatively configured dungeon portals for the map
+        for portal in &map_cfg.dungeon_portals {
+            sim.world.spawn((
+                Position::new(portal.x, portal.y),
+                crate::ecs::components::DungeonPortalTrigger::new(
+                    &portal.portal_id,
+                    &portal.target_dungeon_template_id,
+                    &portal.target_mvp_boss_id,
+                    portal.trigger_radius,
+                    portal.min_level,
+                ),
+            ));
         }
 
         let mut prng = Mulberry32::new(cfg.seed);
@@ -1047,6 +1067,7 @@ impl AtlasSimulation {
             events: self.drain_wire_events(),
             match_events: self.drain_match_events(),
             departed_states,
+            dungeon_portal_events: self.drain_dungeon_portal_events(),
         }
     }
 
@@ -1073,11 +1094,26 @@ impl AtlasSimulation {
             Option<&ThreatTable>,
             Option<&PlayerInputState>,
             Option<&PlayerProgression>,
+            Option<&crate::ecs::components::RaceComponent>,
+            Option<&crate::ecs::components::WeaponGlowComponent>,
         ), Or<(With<PlayerTag>, With<MobTag>)>>();
         let mut entities: Vec<(String, EntitySnapshotData)> = query
             .iter(&self.world)
             .map(
-                |(id, pos, vel, health, is_player, bot, anchor, threat, input, prog)| {
+                |(
+                    id,
+                    pos,
+                    vel,
+                    health,
+                    is_player,
+                    bot,
+                    anchor,
+                    threat,
+                    input,
+                    prog,
+                    race_comp,
+                    glow_comp,
+                )| {
                     let mut flags = 0;
                     if health.is_alive {
                         flags |= STATE_FLAG_ALIVE;
@@ -1114,6 +1150,12 @@ impl AtlasSimulation {
                             input_ack: input.map_or(0, |i| i.client_tick),
                             level: prog.map_or(0, |p| p.level),
                             xp: prog.map_or(0, |p| p.xp),
+                            race: race_comp
+                                .map(|r| r.race.into())
+                                .unwrap_or(crate::protocol::Race::HumanDemiHuman),
+                            enchant_glow: glow_comp
+                                .map(|g| g.glow.into())
+                                .unwrap_or(crate::protocol::EnchantVisualGlow::None),
                         },
                     )
                 },
@@ -1163,6 +1205,8 @@ impl AtlasSimulation {
                         input_ack: 0,
                         level: 0,
                         xp: 0,
+                        race: crate::protocol::Race::HumanDemiHuman,
+                        enchant_glow: crate::protocol::EnchantVisualGlow::None,
                     },
                 )
             })
@@ -1307,7 +1351,12 @@ impl AtlasSimulation {
             None => (1, PrimaryStats::default(), Some("basic_sword")),
         };
 
-        let derived = derived_stats(level, &allocated, weapon_id);
+        let race = loadout
+            .and_then(|l| l.profile.race.as_deref())
+            .and_then(crate::content::AtlasRace::from_key);
+        let race_enum = race.unwrap_or(crate::content::AtlasRace::HumanDemiHuman);
+
+        let derived = derived_stats_with_race(level, &allocated, weapon_id, Some(race_enum));
 
         let saved_cs = loadout
             .and_then(|l| l.character_state.as_ref())
@@ -1362,6 +1411,9 @@ impl AtlasSimulation {
         self.world.entity_mut(entity).insert((
             DashState::default(),
             crate::ecs::components::ParryState::default(),
+            crate::ecs::components::RaceComponent::new(race_enum),
+            crate::ecs::components::WeaponGlowComponent::default(),
+            crate::combat::BuffContainer::default(),
         ));
         entity
     }
@@ -1376,6 +1428,16 @@ impl AtlasSimulation {
         self.world
             .get_resource_mut::<MatchEventQueue>()
             .map(|mut q| q.drain())
+            .unwrap_or_default()
+    }
+
+    /// Drains queued dungeon portal entry events from the ECS simulation.
+    pub fn drain_dungeon_portal_events(
+        &mut self,
+    ) -> Vec<crate::ecs::components::DungeonPortalEntryEvent> {
+        self.world
+            .get_resource_mut::<crate::ecs::components::DungeonPortalEventQueue>()
+            .map(|mut q| std::mem::take(&mut q.pending_entries))
             .unwrap_or_default()
     }
 

@@ -5,6 +5,7 @@ pub mod mob_ai;
 pub mod mob_lifecycle;
 pub mod physics;
 pub mod player_input;
+pub mod portal;
 pub mod progression;
 pub mod projectile;
 pub mod separation;
@@ -14,8 +15,8 @@ pub mod spatial;
 pub mod steering;
 
 pub use combat::{
-    combat_system, cooldown_tick_system, health_regen_system, parry_tick_system,
-    status_effect_tick_system,
+    buff_and_aura_tick_system, combat_system, cooldown_tick_system, health_regen_system,
+    parry_tick_system, status_effect_tick_system,
 };
 pub use companion::{
     companion_combat_system, companion_follow_system, companion_respawn_system, spawn_companion,
@@ -25,6 +26,7 @@ pub use mob_ai::mob_ai_system;
 pub use mob_lifecycle::{mob_bundle, mob_lifecycle_system};
 pub use physics::physics_step_system;
 pub use player_input::player_input_system;
+pub use portal::dungeon_portal_trigger_system;
 pub use progression::{
     apply_death_penalty_and_bind_respawn, claim_quest_reward, configure_skill_loadout,
     discover_waypoint, equip_item_from_inventory, experience_on_kill_system,

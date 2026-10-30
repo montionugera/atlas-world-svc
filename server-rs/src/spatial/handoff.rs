@@ -167,6 +167,7 @@ impl AuthorityHandoffCoordinator {
                         events: Vec::new(),
                         match_events: Vec::new(),
                         departed_states: Vec::new(),
+                        dungeon_portal_events: Vec::new(),
                     });
             }
         }

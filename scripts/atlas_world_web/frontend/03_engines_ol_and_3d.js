@@ -1104,6 +1104,7 @@ function buildAtlas3dBlockoutScene() {
           alpha: 0.88,
           label: `[${fl.floor_id}] ${rm.name.slice(0, 18)}`,
           poi: {
+            room_id: rm.room_id,
             title: `[${fl.floor_id}] ${rm.name}`,
             category: `${isBossRoom ? '👑 Boss Sanctum Chamber' : '⚔️ Dungeon Combat Chamber'} · ${fl.level_range || ''} · ${lensMeta.lensBadge}`,
             thumb: '/thumbs/creatures/god-sola-hearth-weaver.webp',
@@ -3036,6 +3037,8 @@ function scrollCanvasIntoViewSmooth() {
 
 function focusTownStreetBlueprint(townId, locCoord) {
   triggerSmoothSubMapTransition();
+  if (typeof window !== 'undefined') window.LAST_WORLD_TILE_ID = '';
+  clearAtlasLingeringTownShopPoi();
   ATLAS_FOCUSED_TOWN_ID = townId || 'town-lantern-hollow';
   ATLAS_FOCUSED_FIELD_ID = '';
   ATLAS_FOCUSED_FORTRESS_ID = '';
@@ -3062,6 +3065,7 @@ function focusTownStreetBlueprint(townId, locCoord) {
 
 function focusFieldTacticalBlueprint(fieldOrFortId, locCoord = '') {
   triggerSmoothSubMapTransition();
+  if (typeof window !== 'undefined') window.LAST_WORLD_TILE_ID = '';
   const targetId = fieldOrFortId || 'zone-field-clover-south-gate';
   if (targetId.includes('fortress') || targetId.includes('harbor') || targetId.includes('clanhall')) {
     ATLAS_FOCUSED_FORTRESS_ID = targetId;
@@ -3096,6 +3100,7 @@ function focusFortressBlueprint(fortId, locCoord = '') {
 
 function openDungeonSubMap(dungeonId, floorId = '') {
   triggerSmoothSubMapTransition();
+  if (typeof window !== 'undefined') window.LAST_WORLD_TILE_ID = '';
   const sp = (DATA && DATA.studioPerspectives) || {};
   const tatlas = sp.tShapedWorldAtlas || {};
   const dungeons = tatlas.multi_floor_dungeons || [];
@@ -3471,6 +3476,7 @@ function selectAtlasZoneMark(zoneId, evt) {
   if (!f) return;
   STUDIO_MAP_SELECTED_POI = f.poi;
   STUDIO_ACTIVE_INSPECT_ID = f.poi.inspectId || f.id;
+  window.LAST_WORLD_TILE_ID = f.poi.townBlueprintId || f.poi.inspectId || f.id;
   if (evt && f.poi && f.poi.dungeonWarpId) {
     openDungeonSubMap(f.poi.dungeonWarpId, f.poi.dungeonFloorId || 'B1');
     return;
@@ -3486,6 +3492,7 @@ function selectStudioMapPoi(poiJsonStr, evt) {
   try {
     const poi = resolveEncodedPoi(poiJsonStr);
     STUDIO_MAP_SELECTED_POI = poi;
+    window.LAST_WORLD_TILE_ID = (poi && !poi.room_id && (poi.townBlueprintId || poi.inspectId)) || '';
     if (evt && isStudioMapOverland() && poi && poi.dungeonWarpId) {
       openDungeonSubMap(poi.dungeonWarpId, poi.dungeonFloorId || 'B1');
       return;
@@ -3525,6 +3532,7 @@ function selectStudioMapPoi(poiJsonStr, evt) {
 function closeStudioMapPoi(evt) {
   if (evt && evt.stopPropagation) evt.stopPropagation();
   STUDIO_MAP_SELECTED_POI = null;
+  window.LAST_WORLD_TILE_ID = '';
   // F-157: closing the inspector also hands its column back to the map (it used to leave an empty drawer).
   ATLAS_LEFT_DRAWER_OPEN = false;
   if (typeof ATLAS_STATE_STORE !== 'undefined') ATLAS_STATE_STORE.leftDrawerOpen = false;
@@ -3697,7 +3705,7 @@ function isAtlasTownShopContext(poi) {
 }
 
 function clearAtlasLingeringTownShopPoi() {
-  if (STUDIO_MAP_SELECTED_POI && STUDIO_MAP_SELECTED_POI.shopAndRefinementCatalog) {
+  if (STUDIO_MAP_SELECTED_POI && (STUDIO_MAP_SELECTED_POI.shopAndRefinementCatalog || STUDIO_MAP_SELECTED_POI.room_id)) {
     STUDIO_MAP_SELECTED_POI = null;
   }
 }

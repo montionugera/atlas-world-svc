@@ -1,11 +1,13 @@
 use crate::ai::ThreatTable;
+use crate::combat::buffs::{AuraEmitter, BuffContainer};
 use crate::combat::damage::{DamageCalculator, DamageOptions};
 use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    knockback_speed, CombatStats, CooldownTracker, ElementalAttributes, EntityId, EquippedWeapon,
-    Health, HealthRegen, HitLog, HitRecord, Mass, MobAi, MobSpawnAnchor, ParryState, PlayerAvatar,
-    PlayerInputState, Position, Projectile, StatusEffects, Velocity, WeaponKind,
+    knockback_speed, CastingState, CombatStats, CooldownTracker, ElementalAttributes, EntityId,
+    EquippedWeapon, Health, HealthRegen, HitLog, HitRecord, Mass, MobAi, MobSpawnAnchor,
+    ParryState, PlayerAvatar, PlayerInputState, Position, Projectile, StatusEffects, Velocity,
+    WeaponKind,
 };
 use crate::spatial::grid::SpatialGrid;
 use crate::storage::{MatchEvent, MatchEventQueue};
@@ -45,6 +47,7 @@ pub fn combat_system(
             Option<&mut Velocity>,
             Option<&Mass>,
             Option<&mut StatusEffects>,
+            Option<&mut CastingState>,
         )>,
     )>,
 ) {
@@ -219,6 +222,7 @@ pub fn combat_system(
                 mut target_vel,
                 target_mass,
                 mut target_status,
+                mut target_casting,
             )) = health_query.get_mut(target)
             {
                 let was_alive = target_health.is_alive && target_health.current > 0.0;
@@ -234,6 +238,11 @@ pub fn combat_system(
                 };
                 let damage = DamageCalculator::calculate(&damage_opts);
                 target_health.take_damage(damage);
+                if let Some(ref mut casting) = target_casting {
+                    if !casting.uninterruptible {
+                        casting.finish_or_cancel();
+                    }
+                }
                 if let Some(mut threat) = threat {
                     threat.add_threat(attacker, damage, now);
                 }
@@ -411,6 +420,47 @@ pub fn health_regen_system(
                 if status.regen_timer <= 1e-4 {
                     status.regen_timer = 0.0;
                     status.regen_hps = 0.0;
+                }
+            }
+        }
+    }
+}
+
+/// Advances tick-based buff and debuff timers on entities with `BuffContainer`
+/// and periodically radiates active buffs from `AuraEmitter` components within radius.
+pub fn buff_and_aura_tick_system(
+    clock: Res<SimClock>,
+    mut receivers: Query<(Entity, &Position, &mut BuffContainer, Option<&PlayerAvatar>)>,
+    mut auras: Query<(&Position, &mut AuraEmitter)>,
+) {
+    let dt = clock.delta_seconds();
+    if dt <= 0.0 {
+        return;
+    }
+
+    // 1. Advance individual buff timers on all receivers
+    for (_, _, mut container, _) in &mut receivers {
+        container.tick(dt);
+    }
+
+    // 2. Pulse auras to entities in radius
+    for (aura_pos, mut emitter) in &mut auras {
+        emitter.pulse_timer -= dt;
+        if emitter.pulse_timer <= 0.0 {
+            emitter.pulse_timer = emitter.pulse_interval_sec;
+
+            let radius_sq = emitter.radius_m * emitter.radius_m;
+            let buff_to_apply = emitter.aura_buff.clone();
+
+            for (_, receiver_pos, mut container, opt_avatar) in &mut receivers {
+                // If affects_allies is true, affect players
+                if emitter.affects_allies && opt_avatar.is_none() {
+                    continue;
+                }
+                let dx = receiver_pos.x - aura_pos.x;
+                let dy = receiver_pos.y - aura_pos.y;
+                if dx * dx + dy * dy <= radius_sq {
+                    container.apply_buff(buff_to_apply.clone());
                 }
             }
         }

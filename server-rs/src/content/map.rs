@@ -306,6 +306,17 @@ fn smooth_step(edge0: f32, edge1: f32, x: f32) -> f32 {
     t * t * (3.0 - 2.0 * t)
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DungeonPortalConfig {
+    pub portal_id: String,
+    pub target_dungeon_template_id: String,
+    pub target_mvp_boss_id: String,
+    pub x: f32,
+    pub y: f32,
+    pub trigger_radius: f32,
+    pub min_level: u32,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct MapConfig {
     pub map_id: String,
@@ -318,6 +329,7 @@ pub struct MapConfig {
     pub terrain_zones: Vec<TerrainZone>,
     /// Where joining players appear; `None` means the arena centre.
     pub player_spawn: Option<(f32, f32)>,
+    pub dungeon_portals: Vec<DungeonPortalConfig>,
 }
 
 #[derive(Deserialize)]
@@ -367,6 +379,26 @@ struct TownPlanJson {
 }
 
 impl MapConfig {
+    pub fn portals_for_map(map_id: &str) -> Vec<DungeonPortalConfig> {
+        if let Ok(catalog) = crate::content::DungeonCatalog::new() {
+            catalog
+                .for_map(map_id)
+                .iter()
+                .map(|d| DungeonPortalConfig {
+                    portal_id: format!("portal_{}", d.id),
+                    target_dungeon_template_id: d.id.clone(),
+                    target_mvp_boss_id: d.mvp_boss_id.clone(),
+                    x: d.portal_x,
+                    y: d.portal_y,
+                    trigger_radius: d.portal_radius,
+                    min_level: d.level_min,
+                })
+                .collect()
+        } else {
+            Vec::new()
+        }
+    }
+
     fn default_play_terrain_zones() -> Vec<TerrainZone> {
         vec![
             TerrainZone::rect(TerrainType::Ice, 0.0, 0.0, 1000.0, 250.0),
@@ -466,6 +498,7 @@ impl MapConfig {
                 TerrainZone::rect(Road, 1850.0, 1850.0, 300.0, 300.0),
             ],
             player_spawn: Some((2000.0, 2000.0)),
+            dungeon_portals: Vec::new(),
         }
     }
 
@@ -475,12 +508,13 @@ impl MapConfig {
         if doc.spawn_areas.is_empty() && doc.static_obstacles.is_empty() {
             return None;
         }
+        let resolved_id = if doc.map_id.is_empty() {
+            map_id_fallback
+        } else {
+            &doc.map_id
+        };
         Some(Self {
-            map_id: if doc.map_id.is_empty() {
-                map_id_fallback.to_string()
-            } else {
-                doc.map_id
-            },
+            map_id: resolved_id.to_string(),
             width: doc.width,
             height: doc.height,
             terrain_amplitude: doc.terrain_amplitude,
@@ -489,6 +523,7 @@ impl MapConfig {
             static_obstacles: doc.static_obstacles,
             terrain_zones: Self::default_play_terrain_zones(),
             player_spawn: None,
+            dungeon_portals: Self::portals_for_map(resolved_id),
         })
     }
 
@@ -514,6 +549,7 @@ impl MapConfig {
                 static_obstacles: Vec::new(),
                 terrain_zones: Vec::new(),
                 player_spawn: None,
+                dungeon_portals: Vec::new(),
             },
             "map-for-test-projectile" => Self {
                 map_id: map_id.to_string(),
@@ -533,6 +569,7 @@ impl MapConfig {
                 static_obstacles: Vec::new(),
                 terrain_zones: Vec::new(),
                 player_spawn: None,
+                dungeon_portals: Vec::new(),
             },
             // Hand-testing sandbox: every terrain type as a 150-wide strip (fastest to slowest,
             // west to east) so a run along +X from the west-edge spawn crosses them all. South
@@ -577,6 +614,7 @@ impl MapConfig {
                     })
                     .collect(),
                 player_spawn: Some((25.0, 350.0)),
+                dungeon_portals: Vec::new(),
             },
             "freja-south-gate" => {
                 for candidate in [
@@ -676,6 +714,7 @@ impl MapConfig {
             static_obstacles,
             terrain_zones: Self::default_play_terrain_zones(),
             player_spawn: None,
+            dungeon_portals: Self::portals_for_map(map_id),
         }
     }
 }

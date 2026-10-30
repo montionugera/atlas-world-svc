@@ -54,6 +54,7 @@ import {
   HeldKeys,
   TerrainLegend,
 } from "./DebugPanels";
+import { DungeonHUD } from "./DungeonHUD";
 
 /** Where the debug dock is drawn when the page provides it (see App.tsx). */
 export const DEBUG_DOCK_ID = "debug-dock";
@@ -701,6 +702,28 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
             display: "block",
             width: view.width,
             height: view.height,
+          }}
+        />
+
+        {/* In-Dungeon Floor Spire & Boss Encounter HUD */}
+        <DungeonHUD
+          dungeonProgress={gameState?.dungeonProgress}
+          bossEncounter={gameState?.bossEncounter}
+          onAdvanceFloor={() => {
+            if (sendPlayerAction) {
+              sendPlayerAction("advanceFloor", true, {
+                x: mousePositionRef.current.x,
+                y: mousePositionRef.current.y,
+              });
+            }
+          }}
+          onEgress={() => {
+            if (sendPlayerAction) {
+              sendPlayerAction("egressDungeon", true, {
+                x: mousePositionRef.current.x,
+                y: mousePositionRef.current.y,
+              });
+            }
           }}
         />
 

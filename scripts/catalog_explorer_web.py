@@ -347,8 +347,12 @@ def _init_thumb_resolver() -> None:
             _STEM_TO_THUMB.setdefault(glb.stem.lower(), tp)
 
 
-def resolve_thumb_file(request_path: str) -> Path | None:
-    """Resolve any /thumbs/... path to a valid baked .webp file in game-client/assets/.thumbs/."""
+def resolve_thumb_file(request_path: str, allow_fallback: bool = True) -> Path | None:
+    """Resolve any /thumbs/... path to a valid baked .webp file in game-client/assets/.thumbs/.
+    
+    If allow_fallback is False, returns None when no direct or stem/token match is found,
+    enabling audits to detect genuinely missing thumbnails instead of silently masking them with a hash fallback.
+    """
     _init_thumb_resolver()
     if not _ALL_THUMBS:
         return None
@@ -382,6 +386,9 @@ def resolve_thumb_file(request_path: str) -> Path | None:
         for k_stem, tp in _STEM_TO_THUMB.items():
             if tok in k_stem:
                 return tp
+
+    if not allow_fallback:
+        return None
 
     # Category-aware deterministic fallback
     parts = Path(sub_no_ext).parts
@@ -741,6 +748,8 @@ def build_full_bundle() -> dict:
         "studioSnapshots": list_studio_snapshots(),
         "worldSpine": load_world_spine_bundle(),
         "studioPerspectives": load_studio_perspectives_bundle(),
+        "dungeons": load_json_file(ROOT / "content" / "dungeons" / "_compiled_catalog.json") or [],
+        "races": (load_json_file(ROOT / "content" / "studio" / "world_history_and_concept.json") or {}).get("race_taxonomy", {}).get("playable_and_mob_races", []),
     }
 
 
@@ -1873,7 +1882,8 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             return
 
         if parsed.path.startswith("/thumbs/"):
-            target = resolve_thumb_file(parsed.path)
+            strict = "strict=1" in (parsed.query or "") or self.headers.get("X-Strict-Thumb") == "1"
+            target = resolve_thumb_file(parsed.path, allow_fallback=not strict)
             if target and target.exists():
                 raw = target.read_bytes()
                 self.send_response(200)

@@ -15,19 +15,27 @@ pub mod simulation;
 pub mod spatial;
 pub mod storage;
 pub mod systems;
+pub mod ws_swarm;
 
 pub use ai::{ThreatEntry, ThreatTable, DEFAULT_THREAT_HALF_LIFE};
 pub use auth::{AuthError, AuthGuard, Claims};
 pub use combat::{
-    get_element_multiplier, get_skill, DamageCalculator, DamageOptions, DamageType, Element,
-    SkillDefinition, SkillEffect, ALL_ELEMENTS, GLOBAL_MAGIC_CD_KEY,
+    get_element_multiplier, get_skill, ActiveBuff, AuraEmitter, BuffCategory, BuffContainer,
+    CombinedBuffMultipliers, DamageCalculator, DamageOptions, DamageType, Element, SkillDefinition,
+    SkillEffect, ALL_ELEMENTS, GLOBAL_MAGIC_CD_KEY,
 };
 pub use content::{
-    derive_mob_stats, derived_stats, weapon_offence, AtkStat, BestiaryCatalog, BestiaryEntry,
-    DerivedMobStats, DerivedStats, MobTier, WeaponOffence, BASE_ATK, BASE_DEF, BASE_HP,
-    BASE_MOB_ATK, BESTIARY_JSON, GEAR_REFERENCE, GROWTH, STAT_COEF, STAT_MAX, UNARMED_GEAR,
+    attempt_high_tier_enchant, compute_enchant_stat_multipliers, derive_mob_stats, derived_stats,
+    derived_stats_with_race, weapon_offence, AtkStat, AtlasRace, BestiaryCatalog, BestiaryEntry,
+    DerivedMobStats, DerivedStats, EnchantResultKind, EnchantVisualGlow, HighTierEnchantOutcome,
+    ItemSocketState, MobTier, RaceProfile, SpecialAbility, WeaponOffence, BASE_ATK, BASE_DEF,
+    BASE_HP, BASE_MOB_ATK, BESTIARY_JSON, GEAR_REFERENCE, GROWTH, MAX_ENCHANT_TIER,
+    SAFE_ENCHANT_TIER, STAT_COEF, STAT_MAX, UNARMED_GEAR,
 };
-pub use fleet::{AgonesClient, FleetLifecycle, FleetState, HeartbeatTask, MockFleetClient};
+pub use fleet::{
+    AgonesClient, DungeonInstance, DungeonRegistry, DungeonState, FleetLifecycle, FleetState,
+    HeartbeatTask, MockFleetClient, MvpRewardDistribution,
+};
 pub use load_harness::{
     measure_tier, run_capacity_sweep, CapacitySweepReport, CapacityTierReport,
     DEFAULT_CAPACITY_TIERS,
@@ -40,15 +48,16 @@ pub use storage::{
     DEFAULT_CHARACTER_STATE_FLUSH_INTERVAL, DEFAULT_MATCH_EVENT_FLUSH_INTERVAL,
     DEFAULT_NAKAMA_MATCH_ID,
 };
+pub use ws_swarm::{run_swarm, SwarmConfig, SwarmReport};
 
 pub use core::{Lcg, Mulberry32, SimClock};
 pub use ecs::{
     AiAgent, AiState, AttackFacingCone, BotAgent, CastingState, CombatStats, CooldownTracker,
     DashState, DeadMobTracker, ElementalAttributes, EntityId, EquippedWeapon, Health, Mass, MobAi,
     MobSpawnAnchor, MobTag, MobWindupConfig, Parried, ParryState, PlayerInputState, PlayerTag,
-    Position, Projectile, StatusEffects, Velocity, WeaponKind, MAX_PARRY_CHARGES,
-    MAX_PARRY_HOLD_WINDOW_SEC, MOB_FACING_CONE_HALF_ANGLE_COS, MOB_WINDUP_DURATION_SEC,
-    PARRY_COOLDOWN_SEC, PARRY_REFLECT_STAGGER_SEC,
+    Position, Projectile, RaceComponent, StatusEffects, Velocity, WeaponGlowComponent, WeaponKind,
+    MAX_PARRY_CHARGES, MAX_PARRY_HOLD_WINDOW_SEC, MOB_FACING_CONE_HALF_ANGLE_COS,
+    MOB_WINDUP_DURATION_SEC, PARRY_COOLDOWN_SEC, PARRY_REFLECT_STAGGER_SEC,
 };
 pub use physics::{PhysicsWorld, RapierBodyHandle, RapierColliderHandle};
 pub use protocol::{
@@ -59,8 +68,9 @@ pub use simulation::{
 };
 pub use spatial::{AoiTracker, SpatialGrid};
 pub use systems::{
-    bot_steering_system, combat_system, cooldown_tick_system, mob_ai_system, mob_lifecycle_system,
-    parry_tick_system, physics_step_system, player_input_system, projectile_collision_system,
-    projectile_kinematics_system, separation_system, skill_execution_system,
-    spatial_grid_rebuild_system, status_effect_tick_system, ArenaBounds,
+    bot_steering_system, buff_and_aura_tick_system, combat_system, cooldown_tick_system,
+    mob_ai_system, mob_lifecycle_system, parry_tick_system, physics_step_system,
+    player_input_system, projectile_collision_system, projectile_kinematics_system,
+    separation_system, skill_execution_system, spatial_grid_rebuild_system,
+    status_effect_tick_system, ArenaBounds,
 };
