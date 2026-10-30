@@ -29,6 +29,8 @@ const PANEL_TABS = [
   "coverage",
   "forge",
   "combat-lab",
+  "lore",
+  "concept-arts",
 ];
 const VIEW_CLAIMS = {
   story: { views: ["reader", "graph", "undertow"], panel: "story" },

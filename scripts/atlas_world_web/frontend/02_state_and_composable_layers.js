@@ -48,6 +48,13 @@ const NAV_GROUPS = [
     ]
   },
   {
+    section: 'World Bible',
+    items: [
+      { id: 'lore', label: '📜 Lore and History', panel: true, countKey: () => atlasPanelCount('lore') },
+      { id: 'concept-arts', label: '🎨 Game Concept Arts', panel: true, countKey: () => atlasPanelCount('concept-arts') },
+    ]
+  },
+  {
     section: 'World Map & Atlas (Maxion / Lineage)',
     items: [
       { id: 'world', label: '🧭 Interactive World Map', countKey: () => getAllWorldTiles().length + ' Tiles' },
@@ -691,6 +698,8 @@ function render() {
     sql:      'Live Read-Only SQLite Query Studio',
     sim:      'Authoritative Rust Balance Simulator (balance_sim)',
     docs:     'RO Writings — Architecture Specs & Lore Canon',
+    lore:          'Lore and History — the Cradle of Sealed Gods',
+    'concept-arts': 'Game Concept Arts — the world, zone by zone',
     'map-sheets':  'Map Sheets — mapforge world, continent and basin charts',
     'map-builder': 'Map Builder — draft, review, publish and undo world generation',
     assets:        'Asset Classes & 3D Viewer',
