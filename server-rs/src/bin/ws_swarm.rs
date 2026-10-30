@@ -7,6 +7,9 @@ async fn main() {
     let mut clients = 50usize;
     let mut secs = 5u64;
     let mut hz = 20u32;
+    let mut token = std::env::var("SWARM_TOKEN")
+        .or_else(|_| std::env::var("AUTH_TOKEN"))
+        .unwrap_or_else(|_| "dev-token:{}".to_string());
 
     let args: Vec<String> = std::env::args().collect();
     let mut i = 1;
@@ -56,8 +59,18 @@ async fn main() {
                 }
                 i += 1;
             }
+            "--token" if i + 1 < args.len() => {
+                token = args[i + 1].clone();
+                i += 2;
+            }
+            arg if arg.starts_with("--token=") => {
+                token = arg.strip_prefix("--token=").unwrap().to_string();
+                i += 1;
+            }
             "-h" | "--help" => {
-                println!("Usage: ws_swarm [--addr <ADDR>] [--clients <N>] [--secs <SECS>] [--hz <HZ>]");
+                println!(
+                    "Usage: ws_swarm [--addr <ADDR>] [--clients <N>] [--secs <SECS>] [--hz <HZ>] [--token <TOKEN>]"
+                );
                 return;
             }
             _ => {
@@ -71,6 +84,7 @@ async fn main() {
         clients,
         duration: Duration::from_secs(secs),
         input_hz: hz,
+        token,
     };
 
     let report = run_swarm(config).await;

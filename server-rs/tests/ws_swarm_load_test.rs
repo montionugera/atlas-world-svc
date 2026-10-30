@@ -76,6 +76,7 @@ async fn test_ws_swarm_50_clients_real_socket_load() {
         clients: 50,
         duration: Duration::from_secs(5),
         input_hz: 20,
+        token: "dev-token:{}".to_string(),
     };
 
     let report = run_swarm(config).await;
@@ -91,12 +92,33 @@ async fn test_ws_swarm_50_clients_real_socket_load() {
     let _ = sim_handle.await;
 
     // Acceptance criteria assertions:
-    // 50 clients connected, 0 failed, p95 gap < 150ms, every client received snapshots
+    // 50 clients connected, 0 failed, 0 panicked, 0 starved, p95 gap < 150ms,
+    // every client received >= 50 snapshots, in-process rate-limited drops == 0
     assert_eq!(report.clients_connected, 50, "All 50 clients must connect");
     assert_eq!(report.clients_failed, 0, "Zero client connection failures");
+    assert_eq!(report.clients_panicked, 0, "Zero client panics");
+    assert_eq!(report.clients_starved, 0, "Zero client starvations");
+    assert_eq!(
+        report.per_client_snapshots.len(),
+        50,
+        "Must record snapshot counts for all 50 clients"
+    );
+    for (idx, &count) in report.per_client_snapshots.iter().enumerate() {
+        assert!(
+            count >= 50,
+            "Client {} received only {} snapshots (< 50 floor)",
+            idx,
+            count
+        );
+    }
     assert!(
-        report.snapshots_received >= 50 * 20,
-        "Every client received snapshots (total snapshots = {})",
+        report.min_snapshots_per_client >= 50,
+        "min_snapshots_per_client must be >= 50 (got {})",
+        report.min_snapshots_per_client
+    );
+    assert!(
+        report.snapshots_received >= 50 * 50,
+        "Total snapshots received = {}",
         report.snapshots_received
     );
     assert!(
@@ -107,5 +129,10 @@ async fn test_ws_swarm_50_clients_real_socket_load() {
     assert!(
         report.bytes_per_client_per_sec > 0.0,
         "bytes_per_client_per_sec must be positive"
+    );
+    assert_eq!(
+        server_ref.rate_limited_drop_count(),
+        0,
+        "In-process server rate-limited drop count must be 0"
     );
 }

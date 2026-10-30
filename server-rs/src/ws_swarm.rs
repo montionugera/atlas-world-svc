@@ -19,15 +19,23 @@ pub struct SwarmConfig {
     pub clients: usize,
     pub duration: Duration,
     pub input_hz: u32,
+    pub token: String,
 }
 
 impl SwarmConfig {
-    pub fn new(addr: impl Into<String>, clients: usize, duration: Duration, input_hz: u32) -> Self {
+    pub fn new(
+        addr: impl Into<String>,
+        clients: usize,
+        duration: Duration,
+        input_hz: u32,
+        token: impl Into<String>,
+    ) -> Self {
         Self {
             addr: addr.into(),
             clients,
             duration,
             input_hz,
+            token: token.into(),
         }
     }
 }
@@ -37,12 +45,16 @@ impl SwarmConfig {
 pub struct SwarmReport {
     pub clients_connected: usize,
     pub clients_failed: usize,
+    pub clients_panicked: usize,
+    pub clients_starved: usize,
     pub snapshots_received: usize,
+    pub per_client_snapshots: Vec<usize>,
+    pub min_snapshots_per_client: usize,
     pub p50_ms: f64,
     pub p95_ms: f64,
     pub max_ms: f64,
     pub bytes_per_client_per_sec: f64,
-    pub server_rate_limited_drops: usize,
+    pub server_rate_limited_drops: Option<usize>,
 }
 
 impl SwarmReport {
@@ -53,7 +65,13 @@ impl SwarmReport {
         out.push_str("|:---|---:|\n");
         out.push_str(&format!("| Clients Connected | {} |\n", self.clients_connected));
         out.push_str(&format!("| Clients Failed | {} |\n", self.clients_failed));
+        out.push_str(&format!("| Clients Panicked | {} |\n", self.clients_panicked));
+        out.push_str(&format!("| Clients Starved | {} |\n", self.clients_starved));
         out.push_str(&format!("| Snapshots Received | {} |\n", self.snapshots_received));
+        out.push_str(&format!(
+            "| Min Snapshots / Client | {} |\n",
+            self.min_snapshots_per_client
+        ));
         out.push_str(&format!("| Inter-Snapshot Gap p50 (ms) | {:.2} |\n", self.p50_ms));
         out.push_str(&format!("| Inter-Snapshot Gap p95 (ms) | {:.2} |\n", self.p95_ms));
         out.push_str(&format!("| Inter-Snapshot Gap max (ms) | {:.2} |\n", self.max_ms));
@@ -61,28 +79,30 @@ impl SwarmReport {
             "| Bandwidth (Bytes/client/sec) | {:.2} |\n",
             self.bytes_per_client_per_sec
         ));
-        out.push_str(&format!(
-            "| Server Rate Limited Drops | {} |\n",
-            self.server_rate_limited_drops
-        ));
+        match self.server_rate_limited_drops {
+            Some(drops) => out.push_str(&format!("| Server Rate Limited Drops | {} |\n", drops)),
+            None => out.push_str("| Server Rate Limited Drops | n/a |\n"),
+        }
         out
     }
 }
 
 /// Helper to normalize base address into a valid WebSocket URL for client `client_idx`.
-fn build_ws_url(base_addr: &str, client_idx: usize) -> (String, String) {
+fn build_ws_url(base_addr: &str, client_idx: usize, token_template: &str) -> (String, String) {
     let session_id = format!("swarm_client_{:03}", client_idx);
 
-    // Generate valid authentication token for this session
-    let token = {
-        #[cfg(debug_assertions)]
-        {
-            format!("dev-token:{}", session_id)
-        }
-        #[cfg(not(debug_assertions))]
-        {
-            crate::auth::AuthGuard::from_env().generate_test_token(&session_id, &session_id, 3600)
-        }
+    let token = if token_template.contains("{}") {
+        token_template.replace("{}", &session_id)
+    } else if token_template.contains("{session_id}") {
+        token_template.replace("{session_id}", &session_id)
+    } else if token_template.contains("{client_idx}") {
+        token_template.replace("{client_idx}", &client_idx.to_string())
+    } else if token_template == "dev-token" {
+        format!("dev-token:{}", session_id)
+    } else if token_template.is_empty() {
+        format!("dev-token:{}", session_id)
+    } else {
+        token_template.to_string()
     };
 
     let mut raw = base_addr.trim().to_string();
@@ -147,21 +167,22 @@ fn parse_host_port(addr: &str) -> String {
 }
 
 /// Fetches `rate_limited_drops` from `http://{host_port}/metrics`.
-async fn fetch_server_rate_limited_drops(host_port: &str) -> usize {
+async fn fetch_server_rate_limited_drops(host_port: &str) -> Option<usize> {
     let metrics_url = format!("http://{}/metrics", host_port);
     match reqwest::get(&metrics_url).await {
         Ok(resp) => {
             if let Ok(json) = resp.json::<serde_json::Value>().await {
                 if let Some(drops) = json.get("rate_limited_drops").and_then(|d| d.as_u64()) {
-                    return drops as usize;
+                    return Some(drops as usize);
                 }
             }
+            None
         }
         Err(e) => {
             debug!("Could not query {} for metrics: {}", metrics_url, e);
+            None
         }
     }
-    0
 }
 
 struct ClientRunResult {
@@ -177,8 +198,9 @@ async fn run_single_client(
     client_idx: usize,
     duration: Duration,
     input_hz: u32,
+    token_template: String,
 ) -> ClientRunResult {
-    let (url, _session_id) = build_ws_url(&base_addr, client_idx);
+    let (url, _session_id) = build_ws_url(&base_addr, client_idx, &token_template);
 
     let ws_stream = match connect_async(&url).await {
         Ok((stream, _resp)) => stream,
@@ -270,34 +292,57 @@ pub async fn run_swarm(config: SwarmConfig) -> SwarmReport {
     let clients = config.clients;
     let duration = config.duration;
     let input_hz = config.input_hz;
+    let token_template = config.token.clone();
     let addr = config.addr.clone();
     let host_port = parse_host_port(&addr);
 
     let mut handles = Vec::with_capacity(clients);
     for client_idx in 0..clients {
         let base_addr = addr.clone();
+        let tok = token_template.clone();
         handles.push(tokio::spawn(async move {
-            run_single_client(base_addr, client_idx, duration, input_hz).await
+            run_single_client(base_addr, client_idx, duration, input_hz, tok).await
         }));
     }
 
     let mut clients_connected = 0usize;
+    let mut clients_failed = 0usize;
+    let mut clients_panicked = 0usize;
+    let mut clients_starved = 0usize;
     let mut total_snapshots = 0usize;
     let mut total_bytes = 0usize;
     let mut all_gaps = Vec::new();
+    let mut per_client_snapshots = Vec::with_capacity(clients);
 
     for handle in handles {
-        if let Ok(res) = handle.await {
-            if res.connected {
-                clients_connected += 1;
-                total_snapshots += res.snapshots_received;
-                total_bytes += res.bytes_received;
-                all_gaps.extend(res.inter_snapshot_gaps);
+        match handle.await {
+            Ok(res) => {
+                per_client_snapshots.push(res.snapshots_received);
+                if res.connected {
+                    clients_connected += 1;
+                    if res.snapshots_received == 0 {
+                        clients_starved += 1;
+                    }
+                    total_snapshots += res.snapshots_received;
+                    total_bytes += res.bytes_received;
+                    all_gaps.extend(res.inter_snapshot_gaps);
+                } else {
+                    clients_failed += 1;
+                }
+            }
+            Err(e) => {
+                warn!("Client task panicked or join error: {}", e);
+                clients_panicked += 1;
+                per_client_snapshots.push(0);
             }
         }
     }
 
-    let clients_failed = clients.saturating_sub(clients_connected);
+    let min_snapshots_per_client = per_client_snapshots
+        .iter()
+        .copied()
+        .min()
+        .unwrap_or(0);
 
     all_gaps.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     let (p50_ms, p95_ms, max_ms) = if all_gaps.is_empty() {
@@ -319,7 +364,11 @@ pub async fn run_swarm(config: SwarmConfig) -> SwarmReport {
     SwarmReport {
         clients_connected,
         clients_failed,
+        clients_panicked,
+        clients_starved,
         snapshots_received: total_snapshots,
+        per_client_snapshots,
+        min_snapshots_per_client,
         p50_ms,
         p95_ms,
         max_ms,

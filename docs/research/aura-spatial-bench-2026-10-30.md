@@ -12,7 +12,7 @@ The investigation confirms that the aura application path performs a **naive $O(
 
 ### 1. The Real Aura Application Path
 
-The aura propagation logic is implemented in [`server-rs/src/systems/combat.rs:430-467`](file:///private/tmp/worker-cxlru_vj/server-rs/src/systems/combat.rs#L430-L467) in `buff_and_aura_tick_system`:
+The aura propagation logic is implemented in [`server-rs/src/systems/combat.rs:430-467`](server-rs/src/systems/combat.rs#L430-L467) in `buff_and_aura_tick_system`:
 
 ```rust
 // server-rs/src/systems/combat.rs:430-434
@@ -26,10 +26,10 @@ pub fn buff_and_aura_tick_system(
 ### 2. Evidence of Naive $O(N^2)$ Scan vs Spatial Index
 
 1. **Absence of Spatial Index Resource**:
-   [`SpatialGrid`](file:///private/tmp/worker-cxlru_vj/server-rs/src/spatial/grid.rs#L117-L230) provides $O(1)$ grid-cell localized queries (`for_each_player_in_radius`, `for_each_mob_in_radius`), but `buff_and_aura_tick_system` does not take `Res<SpatialGrid>` as a parameter at all ([`server-rs/src/systems/combat.rs:430-434`](file:///private/tmp/worker-cxlru_vj/server-rs/src/systems/combat.rs#L430-L434)).
+   [`SpatialGrid`](server-rs/src/spatial/grid.rs#L117-L230) provides $O(1)$ grid-cell localized queries (`for_each_player_in_radius`, `for_each_mob_in_radius`), but `buff_and_aura_tick_system` does not take `Res<SpatialGrid>` as a parameter at all ([`server-rs/src/systems/combat.rs:430-434`](server-rs/src/systems/combat.rs#L430-L434)).
 
 2. **Full Nested Iteration**:
-   In [`server-rs/src/systems/combat.rs:446-465`](file:///private/tmp/worker-cxlru_vj/server-rs/src/systems/combat.rs#L446-L465), every aura pulse executes a nested loop across all receivers:
+   In [`server-rs/src/systems/combat.rs:446-465`](server-rs/src/systems/combat.rs#L446-L465), every aura pulse executes a nested loop across all receivers:
    ```rust
    // Outer loop: iterates over every AuraEmitter
    for (aura_pos, mut emitter) in &mut auras {
@@ -60,7 +60,7 @@ pub fn buff_and_aura_tick_system(
 
 ## Measured Baseline Benchmark Results
 
-The benchmark was executed using `cargo test --manifest-path server-rs/Cargo.toml --test aura_spatial_bench_test --release -- --ignored --nocapture` over 200 simulation ticks per tier, with entities split 50/50 between players and mobs and auras assigned to 10% of players:
+The benchmark was executed using `cargo test --manifest-path server-rs/Cargo.toml --test aura_spatial_bench_test --release -- --ignored --nocapture` over 200 simulation ticks per tier, with entities split 50/50 between players and mobs and auras assigned to 10% of players. Note that the timings reported here are single-run, and the $O(N^2)$ complexity claim rests on the code implementation rather than the empirical measurements alone:
 
 | Entity Count (N) | Players | Mobs | Auras (10% players) | p50 (µs) | p95 (µs) | max (µs) |
 |-----------------:|--------:|-----:|--------------------:|---------:|---------:|---------:|
