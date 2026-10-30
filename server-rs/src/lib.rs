@@ -15,6 +15,7 @@ pub mod simulation;
 pub mod spatial;
 pub mod storage;
 pub mod systems;
+pub mod ws_swarm;
 
 pub use ai::{ThreatEntry, ThreatTable, DEFAULT_THREAT_HALF_LIFE};
 pub use auth::{AuthError, AuthGuard, Claims};
@@ -40,6 +41,7 @@ pub use load_harness::{
     DEFAULT_CAPACITY_TIERS,
 };
 pub use net::{ClientPacket, WsServer};
+pub use ws_swarm::{run_swarm, SwarmConfig, SwarmReport};
 pub use storage::{
     normalize_match_event_type, CharacterStateBuffer, CharacterStateSnapshot, EquippedItemIds,
     LoadoutSnapshot, MatchEvent, MatchEventBatch, MatchEventBuffer, MatchEventQueue,
