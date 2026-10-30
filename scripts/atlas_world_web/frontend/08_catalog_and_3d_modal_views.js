@@ -2774,6 +2774,187 @@ function renderDocs() {
   `;
 }
 
+function renderRacesDirectory() {
+  const races = DATA.races || [];
+  const raceStats = {
+    'human_demi_human': { str: 6, agi: 6, int: 6, vit: 6, dex: 6, luk: 6, hitbox: '0.45m' },
+    'dwarf': { str: 7, agi: 4, int: 4, vit: 9, dex: 5, luk: 5, hitbox: '0.40m' },
+    'ogre_orc': { str: 10, agi: 4, int: 3, vit: 9, dex: 4, luk: 4, hitbox: '0.65m' },
+    'furral': { str: 5, agi: 9, int: 5, vit: 5, dex: 7, luk: 6, hitbox: '0.35m' },
+    'lunar': { str: 4, agi: 5, int: 9, vit: 4, dex: 7, luk: 6, hitbox: '0.45m' },
+    'dark_lunar': { str: 5, agi: 8, int: 7, vit: 4, dex: 6, luk: 5, hitbox: '0.45m' },
+  };
+
+  return `
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">CANONICAL SIX RACES · ATTRIBUTE RADAR &amp; STARTER CITADELS</div>
+        <h1 class="page-hero__title">Six Canonical Races &amp; Starter Towns Directory</h1>
+        <p class="page-hero__sub">Authoritative 6-Stat baseline attributes (STR, AGI, INT, VIT, DEX, LUK), hitbox scales, and starter arrival lore across Atlas World.</p>
+      </div>
+    </div>
+    <div class="rms-list" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:16px">
+      ${races.map(r => {
+        const stats = raceStats[r.race_key] || { str: 6, agi: 6, int: 6, vit: 6, dex: 6, luk: 6, hitbox: '0.45m' };
+        return `
+          <div class="rms-sheet" style="display:flex;flex-direction:column;gap:10px">
+            <div class="rms-sheet__head">
+              <div class="rms-sheet__head-left">
+                <span class="rms-thumb-chip" style="font-size:1.5rem">${r.icon || '🧬'}</span>
+                <div>
+                  <span class="rms-sheet__title">${escapeHtml(r.name)}</span>
+                  <div class="observatory-card__meta">${escapeHtml(r.archetype_reference || '')}</div>
+                </div>
+              </div>
+              <span class="joy-badge joy-badge--brand joy-badge--sm">Hitbox ${stats.hitbox}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:4px;text-align:center;background:rgba(255,255,255,0.03);padding:8px;border-radius:6px">
+              <div><div class="observatory-card__meta">STR</div><strong style="color:#ef4444">${stats.str}</strong></div>
+              <div><div class="observatory-card__meta">AGI</div><strong style="color:#3b82f6">${stats.agi}</strong></div>
+              <div><div class="observatory-card__meta">INT</div><strong style="color:#a855f7">${stats.int}</strong></div>
+              <div><div class="observatory-card__meta">VIT</div><strong style="color:#10b981">${stats.vit}</strong></div>
+              <div><div class="observatory-card__meta">DEX</div><strong style="color:#f59e0b">${stats.dex}</strong></div>
+              <div><div class="observatory-card__meta">LUK</div><strong style="color:#ec4899">${stats.luk}</strong></div>
+            </div>
+            <div style="font-size:12.5px;color:#94a3b8">
+              <strong>Starter Town:</strong> <span style="color:#f1f5f9">${escapeHtml(r.home_town_name || r.home_town_id)}</span> (${escapeHtml(r.continent_id || '')})
+            </div>
+            <div style="font-size:12px;background:rgba(245,158,11,0.08);border-left:3px solid #f59e0b;padding:6px 10px;border-radius:0 4px 4px 0">
+              <strong style="color:#fbbf24">Trait:</strong> ${escapeHtml(r.combat_trait || '')}
+            </div>
+            <p style="font-size:12px;color:#cbd5e1;line-height:1.4;margin:0">${escapeHtml(r.niched_story || '')}</p>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderDungeonsDirectory() {
+  const dungeons = DATA.dungeons || [];
+  return `
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">60 AUTHORITATIVE SPIRES · MULTI-FLOOR NAVIGATION &amp; MVP ENCOUNTERS</div>
+        <h1 class="page-hero__title">60 Authoritative Dungeon Spires Directory (dungeon_db)</h1>
+        <p class="page-hero__sub">60 compiled dungeon definitions with floor clear mob quotas, bound overworld portal entrance coordinates, and linked MVP boss state machines.</p>
+      </div>
+    </div>
+    <div class="rms-sheet">
+      <table class="rms-table">
+        <thead>
+          <tr>
+            <th style="width:200px">Dungeon Spire</th>
+            <th style="width:100px">Level Band</th>
+            <th style="width:100px">Floors &amp; Mobs</th>
+            <th style="width:180px">Overworld Entrance Portal</th>
+            <th style="width:220px">Bound MVP Boss</th>
+            <th>Hazards &amp; Lore</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${dungeons.map(d => `
+            <tr>
+              <td>
+                <div style="font-weight:700;color:#f1f5f9">${escapeHtml(d.title)}</div>
+                <div class="observatory-card__meta"><code>${escapeHtml(d.id)}</code></div>
+              </td>
+              <td><span class="joy-badge joy-badge--brand joy-badge--sm">Lv.${d.levelMin}–${d.levelMax}</span></td>
+              <td>
+                <div style="font-weight:600">${d.floors} Floors</div>
+                <div class="observatory-card__meta">${d.mobsPerFloor} mobs/floor</div>
+              </td>
+              <td>
+                <div style="font-weight:600;color:#38bdf8">🗺️ ${escapeHtml(d.mapId || 'unbound')}</div>
+                <div class="observatory-card__meta">Portal (${d.portalX}, ${d.portalY}) r=${d.portalRadius}m</div>
+              </td>
+              <td>
+                <div style="font-weight:700;color:#f87171">💀 ${escapeHtml(d.mvpBossName || d.mvpBossId)}</div>
+                <div class="observatory-card__meta">HP ${(d.mvpBossHp || 0).toLocaleString()} · Enrage ${d.bossEnrageSecs}s</div>
+              </td>
+              <td>
+                <div class="chip-row" style="margin-bottom:4px">
+                  ${(d.hazards || []).map(h => `<span class="joy-badge joy-badge--warning joy-badge--sm">${escapeHtml(h)}</span>`).join('')}
+                </div>
+                <div class="observatory-card__meta" style="font-size:11.5px">${escapeHtml(d.lore || '')}</div>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderEnchantingForge() {
+  const glowTiers = [
+    { tier: 0, name: 'None', color: 'transparent', label: 'No Glow' },
+    { tier: 1, name: 'SoftWhite', color: '#f8fafc', label: 'Tier 1: Soft White (+4 to +6)' },
+    { tier: 2, name: 'YellowGlow', color: '#fbbf24', label: 'Tier 2: Golden Radiance (+7 to +9)' },
+    { tier: 3, name: 'CrimsonAura', color: '#ef4444', label: 'Tier 3: Crimson Aura (+10 to +12)' },
+    { tier: 4, name: 'VioletLightning', color: '#a855f7', label: 'Tier 4: Violet Lightning (+13 to +15)' },
+    { tier: 5, name: 'CelestialPrism', color: '#38bdf8', label: 'Tier 5: Celestial Prism (+16 to +20)' },
+  ];
+
+  const levels = [];
+  for (let t = 1; t <= 20; t++) {
+    const safe = t <= 4;
+    const success = safe ? 100 : (t <= 6 ? 70 : (t <= 9 ? 50 : (t <= 12 ? 40 : (t <= 15 ? 30 : (t <= 18 ? 20 : 10)))));
+    const crystallize = t <= 9 ? 0 : (100 - success);
+    const degrade = (t > 4 && t <= 9) ? (100 - success) : 0;
+    const gTier = t < 4 ? 0 : (t < 7 ? 1 : (t < 10 ? 2 : (t < 13 ? 3 : (t < 16 ? 4 : 5))));
+    const mult = 1.0 + (t * 0.05) + (Math.max(0, t - 10) * 0.10);
+    levels.push({ level: t, safe, success, crystallize, degrade, glow: glowTiers[gTier], mult });
+  }
+
+  return `
+    <div class="page-hero">
+      <div>
+        <div class="page-hero__eyebrow">HIGH-STAKES REFINEMENT · LINEAGE 2 CRYSTALLIZATION PAST +10</div>
+        <h1 class="page-hero__title">High-Stakes +20 Enchanting &amp; Weapon Visual Glow Forge</h1>
+        <p class="page-hero__sub">+1 to +4 Safe Zone, -1 Degradation under +10, irreversible Crystallization past +10 without Blessed Scrolls, and 6 Weapon Glow Tiers.</p>
+      </div>
+    </div>
+    <div class="rms-sheet">
+      <table class="rms-table">
+        <thead>
+          <tr>
+            <th style="width:80px">Refine</th>
+            <th style="width:120px">Zone Type</th>
+            <th style="width:140px">Success Odds</th>
+            <th style="width:140px">Failure Penalty</th>
+            <th style="width:200px">Weapon Glow Aura</th>
+            <th>Power Multiplier</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${levels.map(l => `
+            <tr>
+              <td><strong style="font-size:1.1rem;color:${l.glow.color !== 'transparent' ? l.glow.color : '#f1f5f9'}">+${l.level}</strong></td>
+              <td>
+                <span class="joy-badge ${l.safe ? 'joy-badge--success' : (l.level <= 9 ? 'joy-badge--warning' : 'joy-badge--danger')} joy-badge--sm">
+                  ${l.safe ? 'SAFE ZONE' : (l.level <= 9 ? 'DEGRADATION (-1)' : 'CRYSTALLIZATION (DESTROY)')}
+                </span>
+              </td>
+              <td><strong style="color:#10b981">${l.success}% Success</strong></td>
+              <td>
+                ${l.crystallize > 0
+                  ? `<strong style="color:#ef4444">${l.crystallize}% Crystallize</strong>`
+                  : (l.degrade > 0 ? `<span style="color:#f59e0b">${l.degrade}% Degrade (-1)</span>` : '<span style="color:#94a3b8">0% (Safe)</span>')}
+              </td>
+              <td>
+                <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${l.glow.color};margin-right:6px;box-shadow:0 0 8px ${l.glow.color}"></span>
+                <span style="font-size:12px;font-weight:600">${l.glow.label}</span>
+              </td>
+              <td><strong style="color:#38bdf8">${l.mult.toFixed(2)}× Base ATK/DEF</strong></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }

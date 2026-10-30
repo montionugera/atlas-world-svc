@@ -28,6 +28,8 @@ SPINE_DIR = ROOT / "content" / "spine"
 STORY_DIR = ROOT / "content" / "story"
 ZONES_DIR = ROOT / "content" / "zones"
 DUNGEONS_DIR = ROOT / "content" / "dungeons"
+STUDIO_DIR = ROOT / "content" / "studio"
+COMPILED_DUNGEONS_PATH = DUNGEONS_DIR / "_compiled_catalog.json"
 BESTIARY_PATH = ROOT / "content" / "bestiary" / "bestiary.json"
 BUILD_DIR = ROOT / "build"
 DB_PATH = BUILD_DIR / "catalog.sqlite"
@@ -195,10 +197,40 @@ def main() -> int:
                 }
             )
 
-    # Load Dungeons (content/dungeons/*.json)
+    # Load Dungeons (content/dungeons/_compiled_catalog.json or content/dungeons/*.json)
     world_dungeons = []
-    if DUNGEONS_DIR.exists():
+    if COMPILED_DUNGEONS_PATH.exists():
+        for cd in load_json(COMPILED_DUNGEONS_PATH):
+            cid = cd.get("regionId", "").split("/")[0] if "/" in cd.get("regionId", "") else "c02"
+            world_dungeons.append(
+                {
+                    "id": cd.get("id"),
+                    "title": cd.get("title", cd.get("id")),
+                    "continentId": cid,
+                    "handleRef": cd.get("regionId", ""),
+                    "entranceType": cd.get("entranceType", ""),
+                    "floors": cd.get("floors", 1),
+                    "levelMin": cd.get("levelMin", 1),
+                    "levelMax": cd.get("levelMax", 1),
+                    "hazardsJson": json.dumps(cd.get("hazards", [])),
+                    "loreNote": cd.get("lore", ""),
+                    "mapId": cd.get("mapId", ""),
+                    "regionId": cd.get("regionId", ""),
+                    "portalX": cd.get("portalX", 0.0),
+                    "portalY": cd.get("portalY", 0.0),
+                    "portalRadius": cd.get("portalRadius", 25.0),
+                    "mvpBossId": cd.get("mvpBossId", ""),
+                    "mvpBossName": cd.get("mvpBossName", ""),
+                    "mvpBossHp": cd.get("mvpBossHp", 50000),
+                    "bossEnrageSecs": cd.get("bossEnrageSecs", 300),
+                    "mobsPerFloor": cd.get("mobsPerFloor", 10),
+                    "rawJson": json.dumps(cd),
+                }
+            )
+    elif DUNGEONS_DIR.exists():
         for df in sorted(DUNGEONS_DIR.glob("*.json")):
+            if df.name.startswith("_"):
+                continue
             d = load_json(df)
             bind = d.get("bind") or {}
             handle = bind.get("handle") or ""
@@ -217,9 +249,109 @@ def main() -> int:
                     "levelMax": lvl[1] if len(lvl) > 1 else lvl[0],
                     "hazardsJson": json.dumps(d.get("hazards") or []),
                     "loreNote": lore.get("note") or "",
+                    "mapId": "",
+                    "regionId": handle,
+                    "portalX": 0.0,
+                    "portalY": 0.0,
+                    "portalRadius": 25.0,
+                    "mvpBossId": f"mvp-{d.get('id') or df.stem}",
+                    "mvpBossName": f"Awakened {d.get('title') or df.stem}",
+                    "mvpBossHp": 50000,
+                    "bossEnrageSecs": 300,
+                    "mobsPerFloor": 10,
                     "rawJson": json.dumps(d),
                 }
             )
+
+    # Load 6 Canonical Races (content/studio/world_history_and_concept.json)
+    races_catalog = []
+    whc_path = STUDIO_DIR / "world_history_and_concept.json"
+    if whc_path.exists():
+        whc = load_json(whc_path)
+        race_tax = whc.get("race_taxonomy", {}).get("playable_and_mob_races", [])
+        race_stats = {
+            "human_demi_human": {"str": 6, "agi": 6, "int": 6, "vit": 6, "dex": 6, "luk": 6, "hitbox": 0.45},
+            "dwarf": {"str": 7, "agi": 4, "int": 4, "vit": 9, "dex": 5, "luk": 5, "hitbox": 0.40},
+            "ogre_orc": {"str": 10, "agi": 4, "int": 3, "vit": 9, "dex": 4, "luk": 4, "hitbox": 0.65},
+            "furral": {"str": 5, "agi": 9, "int": 5, "vit": 5, "dex": 7, "luk": 6, "hitbox": 0.35},
+            "lunar": {"str": 4, "agi": 5, "int": 9, "vit": 4, "dex": 7, "luk": 6, "hitbox": 0.45},
+            "dark_lunar": {"str": 5, "agi": 8, "int": 7, "vit": 4, "dex": 6, "luk": 5, "hitbox": 0.45},
+        }
+        for r in race_tax:
+            rkey = r.get("race_key", "")
+            stats = race_stats.get(rkey, {"str": 6, "agi": 6, "int": 6, "vit": 6, "dex": 6, "luk": 6, "hitbox": 0.45})
+            races_catalog.append(
+                {
+                    "id": r["id"],
+                    "raceKey": rkey,
+                    "name": r.get("name", rkey),
+                    "icon": r.get("icon", "⚔️"),
+                    "starterTownId": r.get("home_town_id", ""),
+                    "starterTownName": r.get("home_town_name", ""),
+                    "continentId": r.get("continent_id", ""),
+                    "districtId": r.get("district_id", ""),
+                    "str": stats["str"],
+                    "agi": stats["agi"],
+                    "int": stats["int"],
+                    "vit": stats["vit"],
+                    "dex": stats["dex"],
+                    "luk": stats["luk"],
+                    "hitboxRadius": stats["hitbox"],
+                    "combatTrait": r.get("combat_trait", ""),
+                    "nichedStory": r.get("niched_story", ""),
+                    "rawJson": json.dumps(r),
+                }
+            )
+
+    # Load Boss Encounters from world dungeons
+    boss_encounters = []
+    for wd in world_dungeons:
+        if wd.get("mvpBossId"):
+            boss_encounters.append(
+                {
+                    "bossId": wd["mvpBossId"],
+                    "name": wd.get("mvpBossName") or f"Awakened {wd['title']}",
+                    "maxHp": wd.get("mvpBossHp", 100000),
+                    "enrageTimerSecs": wd.get("bossEnrageSecs", 300),
+                    "phase2ThresholdPct": 50.0,
+                    "atkMultiplier": 1.35,
+                    "aspdMultiplier": 1.25,
+                    "empoweredSkill": "Empowered Cleave & Hellfire",
+                    "dungeonId": wd["id"],
+                    "scoringWeightsJson": json.dumps(
+                        {
+                            "damage": 0.50,
+                            "healing": 0.20,
+                            "tanking": 0.15,
+                            "firstHit": 0.075,
+                            "lastHit": 0.075,
+                        }
+                    ),
+                }
+            )
+
+    # Load +1 to +20 High-Stakes Enchanting Rules
+    enchanting_rules = []
+    glow_names = ["None", "SoftWhite", "YellowGlow", "CrimsonAura", "VioletLightning", "CelestialPrism"]
+    for tier in range(1, 21):
+        safe = tier <= 4
+        success = 100.0 if safe else (70.0 if tier <= 6 else (50.0 if tier <= 9 else (40.0 if tier <= 12 else (30.0 if tier <= 15 else (20.0 if tier <= 18 else 10.0)))))
+        crystallize = 0.0 if tier <= 9 else (100.0 - success)
+        degrade = (100.0 - success) if (tier > 4 and tier <= 9) else 0.0
+        glow_tier = 0 if tier < 4 else (1 if tier < 7 else (2 if tier < 10 else (3 if tier < 13 else (4 if tier < 16 else 5))))
+        stat_mult = 1.0 + (tier * 0.05) + (max(0, tier - 10) * 0.10)
+        enchanting_rules.append(
+            {
+                "level": tier,
+                "safeZone": 1 if safe else 0,
+                "successRatePct": success,
+                "crystallizeRatePct": crystallize,
+                "degradeRatePct": degrade,
+                "visualGlowTier": glow_tier,
+                "glowColorName": glow_names[glow_tier],
+                "statMultiplier": round(stat_mult, 2),
+            }
+        )
 
     # Load World Bestiary (content/bestiary/bestiary.json)
     world_bestiary = load_json(BESTIARY_PATH) if BESTIARY_PATH.exists() else []
@@ -480,7 +612,62 @@ def main() -> int:
             level_max INTEGER NOT NULL,
             hazards_json TEXT NOT NULL,
             lore_note TEXT NOT NULL,
+            map_id TEXT,
+            region_id TEXT,
+            portal_x REAL,
+            portal_y REAL,
+            portal_radius REAL,
+            mvp_boss_id TEXT,
+            mvp_boss_name TEXT,
+            mvp_boss_hp INTEGER,
+            boss_enrage_secs INTEGER,
+            mobs_per_floor INTEGER,
             raw_json TEXT NOT NULL
+        );
+
+        CREATE TABLE races_catalog (
+            id TEXT PRIMARY KEY,
+            race_key TEXT NOT NULL,
+            name TEXT NOT NULL,
+            icon TEXT NOT NULL,
+            starter_town_id TEXT NOT NULL,
+            starter_town_name TEXT NOT NULL,
+            continent_id TEXT NOT NULL,
+            district_id TEXT NOT NULL,
+            str INTEGER NOT NULL,
+            agi INTEGER NOT NULL,
+            int INTEGER NOT NULL,
+            vit INTEGER NOT NULL,
+            dex INTEGER NOT NULL,
+            luk INTEGER NOT NULL,
+            hitbox_radius REAL NOT NULL,
+            combat_trait TEXT NOT NULL,
+            niched_story TEXT NOT NULL,
+            raw_json TEXT NOT NULL
+        );
+
+        CREATE TABLE boss_encounters (
+            boss_id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            max_hp INTEGER NOT NULL,
+            enrage_timer_secs INTEGER NOT NULL,
+            phase2_threshold_pct REAL NOT NULL,
+            atk_multiplier REAL NOT NULL,
+            aspd_multiplier REAL NOT NULL,
+            empowered_skill TEXT NOT NULL,
+            dungeon_id TEXT NOT NULL,
+            scoring_weights_json TEXT NOT NULL
+        );
+
+        CREATE TABLE enchanting_rules (
+            level INTEGER PRIMARY KEY,
+            safe_zone INTEGER NOT NULL,
+            success_rate_pct REAL NOT NULL,
+            crystallize_rate_pct REAL NOT NULL,
+            degrade_rate_pct REAL NOT NULL,
+            visual_glow_tier INTEGER NOT NULL,
+            glow_color_name TEXT NOT NULL,
+            stat_multiplier REAL NOT NULL
         );
 
         CREATE TABLE world_bestiary (
@@ -752,7 +939,7 @@ def main() -> int:
 
     for wd in world_dungeons:
         cur.execute(
-            "INSERT INTO world_dungeons VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO world_dungeons VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 wd["id"],
                 wd["title"],
@@ -764,7 +951,74 @@ def main() -> int:
                 wd["levelMax"],
                 wd["hazardsJson"],
                 wd["loreNote"],
+                wd["mapId"],
+                wd["regionId"],
+                wd["portalX"],
+                wd["portalY"],
+                wd["portalRadius"],
+                wd["mvpBossId"],
+                wd["mvpBossName"],
+                wd["mvpBossHp"],
+                wd["bossEnrageSecs"],
+                wd["mobsPerFloor"],
                 wd["rawJson"],
+            ),
+        )
+
+    for rc in races_catalog:
+        cur.execute(
+            "INSERT INTO races_catalog VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                rc["id"],
+                rc["raceKey"],
+                rc["name"],
+                rc["icon"],
+                rc["starterTownId"],
+                rc["starterTownName"],
+                rc["continentId"],
+                rc["districtId"],
+                rc["str"],
+                rc["agi"],
+                rc["int"],
+                rc["vit"],
+                rc["dex"],
+                rc["luk"],
+                rc["hitboxRadius"],
+                rc["combatTrait"],
+                rc["nichedStory"],
+                rc["rawJson"],
+            ),
+        )
+
+    for be in boss_encounters:
+        cur.execute(
+            "INSERT INTO boss_encounters VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                be["bossId"],
+                be["name"],
+                be["maxHp"],
+                be["enrageTimerSecs"],
+                be["phase2ThresholdPct"],
+                be["atkMultiplier"],
+                be["aspdMultiplier"],
+                be["empoweredSkill"],
+                be["dungeonId"],
+                be["scoringWeightsJson"],
+            ),
+        )
+
+    for er in enchanting_rules:
+        cur.execute(
+            "INSERT INTO enchanting_rules VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                er["level"],
+                er["safeZone"],
+                er["successRatePct"],
+                er["crystallizeRatePct"],
+                er["degradeRatePct"],
+                er["visualGlowTier"],
+                er["glowColorName"],
+                er["statMultiplier"],
             ),
         )
 
@@ -984,6 +1238,9 @@ def main() -> int:
             "worldPlaces": len(world_places),
             "worldZones": len(world_zones),
             "worldDungeons": len(world_dungeons),
+            "races": len(races_catalog),
+            "bossEncounters": len(boss_encounters),
+            "enchantingRules": len(enchanting_rules),
             "worldBestiary": len(world_bestiary),
             "spineNodes": len(spine_nodes),
             "storyNodes": len(story_nodes),

@@ -4,7 +4,7 @@ use crate::combat::damage::{DamageCalculator, DamageOptions};
 use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
 use crate::ecs::components::{
-    knockback_speed, CombatStats, CooldownTracker, ElementalAttributes, EntityId, EquippedWeapon,
+    knockback_speed, CastingState, CombatStats, CooldownTracker, ElementalAttributes, EntityId, EquippedWeapon,
     Health, HealthRegen, HitLog, HitRecord, Mass, MobAi, MobSpawnAnchor, ParryState, PlayerAvatar,
     PlayerInputState, Position, Projectile, StatusEffects, Velocity, WeaponKind,
 };
@@ -46,6 +46,7 @@ pub fn combat_system(
             Option<&mut Velocity>,
             Option<&Mass>,
             Option<&mut StatusEffects>,
+            Option<&mut CastingState>,
         )>,
     )>,
 ) {
@@ -220,6 +221,7 @@ pub fn combat_system(
                 mut target_vel,
                 target_mass,
                 mut target_status,
+                mut target_casting,
             )) = health_query.get_mut(target)
             {
                 let was_alive = target_health.is_alive && target_health.current > 0.0;
@@ -235,6 +237,11 @@ pub fn combat_system(
                 };
                 let damage = DamageCalculator::calculate(&damage_opts);
                 target_health.take_damage(damage);
+                if let Some(ref mut casting) = target_casting {
+                    if !casting.uninterruptible {
+                        casting.finish_or_cancel();
+                    }
+                }
                 if let Some(mut threat) = threat {
                     threat.add_threat(attacker, damage, now);
                 }

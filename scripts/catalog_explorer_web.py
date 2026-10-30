@@ -741,6 +741,8 @@ def build_full_bundle() -> dict:
         "studioSnapshots": list_studio_snapshots(),
         "worldSpine": load_world_spine_bundle(),
         "studioPerspectives": load_studio_perspectives_bundle(),
+        "dungeons": load_json_file(ROOT / "content" / "dungeons" / "_compiled_catalog.json") or [],
+        "races": (load_json_file(ROOT / "content" / "studio" / "world_history_and_concept.json") or {}).get("race_taxonomy", {}).get("playable_and_mob_races", []),
     }
 
 

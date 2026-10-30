@@ -805,6 +805,7 @@ pub struct CastingState {
     pub casting_until: f32,
     pub skill_id: Option<String>,
     pub cast_duration: f32,
+    pub uninterruptible: bool,
 }
 
 impl CastingState {
@@ -825,12 +826,14 @@ impl CastingState {
         self.skill_id = Some(skill_id.into());
         self.cast_duration = duration_sec;
         self.casting_until = current_time + duration_sec;
+        self.uninterruptible = false;
     }
 
     pub fn finish_or_cancel(&mut self) {
         self.skill_id = None;
         self.cast_duration = 0.0;
         self.casting_until = 0.0;
+        self.uninterruptible = false;
     }
 }
 

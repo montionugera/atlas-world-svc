@@ -170,6 +170,20 @@ impl BossEncounterState {
             None
         }
     }
+
+    /// Resets the boss encounter state on full party wipe, restoring maximum HP and resetting enrage timer.
+    pub fn reset_on_wipe(&mut self, now_secs: u64) {
+        self.current_hp = self.max_hp;
+        self.phase = BossPhase::Phase1Normal;
+        self.phase2_entered_at_secs = None;
+        self.encounter_start_secs = now_secs;
+        self.is_enraged = false;
+        self.enraged_at_secs = None;
+        self.atk_multiplier = 1.0;
+        self.aspd_multiplier = 1.0;
+        self.empowered_skill_unlocked = false;
+        self.mvp_rewards = None;
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -245,6 +259,8 @@ pub struct DungeonInstance {
     pub boss_encounter: BossEncounterState,
     pub contributions: HashMap<String, PlayerDungeonContribution>,
     pub floor_state: DungeonFloorState,
+    pub origin_region_id: Option<String>,
+    pub origin_coords: Option<(f32, f32)>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -259,7 +275,7 @@ pub struct MvpRewardDistribution {
 }
 
 /// Computes RO/L2 weighted MVP ranking from player contributions:
-/// Damage: 60%, Tanking: 20%, First Hit: 10%, Last Hit: 10%
+/// Damage: 50%, Healing: 20%, Tanking: 15%, First Hit: 7.5%, Last Hit: 7.5%
 pub fn compute_mvp_rewards_from_contributions(
     contributions: &HashMap<String, PlayerDungeonContribution>,
 ) -> Vec<MvpRewardDistribution> {
@@ -268,27 +284,34 @@ pub fn compute_mvp_rewards_from_contributions(
     }
 
     let total_dmg: u64 = contributions.values().map(|c| c.damage_dealt).sum();
+    let total_heal: u64 = contributions.values().map(|c| c.healing_done).sum();
     let total_tank: u64 = contributions.values().map(|c| c.damage_taken).sum();
 
     let mut scored: Vec<(String, u32)> = contributions
         .iter()
         .map(|(player_id, c)| {
             let dmg_score = if total_dmg > 0 {
-                ((c.damage_dealt as f64 / total_dmg as f64) * 6000.0) as u32
+                ((c.damage_dealt as f64 / total_dmg as f64) * 5000.0) as u32
+            } else {
+                0
+            };
+
+            let heal_score = if total_heal > 0 {
+                ((c.healing_done as f64 / total_heal as f64) * 2000.0) as u32
             } else {
                 0
             };
 
             let tank_score = if total_tank > 0 {
-                ((c.damage_taken as f64 / total_tank as f64) * 2000.0) as u32
+                ((c.damage_taken as f64 / total_tank as f64) * 1500.0) as u32
             } else {
                 0
             };
 
-            let first_score = if c.has_first_hit { 1000 } else { 0 };
-            let last_score = if c.has_last_hit { 1000 } else { 0 };
+            let first_score = if c.has_first_hit { 750 } else { 0 };
+            let last_score = if c.has_last_hit { 750 } else { 0 };
 
-            let total_score = dmg_score + tank_score + first_score + last_score;
+            let total_score = dmg_score + heal_score + tank_score + first_score + last_score;
             (player_id.clone(), total_score)
         })
         .collect();
@@ -425,6 +448,8 @@ impl DungeonRegistry {
             boss_encounter: encounter,
             contributions: HashMap::new(),
             floor_state,
+            origin_region_id: None,
+            origin_coords: None,
         };
 
         let mut lock = self.instances.write().unwrap();
@@ -545,6 +570,62 @@ impl DungeonRegistry {
         } else {
             false
         }
+    }
+
+    /// Sets originating overworld return map ID and coordinates for the dungeon instance.
+    pub fn set_instance_origin(
+        &self,
+        instance_id: &str,
+        region_id: impl Into<String>,
+        x: f32,
+        y: f32,
+    ) -> bool {
+        let mut lock = self.instances.write().unwrap();
+        if let Some(inst) = lock.get_mut(instance_id) {
+            inst.origin_region_id = Some(region_id.into());
+            inst.origin_coords = Some((x, y));
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Records healing done by support classes for fair MVP reward contribution.
+    pub fn record_healing(
+        &self,
+        instance_id: &str,
+        player_id: &str,
+        healing: u64,
+    ) -> bool {
+        let mut lock = self.instances.write().unwrap();
+        if let Some(inst) = lock.get_mut(instance_id) {
+            let entry = inst.contributions.entry(player_id.to_string()).or_default();
+            entry.healing_done = entry.healing_done.saturating_add(healing);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Evaluates party wipe condition. If alive player count drops to 0,
+    /// marks the dungeon as Failed and resets the boss encounter to full HP.
+    pub fn check_party_wipe(
+        &self,
+        instance_id: &str,
+        alive_player_count: usize,
+        now_secs: u64,
+    ) -> bool {
+        let mut lock = self.instances.write().unwrap();
+        if let Some(inst) = lock.get_mut(instance_id) {
+            if (inst.state == DungeonState::Active || inst.state == DungeonState::BossEnraged)
+                && alive_player_count == 0
+            {
+                inst.state = DungeonState::Failed;
+                inst.boss_encounter.reset_on_wipe(now_secs);
+                return true;
+            }
+        }
+        false
     }
 
     /// Records damage dealt to the boss encounter, manages phase transitions, enrage, and MVP rewards.

@@ -62,6 +62,9 @@ const NAV_GROUPS = [
     items: [
       { id: 'gear',     label: '⚔️ Item & Card DB (item_db)', countKey: d => d.items.length + d.cards.length },
       { id: 'jobs',     label: '🛡️ Job & Skill DB (skill_db)', countKey: d => d.jobs.length + d.skills.length },
+      { id: 'races',    label: '🧬 6 Canonical Races & Towns', countKey: d => (d.races || []).length },
+      { id: 'dungeons', label: '🏰 60-Dungeon Spires (dungeon_db)', countKey: d => (d.dungeons || []).length },
+      { id: 'enchant',  label: '✨ High-Stakes +20 Forge', countKey: () => 20 },
       { id: 'quests',   label: '📜 Quest Database (quest_db)', countKey: d => d.quests.length },
       { id: 'story',    label: '📖 Story & Undertow Reader', countKey: d => ((d.worldSpine || {}).storyNodes || []).length },
       { id: 'overview', label: '📊 Database Hub & Matrix', countKey: () => 9 },
@@ -720,6 +723,9 @@ function render() {
   else if (CURRENT_TAB === 'mobs') main.innerHTML = renderMobs();
   else if (CURRENT_TAB === 'elements') { main.innerHTML = renderElements(); updateElemCalc(); }
   else if (CURRENT_TAB === 'gear') { main.innerHTML = renderGear(); updateRefineCalc(); }
+  else if (CURRENT_TAB === 'races') main.innerHTML = renderRacesDirectory();
+  else if (CURRENT_TAB === 'dungeons') main.innerHTML = renderDungeonsDirectory();
+  else if (CURRENT_TAB === 'enchant') main.innerHTML = renderEnchantingForge();
   else if (CURRENT_TAB === 'quests') main.innerHTML = renderQuests();
   else if (CURRENT_TAB === 'siege') { main.innerHTML = renderSiege(); updateSiegeCalc(); }
   else if (CURRENT_TAB === 'maps') main.innerHTML = renderMapDirectory();
