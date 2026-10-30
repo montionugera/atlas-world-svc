@@ -145,6 +145,28 @@ export interface GameEventInfo {
   amount: number;
 }
 
+export interface DungeonFloorProgress {
+  dungeonId: string;
+  dungeonName: string;
+  currentFloor: number;
+  totalFloors: number;
+  mobsKilled: number;
+  mobsRequired: number;
+  gateUnlocked: boolean;
+  bossFloor: boolean;
+}
+
+export interface BossEncounterHUD {
+  bossId: string;
+  name: string;
+  currentHp: number;
+  maxHp: number;
+  phase: "phase1_normal" | "phase2_empowered" | "enraged" | "defeated";
+  isEnraged: boolean;
+  enrageRemainingSecs: number;
+  empoweredSkillUnlocked: boolean;
+}
+
 export interface GameState {
   players: Map<string, Player>;
   mobs: Map<string, Mob>;
@@ -165,4 +187,6 @@ export interface GameState {
   height: number;
   /** World units visible across the camera (default 50 = legacy Colyseus scale). */
   viewportSize?: number;
+  dungeonProgress?: DungeonFloorProgress;
+  bossEncounter?: BossEncounterHUD;
 }
