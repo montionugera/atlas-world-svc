@@ -51,6 +51,23 @@ pub enum BossEncounterEvent {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct DungeonEgressDestination {
+    pub player_id: String,
+    pub region_id: String,
+    pub x: f32,
+    pub y: f32,
+    pub is_fallback: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum DungeonEgressError {
+    InstanceNotFound,
+    BossNotDefeated,
+    PlayerInCombat,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BossEncounterState {
     pub boss_id: String,
     pub name: String,
@@ -626,6 +643,41 @@ impl DungeonRegistry {
             }
         }
         false
+    }
+
+    /// Triggers dungeon egress for a player after boss defeat.
+    /// Fails with PlayerInCombat if player is currently in combat (anti-exploit).
+    /// Fails with BossNotDefeated if the instance has not been cleared.
+    /// Falls back to default regional capital ("millcross-ford", 100.0, 100.0) if origin coordinates are missing.
+    pub fn trigger_dungeon_egress(
+        &self,
+        instance_id: &str,
+        player_id: &str,
+        is_in_combat: bool,
+    ) -> Result<DungeonEgressDestination, DungeonEgressError> {
+        if is_in_combat {
+            return Err(DungeonEgressError::PlayerInCombat);
+        }
+
+        let lock = self.instances.read().unwrap();
+        let inst = lock.get(instance_id).ok_or(DungeonEgressError::InstanceNotFound)?;
+
+        if inst.state != DungeonState::Cleared {
+            return Err(DungeonEgressError::BossNotDefeated);
+        }
+
+        let (region_id, (x, y), is_fallback) = match (&inst.origin_region_id, inst.origin_coords) {
+            (Some(reg), Some(coords)) => (reg.clone(), coords, false),
+            _ => ("millcross-ford".to_string(), (100.0, 100.0), true),
+        };
+
+        Ok(DungeonEgressDestination {
+            player_id: player_id.to_string(),
+            region_id,
+            x,
+            y,
+            is_fallback,
+        })
     }
 
     /// Records damage dealt to the boss encounter, manages phase transitions, enrage, and MVP rewards.

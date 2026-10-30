@@ -2886,6 +2886,92 @@ function renderDungeonsDirectory() {
   `;
 }
 
+let currentForgeLevel = 0;
+let currentForgeDestroyed = false;
+let currentForgeCrystals = 0;
+
+window.rollEnchant = function() {
+  if (currentForgeDestroyed) {
+    alert("Item is crystallized! Click Reset to try a new item.");
+    return;
+  }
+  const blessed = document.getElementById('forgeBlessedCheck')?.checked || false;
+  const targetLevel = currentForgeLevel + 1;
+  if (targetLevel > 20) {
+    alert("Maximum refinement +20 already reached!");
+    return;
+  }
+  
+  const safe = targetLevel <= 4;
+  const successRate = safe ? 100 : (targetLevel <= 6 ? 70 : (targetLevel <= 9 ? 50 : (targetLevel <= 12 ? 40 : (targetLevel <= 15 ? 30 : (targetLevel <= 18 ? 20 : 10)))));
+  const roll = Math.floor(Math.random() * 100) + 1;
+  const logEl = document.getElementById('forgeActionLog');
+  
+  if (roll <= successRate) {
+    currentForgeLevel = targetLevel;
+    if (logEl) logEl.innerHTML = `<div style="color:#10b981;font-weight:700">⚔️ SUCCESS! Weapon refined to +${currentForgeLevel}! (Roll: ${roll}/${successRate})</div>` + logEl.innerHTML;
+  } else {
+    if (targetLevel <= 4) {
+      // Safe
+    } else if (targetLevel <= 9) {
+      currentForgeLevel = Math.max(0, currentForgeLevel - 1);
+      if (logEl) logEl.innerHTML = `<div style="color:#f59e0b">⚠️ FAILED: Refinement degraded by -1 to +${currentForgeLevel}. (Roll: ${roll}/${successRate})</div>` + logEl.innerHTML;
+    } else {
+      if (blessed) {
+        currentForgeLevel = Math.max(0, currentForgeLevel - 1);
+        if (logEl) logEl.innerHTML = `<div style="color:#38bdf8">✨ BLESSED PROTECTION: Crystallization prevented! Degraded by -1 to +${currentForgeLevel}. (Roll: ${roll}/${successRate})</div>` + logEl.innerHTML;
+      } else {
+        currentForgeDestroyed = true;
+        currentForgeCrystals = targetLevel * 75;
+        if (logEl) logEl.innerHTML = `<div style="color:#ef4444;font-weight:700">💥 DESTROYED! The weapon shattered into ${currentForgeCrystals} Grade Crystals! (Roll: ${roll}/${successRate})</div>` + logEl.innerHTML;
+      }
+    }
+  }
+  updateForgeDisplay();
+};
+
+window.resetEnchant = function() {
+  currentForgeLevel = 0;
+  currentForgeDestroyed = false;
+  currentForgeCrystals = 0;
+  const logEl = document.getElementById('forgeActionLog');
+  if (logEl) logEl.innerHTML = '<div style="color:#94a3b8">Equipped fresh +0 Longsword. Ready for refinement.</div>';
+  updateForgeDisplay();
+};
+
+function updateForgeDisplay() {
+  const levelEl = document.getElementById('forgeLevelDisplay');
+  const previewBox = document.getElementById('forgeItemPreview');
+  const glowTiers = [
+    { tier: 0, color: 'transparent', label: 'No Glow' },
+    { tier: 1, color: '#f8fafc', label: 'Tier 1: Soft White (+4 to +6)' },
+    { tier: 2, color: '#fbbf24', label: 'Tier 2: Golden Radiance (+7 to +9)' },
+    { tier: 3, color: '#ef4444', label: 'Tier 3: Crimson Aura (+10 to +12)' },
+    { tier: 4, color: '#a855f7', label: 'Tier 4: Violet Lightning (+13 to +15)' },
+    { tier: 5, color: '#38bdf8', label: 'Tier 5: Celestial Prism (+16 to +20)' },
+  ];
+  const gTier = currentForgeLevel < 4 ? 0 : (currentForgeLevel < 7 ? 1 : (currentForgeLevel < 10 ? 2 : (currentForgeLevel < 13 ? 3 : (currentForgeLevel < 16 ? 4 : 5))));
+  const glow = glowTiers[gTier];
+
+  if (levelEl) {
+    if (currentForgeDestroyed) {
+      levelEl.innerHTML = `<span style="color:#ef4444">SHATTERED (+${currentForgeCrystals} Crystals)</span>`;
+    } else {
+      levelEl.innerHTML = `<span style="color:${glow.color !== 'transparent' ? glow.color : '#f1f5f9'}">+${currentForgeLevel} Longsword</span> <span class="joy-badge joy-badge--sm" style="margin-left:8px">${glow.label}</span>`;
+    }
+  }
+
+  if (previewBox) {
+    if (currentForgeDestroyed) {
+      previewBox.style.boxShadow = '0 0 20px rgba(239,68,68,0.5)';
+      previewBox.style.borderColor = '#ef4444';
+    } else {
+      previewBox.style.boxShadow = glow.color !== 'transparent' ? `0 0 25px ${glow.color}` : 'none';
+      previewBox.style.borderColor = glow.color !== 'transparent' ? glow.color : 'rgba(255,255,255,0.1)';
+    }
+  }
+}
+
 function renderEnchantingForge() {
   const glowTiers = [
     { tier: 0, name: 'None', color: 'transparent', label: 'No Glow' },
@@ -2913,6 +2999,36 @@ function renderEnchantingForge() {
         <div class="page-hero__eyebrow">HIGH-STAKES REFINEMENT · LINEAGE 2 CRYSTALLIZATION PAST +10</div>
         <h1 class="page-hero__title">High-Stakes +20 Enchanting &amp; Weapon Visual Glow Forge</h1>
         <p class="page-hero__sub">+1 to +4 Safe Zone, -1 Degradation under +10, irreversible Crystallization past +10 without Blessed Scrolls, and 6 Weapon Glow Tiers.</p>
+      </div>
+    </div>
+    <div class="rms-card" style="margin-bottom:24px;padding:24px;border:1px solid rgba(255,255,255,0.1);background:#0f172a;border-radius:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div id="forgeItemPreview" style="width:64px;height:64px;border-radius:12px;background:#1e293b;border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:28px;transition:all 0.3s ease">
+            🗡️
+          </div>
+          <div>
+            <div style="font-size:12px;text-transform:uppercase;color:#94a3b8;font-weight:700">Equipped Weapon</div>
+            <div id="forgeLevelDisplay" style="font-size:20px;font-weight:800;color:#f8fafc">
+              +0 Longsword <span class="joy-badge joy-badge--sm" style="margin-left:8px">No Glow</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:#e2e8f0">
+            <input type="checkbox" id="forgeBlessedCheck" style="accent-color:#38bdf8;width:18px;height:18px" />
+            <span>Use Blessed Enchant Scroll</span>
+          </label>
+          <button id="forgeRollBtn" onclick="window.rollEnchant()" class="joy-btn joy-btn--primary" style="padding:10px 24px;font-weight:700;font-size:14px">
+            🔨 Forge Attempt
+          </button>
+          <button onclick="window.resetEnchant()" class="joy-btn joy-btn--outline" style="padding:10px 16px;font-size:14px">
+            🔄 Reset
+          </button>
+        </div>
+      </div>
+      <div id="forgeActionLog" style="margin-top:16px;padding:12px 16px;background:#020617;border-radius:8px;font-family:monospace;font-size:13px;max-height:100px;overflow-y:auto;border:1px solid rgba(255,255,255,0.05)">
+        <div style="color:#94a3b8">Equipped fresh +0 Longsword. Ready for refinement.</div>
       </div>
     </div>
     <div class="rms-sheet">
