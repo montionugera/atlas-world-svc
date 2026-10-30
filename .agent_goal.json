@@ -1,9 +1,9 @@
 {
   "autopilot": true,
   "active": true,
-  "goal": "Continuous Autopilot: Surface World Bestiary (116 Creatures) in Wiki Observatory & Verify Parity",
+  "goal": "Continuous Autopilot: Resolve Ideas Backlog (Bestiary + Thumb 404 Audit)",
   "status": "IN_PROGRESS",
   "remaining_tasks": [
-    "Commit surfaced bestiary and verify clean main branch"
+    "Commit resolved thumb 404 audit and verify git clean status"
   ]
 }

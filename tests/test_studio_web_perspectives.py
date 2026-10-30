@@ -120,6 +120,12 @@ class TestStudioWebPerspectives(unittest.TestCase):
             self.assertIsNotNone(resolved)
             self.assertTrue(resolved.exists())
 
+    def test_resolve_thumb_file_strict_returns_none_for_missing(self) -> None:
+        resolved_fallback = web.resolve_thumb_file("/thumbs/nonexistent_fake_asset_12345.webp", allow_fallback=True)
+        self.assertIsNotNone(resolved_fallback)
+        resolved_strict = web.resolve_thumb_file("/thumbs/nonexistent_fake_asset_12345.webp", allow_fallback=False)
+        self.assertIsNone(resolved_strict)
+
     def test_rationale_update_blocks_canon_when_parent_not_canon_or_checklist_incomplete(self) -> None:
         # 1. hunting-area-solstice-chain-causeway has parent district-solstice-pendulum-atoll (status: draft)
         res, code = web.update_studio_rationale(
