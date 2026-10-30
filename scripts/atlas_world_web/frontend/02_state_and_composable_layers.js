@@ -27,7 +27,7 @@ let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute c
 let SIM_RUNNING = false;
 // Panel params (SSOT merge): URL-borne state for mounted panels and the story/review sub-views.
 // Absent in the URL = cleared here, matching the other params (Back/forward never keeps stale state).
-const ATLAS_PARAM_KEYS = ['kind', 'key', 'mode', 'group', 'view', 'verdict'];
+const ATLAS_PARAM_KEYS = ['kind', 'key', 'mode', 'group', 'view', 'verdict', 'zone', 'chapter', 'ref', 'category', 'id', 'search'];
 const ATLAS_PARAM_RE = /^[A-Za-z0-9][A-Za-z0-9:_.\/-]{0,119}$/;
 let ATLAS_PARAMS = {};
 const ATLAS_SUBVIEWS = {
@@ -135,6 +135,15 @@ function atlasSetParams(patch, opts) {
   writeUrlState(!!(opts && opts.push));
 }
 window.atlasSetParams = atlasSetParams;
+if (typeof window !== 'undefined') {
+  Object.defineProperties(window, {
+    DATA: { get: () => DATA, configurable: true },
+    CURRENT_TAB: { get: () => CURRENT_TAB, configurable: true },
+    STUDIO_SELECTED_NODE_ID: { get: () => STUDIO_SELECTED_NODE_ID, configurable: true },
+    ATLAS_PARAMS: { get: () => ATLAS_PARAMS, configurable: true },
+    ATLAS_STATE_STORE: { get: () => ATLAS_STATE_STORE, configurable: true },
+  });
+}
 
 function renderSubViewBar() {
   const bar = document.getElementById('subViewBar');
@@ -471,6 +480,7 @@ function writeUrlState(pushHistory = true) {
     if (pushHistory) history.pushState(null, '', targetUrl);
     else history.replaceState(null, '', targetUrl);
   }
+  window.dispatchEvent(new CustomEvent('atlas-zone-change'));
 }
 
 function setDropRate(val) {
