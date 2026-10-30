@@ -1,9 +1,6 @@
 {
-  "autopilot": true,
-  "active": true,
-  "goal": "Continuous Perpetual Autopilot Engine",
-  "status": "RUNNING",
-  "remaining_tasks": [
-    "Standing autonomous watch: Maintain workspace readiness and ingest next directive"
-  ]
+  "active": false,
+  "goal": "Continuous Autopilot: Full Backlog Resolution & E2E Multi-Epic Verification",
+  "status": "COMPLETED",
+  "remaining_tasks": []
 }
