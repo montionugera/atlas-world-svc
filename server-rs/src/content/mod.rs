@@ -1,4 +1,5 @@
 pub mod bestiary;
+pub mod dungeons;
 pub mod enchantment;
 pub mod item_catalog;
 pub mod map;
@@ -13,6 +14,7 @@ pub use bestiary::{
     derive_mob_stats, BestiaryCatalog, BestiaryEntry, DerivedMobStats, MobTier, BASE_MOB_ATK,
     BESTIARY_JSON, BOSS_ATK_MULTIPLIER, BOSS_HP_MULTIPLIER,
 };
+pub use dungeons::{DungeonCatalog, DungeonCatalogEntry, DUNGEON_CATALOG_JSON};
 pub use enchantment::{
     attempt_high_tier_enchant, compute_enchant_stat_multipliers, enchant_success_rate_bps,
     EnchantResultKind, EnchantVisualGlow, HighTierEnchantOutcome, ItemSocketState, SpecialAbility,

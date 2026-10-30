@@ -429,6 +429,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         match_event_buffer.record(user_id, event.clone());
                     }
 
+                    for portal_entry in &frame.dungeon_portal_events {
+                        info!(
+                            user_id = %portal_entry.player_id,
+                            portal_id = %portal_entry.portal_id,
+                            dungeon = %portal_entry.dungeon_template_id,
+                            boss = %portal_entry.mvp_boss_id,
+                            "Player triggered spatial dungeon portal entry"
+                        );
+                        let entry = portal_entry.clone();
+                        let ws = ws_server.clone();
+                        tokio::spawn(async move {
+                            let _ = ws
+                                .handle_dungeon_portal_entry(
+                                    &entry.player_id,
+                                    &entry.dungeon_template_id,
+                                    &entry.mvp_boss_id,
+                                    &[entry.player_id.clone()],
+                                )
+                                .await;
+                        });
+                    }
+
                     for (user_id, state) in &frame.departed_states {
                         character_state_buffer.record(user_id, state.clone());
                         if !departed_users.contains(user_id) {

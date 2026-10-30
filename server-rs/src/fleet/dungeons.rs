@@ -183,6 +183,55 @@ pub struct PlayerDungeonContribution {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DungeonFloorEvent {
+    FloorMobKilled {
+        floor: u32,
+        current_killed: u32,
+        required: u32,
+    },
+    FloorCleared {
+        floor: u32,
+        at_secs: u64,
+    },
+    FloorAdvanced {
+        from_floor: u32,
+        to_floor: u32,
+        is_boss_floor: bool,
+        at_secs: u64,
+    },
+    BossFloorReached {
+        floor: u32,
+        boss_id: String,
+        at_secs: u64,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DungeonFloorState {
+    pub current_floor: u32,
+    pub total_floors: u32,
+    pub mobs_required: u32,
+    pub mobs_killed: u32,
+    pub is_floor_cleared: bool,
+    pub is_boss_floor: bool,
+}
+
+impl Default for DungeonFloorState {
+    fn default() -> Self {
+        Self {
+            current_floor: 1,
+            total_floors: 1,
+            mobs_required: 0,
+            mobs_killed: 0,
+            is_floor_cleared: true,
+            is_boss_floor: true,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DungeonInstance {
     pub instance_id: String,
@@ -195,6 +244,7 @@ pub struct DungeonInstance {
     pub mvp_boss_alive: bool,
     pub boss_encounter: BossEncounterState,
     pub contributions: HashMap<String, PlayerDungeonContribution>,
+    pub floor_state: DungeonFloorState,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -302,7 +352,7 @@ impl DungeonRegistry {
         )
     }
 
-    /// Allocates a dedicated dungeon instance with custom boss stats and enrage timer.
+    /// Allocates a dedicated dungeon instance with custom boss stats and enrage timer (defaults to single boss floor).
     pub fn allocate_dungeon_with_boss(
         &self,
         instance_id: impl Into<String>,
@@ -311,6 +361,34 @@ impl DungeonRegistry {
         mvp_boss_id: impl Into<String>,
         boss_max_hp: u64,
         boss_enrage_timer_secs: u64,
+        time_limit_secs: u64,
+        now_secs: u64,
+    ) -> DungeonInstance {
+        self.allocate_dungeon_with_floors(
+            instance_id,
+            party_id,
+            dungeon_template_id,
+            mvp_boss_id,
+            boss_max_hp,
+            boss_enrage_timer_secs,
+            1,
+            0,
+            time_limit_secs,
+            now_secs,
+        )
+    }
+
+    /// Allocates a dedicated multi-floor dungeon instance with floor mob requirements.
+    pub fn allocate_dungeon_with_floors(
+        &self,
+        instance_id: impl Into<String>,
+        party_id: impl Into<String>,
+        dungeon_template_id: impl Into<String>,
+        mvp_boss_id: impl Into<String>,
+        boss_max_hp: u64,
+        boss_enrage_timer_secs: u64,
+        total_floors: u32,
+        mobs_per_floor: u32,
         time_limit_secs: u64,
         now_secs: u64,
     ) -> DungeonInstance {
@@ -323,6 +401,18 @@ impl DungeonRegistry {
             now_secs,
         );
 
+        let total = total_floors.max(1);
+        let is_boss = total == 1;
+        let req = if is_boss { 0 } else { mobs_per_floor.max(1) };
+        let floor_state = DungeonFloorState {
+            current_floor: 1,
+            total_floors: total,
+            mobs_required: req,
+            mobs_killed: 0,
+            is_floor_cleared: is_boss,
+            is_boss_floor: is_boss,
+        };
+
         let inst = DungeonInstance {
             instance_id: instance_id.into(),
             dungeon_template_id: dungeon_template_id.into(),
@@ -334,11 +424,96 @@ impl DungeonRegistry {
             mvp_boss_alive: true,
             boss_encounter: encounter,
             contributions: HashMap::new(),
+            floor_state,
         };
 
         let mut lock = self.instances.write().unwrap();
         lock.insert(inst.instance_id.clone(), inst.clone());
         inst
+    }
+
+    /// Records mob kills on the current floor, unlocking floor advancement when requirements are met.
+    pub fn record_floor_mob_kills(
+        &self,
+        instance_id: &str,
+        kills: u32,
+        now_secs: u64,
+    ) -> Option<(DungeonFloorState, Vec<DungeonFloorEvent>)> {
+        let mut lock = self.instances.write().unwrap();
+        let inst = lock.get_mut(instance_id)?;
+        if inst.state != DungeonState::Active && inst.state != DungeonState::BossEnraged {
+            return None;
+        }
+
+        let mut events = Vec::new();
+        inst.floor_state.mobs_killed = inst.floor_state.mobs_killed.saturating_add(kills);
+        events.push(DungeonFloorEvent::FloorMobKilled {
+            floor: inst.floor_state.current_floor,
+            current_killed: inst.floor_state.mobs_killed,
+            required: inst.floor_state.mobs_required,
+        });
+
+        if !inst.floor_state.is_floor_cleared
+            && inst.floor_state.mobs_killed >= inst.floor_state.mobs_required
+        {
+            inst.floor_state.is_floor_cleared = true;
+            events.push(DungeonFloorEvent::FloorCleared {
+                floor: inst.floor_state.current_floor,
+                at_secs: now_secs,
+            });
+        }
+
+        Some((inst.floor_state.clone(), events))
+    }
+
+    /// Advances to the next floor in a multi-floor spire if the current floor has been cleared.
+    pub fn advance_floor(
+        &self,
+        instance_id: &str,
+        now_secs: u64,
+    ) -> Result<(DungeonFloorState, Vec<DungeonFloorEvent>), &'static str> {
+        let mut lock = self.instances.write().unwrap();
+        let inst = lock.get_mut(instance_id).ok_or("Dungeon instance not found")?;
+        if inst.state != DungeonState::Active && inst.state != DungeonState::BossEnraged {
+            return Err("Dungeon is not active");
+        }
+        if !inst.floor_state.is_floor_cleared {
+            return Err("Current floor mobs not cleared yet");
+        }
+        if inst.floor_state.is_boss_floor {
+            return Err("Already on the final boss floor");
+        }
+
+        let from_floor = inst.floor_state.current_floor;
+        let to_floor = from_floor + 1;
+        inst.floor_state.current_floor = to_floor;
+        let is_boss = to_floor >= inst.floor_state.total_floors;
+        inst.floor_state.is_boss_floor = is_boss;
+        inst.floor_state.mobs_killed = 0;
+
+        if is_boss {
+            inst.floor_state.mobs_required = 0;
+            inst.floor_state.is_floor_cleared = false; // cleared when boss dies
+        } else {
+            inst.floor_state.is_floor_cleared = false;
+        }
+
+        let mut events = vec![DungeonFloorEvent::FloorAdvanced {
+            from_floor,
+            to_floor,
+            is_boss_floor: is_boss,
+            at_secs: now_secs,
+        }];
+
+        if is_boss {
+            events.push(DungeonFloorEvent::BossFloorReached {
+                floor: to_floor,
+                boss_id: inst.mvp_boss_id.clone(),
+                at_secs: now_secs,
+            });
+        }
+
+        Ok((inst.floor_state.clone(), events))
     }
 
     /// Records damage or event contribution against the dungeon MVP.
@@ -600,5 +775,74 @@ mod tests {
         let final_inst = registry.get_instance(inst_id).unwrap();
         assert_eq!(final_inst.state, DungeonState::Cleared);
         assert!(!final_inst.mvp_boss_alive);
+    }
+
+    #[test]
+    fn test_multi_floor_spire_progression() {
+        let registry = DungeonRegistry::new();
+        let inst_id = "inst_cindervast_spire";
+        let start_time = 1_700_000_000;
+
+        // Allocate Cindervast Under-City: 3 floors for test, 5 mobs per floor
+        let inst = registry.allocate_dungeon_with_floors(
+            inst_id,
+            "party_cindervast_expedition",
+            "dungeon-cindervast-under-city",
+            "mvp-cindervast-under-city",
+            75_000,
+            400,
+            3,
+            5,
+            3600,
+            start_time,
+        );
+
+        assert_eq!(inst.floor_state.current_floor, 1);
+        assert_eq!(inst.floor_state.total_floors, 3);
+        assert_eq!(inst.floor_state.mobs_required, 5);
+        assert_eq!(inst.floor_state.mobs_killed, 0);
+        assert!(!inst.floor_state.is_floor_cleared);
+        assert!(!inst.floor_state.is_boss_floor);
+
+        // Cannot advance floor without clearing mobs
+        let advance_err = registry.advance_floor(inst_id, start_time + 10);
+        assert!(advance_err.is_err());
+
+        // Kill 3 mobs (out of 5)
+        let (floor, events) = registry
+            .record_floor_mob_kills(inst_id, 3, start_time + 20)
+            .unwrap();
+        assert_eq!(floor.mobs_killed, 3);
+        assert!(!floor.is_floor_cleared);
+        assert_eq!(events.len(), 1);
+
+        // Kill 2 more mobs (total 5, triggers FloorCleared)
+        let (floor, events) = registry
+            .record_floor_mob_kills(inst_id, 2, start_time + 30)
+            .unwrap();
+        assert_eq!(floor.mobs_killed, 5);
+        assert!(floor.is_floor_cleared);
+        assert!(events.iter().any(|e| matches!(e, DungeonFloorEvent::FloorCleared { floor: 1, .. })));
+
+        // Advance to Floor 2
+        let (floor, events) = registry.advance_floor(inst_id, start_time + 35).unwrap();
+        assert_eq!(floor.current_floor, 2);
+        assert_eq!(floor.mobs_killed, 0);
+        assert_eq!(floor.mobs_required, 5);
+        assert!(!floor.is_floor_cleared);
+        assert!(!floor.is_boss_floor);
+        assert!(events.iter().any(|e| matches!(e, DungeonFloorEvent::FloorAdvanced { from_floor: 1, to_floor: 2, is_boss_floor: false, .. })));
+
+        // Clear Floor 2
+        registry.record_floor_mob_kills(inst_id, 5, start_time + 50).unwrap();
+
+        // Advance to Floor 3 (Boss Floor!)
+        let (floor, events) = registry.advance_floor(inst_id, start_time + 60).unwrap();
+        assert_eq!(floor.current_floor, 3);
+        assert!(floor.is_boss_floor);
+        assert!(events.iter().any(|e| matches!(e, DungeonFloorEvent::BossFloorReached { floor: 3, .. })));
+
+        // Cannot advance past the final floor
+        assert!(registry.advance_floor(inst_id, start_time + 70).is_err());
     }
 }

@@ -1858,11 +1858,54 @@ async fn serve_dungeon_http(
                         party_id,
                         rand::random::<u32>()
                     );
-                    let instance = dungeons.allocate_dungeon(
+                    let total_floors = json
+                        .get("totalFloors")
+                        .and_then(|v| v.as_u64())
+                        .map(|v| v as u32)
+                        .or_else(|| {
+                            crate::content::DungeonCatalog::new()
+                                .ok()
+                                .and_then(|c| c.get(dungeon_template_id).map(|e| e.floors))
+                        })
+                        .unwrap_or(1);
+                    let mobs_per_floor = json
+                        .get("mobsPerFloor")
+                        .and_then(|v| v.as_u64())
+                        .map(|v| v as u32)
+                        .or_else(|| {
+                            crate::content::DungeonCatalog::new()
+                                .ok()
+                                .and_then(|c| c.get(dungeon_template_id).map(|e| e.mobs_per_floor))
+                        })
+                        .unwrap_or(5);
+                    let boss_hp = json
+                        .get("bossMaxHp")
+                        .and_then(|v| v.as_u64())
+                        .or_else(|| {
+                            crate::content::DungeonCatalog::new()
+                                .ok()
+                                .and_then(|c| c.get(dungeon_template_id).map(|e| e.mvp_boss_hp))
+                        })
+                        .unwrap_or(50_000);
+                    let boss_enrage = json
+                        .get("bossEnrageTimerSecs")
+                        .and_then(|v| v.as_u64())
+                        .or_else(|| {
+                            crate::content::DungeonCatalog::new()
+                                .ok()
+                                .and_then(|c| c.get(dungeon_template_id).map(|e| e.boss_enrage_secs))
+                        })
+                        .unwrap_or(300);
+
+                    let instance = dungeons.allocate_dungeon_with_floors(
                         instance_id.clone(),
                         party_id,
                         dungeon_template_id,
                         mvp_boss_id,
+                        boss_hp,
+                        boss_enrage,
+                        total_floors,
+                        mobs_per_floor,
                         3600,
                         now_secs,
                     );
@@ -1943,6 +1986,89 @@ async fn serve_dungeon_http(
                             serde_json::json!({ "ok": false, "error": "Dungeon instance not found" })
                                 .to_string(),
                         )
+                    }
+                }
+                Err(e) => (
+                    "400 Bad Request",
+                    serde_json::json!({ "ok": false, "error": e.to_string() }).to_string(),
+                ),
+            }
+        }
+        ("POST", p) if p.starts_with("/dungeon/instance/") && p.ends_with("/floor/kill") => {
+            let instance_id = p
+                .trim_start_matches("/dungeon/instance/")
+                .trim_end_matches("/floor/kill");
+            match serde_json::from_slice::<serde_json::Value>(body) {
+                Ok(json) => {
+                    let kills = json.get("kills").and_then(|v| v.as_u64()).unwrap_or(1) as u32;
+                    let now_secs = json
+                        .get("nowSecs")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or_else(|| {
+                            std::time::SystemTime::now()
+                                .duration_since(std::time::UNIX_EPOCH)
+                                .unwrap_or_default()
+                                .as_secs()
+                        });
+
+                    if let Some((floor_state, events)) =
+                        dungeons.record_floor_mob_kills(instance_id, kills, now_secs)
+                    {
+                        (
+                            "200 OK",
+                            serde_json::json!({
+                                "ok": true,
+                                "instanceId": instance_id,
+                                "floorState": floor_state,
+                                "events": events,
+                            })
+                            .to_string(),
+                        )
+                    } else {
+                        (
+                            "404 Not Found",
+                            serde_json::json!({ "ok": false, "error": "Dungeon instance not found or inactive" })
+                                .to_string(),
+                        )
+                    }
+                }
+                Err(e) => (
+                    "400 Bad Request",
+                    serde_json::json!({ "ok": false, "error": e.to_string() }).to_string(),
+                ),
+            }
+        }
+        ("POST", p) if p.starts_with("/dungeon/instance/") && p.ends_with("/floor/advance") => {
+            let instance_id = p
+                .trim_start_matches("/dungeon/instance/")
+                .trim_end_matches("/floor/advance");
+            match serde_json::from_slice::<serde_json::Value>(body) {
+                Ok(json) => {
+                    let now_secs = json
+                        .get("nowSecs")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or_else(|| {
+                            std::time::SystemTime::now()
+                                .duration_since(std::time::UNIX_EPOCH)
+                                .unwrap_or_default()
+                                .as_secs()
+                        });
+
+                    match dungeons.advance_floor(instance_id, now_secs) {
+                        Ok((floor_state, events)) => (
+                            "200 OK",
+                            serde_json::json!({
+                                "ok": true,
+                                "instanceId": instance_id,
+                                "floorState": floor_state,
+                                "events": events,
+                            })
+                            .to_string(),
+                        ),
+                        Err(err) => (
+                            "400 Bad Request",
+                            serde_json::json!({ "ok": false, "error": err }).to_string(),
+                        ),
                     }
                 }
                 Err(e) => (

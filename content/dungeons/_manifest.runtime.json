@@ -1,0 +1,1708 @@
+[
+  {
+    "id": "dungeon-ashen-spar-fumaroles",
+    "title": "Ashen Spar Fumaroles",
+    "family": null,
+    "bind": {
+      "handle": "c03/coastal/h-74b8b4"
+    },
+    "entranceType": "sea-arch",
+    "floors": 3,
+    "levelBand": [
+      55,
+      80
+    ],
+    "hazards": [
+      "heat",
+      "fume"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Fumarole galleries where the spar grows toward the steam.",
+      "source": "content/world/premises/continent-10.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-ashen-spar-lava-tubes",
+    "title": "Ashen Spar Lava Tubes",
+    "family": null,
+    "bind": {
+      "handle": "c09/mountain/h-48f000"
+    },
+    "entranceType": "tectonic-cave",
+    "floors": 3,
+    "levelBand": [
+      55,
+      80
+    ],
+    "hazards": [
+      "heat",
+      "fume"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Tubes floored with spar that glitters when a torch crosses it.",
+      "source": "content/world/premises/continent-10.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-ashvale-cinder-galleries",
+    "title": "Ashvale Cinder Galleries",
+    "family": null,
+    "bind": {
+      "handle": "c02/fluvial/h-f11cfc"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 4,
+    "levelBand": [
+      8,
+      24
+    ],
+    "hazards": [
+      "heat",
+      "collapse"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12,
+      14
+    ],
+    "lore": {
+      "note": "Galleries punched into cinder by seekers after the Ashvale Front's buried forges.",
+      "source": "content/world/premises/continent-02.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-brightfall-plunge-caves",
+    "title": "Brightfall Plunge Caves",
+    "family": null,
+    "bind": {
+      "handle": "c04/karst/h-a661d0"
+    },
+    "entranceType": "karst-fenster",
+    "floors": 3,
+    "levelBand": [
+      30,
+      56
+    ],
+    "hazards": [
+      "cold",
+      "loose-floor"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Behind the falls the cave keeps falling; the light gives out two bends in.",
+      "source": "content/world/premises/continent-09.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-catacomb-0",
+    "title": "Catacomb 1",
+    "family": "family-catacomb",
+    "familyIndex": 0,
+    "bind": {
+      "handle": "c04/karst/h-e5ff8d"
+    },
+    "entranceType": "cave-system",
+    "floors": 3,
+    "levelBand": [
+      42,
+      48
+    ],
+    "hazards": [
+      "bad-air",
+      "collapse",
+      "grave-damp"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-catacomb-1",
+    "title": "Catacomb 2",
+    "family": "family-catacomb",
+    "familyIndex": 1,
+    "bind": {
+      "handle": "c04/karst/h-6b0126"
+    },
+    "entranceType": "sinkhole-doline",
+    "floors": 3,
+    "levelBand": [
+      45,
+      51
+    ],
+    "hazards": [
+      "bad-air",
+      "collapse",
+      "grave-damp"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-catacomb-2",
+    "title": "Catacomb 3",
+    "family": "family-catacomb",
+    "familyIndex": 2,
+    "bind": {
+      "handle": "c04/karst/h-72f0f7"
+    },
+    "entranceType": "sinkhole-doline",
+    "floors": 3,
+    "levelBand": [
+      48,
+      54
+    ],
+    "hazards": [
+      "bad-air",
+      "collapse",
+      "grave-damp"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-catacomb-3",
+    "title": "Catacomb 4",
+    "family": "family-catacomb",
+    "familyIndex": 3,
+    "bind": {
+      "handle": "c04/karst/h-1ad65c"
+    },
+    "entranceType": "cave-system",
+    "floors": 3,
+    "levelBand": [
+      51,
+      57
+    ],
+    "hazards": [
+      "bad-air",
+      "collapse",
+      "grave-damp"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-catacomb-4",
+    "title": "Catacomb 5",
+    "family": "family-catacomb",
+    "familyIndex": 4,
+    "bind": {
+      "handle": "c04/karst/h-d8794c"
+    },
+    "entranceType": "karst-fenster",
+    "floors": 3,
+    "levelBand": [
+      54,
+      60
+    ],
+    "hazards": [
+      "bad-air",
+      "collapse",
+      "grave-damp"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-catacomb-5",
+    "title": "Catacomb 6",
+    "family": "family-catacomb",
+    "familyIndex": 5,
+    "bind": {
+      "handle": "c04/karst/h-49e4de"
+    },
+    "entranceType": "karst-fenster",
+    "floors": 3,
+    "levelBand": [
+      57,
+      63
+    ],
+    "hazards": [
+      "bad-air",
+      "collapse",
+      "grave-damp"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-catacomb-6",
+    "title": "Catacomb 7",
+    "family": "family-catacomb",
+    "familyIndex": 6,
+    "bind": {
+      "handle": "c04/karst/h-a966fa"
+    },
+    "entranceType": "sinkhole-doline",
+    "floors": 3,
+    "levelBand": [
+      60,
+      66
+    ],
+    "hazards": [
+      "bad-air",
+      "collapse",
+      "grave-damp"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-catacomb-7",
+    "title": "Catacomb 8",
+    "family": "family-catacomb",
+    "familyIndex": 7,
+    "bind": {
+      "handle": "c04/karst/h-e75576"
+    },
+    "entranceType": "cave-system",
+    "floors": 3,
+    "levelBand": [
+      63,
+      69
+    ],
+    "hazards": [
+      "bad-air",
+      "collapse",
+      "grave-damp"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-cindervast-under-city",
+    "title": "The Under-City",
+    "family": null,
+    "bind": {
+      "handle": "c02/coastal/h-5b0445"
+    },
+    "entranceType": "sea-arch",
+    "floors": 12,
+    "levelBand": [
+      16,
+      34
+    ],
+    "hazards": [
+      "collapse",
+      "ashfall",
+      "dark"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22,
+      24,
+      26,
+      28,
+      30
+    ],
+    "lore": {
+      "note": "The fallen city did not fall far. Under the ash there are streets.",
+      "source": "content/story/canon.md \u00a7Cindervast"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-coldreach-arete-shelters",
+    "title": "Coldreach Arete Shelters",
+    "family": null,
+    "bind": {
+      "handle": "c05/fluvial/h-b76d57"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 2,
+    "levelBand": [
+      32,
+      50
+    ],
+    "hazards": [
+      "cold",
+      "silence"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "Shelter caves along the arete, walled with drift bone by climbers who did not all come back.",
+      "source": "content/world/premises/continent-03.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-coldreach-outlet-crevasses",
+    "title": "Coldreach Outlet Crevasses",
+    "family": null,
+    "bind": {
+      "handle": "c03/fluvial/h-598653"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 4,
+    "levelBand": [
+      40,
+      58
+    ],
+    "hazards": [
+      "cold",
+      "collapse"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12,
+      14
+    ],
+    "lore": {
+      "note": "Crevasse mouths where the icefield vents its melt; the depth gauge reads nothing.",
+      "source": "content/world/premises/continent-03.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-driftholt-fog-caverns",
+    "title": "Driftholt Fog Caverns",
+    "family": null,
+    "bind": {
+      "handle": "c02/erosional/h-a70ffb"
+    },
+    "entranceType": "yardang",
+    "floors": 3,
+    "levelBand": [
+      10,
+      36
+    ],
+    "hazards": [
+      "cold",
+      "silence"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Caverns that exhale fog at dusk; the fishermen navigate by them.",
+      "source": "content/world/premises/continent-07.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-driftholt-plunge-undercuts",
+    "title": "Driftholt Plunge Undercuts",
+    "family": null,
+    "bind": {
+      "handle": "c02/fluvial/h-4cb71e"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 2,
+    "levelBand": [
+      10,
+      36
+    ],
+    "hazards": [
+      "collapse",
+      "cold"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "Undercuts where the plunge pools have eaten the cliff from below.",
+      "source": "content/world/premises/continent-07.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-drowned-pavement-cenotes",
+    "title": "Drowned Pavement Cenotes",
+    "family": null,
+    "bind": {
+      "handle": "c09/coastal/h-027ed9"
+    },
+    "entranceType": "sea-cave",
+    "floors": 3,
+    "levelBand": [
+      40,
+      58
+    ],
+    "hazards": [
+      "cold",
+      "bad-air"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Cenotes opening through limestone pavement the cartographers keep drawing as solid ground.",
+      "source": "content/world/premises/continent-04.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-emberdown-old-workings",
+    "title": "Emberdown Old Workings",
+    "family": null,
+    "bind": {
+      "handle": "c02/fluvial/h-bca81f"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 3,
+    "levelBand": [
+      9,
+      23
+    ],
+    "hazards": [
+      "collapse",
+      "fume"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Charcoal burners' galleries; the air still catches on a naked flame.",
+      "source": "content/world/premises/continent-02.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-erg-hoodoo-warren",
+    "title": "Erg Hoodoo Warren",
+    "family": null,
+    "bind": {
+      "handle": "c04/coastal/h-7e3606"
+    },
+    "entranceType": "sea-arch",
+    "floors": 3,
+    "levelBand": [
+      46,
+      64
+    ],
+    "hazards": [
+      "heat",
+      "collapse"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "A warren beneath the hoodoos; the entrances migrate with every dune season.",
+      "source": "content/world/premises/continent-05.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-fumewater-caldera-floor",
+    "title": "Fumewater Caldera Floor",
+    "family": null,
+    "bind": {
+      "handle": "c03/coastal/h-02ab4c"
+    },
+    "entranceType": "sea-arch",
+    "floors": 3,
+    "levelBand": [
+      55,
+      80
+    ],
+    "hazards": [
+      "heat",
+      "fume",
+      "loose-floor"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Vents across the caldera floor keep the water warm enough to mist.",
+      "source": "content/world/premises/continent-10.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-gildmark-undervault",
+    "title": "Gildmark Undervault",
+    "family": null,
+    "bind": {
+      "handle": "c02/coastal/h-fc9b55"
+    },
+    "entranceType": "sea-cave",
+    "floors": 3,
+    "levelBand": [
+      1,
+      10
+    ],
+    "hazards": [
+      "cold",
+      "bad-air"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Vaults cut below the Gildmark sea cliff; the tide floods the lowest gallery twice a day.",
+      "source": "content/world/premises/continent-02.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-hollowmarch-peat-shafts",
+    "title": "Hollowmarch Peat Shafts",
+    "family": null,
+    "bind": {
+      "handle": "c02/fluvial/h-0b949f"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 2,
+    "levelBand": [
+      8,
+      20
+    ],
+    "hazards": [
+      "bad-air",
+      "cold"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "Peat-cutters' shafts that broke into running water and were abandoned in an afternoon.",
+      "source": "content/world/premises/continent-02.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-lavatube-0",
+    "title": "Lava tube 1",
+    "family": "family-lavatube",
+    "familyIndex": 0,
+    "bind": {
+      "handle": "c07/coastal/h-634bdd"
+    },
+    "entranceType": "blowhole",
+    "floors": 3,
+    "levelBand": [
+      19,
+      25
+    ],
+    "hazards": [
+      "heat",
+      "fume",
+      "loose-floor"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-lavatube-1",
+    "title": "Lava tube 2",
+    "family": "family-lavatube",
+    "familyIndex": 1,
+    "bind": {
+      "handle": "c07/mountain/h-1f8f73"
+    },
+    "entranceType": "tectonic-cave",
+    "floors": 3,
+    "levelBand": [
+      11,
+      17
+    ],
+    "hazards": [
+      "heat",
+      "fume",
+      "loose-floor"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-lavatube-2",
+    "title": "Lava tube 3",
+    "family": "family-lavatube",
+    "familyIndex": 2,
+    "bind": {
+      "handle": "c07/mountain/h-fc80d0"
+    },
+    "entranceType": "tectonic-cave",
+    "floors": 3,
+    "levelBand": [
+      25,
+      31
+    ],
+    "hazards": [
+      "heat",
+      "fume",
+      "loose-floor"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-lavatube-3",
+    "title": "Lava tube 4",
+    "family": "family-lavatube",
+    "familyIndex": 3,
+    "bind": {
+      "handle": "c02/coastal/h-7fe4d8"
+    },
+    "entranceType": "blowhole",
+    "floors": 3,
+    "levelBand": [
+      17,
+      23
+    ],
+    "hazards": [
+      "heat",
+      "fume",
+      "loose-floor"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-lavatube-4",
+    "title": "Lava tube 5",
+    "family": "family-lavatube",
+    "familyIndex": 4,
+    "bind": {
+      "handle": "c02/coastal/h-27bc0e"
+    },
+    "entranceType": "blowhole",
+    "floors": 3,
+    "levelBand": [
+      20,
+      26
+    ],
+    "hazards": [
+      "heat",
+      "fume",
+      "loose-floor"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-lavatube-5",
+    "title": "Lava tube 6",
+    "family": "family-lavatube",
+    "familyIndex": 5,
+    "bind": {
+      "handle": "c05/mountain/h-5fcbf8"
+    },
+    "entranceType": "tectonic-cave",
+    "floors": 3,
+    "levelBand": [
+      34,
+      40
+    ],
+    "hazards": [
+      "heat",
+      "fume",
+      "loose-floor"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-lavatube-6",
+    "title": "Lava tube 7",
+    "family": "family-lavatube",
+    "familyIndex": 6,
+    "bind": {
+      "handle": "c05/mountain/h-dfe080"
+    },
+    "entranceType": "tectonic-cave",
+    "floors": 3,
+    "levelBand": [
+      37,
+      43
+    ],
+    "hazards": [
+      "heat",
+      "fume",
+      "loose-floor"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-lavatube-7",
+    "title": "Lava tube 8",
+    "family": "family-lavatube",
+    "familyIndex": 7,
+    "bind": {
+      "handle": "c04/coastal/h-ff0271"
+    },
+    "entranceType": "blowhole",
+    "floors": 3,
+    "levelBand": [
+      40,
+      46
+    ],
+    "hazards": [
+      "heat",
+      "fume",
+      "loose-floor"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-meltwash-ice-caves",
+    "title": "Meltwash Ice Caves",
+    "family": null,
+    "bind": {
+      "handle": "c05/fluvial/h-414ad4"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 3,
+    "levelBand": [
+      24,
+      40
+    ],
+    "hazards": [
+      "cold",
+      "collapse"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Blue chambers refrozen every winter; the meltwater finds a new door each spring.",
+      "source": "content/world/premises/continent-02.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-millcross-race-tunnels",
+    "title": "Millcross Race Tunnels",
+    "family": null,
+    "bind": {
+      "handle": "c02/fluvial/h-8da216"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 2,
+    "levelBand": [
+      1,
+      10
+    ],
+    "hazards": [
+      "bad-air",
+      "loose-floor"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "A leat race driven through the gorge wall; the millers never finished the far portal.",
+      "source": "content/world/premises/continent-02.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-necropolis-0",
+    "title": "Necropolis 1",
+    "family": "family-necropolis",
+    "familyIndex": 0,
+    "bind": {
+      "handle": "c04/karst/h-23357c"
+    },
+    "entranceType": "ponor",
+    "floors": 3,
+    "levelBand": [
+      43,
+      49
+    ],
+    "hazards": [
+      "grave-damp",
+      "cold",
+      "silence"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-necropolis-1",
+    "title": "Necropolis 2",
+    "family": "family-necropolis",
+    "familyIndex": 1,
+    "bind": {
+      "handle": "c04/karst/h-4f8b0d"
+    },
+    "entranceType": "ponor",
+    "floors": 3,
+    "levelBand": [
+      46,
+      52
+    ],
+    "hazards": [
+      "grave-damp",
+      "cold",
+      "silence"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-necropolis-2",
+    "title": "Necropolis 3",
+    "family": "family-necropolis",
+    "familyIndex": 2,
+    "bind": {
+      "handle": "c05/fluvial/h-347f2e"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 3,
+    "levelBand": [
+      49,
+      55
+    ],
+    "hazards": [
+      "grave-damp",
+      "cold",
+      "silence"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-necropolis-3",
+    "title": "Necropolis 4",
+    "family": "family-necropolis",
+    "familyIndex": 3,
+    "bind": {
+      "handle": "c03/fluvial/h-ea62e8"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 3,
+    "levelBand": [
+      47,
+      53
+    ],
+    "hazards": [
+      "grave-damp",
+      "cold",
+      "silence"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-necropolis-4",
+    "title": "Necropolis 5",
+    "family": "family-necropolis",
+    "familyIndex": 4,
+    "bind": {
+      "handle": "c03/fluvial/h-bdc305"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 3,
+    "levelBand": [
+      50,
+      56
+    ],
+    "hazards": [
+      "grave-damp",
+      "cold",
+      "silence"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-necropolis-5",
+    "title": "Necropolis 6",
+    "family": "family-necropolis",
+    "familyIndex": 5,
+    "bind": {
+      "handle": "c04/karst/h-6b3847"
+    },
+    "entranceType": "foiba",
+    "floors": 3,
+    "levelBand": [
+      58,
+      64
+    ],
+    "hazards": [
+      "grave-damp",
+      "cold",
+      "silence"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-necropolis-6",
+    "title": "Necropolis 7",
+    "family": "family-necropolis",
+    "familyIndex": 6,
+    "bind": {
+      "handle": "c03/fluvial/h-f7bd3e"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 3,
+    "levelBand": [
+      61,
+      67
+    ],
+    "hazards": [
+      "grave-damp",
+      "cold",
+      "silence"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-necropolis-7",
+    "title": "Necropolis 8",
+    "family": "family-necropolis",
+    "familyIndex": 7,
+    "bind": {
+      "handle": "c03/fluvial/h-d10dd8"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 3,
+    "levelBand": [
+      64,
+      70
+    ],
+    "hazards": [
+      "grave-damp",
+      "cold",
+      "silence"
+    ],
+    "spineId": null
+  },
+  {
+    "id": "dungeon-netstead-fenster-halls",
+    "title": "Netstead Fenster Halls",
+    "family": null,
+    "bind": {
+      "handle": "c06/fluvial/h-a5b037"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 3,
+    "levelBand": [
+      24,
+      40
+    ],
+    "hazards": [
+      "bad-air",
+      "grave-damp"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Halls lit by karst windows \u2014 shafts of daylight falling through the field above.",
+      "source": "content/world/premises/continent-04.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-northern-icefield-moulin",
+    "title": "Northern Icefield Moulin",
+    "family": null,
+    "bind": {
+      "handle": "c02/coastal/h-6a74b6"
+    },
+    "entranceType": "blowhole",
+    "floors": 2,
+    "levelBand": [
+      16,
+      34
+    ],
+    "hazards": [
+      "cold",
+      "silence"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "A vertical throat that drops into still, black water; ropes vanish before they slacken.",
+      "source": "content/world/premises/continent-02.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-one-wet-strip-gorges",
+    "title": "One Wet Strip Gorges",
+    "family": null,
+    "bind": {
+      "handle": "c02/fluvial/h-6000f2"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 2,
+    "levelBand": [
+      16,
+      34
+    ],
+    "hazards": [
+      "flash-flood",
+      "collapse"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "One river, one strip of green, and gorges that give it back in noise.",
+      "source": "content/world/premises/continent-05.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-reed-shallows-sea-caves",
+    "title": "Reed Shallows Sea Caves",
+    "family": null,
+    "bind": {
+      "handle": "c02/coastal/h-0296ff"
+    },
+    "entranceType": "sea-cave",
+    "floors": 2,
+    "levelBand": [
+      16,
+      30
+    ],
+    "hazards": [
+      "cold",
+      "loose-floor"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "Sea caves at the shallows' edge; low tide opens them, high tide closes the question.",
+      "source": "content/world/premises/continent-06.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-reedstrand-lobe-hollows",
+    "title": "Reedstrand Lobe Hollows",
+    "family": null,
+    "bind": {
+      "handle": "c02/fluvial/h-71b67f"
+    },
+    "entranceType": "knickpoint-gorge",
+    "floors": 2,
+    "levelBand": [
+      9,
+      23
+    ],
+    "hazards": [
+      "cold",
+      "bad-air"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "Hollows under the dune lobes where the reed beds drain underground.",
+      "source": "content/world/premises/continent-06.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-rimewall-moulin-deeps",
+    "title": "Rimewall Moulin Deeps",
+    "family": null,
+    "bind": {
+      "handle": "c03/fluvial/h-71fb0a"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 9,
+    "levelBand": [
+      58,
+      80
+    ],
+    "hazards": [
+      "cold",
+      "silence",
+      "dark"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      22,
+      24
+    ],
+    "lore": {
+      "note": "Nine floors of moulin, each wetter and darker than the last; nobody has mapped the bottom.",
+      "source": "content/world/premises/continent-01.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-rimewall-nunatak-warren",
+    "title": "Rimewall Nunatak Warren",
+    "family": null,
+    "bind": {
+      "handle": "c03/fluvial/h-8f5422"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 3,
+    "levelBand": [
+      58,
+      80
+    ],
+    "hazards": [
+      "cold",
+      "silence"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "A warren of shelters threaded through the nunatak's frozen root.",
+      "source": "content/world/premises/continent-01.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-rooktide-drowned-cellars",
+    "title": "Rooktide Drowned Cellars",
+    "family": null,
+    "bind": {
+      "handle": "c02/fluvial/h-cbd95d"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 2,
+    "levelBand": [
+      16,
+      30
+    ],
+    "hazards": [
+      "cold",
+      "silence"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "Smugglers' cellars the sea claimed; at spring tides the racks float.",
+      "source": "content/world/premises/continent-02.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-slateflow-swallet",
+    "title": "Slateflow Swallet",
+    "family": null,
+    "bind": {
+      "handle": "c03/fluvial/h-e32bd7"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 3,
+    "levelBand": [
+      32,
+      50
+    ],
+    "hazards": [
+      "grave-damp",
+      "collapse"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "A swallet that takes the slate-runoff; everything inside is layered thin and grey.",
+      "source": "content/world/premises/continent-04.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-stonemoor-cave-city",
+    "title": "Stonemoor Cave City",
+    "family": null,
+    "bind": {
+      "handle": "c03/fluvial/h-715637"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 7,
+    "levelBand": [
+      46,
+      64
+    ],
+    "hazards": [
+      "bad-air",
+      "dark",
+      "collapse"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20
+    ],
+    "lore": {
+      "note": "Seven floors of chambers with names like streets; whoever lived here had a census.",
+      "source": "content/world/premises/continent-04.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-stonemoor-foiba",
+    "title": "Stonemoor Foiba",
+    "family": null,
+    "bind": {
+      "handle": "c03/fluvial/h-0a1c30"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 3,
+    "levelBand": [
+      46,
+      64
+    ],
+    "hazards": [
+      "collapse",
+      "grave-damp"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "A collapsed cavern mouth the moor keeps widening; respect the fence.",
+      "source": "content/world/premises/continent-04.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-stonemoor-ponor-throat",
+    "title": "Stonemoor Ponor Throat",
+    "family": null,
+    "bind": {
+      "handle": "c05/fluvial/h-ddc30d"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 3,
+    "levelBand": [
+      32,
+      50
+    ],
+    "hazards": [
+      "bad-air",
+      "collapse"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "The whole moor's streams pour in here; the sound carries for a mile.",
+      "source": "content/world/premises/continent-04.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-tallowquay-tide-caves",
+    "title": "Tallowquay Tide Caves",
+    "family": null,
+    "bind": {
+      "handle": "c07/coastal/h-5d8a28"
+    },
+    "entranceType": "sea-cave",
+    "floors": 3,
+    "levelBand": [
+      24,
+      40
+    ],
+    "hazards": [
+      "cold",
+      "loose-floor"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Caves the whalers used as cold stores until the tide took the last barrel.",
+      "source": "content/world/premises/continent-03.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-thirstwold-slot-canyons",
+    "title": "Thirstwold Slot Canyons",
+    "family": null,
+    "bind": {
+      "handle": "c05/fluvial/h-392e9e"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 3,
+    "levelBand": [
+      40,
+      58
+    ],
+    "hazards": [
+      "flash-flood",
+      "loose-floor"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Slots so narrow the sun reaches the floor for minutes a day.",
+      "source": "content/world/premises/continent-05.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-thirstwold-yardang-hollows",
+    "title": "Thirstwold Yardang Hollows",
+    "family": null,
+    "bind": {
+      "handle": "c05/fluvial/h-af07e7"
+    },
+    "entranceType": "plunge-pool",
+    "floors": 2,
+    "levelBand": [
+      40,
+      58
+    ],
+    "hazards": [
+      "heat",
+      "fume"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "Hollows carved where the wind funnels between yardangs; the sand never settles.",
+      "source": "content/world/premises/continent-05.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-thornveil-briar-sink",
+    "title": "Thornveil Briar Sink",
+    "family": null,
+    "bind": {
+      "handle": "c02/erosional/h-70406f"
+    },
+    "entranceType": "hoodoo",
+    "floors": 3,
+    "levelBand": [
+      8,
+      20
+    ],
+    "hazards": [
+      "grave-damp",
+      "collapse"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Everything the briar swallows surfaces here, sorted by nothing anybody understands.",
+      "source": "content/world/premises/continent-02.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-trade-wind-blowholes",
+    "title": "Trade Wind Blowholes",
+    "family": null,
+    "bind": {
+      "handle": "c06/coastal/h-c481b2"
+    },
+    "entranceType": "sea-arch",
+    "floors": 2,
+    "levelBand": [
+      24,
+      40
+    ],
+    "hazards": [
+      "cold",
+      "loose-floor"
+    ],
+    "roomCountCurve": [
+      8,
+      10
+    ],
+    "lore": {
+      "note": "Blowholes tuned to the trade swell; standing too close is a baptism.",
+      "source": "content/world/premises/continent-03.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-wracklow-blowhole-deeps",
+    "title": "Wracklow Blowhole Deeps",
+    "family": null,
+    "bind": {
+      "handle": "c06/coastal/h-313c7d"
+    },
+    "entranceType": "blowhole",
+    "floors": 3,
+    "levelBand": [
+      20,
+      52
+    ],
+    "hazards": [
+      "cold",
+      "loose-floor"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Blowholes that breathe on the storm schedule; the deep ones exhale old air.",
+      "source": "content/world/premises/continent-08.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  },
+  {
+    "id": "dungeon-wracklow-geo-throats",
+    "title": "Wracklow Geo Throats",
+    "family": null,
+    "bind": {
+      "handle": "c02/coastal/h-595839"
+    },
+    "entranceType": "sea-arch",
+    "floors": 3,
+    "levelBand": [
+      20,
+      52
+    ],
+    "hazards": [
+      "cold",
+      "collapse"
+    ],
+    "roomCountCurve": [
+      8,
+      10,
+      12
+    ],
+    "lore": {
+      "note": "Geos that swallow the Atlantic swell and fire it back out as spray-clockwork.",
+      "source": "content/world/premises/continent-08.json"
+    },
+    "prose": "authored",
+    "spineId": null,
+    "provenance": {
+      "authored": "hand",
+      "generator": null
+    }
+  }
+]
