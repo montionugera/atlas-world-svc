@@ -445,7 +445,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     &entry.player_id,
                                     &entry.dungeon_template_id,
                                     &entry.mvp_boss_id,
-                                    &[entry.player_id.clone()],
+                                    std::slice::from_ref(&entry.player_id),
                                 )
                                 .await;
                         });

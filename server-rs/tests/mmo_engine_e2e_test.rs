@@ -94,8 +94,10 @@ async fn test_mmo_engine_full_e2e_multi_epic_pipeline() {
     assert!(hammer_p_mult >= 1.85);
 
     // Socket Focus card (+15% Crit) into Dwarf's hammer
-    let mut hammer_sockets = ItemSocketState::default();
-    hammer_sockets.max_sockets = 4;
+    let mut hammer_sockets = ItemSocketState {
+        max_sockets: 4,
+        ..Default::default()
+    };
     hammer_sockets
         .socketed_card_ids
         .push("card_solaris_behemoth".to_string());
