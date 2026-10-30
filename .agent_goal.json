@@ -1,6 +1,9 @@
 {
-  "active": false,
-  "goal": "Autonomous Zero-Stop End-to-End Verification and Full Workspace Certification",
-  "status": "COMPLETED",
-  "remaining_tasks": []
+  "autopilot": true,
+  "active": true,
+  "goal": "Continuous Autopilot: Surface World Bestiary (116 Creatures) in Wiki Observatory & Verify Parity",
+  "status": "IN_PROGRESS",
+  "remaining_tasks": [
+    "Commit surfaced bestiary and verify clean main branch"
+  ]
 }

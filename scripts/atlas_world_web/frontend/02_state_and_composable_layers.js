@@ -55,6 +55,7 @@ const NAV_GROUPS = [
       { id: 'map-sheets',  label: '📐 Map Sheets (mapforge)', panel: true, countKey: () => atlasPanelCount('map-sheets') },
       { id: 'map-builder', label: '🧱 Map Builder (draft · publish)', panel: true, countKey: () => atlasPanelCount('map-builder') },
       { id: 'mobs',  label: '👾 Monster Detail (mob_db)', countKey: () => getAllMonsters().length + ' Mobs' },
+      { id: 'bestiary', label: '🐉 World Bestiary (116 Fauna)', countKey: d => (d.bestiary || []).length },
     ]
   },
   {
