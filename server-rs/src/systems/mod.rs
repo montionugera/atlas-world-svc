@@ -5,6 +5,7 @@ pub mod mob_ai;
 pub mod mob_lifecycle;
 pub mod physics;
 pub mod player_input;
+pub mod portal;
 pub mod progression;
 pub mod projectile;
 pub mod separation;
@@ -25,6 +26,7 @@ pub use mob_ai::mob_ai_system;
 pub use mob_lifecycle::{mob_bundle, mob_lifecycle_system};
 pub use physics::physics_step_system;
 pub use player_input::player_input_system;
+pub use portal::dungeon_portal_trigger_system;
 pub use progression::{
     apply_death_penalty_and_bind_respawn, claim_quest_reward, configure_skill_loadout,
     discover_waypoint, equip_item_from_inventory, experience_on_kill_system,

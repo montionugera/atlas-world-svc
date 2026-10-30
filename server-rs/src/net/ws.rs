@@ -264,7 +264,7 @@ pub struct WsServer {
     storage_ref: SharedStorageRef,
     meta_http_ref: SharedMetaHttpRef,
     non_uuid_skip_logs: Arc<AtomicUsize>,
-    pub dungeon_registry: Arc<DungeonRegistry>,
+    pub dungeon_registry: Arc<std::sync::RwLock<Arc<DungeonRegistry>>>,
     pub agones_client: Arc<std::sync::RwLock<Option<Arc<AgonesClient>>>>,
     debug_enabled: Arc<AtomicBool>,
     debug_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<DebugRequest>>>,
@@ -322,7 +322,7 @@ impl WsServer {
             max_players_per_room: Arc::new(AtomicUsize::new(env_max_players_per_room)),
         };
 
-        let dungeon_registry = Arc::new(DungeonRegistry::new());
+        let dungeon_registry = Arc::new(std::sync::RwLock::new(Arc::new(DungeonRegistry::new())));
         let agones_client = Arc::new(std::sync::RwLock::new(None));
 
         let server = Self {
@@ -556,8 +556,8 @@ impl WsServer {
     }
 
     /// Attaches an instanced dungeon registry to the WebSocket server.
-    pub fn with_dungeons(mut self, registry: Arc<DungeonRegistry>) -> Self {
-        self.dungeon_registry = registry;
+    pub fn with_dungeons(self, registry: Arc<DungeonRegistry>) -> Self {
+        *self.dungeon_registry.write().unwrap() = registry;
         self
     }
 
@@ -589,7 +589,8 @@ impl WsServer {
         );
         let time_limit_secs = 3600;
 
-        let instance = self.dungeon_registry.allocate_dungeon(
+        let dungeons = self.dungeon_registry.read().unwrap().clone();
+        let instance = dungeons.allocate_dungeon(
             instance_id.clone(),
             party_id,
             dungeon_template_id,
@@ -943,7 +944,7 @@ impl WsServer {
         storage_ref: SharedStorageRef,
         meta_http_ref: SharedMetaHttpRef,
         non_uuid_skip_logs: Arc<AtomicUsize>,
-        dungeon_registry: Arc<DungeonRegistry>,
+        dungeon_registry: Arc<std::sync::RwLock<Arc<DungeonRegistry>>>,
         agones_client: Arc<std::sync::RwLock<Option<Arc<AgonesClient>>>>,
         debug: DebugGate,
         ready: Arc<AtomicBool>,
@@ -1000,7 +1001,8 @@ impl WsServer {
                     }
                 }
                 if is_dungeon_http(&stream).await {
-                    serve_dungeon_http(stream, dungeons, agones, rooms).await;
+                    let active_dungeons = dungeons.read().unwrap().clone();
+                    serve_dungeon_http(stream, active_dungeons, agones, rooms).await;
                     return;
                 }
                 Self::handle_connection(

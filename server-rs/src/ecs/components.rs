@@ -28,6 +28,68 @@ impl WeaponGlowComponent {
     }
 }
 
+/// In-world spatial dungeon portal trigger component.
+#[derive(Component, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DungeonPortalTrigger {
+    pub portal_id: String,
+    pub target_dungeon_template_id: String,
+    pub target_mvp_boss_id: String,
+    pub trigger_radius: f32,
+    pub min_level: u32,
+}
+
+impl DungeonPortalTrigger {
+    pub fn new(
+        portal_id: impl Into<String>,
+        dungeon_template_id: impl Into<String>,
+        mvp_boss_id: impl Into<String>,
+        trigger_radius: f32,
+        min_level: u32,
+    ) -> Self {
+        Self {
+            portal_id: portal_id.into(),
+            target_dungeon_template_id: dungeon_template_id.into(),
+            target_mvp_boss_id: mvp_boss_id.into(),
+            trigger_radius,
+            min_level,
+        }
+    }
+}
+
+/// Links an in-world boss mob entity to its instanced dungeon encounter in DungeonRegistry.
+#[derive(Component, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DungeonEncounterLink {
+    pub instance_id: String,
+    pub boss_id: String,
+}
+
+impl DungeonEncounterLink {
+    pub fn new(instance_id: impl Into<String>, boss_id: impl Into<String>) -> Self {
+        Self {
+            instance_id: instance_id.into(),
+            boss_id: boss_id.into(),
+        }
+    }
+}
+
+/// Thread-safe DungeonRegistry handle resource for Bevy ECS simulation.
+#[derive(Resource, Clone)]
+pub struct DungeonRegistryResource(pub std::sync::Arc<crate::fleet::DungeonRegistry>);
+
+/// Pending dungeon portal entries triggered by player movement.
+#[derive(Resource, Debug, Clone, Default)]
+pub struct DungeonPortalEventQueue {
+    pub pending_entries: Vec<DungeonPortalEntryEvent>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DungeonPortalEntryEvent {
+    pub player_id: String,
+    pub portal_id: String,
+    pub dungeon_template_id: String,
+    pub mvp_boss_id: String,
+}
+
 #[derive(Component, Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Position {
     pub x: f32,
