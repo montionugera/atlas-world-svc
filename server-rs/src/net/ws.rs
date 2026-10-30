@@ -1769,6 +1769,7 @@ async fn is_dungeon_http(stream: &TcpStream) -> bool {
     [
         &b"POST /dungeon/"[..],
         &b"GET /dungeon/"[..],
+        &b"OPTIONS /dungeon"[..],
         &b"POST /portal/"[..],
     ]
     .iter()
@@ -1891,9 +1892,9 @@ async fn serve_dungeon_http(
                         .get("bossEnrageTimerSecs")
                         .and_then(|v| v.as_u64())
                         .or_else(|| {
-                            crate::content::DungeonCatalog::new()
-                                .ok()
-                                .and_then(|c| c.get(dungeon_template_id).map(|e| e.boss_enrage_secs))
+                            crate::content::DungeonCatalog::new().ok().and_then(|c| {
+                                c.get(dungeon_template_id).map(|e| e.boss_enrage_secs)
+                            })
                         })
                         .unwrap_or(300);
 
@@ -1945,23 +1946,20 @@ async fn serve_dungeon_http(
                         .get("playerId")
                         .and_then(|v| v.as_str())
                         .unwrap_or("unknown_player");
-                    let damage = json
-                        .get("damage")
-                        .and_then(|v| v.as_u64())
-                        .unwrap_or(0);
+                    let damage = json.get("damage").and_then(|v| v.as_u64()).unwrap_or(0);
                     let damage_taken = json
                         .get("damageTaken")
                         .and_then(|v| v.as_u64())
                         .unwrap_or(0);
-                    let now_secs = json
-                        .get("nowSecs")
-                        .and_then(|v| v.as_u64())
-                        .unwrap_or_else(|| {
-                            std::time::SystemTime::now()
-                                .duration_since(std::time::UNIX_EPOCH)
-                                .unwrap_or_default()
-                                .as_secs()
-                        });
+                    let now_secs =
+                        json.get("nowSecs")
+                            .and_then(|v| v.as_u64())
+                            .unwrap_or_else(|| {
+                                std::time::SystemTime::now()
+                                    .duration_since(std::time::UNIX_EPOCH)
+                                    .unwrap_or_default()
+                                    .as_secs()
+                            });
 
                     if let Some((encounter, events)) = dungeons.record_boss_damage(
                         instance_id,
@@ -2001,15 +1999,15 @@ async fn serve_dungeon_http(
             match serde_json::from_slice::<serde_json::Value>(body) {
                 Ok(json) => {
                     let kills = json.get("kills").and_then(|v| v.as_u64()).unwrap_or(1) as u32;
-                    let now_secs = json
-                        .get("nowSecs")
-                        .and_then(|v| v.as_u64())
-                        .unwrap_or_else(|| {
-                            std::time::SystemTime::now()
-                                .duration_since(std::time::UNIX_EPOCH)
-                                .unwrap_or_default()
-                                .as_secs()
-                        });
+                    let now_secs =
+                        json.get("nowSecs")
+                            .and_then(|v| v.as_u64())
+                            .unwrap_or_else(|| {
+                                std::time::SystemTime::now()
+                                    .duration_since(std::time::UNIX_EPOCH)
+                                    .unwrap_or_default()
+                                    .as_secs()
+                            });
 
                     if let Some((floor_state, events)) =
                         dungeons.record_floor_mob_kills(instance_id, kills, now_secs)
@@ -2044,15 +2042,15 @@ async fn serve_dungeon_http(
                 .trim_end_matches("/floor/advance");
             match serde_json::from_slice::<serde_json::Value>(body) {
                 Ok(json) => {
-                    let now_secs = json
-                        .get("nowSecs")
-                        .and_then(|v| v.as_u64())
-                        .unwrap_or_else(|| {
-                            std::time::SystemTime::now()
-                                .duration_since(std::time::UNIX_EPOCH)
-                                .unwrap_or_default()
-                                .as_secs()
-                        });
+                    let now_secs =
+                        json.get("nowSecs")
+                            .and_then(|v| v.as_u64())
+                            .unwrap_or_else(|| {
+                                std::time::SystemTime::now()
+                                    .duration_since(std::time::UNIX_EPOCH)
+                                    .unwrap_or_default()
+                                    .as_secs()
+                            });
 
                     match dungeons.advance_floor(instance_id, now_secs) {
                         Ok((floor_state, events)) => (
@@ -2083,15 +2081,15 @@ async fn serve_dungeon_http(
                 .trim_end_matches("/tick");
             match serde_json::from_slice::<serde_json::Value>(body) {
                 Ok(json) => {
-                    let now_secs = json
-                        .get("nowSecs")
-                        .and_then(|v| v.as_u64())
-                        .unwrap_or_else(|| {
-                            std::time::SystemTime::now()
-                                .duration_since(std::time::UNIX_EPOCH)
-                                .unwrap_or_default()
-                                .as_secs()
-                        });
+                    let now_secs =
+                        json.get("nowSecs")
+                            .and_then(|v| v.as_u64())
+                            .unwrap_or_else(|| {
+                                std::time::SystemTime::now()
+                                    .duration_since(std::time::UNIX_EPOCH)
+                                    .unwrap_or_default()
+                                    .as_secs()
+                            });
 
                     if let Some(events) = dungeons.tick_dungeon(instance_id, now_secs) {
                         let inst = dungeons.get_instance(instance_id);
@@ -2134,14 +2132,102 @@ async fn serve_dungeon_http(
                 )
             }
         }
+        ("POST", p) if p.starts_with("/dungeon/instance/") && p.ends_with("/egress") => {
+            let instance_id = p
+                .trim_start_matches("/dungeon/instance/")
+                .trim_end_matches("/egress");
+            match serde_json::from_slice::<serde_json::Value>(body) {
+                Ok(json) => {
+                    let player_id = json
+                        .get("playerId")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("unknown_player");
+                    let in_combat = json
+                        .get("inCombat")
+                        .and_then(|v| v.as_bool())
+                        .unwrap_or(false);
+
+                    match dungeons.trigger_dungeon_egress(instance_id, player_id, in_combat) {
+                        Ok(egress) => {
+                            let mut rooms = session_rooms.write().await;
+                            for (conn_key, room) in rooms.iter_mut() {
+                                if conn_key
+                                    .rsplit_once('#')
+                                    .is_some_and(|(s, _)| s == player_id)
+                                {
+                                    *room = egress.region_id.clone();
+                                }
+                            }
+                            (
+                                "200 OK",
+                                serde_json::json!({
+                                    "ok": true,
+                                    "instanceId": instance_id,
+                                    "egress": {
+                                        "regionId": egress.region_id,
+                                        "x": egress.x,
+                                        "y": egress.y,
+                                        "isFallback": egress.is_fallback,
+                                    }
+                                })
+                                .to_string(),
+                            )
+                        }
+                        Err(e) => {
+                            let (status, err_code) = match e {
+                                crate::fleet::dungeons::DungeonEgressError::InstanceNotFound => {
+                                    ("404 Not Found", "INSTANCE_NOT_FOUND")
+                                }
+                                crate::fleet::dungeons::DungeonEgressError::BossNotDefeated => {
+                                    ("400 Bad Request", "BOSS_NOT_DEFEATED")
+                                }
+                                crate::fleet::dungeons::DungeonEgressError::PlayerInCombat => {
+                                    ("400 Bad Request", "PLAYER_IN_COMBAT")
+                                }
+                            };
+                            (
+                                status,
+                                serde_json::json!({ "ok": false, "error": err_code }).to_string(),
+                            )
+                        }
+                    }
+                }
+                Err(e) => (
+                    "400 Bad Request",
+                    serde_json::json!({ "ok": false, "error": e.to_string() }).to_string(),
+                ),
+            }
+        }
+        ("OPTIONS", _) => ("204 No Content", "".to_string()),
         _ => (
             "404 Not Found",
             serde_json::json!({ "ok": false, "error": "Not found" }).to_string(),
         ),
     };
 
+    let header = |name: &str| {
+        head.lines().skip(1).find_map(|line| {
+            let (key, value) = line.split_once(':')?;
+            if key.trim().eq_ignore_ascii_case(name) {
+                Some(value.trim())
+            } else {
+                None
+            }
+        })
+    };
+    let cors = local_origin(header("origin"))
+        .map(|origin| {
+            format!(
+                "Access-Control-Allow-Origin: {origin}\r\nVary: Origin\r\n\
+                 Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n\
+                 Access-Control-Allow-Headers: content-type\r\n"
+            )
+        })
+        .unwrap_or_default();
+
     let response = format!(
-        "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{payload}",
+        "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\
+         {cors}Connection: close\r\n\r\n{payload}",
         payload.len()
     );
     let _ = stream.write_all(response.as_bytes()).await;

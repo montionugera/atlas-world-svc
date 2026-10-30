@@ -717,6 +717,14 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
               });
             }
           }}
+          onEgress={() => {
+            if (sendPlayerAction) {
+              sendPlayerAction("egressDungeon", true, {
+                x: mousePositionRef.current.x,
+                y: mousePositionRef.current.y,
+              });
+            }
+          }}
         />
 
         {/* Death Overlay */}

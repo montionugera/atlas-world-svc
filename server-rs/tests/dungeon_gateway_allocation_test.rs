@@ -123,4 +123,58 @@ async fn test_dungeon_portal_http_gateway_endpoint() {
 
     // Verify Agones state is Allocated
     assert_eq!(agones.mock_state(), FleetState::Allocated);
+
+    // Verify POST /dungeon/instance/{instance_id}/egress fails when boss not defeated
+    let egress_url = format!("http://{}/dungeon/instance/{}/egress", addr, instance_id);
+    let egress_fail_resp = client
+        .post(&egress_url)
+        .json(&serde_json::json!({
+            "playerId": "member_1",
+            "inCombat": false
+        }))
+        .send()
+        .await
+        .expect("Egress post failed");
+    assert_eq!(egress_fail_resp.status(), reqwest::StatusCode::BAD_REQUEST);
+    let fail_json: serde_json::Value = egress_fail_resp.json().await.unwrap();
+    assert_eq!(fail_json["error"], "BOSS_NOT_DEFEATED");
+
+    // Slay boss by recording killing blow
+    let dmg_url = format!(
+        "http://{}/dungeon/instance/{}/boss/damage",
+        addr, instance_id
+    );
+    let dmg_resp = client
+        .post(&dmg_url)
+        .json(&serde_json::json!({
+            "playerId": "member_1",
+            "damage": 500_000,
+            "damageTaken": 0,
+            "nowSecs": 1000
+        }))
+        .send()
+        .await
+        .expect("Boss damage failed");
+    assert_eq!(dmg_resp.status(), reqwest::StatusCode::OK);
+
+    // Set instance origin so egress routes back to overworld
+    dungeons.set_instance_origin(instance_id, "c02/fluvial/overworld", 350.0, 420.0);
+
+    // Verify egress now succeeds
+    let egress_success_resp = client
+        .post(&egress_url)
+        .json(&serde_json::json!({
+            "playerId": "member_1",
+            "inCombat": false
+        }))
+        .send()
+        .await
+        .expect("Egress success post failed");
+    assert_eq!(egress_success_resp.status(), reqwest::StatusCode::OK);
+    let success_json: serde_json::Value = egress_success_resp.json().await.unwrap();
+    assert!(success_json["ok"].as_bool().unwrap());
+    assert_eq!(success_json["egress"]["regionId"], "c02/fluvial/overworld");
+    assert_eq!(success_json["egress"]["x"], 350.0);
+    assert_eq!(success_json["egress"]["y"], 420.0);
+    assert!(!success_json["egress"]["isFallback"].as_bool().unwrap());
 }

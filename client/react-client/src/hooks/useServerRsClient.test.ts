@@ -37,8 +37,7 @@ import { getMobDisplayName } from "../utils/mobUtils";
 import { perfTimings, timingGate } from "../utils/frameTiming";
 
 jest.mock("../components/ColyseusGameCanvas", () => ({
-  ColyseusGameCanvas: () =>
-    null,
+  ColyseusGameCanvas: () => null,
   DEBUG_DOCK_ID: "debug-dock",
 }));
 
@@ -139,7 +138,10 @@ describe("useServerRsClient", () => {
     (global as any).fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({ token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aWQiOiJhNzI0NTIzNi00NTFkLTQxODQtODU1Ni1jZGQ4MzcxMDE0Y2UiLCJ1aWQiOiJlNTYwZTdlMC02NzY3LTQyODctYmIzYy1lODliNTU1NjU5YTQiLCJ1c24iOiJHa0xpanJJZ2NjIiwiZXhwIjoxNzkyMjc5MjMzfQ.k663Qar6bS1dzoZgbUFH_n3nCAEJWjfXonYYYWagaPs" }),
+      json: async () => ({
+        token:
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aWQiOiJhNzI0NTIzNi00NTFkLTQxODQtODU1Ni1jZGQ4MzcxMDE0Y2UiLCJ1aWQiOiJlNTYwZTdlMC02NzY3LTQyODctYmIzYy1lODliNTU1NjU5YTQiLCJ1c24iOiJHa0xpanJJZ2NjIiwiZXhwIjoxNzkyMjc5MjMzfQ.k663Qar6bS1dzoZgbUFH_n3nCAEJWjfXonYYYWagaPs",
+      }),
     });
     // Snapshots reach React state at most every 150 ms; unless a test drives the
     // clock itself, every look at it is a second later, so each one is published.
@@ -1272,7 +1274,8 @@ describe("useServerRsClient", () => {
 
   it("authenticates against Nakama device endpoint and sends real session JWT instead of dev-token", async () => {
     const nakamaUid = "e560e7e0-6767-4287-bb3c-e89b555659a4";
-    const nakamaJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aWQiOiJhNzI0NTIzNi00NTFkLTQxODQtODU1Ni1jZGQ4MzcxMDE0Y2UiLCJ1aWQiOiJlNTYwZTdlMC02NzY3LTQyODctYmIzYy1lODliNTU1NjU5YTQiLCJ1c24iOiJHa0xpanJJZ2NjIiwiZXhwIjoxNzkyMjc5MjMzfQ.k663Qar6bS1dzoZgbUFH_n3nCAEJWjfXonYYYWagaPs";
+    const nakamaJwt =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0aWQiOiJhNzI0NTIzNi00NTFkLTQxODQtODU1Ni1jZGQ4MzcxMDE0Y2UiLCJ1aWQiOiJlNTYwZTdlMC02NzY3LTQyODctYmIzYy1lODliNTU1NjU5YTQiLCJ1c24iOiJHa0xpanJJZ2NjIiwiZXhwIjoxNzkyMjc5MjMzfQ.k663Qar6bS1dzoZgbUFH_n3nCAEJWjfXonYYYWagaPs";
 
     expect(extractTokenUserId(nakamaJwt)).toBe(nakamaUid);
 
@@ -1398,5 +1401,110 @@ describe("useServerRsClient", () => {
     });
     expect(MockWebSocket.instances).toHaveLength(2);
     expect(result.current.isConnected).toBe(false);
+    jest.useRealTimers();
+  });
+
+  it("handles enterDungeon, advanceDungeonFloor, and egressDungeon via sendPlayerAction and HTTP APIs", async () => {
+    const fetchSpy = jest
+      .spyOn(global, "fetch")
+      .mockImplementation(async (input: any) => {
+        const url = typeof input === "string" ? input : input.url;
+        if (url.includes("/dungeon/portal/enter")) {
+          return {
+            ok: true,
+            json: async () => ({
+              ok: true,
+              instance: {
+                instanceId: "dungeon_vesper_crater-party_solo-1234abcd",
+                floorState: {
+                  currentFloor: 1,
+                  totalFloors: 5,
+                  floorCleared: false,
+                  mobsKilled: 0,
+                  mobsRequired: 10,
+                  portalActive: false,
+                },
+              },
+            }),
+          } as any;
+        }
+        if (url.includes("/floor/advance")) {
+          return {
+            ok: true,
+            json: async () => ({
+              ok: true,
+              floorState: {
+                currentFloor: 2,
+                totalFloors: 5,
+                floorCleared: false,
+                mobsKilled: 0,
+                mobsRequired: 10,
+                portalActive: false,
+              },
+            }),
+          } as any;
+        }
+        if (url.includes("/egress")) {
+          return {
+            ok: true,
+            json: async () => ({
+              ok: true,
+              instanceId: "dungeon_vesper_crater-party_solo-1234abcd",
+              egress: {
+                regionId: "c02/fluvial/overworld",
+                x: 500,
+                y: 500,
+                isFallback: false,
+              },
+            }),
+          } as any;
+        }
+        return { ok: false, statusText: "Not Found" } as any;
+      });
+
+    const view = renderHook(() =>
+      useServerRsClient({
+        serverHost: "127.0.0.1",
+        serverPort: 8080,
+        useSSL: false,
+        token: "dev-token:hero",
+      }),
+    );
+    const { result } = view;
+
+    await act(async () => {
+      await result.current.connect();
+    });
+
+    // 1. Enter dungeon
+    await act(async () => {
+      await result.current.enterDungeon?.(
+        "dungeon_vesper_crater",
+        "party_alpha",
+      );
+    });
+
+    expect(result.current.roomId).toBe(
+      "dungeon_vesper_crater-party_solo-1234abcd",
+    );
+    expect(result.current.gameState?.dungeonProgress?.currentFloor).toBe(1);
+
+    // 2. Advance floor via sendPlayerAction("advanceFloor")
+    await act(async () => {
+      result.current.sendPlayerAction("advanceFloor", true);
+      await Promise.resolve();
+    });
+
+    expect(result.current.gameState?.dungeonProgress?.currentFloor).toBe(2);
+
+    // 3. Egress dungeon via egressDungeon()
+    await act(async () => {
+      await result.current.egressDungeon?.();
+    });
+
+    expect(result.current.gameState?.dungeonProgress).toBeUndefined();
+    expect(result.current.roomId).toBe("server-rs-c02/fluvial/overworld");
+
+    fetchSpy.mockRestore();
   });
 });
