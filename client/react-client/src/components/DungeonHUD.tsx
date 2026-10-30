@@ -5,12 +5,14 @@ interface DungeonHUDProps {
   dungeonProgress?: DungeonFloorProgress;
   bossEncounter?: BossEncounterHUD;
   onAdvanceFloor?: () => void;
+  onEgress?: () => void;
 }
 
 export const DungeonHUD: React.FC<DungeonHUDProps> = ({
   dungeonProgress,
   bossEncounter,
   onAdvanceFloor,
+  onEgress,
 }) => {
   if (!dungeonProgress && !bossEncounter) {
     return null;
@@ -389,6 +391,74 @@ export const DungeonHUD: React.FC<DungeonHUDProps> = ({
               </span>
             )}
           </div>
+        </div>
+      )}
+
+      {/* 3. Victory & Exit Portal Egress Card */}
+      {bossEncounter?.phase === "defeated" && (
+        <div
+          data-testid="dungeon-egress-card"
+          style={{
+            width: "100%",
+            backgroundColor: "rgba(6, 78, 59, 0.94)",
+            backdropFilter: "blur(10px)",
+            borderRadius: "10px",
+            border: "1px solid #10b981",
+            boxShadow: "0 0 20px rgba(16, 185, 129, 0.4)",
+            padding: "10px 16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            pointerEvents: "auto",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "1.3rem" }}>✨</span>
+            <div>
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 800,
+                  color: "#a7f3d0",
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Dungeon Cleared
+              </div>
+              <div style={{ fontSize: "0.75rem", color: "#e2e8f0" }}>
+                Dimensional exit portal active.
+              </div>
+            </div>
+          </div>
+
+          {onEgress && (
+            <button
+              type="button"
+              data-testid="egress-dungeon-btn"
+              onClick={onEgress}
+              style={{
+                backgroundColor: "#10b981",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "6px",
+                padding: "6px 14px",
+                fontSize: "0.8rem",
+                fontWeight: 800,
+                cursor: "pointer",
+                boxShadow: "0 0 12px rgba(16, 185, 129, 0.6)",
+                transition: "transform 0.15s ease",
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.transform = "scale(1.05)")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.transform = "scale(1)")
+              }
+            >
+              Return to Overworld [E] ➔
+            </button>
+          )}
         </div>
       )}
     </div>

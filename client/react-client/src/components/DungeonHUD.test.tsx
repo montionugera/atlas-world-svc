@@ -113,4 +113,28 @@ describe("DungeonHUD", () => {
       /BOSS ENRAGED/i,
     );
   });
+
+  it("renders victory egress card when boss is defeated and fires onEgress callback", () => {
+    const boss: BossEncounterHUD = {
+      bossId: "boss_drakon_lord",
+      name: "Drakon Lord Ignis",
+      currentHp: 0,
+      maxHp: 2500000,
+      phase: "defeated",
+      isEnraged: false,
+      enrageRemainingSecs: 0,
+      empoweredSkillUnlocked: true,
+    };
+
+    const handleEgress = jest.fn();
+    render(<DungeonHUD bossEncounter={boss} onEgress={handleEgress} />);
+
+    expect(screen.getByTestId("dungeon-egress-card")).toBeInTheDocument();
+    expect(screen.getByText(/Dungeon Cleared/i)).toBeInTheDocument();
+    const egressBtn = screen.getByTestId("egress-dungeon-btn");
+    expect(egressBtn).toBeInTheDocument();
+
+    fireEvent.click(egressBtn);
+    expect(handleEgress).toHaveBeenCalledTimes(1);
+  });
 });
