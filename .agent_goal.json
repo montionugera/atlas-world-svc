@@ -1,9 +1,9 @@
 {
   "autopilot": true,
   "active": true,
-  "goal": "Continuous Autopilot: Resolve Ideas Backlog (Bestiary + Thumb 404 Audit)",
+  "goal": "Continuous Autopilot: Zero-Stop Engine Hygiene and Full Probe Suite Verification",
   "status": "IN_PROGRESS",
   "remaining_tasks": [
-    "Commit resolved thumb 404 audit and verify git clean status"
+    "Verify clean git status"
   ]
 }
