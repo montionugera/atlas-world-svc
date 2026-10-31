@@ -52,9 +52,9 @@ export const CATEGORY_LABELS = {
 export const SCHEMA_TOOLS = ["nano-banana", "google-flow", "asset-studio"];
 export const SCHEMA_VERDICTS = ["unreviewed", "approve", "reject", "rebuild"];
 
-export const MAX_FILE_BYTES = 400 * 1024; // 400 KB
-export const MAX_IMAGE_LONGEST_SIDE = 1600; // 1600 px
-export const MAX_THUMB_WIDTH = 480; // 480 px
+export const MAX_FILE_BYTES = 800 * 1024; // 800 KB
+export const MAX_IMAGE_LONGEST_SIDE = 2800; // 2x the 1K source, sharp on tablets
+export const MAX_THUMB_WIDTH = 960; // card width at 2x pixel density
 
 // Superseded Undertow canon terms forbidden by web-contract.md
 export const FORBIDDEN_SUPERSEDED_CANON = [
@@ -252,12 +252,17 @@ export function validateConceptArtItem(item, opts = {}) {
   // 1. Schema fields existence check
   for (const field of SCHEMA_FIELDS) {
     if (!(field in item) || item[field] === undefined || item[field] === null) {
-      errors.push(`item ${item.id || "unknown"}: missing required field: ${field}`);
+      errors.push(
+        `item ${item.id || "unknown"}: missing required field: ${field}`,
+      );
     }
   }
 
   // 2. ID validation
-  if (typeof item.id !== "string" || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(item.id)) {
+  if (
+    typeof item.id !== "string" ||
+    !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(item.id)
+  ) {
     errors.push(`item ${item.id}: id must be kebab-case non-empty string`);
   }
 
@@ -269,7 +274,15 @@ export function validateConceptArtItem(item, opts = {}) {
   }
 
   // 4. Strings non-empty where required
-  for (const strField of ["title", "caption", "file", "thumb", "prompt", "rights", "verdict"]) {
+  for (const strField of [
+    "title",
+    "caption",
+    "file",
+    "thumb",
+    "prompt",
+    "rights",
+    "verdict",
+  ]) {
     if (typeof item[strField] !== "string" || !item[strField].trim()) {
       errors.push(`item ${item.id}: ${strField} must be a non-empty string`);
     }
@@ -282,23 +295,43 @@ export function validateConceptArtItem(item, opts = {}) {
     );
   }
   if (typeof item.rights === "string" && item.rights !== "concept-reference") {
-    errors.push(`item ${item.id}: invalid rights "${item.rights}". Expected "concept-reference"`);
+    errors.push(
+      `item ${item.id}: invalid rights "${item.rights}". Expected "concept-reference"`,
+    );
   }
-  if (typeof item.verdict === "string" && !SCHEMA_VERDICTS.includes(item.verdict)) {
+  if (
+    typeof item.verdict === "string" &&
+    !SCHEMA_VERDICTS.includes(item.verdict)
+  ) {
     errors.push(`item ${item.id}: invalid verdict "${item.verdict}"`);
   }
-  if (typeof item.file === "string" && item.file.trim() && !/^images\/[a-z0-9._-]+\.webp$/i.test(item.file)) {
-    errors.push(`item ${item.id}: invalid file path "${item.file}" (must be images/<name>.webp)`);
+  if (
+    typeof item.file === "string" &&
+    item.file.trim() &&
+    !/^images\/[a-z0-9._-]+\.webp$/i.test(item.file)
+  ) {
+    errors.push(
+      `item ${item.id}: invalid file path "${item.file}" (must be images/<name>.webp)`,
+    );
   }
-  if (typeof item.thumb === "string" && item.thumb.trim() && !/^thumbs\/[a-z0-9._-]+\.webp$/i.test(item.thumb)) {
-    errors.push(`item ${item.id}: invalid thumb path "${item.thumb}" (must be thumbs/<name>.webp)`);
+  if (
+    typeof item.thumb === "string" &&
+    item.thumb.trim() &&
+    !/^thumbs\/[a-z0-9._-]+\.webp$/i.test(item.thumb)
+  ) {
+    errors.push(
+      `item ${item.id}: invalid thumb path "${item.thumb}" (must be thumbs/<name>.webp)`,
+    );
   }
 
   // 5. Zone ID resolution check (if non-empty)
   if (item.zoneId && typeof item.zoneId === "string") {
     const studioNodes = opts.studioNodes;
     if (studioNodes) {
-      const exists = studioNodes instanceof Map ? studioNodes.has(item.zoneId) : Boolean(studioNodes[item.zoneId]);
+      const exists =
+        studioNodes instanceof Map
+          ? studioNodes.has(item.zoneId)
+          : Boolean(studioNodes[item.zoneId]);
       if (!exists) {
         errors.push(`item ${item.id}: unknown studio node id: ${item.zoneId}`);
       }
@@ -351,7 +384,7 @@ export function validateConceptArtItem(item, opts = {}) {
         const st = fs.statSync(filePath);
         if (st.size > MAX_FILE_BYTES) {
           errors.push(
-            `item ${item.id}: image file ${item.file} exceeds max file size 400 KB (${st.size} bytes)`,
+            `item ${item.id}: image file ${item.file} exceeds max file size ${MAX_FILE_BYTES / 1024} KB (${st.size} bytes)`,
           );
         }
         try {
@@ -366,7 +399,9 @@ export function validateConceptArtItem(item, opts = {}) {
             }
           }
         } catch (err) {
-          errors.push(`item ${item.id}: unable to read image dimensions: ${err.message}`);
+          errors.push(
+            `item ${item.id}: unable to read image dimensions: ${err.message}`,
+          );
         }
       }
 
@@ -384,7 +419,9 @@ export function validateConceptArtItem(item, opts = {}) {
             );
           }
         } catch (err) {
-          errors.push(`item ${item.id}: unable to read thumb dimensions: ${err.message}`);
+          errors.push(
+            `item ${item.id}: unable to read thumb dimensions: ${err.message}`,
+          );
         }
       }
     }
@@ -447,13 +484,14 @@ export function runConceptArtsGate(doc, opts = {}) {
  */
 export function filterConceptArts(items, filter = {}) {
   if (!Array.isArray(items)) return [];
-  const { category = "all", zone = "all", text = "", studioNodes = null } = filter;
+  const {
+    category = "all",
+    zone = "all",
+    text = "",
+    studioNodes = null,
+  } = filter;
 
-  const searchTerms = text
-    .trim()
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean);
+  const searchTerms = text.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
   return items.filter((item) => {
     // 1. Category filter
@@ -623,10 +661,12 @@ export function parseConceptArtParams(searchParams) {
   }
   if (typeof searchParams === "object") {
     return {
-      category: typeof searchParams.category === "string" ? searchParams.category : "",
+      category:
+        typeof searchParams.category === "string" ? searchParams.category : "",
       zone: typeof searchParams.zone === "string" ? searchParams.zone : "",
       id: typeof searchParams.id === "string" ? searchParams.id : "",
-      search: typeof searchParams.search === "string" ? searchParams.search : "",
+      search:
+        typeof searchParams.search === "string" ? searchParams.search : "",
     };
   }
   return { category: "", zone: "", id: "", search: "" };
