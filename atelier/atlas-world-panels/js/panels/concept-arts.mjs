@@ -351,6 +351,14 @@ function buildCard(item) {
     </div>
   `;
 
+  // Any portrait image (a character or a design sheet) shows whole, not cropped.
+  const thumb = card.querySelector("img");
+  const markShape = () => {
+    if (thumb.naturalHeight > thumb.naturalWidth) card.dataset.shape = "portrait";
+  };
+  if (thumb.complete) markShape();
+  else thumb.addEventListener("load", markShape);
+
   card.addEventListener("click", () => {
     openLightbox(item);
   });
