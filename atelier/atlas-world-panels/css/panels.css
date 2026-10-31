@@ -2564,8 +2564,9 @@
     transition: transform 0.2s ease;
   }
 
-  /* Character art is portrait: show the whole figure rather than crop the head. */
-  & .concept-card[data-category="character"] .concept-card-thumb-wrap img {
+  /* Portrait art (characters, design sheets): show the whole figure rather than crop the head. */
+  & .concept-card[data-category="character"] .concept-card-thumb-wrap img,
+  & .concept-card[data-shape="portrait"] .concept-card-thumb-wrap img {
     object-fit: contain;
   }
 

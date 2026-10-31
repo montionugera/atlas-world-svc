@@ -934,9 +934,14 @@ test("GATE: every image on disk matches the orientation of its brief", () => {
   }
 });
 
-test("character cards show the whole portrait instead of cropping it", () => {
+test("character cards and any portrait image show whole instead of cropping", () => {
   const css = readFileSync(resolve(ROOT, "atelier/atlas-world-panels/css/panels.css"), "utf8");
-  assert.match(css, /\.concept-card\[data-category="character"\] \.concept-card-thumb-wrap img \{\s*object-fit: contain;/);
+  assert.match(
+    css,
+    /\.concept-card\[data-category="character"\] \.concept-card-thumb-wrap img,\s*& \.concept-card\[data-shape="portrait"\] \.concept-card-thumb-wrap img \{\s*object-fit: contain;/,
+  );
   const panel = readFileSync(resolve(ROOT, "atelier/atlas-world-panels/js/panels/concept-arts.mjs"), "utf8");
   assert.match(panel, /card\.dataset\.category = item\.category;/);
+  // A portrait boss sheet must not be cropped to the 16:10 card either.
+  assert.match(panel, /naturalHeight > thumb\.naturalWidth\) card\.dataset\.shape = "portrait"/);
 });
