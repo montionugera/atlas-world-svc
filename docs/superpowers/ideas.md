@@ -9,3 +9,4 @@
 - atlas-web: Concept Arts `show()` keeps the old item if Back lands on another `id` while the lightbox is open.
 - atlas-web: zone-bgm rebuilds `getNodesLookup()` on every sync and its class MutationObserver watches the whole body; memoise if it ever shows in a profile.
 - atlas-web: `applyNameMap` token map still rewrites lowercase "porta"/"mink"/"electro" in any future prose; replace at source via `name-map.json`.
+- Atlas web shell header: lint finds it wraps to 2 rows at 1280, 28/44px uneven controls and 39px tap targets on phone (found on the concept-art check, 2026-10-31).
