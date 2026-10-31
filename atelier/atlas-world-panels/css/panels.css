@@ -2564,6 +2564,11 @@
     transition: transform 0.2s ease;
   }
 
+  /* Character art is portrait: show the whole figure rather than crop the head. */
+  & .concept-card[data-category="character"] .concept-card-thumb-wrap img {
+    object-fit: contain;
+  }
+
   & .concept-card:hover .concept-card-thumb-wrap img {
     transform: scale(1.03);
   }

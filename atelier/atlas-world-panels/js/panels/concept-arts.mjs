@@ -328,6 +328,7 @@ function renderGallery() {
 function buildCard(item) {
   const card = document.createElement("div");
   card.className = "concept-card";
+  card.dataset.category = item.category;
   card.dataset.id = item.id;
   card.tabIndex = 0;
   card.setAttribute("role", "button");
