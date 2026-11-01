@@ -1,6 +1,6 @@
 {
   "playerScaleAnchor": {
-    "archetype": "chibi_toddler",
+    "archetype": "slim_adventurer",
     "heightRangeM": [0.90, 1.20],
     "targetHeightM": 1.05,
     "foliageCapsM": {
@@ -24,7 +24,7 @@
       "requiredStates": ["idle", "walk", "run", "attack", "death"]
     },
     "mvpBoss": {
-      "heightRange": [1.90, 2.20],
+      "heightRange": [7.35, 40.00],
       "maxTriangles": 12000,
       "maxTextureSize": 1024,
       "requiredStates": ["idle", "walk", "run", "attack", "death"]

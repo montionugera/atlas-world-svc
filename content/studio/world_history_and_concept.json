@@ -15,7 +15,7 @@
     },
     "character_scale_consistency": {
       "verified": true,
-      "evidence": "Enforces the 0.90 to 1.20 meter chibi/miniature proportion standard (1.05m reference height, 2.0x1.5m doors, <=0.15m stairs, <=0.35m grass, >=3.5m roads, 0.55-0.65m counters) across all 6 racial home towns."
+      "evidence": "Enforces the 0.90 to 1.20 meter slim adventurer standard (1.05m reference height, 1:6 head-to-body, bosses 7x player height or more, 2.0x1.5m doors, <=0.15m stairs, <=0.35m grass, >=3.5m roads, 0.55-0.65m counters) across all 6 racial home towns."
     },
     "spatial_and_ecological_consistency": {
       "verified": true,
@@ -32,7 +32,16 @@
       1.2
     ],
     "reference_height_meters": 1.05,
-    "head_to_body_ratio": "1:2.3 cute toddler and kid proportions with chunky boots, clear silhouettes, and expressive oversized backpacks and lanterns",
+    "head_to_body_ratio": "1:6 slim adventurer proportions with clear silhouettes and readable backpacks and lanterns",
+    "boss_scale_law": {
+      "applies_to_tiers": [
+        "RAID_BOSS",
+        "MVP_GOD_SUBORDINATE",
+        "GOD_SEALED"
+      ],
+      "min_multiple_of_reference_height": 7.0,
+      "min_height_meters": 7.35
+    },
     "silhouette_rules": [
       "Headgear, ears, and backpack props must read clearly at 12 meter camera distance against ground terrain.",
       "Ground foliage never exceeds knee height (0.35 meters) in traversal lanes; bushes never exceed chest height (0.65 meters)."
@@ -688,7 +697,7 @@
       "id": "faction-blacksmith-clan",
       "name": "The Sovereign Blacksmith Clan (Six-Anvil Covenant)",
       "allegiance": "Cross-Racial Craft Covenant (Found in all 6 Racial Home Towns)",
-      "core_role": "Transforms raw materials farmed from racial hunting/farming grounds and boss drops into weapons, armor, and God-Seal socketed gear on 0.60m chibi-scale anvils.",
+      "core_role": "Transforms raw materials farmed from racial hunting/farming grounds and boss drops into weapons, armor, and God-Seal socketed gear on 0.60m anvils.",
       "forging_systems": [
         "Racial Alloy Smelting (combining Human terracotta-steel, Dwarf root-iron, Ogre dragon-cinder, Furral storm-brass, and Lunar/Dark-Lunar star-glass)",
         "Boss Core Awakening (socketing Raid Boss & MVP Apostle cores into endgame equipment)",
