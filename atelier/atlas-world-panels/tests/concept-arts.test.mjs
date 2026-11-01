@@ -692,6 +692,19 @@ test("GATE: fails on invalid tool enum, superseded Undertow/Millcross canon, or 
   );
 });
 
+test("GATE: accepts the chatgpt tool and the shipped set passes on real files", () => {
+  assert.ok(SCHEMA_TOOLS.includes("chatgpt"));
+
+  const realDoc = JSON.parse(readFileSync(REAL_INDEX_PATH, "utf8"));
+  const result = runConceptArtsGate(realDoc, {
+    baseDir: resolve(ROOT, "content/concept-art"),
+    studioDir: REAL_STUDIO_DIR,
+    skipFileCheck: false,
+  });
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.valid, true);
+});
+
 test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders hero, cards, and lightbox", async () => {
   const realDoc = JSON.parse(readFileSync(REAL_INDEX_PATH, "utf8"));
 
