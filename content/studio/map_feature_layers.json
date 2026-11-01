@@ -59,7 +59,7 @@
       "order": 4,
       "name": "Top-Down Tree Canopy Clusters, Swamp Reeds & Rock Outcrops",
       "rebuild_scope": "incremental_poisson_scatter",
-      "description": "Seeded multi-crown tree clusters with ground shadows and biome-specific canopy tints. Enforces 1.05m chibi scale law (ground grass <=0.35m, bushes <=0.65m)."
+      "description": "Seeded multi-crown tree clusters with ground shadows and biome-specific canopy tints. Enforces 1.05m player scale law (ground grass <=0.35m, bushes <=0.65m)."
     },
     {
       "layer_id": "layer_5_architectural_compounds_and_quest_rings",

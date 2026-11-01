@@ -180,6 +180,32 @@ def _validate_character_scale_law(
             f"{source_label}: character_scale_law.reference_height_meters must be 1.05, got {ref_height!r}"
         )
 
+    head_ratio = scale_law.get("head_to_body_ratio")
+    if not isinstance(head_ratio, str) or not head_ratio.startswith("1:6 "):
+        errors.append(
+            f"{source_label}: character_scale_law.head_to_body_ratio must start with '1:6 ', got {head_ratio!r}"
+        )
+
+    boss_law = scale_law.get("boss_scale_law")
+    if not isinstance(boss_law, dict):
+        errors.append(f"{source_label}: character_scale_law.boss_scale_law must be an object")
+    else:
+        boss_tiers = boss_law.get("applies_to_tiers")
+        if not isinstance(boss_tiers, list) or "RAID_BOSS" not in boss_tiers:
+            errors.append(
+                f"{source_label}: boss_scale_law.applies_to_tiers must include RAID_BOSS, got {boss_tiers!r}"
+            )
+        boss_multiple = boss_law.get("min_multiple_of_reference_height")
+        if not isinstance(boss_multiple, (int, float)) or boss_multiple < 7.0:
+            errors.append(
+                f"{source_label}: boss_scale_law.min_multiple_of_reference_height must be >= 7.0, got {boss_multiple!r}"
+            )
+        boss_height = boss_law.get("min_height_meters")
+        if not isinstance(boss_height, (int, float)) or boss_height < 7.35:
+            errors.append(
+                f"{source_label}: boss_scale_law.min_height_meters must be >= 7.35, got {boss_height!r}"
+            )
+
     metrics = scale_law.get("environment_metrics")
     if not isinstance(metrics, dict):
         errors.append(f"{source_label}: character_scale_law.environment_metrics must be an object")
