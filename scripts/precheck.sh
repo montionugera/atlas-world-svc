@@ -34,6 +34,14 @@ set -uo pipefail
 # Usage:
 #   ./scripts/precheck.sh              # full gate
 #   ./scripts/precheck.sh --no-install # assume deps are already installed
+#   PRECHECK_FULL=1 ./scripts/precheck.sh  # never skip a section by change-detection
+#
+# SELECTIVE RUST: the server-rs section (cargo fmt/clippy/test, the slowest and
+# most memory-hungry one) is SKIPPED when no changed path can affect it — see
+# rust_relevant_change(). Changed = branch diff vs merge-base(origin/main) plus
+# uncommitted/untracked files. If the diff cannot be computed it runs (fail
+# safe). Gate 1's second run in _release sees the whole merged diff, a superset,
+# so merged server code is always compiled before it reaches main.
 #
 # Exit code: 0 only if every section passes; 1 if any section fails.
 # =============================================================================
@@ -82,6 +90,37 @@ run_section() {
     echo "❌ $name — FAIL"
   fi
   echo "[gate-timing] $name $((SECONDS - start))s"
+}
+
+# Paths whose change can alter the server-rs build: the crate itself, the
+# contracts/content it include_str!s, the protocol the client mirrors, and this
+# script. Docs, wiki, art and other packages cannot.
+RUST_RELEVANT_RE='^(server-rs/|contracts/content|content/|client/react-client/src/protocol|scripts/precheck\.sh)'
+
+# Prints the changed paths; returns 1 if they cannot be determined.
+changed_paths() {
+  local base
+  base="$(git merge-base HEAD origin/main 2>/dev/null)" || return 1
+  { git diff --name-only "$base"...HEAD || return 1
+    git status --porcelain | cut -c4- | sed 's/.* -> //'
+  } | sort -u
+}
+
+# 0 = run rust_gates; 1 = safe to skip. Echoes the reason.
+rust_relevant_change() {
+  if [ "${PRECHECK_FULL:-0}" = "1" ]; then echo "PRECHECK_FULL=1"; return 0; fi
+  local paths
+  if ! paths="$(changed_paths)"; then echo "diff vs origin/main unavailable — running to be safe"; return 0; fi
+  local hit
+  hit="$(printf '%s\n' "$paths" | grep -E "$RUST_RELEVANT_RE" | head -3)"
+  if [ -n "$hit" ]; then echo "rust-relevant change: $(echo "$hit" | tr '\n' ' ')"; return 0; fi
+  echo "no rust-relevant path changed ($(printf '%s\n' "$paths" | grep -c .) files)"; return 1
+}
+
+# run_section variant that records a visible SKIP.
+skip_section() {
+  SECTION_NAMES+=("$1"); SECTION_RESULTS+=("SKIP")
+  echo ""; echo "⏭  $1 — SKIP ($2)"
 }
 
 # --- Sections ----------------------------------------------------------------
@@ -380,7 +419,12 @@ explorer_probes() {
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace install" deps_install
 run_section "contracts: tsc build"          contracts_build
 run_section "contracts: jest suite"         contracts_tests
-run_section "server-rs: cargo clippy & test" rust_gates
+if reason="$(rust_relevant_change)"; then
+  echo "🦀 server-rs gate: $reason"
+  run_section "server-rs: cargo clippy & test" rust_gates
+else
+  skip_section "server-rs: cargo clippy & test" "$reason; PRECHECK_FULL=1 to force"
+fi
 run_section "nakama: tsc --noEmit"          nakama_typecheck
 run_section "nakama: jest suite"            nakama_tests
 run_section "client: react-client suite"    client_tests
