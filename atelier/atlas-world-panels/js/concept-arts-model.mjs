@@ -49,7 +49,12 @@ export const CATEGORY_LABELS = {
   item: "Items & Relics",
 };
 
-export const SCHEMA_TOOLS = ["nano-banana", "google-flow", "asset-studio"];
+export const SCHEMA_TOOLS = [
+  "nano-banana",
+  "google-flow",
+  "chatgpt",
+  "asset-studio",
+];
 export const SCHEMA_VERDICTS = ["unreviewed", "approve", "reject", "rebuild"];
 
 export const MAX_FILE_BYTES = 800 * 1024; // 800 KB
