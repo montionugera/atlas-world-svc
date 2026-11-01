@@ -2150,8 +2150,9 @@
     "title": "Docs cleanup: fix stale Colyseus text, archive completed plans and dead docs",
     "from_idea": "I-244",
     "created_at": "2026-11-01T05:33:43.386306+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-01T05:33:59.837962+00:00"
   }
 ]
