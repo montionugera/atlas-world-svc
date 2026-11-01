@@ -118,6 +118,45 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 f"Expected grass height scale violation, got: {errors}",
             )
 
+    def test_rejects_chibi_head_to_body_ratio(self) -> None:
+        with self._mutated_files(
+            {
+                "world_history_and_concept.json": lambda d: d["character_scale_law"].__setitem__(
+                    "head_to_body_ratio", "1:2.3 toddler"
+                )
+            }
+        ) as studio_dir:
+            errors = validate_studio_directory(studio_dir)
+            self.assertTrue(
+                any("head_to_body_ratio" in err for err in errors),
+                f"Expected head ratio violation, got: {errors}",
+            )
+
+    def test_rejects_boss_under_seven_times_player_height(self) -> None:
+        with self._mutated_files(
+            {
+                "world_history_and_concept.json": lambda d: d["character_scale_law"][
+                    "boss_scale_law"
+                ].__setitem__("min_height_meters", 2.4)
+            }
+        ) as studio_dir:
+            errors = validate_studio_directory(studio_dir)
+            self.assertTrue(
+                any("boss_scale_law" in err for err in errors),
+                f"Expected boss scale violation, got: {errors}",
+            )
+
+    def test_asset_forge_boss_band_matches_scale_law(self) -> None:
+        repo = Path(__file__).resolve().parents[1]
+        law = json.loads((repo / "content/studio/world_history_and_concept.json").read_text())[
+            "character_scale_law"
+        ]
+        forge = json.loads((repo / "atelier/asset-forge/forge.config.json").read_text())
+        self.assertEqual(
+            forge["kinds"]["mvpBoss"]["heightRange"][0],
+            law["boss_scale_law"]["min_height_meters"],
+        )
+
     def test_rejects_forbidden_legacy_boilerplate_terms(self) -> None:
         with self._mutated_files(
             {

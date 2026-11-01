@@ -1258,7 +1258,7 @@ def _apply_review_verdict(payload: dict, tx) -> dict:
                 "pillar": target_prop.get("pillar", kind),
                 "prompt": f"Approved {prop_id} with {selected_take.get('label', 'Selected Take')}",
                 "summary": f"Committed {selected_take.get('label', prop_id)} to {', '.join(mutated_files)}",
-                "guardrails": ["Chibi 1.05m Scale Anchor Verified", "Auto-Snapshot Saved"],
+                "guardrails": ["1.05m Player Scale Anchor Verified", "Auto-Snapshot Saved"],
                 "files": mutated_files,
                 "snapshotId": snap_meta.get("id"),
             },
@@ -1269,7 +1269,7 @@ def _apply_review_verdict(payload: dict, tx) -> dict:
     if verdict == "feedback":
         snap_meta = create_studio_snapshot(f"feedback_{prop_id}", ["content/review-queue.json"])
         target_prop["status"] = "pending_review"
-        target_prop["lastFeedback"] = feedback_text or "Re-roll requested with Chibi scale constraints."
+        target_prop["lastFeedback"] = feedback_text or "Re-roll requested with player scale constraints."
         target_prop.setdefault("feedbackHistory", []).append(
             {"timestamp": now_iso, "verdict": "feedback_reroll", "note": target_prop["lastFeedback"], "takeIdx": take_idx}
         )
@@ -1365,7 +1365,7 @@ def _update_map_structure(payload: dict, tx) -> dict:
     )
 
     changes = []
-    guardrails = ["Chibi Player Anchor [0.90m-1.20m] (Ref 1.05m)"]
+    guardrails = ["Slim Player Anchor [0.90m-1.20m] (Ref 1.05m)"]
 
     highway_w = payload.get("highwayWidth")
     spur_w = payload.get("spurWidth")
@@ -1443,7 +1443,7 @@ def _apply_ai_studio_edit(payload: dict, tx) -> dict:
       - Pillar A: Biome Brushes & Smart Tag Pools (content/ground_palettes.json + freja-south-gate.json)
       - Pillar B: DB Entities & 3D Assets (game-client/assets/manifest.json + contracts/content/mobs.json)
       - Pillar C: 2D Map Blueprint, Routes & 3D Structures (content/maps/freja-south-gate.json)
-    Enforces Chibi Toddler Player Scale Guardrails (0.90m-1.20m, Ref 1.05m) and creates an automatic Undo snapshot.
+    Enforces Slim Player Scale Guardrails (0.90m-1.20m, Ref 1.05m) and creates an automatic Undo snapshot.
     """
     import re
     import time
@@ -1473,7 +1473,7 @@ def _apply_ai_studio_edit(payload: dict, tx) -> dict:
     manifest = load_json_file(CLIENT_MANIFEST_PATH) or {"version": 2, "entries": {}}
 
     actions_taken: list[str] = []
-    guardrails_checked: list[str] = ["Chibi Player Anchor: 1.05m [0.90m-1.20m]"]
+    guardrails_checked: list[str] = ["Slim Player Anchor: 1.05m [0.90m-1.20m]"]
     mutated_files: list[str] = []
     pillars_touched: list[str] = []
 
@@ -1489,27 +1489,27 @@ def _apply_ai_studio_edit(payload: dict, tx) -> dict:
         if "golem" in low or "take c" in low or "2.2" in low or "colossal" in low:
             chosen_idx = 2
             new_scene = "res://assets/characters/skeleton_golem.glb"
-            new_height = 2.20
-            new_scale = 1.28
+            new_height = 9.00
+            new_scale = 5.23
         elif "raider" in low or "orc_enemy" in low or "take a" in low or "1.95" in low or "compact" in low:
             chosen_idx = 0
             new_scene = "res://assets/creatures/orc_enemy.glb"
-            new_height = 1.95
-            new_scale = 1.12
+            new_height = 7.35
+            new_scale = 4.27
         elif "brute" in low or "take b" in low or "2.1" in low or "recommended" in low or "reset" in low:
             chosen_idx = 1
             new_scene = "res://assets/characters/orc_brute.glb"
-            new_height = 2.10
-            new_scale = 1.22
+            new_height = 7.35
+            new_scale = 4.27
 
-        # Check explicit height in meters like "2.05m"
+        # Check explicit height in meters like "9.00m"
         m_height = re.search(r"(\d+\.\d+)\s*m\b", low)
         if m_height and any(w in low for w in ("orc", "warlord", "boss", "height", "tall")):
             raw_h = float(m_height.group(1))
-            clamped_h = round(max(1.80, min(2.40, raw_h)), 2)
+            clamped_h = round(max(7.35, min(40.0, raw_h)), 2)
             new_height = clamped_h
             new_scale = round(clamped_h / 1.72, 2)
-            guardrails_checked.append(f"MVP Boss Scale Band [1.80m-2.40m] PASS ({clamped_h}m = {round(clamped_h/1.05, 2)}x Chibi)")
+            guardrails_checked.append(f"MVP Boss Scale Band [7.35m-40.00m] PASS ({clamped_h}m = {round(clamped_h/1.05, 2)}x Player)")
 
         # Check explicit HP override like "hp 1800" or "1800 hp"
         m_hp = re.search(r"(?:hp\s*(?:to|=)?\s*(\d{3,5})|(\d{3,5})\s*hp)", low)
@@ -1550,8 +1550,8 @@ def _apply_ai_studio_edit(payload: dict, tx) -> dict:
 
             if new_scene:
                 short_glb = new_scene.split("/")[-1]
-                actions_taken.append(f"Swapped Orc Warlord 3D asset -> {short_glb} ({new_height or 2.10}m, {new_scale or 1.22}x scale)")
-                guardrails_checked.append(f"2.0x Chibi Silhouette Contrast PASS ({new_height or 2.10}m vs 1.05m player)")
+                actions_taken.append(f"Swapped Orc Warlord 3D asset -> {short_glb} ({new_height or 7.35}m, {new_scale or 4.27}x scale)")
+                guardrails_checked.append(f"7x Boss Silhouette Contrast PASS ({new_height or 7.35}m vs 1.05m player)")
 
     # --- 2. Detect Pillar A: Biome Brush / Foliage / Tree Density / Dead Pine Edits ---
     if any(k in low for k in ("pine", "tree", "forest", "bush", "grass", "foliage", "sunlit", "sparse", "dense", "dead", "brush", "meadow")):
@@ -1613,7 +1613,7 @@ def _apply_ai_studio_edit(payload: dict, tx) -> dict:
                 scatter["canopy_tree"]["disabledAssets"] = c_dis
                 actions_taken.append("Re-enabled dead_pine_tree_1_a_color1.glb in canopy_tree tag pool")
 
-        guardrails_checked.append("Chibi Foliage Cap PASS (Grass <= 0.35m, Bush <= 0.65m, Trunk r=0.45m)")
+        guardrails_checked.append("Foliage Cap PASS (Grass <= 0.35m, Bush <= 0.65m, Trunk r=0.45m)")
         GROUND_PALETTES_PATH.write_text(json.dumps(pals, indent=2) + "\n", encoding="utf-8")
         sync_palettes_into_pilot_map(pals)
         m_doc = load_json_file(map_p) or m_doc
@@ -1680,7 +1680,7 @@ def _apply_ai_studio_edit(payload: dict, tx) -> dict:
                     map_changed = True
 
         if map_changed:
-            guardrails_checked.append("Chibi Terrace Step Cap <= 0.25m/step PASS")
+            guardrails_checked.append("Terrace Step Cap <= 0.25m/step PASS")
             map_p.write_text(json.dumps(m_doc, indent=2) + "\n", encoding="utf-8")
             if "content/maps/freja-south-gate.json" not in mutated_files:
                 mutated_files.append("content/maps/freja-south-gate.json")

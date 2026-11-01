@@ -5,7 +5,7 @@ The authoritative single source of truth for the Atlas World game lore, continen
 - **`content/studio/world_history_and_concept.json`**:
   - The 3 Canonical Continents: `continent-01-hearthbloom-basin`, `continent-02-fluvial-reach`, and `continent-03-shattered-halo`.
   - The 6 Canonical Races & Starter Towns (`human_demi_human`, `dwarf`, `ogre_orc`, `furral`, `lunar`, `dark_lunar`).
-  - Character scale laws (0.90m–1.20m chibi miniature scale, 1.05m reference).
+  - Character scale laws (0.90m–1.20m slim adventurer at 1:6 head-to-body, 1.05m reference; bosses 7x player height or more).
   - Strict boss power hierarchy (`GOD_SEALED > MVP_GOD_SUBORDINATE > RAID_BOSS > MINI_BOSS > NORMAL_MOB`).
 - **`content/studio/t_shaped_world_atlas.json`**:
   - The 63 canonical overland zones, regional bounds, highways, and landmark pins.

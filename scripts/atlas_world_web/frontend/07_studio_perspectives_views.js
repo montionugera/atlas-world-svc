@@ -591,7 +591,7 @@ function renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, active
     summary: `Central architectural focal point at [2000m, 2000m] surrounded by a ${roadWidth}m wide stone roundabout and ${pathWidth}m pedestrian walkways.`,
     address: `2000m E, 2000m N · Central Plaza · ${activeNode.name} · ${activeDistrict.name || ''}`,
     coordinates: `Map ID: ${activeNode.map_id || activeNode.id} · Elevation Step ≤ ${tile.max_terrace_step_meters || 0.14}m`,
-    scaleSpecs: `Pedestal Riser: ${riserH}m (≤0.15m toddler law) · Plaza Road: ${roadWidth}m · Walkway: ${pathWidth}m · Unobstructed 12m camera sightline`,
+    scaleSpecs: `Pedestal Riser: ${riserH}m (≤0.15m player scale law) · Plaza Road: ${roadWidth}m · Walkway: ${pathWidth}m · Unobstructed 12m camera sightline`,
     inspectId: activeNode.id,
     connections: [
       { label: `🛣️ Main Artery: ${activeNode.name} Grand Avenue (${roadWidth}m)`, badge: '2-WAY' },
@@ -644,7 +644,7 @@ function renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, active
       summary: `"${npc.dialogue_greeting || 'Welcome to our workshop!'}"`,
       address: `${Math.round((npc.position_meters && npc.position_meters.x) || 1980)}m E, ${Math.round((npc.position_meters && npc.position_meters.y) || 2010)}m N · ${activeNode.name}`,
       coordinates: `NPC ID: ${npc.npc_id} · Counter Height: ${npc.counter_height_meters || counterH}m`,
-      scaleSpecs: `Shop Counter: ${npc.counter_height_meters || counterH}m (0.55–0.65m toddler law) · Doorway: ${doorH}m × ${doorW}m · Frontage Walkway: ${pathWidth}m`,
+      scaleSpecs: `Shop Counter: ${npc.counter_height_meters || counterH}m (0.55–0.65m player scale law) · Doorway: ${doorH}m × ${doorW}m · Frontage Walkway: ${pathWidth}m`,
       inspectId: activeNode.id,
       connections: [
         { label: `🛍️ Service Role: ${npc.role}`, badge: 'OPEN' },
@@ -965,7 +965,7 @@ function renderStudioWorldHistoryPerspective(whc, continents) {
         </section>
 
         <section class="panel" style="padding:18px;background:var(--joy-surface-card);border:1px solid var(--joy-border-default);border-radius:10px">
-          <h3 style="margin:0 0 8px;font-size:1rem">90 to 120 Centimeter Cute Toddler and Kid Character Scale Law Visualizer</h3>
+          <h3 style="margin:0 0 8px;font-size:1rem">90 to 120 Centimeter Slim Adventurer Character Scale Law Visualizer</h3>
           <p style="font-size:12px;color:var(--joy-text-secondary);margin:0 0 10px">${escapeHtml(scale.head_to_body_ratio || '')}</p>
           <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:end;height:130px;padding:14px;background:var(--joy-surface-sunken);border-radius:8px;border:1px solid var(--joy-border-subtle)">
             <div style="text-align:center"><div style="height:22px;background:#22c55e;border-radius:4px 4px 0 0"></div><div style="font-size:10px;margin-top:4px">Grass ≤ ${metrics.max_grass_height_meters || 0.35}m</div></div>
@@ -1974,43 +1974,47 @@ function inspectBtnHtml(kind, title, obj) {
 /* ============================================================================
  * 0. AI ASSET & MAP STUDIO — STEP 3 REVIEW GATE INBOX & BIOME BRUSH COMPOSER
  * ========================================================================== */
-function renderChibiLineupSvg(proposal) {
+function renderPlayerLineupSvg(proposal) {
   if (proposal.kind === 'db_entity') {
     const selIdx = proposal.selectedTakeIdx || 0;
     const activeTake = (proposal.takes || [])[selIdx] || {};
-    const bossH = activeTake.heightM || (proposal.embeddedInputs && proposal.embeddedInputs.targetHeightM) || 2.10;
+    const bossH = activeTake.heightM || (proposal.embeddedInputs && proposal.embeddedInputs.targetHeightM) || 7.35;
     const ratio = (bossH / 1.05).toFixed(2);
-    const bossTopY = Math.max(24, Math.round(158 - (bossH / 2.10) * 120));
-    const headY = bossTopY + 15;
-    const bodyY = bossTopY + 30;
-    const bodyH = Math.max(40, 158 - bodyY);
+    const groundY = 158;
+    const pxPerM = 134 / Math.max(bossH, 2.1);
+    const topY = (heightM) => Math.round(groundY - heightM * pxPerM);
+    const bossTopY = topY(bossH);
+    const playerTopY = topY(1.05);
+    const mobTopY = topY(0.55);
+    const playerHeadR = (groundY - playerTopY) / 12;
+    const bossHeadR = (groundY - bossTopY) / 12;
+    const mobR = (groundY - mobTopY) / 2;
     const shortAsset = (activeTake.assetPath || 'orc_brute.glb').split('/').pop();
     return `
       <svg width="100%" height="185" viewBox="0 0 520 185" style="border-radius:8px;background:#121b28;border:1px solid var(--joy-border-strong)">
         <line x1="20" y1="158" x2="500" y2="158" stroke="#4a5d78" stroke-width="2"/>
         <!-- 0.55m Small Mob -->
-        <line x1="20" y1="127" x2="500" y2="127" stroke="rgba(126,217,135,0.25)" stroke-dasharray="3 3"/>
-        <text x="26" y="123" fill="#7ed987" font-size="10" font-family="monospace">0.55m Small Mob</text>
-        <!-- 1.05m Chibi Player Reference Line -->
-        <line x1="20" y1="98" x2="500" y2="98" stroke="#ffd166" stroke-width="1.5" stroke-dasharray="4 3"/>
-        <text x="26" y="93" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">1.05m Chibi Toddler Player Anchor [0.90m-1.20m]</text>
+        <line x1="20" y1="${mobTopY}" x2="500" y2="${mobTopY}" stroke="rgba(126,217,135,0.25)" stroke-dasharray="3 3"/>
+        ${mobTopY - playerTopY > 12 ? `<text x="26" y="${mobTopY - 3}" fill="#7ed987" font-size="10" font-family="monospace">0.55m Small Mob</text>` : ''}
+        <!-- 1.05m Slim Player Reference Line -->
+        <line x1="20" y1="${playerTopY}" x2="500" y2="${playerTopY}" stroke="#ffd166" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <text x="26" y="${playerTopY - 5}" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">1.05m Slim Player Anchor [0.90m-1.20m]</text>
         <!-- Dynamic MVP Boss Line -->
         <line x1="20" y1="${bossTopY}" x2="500" y2="${bossTopY}" stroke="#ff6b6b" stroke-width="1.2" stroke-dasharray="4 3"/>
-        <text x="26" y="${Math.max(14, bossTopY - 5)}" fill="#ff6b6b" font-size="10.5" font-weight="bold" font-family="monospace">${bossH.toFixed(2)}m MVP Boss (${ratio}x Chibi · ${escapeHtml(shortAsset)})</text>
+        <text x="26" y="${Math.max(14, bossTopY - 5)}" fill="#ff6b6b" font-size="10.5" font-weight="bold" font-family="monospace">${bossH.toFixed(2)}m MVP Boss (${ratio}x Player)</text>
 
         <!-- Small Poring (0.55m) -->
-        <ellipse cx="145" cy="143" rx="18" ry="15" fill="#5ec27e" stroke="#a8f0be" stroke-width="1.5"/>
+        <ellipse cx="145" cy="${groundY - mobR}" rx="${mobR * 1.2}" ry="${mobR}" fill="#5ec27e" stroke="#a8f0be" stroke-width="1.5"/>
         <text x="145" y="174" text-anchor="middle" fill="#a8f0be" font-size="10" font-family="monospace">Poring (0.55m)</text>
 
-        <!-- Chibi Player Dummy (1.05m, 2.5 head-to-body ratio) -->
-        <circle cx="265" cy="112" r="13" fill="#ffd166" stroke="#fff" stroke-width="1.5"/>
-        <rect x="253" y="125" width="24" height="33" rx="7" fill="#3b82f6" stroke="#93c5fd" stroke-width="1.5"/>
-        <text x="265" y="174" text-anchor="middle" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">Chibi Player (1.05m)</text>
+        <!-- Slim Player Dummy (1.05m, 1:6 head-to-body) -->
+        <circle cx="265" cy="${playerTopY + playerHeadR}" r="${playerHeadR}" fill="#ffd166" stroke="#fff" stroke-width="1"/>
+        <rect x="${265 - playerHeadR}" y="${playerTopY + playerHeadR * 2}" width="${playerHeadR * 2}" height="${groundY - playerTopY - playerHeadR * 2}" rx="1" fill="#3b82f6" stroke="#93c5fd" stroke-width="1"/>
+        <text x="265" y="174" text-anchor="middle" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">Slim Player (1.05m)</text>
 
         <!-- Dynamic Orc Warlord MVP -->
-        <circle cx="405" cy="${headY}" r="16" fill="#e63946" stroke="#ffb4a2" stroke-width="1.5"/>
-        <rect x="381" y="${bodyY}" width="48" height="${bodyH}" rx="9" fill="#9d0208" stroke="#ff6b6b" stroke-width="2"/>
-        <path d="M 432 ${headY} L 456 148" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="405" cy="${bossTopY + bossHeadR}" r="${bossHeadR}" fill="#e63946" stroke="#ffb4a2" stroke-width="1.5"/>
+        <rect x="${405 - bossHeadR * 1.6}" y="${bossTopY + bossHeadR * 2}" width="${bossHeadR * 3.2}" height="${groundY - bossTopY - bossHeadR * 2}" rx="5" fill="#9d0208" stroke="#ff6b6b" stroke-width="2"/>
         <text x="405" y="174" text-anchor="middle" fill="#ff6b6b" font-size="10.5" font-weight="bold" font-family="monospace">Orc Warlord (${bossH.toFixed(2)}m)</text>
       </svg>
     `;
@@ -2025,9 +2029,9 @@ function renderChibiLineupSvg(proposal) {
         <!-- 0.65m Bush Cap -->
         <line x1="20" y1="118" x2="310" y2="118" stroke="#5ec27e" stroke-dasharray="3 2"/>
         <text x="25" y="114" fill="#5ec27e" font-size="10" font-family="monospace">0.65m Chest-High Bush Cap (Head Visible!)</text>
-        <!-- 1.05m Chibi Player -->
+        <!-- 1.05m Slim Player -->
         <line x1="20" y1="95" x2="500" y2="95" stroke="#ffd166" stroke-width="1.4" stroke-dasharray="4 3"/>
-        <text x="25" y="90" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">1.05m Chibi Player Head Always Above Foliage</text>
+        <text x="25" y="90" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">1.05m Slim Player Head Always Above Foliage</text>
 
         <!-- Grass (0.35m) -->
         <rect x="95" y="136" width="22" height="20" rx="4" fill="#529e47"/>
@@ -2037,10 +2041,10 @@ function renderChibiLineupSvg(proposal) {
         <ellipse cx="185" cy="137" rx="24" ry="19" fill="#346e36" stroke="#7ed987" stroke-width="1.2"/>
         <text x="185" y="172" text-anchor="middle" fill="#7ed987" font-size="10" font-family="monospace">Bush 0.65m</text>
 
-        <!-- Chibi Player (1.05m) -->
+        <!-- Slim Player (1.05m) -->
         <circle cx="275" cy="109" r="13" fill="#ffd166" stroke="#fff" stroke-width="1.5"/>
         <rect x="263" y="122" width="24" height="34" rx="6" fill="#3b82f6" stroke="#93c5fd" stroke-width="1.5"/>
-        <text x="275" y="172" text-anchor="middle" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">Chibi 1.05m</text>
+        <text x="275" y="172" text-anchor="middle" fill="#ffd166" font-size="10.5" font-weight="bold" font-family="monospace">Slim 1.05m</text>
 
         <!-- Pine Canopy Tree: 0.45m Red Trunk Collider vs 1.85m Green Walkable Canopy Overhang -->
         <ellipse cx="410" cy="64" rx="64" ry="44" fill="rgba(82,158,71,0.34)" stroke="#7ed987" stroke-width="1.5" stroke-dasharray="4 2"/>
@@ -2197,7 +2201,7 @@ function renderMapStructureEditor(m, prefix) {
     <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-strong);display:flex;flex-direction:column;gap:10px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div style="font-size:12px;font-weight:700;color:var(--joy-accent-text)">
-          🛠️ Interactive Map Structure &amp; Route Editor (Wrapped by AI Chibi Guardrails)
+          🛠️ Interactive Map Structure &amp; Route Editor (Wrapped by AI Scale Guardrails)
         </div>
         <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="applyInteractiveMapStructure('${escapeHtml(prefix)}')">
           ✨ Apply Structure Changes
@@ -2249,9 +2253,9 @@ function renderAiCopilotBar() {
   const snaps = DATA.studioSnapshots || [];
 
   const presets = [
-    { label: '✨ Entity: Orc Warlord -> Raider 1.95m (Take A)', prompt: 'Swap Orc Warlord to Take A Orc Raider at 1.95m' },
-    { label: '✨ Entity: Orc Warlord -> Colossal Golem 2.20m + 1800 HP', prompt: 'Swap Orc Warlord to Colossal Golem 2.20m and set HP to 1800' },
-    { label: '✨ Entity: Orc Warlord -> Brute 2.10m (Recommended)', prompt: 'Reset Orc Warlord to Take B Orc Brute 2.10m and HP 1445' },
+    { label: '✨ Entity: Orc Warlord -> Raider 7.35m (Take A)', prompt: 'Swap Orc Warlord to Take A Orc Raider at 7.35m' },
+    { label: '✨ Entity: Orc Warlord -> Colossal Golem 9.00m + 1800 HP', prompt: 'Swap Orc Warlord to Colossal Golem 9.00m and set HP to 1800' },
+    { label: '✨ Entity: Orc Warlord -> Brute 7.35m (Recommended)', prompt: 'Reset Orc Warlord to Take B Orc Brute 7.35m and HP 1445' },
     { label: '✨ Brush: Sunlit Woods (Tree 2.5% + Exclude Dead Pine)', prompt: 'Open sunlit sparse woods: set pine tree density to 2.5% and disable dead pine' },
     { label: '✨ Brush: Balanced Border (Tree 4.0%, Bush 10%)', prompt: 'Set pine forest border to balanced 4.0% canopy tree and exclude dead pine' },
     { label: '✨ Map: Widen Highway to 7.5m + Expand Watchtower', prompt: 'Widen highway to 7.5m and expand Watchtower 2F to 3.5m at (-11.0, -2.5)' },
@@ -2264,11 +2268,11 @@ function renderAiCopilotBar() {
         <div>
           <div class="page-hero__eyebrow" style="margin-bottom:2px">🤖 AI STUDIO CO-PILOT AGENT · NATURAL-LANGUAGE EDIT WRAPPER (3 PILLARS)</div>
           <div style="font-size:13px;color:var(--joy-text-secondary)">
-            Type any natural-language instruction (or click a 1-click preset below) to edit <strong>3D Entities &amp; Stats</strong>, <strong>Biome Brushes</strong>, or <strong>Map Routes &amp; 3D Structures</strong>. Automatically validates Chibi <code>1.05m</code> scale guardrails and saves a 1-click Undo snapshot.
+            Type any natural-language instruction (or click a 1-click preset below) to edit <strong>3D Entities &amp; Stats</strong>, <strong>Biome Brushes</strong>, or <strong>Map Routes &amp; 3D Structures</strong>. Automatically validates Player <code>1.05m</code> scale guardrails and saves a 1-click Undo snapshot.
           </div>
         </div>
         <div class="chip-row">
-          <span class="joy-badge joy-badge--success joy-badge--sm">Chibi 1.05m Guardrail Active</span>
+          <span class="joy-badge joy-badge--success joy-badge--sm">Player 1.05m Guardrail Active</span>
           <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="launch3dClient('map_builder')">
             🗺️ Preview in 3D Map Builder
           </button>
@@ -2286,7 +2290,7 @@ function renderAiCopilotBar() {
           id="aiStudioPromptInput"
           class="joy-input"
           type="text"
-          placeholder="Tell the AI Agent what to edit (e.g., 'Swap Orc Warlord to Golem 2.20m with 1800 HP', 'Widen highway to 7.5m and move Watchtower to (-11, -2.5)', 'Set pine tree density to 2.5% and disable dead pine')..."
+          placeholder="Tell the AI Agent what to edit (e.g., 'Swap Orc Warlord to Golem 9.00m with 1800 HP', 'Widen highway to 7.5m and move Watchtower to (-11, -2.5)', 'Set pine tree density to 2.5% and disable dead pine')..."
           style="flex:1;min-width:280px;height:36px;font-size:12.5px"
           onkeydown="if(event.key==='Enter'){event.preventDefault();runAiStudioAgent();}"
         />
@@ -2338,12 +2342,12 @@ function renderReviewInbox() {
         <div class="page-hero__eyebrow">99% AUTOMATED PIPELINE · 1% HUMAN APPROVAL &amp; FEEDBACK GATE</div>
         <h1 class="page-hero__title">Step 3 Review Gate Inbox — 1-Map Pilot (<code>prontera_south_field</code>)</h1>
         <p class="page-hero__sub">
-          Every asset, biome brush, and map blueprint embeds the <strong>Chibi Toddler Player Scale Anchor (${scaleAnchor.heightRangeM[0].toFixed(2)}m–${scaleAnchor.heightRangeM[1].toFixed(2)}m, Ref ${scaleAnchor.referenceHeightM.toFixed(2)}m)</strong>
+          Every asset, biome brush, and map blueprint embeds the <strong>Slim Player Scale Anchor (${scaleAnchor.heightRangeM[0].toFixed(2)}m–${scaleAnchor.heightRangeM[1].toFixed(2)}m, Ref ${scaleAnchor.referenceHeightM.toFixed(2)}m)</strong>
           into its generator contract and passes automated machine gates before reaching this inbox.
         </p>
       </div>
       <div class="chip-row">
-        <span class="joy-badge joy-badge--brand">Chibi Player: ${scaleAnchor.referenceHeightM.toFixed(2)}m</span>
+        <span class="joy-badge joy-badge--brand">Slim Player: ${scaleAnchor.referenceHeightM.toFixed(2)}m</span>
         <span class="joy-badge joy-badge--success">${proposals.filter(p => p.status === 'approved').length}/${proposals.length} Approved</span>
         <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="undoStudioSnapshot()" ${snaps.length === 0 ? 'disabled' : ''}>
           ↩ Undo Last Commit (${snaps.length})
@@ -2448,7 +2452,7 @@ function renderReviewInbox() {
                 </div>
 
                 <!-- Visual Scale / Cutaway / Blueprint Diagram -->
-                ${renderChibiLineupSvg(prop)}
+                ${renderPlayerLineupSvg(prop)}
 
                 <!-- Multi-Take Picker -->
                 <div>
