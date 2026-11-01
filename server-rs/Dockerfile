@@ -17,6 +17,7 @@ RUN mkdir src \
 COPY schemas /usr/src/schemas
 COPY contracts/content /usr/src/contracts/content
 COPY content/bestiary /usr/src/content/bestiary
+COPY content/dungeons /usr/src/content/dungeons
 COPY content/generated /usr/src/content/generated
 COPY content/towns /usr/src/content/towns
 COPY content/maps /usr/src/content/maps
