@@ -1928,6 +1928,12 @@
         gap: 4px !important;
         padding: 4px 6px !important;
       }
+      /* F-156 B3: theater makes the canvas the full viewport, so the fixed zone-bgm mini-player (bottom:8px,
+         ~56px tall on phones) sat on top of the toolbars; lift them clear of it. */
+      .joy-spatial-shell[data-theater="true"] #atlasOlToolbarPanel,
+      .joy-spatial-shell[data-theater="true"] #atlasMap3dToolbarPanel {
+        bottom: 72px !important;
+      }
       #atlasOlPersonaTelemetryPill,
       #atlasMap3dPersonaTelemetryPill {
         display: none;
