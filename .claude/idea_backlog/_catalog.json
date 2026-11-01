@@ -1545,5 +1545,11 @@
     "title": "Atlas web app in local k8s deployed via release: images and Game DB",
     "created_at": "2026-11-01T04:47:50.184957+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-247",
+    "title": "Demi-human mob share rising by tier",
+    "created_at": "2026-11-01T05:47:00.269617+00:00",
+    "promoted_to": null
   }
 ]
