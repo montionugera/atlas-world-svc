@@ -334,6 +334,11 @@ storybook_tests() {
   ( cd "$REPO_ROOT" && node atelier/atlas-world-panels/tests/smoke/run.mjs )
 }
 
+atlas_web_tests() {
+  # I-246: read-only guard, hidden controls, image contents, routing, the verify script.
+  ( cd "$REPO_ROOT/scripts" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" tests/atlas-web-*.test.mjs )
+}
+
 map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/map-builder/tests/*.test.mjs ) }
 
 # F-156: atlas explorer probes (scripts/probes/). atlas_ux_probe.py is pure Python (no server, no browser);
@@ -432,6 +437,7 @@ run_section "system deps: binary check (scripts/system-deps.json)" system_deps_c
 run_section "art-forge: node --test suite"  art_forge_tests
 run_section "atlas-world-panels: node --test suite" storybook_tests
 run_section "map-builder: node --test suite" map_builder_tests
+run_section "atlas web: node --test suite" atlas_web_tests
 run_section "atlas explorer: UX + touch probes (F-156)" explorer_probes
 run_section "combat-lab: model gates"       combat_lab
 run_section "content: spine gates (--only=spine)" content_spine

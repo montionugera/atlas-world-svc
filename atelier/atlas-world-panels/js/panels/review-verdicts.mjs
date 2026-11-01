@@ -280,7 +280,11 @@ function paintStatus() {
   const c = store.counts();
   const err = getSaveError();
   const summary = c.reject + " rejected · " + c.rebuild + " need rebuild";
-  if (err) {
+  if (document.body.hasAttribute("data-read-only")) {
+    // No sync runs on a release page, so never claim a save.
+    status.style.color = "var(--text-dim)";
+    status.textContent = summary + " — read-only release page; marks are not saved here.";
+  } else if (err) {
     status.style.color = "var(--err)";
     status.textContent = "⚠ " + summary + " — " + err;
   } else if (store.unsavedCount() > 0) {

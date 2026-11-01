@@ -252,6 +252,18 @@
       text-overflow: clip;
       max-width: none;
     }
+    #topbarStatus a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    @media (max-width: 480px) {
+      #topbarStatus a {
+        padding: 16px 0;
+        margin: -16px 0;
+        display: inline-block;
+      }
+    }
     .scroll-stage {
       flex: 1;
       overflow-y: auto;
@@ -2452,6 +2464,40 @@
     [id^="atlasFieldComposable_"] polyline {
       vector-effect: none !important;
     }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    @media (pointer: coarse) {
+      #atlasShapeToggle, .atlas-shape-target { min-height: 44px; }
+    }
+    /* read-only controls */
+    body[data-read-only] [data-write-control],
+    body[data-read-only] [onclick*="rebuildDb"],
+    body[data-read-only] [onclick*="triggerBalanceSim"],
+    body[data-read-only] [onclick*="submitReviewVerdict"],
+    body[data-read-only] input[onclick*="togglePaletteAsset"],
+    body[data-read-only] [onclick*="undoStudioSnapshot"],
+    body[data-read-only] [onclick*="runAiStudioAgent"],
+    body[data-read-only] [onclick*="applyInteractiveMapStructure"],
+    body[data-read-only] [onchange*="applyInteractiveMapStructure"],
+    body[data-read-only] [onchange*="togglePaletteAsset"],
+    body[data-read-only] [onkeydown*="runAiStudioAgent"],
+    body[data-read-only] [onclick*="launch3dClient"],
+    body[data-read-only] [onclick*="saveStudioRationaleForm"],
+    body[data-read-only] [onclick*="toggleStudioQualityPillar"],
+    body[data-read-only] [onchange*="toggleStudioQualityPillar"],
+    body[data-read-only] [onclick*="triggerStudioChildGeneration"],
+    body[data-read-only] [onclick*="saveIncrementalComposableFeaturesToDisk"] { display: none !important; }
+    body[data-read-only] label[onclick*="togglePaletteAsset"] { pointer-events: none; }
+    /* end read-only controls */
   </style>
 </head>
 <body>
@@ -2491,7 +2537,7 @@
     <nav class="nav" id="sidebarNav"></nav>
 
     <div class="sidebar-footer">
-      <span>Web Studio (:8788)</span>
+      <span id="sidebarVersion">Web Studio (:8788)</span>
       <span class="joy-badge joy-badge--brand joy-badge--sm">joy-design</span>
     </div>
   </aside>
@@ -2509,7 +2555,7 @@
           <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="window.history.forward()" title="Browser Forward" aria-label="Browser Forward"><span class="topbar__history-label">Forward </span>→</button>
         </div>
         <span class="topbar__title" id="topbarTitle">Interactive World Map &amp; Monster Atlas</span>
-        <span class="joy-badge joy-badge--neutral joy-badge--sm" id="topbarStatus">Ready</span>
+        <span class="joy-badge joy-badge--neutral joy-badge--sm" id="topbarStatus" role="status">Ready</span>
       </div>
       <div class="topbar__end">
         <select id="dropRateSelect" class="joy-select" aria-label="Item Drop Rate Multiplier" onchange="setDropRate(this.value)">
@@ -2546,6 +2592,7 @@
       <div class="subview-bar" id="subViewBar" role="group" aria-label="View" hidden></div>
       <main class="content-area" id="mainContent"></main>
       <div id="panelHost" hidden></div>
+      <div id="atlasShapeLive" role="status" class="sr-only"></div>
     </div>
   </div>
 

@@ -31,9 +31,9 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 try:  # imported as scripts.catalog_explorer_web (tests) ...
-    from scripts.atlas_world_web import review_queue, routes as web_routes
+    from scripts.atlas_world_web import review_queue, routes as web_routes, runtime as web_runtime
 except ImportError:  # ... or run as a script, where scripts/ is sys.path[0]
-    from atlas_world_web import review_queue, routes as web_routes  # type: ignore
+    from atlas_world_web import review_queue, routes as web_routes, runtime as web_runtime  # type: ignore
 
 ROOT = Path(__file__).resolve().parent.parent
 BUILD_SCRIPT = ROOT / "scripts" / "build_catalog_db.py"
@@ -429,6 +429,8 @@ def load_theme_css() -> bytes:
 
 
 def ensure_catalog_db() -> None:
+    if web_runtime.read_only():
+        return
     needs_build = not DB_PATH.exists()
     if not needs_build:
         try:
@@ -1836,7 +1838,7 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             return
         parsed = urlparse(self.path)
         if parsed.path in ("/", "/index.html"):
-            raw = load_modular_index_html().encode("utf-8")
+            raw = web_runtime.mark_body(load_modular_index_html()).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(raw)))
@@ -1862,13 +1864,7 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             file_name, content_type = vendor_assets[parsed.path]
             target = ROOT / "tools" / "mac-observatory" / "vendor" / file_name
             if target.is_file():
-                raw = target.read_bytes()
-                self.send_response(200)
-                self.send_header("Content-Type", content_type)
-                self.send_header("Cache-Control", "public, max-age=86400")
-                self.send_header("Content-Length", str(len(raw)))
-                self.end_headers()
-                self.wfile.write(raw)
+                web_runtime.send_cacheable(self, target.read_bytes(), content_type, "public, max-age=86400")
                 return
             self._send_json({"ok": False, "error": "Vendored asset not found"}, status=404)
             return
@@ -1891,15 +1887,11 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
 
         if parsed.path.startswith("/thumbs/"):
             strict = "strict=1" in (parsed.query or "") or self.headers.get("X-Strict-Thumb") == "1"
-            target = resolve_thumb_file(parsed.path, allow_fallback=not strict)
+            target = resolve_thumb_file(parsed.path, allow_fallback=not (strict or web_runtime.read_only()))
             if target and target.exists():
-                raw = target.read_bytes()
-                self.send_response(200)
-                self.send_header("Content-Type", "image/webp")
-                self.send_header("Cache-Control", "public, max-age=86400")
-                self.send_header("Content-Length", str(len(raw)))
-                self.end_headers()
-                self.wfile.write(raw)
+                web_runtime.send_cacheable(self, target.read_bytes(), "image/webp", "public, max-age=86400")
+                return
+            if not strict and web_runtime.send_missing_thumb(self):
                 return
             self._send_json({"ok": False, "error": "Thumbnail not found"}, status=404)
             return
@@ -1950,11 +1942,15 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_DELETE(self) -> None:
+        if web_runtime.refuse_write(self):
+            return
         if web_routes.dispatch(self, "DELETE"):
             return
         self._send_json({"ok": False, "error": "Not found"}, status=404)
 
     def do_POST(self) -> None:
+        if web_runtime.refuse_write(self):
+            return
         if web_routes.dispatch(self, "POST"):
             return
         parsed = urlparse(self.path)

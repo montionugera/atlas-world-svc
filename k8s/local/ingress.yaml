@@ -1,4 +1,5 @@
-# Local Kubernetes Ingress for Atlas World Studio (:8788 on host) and cluster services.
+# Local Kubernetes Ingress for Atlas World (cluster workload atlas-world-web) and
+# Atlas World Studio host process (atlas-edit on :8788 on host).
 # Routes *.joymify.local.com (and legacy *.joymify.local) via ingress-nginx so
 # both the Mac and Tailscale devices (iPad / iPhone via tailscale-dns) can access
 # Atlas World without specifying a port.
@@ -50,7 +51,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: atlas-world-studio-host
+                name: atlas-world-web
                 port:
                   number: 8788
     - host: atlas.joymify.local.com
@@ -60,10 +61,20 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: atlas-world-studio-host
+                name: atlas-world-web
                 port:
                   number: 8788
     - host: atlas-world.joymify.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: atlas-world-web
+                port:
+                  number: 8788
+    - host: atlas-edit.joymify.local.com
       http:
         paths:
           - path: /

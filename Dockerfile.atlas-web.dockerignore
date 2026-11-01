@@ -1,0 +1,15 @@
+# Dockerfile.atlas-web.dockerignore — BuildKit takes this over the root .dockerignore.
+*
+!scripts/**
+!contracts/content/**
+!content/**
+!tools/mac-observatory/**
+!docs/superpowers/specs/**
+!docs/story/undertow/**
+!game-client/assets/**
+!atelier/atlas-world-panels/**
+!atelier/mapforge/lib/**
+!atelier/art-forge/runs/**
+!atelier/art-forge/briefs/**
+!atelier/story-explorer/**
+!atelier/combat-lab/**

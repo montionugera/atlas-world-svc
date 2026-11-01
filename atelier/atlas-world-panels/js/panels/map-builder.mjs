@@ -54,8 +54,8 @@ function mount() {
       handle = result;
       if (!result.ready) {
         badge = null;
-        next.appendChild(recheckButton());
       }
+      if (!result.ready && !result.excluded) next.appendChild(recheckButton());
       root.replaceChildren(next);
       return result;
     })

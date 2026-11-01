@@ -27,7 +27,8 @@ Keep cargo light on a laptop: Gate 1 caps workers at `ATLAS_MAX_WORKERS` (defaul
 ## Service endpoints (local)
 
 - `ws://localhost:2567` — `server-rs` WebSocket gateway (`PORT` env, default 2567)
-- `http://localhost:8788` — atlas-world web surface (`scripts/catalog_explorer_web.py`)
+- `http://atlas-world.joymify.local.com` — read-only release app (cluster workload `deployment/atlas-world-web`)
+- `http://atlas-edit.joymify.local.com` / `http://localhost:8788` — edit host (`python3 scripts/catalog_explorer_web.py --port 8788`)
 - `http://localhost:3001` — React client
 
 ## Non-obvious invariants
@@ -46,7 +47,7 @@ Rust: `server-rs/tests/` and inline unit tests (`cargo test`). TS: jest in `cont
 - TypeScript strict mode; no unjustified `any`. Prettier + ESLint must pass.
 - Trunk-based: short-lived `feature/`, `fix/`, `docs/` branches off `main`; **squash-merge only**; conventional commit subjects (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`), kept short.
 - This repo is opted into **ps-release-workflow** (`.release.json` present) — backlog/feature work routes through `/ps-release-workflow:*` skills and `.claude/idea_backlog/` + `.claude/refined_backlog/`.
-- **Every produced artifact (maps, sheets, renders, reports) must be observable in a review surface** — the **atlas-world web surface** (`scripts/catalog_explorer_web.py`, `:8788` — the asset storybook's panels live there now; the nginx storybook pod and its `atlas-storybook` hostname are retired, the hostname permanently redirects to `/?tab=assets`); wiring new artifact types into it is part of the producing feature's acceptance criteria (owner rule, 2026-08-15). The maps parity gate (`atelier/atlas-world-panels/tests/maps-index.test.mjs`) enforces this for mapforge sheets, and `tests/panel-parity.test.mjs` fails if a storybook tab has no atlas-world panel.
+- **Every produced artifact (maps, sheets, renders, reports) must be observable in a review surface** — a review surface now means the edit host (`:8788`, `atlas-edit.joymify.local.com`) before shipping and the release app (`atlas-world.joymify.local.com`) after (the asset storybook's panels live there now; the nginx storybook pod and its `atlas-storybook` hostname are retired, the hostname permanently redirects to `/?tab=assets`); wiring new artifact types into it is part of the producing feature's acceptance criteria (owner rule, 2026-08-15). The maps parity gate (`atelier/atlas-world-panels/tests/maps-index.test.mjs`) enforces this for mapforge sheets, and `tests/panel-parity.test.mjs` fails if a storybook tab has no atlas-world panel.
 
 ## Further docs
 

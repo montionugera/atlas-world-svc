@@ -319,6 +319,7 @@ function attachRerunAffordance(row, cell, briefId, entry) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "forge-rerun";
+  btn.dataset.writeControl = "";
   btn.textContent = "↻";
   btn.title = "Issue a re-run work order for " + cellLabel(entry);
   row.insertBefore(btn, cell.nextSibling);
@@ -646,6 +647,10 @@ async function saveDrafts() {
     sessionOrders = sessionOrders.filter((o) => !sent.has(o.id));
     bufferSaved = writeOrderBuffer({ storage: browserStorage(), orders: sessionOrders });
   } catch (err) {
+    if (err && err.readOnly) {
+      saveError = err.message;
+      return;
+    }
     console.error("[forge] saving work orders failed:", err);
     saveError =
       "Not saved to review-queue.json (" +
@@ -711,6 +716,7 @@ async function loadOrders(sectionEl) {
   exportBtn.type = "button";
   exportBtn.className = "forge-export-btn";
   if (isHosted()) {
+    exportBtn.dataset.writeControl = "";
     exportBtn.dataset.act = "save-work-orders";
     exportBtn.addEventListener("click", saveDrafts);
     saveBtn = exportBtn;

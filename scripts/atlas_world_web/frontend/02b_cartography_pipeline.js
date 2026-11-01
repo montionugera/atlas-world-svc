@@ -722,18 +722,19 @@ function saveIncrementalComposableFeaturesToDisk() {
     quest_rings: [...(ATLAS_INCREMENTAL_CUSTOM_FEATURES.quest_rings || [])]
   };
   sp.mapFeatureLayers.persisted_custom_features = snapshot;
+  const showSaved = () => {
+    const badgeEl = typeof document !== 'undefined' ? document.getElementById('atlasComposableSaveStatusBadge') : null;
+    if (badgeEl) {
+      badgeEl.textContent = `SAVED SNAPSHOT #${ATLAS_SAVED_LAYER_SNAPSHOT_COUNT}`;
+    }
+  };
   if (typeof fetch === 'function') {
-    try {
-      fetch('/api/studio/map-layers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ persisted_custom_features: snapshot })
-      }).catch(() => {});
-    } catch (_e) {}
-  }
-  const badgeEl = typeof document !== 'undefined' ? document.getElementById('atlasComposableSaveStatusBadge') : null;
-  if (badgeEl) {
-    badgeEl.textContent = `SAVED SNAPSHOT #${ATLAS_SAVED_LAYER_SNAPSHOT_COUNT}`;
+    atlasWrite('/api/studio/map-layers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ persisted_custom_features: snapshot })
+    }).then((res) => { if (res.ok) showSaved(); else console.error('[atlas] map layer save refused: HTTP ' + res.status); })
+      .catch((err) => { if (!err.readOnly) console.error('[atlas] map layer save failed:', err); });
   }
   return {
     ok: true,

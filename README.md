@@ -234,8 +234,30 @@ xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.clie
 | **Metrics (Prometheus)** | `http://localhost:2567/metrics`| Live server tick & entity diagnostic metrics |
 | **Dashboards (Grafana)** | `http://localhost:3000` | Analytics dashboards (admin/admin) |
 | **React Interface** | `http://localhost:3001` | Browser-based generic client |
-| **World Studio & Semantic-Zoom Atlas** | `http://localhost:8788` | Interactive 4-Layer World Studio, 15 Town Street Blueprints & 16 Multi-Floor Dungeon Sub-Maps |
-| **Asset Library (formerly the asset storybook)** | `http://localhost:8788/?tab=assets` | 3D/2D asset classes, SFX & music, concept art, coverage, map sheets, Map Builder, review verdicts. `atlas-storybook.joymify.local.com` redirects here; the nginx storybook pod is retired |
+| **Atlas World (Release App)** | `http://atlas-world.joymify.local.com/` | Read-only release app deployed as a local Kubernetes cluster workload (`deployment/atlas-world-web`) |
+| **Atlas Edit (Edit Host)** | `http://atlas-edit.joymify.local.com/` (`:8788`) | Host process for interactive editing, writing reviews, and running tools (`python3 scripts/catalog_explorer_web.py --port 8788`) |
+| **Asset Library (formerly storybook)** | `http://atlas-world.joymify.local.com/?tab=assets` | 3D/2D asset classes, SFX & music, concept art, coverage, map sheets (the read-only host does not offer Map Builder or verdicts). `atlas-storybook.joymify.local.com` redirects here |
+
+### Atlas Web Hostnames & Operational Lifecycle
+
+The atlas web surface operates on two distinct hostnames:
+1. **Release Host (`http://atlas-world.joymify.local.com/`):**
+   - Cluster workload (`deployment/atlas-world-web` in namespace `atlas-world`).
+   - Served in read-only mode (`ATLAS_READ_ONLY=1`) from the image built from the release commit (`atlas-world-web:local`).
+   - Write actions return HTTP 403 Forbidden; write controls (buttons, forms) are hidden in the UI; top bar displays `Read-only · <release> · <short-commit>`.
+2. **Edit Host (`http://atlas-edit.joymify.local.com/` or `http://localhost:8788`):**
+   - Host process on the developer's machine running with write access enabled.
+   - Start command: `python3 scripts/catalog_explorer_web.py --port 8788`
+   - **502 Bad Gateway:** If `http://atlas-edit.joymify.local.com/` returns `502 Bad Gateway`, it simply means the local host process is not running on port 8788.
+
+#### Build & Verification Tooling
+- **Build Image:** `scripts/build-atlas-web-image.sh <commit>` builds the container image `atlas-world-web:local` for the specified git commit.
+- **Verify Endpoint:** `scripts/verify-atlas-web.sh` checks that `http://atlas-world.joymify.local.com` serves the expected commit and release, one concept-art md5, and one catalog count.
+- **Deploy:** `./scripts/deploy-local.sh` (or `psrw ship --deploy`) deploys the stack to the local Kubernetes cluster. Note that `psrw ship` only warns on a failed deploy rather than halting the merge.
+
+#### Known Operational Limits
+- **Page follows deploy, not merge:** The release web page reflects the last release deployment, not the last git merge. After `ship --no-deploy` or `promote --direct`, the web app remains on its previous commit until `./scripts/deploy-local.sh` is executed from the release branch (`_release` worktree). `scripts/verify-atlas-web.sh` run from `_release` will report if the cluster pod is behind HEAD.
+- **Older branch deployments:** Deploying from an older branch reapplies that branch's ingress rules.
 
 ---
 
@@ -308,10 +330,15 @@ The real-time game state replication protocol uses schema-compiled Google FlatBu
 | `PORT` | `2567` | Game WebSocket & primary HTTP gateway port |
 | `AGONES_ENABLED` | `false` (local) / `true` (prod) | Whether to connect to Agones Kubernetes sidecar |
 | `AGONES_SDK_PORT` | `9357` | Port for the Agones SDK sidecar gRPC/HTTP interface |
+| `ATLAS_READ_ONLY` | `0` (edit host) / `1` (release pod) | When `1`, runs web app in read-only mode (403 on writes, hides write UI) |
+| `ATLAS_RELEASE` | `1.19` | Release version string displayed in the web app top bar |
+| `ATLAS_COMMIT` | `<git commit sha>` | Git commit hash displayed in the web app top bar and `/api/runtime` |
 
 ---
 
 ## 🧭 Atlas World & Map Studio — Unified Spatial Engine (`:8788/?tab=studio`)
+
+**Upright monsters (F-167):** dungeon spawn rows can carry `body_plan: upright_monster` and `body_kin`, a shape tag rather than a race. Choices live in `content/studio/mob_body_plan_picks.json`, and `python3 scripts/mob_body_plan_pass.py` applies them (`--check` validates without writing). Gate `G-MOB-SHAPE` (`scripts/tests/mob-shape-gate.test.mjs`) holds the share per tier and blocks filler boss names. The spawn matrix has an "Upright monster" toggle, stored in the URL as `shape=upright`.
 
 Launch the Catalog & Spatial Studio Web Observatory:
 ```bash

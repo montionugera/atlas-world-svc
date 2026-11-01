@@ -54,7 +54,7 @@ export function initReview(committed) {
     },
   });
   ensureBar();
-  if (hosted()) startHostedSync(committed);
+  if (hosted() && !document.body.hasAttribute("data-read-only")) startHostedSync(committed);
   return store;
 }
 
@@ -188,6 +188,7 @@ export function attachVerdictControls(card, key) {
 
   const bar = document.createElement("div");
   bar.className = "verdict-bar";
+  bar.dataset.writeControl = "";
 
   for (const verdict of ["reject", "rebuild"]) {
     const btn = document.createElement("button");
@@ -329,6 +330,11 @@ export function refreshBar() {
   if (!bar || !store) return;
   const n = store.unsavedCount();
   const label = n + (n === 1 ? " unsaved mark" : " unsaved marks");
+  if (hosted() && document.body.hasAttribute("data-read-only")) {
+    // A release page runs no sync, so a leftover buffer is never "saving".
+    bar.hidden = true;
+    return;
+  }
   if (hosted()) {
     // Hidden = everything is in review-queue.json. Visible = a save is in flight or failed.
     bar.hidden = n === 0 && !saveError;

@@ -1,0 +1,1252 @@
+{
+  "_note": "F-167 picks. old_name is the row's name in the atlas just before the pass that set new_name: the rewritten entries (fix round 1) hold the earlier picks' names, the rest the original names.",
+  "keep_robotic": [
+    "zone-dungeon-kiln-cellar/B3/2",
+    "zone-dungeon-medallion-heart-vault/B3/3",
+    "zone-dungeon-chronometer-foundry/3F/3",
+    "zone-catacomb-forbidden-path-orrery/B3/3"
+  ],
+  "entries": [
+    {
+      "row": "zone-catacomb-apostate-dynamo/B1/1",
+      "old_name": "[Mini-Boss] Cog-Jawed Hammer-Hulk",
+      "new_name": "[Mini-Boss] Dynamo Coil-Fist",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-apostate-dynamo/B1/2",
+      "old_name": "[Raid Boss] Riveted Chain-Reaper",
+      "new_name": "[Raid Boss] Leyden Jar Arc-Thrower",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-apostate-dynamo/B1/3",
+      "old_name": "[MVP] Cracked-Skull Corpse Ox Despoiler",
+      "new_name": "[MVP] Drake-Skull Revenant of the Dynamo Seal",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-apostate-dynamo/B2/1",
+      "old_name": "[Mini-Boss] Steam-Venting Gear-Lancer",
+      "new_name": "[Mini-Boss] Steam-Venting Turbine Lancer",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-apostate-dynamo/B2/2",
+      "old_name": "[Raid Boss] Flywheel-Chested Driller",
+      "new_name": "[Raid Boss] Flywheel-Chested Ground-Breaker",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-apostate-dynamo/B2/3",
+      "old_name": "[MVP] Mourning-Black Husk Boar Destroyer",
+      "new_name": "[MVP] Thunder-Scale Bone Wyrmling",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-apostate-dynamo/B3/1",
+      "old_name": "[Mini-Boss] Brass-Plated Spring-Stalker",
+      "new_name": "[Mini-Boss] Brass Capacitor Sentry",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-apostate-dynamo/B3/2",
+      "old_name": "[Raid Boss] Gear-Toothed Cutter-Walker",
+      "new_name": "[Raid Boss] Galvanic Scythe-Carriage",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-apostate-dynamo/B3/3",
+      "old_name": "[MVP] Tomb-Grey Skeleton Bear Annihilator",
+      "new_name": "[MVP] Tri-Scale Wyrm-Marshal Volcanor",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-catacomb-branded-bellows/B1/1",
+      "old_name": "[Mini-Boss] B1 Gate Overseer",
+      "new_name": "[Mini-Boss] Brass-Plated Hammer-Hulk",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-branded-bellows/B1/2",
+      "old_name": "[Raid Boss] B1 Seal Warden",
+      "new_name": "[Raid Boss] Gear-Toothed Chain-Reaper",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-branded-bellows/B1/3",
+      "old_name": "[MVP] Shroud-Wrapped Corpse Ox Despoiler",
+      "new_name": "[MVP] Brass-Branded Pilgrim Revenant",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-branded-bellows/B2/1",
+      "old_name": "[Mini-Boss] B2 Gate Overseer",
+      "new_name": "[Mini-Boss] Copper-Veined Gear-Lancer",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-branded-bellows/B2/2",
+      "old_name": "[Raid Boss] B2 Seal Warden",
+      "new_name": "[Raid Boss] Dial-Eyed Driller",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-branded-bellows/B2/3",
+      "old_name": "[MVP] Bone-White Husk Boar Destroyer",
+      "new_name": "[MVP] Gear-Spined Bellows Ghoul",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-branded-bellows/B3/1",
+      "old_name": "[Mini-Boss] B3 Gate Overseer",
+      "new_name": "[Mini-Boss] Piston-Armed Spring-Stalker",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-branded-bellows/B3/2",
+      "old_name": "[Raid Boss] B3 Seal Warden",
+      "new_name": "[Raid Boss] Spring-Coiled Cutter-Walker",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-branded-bellows/B3/3",
+      "old_name": "[MVP] Tooth-Studded Skeleton Bear Annihilator",
+      "new_name": "[MVP] Hierophant Vorn, Brass-Branded Lich",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-dark-omens-coral/B1/1",
+      "old_name": "[Mini-Boss] Deep-Blue Bone Hound Slasher",
+      "new_name": "[Mini-Boss] Barnacled Tide-Priest",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-dark-omens-coral/B1/2",
+      "old_name": "[Raid Boss] Barnacle-Hided Catfish Chieftain",
+      "new_name": "[Raid Boss] Maul-Swinging Moray-Headed Reef-Breaker",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-catacomb-dark-omens-coral/B1/3",
+      "old_name": "[MVP] Salt-White Drake-Skull Juggernaut",
+      "new_name": "[MVP] Deep-Cantor Imoth, Anglerfish-Headed Priest",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-catacomb-dark-omens-coral/B2/1",
+      "old_name": "[Mini-Boss] Tide-Worn Caiman Clubber",
+      "new_name": "[Mini-Boss] Old Brine-Shell Crab",
+      "race_key": "fish"
+    },
+    {
+      "row": "zone-catacomb-dark-omens-coral/B2/2",
+      "old_name": "[Raid Boss] Reef-Red Scorpion Executioner",
+      "new_name": "[Raid Boss] Bloated Pilgrim of the Trench",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-dark-omens-coral/B2/3",
+      "old_name": "[MVP] Trench-Black Pike Behemoth",
+      "new_name": "[MVP] Whale-Skulled Abbot Morgrun",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-catacomb-dark-omens-coral/B3/0",
+      "old_name": "Kelp-Draped Drake-Skull Lurker",
+      "new_name": "Harpoon-Carrying Lanternfish",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-catacomb-dark-omens-coral/B3/1",
+      "old_name": "[Mini-Boss] Sea-Green Gecko Stalker",
+      "new_name": "[Mini-Boss] Spear-Gripping Hammerhead Zealot",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-catacomb-dark-omens-coral/B3/2",
+      "old_name": "[Raid Boss] Foam-Flecked Mantis Crusher",
+      "new_name": "[Raid Boss] Anchor-Dragging Crab-Armed Reef King",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-catacomb-dark-omens-coral/B3/3",
+      "old_name": "[MVP] Fin-Crested Gar Despoiler",
+      "new_name": "[MVP] Tide-Herald Pelagios",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B1/1",
+      "old_name": "[Mini-Boss] Rib-Plated Cave Bear Slasher",
+      "new_name": "[Mini-Boss] Ossuary Gate Seal-Watcher",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B1/2",
+      "old_name": "[Raid Boss] Mourning-Black Rock Scorpion Marauder",
+      "new_name": "[Raid Boss] Memory-Glass Wraith Procession",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B1/3",
+      "old_name": "[MVP] Hollow-Socketed Dire Wolf Destroyer",
+      "new_name": "[MVP] Prefect Dunmor, Elk-Skulled Gate-Marshal",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B2/1",
+      "old_name": "[Mini-Boss] Grave-Dusted Husk Boar Hurler",
+      "new_name": "[Mini-Boss] Drowned Astrolabe Hauler",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B2/2",
+      "old_name": "[Raid Boss] Bleached Armoured Roach Rampager",
+      "new_name": "[Raid Boss] Stag-Skulled Sextant-Bearer",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B2/3",
+      "old_name": "[MVP] Rib-Plated Boar-Skull Behemoth",
+      "new_name": "[MVP] Goat-Skulled Astrologer Yssa",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B3/1",
+      "old_name": "[Mini-Boss] Skull-Faced Grave Wolf Skirmisher",
+      "new_name": "[Mini-Boss] Chisel-Bearing Jackal Mason",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B3/2",
+      "old_name": "[Raid Boss] Cracked-Skull Basilisk Crusher",
+      "new_name": "[Raid Boss] Lizard-Headed Gallery Architect",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B3/3",
+      "old_name": "[MVP] Grave-Dusted Jackal Despoiler",
+      "new_name": "[MVP] First Seal-Scribe Automaton",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B4/1",
+      "old_name": "[Mini-Boss] Tooth-Studded Warthog Bruiser",
+      "new_name": "[Mini-Boss] Void-Lens Reliquary Thrall",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B4/2",
+      "old_name": "[Raid Boss] Marrow-Pale Earwig Hunter",
+      "new_name": "[Raid Boss] Null-Gravity Wraith Cortege",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B4/3",
+      "old_name": "[MVP] Skull-Faced Jackal-Skull Warchief",
+      "new_name": "[MVP] Lens-Grinder Okaros, Jackal-Headed Seal-Breaker",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B5/0",
+      "old_name": "Jaw-Wired Basilisk Scout",
+      "new_name": "Lance-Bearing Void Basilisk",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B5/1",
+      "old_name": "[Mini-Boss] Tomb-Grey Hyena Biter",
+      "new_name": "[Mini-Boss] Mace-Bearing Hyena-Skull Sentry",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B5/2",
+      "old_name": "[Raid Boss] Crypt-Black Tusker Gorger",
+      "new_name": "[Raid Boss] Bison-Skulled Last-Gate Colossus",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-catacomb-forbidden-path-orrery/B5/3",
+      "race_key": "undead",
+      "old_name": "[MVP] Primordial God-Seal Abyssal Sanctum Apex Sovereign",
+      "new_name": "[MVP] Ossivar the Unwritten, Dragon-Skulled Herald of the Final Seal",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-catacomb-heretic-kiln/B1/1",
+      "old_name": "[Mini-Boss] Crypt-Black Cave Bear Slasher",
+      "new_name": "[Mini-Boss] Glass-Crusted Zealot",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-heretic-kiln/B1/2",
+      "old_name": "[Raid Boss] Mourning-Black Dire Wolf Marauder",
+      "new_name": "[Raid Boss] Clay-Baked Revenant Giant",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-heretic-kiln/B1/3",
+      "old_name": "[MVP] Crypt-Black Drake-Skull Juggernaut",
+      "new_name": "[MVP] Deacon Ossel, Bull-Skulled Kiln-Priest",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-catacomb-heretic-kiln/B2/1",
+      "old_name": "[Mini-Boss] Hollow-Socketed Hound Clubber",
+      "new_name": "[Mini-Boss] Poker-Wielding Hearth Hound",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-catacomb-heretic-kiln/B2/2",
+      "old_name": "[Raid Boss] Shroud-Wrapped Iguana Executioner",
+      "new_name": "[Raid Boss] Salamander Kiln-Stoker",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-catacomb-heretic-kiln/B2/3",
+      "old_name": "[MVP] Rib-Plated Peccary Behemoth",
+      "new_name": "[MVP] Sister Cindermaw, Hound-Headed Flame-Tender",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-catacomb-heretic-kiln/B3/0",
+      "old_name": "Bleached Drake-Skull Lurker",
+      "new_name": "Censer-Swinging Ox-Skull Acolyte",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-catacomb-heretic-kiln/B3/1",
+      "old_name": "[Mini-Boss] Ash-Boned Coyote Stalker",
+      "new_name": "[Mini-Boss] Ember-Eyed Urn Ghoul",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-heretic-kiln/B3/2",
+      "old_name": "[Raid Boss] Shroud-Wrapped Basilisk Crusher",
+      "new_name": "[Raid Boss] Boar-Skulled Urn-Breaker",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-catacomb-heretic-kiln/B3/3",
+      "old_name": "[MVP] Grave-Dusted Peccary Despoiler",
+      "new_name": "[MVP] Vitrified Apostle Ignisazar",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-witch-pendulum/B1/1",
+      "old_name": "[Mini-Boss] Marrow-Pale Cave Bear Slasher",
+      "new_name": "[Mini-Boss] Seal-Branded Nephilim Husk",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-witch-pendulum/B1/2",
+      "old_name": "[Raid Boss] Bone-White Rock Scorpion Marauder",
+      "new_name": "[Raid Boss] Harmonic Bell-Wisp Choir",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-witch-pendulum/B1/3",
+      "old_name": "[MVP] Marrow-Pale Drake-Skull Juggernaut",
+      "new_name": "[MVP] Prioress Vael, Scythe-Bearing Mantis of the Zenith Choir",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-catacomb-witch-pendulum/B2/1",
+      "old_name": "[Mini-Boss] Jaw-Wired Hound Clubber",
+      "new_name": "[Mini-Boss] Lantern-Bearing Sighthound Inquisitor",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-catacomb-witch-pendulum/B2/2",
+      "old_name": "[Raid Boss] Shroud-Wrapped Scorpion Executioner",
+      "new_name": "[Raid Boss] Pendulum-Swinging Mantis Executioner",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-catacomb-witch-pendulum/B2/3",
+      "old_name": "[MVP] Rib-Plated Drake Behemoth",
+      "new_name": "[MVP] Inquisitor Halcyr, Wolf-Headed Radiant Judge",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-catacomb-witch-pendulum/B3/0",
+      "old_name": "Mourning-Black Drake-Skull Lurker",
+      "new_name": "Bell-Carrying Mantis Novice",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-catacomb-witch-pendulum/B3/1",
+      "old_name": "[Mini-Boss] Hollow-Socketed Coyote Stalker",
+      "new_name": "[Mini-Boss] Sun-Blind Nephilim Revenant",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-catacomb-witch-pendulum/B3/2",
+      "old_name": "[Raid Boss] Cracked-Skull Mantis Crusher",
+      "new_name": "[Raid Boss] Halberd-Bearing Alabaster Wolf",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-catacomb-witch-pendulum/B3/3",
+      "old_name": "[MVP] Grave-Dusted Monitor Despoiler",
+      "new_name": "[MVP] Arch-Valkyrie Caelia — Dawn-Forger Apostle",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-ceramic-resonator-crypt/B1/1",
+      "old_name": "[Mini-Boss] Chalk-Marked Cave Bear Slasher",
+      "new_name": "[Mini-Boss] Ink-Sac Spider",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-ceramic-resonator-crypt/B1/2",
+      "old_name": "[Raid Boss] Ink-Stained Rock Scorpion Marauder",
+      "new_name": "[Raid Boss] Great Belfry Bat",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-dungeon-ceramic-resonator-crypt/B1/3",
+      "old_name": "[MVP] Dust-Wrapped Drake-Skull Juggernaut",
+      "new_name": "[MVP] Tallow Moth Empress",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-ceramic-resonator-crypt/B2/1",
+      "old_name": "[Mini-Boss] Candle-Eyed Hound Clubber",
+      "new_name": "[Mini-Boss] Dissection-Hall Rat King",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-dungeon-ceramic-resonator-crypt/B2/2",
+      "old_name": "[Raid Boss] Gaunt Scorpion Executioner",
+      "new_name": "[Raid Boss] Rod-Carrying Jackal Proctor",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-dungeon-ceramic-resonator-crypt/B2/3",
+      "old_name": "[MVP] Charred Drake Behemoth",
+      "new_name": "[MVP] Stitched Specimen Chimera",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-ceramic-resonator-crypt/B3/0",
+      "old_name": "Cracked-Fang Drake-Skull Lurker",
+      "new_name": "Slate-Carrying Goat-Skull Pupil",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-dungeon-ceramic-resonator-crypt/B3/1",
+      "old_name": "[Mini-Boss] Grave-Grey Coyote Stalker",
+      "new_name": "[Mini-Boss] Bell-Swinging Mastiff Usher",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-dungeon-ceramic-resonator-crypt/B3/2",
+      "old_name": "[Raid Boss] Wax-Pale Mantis Crusher",
+      "new_name": "[Raid Boss] Ram-Skulled Ossuary Lecturer",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-dungeon-ceramic-resonator-crypt/B3/3",
+      "old_name": "[MVP] Hooded Monitor Despoiler",
+      "new_name": "[MVP] Headmaster Morvain, Wolf-Skulled Necromancer",
+      "race_key": "undead",
+      "body_kin": "bone_kin"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/1F/1",
+      "old_name": "[Mini-Boss] 1F Cold Furnace Vestibule Overseer",
+      "new_name": "[Mini-Boss] Piston-Armed Hammer-Hulk",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/1F/2",
+      "old_name": "[Raid Boss] 1F Seal Warden",
+      "new_name": "[Raid Boss] Spring-Coiled Chain-Reaper",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/1F/3",
+      "old_name": "[MVP] Sunken Chronometer Foundry 1F Apostle Sovereign",
+      "new_name": "[MVP] Chain-Wrapped Rivet-Gunner",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/2F/1",
+      "old_name": "[Mini-Boss] 2F Escapement Gear Hall Overseer",
+      "new_name": "[Mini-Boss] Lever-Limbed Gear-Lancer",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/2F/2",
+      "old_name": "[Raid Boss] 2F Seal Warden",
+      "new_name": "[Raid Boss] Escapement-Ticking Driller",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/2F/3",
+      "old_name": "[MVP] Sunken Chronometer Foundry 2F Apostle Sovereign",
+      "new_name": "[MVP] Oil-Slick Winch-Brute",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/3F/1",
+      "old_name": "[Mini-Boss] 3F Mainspring Casting Pit Overseer",
+      "new_name": "[Mini-Boss] Riveted Spring-Stalker",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/3F/2",
+      "old_name": "[Raid Boss] 3F Seal Warden",
+      "new_name": "[Raid Boss] Chain-Wrapped Cutter-Walker",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/3F/3",
+      "old_name": "[MVP] Bolt-Studded Hammer-Hulk",
+      "new_name": "[MVP] Sovereign Chronometer Aethel-Prime",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/4F/1",
+      "old_name": "[Mini-Boss] 4F Tick-Lock Assembly Line Overseer",
+      "new_name": "[Mini-Boss] Copper-Veined Lathe-Slasher",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/4F/2",
+      "old_name": "[Raid Boss] 4F Seal Warden",
+      "new_name": "[Raid Boss] Dial-Eyed Loom-Grinder",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/4F/3",
+      "old_name": "[MVP] Plate-Shouldered Gear-Lancer",
+      "new_name": "[MVP] Tick-Lock Assembly Titan",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/5F/1",
+      "old_name": "[Mini-Boss] 5F Quenching Bell Gallery Overseer",
+      "new_name": "[Mini-Boss] Piston-Armed Stamper",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/5F/2",
+      "old_name": "[Raid Boss] 5F Seal Warden",
+      "new_name": "[Raid Boss] Spring-Coiled Press-Engine",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/5F/3",
+      "old_name": "[MVP] Pendulum-Weighted Spring-Stalker",
+      "new_name": "[MVP] Quench-Bell Tolling Engine",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/6F/1",
+      "old_name": "[Mini-Boss] 6F Chronarch Regulator Loft Overseer",
+      "new_name": "[Mini-Boss] Lever-Limbed Rivet-Gunner",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/6F/2",
+      "old_name": "[Raid Boss] 6F Seal Warden",
+      "new_name": "[Raid Boss] Escapement-Ticking Piston-Crusher",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/6F/3",
+      "old_name": "[MVP] Sunken Chronometer Foundry 6F Apostle Sovereign",
+      "new_name": "[MVP] Cog-Jawed Lathe-Slasher",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/7F/1",
+      "old_name": "[Mini-Boss] 7F Hourglass Crown Foundry Heart Overseer",
+      "new_name": "[Mini-Boss] Riveted Winch-Brute",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-chronometer-foundry/7F/2",
+      "old_name": "[Raid Boss] 7F Seal Warden",
+      "new_name": "[Raid Boss] Chain-Wrapped Boiler-Brute",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-ember-bellows-chamber/B1/1",
+      "old_name": "[Mini-Boss] Molten-Eyed Giant Beetle Slasher",
+      "new_name": "[Mini-Boss] Bellows Wyvern Hatchling",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-dungeon-ember-bellows-chamber/B1/2",
+      "old_name": "[Raid Boss] Hammer-Scarred Rock Scorpion Marauder",
+      "new_name": "[Raid Boss] Soot Wyvern Broodmother",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-dungeon-ember-bellows-chamber/B1/3",
+      "old_name": "[MVP] Soot-Pelted Peccary Juggernaut",
+      "new_name": "[MVP] Hask, Drake-Headed Trial-Master",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-ember-bellows-chamber/B2/1",
+      "old_name": "[Mini-Boss] Red-Hot Caiman Clubber",
+      "new_name": "[Mini-Boss] Firebrick Monitor",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-dungeon-ember-bellows-chamber/B2/2",
+      "old_name": "[Raid Boss] Burnt-Hide Scarab Executioner",
+      "new_name": "[Raid Boss] Slag-Bellied Ash-Drake",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-dungeon-ember-bellows-chamber/B2/3",
+      "old_name": "[MVP] Bellows-Chested Wolf Behemoth",
+      "new_name": "[MVP] Vorrak of the Anvil, Wolf-Headed Smith",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-dungeon-ember-bellows-chamber/B3/0",
+      "old_name": "Rust-Streaked Boar Lurker",
+      "new_name": "Coal-Shovelling Salamander",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-ember-bellows-chamber/B3/1",
+      "old_name": "[Mini-Boss] Iron-Browed Gecko Stalker",
+      "new_name": "[Mini-Boss] Galvanic Scale-Hound Spearman",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-dungeon-ember-bellows-chamber/B3/2",
+      "old_name": "[Raid Boss] Coal-Black Beetle Crusher",
+      "new_name": "[Raid Boss] Drake-Headed Forge Marshal",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-ember-bellows-chamber/B3/3",
+      "old_name": "[MVP] Cinder-Maned Jackal Despoiler",
+      "new_name": "[MVP] Alpha Electro-Stalker Raijin-Vex",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-dungeon-kiln-cellar/B1/3",
+      "old_name": "[Raid Boss] Soot-Black Stag-Beetle Chieftain",
+      "new_name": "[Raid Boss] Mattock-Swinging Stag-Beetle Foreman",
+      "race_key": "insect_arachnia",
+      "body_kin": "beetle_kin"
+    },
+    {
+      "row": "zone-dungeon-kiln-cellar/B1/4",
+      "old_name": "[MVP] Ash-Dusted Hornet Juggernaut",
+      "new_name": "[MVP] Ssikra, Ash Mantis Flue-Stoker",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-kiln-cellar/B2/3",
+      "old_name": "[MVP] Cracked-Shell Hyena Behemoth",
+      "new_name": "[MVP] Grubmother Okka, Shovel-Bearing Scarab",
+      "race_key": "insect_arachnia",
+      "body_kin": "beetle_kin"
+    },
+    {
+      "row": "zone-dungeon-medallion-heart-vault/B1/1",
+      "old_name": "[Mini-Boss] Blue-Shadowed Giant Beetle Slasher",
+      "new_name": "[Mini-Boss] Glazed Bell-Cricket",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-medallion-heart-vault/B1/2",
+      "old_name": "[Raid Boss] Crescent-Marked Rock Scorpion Marauder",
+      "new_name": "[Raid Boss] Celadon Hive-Wasp Queen",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-medallion-heart-vault/B1/3",
+      "old_name": "[MVP] Long-Fanged Hyena Juggernaut",
+      "new_name": "[MVP] Hollow Bell-Moth Mother",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-medallion-heart-vault/B2/1",
+      "old_name": "[Mini-Boss] Long-Fanged Cave Cricket Hurler",
+      "new_name": "[Mini-Boss] Droning Chalk Cicada",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-medallion-heart-vault/B2/2",
+      "old_name": "[Raid Boss] Slate-Blue Iguana Executioner",
+      "new_name": "[Raid Boss] Cracked-Glaze Centipede",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-medallion-heart-vault/B2/3",
+      "old_name": "[MVP] Bright-Tusked Weevil Behemoth",
+      "new_name": "[MVP] Ilun, Two-Legged Jewel Beetle Glazier",
+      "race_key": "insect_arachnia",
+      "body_kin": "beetle_kin"
+    },
+    {
+      "row": "zone-dungeon-medallion-heart-vault/B3/0",
+      "old_name": "Frost-Tipped Hornet Lurker",
+      "new_name": "Mallet-Bearing Orchid Mantis",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-medallion-heart-vault/B3/1",
+      "old_name": "[Mini-Boss] Dust-Grey Coyote Stalker",
+      "new_name": "[Mini-Boss] Tiger Beetle Bell-Ringer",
+      "race_key": "insect_arachnia",
+      "body_kin": "beetle_kin"
+    },
+    {
+      "row": "zone-dungeon-medallion-heart-vault/B3/2",
+      "old_name": "[Raid Boss] Chalk-White Basilisk Crusher",
+      "new_name": "[Raid Boss] Glaive-Bearing Moon Mantis",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-medallion-heart-vault/B3/3",
+      "old_name": "[MVP] Pale-Furred Scarab Despoiler",
+      "new_name": "[MVP] Porcelain Medallion Archon Sera",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-pendulum-shaft/1F/3",
+      "old_name": "[Raid Boss] Cog-Jawed Hammer-Hulk",
+      "new_name": "[Raid Boss] Counterweight Pile-Driver",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-pendulum-shaft/1F/4",
+      "old_name": "[MVP] Riveted Chain-Reaper",
+      "new_name": "[MVP] Gear-Ring Flail Engine",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-pendulum-shaft/2F/3",
+      "old_name": "[MVP] Apostle Vanguard Manifestation",
+      "new_name": "[MVP] Chain-Wrapped Loom-Grinder",
+      "race_key": "robotic"
+    },
+    {
+      "row": "zone-dungeon-sap-heart-cistern/B1/1",
+      "old_name": "[Mini-Boss] Knot-Browed Giant Beetle Slasher",
+      "new_name": "[Mini-Boss] Amber-Crusted Bark Beetle",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-sap-heart-cistern/B1/2",
+      "old_name": "[Raid Boss] Gnarled Dire Wolf Marauder",
+      "new_name": "[Raid Boss] Great Coal Badger",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-dungeon-sap-heart-cistern/B1/3",
+      "old_name": "[MVP] Amber-Dripping Armoured Gar Destroyer",
+      "new_name": "[MVP] Resin Stump Colossus",
+      "race_key": "plant"
+    },
+    {
+      "row": "zone-dungeon-sap-heart-cistern/B2/1",
+      "old_name": "[Mini-Boss] Root-Footed Horned Bull Hurler",
+      "new_name": "[Mini-Boss] Pick-Swinging Birch Treant",
+      "race_key": "plant",
+      "body_kin": "bark_kin"
+    },
+    {
+      "row": "zone-dungeon-sap-heart-cistern/B2/2",
+      "old_name": "[Raid Boss] Seed-Pocked Thornback-Ox Executioner",
+      "new_name": "[Raid Boss] Sledge-Swinging Ironbark Ganger",
+      "race_key": "plant",
+      "body_kin": "bark_kin"
+    },
+    {
+      "row": "zone-dungeon-sap-heart-cistern/B2/3",
+      "old_name": "[MVP] Pitch-Black Weevil Behemoth",
+      "new_name": "[MVP] Sap-Gorged Bore Beetle",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-sap-heart-cistern/B3/1",
+      "old_name": "[Mini-Boss] Resin-Coated Warthog Stalker",
+      "new_name": "[Mini-Boss] Axe-Bearing Warthog Timberman",
+      "race_key": "beast_animal_brute",
+      "body_kin": "boar_kin"
+    },
+    {
+      "row": "zone-dungeon-sap-heart-cistern/B3/2",
+      "old_name": "[Raid Boss] Lichen-Crusted Sturgeon Crusher",
+      "new_name": "[Raid Boss] Amber-Glazed Root Tangle",
+      "race_key": "plant"
+    },
+    {
+      "row": "zone-dungeon-sap-heart-cistern/B3/3",
+      "old_name": "[MVP] Moss-Backed Thornback-Ox Despoiler",
+      "new_name": "[MVP] Grandfather Knotwood, Hammer-Bearing Treant",
+      "race_key": "plant",
+      "body_kin": "bark_kin"
+    },
+    {
+      "row": "zone-dungeon-spice-kiln-cellar/B1/1",
+      "old_name": "[Mini-Boss] Ginger-Maned Giant Toadstool Slasher",
+      "new_name": "[Mini-Boss] Pestle-Swinging Cinnamon Treant",
+      "race_key": "plant",
+      "body_kin": "bark_kin"
+    },
+    {
+      "row": "zone-dungeon-spice-kiln-cellar/B1/2",
+      "old_name": "[Raid Boss] Smoke-Dried Hollow Stump Marauder",
+      "new_name": "[Raid Boss] Smokehouse Giant Toadstool",
+      "race_key": "plant"
+    },
+    {
+      "row": "zone-dungeon-spice-kiln-cellar/B1/3",
+      "old_name": "[MVP] Pepper-Red Dire Wolf Destroyer",
+      "new_name": "[MVP] Scorched-Nose Pepper Wolf",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-dungeon-spice-kiln-cellar/B2/1",
+      "old_name": "[Mini-Boss] Pepper-Red Hound Clubber",
+      "new_name": "[Mini-Boss] Cleaver-Swinging Tusker Thief",
+      "race_key": "beast_animal_brute",
+      "body_kin": "boar_kin"
+    },
+    {
+      "row": "zone-dungeon-spice-kiln-cellar/B2/2",
+      "old_name": "[Raid Boss] Paprika-Marked Tusker Executioner",
+      "new_name": "[Raid Boss] Boar-Headed Caravan Raider",
+      "race_key": "beast_animal_brute",
+      "body_kin": "boar_kin"
+    },
+    {
+      "row": "zone-dungeon-spice-kiln-cellar/B2/3",
+      "old_name": "[MVP] Salt-Crusted Hollow-Log-Bear Behemoth",
+      "new_name": "[MVP] Clove-Spore Puffball Titan",
+      "race_key": "plant"
+    },
+    {
+      "row": "zone-dungeon-spice-kiln-cellar/B3/0",
+      "old_name": "Ochre Saurian Lurker",
+      "new_name": "Sack-Hauling Peccary",
+      "race_key": "beast_animal_brute",
+      "body_kin": "boar_kin"
+    },
+    {
+      "row": "zone-dungeon-spice-kiln-cellar/B3/1",
+      "old_name": "[Mini-Boss] Husk-Pelted Coyote Stalker",
+      "new_name": "[Mini-Boss] Drying-Rack Weevil",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-spice-kiln-cellar/B3/2",
+      "old_name": "[Raid Boss] Clove-Brown Tusker Crusher",
+      "new_name": "[Raid Boss] Bristled Paprika Sow",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-dungeon-spice-kiln-cellar/B3/3",
+      "old_name": "[MVP] Saffron-Yellow Thornback-Ox Despoiler",
+      "new_name": "[MVP] Mother Cassia, Pestle-Bearing Bark-Skinned Matron",
+      "race_key": "plant",
+      "body_kin": "bark_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/1F/1",
+      "old_name": "[Mini-Boss] Night-Blue Giant Beetle Slasher",
+      "new_name": "[Mini-Boss] Nave-Haunting Glass Wraith",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/1F/2",
+      "old_name": "[Raid Boss] Dawn-Pink Rock Scorpion Marauder",
+      "new_name": "[Raid Boss] Organ-Loft Phantom",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/1F/3",
+      "old_name": "[MVP] Gold-Crested Dire Wolf Destroyer",
+      "new_name": "[MVP] Memory-Glass Bishop",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/2F/1",
+      "old_name": "[Mini-Boss] Silver-Spined Cave Cricket Hurler",
+      "new_name": "[Mini-Boss] Chime-Cricket Cantor",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/2F/2",
+      "old_name": "[Raid Boss] Comet-Tailed Armoured Roach Rampager",
+      "new_name": "[Raid Boss] Great Pendulum Hornet",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/2F/3",
+      "old_name": "[MVP] Spire-Scaled Mountain Lion Devastator",
+      "new_name": "[MVP] Thousand-Bell Phantom",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/3F/1",
+      "old_name": "[Mini-Boss] Zenith-Blue Burrow Spider Skirmisher",
+      "new_name": "[Mini-Boss] Hollow Star-Forged Squire",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/3F/2",
+      "old_name": "[Raid Boss] Thunder-Browed Iron Centipede Ravager",
+      "new_name": "[Raid Boss] Star-Forged Knight-Phantom",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/3F/3",
+      "old_name": "[MVP] Storm-Grey Giant Lizard Butcher",
+      "new_name": "[MVP] Eclipse-Cantor Nocturne — Apostle of the Shattered Halo",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/4F/1",
+      "old_name": "[Mini-Boss] Glass-Eyed Rock Scorpion Lancer",
+      "new_name": "[Mini-Boss] Seal-Breaker Echo",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/4F/2",
+      "old_name": "[Raid Boss] Night-Blue Great Hornet Reaver",
+      "new_name": "[Raid Boss] Seal-Gnawing Silver Centipede",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/4F/3",
+      "old_name": "[MVP] Dawn-Pink Armoured Rhino Annihilator",
+      "new_name": "[MVP] Seal-Breaker Varro, Jackal-Headed Apostate",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/5F/1",
+      "old_name": "[Mini-Boss] Pearl-Fanged Armoured Roach Gouger",
+      "new_name": "[Mini-Boss] Ceiling-Walking Prism Spider",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/5F/2",
+      "old_name": "[Raid Boss] Silver-Spined Giant Beetle Warlord",
+      "new_name": "[Raid Boss] Inverted Wraith Choir",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/5F/3",
+      "old_name": "[MVP] Comet-Tailed Cave Bear Overlord",
+      "new_name": "[MVP] Ilex, Ceiling-Striding Astral Mantis",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/6F/1",
+      "old_name": "[Mini-Boss] Halo-Horned Iron Centipede Raider",
+      "new_name": "[Mini-Boss] Mirror-Glass Wraith Novice",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/6F/2",
+      "old_name": "[Raid Boss] Zenith-Blue Cave Cricket Mauler",
+      "new_name": "[Raid Boss] Mirror-Silk Orb Spider",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/6F/3",
+      "old_name": "[MVP] Thunder-Browed Horned Bull Colossus",
+      "new_name": "[MVP] Abbess Lumen, Crozier-Bearing Mirror Mantis",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/7F/1",
+      "old_name": "[Mini-Boss] Lightning-Scarred Great Hornet Sentry",
+      "new_name": "[Mini-Boss] Crucible Fire-Hornet",
+      "race_key": "insect_arachnia"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/7F/2",
+      "old_name": "[Raid Boss] Glass-Eyed Burrow Spider Trampler",
+      "new_name": "[Raid Boss] Hammer-Wielding Crucible Drake",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/7F/3",
+      "old_name": "[MVP] Night-Blue Great Elk Conqueror",
+      "new_name": "[MVP] Furnace-Marshal Kazrak, Dragon-Headed Lord of the Crucible",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/8F/1",
+      "old_name": "[Mini-Boss] Wind-Torn Giant Beetle Brawler",
+      "new_name": "[Mini-Boss] Conduit-Bound Prism Shade",
+      "race_key": "undead"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/8F/2",
+      "old_name": "[Raid Boss] Pearl-Fanged Rock Scorpion Chieftain",
+      "new_name": "[Raid Boss] Seraph-Wing Mantis Duelist",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/8F/3",
+      "old_name": "[MVP] Silver-Spined Dire Wolf Juggernaut",
+      "new_name": "[MVP] Telvane, Spear-Wielding Rhinoceros Beetle",
+      "race_key": "insect_arachnia",
+      "body_kin": "beetle_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/9F/1",
+      "old_name": "[Mini-Boss] Violet-Banded Cave Cricket Clubber",
+      "new_name": "[Mini-Boss] Eclipse Mantis Relic-Bearer",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/9F/2",
+      "old_name": "[Raid Boss] Halo-Horned Armoured Roach Executioner",
+      "new_name": "[Raid Boss] Black-Sun Scarab Reliquary-Bearer",
+      "race_key": "insect_arachnia",
+      "body_kin": "beetle_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/9F/3",
+      "old_name": "[MVP] Zenith-Blue Mountain Lion Behemoth",
+      "new_name": "[MVP] Sethra the Moon-Devourer, Halberd-Bearing Eclipse Wolf",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/10F/1",
+      "old_name": "[Mini-Boss] Star-Speckled Burrow Spider Stalker",
+      "new_name": "[Mini-Boss] Ring-Guard Moon Hound Pikeman",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/10F/2",
+      "old_name": "[Raid Boss] Lightning-Scarred Iron Centipede Crusher",
+      "new_name": "[Raid Boss] Commander Asra, Moon-Wolf Standard-Bearer",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/10F/3",
+      "old_name": "[MVP] Glass-Eyed Giant Lizard Despoiler",
+      "new_name": "[MVP] Archon-General Thyrax, Dragon-Headed Ring-Commander",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/11F/1",
+      "old_name": "[Mini-Boss] Crown-Antlered Rock Scorpion Bruiser",
+      "new_name": "[Mini-Boss] Wrench-Wielding Prism Beetle",
+      "race_key": "insect_arachnia",
+      "body_kin": "beetle_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/11F/2",
+      "old_name": "[Raid Boss] Wind-Torn Great Hornet Hunter",
+      "new_name": "[Raid Boss] Prism-Engine Mantis Machinist",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/11F/3",
+      "old_name": "[MVP] Pearl-Fanged Armoured Rhino Warchief",
+      "new_name": "[MVP] Prism-Wright Quell, Hammer-Bearing Stag Beetle",
+      "race_key": "insect_arachnia",
+      "body_kin": "beetle_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/12F/1",
+      "old_name": "[Mini-Boss] Cloud-Pale Armoured Roach Biter",
+      "new_name": "[Mini-Boss] Star-Scaled Drake Lancer",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/12F/2",
+      "old_name": "[Raid Boss] Silver-Spined Crocodile Trampler",
+      "new_name": "[Raid Boss] Zarkeen, Lizard-Headed Spear-Master",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/12F/3",
+      "old_name": "[MVP] Comet-Tailed Mastiff Conqueror",
+      "new_name": "[MVP] High Marshal Ulfrun, Wolf-Headed Valkyrie-Breaker",
+      "race_key": "beast_animal_brute",
+      "body_kin": "hound_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/13F/1",
+      "old_name": "[Mini-Boss] Halo-Horned Scorpion Brawler",
+      "new_name": "[Mini-Boss] Glass Mantis Seal-Bearer",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/13F/2",
+      "old_name": "[Raid Boss] Zenith-Blue Weevil Chieftain",
+      "new_name": "[Raid Boss] Greatsword-Wielding Goliath Beetle",
+      "race_key": "insect_arachnia",
+      "body_kin": "beetle_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/13F/3",
+      "old_name": "[MVP] Thunder-Browed Peccary Juggernaut",
+      "new_name": "[MVP] Ishrel, Glaive-Bearing Mantis Queen of the Last Seal",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/14F/0",
+      "old_name": "Star-Speckled Crocodile Skirmisher",
+      "new_name": "Spear-Bearing Star Saurian",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/14F/1",
+      "old_name": "[Mini-Boss] 14F Rooftop Apex · Vesper's Throne Lightning-Scarred Saurian Skirmisher",
+      "new_name": "[Mini-Boss] Throne-Step Wyrm Halberdier",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/14F/2",
+      "old_name": "[Raid Boss] Glass-Eyed Scorpion Executioner",
+      "new_name": "[Raid Boss] Vesper's Left Hand, Sabre-Wielding Mantis",
+      "race_key": "insect_arachnia",
+      "body_kin": "mantis_kin"
+    },
+    {
+      "row": "zone-dungeon-star-heart-nave/14F/3",
+      "old_name": "[MVP] Rooftop Apex · Vesper's Throne Night-Blue Basilisk Overlord",
+      "new_name": "[MVP] Ozryth, Dragon-Headed Regent of Vesper's Throne",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-sunken-potter-hold/B1/1",
+      "old_name": "[Mini-Boss] Gill-Necked Cave Bear Slasher",
+      "new_name": "[Mini-Boss] Trident-Bearing Eel-Headed Silt Warden",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-dungeon-sunken-potter-hold/B1/2",
+      "old_name": "[Raid Boss] Pond-Scaled Hollow Stump Marauder",
+      "new_name": "[Raid Boss] Great Bog Lotus",
+      "race_key": "plant"
+    },
+    {
+      "row": "zone-dungeon-sunken-potter-hold/B1/3",
+      "old_name": "[MVP] Weed-Draped Piranha Juggernaut",
+      "new_name": "[MVP] Moss-Shelled Snapper of the Flooded Kiln",
+      "race_key": "beast_animal_brute"
+    },
+    {
+      "row": "zone-dungeon-sunken-potter-hold/B2/1",
+      "old_name": "[Mini-Boss] Reed-Green Caiman Clubber",
+      "new_name": "[Mini-Boss] Pole-Wielding Water Monitor",
+      "race_key": "beast_animal_brute",
+      "body_kin": "scale_kin"
+    },
+    {
+      "row": "zone-dungeon-sunken-potter-hold/B2/2",
+      "old_name": "[Raid Boss] Barnacled Thornback-Ox Executioner",
+      "new_name": "[Raid Boss] Urn-Hurling Catfish Bruiser",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-dungeon-sunken-potter-hold/B2/3",
+      "old_name": "[MVP] Algae-Stained Weevil Behemoth",
+      "new_name": "[MVP] Old Gullet, Two-Legged Mud Crab",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-dungeon-sunken-potter-hold/B3/0",
+      "old_name": "Wet-Furred Piranha Lurker",
+      "new_name": "Net-Casting Crab-Clawed River Fisher",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-dungeon-sunken-potter-hold/B3/1",
+      "old_name": "[Mini-Boss] Blue-Finned Gecko Stalker",
+      "new_name": "[Mini-Boss] Shard-Grazing Gar",
+      "race_key": "fish"
+    },
+    {
+      "row": "zone-dungeon-sunken-potter-hold/B3/2",
+      "old_name": "[Raid Boss] Mud-Slick Barkhide-Stag Crusher",
+      "new_name": "[Raid Boss] Gaff-Swinging Snakehead",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    },
+    {
+      "row": "zone-dungeon-sunken-potter-hold/B3/3",
+      "old_name": "[MVP] Silt-Grey Scarab Despoiler",
+      "new_name": "[MVP] Sunken Potter Leviathan-Brood Matriarch",
+      "race_key": "fish",
+      "body_kin": "tide_kin"
+    }
+  ]
+}

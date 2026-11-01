@@ -35,8 +35,7 @@ import {
   openDetail,
 } from "../view/DetailOverlay.mjs";
 import { buildFilterBar, matchesFilter } from "../view/FilterBar.mjs";
-import { startVerdictSync } from "../view/VerdictSync.mjs";
-import { getStore, initReview } from "../review/ui.mjs";
+import { getSaveError, getStore, initReview } from "../review/ui.mjs";
 import { register } from "./registry.mjs";
 
 const MODEL_VIEWER_SRC = "/vendor/model-viewer.min.js";
@@ -199,11 +198,10 @@ async function mount(el0) {
   const queue = queueJson || { version: 1, verdicts: {} };
   const store = getStore() || initReview(queue);
   adoptReviewChrome();
-  startVerdictSync({
-    store,
-    committed: queue.verdicts || {},
-    onStatus: (msg) => setNote("verdict-sync", msg),
-  });
+  // initReview starts the one verdict sync.
+  document.addEventListener("storybook:verdict-save-status", () =>
+    setNote("verdict-sync", getSaveError()),
+  );
 
   // --- chrome ---
   const kindBar = el("div", "subview-bar");

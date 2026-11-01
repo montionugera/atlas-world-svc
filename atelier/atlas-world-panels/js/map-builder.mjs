@@ -1,4 +1,5 @@
 import { MAP_BUILDER_CLASS, MAPS_CLASS, fetchJson } from "./state.mjs";
+import { writeFetch } from "./utils.mjs";
 import { initHealth, bumpHealth, renderSidebarBadge } from "./health.mjs";
 import { buildSidebarItem } from "./sidebar.mjs";
 import { createPanZoom, linkPanZoom } from "./panzoom.mjs";
@@ -82,7 +83,7 @@ async function checkHealth(apiBase) {
 }
 
 async function postJson(url, body) {
-  const res = await fetch(url, {
+  const res = await writeFetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body ?? {}),
@@ -94,7 +95,7 @@ async function postJson(url, body) {
 }
 
 async function deleteJson(url) {
-  const res = await fetch(url, {
+  const res = await writeFetch(url, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
   });
@@ -214,6 +215,15 @@ export async function mountMapBuilder(main, options = {}) {
   });
   section.dataset.kind = MAP_BUILDER_CLASS;
   section.appendChild(el("h2", { text: "Map Builder" }));
+
+  if (document.body.hasAttribute("data-read-only")) {
+    const link = el("a", { href: "http://atlas-edit.joymify.local.com/", text: "Open the edit site." });
+    section.appendChild(el("p", { className: "empty-state" }, [
+      document.createTextNode("Not in this release image. "), link,
+    ]));
+    main.appendChild(section);
+    return { ready: false, excluded: true, setActive() {} };
+  }
 
   const healthy = await checkHealth(apiBase);
   if (!healthy) {

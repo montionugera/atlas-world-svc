@@ -135,3 +135,6 @@ __pycache__/
 
 # Copyrighted third-party art references: local only, see references/README.md
 references/
+
+# Per-session cargo build caches
+.claude/cargo-target-*/

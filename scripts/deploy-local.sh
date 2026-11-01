@@ -8,10 +8,11 @@ set -e
 #   cockroachdb      StatefulSet + PVC  (Nakama's database)
 #   nakama           Deployment + migrate initContainer
 #   server-rs        Deployment         (authoritative game sim)
+#   atlas-world-web  Deployment         (read-only web app for release hostnames)
 #
-# The asset storybook is no longer a cluster workload: its panels are served by atlas-world
-# (scripts/catalog_explorer_web.py on the Mac host, :8788). The old atlas-storybook hostname is a
-# permanent redirect to it (k8s/local/ingress.yaml).
+# atlas-world is a cluster workload (deployment/atlas-world-web); atlas-edit
+# (scripts/catalog_explorer_web.py on the Mac host, :8788) is the host process for editing.
+# The old atlas-storybook hostname is a permanent redirect to atlas-world (k8s/local/ingress.yaml).
 #
 # Invoked automatically by ps-release-workflow `ship` after a feature merges into
 # release/<v> — treat merge-to-release like an MR merge that triggers a staging
@@ -86,6 +87,16 @@ export DOCKER_BUILDKIT=1
 
 GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo dev)"
 
+# The web image only tracks the release branch; a feature deploy leaves it on the last release.
+RELEASE_BRANCH="release/$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$REPO_ROOT/.release.json")"
+DO_WEB=0
+if [ "$(git rev-parse --abbrev-ref HEAD)" = "$RELEASE_BRANCH" ]; then
+  DO_WEB=1
+  WEB_COMMIT="$(git rev-parse HEAD)"  # one read: build and check use the same commit
+else
+  echo "⚠ Not on $RELEASE_BRANCH: skipping the atlas-world-web image."
+fi
+
 echo "======================================"
 echo " Deploying Atlas World to Local K8s"
 echo " commit: $GIT_SHA"
@@ -111,6 +122,13 @@ if [ "$DO_META" -eq 1 ]; then
   echo "  ✓ built"
 fi
 
+if [ "$DO_WEB" -eq 1 ]; then
+  echo ""
+  echo "▶ Building atlas-world-web image from $WEB_COMMIT..."
+  "$REPO_ROOT/scripts/build-atlas-web-image.sh" "$WEB_COMMIT"
+  echo "  ✓ built"
+fi
+
 # --- Apply --------------------------------------------------------------------
 echo ""
 echo "▶ Applying local Kubernetes manifests..."
@@ -128,6 +146,9 @@ if [ "$DO_SERVER" -eq 1 ]; then
     kubectl -n "$NAMESPACE" set env deployment/server-rs NAKAMA_URL- NAKAMA_HTTP_KEY-
   fi
 fi
+if [ "$DO_WEB" -eq 1 ]; then
+  kubectl apply -f "$REPO_ROOT/k8s/local/atlas-world-web.yaml"
+fi
 # `apply` never removes what a manifest stopped declaring, so retire the old storybook workload
 # explicitly (a no-op once it is gone).
 verify_local_ctx
@@ -135,13 +156,6 @@ verify_local_ctx
 # directory-rename grep gate stays at zero matches.
 LEGACY_SB="asset-""storybook"
 kubectl -n "$NAMESPACE" delete deployment/"$LEGACY_SB" service/"$LEGACY_SB" --ignore-not-found >/dev/null 2>&1 || true
-if [ -f "$REPO_ROOT/k8s/local/ingress.yaml" ]; then
-  # The admission webhook rejects the atlas-storybook-redirect Ingress while the old
-  # atlas-world-local Ingress still claims that host. The first pass drops the host from
-  # atlas-world-local; the second creates the redirect. Both are idempotent.
-  kubectl apply -f "$REPO_ROOT/k8s/local/ingress.yaml" >/dev/null 2>&1 || true
-  kubectl apply -f "$REPO_ROOT/k8s/local/ingress.yaml"
-fi
 
 # --- Roll out -----------------------------------------------------------------
 # imagePullPolicy:Never + a stable :local tag means the manifests are unchanged
@@ -167,15 +181,33 @@ if [ "$DO_META" -eq 1 ]; then
   roll deployment  nakama      180s
 fi
 [ "$DO_SERVER" -eq 1 ]    && roll deployment server-rs 120s
+if [ "$DO_WEB" -eq 1 ]; then
+  roll deployment atlas-world-web 120s
+fi
+
+if [ -f "$REPO_ROOT/k8s/local/ingress.yaml" ]; then
+  verify_local_ctx
+  # The admission webhook rejects the atlas-storybook-redirect Ingress while the old
+  # atlas-world-local Ingress still claims that host. The first pass drops the host from
+  # atlas-world-local; the second creates the redirect. Both are idempotent.
+  kubectl apply -f "$REPO_ROOT/k8s/local/ingress.yaml" >/dev/null 2>&1 || true
+  kubectl apply -f "$REPO_ROOT/k8s/local/ingress.yaml"
+fi
 
 # --- Atlas World host process -------------------------------------------------
-# atlas-world (the studio + the asset panels) is a Mac host process, not a pod; the cluster only
-# routes to it. A missing server is a notice, never a deploy failure.
+# atlas-world is a cluster workload (deployment/atlas-world-web). atlas-edit (scripts/catalog_explorer_web.py
+# on the Mac host, :8788) is the host process for editing; the cluster routes to it.
+# A missing server is a notice, never a deploy failure.
 if ! curl -fsS --max-time 3 http://127.0.0.1:8788/healthz >/dev/null 2>&1; then
   echo ""
-  echo "⚠ atlas-world is not running on :8788, so atlas-world.joymify.local.com (and the"
-  echo "  atlas-storybook redirect) will show a bad gateway. Start it from this checkout:"
+  echo "⚠ the edit site (atlas-edit.joymify.local.com) has no host process. Start it with:"
   echo "    python3 $REPO_ROOT/scripts/catalog_explorer_web.py --port 8788"
+fi
+
+if [ "$DO_WEB" -eq 1 ]; then
+  echo ""
+  echo "▶ Checking the atlas web host..."
+  ATLAS_WEB_COMMIT="$WEB_COMMIT" "$REPO_ROOT/scripts/verify-atlas-web.sh"
 fi
 
 # --- Summary ------------------------------------------------------------------
@@ -183,7 +215,8 @@ echo ""
 echo "======================================"
 echo " Deployment Complete!"
 echo "======================================"
-echo " Atlas Studio  : http://atlas-world.joymify.local.com/ (or http://127.0.0.1:8788/)"
+echo " Atlas World   : http://atlas-world.joymify.local.com/ (cluster workload)"
+echo " Atlas Edit    : http://atlas-edit.joymify.local.com/ (or http://127.0.0.1:8788/, host process)"
 if [ "$DO_SERVER" -eq 1 ]; then
   echo " Server-RS WS  : ws://localhost:2567?token=<jwt>"
   echo " Server-RS Pod : deployment/server-rs (port 2567)"
@@ -197,4 +230,5 @@ echo ""
 echo " No LoadBalancer (e.g. kind)? Port-forward instead:"
 [ "$DO_SERVER" -eq 1 ]    && echo "   kubectl -n $NAMESPACE port-forward deployment/server-rs 2567:2567"
 [ "$DO_META" -eq 1 ]      && echo "   kubectl -n $NAMESPACE port-forward deployment/nakama 7350:7350 7351:7351"
+[ "$DO_WEB" -eq 1 ]       && echo "   kubectl -n $NAMESPACE port-forward deployment/atlas-world-web 8788:8788"
 echo "======================================"

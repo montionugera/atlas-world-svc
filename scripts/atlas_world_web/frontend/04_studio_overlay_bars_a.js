@@ -160,6 +160,11 @@ function searchAtlasOmniIndex(query, tatlas) {
   }).slice(0, 14);
 }
 
+const ATLAS_KIN_LABELS = {
+  scale_kin: 'Scale kin', hound_kin: 'Hound kin', boar_kin: 'Boar kin', mantis_kin: 'Mantis kin',
+  beetle_kin: 'Beetle kin', tide_kin: 'Tide kin', bark_kin: 'Bark kin', bone_kin: 'Bone kin'
+};
+
 function renderAtlasFilteredEntityMatrixHtml(tatlas) {
   const activeFilter = ATLAS_STATE_STORE.filter || 'All';
   const activeBand = ATLAS_STATE_STORE.levelBand || 'All';
@@ -242,7 +247,9 @@ function renderAtlasFilteredEntityMatrixHtml(tatlas) {
           drops: (sp.refinement_drops || ['High-Grade Iron Ore', 'Refinement Flux Dust']).join(' · '),
           locCoord: sp.loc_coord || d.entrance_loc || '',
           actionJs: `openDungeonSubMap('${escapeHtml(d.dungeon_id)}', '${escapeHtml(fl.floor_id)}')`,
-          actionLabel: `📍 Locate on Map / Open Floor ${fl.floor_id}`
+          actionLabel: `📍 Locate on Map / Open Floor ${fl.floor_id}`,
+          bodyPlan: sp.body_plan,
+          bodyKin: sp.body_kin
         });
       });
     });
@@ -279,7 +286,30 @@ function renderAtlasFilteredEntityMatrixHtml(tatlas) {
     ? rows.filter(r => `${r.name} ${r.zoneOrFloor} ${r.drops} ${r.badgeLabel}`.toLowerCase().includes(searchRaw))
     : rows;
 
-  const displayRows = filteredRows.slice(0, 18);
+  const shapeOn = ATLAS_STATE_STORE.shape === 'upright';
+  const allDungeonSpawns = allDungeons.flatMap(d => (d.floors || []).flatMap(fl => fl.spawns || []));
+  const totalDungeonRows = allDungeonSpawns.length;
+  const allTagged = allDungeonSpawns.filter(sp => sp.body_plan === 'upright_monster').length;
+  const dataMissing = !(tatlas && tatlas.multi_floor_dungeons);
+  const visibleRows = shapeOn ? filteredRows.filter(r => r.bodyPlan === 'upright_monster') : filteredRows;
+  const displayRows = shapeOn ? visibleRows : visibleRows.slice(0, 18);
+  const tierCounts = { Normal: 0, 'Mini-boss': 0, Raid: 0, MVP: 0 };
+  visibleRows.forEach(r => {
+    const k = { Monster: 'Normal', 'Mini-Boss': 'Mini-boss', Raid: 'Raid', MVP: 'MVP' }[r.entityType];
+    if (k) tierCounts[k] += 1;
+  });
+  const shapeStatusText = `Showing ${visibleRows.length} of ${totalDungeonRows} dungeon rows · Normal ${tierCounts.Normal} · Mini-boss ${tierCounts['Mini-boss']} · Raid ${tierCounts.Raid} · MVP ${tierCounts.MVP}`;
+  const shapeNotice = dataMissing
+    ? 'Monster list unavailable. Reload the page.'
+    : (allTagged === 0 ? 'No rows carry a shape tag yet.' : '');
+  const shapeEmptyText = 'No upright monsters match these filters';
+  const shapePressed = shapeOn && allTagged > 0;
+  // The matrix is rebuilt on every render, so a stable shell node carries the announcement.
+  const liveText = shapeNotice || (shapeOn ? (visibleRows.length ? shapeStatusText : shapeEmptyText) : '');
+  setTimeout(() => {
+    const live = document.getElementById('atlasShapeLive');
+    if (live) live.textContent = liveText;
+  }, 0);
   const tabDefs = [
     { id: 'All', label: '🌐 All Entities' },
     { id: 'RaceSpawns', label: '🧬 Race Spawns' },
@@ -296,14 +326,15 @@ function renderAtlasFilteredEntityMatrixHtml(tatlas) {
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <button type="button" onclick="toggleAtlasEntityMatrix()"
                   style="padding:5px 12px;border-radius:8px;border:1.5px solid #fde047;background:${ATLAS_ENTITY_MATRIX_OPEN ? '#b45309' : '#162032'};color:#fde047;font-size:11.5px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
-            📊 Filtered World Entity Matrix (Click to Expand / Collapse) · ${filteredRows.length} Matching ${ATLAS_ENTITY_MATRIX_OPEN ? '▲' : '▼'}
+            📊 Filtered World Entity Matrix (Click to Expand / Collapse) · ${visibleRows.length} Matching ${ATLAS_ENTITY_MATRIX_OPEN ? '▲' : '▼'}
           </button>
+          <button id="atlasShapeToggle" type="button" class="joy-button joy-button--sm ${shapePressed ? 'joy-button--solid' : 'joy-button--outline'}" aria-pressed="${shapePressed}" ${allTagged ? '' : 'disabled'} onclick="toggleAtlasShape()">Upright monster (${allTagged})</button>
           <div>
             <div style="font-size:11.5px;font-weight:900;color:#fde047">
-              🎯 LIVE WORLD &amp; DUNGEON SPAWN &amp; REFINEMENT-SPOIL LOCATOR MATRIX (D14 · ${filteredRows.length} MATCHING ENTITIES)
+              🎯 LIVE WORLD &amp; DUNGEON SPAWN &amp; REFINEMENT-SPOIL LOCATOR MATRIX (D14 · <span id="atlasMatrixTitleCount">${visibleRows.length}</span> MATCHING ENTITIES)
             </div>
             <div style="font-size:10px;color:#94a3b8">
-              Synced with Active Filter (${escapeHtml(activeFilter)}) &amp; Level Band (${escapeHtml(activeBand)}) across 16 Multi-Floor Dungeons (48 Floors), 24 Fields, 8 Fortresses &amp; 15 Towns
+              Synced with Active Filter (${escapeHtml(activeFilter)}) &amp; Level Band (${escapeHtml(activeBand)}) across ${shapeOn ? '16 Multi-Floor Dungeons, dungeon rows only' : '16 Multi-Floor Dungeons (48 Floors), 24 Fields, 8 Fortresses &amp; 15 Towns'}
             </div>
           </div>
         </div>
@@ -311,7 +342,7 @@ function renderAtlasFilteredEntityMatrixHtml(tatlas) {
           ${tabDefs.map(tb => {
             const act = activeFilter === tb.id;
             return `
-              <button type="button" onclick="setAtlasFilter('${tb.id}')"
+              <button type="button" class="atlas-shape-target" onclick="setAtlasFilter('${tb.id}')"
                       style="padding:3px 9px;border-radius:999px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid ${act ? '#fde047' : 'rgba(255,255,255,0.14)'};background:${act ? '#d97706' : '#162032'};color:${act ? '#ffffff' : '#cbd5e1'}">
                 ${tb.label}
               </button>
@@ -319,16 +350,23 @@ function renderAtlasFilteredEntityMatrixHtml(tatlas) {
           }).join('')}
         </div>
       </div>
+      ${shapeNotice ? `<div id="atlasShapeNotice" style="padding:8px 10px;font-size:11px;font-weight:800;color:#fca5a5">${shapeNotice}</div>` : ''}
       <div id="studioAtlasFilteredEntityMatrix" style="display:${ATLAS_ENTITY_MATRIX_OPEN ? 'block' : 'none'}">
         ${ATLAS_ENTITY_MATRIX_OPEN ? `
+        ${shapeOn && !shapeNotice ? `<div id="atlasShapeCount" style="padding:2px 2px 8px;font-size:11px;font-weight:800;color:#e2e8f0">${shapeStatusText}</div>` : ''}
+        ${shapeOn && !shapeNotice && visibleRows.length === 0 ? `
+          <div style="padding:10px;font-size:11.5px;color:#e2e8f0">${shapeEmptyText}
+            <button type="button" class="atlas-shape-target joy-button joy-button--sm joy-button--outline" style="margin-left:8px" onclick="clearAtlasShapeFilters()">Clear filters</button>
+          </div>` : ''}
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:7px">
-          ${displayRows.map(r => `
-            <div style="padding:8px 10px;border-radius:8px;background:#141d2d;border-left:3.5px solid ${r.badgeColor};border-top:1px solid rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;justify-content:space-between;gap:5px">
+          ${(shapeNotice && shapeOn ? [] : displayRows).map(r => `
+            <div class="atlas-row-card" style="padding:8px 10px;border-radius:8px;background:#141d2d;border-left:3.5px solid ${r.badgeColor};border-top:1px solid rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;justify-content:space-between;gap:5px">
               <div>
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-                  <span style="font-size:11px;font-weight:900;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(r.name)}</span>
+                  <span style="font-size:11px;font-weight:900;color:#f8fafc;overflow-wrap:anywhere">${escapeHtml(r.name)}</span>
                   <span class="mono" style="font-size:9.5px;padding:1px 6px;border-radius:4px;background:rgba(15,23,42,0.9);color:${r.badgeColor};border:1px solid ${r.badgeColor};flex-shrink:0">${escapeHtml(r.badgeLabel)} · ${escapeHtml(r.levelDisplay)}</span>
                 </div>
+                ${r.bodyPlan === 'upright_monster' ? `<div class="mono" style="font-size:9.5px;color:#e2e8f0;margin-top:2px">Upright · ${escapeHtml(ATLAS_KIN_LABELS[r.bodyKin] || '')}</div>` : ''}
                 <div style="font-size:10px;color:#cbd5e1;margin-top:2px;font-weight:700">
                   🗺️ ${escapeHtml(r.zoneOrFloor)} · <span class="mono" style="color:#38bdf8">⏱️ ${escapeHtml(r.respawn)}</span>
                 </div>
@@ -338,7 +376,7 @@ function renderAtlasFilteredEntityMatrixHtml(tatlas) {
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:3px">
                 <span class="mono" style="font-size:9px;color:#94a3b8">loc=${escapeHtml(r.locCoord)}</span>
-                <button type="button" onclick="${r.actionJs}"
+                <button type="button" class="atlas-locate-btn atlas-shape-target" onclick="${r.actionJs}"
                         style="padding:3px 9px;border-radius:6px;border:1px solid #fde047;background:#1e3a8a;color:#fde047;font-size:9.5px;font-weight:900;cursor:pointer;flex-shrink:0">
                   ${escapeHtml(r.actionLabel)}
                 </button>

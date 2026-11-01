@@ -1,3 +1,80 @@
+const ATLAS_EDIT_URL = 'http://atlas-edit.joymify.local.com/';
+const ATLAS_NOT_SAVED = 'Not saved: this is a read-only release page. Reload to see the current release.';
+
+function atlasIsReadOnly() {
+  const body = typeof document !== 'undefined' ? document.body : null;
+  return !!(body && typeof body.hasAttribute === 'function' && body.hasAttribute('data-read-only'));
+}
+
+async function atlasWrite(url, init) {
+  const res = await fetch(url, init);
+  if (res.status === 403) {
+    const body = await res.clone().json().catch(() => null);
+    if (body && body.error && body.error.code === 'read_only') {
+      const status = document.getElementById('topbarStatus');
+      status.textContent = ATLAS_NOT_SAVED;
+      status.style.whiteSpace = 'normal'; // 82 characters do not fit a nowrap pill at 390px
+      const err = new Error(ATLAS_NOT_SAVED);
+      err.readOnly = true;
+      throw err;
+    }
+  }
+  return res;
+}
+// The panel modules (ES modules) reach it through globalThis.
+globalThis.atlasWrite = atlasWrite;
+// A refused write already told the user; it is not an uncaught failure.
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('unhandledrejection', (e) => {
+    if (e.reason && e.reason.readOnly) e.preventDefault();
+  });
+}
+
+function renderVersionLine(text) {
+  const status = document.getElementById('topbarStatus');
+  const link = document.createElement('a');
+  link.href = ATLAS_EDIT_URL;
+  link.textContent = text;
+  status.replaceChildren(link);
+  const footer = document.getElementById('sidebarVersion');
+  if (footer) footer.textContent = text;
+}
+
+async function loadRuntime() {
+  if (atlasIsReadOnly()) document.getElementById('topbarStatus').textContent = 'Loading release…';
+  try {
+    const res = await fetch('/api/runtime');
+    // A pre-merge edit host has no such route; a read-only image always has it.
+    if (res.status === 404) { if (atlasIsReadOnly()) renderVersionLine('Version unknown'); return; }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rt = await res.json();
+    if (rt.readOnly) {
+      renderVersionLine(rt.release && rt.commit
+        ? `Read-only · ${rt.release} · ${String(rt.commit).slice(0, 7)}`
+        : 'Version unknown');
+    }
+  } catch {
+    const local = ['localhost', '127.0.0.1'].includes(location.hostname);
+    if (!local) document.body.setAttribute('data-read-only', '1');
+    if (atlasIsReadOnly()) renderVersionLine('Version unknown');
+  }
+}
+
+function showBundleError() {
+  const box = document.createElement('div');
+  box.className = 'empty-state';
+  const msg = document.createElement('p');
+  msg.textContent = "Can't load this release. A deploy may be in progress.";
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'joy-button joy-button--solid joy-button--sm';
+  btn.textContent = 'Retry';
+  btn.onclick = () => location.reload();
+  box.append(msg, btn);
+  document.querySelector('.main').appendChild(box);
+  btn.focus();
+}
+
 let DATA = null;
 let THUMB_INDEX = {};
 let CURRENT_TAB = 'studio';
@@ -320,6 +397,10 @@ function syncUrlState() {
     const validFilters = ['All', 'RaceSpawns', 'TownMarks', 'Monster', 'Mini-Boss', 'Raid', 'MVP'];
     ATLAS_STATE_STORE.filter = validFilters.includes(filterParam) ? filterParam : 'All';
   }
+  if (typeof ATLAS_STATE_STORE !== 'undefined' && (CURRENT_TAB === 'studio' || CURRENT_TAB === 'world')) {
+    ATLAS_STATE_STORE.shape = params.get('shape') === 'upright' ? 'upright' : '';
+    if (ATLAS_STATE_STORE.shape) ATLAS_ENTITY_MATRIX_OPEN = true;
+  }
   if (lensParam && typeof ATLAS_STATE_STORE !== 'undefined') {
     const validLenses = ['gamer', 'designer', 'architect', 'developer', 'liveops'];
     const nextLens = validLenses.includes(lensParam) ? lensParam : 'gamer';
@@ -459,6 +540,7 @@ function writeUrlState(pushHistory = true) {
       if (ATLAS_STATE_STORE.activeFloorId) params.set('floor', ATLAS_STATE_STORE.activeFloorId);
       params.set('filter', ATLAS_STATE_STORE.filter || 'All');
       params.set('band', ATLAS_STATE_STORE.levelBand || 'All');
+      if (ATLAS_STATE_STORE.shape) params.set('shape', ATLAS_STATE_STORE.shape);
       params.set('lens', ATLAS_PERSONA_LENS || ATLAS_STATE_STORE.personaLens || 'gamer');
       // Overlay only when it differs from the lens default (absent = the lens default overlay).
       if (typeof ATLAS_LENS_DEFAULT_BAR !== 'undefined' && ATLAS_ACTIVE_STUDIO_BAR
@@ -573,8 +655,17 @@ async function init() {
   // registry.mjs is a deferred module: it may finish before or after the bundle fetch below.
   window.addEventListener('atlas-panels-ready', () => { if (DATA) { renderSidebar(); render(); } });
   window.addEventListener('atlas-panels-updated', () => { if (DATA) renderSidebar(); });
-  const res = await fetch('/api/bundle');
-  DATA = await res.json();
+  await loadRuntime();
+  let res;
+  try {
+    res = await fetch('/api/bundle');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    DATA = await res.json();
+  } catch (err) {
+    if (!atlasIsReadOnly()) throw err;
+    showBundleError();
+    return;
+  }
   buildThumbIndex();
   renderSidebar();
   render();
@@ -682,7 +773,14 @@ function closeInspector() {
 async function rebuildDb() {
   const status = document.getElementById('topbarStatus');
   status.textContent = 'Rebuilding SQLite...';
-  await fetch('/api/rebuild', { method: 'POST' });
+  let rebuilt;
+  try {
+    rebuilt = await atlasWrite('/api/rebuild', { method: 'POST' });
+  } catch (err) {
+    if (!err.readOnly) status.textContent = 'SQLite rebuild failed'; // a refusal already set the line
+    return;
+  }
+  if (!rebuilt.ok) { status.textContent = 'SQLite rebuild failed'; return; }
   const res = await fetch('/api/bundle');
   DATA = await res.json();
   buildThumbIndex();
@@ -693,11 +791,21 @@ async function rebuildDb() {
 
 async function triggerBalanceSim() {
   if (SIM_RUNNING) return;
+  const prevSimOutput = SIM_OUTPUT;
   SIM_RUNNING = true;
   SIM_OUTPUT = 'Running cargo run --quiet --manifest-path server-rs/Cargo.toml --bin balance_sim...';
   document.getElementById('topbarStatus').textContent = 'Running Balance Sim...';
   render();
-  const res = await fetch('/api/sim', { method: 'POST' });
+  let res;
+  try {
+    res = await atlasWrite('/api/sim', { method: 'POST' });
+  } catch (err) {
+    SIM_RUNNING = false; // a refused run must not leave the button disabled
+    SIM_OUTPUT = prevSimOutput;
+    render();
+    if (!err.readOnly) throw err;
+    return;
+  }
   const payload = await res.json();
   SIM_RUNNING = false;
   SIM_OUTPUT = payload.output || '(no output)';
@@ -874,11 +982,18 @@ function renderStatusBadgeHtml(status) {
 async function submitStudioRationaleUpdate(nodeId, patchPayload) {
   const statusEl = document.getElementById('studioDrawerStatusMsg');
   if (statusEl) statusEl.textContent = 'Saving studio update...';
-  const res = await fetch('/api/studio/rationale/update', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nodeId, ...patchPayload })
-  });
+  let res;
+  try {
+    res = await atlasWrite('/api/studio/rationale/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nodeId, ...patchPayload })
+    });
+  } catch (err) {
+    if (statusEl) statusEl.textContent = ''; // the refusal is shown in the top bar
+    if (!err.readOnly) throw err;
+    return;
+  }
   const data = await res.json();
   if (!res.ok || !data.ok) {
     if (statusEl) {
@@ -933,11 +1048,18 @@ async function triggerStudioChildGeneration(parentId) {
   const childNameEl = document.getElementById('studioChildNameInput');
   const childName = (childNameEl && childNameEl.value.trim()) || 'Uncharted Horizon Sector';
   if (statusEl) statusEl.textContent = 'Validating parent Canon & 5-pillar gate...';
-  const res = await fetch('/api/studio/generate-children', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ parentId, childName, childStatus: 'mystery', persist: false })
-  });
+  let res;
+  try {
+    res = await atlasWrite('/api/studio/generate-children', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parentId, childName, childStatus: 'mystery', persist: false })
+    });
+  } catch (err) {
+    if (statusEl) statusEl.textContent = '';
+    if (!err.readOnly) throw err;
+    return;
+  }
   const data = await res.json();
   if (!res.ok || !data.ok) {
     if (statusEl) {
@@ -954,7 +1076,7 @@ async function triggerStudioChildGeneration(parentId) {
 }
 
 async function undoStudioSnapshotAction() {
-  const res = await fetch('/api/studio/undo', { method: 'POST' });
+  const res = await atlasWrite('/api/studio/undo', { method: 'POST' });
   const data = await res.json();
   const bundleRes = await fetch('/api/studio/perspectives');
   const bundleData = await bundleRes.json();
@@ -1332,6 +1454,7 @@ let TAVERN_SOCIAL_HUBS = [];
 let CHURN_INTERVENTIONS = [];
 
 const ATLAS_STATE_STORE = {
+  shape: '',             // '' | 'upright' (F-167 Upright monster toggle)
   filter: 'All',         // 'All' | 'RaceSpawns' | 'TownMarks' | 'Monster' | 'Mini-Boss' | 'Raid' | 'MVP'
   levelBand: 'All',      // 'All' | '1-20' | '21-40' | '41-60' | '61-80' | '81-99'
   raceGrowthRoute: 'All', // 'All' | 'Human' | 'Lunar' | 'Ogre/Orc' | 'Dwarf' | 'Dark-Lunar' | 'Furral'
@@ -3452,6 +3575,21 @@ function setAtlasFilter(cat) {
   ATLAS_STATE_STORE.contextAutoHealNote = '';
   writeUrlState(false);
   render();
+}
+
+function toggleAtlasShape() {
+  ATLAS_STATE_STORE.shape = ATLAS_STATE_STORE.shape ? '' : 'upright';
+  if (ATLAS_STATE_STORE.shape) ATLAS_ENTITY_MATRIX_OPEN = true;
+  writeUrlState(false);
+  render();
+  const el = document.getElementById('atlasShapeToggle');
+  if (el) el.focus();
+}
+
+function clearAtlasShapeFilters() {
+  resetAtlasFilters();
+  const el = document.getElementById('atlasShapeToggle');
+  if (el) el.focus();
 }
 
 function setAtlasLevelBand(band) {

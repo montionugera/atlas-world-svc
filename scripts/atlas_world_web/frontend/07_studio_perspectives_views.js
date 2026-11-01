@@ -2065,7 +2065,7 @@ async function submitReviewVerdict(propId, verdict, takeIdx) {
   const statusEl = document.getElementById('topbarStatus');
   if (statusEl) statusEl.textContent = 'Applying Review Verdict...';
 
-  const res = await fetch('/api/review-queue/verdict', {
+  const res = await atlasWrite('/api/review-queue/verdict', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: propId, verdict, selectedTakeIdx: takeIdx, feedbackText })
@@ -2091,7 +2091,7 @@ async function togglePaletteAsset(paletteId, ruleName, assetPath, weightVal) {
   const payload = { paletteId, ruleName };
   if (assetPath) payload.assetPath = assetPath;
   if (weightVal !== undefined && weightVal !== null) payload.weight = parseFloat(weightVal);
-  await fetch('/api/palette/toggle-asset', {
+  await atlasWrite('/api/palette/toggle-asset', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -2107,7 +2107,7 @@ async function togglePaletteAsset(paletteId, ruleName, assetPath, weightVal) {
 async function undoStudioSnapshot() {
   const statusEl = document.getElementById('topbarStatus');
   if (statusEl) statusEl.textContent = 'Restoring Snapshot...';
-  const res = await fetch('/api/studio/undo', { method: 'POST' });
+  const res = await atlasWrite('/api/studio/undo', { method: 'POST' });
   const out = await res.json();
   const bRes = await fetch('/api/bundle');
   DATA = await bRes.json();
@@ -2122,7 +2122,7 @@ let LAST_AI_AGENT_RESULT = null;
 async function launch3dClient(mode) {
   const statusEl = document.getElementById('topbarStatus');
   if (statusEl) statusEl.textContent = mode === 'map_builder' ? '🗺️ Launching 3D Map Builder...' : '🎮 Launching 3D Game Client...';
-  const res = await fetch('/api/studio/launch-3d', {
+  const res = await atlasWrite('/api/studio/launch-3d', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ mode })
@@ -2140,7 +2140,7 @@ async function runAiStudioAgent(presetPrompt) {
   const statusEl = document.getElementById('topbarStatus');
   if (statusEl) statusEl.textContent = '🤖 AI Agent applying edit...';
 
-  const res = await fetch('/api/studio/ai-edit', {
+  const res = await atlasWrite('/api/studio/ai-edit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt })
@@ -2176,7 +2176,7 @@ async function applyInteractiveMapStructure(prefix) {
   };
   const statusEl = document.getElementById('topbarStatus');
   if (statusEl) statusEl.textContent = '🤖 Updating Map Structure...';
-  const res = await fetch('/api/map/update-structure', {
+  const res = await atlasWrite('/api/map/update-structure', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)

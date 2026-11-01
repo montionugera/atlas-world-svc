@@ -1,0 +1,49 @@
+# k8s/local/atlas-world-web.yaml — read-only atlas web surface, built from the release commit.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atlas-world-web
+  namespace: atlas-world
+  labels:
+    app: atlas-world-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: atlas-world-web
+  template:
+    metadata:
+      labels:
+        app: atlas-world-web
+    spec:
+      containers:
+        - name: atlas-world-web
+          image: atlas-world-web:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8788
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8788
+            periodSeconds: 3
+          resources:
+            requests:
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: atlas-world-web
+  namespace: atlas-world
+  labels:
+    app: atlas-world-web
+spec:
+  selector:
+    app: atlas-world-web
+  ports:
+    - name: http
+      port: 8788
+      targetPort: 8788

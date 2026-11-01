@@ -15,3 +15,6 @@ export function filenameOf(path) {
 // competing with real asset traffic to display a number the build already
 // knew. Sizes now come from game-client/assets/.thumbs/index.json via
 // js/data/thumbs.mjs sizeTextFor(), instantly and exactly.
+
+// Mutating requests go through the page's read-only guard when it is present.
+export const writeFetch = (...args) => (globalThis.atlasWrite ?? fetch)(...args);

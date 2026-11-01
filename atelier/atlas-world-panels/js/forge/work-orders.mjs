@@ -8,6 +8,8 @@
 //
 // Pure + fetch-injectable (tests/forge-work-orders.test.mjs).
 
+import { writeFetch } from "../utils.mjs";
+
 export const WORK_ORDERS_URL = "/api/review-queue/work-orders";
 
 /** The wire shape for one buffered order; unknown fields never leave the browser. */
@@ -38,7 +40,7 @@ async function errorDetail(res) {
  * @returns {Promise<{ created: string[], skipped: string[], queue: object }>}
  * @throws {Error} with the server's message when the POST is refused or unreachable
  */
-export async function postWorkOrders(orders, { fetchImpl = fetch } = {}) {
+export async function postWorkOrders(orders, { fetchImpl = writeFetch } = {}) {
   if (!Array.isArray(orders) || orders.length === 0) {
     throw new Error("no draft work orders to save");
   }

@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from urllib.parse import urlsplit
 
-from . import map_builder_proxy, review_queue, static_mounts
+from . import map_builder_proxy, review_queue, runtime, static_mounts
 
 MAX_BODY_BYTES = 2 * 1024 * 1024
 
@@ -102,6 +102,10 @@ def _post_work_orders(handler, path: str) -> None:
     _send_json(handler, result)
 
 
+def _runtime(handler, path: str, *, head: bool = False) -> None:
+    _send_json(handler, runtime.payload(), head=head)
+
+
 def _map_builder(method: str):
     def run(handler, path: str, *, head: bool = False) -> None:
         if method != "GET":
@@ -121,6 +125,7 @@ def _map_builder(method: str):
 ROUTES = {
     "GET": [
         ("/healthz", _healthz),
+        ("/api/runtime", _runtime),
         ("/api/map-builder/", _map_builder("GET")),
         ("/api/map-builder-files/", _map_builder("GET")),
     ],

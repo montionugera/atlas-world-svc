@@ -809,6 +809,8 @@
         "aggro": { "type": "string", "enum": ["Yes", "No"] },
         "race_key": { "type": "string" },
         "race_badge": { "type": "string" },
+        "body_plan": { "type": "string", "enum": ["upright_monster"] },
+        "body_kin": { "type": "string", "enum": ["scale_kin", "hound_kin", "boar_kin", "mantis_kin", "beetle_kin", "tide_kin", "bark_kin", "bone_kin"] },
         "hp_multiplier": { "type": "string" },
         "protections": { "type": "array", "items": { "type": "string" } },
         "weaknesses": { "type": "array", "items": { "type": "string" } },

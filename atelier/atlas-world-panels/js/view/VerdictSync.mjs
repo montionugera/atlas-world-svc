@@ -10,6 +10,8 @@
 //
 // diffVerdicts() is pure (tests/verdict-sync.test.mjs).
 
+import { writeFetch } from "../utils.mjs";
+
 export const ASSET_VERDICTS_URL = "/api/review-queue/asset-verdicts";
 
 /**
@@ -47,16 +49,18 @@ export function startVerdictSync({
   store,
   committed,
   onStatus,
-  fetchImpl = fetch,
+  fetchImpl = writeFetch,
   target = document,
 }) {
   let synced = {};
   for (const [k, rec] of Object.entries(committed || {})) synced[k] = pick(rec);
   let chain = Promise.resolve();
+  let refused = false; // a read-only refusal is final: no retry, no second POST
 
   function flush() {
     // Serialised: two quick marks must reach the server in the order they were made.
     chain = chain.then(async () => {
+      if (refused) return;
       const current = {};
       for (const [k, rec] of Object.entries(store.effective())) {
         current[k] = pick(rec);
@@ -85,6 +89,11 @@ export function startVerdictSync({
         synced = current;
         onStatus(null);
       } catch (err) {
+        if (err && err.readOnly) {
+          refused = true;
+          onStatus("read-only release page");
+          return;
+        }
         console.error("[assets] verdict save failed:", err);
         onStatus(
           "Verdict not saved to review-queue.json (" +

@@ -20513,12 +20513,14 @@
             },
             {
               "npc_id": 29738,
-              "name": "[Raid Boss] Regional Seal Warden",
+              "name": "[Raid Boss] Mattock-Swinging Stag-Beetle Foreman",
               "entity_type": "Raid",
               "level": 22,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Tier Verified",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "beetle_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Seal Ward"
@@ -20541,12 +20543,14 @@
             },
             {
               "npc_id": 29739,
-              "name": "[MVP] Apostle Vanguard Manifestation",
+              "name": "[MVP] Ssikra, Ash Mantis Flue-Stoker",
               "entity_type": "MVP",
               "level": 22,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Tier Verified",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "Seal Ward"
@@ -20727,12 +20731,14 @@
             },
             {
               "npc_id": 29744,
-              "name": "[MVP] Apostle Vanguard Manifestation",
+              "name": "[MVP] Grubmother Okka, Shovel-Bearing Scarab",
               "entity_type": "MVP",
               "level": 24,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Tier Verified",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "beetle_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "Seal Ward"
@@ -20957,7 +20963,7 @@
               "h_pct": 36,
               "key_mobs": [
                 "Clockwork Porta Construct",
-                "[Raid Boss] Regional Seal Warden"
+                "[Raid Boss] Counterweight Pile-Driver"
               ]
             },
             {
@@ -20971,7 +20977,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Excuro Gear-Stalker",
-                "[MVP] Apostle Vanguard Manifestation"
+                "[MVP] Gear-Ring Flail Engine"
               ]
             },
             {
@@ -21072,7 +21078,7 @@
               "level": 23,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · 1F Overseer",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Reflect Shield"
@@ -21095,12 +21101,12 @@
             },
             {
               "npc_id": 29768,
-              "name": "[Raid Boss] Regional Seal Warden",
+              "name": "[Raid Boss] Counterweight Pile-Driver",
               "entity_type": "Raid",
               "level": 22,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Tier Verified",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Seal Ward"
@@ -21123,12 +21129,12 @@
             },
             {
               "npc_id": 29769,
-              "name": "[MVP] Apostle Vanguard Manifestation",
+              "name": "[MVP] Gear-Ring Flail Engine",
               "entity_type": "MVP",
               "level": 22,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "MVP · Tier Verified",
+              "race_badge": "Robotic · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "Seal Ward"
@@ -21170,7 +21176,7 @@
               "h_pct": 30,
               "key_mobs": [
                 "Krator Inductor Automaton",
-                "[MVP] Apostle Vanguard Manifestation"
+                "[MVP] Chain-Wrapped Loom-Grinder"
               ]
             },
             {
@@ -21256,7 +21262,7 @@
               "level": 25,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · 2F Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Thunder Cloak"
@@ -21307,12 +21313,12 @@
             },
             {
               "npc_id": 29774,
-              "name": "[MVP] Apostle Vanguard Manifestation",
+              "name": "[MVP] Chain-Wrapped Loom-Grinder",
               "entity_type": "MVP",
               "level": 24,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "MVP · Tier Verified",
+              "race_badge": "Robotic · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "Seal Ward"
@@ -21524,7 +21530,7 @@
           "floor_id": "1F",
           "floor_index": 1,
           "floor_elevation_meters": 35,
-          "boss_tier_highlight": "1F Cold Furnace Vestibule · 1F Cold Furnace Vestibule Overseer (Mini-Boss)",
+          "boss_tier_highlight": "1F Cold Furnace Vestibule · Piston-Armed Hammer-Hulk (Mini-Boss)",
           "name": "1F — Cold Furnace Vestibule (Lv.25–28)",
           "level_range": "Lv.25–28",
           "rooms": [
@@ -21551,8 +21557,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 1F Cold Furnace Vestibule Overseer",
-                "[Raid Boss] 1F Seal Warden"
+                "[Mini-Boss] Piston-Armed Hammer-Hulk",
+                "[Raid Boss] Spring-Coiled Chain-Reaper"
               ]
             },
             {
@@ -21565,7 +21571,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Sunken Chronometer Foundry 1F Apostle Sovereign"
+                "[MVP] Chain-Wrapped Rivet-Gunner"
               ]
             }
           ],
@@ -21620,12 +21626,12 @@
             },
             {
               "npc_id": 61012,
-              "name": "[Mini-Boss] 1F Cold Furnace Vestibule Overseer",
+              "name": "[Mini-Boss] Piston-Armed Hammer-Hulk",
               "entity_type": "Mini-Boss",
               "level": 26,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · 1F Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -21648,12 +21654,12 @@
             },
             {
               "npc_id": 61013,
-              "name": "[Raid Boss] 1F Seal Warden",
+              "name": "[Raid Boss] Spring-Coiled Chain-Reaper",
               "entity_type": "Raid",
               "level": 28,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -21676,12 +21682,12 @@
             },
             {
               "npc_id": 61014,
-              "name": "[MVP] Sunken Chronometer Foundry 1F Apostle Sovereign",
+              "name": "[MVP] Chain-Wrapped Rivet-Gunner",
               "entity_type": "MVP",
               "level": 28,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_badge": "Robotic · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -21708,7 +21714,7 @@
           "floor_id": "2F",
           "floor_index": 2,
           "floor_elevation_meters": 70,
-          "boss_tier_highlight": "2F Escapement Gear Hall · 2F Seal Warden (Raid Boss)",
+          "boss_tier_highlight": "2F Escapement Gear Hall · Escapement-Ticking Driller (Raid Boss)",
           "name": "2F — Escapement Gear Hall (Lv.27–30)",
           "level_range": "Lv.27–30",
           "rooms": [
@@ -21735,8 +21741,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 2F Escapement Gear Hall Overseer",
-                "[Raid Boss] 2F Seal Warden"
+                "[Mini-Boss] Lever-Limbed Gear-Lancer",
+                "[Raid Boss] Escapement-Ticking Driller"
               ]
             },
             {
@@ -21749,7 +21755,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Sunken Chronometer Foundry 2F Apostle Sovereign"
+                "[MVP] Oil-Slick Winch-Brute"
               ]
             }
           ],
@@ -21813,12 +21819,12 @@
             },
             {
               "npc_id": 61022,
-              "name": "[Mini-Boss] 2F Escapement Gear Hall Overseer",
+              "name": "[Mini-Boss] Lever-Limbed Gear-Lancer",
               "entity_type": "Mini-Boss",
               "level": 28,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · 2F Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -21841,12 +21847,12 @@
             },
             {
               "npc_id": 61023,
-              "name": "[Raid Boss] 2F Seal Warden",
+              "name": "[Raid Boss] Escapement-Ticking Driller",
               "entity_type": "Raid",
               "level": 30,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -21869,12 +21875,12 @@
             },
             {
               "npc_id": 61024,
-              "name": "[MVP] Sunken Chronometer Foundry 2F Apostle Sovereign",
+              "name": "[MVP] Oil-Slick Winch-Brute",
               "entity_type": "MVP",
               "level": 30,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_badge": "Robotic · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -21901,7 +21907,7 @@
           "floor_id": "3F",
           "floor_index": 3,
           "floor_elevation_meters": 105,
-          "boss_tier_highlight": "3F Mainspring Casting Pit · Sunken Chronometer Foundry 3F Apostle Sovereign (MVP)",
+          "boss_tier_highlight": "3F Mainspring Casting Pit · Sovereign Chronometer Aethel-Prime (MVP)",
           "name": "3F — Mainspring Casting Pit (Lv.28–31)",
           "level_range": "Lv.28–31",
           "rooms": [
@@ -21928,8 +21934,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 3F Mainspring Casting Pit Overseer",
-                "[Raid Boss] 3F Seal Warden"
+                "[Mini-Boss] Riveted Spring-Stalker",
+                "[Raid Boss] Chain-Wrapped Cutter-Walker"
               ]
             },
             {
@@ -21942,7 +21948,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Sunken Chronometer Foundry 3F Apostle Sovereign"
+                "[MVP] Sovereign Chronometer Aethel-Prime"
               ]
             }
           ],
@@ -22006,12 +22012,12 @@
             },
             {
               "npc_id": 61032,
-              "name": "[Mini-Boss] 3F Mainspring Casting Pit Overseer",
+              "name": "[Mini-Boss] Riveted Spring-Stalker",
               "entity_type": "Mini-Boss",
               "level": 29,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · 3F Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -22034,12 +22040,12 @@
             },
             {
               "npc_id": 61033,
-              "name": "[Raid Boss] 3F Seal Warden",
+              "name": "[Raid Boss] Chain-Wrapped Cutter-Walker",
               "entity_type": "Raid",
               "level": 31,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -22062,12 +22068,12 @@
             },
             {
               "npc_id": 61034,
-              "name": "[MVP] Sunken Chronometer Foundry 3F Apostle Sovereign",
+              "name": "[MVP] Sovereign Chronometer Aethel-Prime",
               "entity_type": "MVP",
               "level": 31,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_badge": "Robotic · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -22094,7 +22100,7 @@
           "floor_id": "4F",
           "floor_index": 4,
           "floor_elevation_meters": 140,
-          "boss_tier_highlight": "4F Tick-Lock Assembly Line · 4F Tick-Lock Assembly Line Overseer (Mini-Boss)",
+          "boss_tier_highlight": "4F Tick-Lock Assembly Line · Copper-Veined Lathe-Slasher (Mini-Boss)",
           "name": "4F — Tick-Lock Assembly Line (Lv.30–33)",
           "level_range": "Lv.30–33",
           "rooms": [
@@ -22121,8 +22127,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 4F Tick-Lock Assembly Line Overseer",
-                "[Raid Boss] 4F Seal Warden"
+                "[Mini-Boss] Copper-Veined Lathe-Slasher",
+                "[Raid Boss] Dial-Eyed Loom-Grinder"
               ]
             },
             {
@@ -22135,7 +22141,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Sunken Chronometer Foundry 4F Apostle Sovereign"
+                "[MVP] Tick-Lock Assembly Titan"
               ]
             }
           ],
@@ -22199,12 +22205,12 @@
             },
             {
               "npc_id": 61042,
-              "name": "[Mini-Boss] 4F Tick-Lock Assembly Line Overseer",
+              "name": "[Mini-Boss] Copper-Veined Lathe-Slasher",
               "entity_type": "Mini-Boss",
               "level": 31,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · 4F Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -22227,12 +22233,12 @@
             },
             {
               "npc_id": 61043,
-              "name": "[Raid Boss] 4F Seal Warden",
+              "name": "[Raid Boss] Dial-Eyed Loom-Grinder",
               "entity_type": "Raid",
               "level": 33,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -22255,12 +22261,12 @@
             },
             {
               "npc_id": 61044,
-              "name": "[MVP] Sunken Chronometer Foundry 4F Apostle Sovereign",
+              "name": "[MVP] Tick-Lock Assembly Titan",
               "entity_type": "MVP",
               "level": 33,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_badge": "Robotic · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -22287,7 +22293,7 @@
           "floor_id": "5F",
           "floor_index": 5,
           "floor_elevation_meters": 175,
-          "boss_tier_highlight": "5F Quenching Bell Gallery · 5F Seal Warden (Raid Boss)",
+          "boss_tier_highlight": "5F Quenching Bell Gallery · Spring-Coiled Press-Engine (Raid Boss)",
           "name": "5F — Quenching Bell Gallery (Lv.32–35)",
           "level_range": "Lv.32–35",
           "rooms": [
@@ -22314,8 +22320,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 5F Quenching Bell Gallery Overseer",
-                "[Raid Boss] 5F Seal Warden"
+                "[Mini-Boss] Piston-Armed Stamper",
+                "[Raid Boss] Spring-Coiled Press-Engine"
               ]
             },
             {
@@ -22328,7 +22334,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Sunken Chronometer Foundry 5F Apostle Sovereign"
+                "[MVP] Quench-Bell Tolling Engine"
               ]
             }
           ],
@@ -22392,12 +22398,12 @@
             },
             {
               "npc_id": 61052,
-              "name": "[Mini-Boss] 5F Quenching Bell Gallery Overseer",
+              "name": "[Mini-Boss] Piston-Armed Stamper",
               "entity_type": "Mini-Boss",
               "level": 33,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · 5F Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -22420,12 +22426,12 @@
             },
             {
               "npc_id": 61053,
-              "name": "[Raid Boss] 5F Seal Warden",
+              "name": "[Raid Boss] Spring-Coiled Press-Engine",
               "entity_type": "Raid",
               "level": 35,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -22448,12 +22454,12 @@
             },
             {
               "npc_id": 61054,
-              "name": "[MVP] Sunken Chronometer Foundry 5F Apostle Sovereign",
+              "name": "[MVP] Quench-Bell Tolling Engine",
               "entity_type": "MVP",
               "level": 35,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_badge": "Robotic · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -22480,7 +22486,7 @@
           "floor_id": "6F",
           "floor_index": 6,
           "floor_elevation_meters": 210,
-          "boss_tier_highlight": "6F Chronarch Regulator Loft · Sunken Chronometer Foundry 6F Apostle Sovereign (MVP)",
+          "boss_tier_highlight": "6F Chronarch Regulator Loft · Cog-Jawed Lathe-Slasher (MVP)",
           "name": "6F — Chronarch Regulator Loft (Lv.33–36)",
           "level_range": "Lv.33–36",
           "rooms": [
@@ -22507,8 +22513,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 6F Chronarch Regulator Loft Overseer",
-                "[Raid Boss] 6F Seal Warden"
+                "[Mini-Boss] Lever-Limbed Rivet-Gunner",
+                "[Raid Boss] Escapement-Ticking Piston-Crusher"
               ]
             },
             {
@@ -22521,7 +22527,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Sunken Chronometer Foundry 6F Apostle Sovereign"
+                "[MVP] Cog-Jawed Lathe-Slasher"
               ]
             }
           ],
@@ -22576,12 +22582,12 @@
             },
             {
               "npc_id": 61062,
-              "name": "[Mini-Boss] 6F Chronarch Regulator Loft Overseer",
+              "name": "[Mini-Boss] Lever-Limbed Rivet-Gunner",
               "entity_type": "Mini-Boss",
               "level": 34,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · 6F Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -22604,12 +22610,12 @@
             },
             {
               "npc_id": 61063,
-              "name": "[Raid Boss] 6F Seal Warden",
+              "name": "[Raid Boss] Escapement-Ticking Piston-Crusher",
               "entity_type": "Raid",
               "level": 36,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -22632,12 +22638,12 @@
             },
             {
               "npc_id": 61064,
-              "name": "[MVP] Sunken Chronometer Foundry 6F Apostle Sovereign",
+              "name": "[MVP] Cog-Jawed Lathe-Slasher",
               "entity_type": "MVP",
               "level": 36,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_badge": "Robotic · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -22679,7 +22685,7 @@
               "h_pct": 38,
               "key_mobs": [
                 "Sunken Chronometer Foundry 7F Sentinel",
-                "[Mini-Boss] 7F Hourglass Crown Foundry Heart Overseer"
+                "[Mini-Boss] Riveted Winch-Brute"
               ]
             },
             {
@@ -22692,7 +22698,7 @@
               "w_pct": 44,
               "h_pct": 64,
               "key_mobs": [
-                "[Raid Boss] 7F Seal Warden",
+                "[Raid Boss] Chain-Wrapped Boiler-Brute",
                 "[MVP] Hourglass Crown Foundry Heart Apex Sovereign"
               ]
             }
@@ -22757,12 +22763,12 @@
             },
             {
               "npc_id": 61072,
-              "name": "[Mini-Boss] 7F Hourglass Crown Foundry Heart Overseer",
+              "name": "[Mini-Boss] Riveted Winch-Brute",
               "entity_type": "Mini-Boss",
               "level": 36,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · 7F Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -22785,12 +22791,12 @@
             },
             {
               "npc_id": 61073,
-              "name": "[Raid Boss] 7F Seal Warden",
+              "name": "[Raid Boss] Chain-Wrapped Boiler-Brute",
               "entity_type": "Raid",
               "level": 38,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -22868,7 +22874,7 @@
               "h_pct": 26,
               "key_mobs": [
                 "Medallion Heart Fortress B1 Sentinel",
-                "[MVP] Medallion Heart Fortress B1 Apostle Sovereign"
+                "[MVP] Hollow Bell-Moth Mother"
               ]
             },
             {
@@ -22881,7 +22887,7 @@
               "w_pct": 26,
               "h_pct": 28,
               "key_mobs": [
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Glazed Bell-Cricket"
               ]
             },
             {
@@ -22894,7 +22900,7 @@
               "w_pct": 22,
               "h_pct": 32,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden"
+                "[Raid Boss] Celadon Hive-Wasp Queen"
               ]
             }
           ],
@@ -22949,12 +22955,12 @@
             },
             {
               "npc_id": 21112,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Glazed Bell-Cricket",
               "entity_type": "Mini-Boss",
               "level": 10,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -22977,12 +22983,12 @@
             },
             {
               "npc_id": 21113,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Celadon Hive-Wasp Queen",
               "entity_type": "Raid",
               "level": 13,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -23005,12 +23011,12 @@
             },
             {
               "npc_id": 21114,
-              "name": "[MVP] Medallion Heart Fortress B1 Apostle Sovereign",
+              "name": "[MVP] Hollow Bell-Moth Mother",
               "entity_type": "MVP",
               "level": 13,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -23033,7 +23039,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Glazed Bell-Cricket"
         },
         {
           "floor_id": "B2",
@@ -23052,7 +23058,7 @@
               "h_pct": 30,
               "key_mobs": [
                 "Medallion Heart Fortress B2 Sentinel",
-                "[MVP] Medallion Heart Fortress B2 Apostle Sovereign"
+                "[MVP] Ilun, Two-Legged Jewel Beetle Glazier"
               ]
             },
             {
@@ -23065,7 +23071,7 @@
               "w_pct": 28,
               "h_pct": 32,
               "key_mobs": [
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Droning Chalk Cicada"
               ]
             },
             {
@@ -23078,7 +23084,7 @@
               "w_pct": 20,
               "h_pct": 34,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden"
+                "[Raid Boss] Cracked-Glaze Centipede"
               ]
             }
           ],
@@ -23133,12 +23139,12 @@
             },
             {
               "npc_id": 21122,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Droning Chalk Cicada",
               "entity_type": "Mini-Boss",
               "level": 13,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -23161,12 +23167,12 @@
             },
             {
               "npc_id": 21123,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Cracked-Glaze Centipede",
               "entity_type": "Raid",
               "level": 16,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -23189,12 +23195,14 @@
             },
             {
               "npc_id": 21124,
-              "name": "[MVP] Medallion Heart Fortress B2 Apostle Sovereign",
+              "name": "[MVP] Ilun, Two-Legged Jewel Beetle Glazier",
               "entity_type": "MVP",
               "level": 16,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "beetle_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -23217,7 +23225,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Cracked-Glaze Centipede"
         },
         {
           "floor_id": "B3",
@@ -23235,8 +23243,8 @@
               "w_pct": 26,
               "h_pct": 34,
               "key_mobs": [
-                "Medallion Heart Fortress B3 Sentinel",
-                "[Raid Boss] B3 Seal Warden"
+                "Mallet-Bearing Orchid Mantis",
+                "[Raid Boss] Glaive-Bearing Moon Mantis"
               ]
             },
             {
@@ -23249,8 +23257,8 @@
               "w_pct": 40,
               "h_pct": 56,
               "key_mobs": [
-                "[Mini-Boss] B3 Gate Overseer",
-                "[MVP] Medallion Heart Fortress B3 Apostle Sovereign"
+                "[Mini-Boss] Tiger Beetle Bell-Ringer",
+                "[MVP] Porcelain Medallion Archon Sera"
               ]
             }
           ],
@@ -23277,12 +23285,14 @@
           "spawns": [
             {
               "npc_id": 21131,
-              "name": "Medallion Heart Fortress B3 Sentinel",
+              "name": "Mallet-Bearing Orchid Mantis",
               "entity_type": "Monster",
               "level": 15,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Normal Mob",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Normal",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "2x",
               "protections": [
                 "Seal Ward Lv.1"
@@ -23305,12 +23315,14 @@
             },
             {
               "npc_id": 21132,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Tiger Beetle Bell-Ringer",
               "entity_type": "Mini-Boss",
               "level": 16,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "beetle_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -23333,12 +23345,14 @@
             },
             {
               "npc_id": 21133,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Glaive-Bearing Moon Mantis",
               "entity_type": "Raid",
               "level": 20,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -23361,12 +23375,12 @@
             },
             {
               "npc_id": 21134,
-              "name": "[MVP] Medallion Heart Fortress B3 Apostle Sovereign",
+              "name": "[MVP] Porcelain Medallion Archon Sera",
               "entity_type": "MVP",
               "level": 20,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_badge": "Robotic · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -23389,7 +23403,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Medallion Heart Fortress B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Porcelain Medallion Archon Sera"
         }
       ]
     },
@@ -23418,7 +23432,7 @@
               "h_pct": 26,
               "key_mobs": [
                 "Ember Bellows Cave of Trials B1 Sentinel",
-                "[MVP] Ember Bellows Cave of Trials B1 Apostle Sovereign"
+                "[MVP] Hask, Drake-Headed Trial-Master"
               ]
             },
             {
@@ -23431,7 +23445,7 @@
               "w_pct": 26,
               "h_pct": 28,
               "key_mobs": [
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Bellows Wyvern Hatchling"
               ]
             },
             {
@@ -23444,7 +23458,7 @@
               "w_pct": 22,
               "h_pct": 32,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden"
+                "[Raid Boss] Soot Wyvern Broodmother"
               ]
             }
           ],
@@ -23499,12 +23513,12 @@
             },
             {
               "npc_id": 21162,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Bellows Wyvern Hatchling",
               "entity_type": "Mini-Boss",
               "level": 10,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -23527,12 +23541,12 @@
             },
             {
               "npc_id": 21163,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Soot Wyvern Broodmother",
               "entity_type": "Raid",
               "level": 14,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -23555,12 +23569,14 @@
             },
             {
               "npc_id": 21164,
-              "name": "[MVP] Ember Bellows Cave of Trials B1 Apostle Sovereign",
+              "name": "[MVP] Hask, Drake-Headed Trial-Master",
               "entity_type": "MVP",
               "level": 14,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -23583,7 +23599,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Bellows Wyvern Hatchling"
         },
         {
           "floor_id": "B2",
@@ -23602,7 +23618,7 @@
               "h_pct": 30,
               "key_mobs": [
                 "Ember Bellows Cave of Trials B2 Sentinel",
-                "[MVP] Ember Bellows Cave of Trials B2 Apostle Sovereign"
+                "[MVP] Vorrak of the Anvil, Wolf-Headed Smith"
               ]
             },
             {
@@ -23615,7 +23631,7 @@
               "w_pct": 28,
               "h_pct": 32,
               "key_mobs": [
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Firebrick Monitor"
               ]
             },
             {
@@ -23628,7 +23644,7 @@
               "w_pct": 20,
               "h_pct": 34,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden"
+                "[Raid Boss] Slag-Bellied Ash-Drake"
               ]
             }
           ],
@@ -23683,12 +23699,12 @@
             },
             {
               "npc_id": 21172,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Firebrick Monitor",
               "entity_type": "Mini-Boss",
               "level": 14,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -23711,12 +23727,12 @@
             },
             {
               "npc_id": 21173,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Slag-Bellied Ash-Drake",
               "entity_type": "Raid",
               "level": 18,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -23739,12 +23755,14 @@
             },
             {
               "npc_id": 21174,
-              "name": "[MVP] Ember Bellows Cave of Trials B2 Apostle Sovereign",
+              "name": "[MVP] Vorrak of the Anvil, Wolf-Headed Smith",
               "entity_type": "MVP",
               "level": 18,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -23767,7 +23785,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Slag-Bellied Ash-Drake"
         },
         {
           "floor_id": "B3",
@@ -23785,8 +23803,8 @@
               "w_pct": 26,
               "h_pct": 34,
               "key_mobs": [
-                "Ember Bellows Cave of Trials B3 Sentinel",
-                "[Raid Boss] B3 Seal Warden"
+                "Coal-Shovelling Salamander",
+                "[Raid Boss] Drake-Headed Forge Marshal"
               ]
             },
             {
@@ -23799,8 +23817,8 @@
               "w_pct": 40,
               "h_pct": 56,
               "key_mobs": [
-                "[Mini-Boss] B3 Gate Overseer",
-                "[MVP] Ember Bellows Cave of Trials B3 Apostle Sovereign"
+                "[Mini-Boss] Galvanic Scale-Hound Spearman",
+                "[MVP] Alpha Electro-Stalker Raijin-Vex"
               ]
             }
           ],
@@ -23827,12 +23845,14 @@
           "spawns": [
             {
               "npc_id": 21181,
-              "name": "Ember Bellows Cave of Trials B3 Sentinel",
+              "name": "Coal-Shovelling Salamander",
               "entity_type": "Monster",
               "level": 17,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Normal Mob",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Normal",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "2x",
               "protections": [
                 "Seal Ward Lv.1"
@@ -23855,12 +23875,14 @@
             },
             {
               "npc_id": 21182,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Galvanic Scale-Hound Spearman",
               "entity_type": "Mini-Boss",
               "level": 18,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -23883,12 +23905,14 @@
             },
             {
               "npc_id": 21183,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Drake-Headed Forge Marshal",
               "entity_type": "Raid",
               "level": 23,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -23911,12 +23935,14 @@
             },
             {
               "npc_id": 21184,
-              "name": "[MVP] Ember Bellows Cave of Trials B3 Apostle Sovereign",
+              "name": "[MVP] Alpha Electro-Stalker Raijin-Vex",
               "entity_type": "MVP",
               "level": 23,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -23939,7 +23965,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Ember Bellows Cave of Trials B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Alpha Electro-Stalker Raijin-Vex"
         }
       ]
     },
@@ -23968,7 +23994,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Sap-Heart Abandoned Mines B1 Sentinel",
-                "[MVP] Sap-Heart Abandoned Mines B1 Apostle Sovereign"
+                "[MVP] Resin Stump Colossus"
               ]
             },
             {
@@ -23981,7 +24007,7 @@
               "w_pct": 28,
               "h_pct": 28,
               "key_mobs": [
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Amber-Crusted Bark Beetle"
               ]
             },
             {
@@ -23994,7 +24020,7 @@
               "w_pct": 24,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden"
+                "[Raid Boss] Great Coal Badger"
               ]
             }
           ],
@@ -24049,12 +24075,12 @@
             },
             {
               "npc_id": 21212,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Amber-Crusted Bark Beetle",
               "entity_type": "Mini-Boss",
               "level": 9,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -24077,12 +24103,12 @@
             },
             {
               "npc_id": 21213,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Great Coal Badger",
               "entity_type": "Raid",
               "level": 12,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -24105,12 +24131,12 @@
             },
             {
               "npc_id": 21214,
-              "name": "[MVP] Sap-Heart Abandoned Mines B1 Apostle Sovereign",
+              "name": "[MVP] Resin Stump Colossus",
               "entity_type": "MVP",
               "level": 12,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "plant",
+              "race_badge": "Plant · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -24133,7 +24159,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Amber-Crusted Bark Beetle"
         },
         {
           "floor_id": "B2",
@@ -24152,7 +24178,7 @@
               "h_pct": 30,
               "key_mobs": [
                 "Sap-Heart Abandoned Mines B2 Sentinel",
-                "[MVP] Sap-Heart Abandoned Mines B2 Apostle Sovereign"
+                "[MVP] Sap-Gorged Bore Beetle"
               ]
             },
             {
@@ -24165,7 +24191,7 @@
               "w_pct": 26,
               "h_pct": 30,
               "key_mobs": [
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Pick-Swinging Birch Treant"
               ]
             },
             {
@@ -24178,7 +24204,7 @@
               "w_pct": 18,
               "h_pct": 32,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden"
+                "[Raid Boss] Sledge-Swinging Ironbark Ganger"
               ]
             }
           ],
@@ -24233,12 +24259,14 @@
             },
             {
               "npc_id": 21222,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Pick-Swinging Birch Treant",
               "entity_type": "Mini-Boss",
               "level": 12,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_key": "plant",
+              "race_badge": "Plant · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "bark_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -24261,12 +24289,14 @@
             },
             {
               "npc_id": 21223,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Sledge-Swinging Ironbark Ganger",
               "entity_type": "Raid",
               "level": 15,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "plant",
+              "race_badge": "Plant · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "bark_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -24289,12 +24319,12 @@
             },
             {
               "npc_id": 21224,
-              "name": "[MVP] Sap-Heart Abandoned Mines B2 Apostle Sovereign",
+              "name": "[MVP] Sap-Gorged Bore Beetle",
               "entity_type": "MVP",
               "level": 15,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -24317,7 +24347,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Sledge-Swinging Ironbark Ganger"
         },
         {
           "floor_id": "B3",
@@ -24336,7 +24366,7 @@
               "h_pct": 36,
               "key_mobs": [
                 "Sap-Heart Abandoned Mines B3 Sentinel",
-                "[Raid Boss] B3 Seal Warden"
+                "[Raid Boss] Amber-Glazed Root Tangle"
               ]
             },
             {
@@ -24349,8 +24379,8 @@
               "w_pct": 38,
               "h_pct": 56,
               "key_mobs": [
-                "[Mini-Boss] B3 Gate Overseer",
-                "[MVP] Sap-Heart Abandoned Mines B3 Apostle Sovereign"
+                "[Mini-Boss] Axe-Bearing Warthog Timberman",
+                "[MVP] Grandfather Knotwood, Hammer-Bearing Treant"
               ]
             }
           ],
@@ -24405,12 +24435,14 @@
             },
             {
               "npc_id": 21232,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Axe-Bearing Warthog Timberman",
               "entity_type": "Mini-Boss",
               "level": 15,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "boar_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -24433,12 +24465,12 @@
             },
             {
               "npc_id": 21233,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Amber-Glazed Root Tangle",
               "entity_type": "Raid",
               "level": 19,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "plant",
+              "race_badge": "Plant · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -24461,12 +24493,14 @@
             },
             {
               "npc_id": 21234,
-              "name": "[MVP] Sap-Heart Abandoned Mines B3 Apostle Sovereign",
+              "name": "[MVP] Grandfather Knotwood, Hammer-Bearing Treant",
               "entity_type": "MVP",
               "level": 19,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "plant",
+              "race_badge": "Plant · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "bark_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -24489,7 +24523,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Sap-Heart Abandoned Mines B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Grandfather Knotwood, Hammer-Bearing Treant"
         }
       ]
     },
@@ -24518,7 +24552,7 @@
               "h_pct": 26,
               "key_mobs": [
                 "Ceramic Resonator School of Dark Arts B1 Sentinel",
-                "[MVP] Ceramic Resonator School of Dark Arts B1 Apostle Sovereign"
+                "[MVP] Tallow Moth Empress"
               ]
             },
             {
@@ -24531,7 +24565,7 @@
               "w_pct": 26,
               "h_pct": 28,
               "key_mobs": [
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Ink-Sac Spider"
               ]
             },
             {
@@ -24544,7 +24578,7 @@
               "w_pct": 22,
               "h_pct": 32,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden"
+                "[Raid Boss] Great Belfry Bat"
               ]
             }
           ],
@@ -24599,12 +24633,12 @@
             },
             {
               "npc_id": 21262,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Ink-Sac Spider",
               "entity_type": "Mini-Boss",
               "level": 9,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -24627,12 +24661,12 @@
             },
             {
               "npc_id": 21263,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Great Belfry Bat",
               "entity_type": "Raid",
               "level": 13,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -24655,12 +24689,12 @@
             },
             {
               "npc_id": 21264,
-              "name": "[MVP] Ceramic Resonator School of Dark Arts B1 Apostle Sovereign",
+              "name": "[MVP] Tallow Moth Empress",
               "entity_type": "MVP",
               "level": 13,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -24683,7 +24717,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Ink-Sac Spider"
         },
         {
           "floor_id": "B2",
@@ -24702,7 +24736,7 @@
               "h_pct": 30,
               "key_mobs": [
                 "Ceramic Resonator School of Dark Arts B2 Sentinel",
-                "[MVP] Ceramic Resonator School of Dark Arts B2 Apostle Sovereign"
+                "[MVP] Stitched Specimen Chimera"
               ]
             },
             {
@@ -24715,7 +24749,7 @@
               "w_pct": 28,
               "h_pct": 32,
               "key_mobs": [
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Dissection-Hall Rat King"
               ]
             },
             {
@@ -24728,7 +24762,7 @@
               "w_pct": 20,
               "h_pct": 34,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden"
+                "[Raid Boss] Rod-Carrying Jackal Proctor"
               ]
             }
           ],
@@ -24783,12 +24817,12 @@
             },
             {
               "npc_id": 21272,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Dissection-Hall Rat King",
               "entity_type": "Mini-Boss",
               "level": 13,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -24811,12 +24845,14 @@
             },
             {
               "npc_id": 21273,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Rod-Carrying Jackal Proctor",
               "entity_type": "Raid",
               "level": 17,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -24839,12 +24875,12 @@
             },
             {
               "npc_id": 21274,
-              "name": "[MVP] Ceramic Resonator School of Dark Arts B2 Apostle Sovereign",
+              "name": "[MVP] Stitched Specimen Chimera",
               "entity_type": "MVP",
               "level": 17,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -24867,7 +24903,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Rod-Carrying Jackal Proctor"
         },
         {
           "floor_id": "B3",
@@ -24885,8 +24921,8 @@
               "w_pct": 26,
               "h_pct": 34,
               "key_mobs": [
-                "Ceramic Resonator School of Dark Arts B3 Sentinel",
-                "[Raid Boss] B3 Seal Warden"
+                "Slate-Carrying Goat-Skull Pupil",
+                "[Raid Boss] Ram-Skulled Ossuary Lecturer"
               ]
             },
             {
@@ -24899,8 +24935,8 @@
               "w_pct": 40,
               "h_pct": 56,
               "key_mobs": [
-                "[Mini-Boss] B3 Gate Overseer",
-                "[MVP] Ceramic Resonator School of Dark Arts B3 Apostle Sovereign"
+                "[Mini-Boss] Bell-Swinging Mastiff Usher",
+                "[MVP] Headmaster Morvain, Wolf-Skulled Necromancer"
               ]
             }
           ],
@@ -24927,12 +24963,14 @@
           "spawns": [
             {
               "npc_id": 21281,
-              "name": "Ceramic Resonator School of Dark Arts B3 Sentinel",
+              "name": "Slate-Carrying Goat-Skull Pupil",
               "entity_type": "Monster",
               "level": 16,
               "aggro": "Yes",
               "race_key": "undead",
               "race_badge": "Normal Mob",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "2x",
               "protections": [
                 "Seal Ward Lv.1"
@@ -24955,12 +24993,14 @@
             },
             {
               "npc_id": 21282,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Bell-Swinging Mastiff Usher",
               "entity_type": "Mini-Boss",
               "level": 17,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -24983,12 +25023,14 @@
             },
             {
               "npc_id": 21283,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Ram-Skulled Ossuary Lecturer",
               "entity_type": "Raid",
               "level": 20,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -25011,12 +25053,14 @@
             },
             {
               "npc_id": 21284,
-              "name": "[MVP] Ceramic Resonator School of Dark Arts B3 Apostle Sovereign",
+              "name": "[MVP] Headmaster Morvain, Wolf-Skulled Necromancer",
               "entity_type": "MVP",
               "level": 20,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -25039,7 +25083,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Ceramic Resonator School of Dark Arts B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Headmaster Morvain, Wolf-Skulled Necromancer"
         }
       ]
     },
@@ -25068,7 +25112,7 @@
               "h_pct": 34,
               "key_mobs": [
                 "Spice-Kiln Nornil's Cave B1 Sentinel",
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Pestle-Swinging Cinnamon Treant"
               ]
             },
             {
@@ -25081,8 +25125,8 @@
               "w_pct": 34,
               "h_pct": 44,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden",
-                "[MVP] Spice-Kiln Nornil's Cave B1 Apostle Sovereign"
+                "[Raid Boss] Smokehouse Giant Toadstool",
+                "[MVP] Scorched-Nose Pepper Wolf"
               ]
             }
           ],
@@ -25137,12 +25181,14 @@
             },
             {
               "npc_id": 21312,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Pestle-Swinging Cinnamon Treant",
               "entity_type": "Mini-Boss",
               "level": 9,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_key": "plant",
+              "race_badge": "Plant · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "bark_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -25165,12 +25211,12 @@
             },
             {
               "npc_id": 21313,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Smokehouse Giant Toadstool",
               "entity_type": "Raid",
               "level": 13,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "plant",
+              "race_badge": "Plant · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -25193,12 +25239,12 @@
             },
             {
               "npc_id": 21314,
-              "name": "[MVP] Spice-Kiln Nornil's Cave B1 Apostle Sovereign",
+              "name": "[MVP] Scorched-Nose Pepper Wolf",
               "entity_type": "MVP",
               "level": 13,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -25221,7 +25267,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Pestle-Swinging Cinnamon Treant"
         },
         {
           "floor_id": "B2",
@@ -25240,7 +25286,7 @@
               "h_pct": 34,
               "key_mobs": [
                 "Spice-Kiln Nornil's Cave B2 Sentinel",
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Cleaver-Swinging Tusker Thief"
               ]
             },
             {
@@ -25253,8 +25299,8 @@
               "w_pct": 34,
               "h_pct": 44,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden",
-                "[MVP] Spice-Kiln Nornil's Cave B2 Apostle Sovereign"
+                "[Raid Boss] Boar-Headed Caravan Raider",
+                "[MVP] Clove-Spore Puffball Titan"
               ]
             }
           ],
@@ -25309,12 +25355,14 @@
             },
             {
               "npc_id": 21322,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Cleaver-Swinging Tusker Thief",
               "entity_type": "Mini-Boss",
               "level": 13,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "boar_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -25337,12 +25385,14 @@
             },
             {
               "npc_id": 21323,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Boar-Headed Caravan Raider",
               "entity_type": "Raid",
               "level": 17,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "boar_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -25365,12 +25415,12 @@
             },
             {
               "npc_id": 21324,
-              "name": "[MVP] Spice-Kiln Nornil's Cave B2 Apostle Sovereign",
+              "name": "[MVP] Clove-Spore Puffball Titan",
               "entity_type": "MVP",
               "level": 17,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "plant",
+              "race_badge": "Plant · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -25393,7 +25443,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Boar-Headed Caravan Raider"
         },
         {
           "floor_id": "B3",
@@ -25411,8 +25461,8 @@
               "w_pct": 28,
               "h_pct": 34,
               "key_mobs": [
-                "Spice-Kiln Nornil's Cave B3 Sentinel",
-                "[Mini-Boss] B3 Gate Overseer"
+                "Sack-Hauling Peccary",
+                "[Mini-Boss] Drying-Rack Weevil"
               ]
             },
             {
@@ -25425,8 +25475,8 @@
               "w_pct": 34,
               "h_pct": 44,
               "key_mobs": [
-                "[Raid Boss] B3 Seal Warden",
-                "[MVP] Spice-Kiln Nornil's Cave B3 Apostle Sovereign"
+                "[Raid Boss] Bristled Paprika Sow",
+                "[MVP] Mother Cassia, Pestle-Bearing Bark-Skinned Matron"
               ]
             }
           ],
@@ -25453,12 +25503,14 @@
           "spawns": [
             {
               "npc_id": 21331,
-              "name": "Spice-Kiln Nornil's Cave B3 Sentinel",
+              "name": "Sack-Hauling Peccary",
               "entity_type": "Monster",
               "level": 16,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Normal Mob",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Normal",
+              "body_plan": "upright_monster",
+              "body_kin": "boar_kin",
               "hp_multiplier": "2x",
               "protections": [
                 "Seal Ward Lv.1"
@@ -25481,12 +25533,12 @@
             },
             {
               "npc_id": 21332,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Drying-Rack Weevil",
               "entity_type": "Mini-Boss",
               "level": 17,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -25509,12 +25561,12 @@
             },
             {
               "npc_id": 21333,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Bristled Paprika Sow",
               "entity_type": "Raid",
               "level": 20,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -25537,12 +25589,14 @@
             },
             {
               "npc_id": 21334,
-              "name": "[MVP] Spice-Kiln Nornil's Cave B3 Apostle Sovereign",
+              "name": "[MVP] Mother Cassia, Pestle-Bearing Bark-Skinned Matron",
               "entity_type": "MVP",
               "level": 20,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "plant",
+              "race_badge": "Plant · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "bark_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -25565,7 +25619,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Spice-Kiln Nornil's Cave B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Mother Cassia, Pestle-Bearing Bark-Skinned Matron"
         }
       ]
     },
@@ -25594,7 +25648,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Sunken Potter Hold B1 Sentinel",
-                "[MVP] Sunken Potter Hold B1 Apostle Sovereign"
+                "[MVP] Moss-Shelled Snapper of the Flooded Kiln"
               ]
             },
             {
@@ -25607,7 +25661,7 @@
               "w_pct": 28,
               "h_pct": 28,
               "key_mobs": [
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Trident-Bearing Eel-Headed Silt Warden"
               ]
             },
             {
@@ -25620,7 +25674,7 @@
               "w_pct": 24,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden"
+                "[Raid Boss] Great Bog Lotus"
               ]
             }
           ],
@@ -25675,12 +25729,14 @@
             },
             {
               "npc_id": 21362,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Trident-Bearing Eel-Headed Silt Warden",
               "entity_type": "Mini-Boss",
               "level": 19,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_key": "fish",
+              "race_badge": "Fish · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -25703,12 +25759,12 @@
             },
             {
               "npc_id": 21363,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Great Bog Lotus",
               "entity_type": "Raid",
               "level": 21,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "plant",
+              "race_badge": "Plant · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -25731,12 +25787,12 @@
             },
             {
               "npc_id": 21364,
-              "name": "[MVP] Sunken Potter Hold B1 Apostle Sovereign",
+              "name": "[MVP] Moss-Shelled Snapper of the Flooded Kiln",
               "entity_type": "MVP",
               "level": 21,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -25759,7 +25815,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Trident-Bearing Eel-Headed Silt Warden"
         },
         {
           "floor_id": "B2",
@@ -25778,7 +25834,7 @@
               "h_pct": 30,
               "key_mobs": [
                 "Sunken Potter Hold B2 Sentinel",
-                "[MVP] Sunken Potter Hold B2 Apostle Sovereign"
+                "[MVP] Old Gullet, Two-Legged Mud Crab"
               ]
             },
             {
@@ -25791,7 +25847,7 @@
               "w_pct": 26,
               "h_pct": 30,
               "key_mobs": [
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Pole-Wielding Water Monitor"
               ]
             },
             {
@@ -25804,7 +25860,7 @@
               "w_pct": 18,
               "h_pct": 32,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden"
+                "[Raid Boss] Urn-Hurling Catfish Bruiser"
               ]
             }
           ],
@@ -25859,12 +25915,14 @@
             },
             {
               "npc_id": 21372,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Pole-Wielding Water Monitor",
               "entity_type": "Mini-Boss",
               "level": 21,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -25887,12 +25945,14 @@
             },
             {
               "npc_id": 21373,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Urn-Hurling Catfish Bruiser",
               "entity_type": "Raid",
               "level": 23,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "fish",
+              "race_badge": "Fish · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -25915,12 +25975,14 @@
             },
             {
               "npc_id": 21374,
-              "name": "[MVP] Sunken Potter Hold B2 Apostle Sovereign",
+              "name": "[MVP] Old Gullet, Two-Legged Mud Crab",
               "entity_type": "MVP",
               "level": 23,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "fish",
+              "race_badge": "Fish · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -25943,7 +26005,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Urn-Hurling Catfish Bruiser"
         },
         {
           "floor_id": "B3",
@@ -25961,8 +26023,8 @@
               "w_pct": 26,
               "h_pct": 36,
               "key_mobs": [
-                "Sunken Potter Hold B3 Sentinel",
-                "[Raid Boss] B3 Seal Warden"
+                "Net-Casting Crab-Clawed River Fisher",
+                "[Raid Boss] Gaff-Swinging Snakehead"
               ]
             },
             {
@@ -25975,8 +26037,8 @@
               "w_pct": 38,
               "h_pct": 56,
               "key_mobs": [
-                "[Mini-Boss] B3 Gate Overseer",
-                "[MVP] Sunken Potter Hold B3 Apostle Sovereign"
+                "[Mini-Boss] Shard-Grazing Gar",
+                "[MVP] Sunken Potter Leviathan-Brood Matriarch"
               ]
             }
           ],
@@ -26003,12 +26065,14 @@
           "spawns": [
             {
               "npc_id": 21381,
-              "name": "Sunken Potter Hold B3 Sentinel",
+              "name": "Net-Casting Crab-Clawed River Fisher",
               "entity_type": "Monster",
               "level": 22,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Normal Mob",
+              "race_key": "fish",
+              "race_badge": "Fish · Normal",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "2x",
               "protections": [
                 "Seal Ward Lv.1"
@@ -26031,12 +26095,12 @@
             },
             {
               "npc_id": 21382,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Shard-Grazing Gar",
               "entity_type": "Mini-Boss",
               "level": 23,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_key": "fish",
+              "race_badge": "Fish · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -26059,12 +26123,14 @@
             },
             {
               "npc_id": 21383,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Gaff-Swinging Snakehead",
               "entity_type": "Raid",
               "level": 25,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "fish",
+              "race_badge": "Fish · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -26087,12 +26153,14 @@
             },
             {
               "npc_id": 21384,
-              "name": "[MVP] Sunken Potter Hold B3 Apostle Sovereign",
+              "name": "[MVP] Sunken Potter Leviathan-Brood Matriarch",
               "entity_type": "MVP",
               "level": 25,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "fish",
+              "race_badge": "Fish · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -26115,7 +26183,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Sunken Potter Hold B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Sunken Potter Leviathan-Brood Matriarch"
         }
       ]
     },
@@ -26131,7 +26199,7 @@
           "floor_id": "1F",
           "floor_index": 1,
           "floor_elevation_meters": 40,
-          "boss_tier_highlight": "1F Lower Astral Nave · 1F Lower Astral Nave Overseer (Mini-Boss)",
+          "boss_tier_highlight": "1F Lower Astral Nave · Nave-Haunting Glass Wraith (Mini-Boss)",
           "name": "1F — Lower Astral Nave (Lv.50–53)",
           "level_range": "Lv.50–53",
           "rooms": [
@@ -26158,8 +26226,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 1F Lower Astral Nave Overseer",
-                "[Raid Boss] 1F Seal Warden"
+                "[Mini-Boss] Nave-Haunting Glass Wraith",
+                "[Raid Boss] Organ-Loft Phantom"
               ]
             },
             {
@@ -26172,7 +26240,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 1F Apostle Sovereign"
+                "[MVP] Memory-Glass Bishop"
               ]
             }
           ],
@@ -26227,12 +26295,12 @@
             },
             {
               "npc_id": 60012,
-              "name": "[Mini-Boss] 1F Lower Astral Nave Overseer",
+              "name": "[Mini-Boss] Nave-Haunting Glass Wraith",
               "entity_type": "Mini-Boss",
               "level": 51,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 1F Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -26255,12 +26323,12 @@
             },
             {
               "npc_id": 60013,
-              "name": "[Raid Boss] 1F Seal Warden",
+              "name": "[Raid Boss] Organ-Loft Phantom",
               "entity_type": "Raid",
               "level": 53,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -26283,12 +26351,12 @@
             },
             {
               "npc_id": 60014,
-              "name": "[MVP] Star-Heart Tower of Insolence 1F Apostle Sovereign",
+              "name": "[MVP] Memory-Glass Bishop",
               "entity_type": "MVP",
               "level": 53,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -26315,7 +26383,7 @@
           "floor_id": "2F",
           "floor_index": 2,
           "floor_elevation_meters": 80,
-          "boss_tier_highlight": "2F Choir of Pendulums · 2F Seal Warden (Raid Boss)",
+          "boss_tier_highlight": "2F Choir of Pendulums · Great Pendulum Hornet (Raid Boss)",
           "name": "2F — Choir of Pendulums (Lv.54–57)",
           "level_range": "Lv.54–57",
           "rooms": [
@@ -26342,8 +26410,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 2F Choir of Pendulums Overseer",
-                "[Raid Boss] 2F Seal Warden"
+                "[Mini-Boss] Chime-Cricket Cantor",
+                "[Raid Boss] Great Pendulum Hornet"
               ]
             },
             {
@@ -26356,7 +26424,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 2F Apostle Sovereign"
+                "[MVP] Thousand-Bell Phantom"
               ]
             }
           ],
@@ -26420,12 +26488,12 @@
             },
             {
               "npc_id": 60022,
-              "name": "[Mini-Boss] 2F Choir of Pendulums Overseer",
+              "name": "[Mini-Boss] Chime-Cricket Cantor",
               "entity_type": "Mini-Boss",
               "level": 55,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 2F Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -26448,12 +26516,12 @@
             },
             {
               "npc_id": 60023,
-              "name": "[Raid Boss] 2F Seal Warden",
+              "name": "[Raid Boss] Great Pendulum Hornet",
               "entity_type": "Raid",
               "level": 57,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -26476,12 +26544,12 @@
             },
             {
               "npc_id": 60024,
-              "name": "[MVP] Star-Heart Tower of Insolence 2F Apostle Sovereign",
+              "name": "[MVP] Thousand-Bell Phantom",
               "entity_type": "MVP",
               "level": 57,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -26508,7 +26576,7 @@
           "floor_id": "3F",
           "floor_index": 3,
           "floor_elevation_meters": 120,
-          "boss_tier_highlight": "3F Hall of Star-Forged Knights · Star-Heart Tower of Insolence 3F Apostle Sovereign (MVP)",
+          "boss_tier_highlight": "3F Hall of Star-Forged Knights · Eclipse-Cantor Nocturne — Apostle of the Shattered Halo (MVP)",
           "name": "3F — Hall of Star-Forged Knights (Lv.57–60)",
           "level_range": "Lv.57–60",
           "rooms": [
@@ -26535,8 +26603,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 3F Hall of Star-Forged Knights Overseer",
-                "[Raid Boss] 3F Seal Warden"
+                "[Mini-Boss] Hollow Star-Forged Squire",
+                "[Raid Boss] Star-Forged Knight-Phantom"
               ]
             },
             {
@@ -26549,7 +26617,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 3F Apostle Sovereign"
+                "[MVP] Eclipse-Cantor Nocturne — Apostle of the Shattered Halo"
               ]
             }
           ],
@@ -26613,12 +26681,12 @@
             },
             {
               "npc_id": 60032,
-              "name": "[Mini-Boss] 3F Hall of Star-Forged Knights Overseer",
+              "name": "[Mini-Boss] Hollow Star-Forged Squire",
               "entity_type": "Mini-Boss",
               "level": 58,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 3F Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -26641,12 +26709,12 @@
             },
             {
               "npc_id": 60033,
-              "name": "[Raid Boss] 3F Seal Warden",
+              "name": "[Raid Boss] Star-Forged Knight-Phantom",
               "entity_type": "Raid",
               "level": 60,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -26669,12 +26737,12 @@
             },
             {
               "npc_id": 60034,
-              "name": "[MVP] Star-Heart Tower of Insolence 3F Apostle Sovereign",
+              "name": "[MVP] Eclipse-Cantor Nocturne — Apostle of the Shattered Halo",
               "entity_type": "MVP",
               "level": 60,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -26701,7 +26769,7 @@
           "floor_id": "4F",
           "floor_index": 4,
           "floor_elevation_meters": 160,
-          "boss_tier_highlight": "4F Seal-Breaker Gallery · 4F Seal-Breaker Gallery Overseer (Mini-Boss)",
+          "boss_tier_highlight": "4F Seal-Breaker Gallery · Seal-Breaker Echo (Mini-Boss)",
           "name": "4F — Seal-Breaker Gallery (Lv.61–64)",
           "level_range": "Lv.61–64",
           "rooms": [
@@ -26728,8 +26796,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 4F Seal-Breaker Gallery Overseer",
-                "[Raid Boss] 4F Seal Warden"
+                "[Mini-Boss] Seal-Breaker Echo",
+                "[Raid Boss] Seal-Gnawing Silver Centipede"
               ]
             },
             {
@@ -26742,7 +26810,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 4F Apostle Sovereign"
+                "[MVP] Seal-Breaker Varro, Jackal-Headed Apostate"
               ]
             }
           ],
@@ -26806,12 +26874,12 @@
             },
             {
               "npc_id": 60042,
-              "name": "[Mini-Boss] 4F Seal-Breaker Gallery Overseer",
+              "name": "[Mini-Boss] Seal-Breaker Echo",
               "entity_type": "Mini-Boss",
               "level": 62,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 4F Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -26834,12 +26902,12 @@
             },
             {
               "npc_id": 60043,
-              "name": "[Raid Boss] 4F Seal Warden",
+              "name": "[Raid Boss] Seal-Gnawing Silver Centipede",
               "entity_type": "Raid",
               "level": 64,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -26862,12 +26930,14 @@
             },
             {
               "npc_id": 60044,
-              "name": "[MVP] Star-Heart Tower of Insolence 4F Apostle Sovereign",
+              "name": "[MVP] Seal-Breaker Varro, Jackal-Headed Apostate",
               "entity_type": "MVP",
               "level": 64,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -26894,7 +26964,7 @@
           "floor_id": "5F",
           "floor_index": 5,
           "floor_elevation_meters": 200,
-          "boss_tier_highlight": "5F Gravity Inversion Atrium · 5F Seal Warden (Raid Boss)",
+          "boss_tier_highlight": "5F Gravity Inversion Atrium · Inverted Wraith Choir (Raid Boss)",
           "name": "5F — Gravity Inversion Atrium (Lv.64–67)",
           "level_range": "Lv.64–67",
           "rooms": [
@@ -26921,8 +26991,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 5F Gravity Inversion Atrium Overseer",
-                "[Raid Boss] 5F Seal Warden"
+                "[Mini-Boss] Ceiling-Walking Prism Spider",
+                "[Raid Boss] Inverted Wraith Choir"
               ]
             },
             {
@@ -26935,7 +27005,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 5F Apostle Sovereign"
+                "[MVP] Ilex, Ceiling-Striding Astral Mantis"
               ]
             }
           ],
@@ -26999,12 +27069,12 @@
             },
             {
               "npc_id": 60052,
-              "name": "[Mini-Boss] 5F Gravity Inversion Atrium Overseer",
+              "name": "[Mini-Boss] Ceiling-Walking Prism Spider",
               "entity_type": "Mini-Boss",
               "level": 65,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 5F Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -27027,12 +27097,12 @@
             },
             {
               "npc_id": 60053,
-              "name": "[Raid Boss] 5F Seal Warden",
+              "name": "[Raid Boss] Inverted Wraith Choir",
               "entity_type": "Raid",
               "level": 67,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -27055,12 +27125,14 @@
             },
             {
               "npc_id": 60054,
-              "name": "[MVP] Star-Heart Tower of Insolence 5F Apostle Sovereign",
+              "name": "[MVP] Ilex, Ceiling-Striding Astral Mantis",
               "entity_type": "MVP",
               "level": 67,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -27087,7 +27159,7 @@
           "floor_id": "6F",
           "floor_index": 6,
           "floor_elevation_meters": 240,
-          "boss_tier_highlight": "6F Mirror-Glass Cloister · Star-Heart Tower of Insolence 6F Apostle Sovereign (MVP)",
+          "boss_tier_highlight": "6F Mirror-Glass Cloister · Abbess Lumen, Crozier-Bearing Mirror Mantis (MVP)",
           "name": "6F — Mirror-Glass Cloister (Lv.68–71)",
           "level_range": "Lv.68–71",
           "rooms": [
@@ -27114,8 +27186,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 6F Mirror-Glass Cloister Overseer",
-                "[Raid Boss] 6F Seal Warden"
+                "[Mini-Boss] Mirror-Glass Wraith Novice",
+                "[Raid Boss] Mirror-Silk Orb Spider"
               ]
             },
             {
@@ -27128,7 +27200,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 6F Apostle Sovereign"
+                "[MVP] Abbess Lumen, Crozier-Bearing Mirror Mantis"
               ]
             }
           ],
@@ -27192,12 +27264,12 @@
             },
             {
               "npc_id": 60062,
-              "name": "[Mini-Boss] 6F Mirror-Glass Cloister Overseer",
+              "name": "[Mini-Boss] Mirror-Glass Wraith Novice",
               "entity_type": "Mini-Boss",
               "level": 69,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 6F Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -27220,12 +27292,12 @@
             },
             {
               "npc_id": 60063,
-              "name": "[Raid Boss] 6F Seal Warden",
+              "name": "[Raid Boss] Mirror-Silk Orb Spider",
               "entity_type": "Raid",
               "level": 71,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -27248,12 +27320,14 @@
             },
             {
               "npc_id": 60064,
-              "name": "[MVP] Star-Heart Tower of Insolence 6F Apostle Sovereign",
+              "name": "[MVP] Abbess Lumen, Crozier-Bearing Mirror Mantis",
               "entity_type": "MVP",
               "level": 71,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -27280,7 +27354,7 @@
           "floor_id": "7F",
           "floor_index": 7,
           "floor_elevation_meters": 280,
-          "boss_tier_highlight": "7F Mid-Spire Sovereign Crucible · 7F Mid-Spire Sovereign Crucible Overseer (Mini-Boss)",
+          "boss_tier_highlight": "7F Mid-Spire Sovereign Crucible · Crucible Fire-Hornet (Mini-Boss)",
           "name": "7F — Mid-Spire Sovereign Crucible (Lv.71–74)",
           "level_range": "Lv.71–74",
           "rooms": [
@@ -27307,8 +27381,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 7F Mid-Spire Sovereign Crucible Overseer",
-                "[Raid Boss] 7F Seal Warden"
+                "[Mini-Boss] Crucible Fire-Hornet",
+                "[Raid Boss] Hammer-Wielding Crucible Drake"
               ]
             },
             {
@@ -27321,7 +27395,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 7F Apostle Sovereign"
+                "[MVP] Furnace-Marshal Kazrak, Dragon-Headed Lord of the Crucible"
               ]
             }
           ],
@@ -27385,12 +27459,12 @@
             },
             {
               "npc_id": 60072,
-              "name": "[Mini-Boss] 7F Mid-Spire Sovereign Crucible Overseer",
+              "name": "[Mini-Boss] Crucible Fire-Hornet",
               "entity_type": "Mini-Boss",
               "level": 72,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 7F Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -27413,12 +27487,14 @@
             },
             {
               "npc_id": 60073,
-              "name": "[Raid Boss] 7F Seal Warden",
+              "name": "[Raid Boss] Hammer-Wielding Crucible Drake",
               "entity_type": "Raid",
               "level": 74,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -27441,12 +27517,14 @@
             },
             {
               "npc_id": 60074,
-              "name": "[MVP] Star-Heart Tower of Insolence 7F Apostle Sovereign",
+              "name": "[MVP] Furnace-Marshal Kazrak, Dragon-Headed Lord of the Crucible",
               "entity_type": "MVP",
               "level": 74,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -27473,7 +27551,7 @@
           "floor_id": "8F",
           "floor_index": 8,
           "floor_elevation_meters": 320,
-          "boss_tier_highlight": "8F Seraphim Conduit Deck · 8F Seal Warden (Raid Boss)",
+          "boss_tier_highlight": "8F Seraphim Conduit Deck · Seraph-Wing Mantis Duelist (Raid Boss)",
           "name": "8F — Seraphim Conduit Deck (Lv.75–78)",
           "level_range": "Lv.75–78",
           "rooms": [
@@ -27500,8 +27578,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 8F Seraphim Conduit Deck Overseer",
-                "[Raid Boss] 8F Seal Warden"
+                "[Mini-Boss] Conduit-Bound Prism Shade",
+                "[Raid Boss] Seraph-Wing Mantis Duelist"
               ]
             },
             {
@@ -27514,7 +27592,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 8F Apostle Sovereign"
+                "[MVP] Telvane, Spear-Wielding Rhinoceros Beetle"
               ]
             }
           ],
@@ -27578,12 +27656,12 @@
             },
             {
               "npc_id": 60082,
-              "name": "[Mini-Boss] 8F Seraphim Conduit Deck Overseer",
+              "name": "[Mini-Boss] Conduit-Bound Prism Shade",
               "entity_type": "Mini-Boss",
               "level": 76,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 8F Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -27606,12 +27684,14 @@
             },
             {
               "npc_id": 60083,
-              "name": "[Raid Boss] 8F Seal Warden",
+              "name": "[Raid Boss] Seraph-Wing Mantis Duelist",
               "entity_type": "Raid",
               "level": 78,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -27634,12 +27714,14 @@
             },
             {
               "npc_id": 60084,
-              "name": "[MVP] Star-Heart Tower of Insolence 8F Apostle Sovereign",
+              "name": "[MVP] Telvane, Spear-Wielding Rhinoceros Beetle",
               "entity_type": "MVP",
               "level": 78,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "beetle_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -27666,7 +27748,7 @@
           "floor_id": "9F",
           "floor_index": 9,
           "floor_elevation_meters": 360,
-          "boss_tier_highlight": "9F Eclipse Reliquary · Star-Heart Tower of Insolence 9F Apostle Sovereign (MVP)",
+          "boss_tier_highlight": "9F Eclipse Reliquary · Sethra the Moon-Devourer, Halberd-Bearing Eclipse Wolf (MVP)",
           "name": "9F — Eclipse Reliquary (Lv.78–81)",
           "level_range": "Lv.78–81",
           "rooms": [
@@ -27693,8 +27775,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 9F Eclipse Reliquary Overseer",
-                "[Raid Boss] 9F Seal Warden"
+                "[Mini-Boss] Eclipse Mantis Relic-Bearer",
+                "[Raid Boss] Black-Sun Scarab Reliquary-Bearer"
               ]
             },
             {
@@ -27707,7 +27789,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 9F Apostle Sovereign"
+                "[MVP] Sethra the Moon-Devourer, Halberd-Bearing Eclipse Wolf"
               ]
             }
           ],
@@ -27771,12 +27853,14 @@
             },
             {
               "npc_id": 60092,
-              "name": "[Mini-Boss] 9F Eclipse Reliquary Overseer",
+              "name": "[Mini-Boss] Eclipse Mantis Relic-Bearer",
               "entity_type": "Mini-Boss",
               "level": 79,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 9F Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -27799,12 +27883,14 @@
             },
             {
               "npc_id": 60093,
-              "name": "[Raid Boss] 9F Seal Warden",
+              "name": "[Raid Boss] Black-Sun Scarab Reliquary-Bearer",
               "entity_type": "Raid",
               "level": 81,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "beetle_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -27827,12 +27913,14 @@
             },
             {
               "npc_id": 60094,
-              "name": "[MVP] Star-Heart Tower of Insolence 9F Apostle Sovereign",
+              "name": "[MVP] Sethra the Moon-Devourer, Halberd-Bearing Eclipse Wolf",
               "entity_type": "MVP",
               "level": 81,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -27859,7 +27947,7 @@
           "floor_id": "10F",
           "floor_index": 10,
           "floor_elevation_meters": 400,
-          "boss_tier_highlight": "10F Archon Command Ring · 10F Archon Command Ring Overseer (Mini-Boss)",
+          "boss_tier_highlight": "10F Archon Command Ring · Ring-Guard Moon Hound Pikeman (Mini-Boss)",
           "name": "10F — Archon Command Ring (Lv.82–85)",
           "level_range": "Lv.82–85",
           "rooms": [
@@ -27886,8 +27974,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 10F Archon Command Ring Overseer",
-                "[Raid Boss] 10F Seal Warden"
+                "[Mini-Boss] Ring-Guard Moon Hound Pikeman",
+                "[Raid Boss] Commander Asra, Moon-Wolf Standard-Bearer"
               ]
             },
             {
@@ -27900,7 +27988,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 10F Apostle Sovereign"
+                "[MVP] Archon-General Thyrax, Dragon-Headed Ring-Commander"
               ]
             }
           ],
@@ -27964,12 +28052,14 @@
             },
             {
               "npc_id": 60102,
-              "name": "[Mini-Boss] 10F Archon Command Ring Overseer",
+              "name": "[Mini-Boss] Ring-Guard Moon Hound Pikeman",
               "entity_type": "Mini-Boss",
               "level": 83,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 10F Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -27992,12 +28082,14 @@
             },
             {
               "npc_id": 60103,
-              "name": "[Raid Boss] 10F Seal Warden",
+              "name": "[Raid Boss] Commander Asra, Moon-Wolf Standard-Bearer",
               "entity_type": "Raid",
               "level": 85,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -28020,12 +28112,14 @@
             },
             {
               "npc_id": 60104,
-              "name": "[MVP] Star-Heart Tower of Insolence 10F Apostle Sovereign",
+              "name": "[MVP] Archon-General Thyrax, Dragon-Headed Ring-Commander",
               "entity_type": "MVP",
               "level": 85,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -28052,7 +28146,7 @@
           "floor_id": "11F",
           "floor_index": 11,
           "floor_elevation_meters": 440,
-          "boss_tier_highlight": "11F Prism Engine Core · 11F Seal Warden (Raid Boss)",
+          "boss_tier_highlight": "11F Prism Engine Core · Prism-Engine Mantis Machinist (Raid Boss)",
           "name": "11F — Prism Engine Core (Lv.85–88)",
           "level_range": "Lv.85–88",
           "rooms": [
@@ -28079,8 +28173,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 11F Prism Engine Core Overseer",
-                "[Raid Boss] 11F Seal Warden"
+                "[Mini-Boss] Wrench-Wielding Prism Beetle",
+                "[Raid Boss] Prism-Engine Mantis Machinist"
               ]
             },
             {
@@ -28093,7 +28187,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 11F Apostle Sovereign"
+                "[MVP] Prism-Wright Quell, Hammer-Bearing Stag Beetle"
               ]
             }
           ],
@@ -28157,12 +28251,14 @@
             },
             {
               "npc_id": 60112,
-              "name": "[Mini-Boss] 11F Prism Engine Core Overseer",
+              "name": "[Mini-Boss] Wrench-Wielding Prism Beetle",
               "entity_type": "Mini-Boss",
               "level": 86,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 11F Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "beetle_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -28185,12 +28281,14 @@
             },
             {
               "npc_id": 60113,
-              "name": "[Raid Boss] 11F Seal Warden",
+              "name": "[Raid Boss] Prism-Engine Mantis Machinist",
               "entity_type": "Raid",
               "level": 88,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -28213,12 +28311,14 @@
             },
             {
               "npc_id": 60114,
-              "name": "[MVP] Star-Heart Tower of Insolence 11F Apostle Sovereign",
+              "name": "[MVP] Prism-Wright Quell, Hammer-Bearing Stag Beetle",
               "entity_type": "MVP",
               "level": 88,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "beetle_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -28245,7 +28345,7 @@
           "floor_id": "12F",
           "floor_index": 12,
           "floor_elevation_meters": 480,
-          "boss_tier_highlight": "12F Celestial Valkyrie Bastion · Star-Heart Tower of Insolence 12F Apostle Sovereign (MVP)",
+          "boss_tier_highlight": "12F Celestial Valkyrie Bastion · High Marshal Ulfrun, Wolf-Headed Valkyrie-Breaker (MVP)",
           "name": "12F — Celestial Valkyrie Bastion (Lv.89–92)",
           "level_range": "Lv.89–92",
           "rooms": [
@@ -28272,8 +28372,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 12F Celestial Valkyrie Bastion Overseer",
-                "[Raid Boss] 12F Seal Warden"
+                "[Mini-Boss] Star-Scaled Drake Lancer",
+                "[Raid Boss] Zarkeen, Lizard-Headed Spear-Master"
               ]
             },
             {
@@ -28286,7 +28386,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 12F Apostle Sovereign"
+                "[MVP] High Marshal Ulfrun, Wolf-Headed Valkyrie-Breaker"
               ]
             }
           ],
@@ -28350,12 +28450,14 @@
             },
             {
               "npc_id": 60122,
-              "name": "[Mini-Boss] 12F Celestial Valkyrie Bastion Overseer",
+              "name": "[Mini-Boss] Star-Scaled Drake Lancer",
               "entity_type": "Mini-Boss",
               "level": 90,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 12F Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -28378,12 +28480,14 @@
             },
             {
               "npc_id": 60123,
-              "name": "[Raid Boss] 12F Seal Warden",
+              "name": "[Raid Boss] Zarkeen, Lizard-Headed Spear-Master",
               "entity_type": "Raid",
               "level": 92,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -28406,12 +28510,14 @@
             },
             {
               "npc_id": 60124,
-              "name": "[MVP] Star-Heart Tower of Insolence 12F Apostle Sovereign",
+              "name": "[MVP] High Marshal Ulfrun, Wolf-Headed Valkyrie-Breaker",
               "entity_type": "MVP",
               "level": 92,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -28438,7 +28544,7 @@
           "floor_id": "13F",
           "floor_index": 13,
           "floor_elevation_meters": 520,
-          "boss_tier_highlight": "13F Pre-Apex Seal Chamber · 13F Pre-Apex Seal Chamber Overseer (Mini-Boss)",
+          "boss_tier_highlight": "13F Pre-Apex Seal Chamber · Glass Mantis Seal-Bearer (Mini-Boss)",
           "name": "13F — Pre-Apex Seal Chamber (Lv.92–95)",
           "level_range": "Lv.92–95",
           "rooms": [
@@ -28465,8 +28571,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] 13F Pre-Apex Seal Chamber Overseer",
-                "[Raid Boss] 13F Seal Warden"
+                "[Mini-Boss] Glass Mantis Seal-Bearer",
+                "[Raid Boss] Greatsword-Wielding Goliath Beetle"
               ]
             },
             {
@@ -28479,7 +28585,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Star-Heart Tower of Insolence 13F Apostle Sovereign"
+                "[MVP] Ishrel, Glaive-Bearing Mantis Queen of the Last Seal"
               ]
             }
           ],
@@ -28534,12 +28640,14 @@
             },
             {
               "npc_id": 60132,
-              "name": "[Mini-Boss] 13F Pre-Apex Seal Chamber Overseer",
+              "name": "[Mini-Boss] Glass Mantis Seal-Bearer",
               "entity_type": "Mini-Boss",
               "level": 93,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 13F Keeper",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -28562,12 +28670,14 @@
             },
             {
               "npc_id": 60133,
-              "name": "[Raid Boss] 13F Seal Warden",
+              "name": "[Raid Boss] Greatsword-Wielding Goliath Beetle",
               "entity_type": "Raid",
               "level": 95,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "beetle_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -28590,12 +28700,14 @@
             },
             {
               "npc_id": 60134,
-              "name": "[MVP] Star-Heart Tower of Insolence 13F Apostle Sovereign",
+              "name": "[MVP] Ishrel, Glaive-Bearing Mantis Queen of the Last Seal",
               "entity_type": "MVP",
               "level": 95,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -28622,7 +28734,7 @@
           "floor_id": "14F",
           "floor_index": 14,
           "floor_elevation_meters": 560,
-          "boss_tier_highlight": "14F Rooftop Apex · Baium & Vesper's Throne · Rooftop Apex · Baium & Vesper's Throne Apex Sovereign (MVP)",
+          "boss_tier_highlight": "14F Rooftop Apex · Ozryth, Dragon-Headed Regent of Vesper's Throne (MVP)",
           "name": "14F — Rooftop Apex · Baium & Vesper's Throne (Lv.96–99)",
           "level_range": "Lv.96–99",
           "rooms": [
@@ -28636,8 +28748,8 @@
               "w_pct": 26,
               "h_pct": 38,
               "key_mobs": [
-                "Star-Heart Tower of Insolence 14F Sentinel",
-                "[Mini-Boss] 14F Rooftop Apex · Baium & Vesper's Throne Overseer"
+                "Spear-Bearing Star Saurian",
+                "[Mini-Boss] Throne-Step Wyrm Halberdier"
               ]
             },
             {
@@ -28650,8 +28762,8 @@
               "w_pct": 44,
               "h_pct": 64,
               "key_mobs": [
-                "[Raid Boss] 14F Seal Warden",
-                "[MVP] Rooftop Apex · Baium & Vesper's Throne Apex Sovereign"
+                "[Raid Boss] Vesper's Left Hand, Sabre-Wielding Mantis",
+                "[MVP] Ozryth, Dragon-Headed Regent of Vesper's Throne"
               ]
             }
           ],
@@ -28687,12 +28799,14 @@
           "spawns": [
             {
               "npc_id": 60141,
-              "name": "Star-Heart Tower of Insolence 14F Sentinel",
+              "name": "Spear-Bearing Star Saurian",
               "entity_type": "Monster",
               "level": 96,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Normal Mob",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Normal",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "2x",
               "protections": [
                 "Seal Ward Lv.1"
@@ -28715,12 +28829,14 @@
             },
             {
               "npc_id": 60142,
-              "name": "[Mini-Boss] 14F Rooftop Apex · Baium & Vesper's Throne Overseer",
+              "name": "[Mini-Boss] Throne-Step Wyrm Halberdier",
               "entity_type": "Mini-Boss",
               "level": 97,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · 14F Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -28743,12 +28859,14 @@
             },
             {
               "npc_id": 60143,
-              "name": "[Raid Boss] 14F Seal Warden",
+              "name": "[Raid Boss] Vesper's Left Hand, Sabre-Wielding Mantis",
               "entity_type": "Raid",
               "level": 99,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -28771,12 +28889,14 @@
             },
             {
               "npc_id": 60144,
-              "name": "[MVP] Rooftop Apex · Baium & Vesper's Throne Apex Sovereign",
+              "name": "[MVP] Ozryth, Dragon-Headed Regent of Vesper's Throne",
               "entity_type": "MVP",
               "level": 99,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -28826,7 +28946,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Catacomb of the Heretic Kiln B1 Sentinel",
-                "[MVP] Catacomb of the Heretic Kiln B1 Apostle Sovereign"
+                "[MVP] Deacon Ossel, Bull-Skulled Kiln-Priest"
               ]
             },
             {
@@ -28839,7 +28959,7 @@
               "w_pct": 26,
               "h_pct": 26,
               "key_mobs": [
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Glass-Crusted Zealot"
               ]
             },
             {
@@ -28852,7 +28972,7 @@
               "w_pct": 22,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden"
+                "[Raid Boss] Clay-Baked Revenant Giant"
               ]
             }
           ],
@@ -28907,12 +29027,12 @@
             },
             {
               "npc_id": 21562,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Glass-Crusted Zealot",
               "entity_type": "Mini-Boss",
               "level": 21,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -28935,12 +29055,12 @@
             },
             {
               "npc_id": 21563,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Clay-Baked Revenant Giant",
               "entity_type": "Raid",
               "level": 24,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -28963,12 +29083,14 @@
             },
             {
               "npc_id": 21564,
-              "name": "[MVP] Catacomb of the Heretic Kiln B1 Apostle Sovereign",
+              "name": "[MVP] Deacon Ossel, Bull-Skulled Kiln-Priest",
               "entity_type": "MVP",
               "level": 24,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -28991,7 +29113,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Glass-Crusted Zealot"
         },
         {
           "floor_id": "B2",
@@ -29010,7 +29132,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Catacomb of the Heretic Kiln B2 Sentinel",
-                "[MVP] Catacomb of the Heretic Kiln B2 Apostle Sovereign"
+                "[MVP] Sister Cindermaw, Hound-Headed Flame-Tender"
               ]
             },
             {
@@ -29023,7 +29145,7 @@
               "w_pct": 26,
               "h_pct": 30,
               "key_mobs": [
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Poker-Wielding Hearth Hound"
               ]
             },
             {
@@ -29036,7 +29158,7 @@
               "w_pct": 20,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden"
+                "[Raid Boss] Salamander Kiln-Stoker"
               ]
             }
           ],
@@ -29091,12 +29213,14 @@
             },
             {
               "npc_id": 21572,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Poker-Wielding Hearth Hound",
               "entity_type": "Mini-Boss",
               "level": 24,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -29119,12 +29243,14 @@
             },
             {
               "npc_id": 21573,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Salamander Kiln-Stoker",
               "entity_type": "Raid",
               "level": 27,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -29147,12 +29273,14 @@
             },
             {
               "npc_id": 21574,
-              "name": "[MVP] Catacomb of the Heretic Kiln B2 Apostle Sovereign",
+              "name": "[MVP] Sister Cindermaw, Hound-Headed Flame-Tender",
               "entity_type": "MVP",
               "level": 27,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -29175,7 +29303,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Salamander Kiln-Stoker"
         },
         {
           "floor_id": "B3",
@@ -29193,8 +29321,8 @@
               "w_pct": 26,
               "h_pct": 32,
               "key_mobs": [
-                "Catacomb of the Heretic Kiln B3 Sentinel",
-                "[Raid Boss] B3 Seal Warden"
+                "Censer-Swinging Ox-Skull Acolyte",
+                "[Raid Boss] Boar-Skulled Urn-Breaker"
               ]
             },
             {
@@ -29207,8 +29335,8 @@
               "w_pct": 40,
               "h_pct": 54,
               "key_mobs": [
-                "[Mini-Boss] B3 Gate Overseer",
-                "[MVP] Catacomb of the Heretic Kiln B3 Apostle Sovereign"
+                "[Mini-Boss] Ember-Eyed Urn Ghoul",
+                "[MVP] Vitrified Apostle Ignisazar"
               ]
             }
           ],
@@ -29235,12 +29363,14 @@
           "spawns": [
             {
               "npc_id": 21581,
-              "name": "Catacomb of the Heretic Kiln B3 Sentinel",
+              "name": "Censer-Swinging Ox-Skull Acolyte",
               "entity_type": "Monster",
               "level": 26,
               "aggro": "Yes",
               "race_key": "undead",
               "race_badge": "Normal Mob",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "2x",
               "protections": [
                 "Seal Ward Lv.1"
@@ -29263,12 +29393,12 @@
             },
             {
               "npc_id": 21582,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Ember-Eyed Urn Ghoul",
               "entity_type": "Mini-Boss",
               "level": 27,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -29291,12 +29421,14 @@
             },
             {
               "npc_id": 21583,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Boar-Skulled Urn-Breaker",
               "entity_type": "Raid",
               "level": 30,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -29319,12 +29451,12 @@
             },
             {
               "npc_id": 21584,
-              "name": "[MVP] Catacomb of the Heretic Kiln B3 Apostle Sovereign",
+              "name": "[MVP] Vitrified Apostle Ignisazar",
               "entity_type": "MVP",
               "level": 30,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -29347,7 +29479,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Catacomb of the Heretic Kiln B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Vitrified Apostle Ignisazar"
         }
       ]
     },
@@ -29376,7 +29508,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Catacomb of the Branded Bellows B1 Sentinel",
-                "[MVP] Catacomb of the Branded Bellows B1 Apostle Sovereign"
+                "[MVP] Brass-Branded Pilgrim Revenant"
               ]
             },
             {
@@ -29389,7 +29521,7 @@
               "w_pct": 26,
               "h_pct": 26,
               "key_mobs": [
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Brass-Plated Hammer-Hulk"
               ]
             },
             {
@@ -29402,7 +29534,7 @@
               "w_pct": 22,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden"
+                "[Raid Boss] Gear-Toothed Chain-Reaper"
               ]
             }
           ],
@@ -29457,12 +29589,12 @@
             },
             {
               "npc_id": 21612,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Brass-Plated Hammer-Hulk",
               "entity_type": "Mini-Boss",
               "level": 29,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -29485,12 +29617,12 @@
             },
             {
               "npc_id": 21613,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Gear-Toothed Chain-Reaper",
               "entity_type": "Raid",
               "level": 33,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -29513,12 +29645,12 @@
             },
             {
               "npc_id": 21614,
-              "name": "[MVP] Catacomb of the Branded Bellows B1 Apostle Sovereign",
+              "name": "[MVP] Brass-Branded Pilgrim Revenant",
               "entity_type": "MVP",
               "level": 33,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -29541,7 +29673,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Brass-Plated Hammer-Hulk"
         },
         {
           "floor_id": "B2",
@@ -29560,7 +29692,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Catacomb of the Branded Bellows B2 Sentinel",
-                "[MVP] Catacomb of the Branded Bellows B2 Apostle Sovereign"
+                "[MVP] Gear-Spined Bellows Ghoul"
               ]
             },
             {
@@ -29573,7 +29705,7 @@
               "w_pct": 26,
               "h_pct": 30,
               "key_mobs": [
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Copper-Veined Gear-Lancer"
               ]
             },
             {
@@ -29586,7 +29718,7 @@
               "w_pct": 20,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden"
+                "[Raid Boss] Dial-Eyed Driller"
               ]
             }
           ],
@@ -29641,12 +29773,12 @@
             },
             {
               "npc_id": 21622,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Copper-Veined Gear-Lancer",
               "entity_type": "Mini-Boss",
               "level": 33,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -29669,12 +29801,12 @@
             },
             {
               "npc_id": 21623,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Dial-Eyed Driller",
               "entity_type": "Raid",
               "level": 37,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -29697,12 +29829,12 @@
             },
             {
               "npc_id": 21624,
-              "name": "[MVP] Catacomb of the Branded Bellows B2 Apostle Sovereign",
+              "name": "[MVP] Gear-Spined Bellows Ghoul",
               "entity_type": "MVP",
               "level": 37,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -29725,7 +29857,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Dial-Eyed Driller"
         },
         {
           "floor_id": "B3",
@@ -29744,7 +29876,7 @@
               "h_pct": 32,
               "key_mobs": [
                 "Catacomb of the Branded Bellows B3 Sentinel",
-                "[Raid Boss] B3 Seal Warden"
+                "[Raid Boss] Spring-Coiled Cutter-Walker"
               ]
             },
             {
@@ -29757,8 +29889,8 @@
               "w_pct": 40,
               "h_pct": 54,
               "key_mobs": [
-                "[Mini-Boss] B3 Gate Overseer",
-                "[MVP] Catacomb of the Branded Bellows B3 Apostle Sovereign"
+                "[Mini-Boss] Piston-Armed Spring-Stalker",
+                "[MVP] Hierophant Vorn, Brass-Branded Lich"
               ]
             }
           ],
@@ -29813,12 +29945,12 @@
             },
             {
               "npc_id": 21632,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Piston-Armed Spring-Stalker",
               "entity_type": "Mini-Boss",
               "level": 37,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -29841,12 +29973,12 @@
             },
             {
               "npc_id": 21633,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Spring-Coiled Cutter-Walker",
               "entity_type": "Raid",
               "level": 40,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -29869,12 +30001,12 @@
             },
             {
               "npc_id": 21634,
-              "name": "[MVP] Catacomb of the Branded Bellows B3 Apostle Sovereign",
+              "name": "[MVP] Hierophant Vorn, Brass-Branded Lich",
               "entity_type": "MVP",
               "level": 40,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -29897,7 +30029,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Catacomb of the Branded Bellows B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Hierophant Vorn, Brass-Branded Lich"
         }
       ]
     },
@@ -29926,7 +30058,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Necropolis of Worship & Dynamo Seal B1 Sentinel",
-                "[MVP] Necropolis of Worship & Dynamo Seal B1 Apostle Sovereign"
+                "[MVP] Drake-Skull Revenant of the Dynamo Seal"
               ]
             },
             {
@@ -29939,7 +30071,7 @@
               "w_pct": 26,
               "h_pct": 26,
               "key_mobs": [
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Dynamo Coil-Fist"
               ]
             },
             {
@@ -29952,7 +30084,7 @@
               "w_pct": 22,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden"
+                "[Raid Boss] Leyden Jar Arc-Thrower"
               ]
             }
           ],
@@ -30007,12 +30139,12 @@
             },
             {
               "npc_id": 21662,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Dynamo Coil-Fist",
               "entity_type": "Mini-Boss",
               "level": 36,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -30035,12 +30167,12 @@
             },
             {
               "npc_id": 21663,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Leyden Jar Arc-Thrower",
               "entity_type": "Raid",
               "level": 39,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -30063,12 +30195,12 @@
             },
             {
               "npc_id": 21664,
-              "name": "[MVP] Necropolis of Worship & Dynamo Seal B1 Apostle Sovereign",
+              "name": "[MVP] Drake-Skull Revenant of the Dynamo Seal",
               "entity_type": "MVP",
               "level": 39,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -30091,7 +30223,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Dynamo Coil-Fist"
         },
         {
           "floor_id": "B2",
@@ -30110,7 +30242,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Necropolis of Worship & Dynamo Seal B2 Sentinel",
-                "[MVP] Necropolis of Worship & Dynamo Seal B2 Apostle Sovereign"
+                "[MVP] Thunder-Scale Bone Wyrmling"
               ]
             },
             {
@@ -30123,7 +30255,7 @@
               "w_pct": 26,
               "h_pct": 30,
               "key_mobs": [
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Steam-Venting Turbine Lancer"
               ]
             },
             {
@@ -30136,7 +30268,7 @@
               "w_pct": 20,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden"
+                "[Raid Boss] Flywheel-Chested Ground-Breaker"
               ]
             }
           ],
@@ -30191,12 +30323,12 @@
             },
             {
               "npc_id": 21672,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Steam-Venting Turbine Lancer",
               "entity_type": "Mini-Boss",
               "level": 39,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -30219,12 +30351,12 @@
             },
             {
               "npc_id": 21673,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Flywheel-Chested Ground-Breaker",
               "entity_type": "Raid",
               "level": 42,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -30247,12 +30379,12 @@
             },
             {
               "npc_id": 21674,
-              "name": "[MVP] Necropolis of Worship & Dynamo Seal B2 Apostle Sovereign",
+              "name": "[MVP] Thunder-Scale Bone Wyrmling",
               "entity_type": "MVP",
               "level": 42,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -30275,7 +30407,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Flywheel-Chested Ground-Breaker"
         },
         {
           "floor_id": "B3",
@@ -30294,7 +30426,7 @@
               "h_pct": 32,
               "key_mobs": [
                 "Necropolis of Worship & Dynamo Seal B3 Sentinel",
-                "[Raid Boss] B3 Seal Warden"
+                "[Raid Boss] Galvanic Scythe-Carriage"
               ]
             },
             {
@@ -30307,8 +30439,8 @@
               "w_pct": 40,
               "h_pct": 54,
               "key_mobs": [
-                "[Mini-Boss] B3 Gate Overseer",
-                "[MVP] Necropolis of Worship & Dynamo Seal B3 Apostle Sovereign"
+                "[Mini-Boss] Brass Capacitor Sentry",
+                "[MVP] Tri-Scale Wyrm-Marshal Volcanor"
               ]
             }
           ],
@@ -30363,12 +30495,12 @@
             },
             {
               "npc_id": 21682,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Brass Capacitor Sentry",
               "entity_type": "Mini-Boss",
               "level": 42,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_badge": "Robotic · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -30391,12 +30523,12 @@
             },
             {
               "npc_id": 21683,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Galvanic Scythe-Carriage",
               "entity_type": "Raid",
               "level": 45,
               "aggro": "Yes",
               "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_badge": "Robotic · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -30419,12 +30551,12 @@
             },
             {
               "npc_id": 21684,
-              "name": "[MVP] Necropolis of Worship & Dynamo Seal B3 Apostle Sovereign",
+              "name": "[MVP] Tri-Scale Wyrm-Marshal Volcanor",
               "entity_type": "MVP",
               "level": 45,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -30447,7 +30579,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Necropolis of Worship & Dynamo Seal B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Tri-Scale Wyrm-Marshal Volcanor"
         }
       ]
     },
@@ -30476,7 +30608,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Catacomb of the Astral Witch B1 Sentinel",
-                "[MVP] Catacomb of the Astral Witch B1 Apostle Sovereign"
+                "[MVP] Prioress Vael, Scythe-Bearing Mantis of the Zenith Choir"
               ]
             },
             {
@@ -30489,7 +30621,7 @@
               "w_pct": 26,
               "h_pct": 26,
               "key_mobs": [
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Seal-Branded Nephilim Husk"
               ]
             },
             {
@@ -30502,7 +30634,7 @@
               "w_pct": 22,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden"
+                "[Raid Boss] Harmonic Bell-Wisp Choir"
               ]
             }
           ],
@@ -30557,12 +30689,12 @@
             },
             {
               "npc_id": 21712,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Seal-Branded Nephilim Husk",
               "entity_type": "Mini-Boss",
               "level": 41,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -30585,12 +30717,12 @@
             },
             {
               "npc_id": 21713,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Harmonic Bell-Wisp Choir",
               "entity_type": "Raid",
               "level": 45,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -30613,12 +30745,14 @@
             },
             {
               "npc_id": 21714,
-              "name": "[MVP] Catacomb of the Astral Witch B1 Apostle Sovereign",
+              "name": "[MVP] Prioress Vael, Scythe-Bearing Mantis of the Zenith Choir",
               "entity_type": "MVP",
               "level": 45,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -30641,7 +30775,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Seal-Branded Nephilim Husk"
         },
         {
           "floor_id": "B2",
@@ -30660,7 +30794,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Catacomb of the Astral Witch B2 Sentinel",
-                "[MVP] Catacomb of the Astral Witch B2 Apostle Sovereign"
+                "[MVP] Inquisitor Halcyr, Wolf-Headed Radiant Judge"
               ]
             },
             {
@@ -30673,7 +30807,7 @@
               "w_pct": 26,
               "h_pct": 30,
               "key_mobs": [
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Lantern-Bearing Sighthound Inquisitor"
               ]
             },
             {
@@ -30686,7 +30820,7 @@
               "w_pct": 20,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden"
+                "[Raid Boss] Pendulum-Swinging Mantis Executioner"
               ]
             }
           ],
@@ -30741,12 +30875,14 @@
             },
             {
               "npc_id": 21722,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Lantern-Bearing Sighthound Inquisitor",
               "entity_type": "Mini-Boss",
               "level": 45,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -30769,12 +30905,14 @@
             },
             {
               "npc_id": 21723,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Pendulum-Swinging Mantis Executioner",
               "entity_type": "Raid",
               "level": 49,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -30797,12 +30935,14 @@
             },
             {
               "npc_id": 21724,
-              "name": "[MVP] Catacomb of the Astral Witch B2 Apostle Sovereign",
+              "name": "[MVP] Inquisitor Halcyr, Wolf-Headed Radiant Judge",
               "entity_type": "MVP",
               "level": 49,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -30825,7 +30965,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Pendulum-Swinging Mantis Executioner"
         },
         {
           "floor_id": "B3",
@@ -30843,8 +30983,8 @@
               "w_pct": 26,
               "h_pct": 32,
               "key_mobs": [
-                "Catacomb of the Astral Witch B3 Sentinel",
-                "[Raid Boss] B3 Seal Warden"
+                "Bell-Carrying Mantis Novice",
+                "[Raid Boss] Halberd-Bearing Alabaster Wolf"
               ]
             },
             {
@@ -30857,8 +30997,8 @@
               "w_pct": 40,
               "h_pct": 54,
               "key_mobs": [
-                "[Mini-Boss] B3 Gate Overseer",
-                "[MVP] Catacomb of the Astral Witch B3 Apostle Sovereign"
+                "[Mini-Boss] Sun-Blind Nephilim Revenant",
+                "[MVP] Arch-Valkyrie Caelia — Dawn-Forger Apostle"
               ]
             }
           ],
@@ -30885,12 +31025,14 @@
           "spawns": [
             {
               "npc_id": 21731,
-              "name": "Catacomb of the Astral Witch B3 Sentinel",
+              "name": "Bell-Carrying Mantis Novice",
               "entity_type": "Monster",
               "level": 48,
               "aggro": "Yes",
-              "race_key": "undead",
-              "race_badge": "Normal Mob",
+              "race_key": "insect_arachnia",
+              "race_badge": "Insect · Normal",
+              "body_plan": "upright_monster",
+              "body_kin": "mantis_kin",
               "hp_multiplier": "2x",
               "protections": [
                 "Seal Ward Lv.1"
@@ -30913,12 +31055,12 @@
             },
             {
               "npc_id": 21732,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Sun-Blind Nephilim Revenant",
               "entity_type": "Mini-Boss",
               "level": 49,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -30941,12 +31083,14 @@
             },
             {
               "npc_id": 21733,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Halberd-Bearing Alabaster Wolf",
               "entity_type": "Raid",
               "level": 52,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -30969,12 +31113,12 @@
             },
             {
               "npc_id": 21734,
-              "name": "[MVP] Catacomb of the Astral Witch B3 Apostle Sovereign",
+              "name": "[MVP] Arch-Valkyrie Caelia — Dawn-Forger Apostle",
               "entity_type": "MVP",
               "level": 52,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -30997,7 +31141,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Catacomb of the Astral Witch B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Arch-Valkyrie Caelia — Dawn-Forger Apostle"
         }
       ]
     },
@@ -31026,7 +31170,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Necropolis of Deep Devotion B1 Sentinel",
-                "[MVP] Necropolis of Deep Devotion B1 Apostle Sovereign"
+                "[MVP] Deep-Cantor Imoth, Anglerfish-Headed Priest"
               ]
             },
             {
@@ -31039,7 +31183,7 @@
               "w_pct": 26,
               "h_pct": 26,
               "key_mobs": [
-                "[Mini-Boss] B1 Gate Overseer"
+                "[Mini-Boss] Barnacled Tide-Priest"
               ]
             },
             {
@@ -31052,7 +31196,7 @@
               "w_pct": 22,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B1 Seal Warden"
+                "[Raid Boss] Maul-Swinging Moray-Headed Reef-Breaker"
               ]
             }
           ],
@@ -31107,12 +31251,12 @@
             },
             {
               "npc_id": 21762,
-              "name": "[Mini-Boss] B1 Gate Overseer",
+              "name": "[Mini-Boss] Barnacled Tide-Priest",
               "entity_type": "Mini-Boss",
               "level": 51,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -31135,12 +31279,14 @@
             },
             {
               "npc_id": 21763,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Maul-Swinging Moray-Headed Reef-Breaker",
               "entity_type": "Raid",
               "level": 56,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "fish",
+              "race_badge": "Fish · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -31163,12 +31309,14 @@
             },
             {
               "npc_id": 21764,
-              "name": "[MVP] Necropolis of Deep Devotion B1 Apostle Sovereign",
+              "name": "[MVP] Deep-Cantor Imoth, Anglerfish-Headed Priest",
               "entity_type": "MVP",
               "level": 56,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "fish",
+              "race_badge": "Fish · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -31191,7 +31339,7 @@
             }
           ],
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] B1 Gate Overseer"
+          "boss_tier_highlight": "B1 Entry Vestibule · [Mini-Boss] Barnacled Tide-Priest"
         },
         {
           "floor_id": "B2",
@@ -31210,7 +31358,7 @@
               "h_pct": 28,
               "key_mobs": [
                 "Necropolis of Deep Devotion B2 Sentinel",
-                "[MVP] Necropolis of Deep Devotion B2 Apostle Sovereign"
+                "[MVP] Whale-Skulled Abbot Morgrun"
               ]
             },
             {
@@ -31223,7 +31371,7 @@
               "w_pct": 26,
               "h_pct": 30,
               "key_mobs": [
-                "[Mini-Boss] B2 Gate Overseer"
+                "[Mini-Boss] Old Brine-Shell Crab"
               ]
             },
             {
@@ -31236,7 +31384,7 @@
               "w_pct": 20,
               "h_pct": 30,
               "key_mobs": [
-                "[Raid Boss] B2 Seal Warden"
+                "[Raid Boss] Bloated Pilgrim of the Trench"
               ]
             }
           ],
@@ -31291,12 +31439,12 @@
             },
             {
               "npc_id": 21772,
-              "name": "[Mini-Boss] B2 Gate Overseer",
+              "name": "[Mini-Boss] Old Brine-Shell Crab",
               "entity_type": "Mini-Boss",
               "level": 56,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_key": "fish",
+              "race_badge": "Fish · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -31319,12 +31467,12 @@
             },
             {
               "npc_id": 21773,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Bloated Pilgrim of the Trench",
               "entity_type": "Raid",
               "level": 61,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -31347,12 +31495,14 @@
             },
             {
               "npc_id": 21774,
-              "name": "[MVP] Necropolis of Deep Devotion B2 Apostle Sovereign",
+              "name": "[MVP] Whale-Skulled Abbot Morgrun",
               "entity_type": "MVP",
               "level": 61,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -31375,7 +31525,7 @@
             }
           ],
           "floor_elevation_meters": -110,
-          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] B2 Seal Warden"
+          "boss_tier_highlight": "B2 Mid-Sanctum · [Raid Boss] Bloated Pilgrim of the Trench"
         },
         {
           "floor_id": "B3",
@@ -31393,8 +31543,8 @@
               "w_pct": 26,
               "h_pct": 32,
               "key_mobs": [
-                "Necropolis of Deep Devotion B3 Sentinel",
-                "[Raid Boss] B3 Seal Warden"
+                "Harpoon-Carrying Lanternfish",
+                "[Raid Boss] Anchor-Dragging Crab-Armed Reef King"
               ]
             },
             {
@@ -31407,8 +31557,8 @@
               "w_pct": 40,
               "h_pct": 54,
               "key_mobs": [
-                "[Mini-Boss] B3 Gate Overseer",
-                "[MVP] Necropolis of Deep Devotion B3 Apostle Sovereign"
+                "[Mini-Boss] Spear-Gripping Hammerhead Zealot",
+                "[MVP] Tide-Herald Pelagios"
               ]
             }
           ],
@@ -31435,12 +31585,14 @@
           "spawns": [
             {
               "npc_id": 21781,
-              "name": "Necropolis of Deep Devotion B3 Sentinel",
+              "name": "Harpoon-Carrying Lanternfish",
               "entity_type": "Monster",
               "level": 60,
               "aggro": "Yes",
-              "race_key": "undead",
-              "race_badge": "Normal Mob",
+              "race_key": "fish",
+              "race_badge": "Fish · Normal",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "2x",
               "protections": [
                 "Seal Ward Lv.1"
@@ -31463,12 +31615,14 @@
             },
             {
               "npc_id": 21782,
-              "name": "[Mini-Boss] B3 Gate Overseer",
+              "name": "[Mini-Boss] Spear-Gripping Hammerhead Zealot",
               "entity_type": "Mini-Boss",
               "level": 61,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_key": "fish",
+              "race_badge": "Fish · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -31491,12 +31645,14 @@
             },
             {
               "npc_id": 21783,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Anchor-Dragging Crab-Armed Reef King",
               "entity_type": "Raid",
               "level": 65,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "fish",
+              "race_badge": "Fish · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -31519,12 +31675,14 @@
             },
             {
               "npc_id": 21784,
-              "name": "[MVP] Necropolis of Deep Devotion B3 Apostle Sovereign",
+              "name": "[MVP] Tide-Herald Pelagios",
               "entity_type": "MVP",
               "level": 65,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "fish",
+              "race_badge": "Fish · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "tide_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -31547,7 +31705,7 @@
             }
           ],
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Necropolis of Deep Devotion B3 Apostle Sovereign"
+          "boss_tier_highlight": "B3 Core Sanctum · [MVP] Tide-Herald Pelagios"
         }
       ]
     },
@@ -31563,7 +31721,7 @@
           "floor_id": "B1",
           "floor_index": 1,
           "floor_elevation_meters": -45,
-          "boss_tier_highlight": "B1 Orrery Ossuary Gate · B1 Orrery Ossuary Gate Overseer (Mini-Boss)",
+          "boss_tier_highlight": "B1 Orrery Ossuary Gate · Ossuary Gate Seal-Watcher (Mini-Boss)",
           "name": "B1 — Orrery Ossuary Gate (Lv.70–75)",
           "level_range": "Lv.70–75",
           "rooms": [
@@ -31590,8 +31748,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] B1 Orrery Ossuary Gate Overseer",
-                "[Raid Boss] B1 Seal Warden"
+                "[Mini-Boss] Ossuary Gate Seal-Watcher",
+                "[Raid Boss] Memory-Glass Wraith Procession"
               ]
             },
             {
@@ -31604,7 +31762,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Catacomb of the Forbidden Architect Path B1 Apostle Sovereign"
+                "[MVP] Prefect Dunmor, Elk-Skulled Gate-Marshal"
               ]
             }
           ],
@@ -31659,12 +31817,12 @@
             },
             {
               "npc_id": 62012,
-              "name": "[Mini-Boss] B1 Orrery Ossuary Gate Overseer",
+              "name": "[Mini-Boss] Ossuary Gate Seal-Watcher",
               "entity_type": "Mini-Boss",
               "level": 71,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B1 Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -31687,12 +31845,12 @@
             },
             {
               "npc_id": 62013,
-              "name": "[Raid Boss] B1 Seal Warden",
+              "name": "[Raid Boss] Memory-Glass Wraith Procession",
               "entity_type": "Raid",
               "level": 75,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -31715,12 +31873,14 @@
             },
             {
               "npc_id": 62014,
-              "name": "[MVP] Catacomb of the Forbidden Architect Path B1 Apostle Sovereign",
+              "name": "[MVP] Prefect Dunmor, Elk-Skulled Gate-Marshal",
               "entity_type": "MVP",
               "level": 75,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -31747,7 +31907,7 @@
           "floor_id": "B2",
           "floor_index": 2,
           "floor_elevation_meters": -95,
-          "boss_tier_highlight": "B2 Drowned Astrolabe Vaults · B2 Seal Warden (Raid Boss)",
+          "boss_tier_highlight": "B2 Drowned Astrolabe Vaults · Stag-Skulled Sextant-Bearer (Raid Boss)",
           "name": "B2 — Drowned Astrolabe Vaults (Lv.76–81)",
           "level_range": "Lv.76–81",
           "rooms": [
@@ -31774,8 +31934,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] B2 Drowned Astrolabe Vaults Overseer",
-                "[Raid Boss] B2 Seal Warden"
+                "[Mini-Boss] Drowned Astrolabe Hauler",
+                "[Raid Boss] Stag-Skulled Sextant-Bearer"
               ]
             },
             {
@@ -31788,7 +31948,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Catacomb of the Forbidden Architect Path B2 Apostle Sovereign"
+                "[MVP] Goat-Skulled Astrologer Yssa"
               ]
             }
           ],
@@ -31852,12 +32012,12 @@
             },
             {
               "npc_id": 62022,
-              "name": "[Mini-Boss] B2 Drowned Astrolabe Vaults Overseer",
+              "name": "[Mini-Boss] Drowned Astrolabe Hauler",
               "entity_type": "Mini-Boss",
               "level": 77,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B2 Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -31880,12 +32040,14 @@
             },
             {
               "npc_id": 62023,
-              "name": "[Raid Boss] B2 Seal Warden",
+              "name": "[Raid Boss] Stag-Skulled Sextant-Bearer",
               "entity_type": "Raid",
               "level": 81,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -31908,12 +32070,14 @@
             },
             {
               "npc_id": 62024,
-              "name": "[MVP] Catacomb of the Forbidden Architect Path B2 Apostle Sovereign",
+              "name": "[MVP] Goat-Skulled Astrologer Yssa",
               "entity_type": "MVP",
               "level": 81,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -31940,7 +32104,7 @@
           "floor_id": "B3",
           "floor_index": 3,
           "floor_elevation_meters": -145,
-          "boss_tier_highlight": "B3 Architect's Bone Gallery · Catacomb of the Forbidden Architect Path B3 Apostle Sovereign (MVP)",
+          "boss_tier_highlight": "B3 Architect's Bone Gallery · First Seal-Scribe Automaton (MVP)",
           "name": "B3 — Architect's Bone Gallery (Lv.82–87)",
           "level_range": "Lv.82–87",
           "rooms": [
@@ -31967,8 +32131,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] B3 Architect's Bone Gallery Overseer",
-                "[Raid Boss] B3 Seal Warden"
+                "[Mini-Boss] Chisel-Bearing Jackal Mason",
+                "[Raid Boss] Lizard-Headed Gallery Architect"
               ]
             },
             {
@@ -31981,7 +32145,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Catacomb of the Forbidden Architect Path B3 Apostle Sovereign"
+                "[MVP] First Seal-Scribe Automaton"
               ]
             }
           ],
@@ -32045,12 +32209,14 @@
             },
             {
               "npc_id": 62032,
-              "name": "[Mini-Boss] B3 Architect's Bone Gallery Overseer",
+              "name": "[Mini-Boss] Chisel-Bearing Jackal Mason",
               "entity_type": "Mini-Boss",
               "level": 83,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B3 Keeper",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -32073,12 +32239,14 @@
             },
             {
               "npc_id": 62033,
-              "name": "[Raid Boss] B3 Seal Warden",
+              "name": "[Raid Boss] Lizard-Headed Gallery Architect",
               "entity_type": "Raid",
               "level": 87,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -32101,12 +32269,12 @@
             },
             {
               "npc_id": 62034,
-              "name": "[MVP] Catacomb of the Forbidden Architect Path B3 Apostle Sovereign",
+              "name": "[MVP] First Seal-Scribe Automaton",
               "entity_type": "MVP",
               "level": 87,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "robotic",
+              "race_badge": "Robotic · MVP",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -32133,7 +32301,7 @@
           "floor_id": "B4",
           "floor_index": 4,
           "floor_elevation_meters": -195,
-          "boss_tier_highlight": "B4 Void-Lens Reliquary · B4 Void-Lens Reliquary Overseer (Mini-Boss)",
+          "boss_tier_highlight": "B4 Void-Lens Reliquary · Void-Lens Reliquary Thrall (Mini-Boss)",
           "name": "B4 — Void-Lens Reliquary (Lv.88–93)",
           "level_range": "Lv.88–93",
           "rooms": [
@@ -32160,8 +32328,8 @@
               "w_pct": 24,
               "h_pct": 36,
               "key_mobs": [
-                "[Mini-Boss] B4 Void-Lens Reliquary Overseer",
-                "[Raid Boss] B4 Seal Warden"
+                "[Mini-Boss] Void-Lens Reliquary Thrall",
+                "[Raid Boss] Null-Gravity Wraith Cortege"
               ]
             },
             {
@@ -32174,7 +32342,7 @@
               "w_pct": 28,
               "h_pct": 40,
               "key_mobs": [
-                "[MVP] Catacomb of the Forbidden Architect Path B4 Apostle Sovereign"
+                "[MVP] Lens-Grinder Okaros, Jackal-Headed Seal-Breaker"
               ]
             }
           ],
@@ -32229,12 +32397,12 @@
             },
             {
               "npc_id": 62042,
-              "name": "[Mini-Boss] B4 Void-Lens Reliquary Overseer",
+              "name": "[Mini-Boss] Void-Lens Reliquary Thrall",
               "entity_type": "Mini-Boss",
               "level": 89,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B4 Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -32257,12 +32425,12 @@
             },
             {
               "npc_id": 62043,
-              "name": "[Raid Boss] B4 Seal Warden",
+              "name": "[Raid Boss] Null-Gravity Wraith Cortege",
               "entity_type": "Raid",
               "level": 93,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -32285,12 +32453,14 @@
             },
             {
               "npc_id": 62044,
-              "name": "[MVP] Catacomb of the Forbidden Architect Path B4 Apostle Sovereign",
+              "name": "[MVP] Lens-Grinder Okaros, Jackal-Headed Seal-Breaker",
               "entity_type": "MVP",
               "level": 93,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "hound_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -32317,7 +32487,7 @@
           "floor_id": "B5",
           "floor_index": 5,
           "floor_elevation_meters": -250,
-          "boss_tier_highlight": "B5 Primordial God-Seal Abyssal Sanctum · Primordial God-Seal Abyssal Sanctum Apex Sovereign (MVP)",
+          "boss_tier_highlight": "B5 Primordial God-Seal Abyssal Sanctum · Ossivar the Unwritten, Dragon-Skulled Herald of the Final Seal (MVP)",
           "name": "B5 — Primordial God-Seal Abyssal Sanctum (Lv.94–99)",
           "level_range": "Lv.94–99",
           "rooms": [
@@ -32331,8 +32501,8 @@
               "w_pct": 26,
               "h_pct": 38,
               "key_mobs": [
-                "Catacomb of the Forbidden Architect Path B5 Sentinel",
-                "[Mini-Boss] B5 Primordial God-Seal Abyssal Sanctum Overseer"
+                "Lance-Bearing Void Basilisk",
+                "[Mini-Boss] Mace-Bearing Hyena-Skull Sentry"
               ]
             },
             {
@@ -32345,8 +32515,8 @@
               "w_pct": 44,
               "h_pct": 64,
               "key_mobs": [
-                "[Raid Boss] B5 Seal Warden",
-                "[MVP] Primordial God-Seal Abyssal Sanctum Apex Sovereign"
+                "[Raid Boss] Bison-Skulled Last-Gate Colossus",
+                "[MVP] Ossivar the Unwritten, Dragon-Skulled Herald of the Final Seal"
               ]
             }
           ],
@@ -32382,12 +32552,14 @@
           "spawns": [
             {
               "npc_id": 62051,
-              "name": "Catacomb of the Forbidden Architect Path B5 Sentinel",
+              "name": "Lance-Bearing Void Basilisk",
               "entity_type": "Monster",
               "level": 94,
               "aggro": "Yes",
-              "race_key": "undead",
-              "race_badge": "Normal Mob",
+              "race_key": "beast_animal_brute",
+              "race_badge": "Beast · Normal",
+              "body_plan": "upright_monster",
+              "body_kin": "scale_kin",
               "hp_multiplier": "2x",
               "protections": [
                 "Seal Ward Lv.1"
@@ -32410,12 +32582,14 @@
             },
             {
               "npc_id": 62052,
-              "name": "[Mini-Boss] B5 Primordial God-Seal Abyssal Sanctum Overseer",
+              "name": "[Mini-Boss] Mace-Bearing Hyena-Skull Sentry",
               "entity_type": "Mini-Boss",
               "level": 95,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Mini-Boss · B5 Keeper",
+              "race_key": "undead",
+              "race_badge": "Undead · Mini-Boss",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "3x",
               "protections": [
                 "Heavy Plate"
@@ -32438,12 +32612,14 @@
             },
             {
               "npc_id": 62053,
-              "name": "[Raid Boss] B5 Seal Warden",
+              "name": "[Raid Boss] Bison-Skulled Last-Gate Colossus",
               "entity_type": "Raid",
               "level": 99,
               "aggro": "Yes",
-              "race_key": "robotic",
-              "race_badge": "Raid · Rank 3 Warden",
+              "race_key": "undead",
+              "race_badge": "Undead · Raid",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "6x",
               "protections": [
                 "Raid Seal Armor"
@@ -32466,12 +32642,14 @@
             },
             {
               "npc_id": 62054,
-              "name": "[MVP] Primordial God-Seal Abyssal Sanctum Apex Sovereign",
+              "name": "[MVP] Ossivar the Unwritten, Dragon-Skulled Herald of the Final Seal",
               "entity_type": "MVP",
               "level": 99,
               "aggro": "Yes",
-              "race_key": "dark_lunar",
-              "race_badge": "MVP · Rank 2 God-Subordinate",
+              "race_key": "undead",
+              "race_badge": "Undead · MVP",
+              "body_plan": "upright_monster",
+              "body_kin": "bone_kin",
               "hp_multiplier": "10x",
               "protections": [
                 "God-Seal Aegis"
@@ -52327,7 +52505,7 @@
     },
     {
       "boss_id": "radar-mvp-04-dungeon-medallion-heart-vault",
-      "boss_name": "[MVP] Medallion Heart Fortress B3 Apostle Sovereign",
+      "boss_name": "[MVP] Porcelain Medallion Archon Sera",
       "boss_category": "MVP",
       "level": 20,
       "zone_id": "zone-dungeon-medallion-heart-vault",
@@ -52341,7 +52519,7 @@
     },
     {
       "boss_id": "radar-mvp-05-dungeon-ember-bellows-chamber",
-      "boss_name": "[MVP] Ember Bellows Cave of Trials B3 Apostle Sovereign",
+      "boss_name": "[MVP] Alpha Electro-Stalker Raijin-Vex",
       "boss_category": "MVP",
       "level": 23,
       "zone_id": "zone-dungeon-ember-bellows-chamber",
@@ -52355,7 +52533,7 @@
     },
     {
       "boss_id": "radar-mvp-06-dungeon-sap-heart-cistern",
-      "boss_name": "[MVP] Sap-Heart Abandoned Mines B3 Apostle Sovereign",
+      "boss_name": "[MVP] Grandfather Knotwood, Hammer-Bearing Treant",
       "boss_category": "MVP",
       "level": 19,
       "zone_id": "zone-dungeon-sap-heart-cistern",
@@ -52369,7 +52547,7 @@
     },
     {
       "boss_id": "radar-mvp-07-dungeon-ceramic-resonator-crypt",
-      "boss_name": "[MVP] Ceramic Resonator School of Dark Arts B3 Apostle Sovereign",
+      "boss_name": "[MVP] Headmaster Morvain, Wolf-Skulled Necromancer",
       "boss_category": "MVP",
       "level": 20,
       "zone_id": "zone-dungeon-ceramic-resonator-crypt",
@@ -52383,7 +52561,7 @@
     },
     {
       "boss_id": "radar-mvp-08-dungeon-spice-kiln-cellar",
-      "boss_name": "[MVP] Spice-Kiln Nornil's Cave B3 Apostle Sovereign",
+      "boss_name": "[MVP] Mother Cassia, Pestle-Bearing Bark-Skinned Matron",
       "boss_category": "MVP",
       "level": 20,
       "zone_id": "zone-dungeon-spice-kiln-cellar",
@@ -52397,7 +52575,7 @@
     },
     {
       "boss_id": "radar-mvp-09-dungeon-sunken-potter-hold",
-      "boss_name": "[MVP] Sunken Potter Hold B3 Apostle Sovereign",
+      "boss_name": "[MVP] Sunken Potter Leviathan-Brood Matriarch",
       "boss_category": "MVP",
       "level": 25,
       "zone_id": "zone-dungeon-sunken-potter-hold",
@@ -52411,7 +52589,7 @@
     },
     {
       "boss_id": "radar-mvp-10-dungeon-star-heart-nave",
-      "boss_name": "[MVP] Star-Heart Tower of Insolence 3F Apostle Sovereign",
+      "boss_name": "[MVP] Eclipse-Cantor Nocturne — Apostle of the Shattered Halo",
       "boss_category": "MVP",
       "level": 85,
       "zone_id": "zone-dungeon-star-heart-nave",
@@ -52425,7 +52603,7 @@
     },
     {
       "boss_id": "radar-mvp-11-catacomb-heretic-kiln",
-      "boss_name": "[MVP] Catacomb of the Heretic Kiln B3 Apostle Sovereign",
+      "boss_name": "[MVP] Vitrified Apostle Ignisazar",
       "boss_category": "MVP",
       "level": 30,
       "zone_id": "zone-catacomb-heretic-kiln",
@@ -52439,7 +52617,7 @@
     },
     {
       "boss_id": "radar-mvp-12-catacomb-branded-bellows",
-      "boss_name": "[MVP] Catacomb of the Branded Bellows B3 Apostle Sovereign",
+      "boss_name": "[MVP] Hierophant Vorn, Brass-Branded Lich",
       "boss_category": "MVP",
       "level": 40,
       "zone_id": "zone-catacomb-branded-bellows",
@@ -52453,7 +52631,7 @@
     },
     {
       "boss_id": "radar-mvp-13-catacomb-apostate-dynamo",
-      "boss_name": "[MVP] Necropolis of Worship & Dynamo Seal B3 Apostle Sovereign",
+      "boss_name": "[MVP] Tri-Scale Wyrm-Marshal Volcanor",
       "boss_category": "MVP",
       "level": 45,
       "zone_id": "zone-catacomb-apostate-dynamo",
@@ -52467,7 +52645,7 @@
     },
     {
       "boss_id": "radar-mvp-14-catacomb-witch-pendulum",
-      "boss_name": "[MVP] Catacomb of the Astral Witch B3 Apostle Sovereign",
+      "boss_name": "[MVP] Arch-Valkyrie Caelia — Dawn-Forger Apostle",
       "boss_category": "MVP",
       "level": 52,
       "zone_id": "zone-catacomb-witch-pendulum",
@@ -52481,7 +52659,7 @@
     },
     {
       "boss_id": "radar-mvp-15-catacomb-dark-omens-coral",
-      "boss_name": "[MVP] Necropolis of Deep Devotion B3 Apostle Sovereign",
+      "boss_name": "[MVP] Tide-Herald Pelagios",
       "boss_category": "MVP",
       "level": 65,
       "zone_id": "zone-catacomb-dark-omens-coral",
@@ -52495,7 +52673,7 @@
     },
     {
       "boss_id": "radar-mvp-16-catacomb-forbidden-path-orrery",
-      "boss_name": "[MVP] Catacomb of the Forbidden Architect Path B3 Apostle Sovereign",
+      "boss_name": "[MVP] First Seal-Scribe Automaton",
       "boss_category": "MVP",
       "level": 99,
       "zone_id": "zone-catacomb-forbidden-path-orrery",

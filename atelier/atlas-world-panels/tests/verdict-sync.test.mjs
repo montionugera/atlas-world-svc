@@ -124,3 +124,43 @@ test("committed verdicts count as already synced", async () => {
   await sync.flush();
   assert.equal(calls.length, 0);
 });
+
+test("a read-only refusal is final: one POST, no retry text, no second POST", async () => {
+  const target = new EventTarget();
+  const calls = [];
+  const statuses = [];
+  let current = { a: rej("x") };
+  const sync = startVerdictSync({
+    store: { effective: () => current },
+    committed: {},
+    onStatus: (m) => statuses.push(m),
+    fetchImpl: async (...a) => {
+      calls.push(a);
+      throw Object.assign(new Error("x"), { readOnly: true });
+    },
+    target,
+  });
+  await sync.flush();
+  current = { a: rej("x"), b: rej("y") };
+  await sync.flush();
+  assert.equal(calls.length, 1);
+  assert.deepEqual(statuses, ["read-only release page"]);
+  assert.doesNotMatch(statuses[0], /retried on the next change/);
+});
+
+test("a read-only refusal calls onStatus with a short status so stale tabs stop showing saving…", async () => {
+  const target = new EventTarget();
+  const statuses = [];
+  const sync = startVerdictSync({
+    store: { effective: () => ({ a: rej("x") }) },
+    committed: {},
+    onStatus: (m) => statuses.push(m),
+    fetchImpl: async () => {
+      throw Object.assign(new Error("x"), { readOnly: true });
+    },
+    target,
+  });
+  await sync.flush();
+  assert.equal(statuses.length, 1);
+  assert.equal(statuses[0], "read-only release page");
+});
