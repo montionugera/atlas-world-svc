@@ -80,7 +80,7 @@ server_rs_build() {
 
 server_rs_tests() {
   export PATH="$HOME/.cargo/bin:$PATH"
-  (cd "$REPO_ROOT/server-rs" && cargo test --release)
+  (cd "$REPO_ROOT/server-rs" && cargo test --locked)
 }
 
 # The ship bar: escalates orphan/unreachable content warnings to failures.
@@ -169,7 +169,7 @@ map_builder_e2e() { REPO_ROOT="$REPO_ROOT" bash "$REPO_ROOT/atelier/map-builder/
 # --- Execute -----------------------------------------------------------------
 [ "$RUN_INSTALL" -eq 1 ] && run_section "deps: pnpm workspace + content-gate + contracts build" deps_install
 run_section "server-rs: cargo build --release" server_rs_build
-run_section "server-rs: cargo test --release"  server_rs_tests
+run_section "server-rs: cargo test --locked"  server_rs_tests
 run_section "content: gate (--require-complete)" content_gate
 run_section "content: story-graph drift"   graph_drift
 run_section "content: canon-leg pre-flight"  canon_legs
