@@ -18,8 +18,9 @@ Owner request (2026-11-01): reduce context from legacy/unused/outdated files. St
 ## Sketch
 
 - Trim the Colyseus-era sections of `CLAUDE.md` and `README.md` (and note server-rs as the authoritative server); keep every still-true invariant.
-- `git mv` to `docs/archive/` (history kept): `docs/API.md`, `docs/HANDOFF-2026-07-22.md`, `docs/backlog-overview-2026-07-28.md`, `docs/superpowers/plans/2026-06-20-simplify-refactor*.md` (4), `docs/superpowers/plans/2026-07-22-narrative-system-v2.md`, `docs/superpowers/plans/2026-07-22-epic-story-pipeline.md`, `docs/superpowers/specs/2026-07-22-narrative-system-v2-design.md`, `docs/superpowers/specs/2026-07-22-epic-story-pipeline-design.md`, `.cursor/plans/01-weapon-ws-loadout/`.
+- `git mv` to `docs/archive/` (history kept): `docs/API.md`, `docs/HANDOFF-2026-07-22.md`, `docs/backlog-overview-2026-07-28.md`, `docs/superpowers/plans/2026-06-20-simplify-refactor*.md` (4), `docs/superpowers/plans/2026-07-22-narrative-system-v2.md`, `docs/superpowers/plans/2026-07-22-epic-story-pipeline.md`, `.cursor/plans/01-weapon-ws-loadout/`.
 - Add one line to `CLAUDE.md`: do not read `docs/story/undertow/` or `docs/archive/` unless the task needs them.
+- The two F-014 design specs STAY in `docs/superpowers/specs/`: `content/schemas/*` and `content/story/README.md` cite them, and `content/` is a Rust compile input.
 - NOT touched: `content/story/*`, `docs/story/*`, `docs/worldbuilding/*`, `docs/research/*`, bible.md, any file a gate reads.
 
 ## Acceptance criteria
