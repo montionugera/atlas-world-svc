@@ -264,11 +264,13 @@ function makeEl(id) {
 }
 
 const sandbox = {
+  CustomEvent: class CustomEvent { constructor(type, init) { this.type = type; this.detail = init && init.detail; } },
   window: {
     devicePixelRatio: 2,
     location: { search: '?tab=studio', hash: '', pathname: '/', origin: 'http://127.0.0.1:8788' },
     history: { replaceState() {}, pushState() {}, back() {}, forward() {} },
     addEventListener() {},
+    dispatchEvent() { return true; },
     scrollTo() {}
   },
   document: {
