@@ -23,6 +23,7 @@ a deeper README covering internals.
 ## Pipeline docs (the ABP family — read in this order)
 
 **Current recipe (authoritative):**
+- `ABP-twostage-flux-pipeline.md` — 2-stage fast draft (10s) + hi-res polish (33s) Flux Dev recipe, direct Tailscale URL (`https://mont-pc.taild6b5fe.ts.net:8188`), and Hyper-FLUX LoRA scaling rules (`0.125` model strength)
 - `ABP-town-concept-workflow.md` — the stage machine: brief-check → map-derive → generate ≤5 cells → reviewer → owner verdict → record/stop
 - `ABP-town-art-loop.md` — the actual loop as measured (roll → canon review → verdict → change set)
 - `ABP-flux-dev-and-anchor.md` — the dev-model + anchor render recipe (the current "measured recipe")

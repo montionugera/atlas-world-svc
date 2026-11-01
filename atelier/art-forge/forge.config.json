@@ -3,10 +3,11 @@
   "comfy": {
     "host": "127.0.0.1",
     "port": 8188,
+    "tailscaleUrl": "https://mont-pc.taild6b5fe.ts.net:8188",
     "gpu": 0,
     "launchScript": "C:\\Users\\Mont\\run-comfy-gpu0.cmd",
     "warning": "GPU 1 : 8189 is the owner's own instance — do not touch it.",
-    "_note": "The ComfyUI server launches with --listen 127.0.0.1 on mont-pc, so it binds localhost-only — 100.66.190.100 (its Tailscale address) is NOT reachable directly and never was. Reach it either by running on mont-pc itself, or via an SSH tunnel from this machine: ssh -N -L 8188:127.0.0.1:8188 Mont@100.66.190.100 — then this host value (127.0.0.1) resolves through the tunnel. Verified live 2026-08-02."
+    "_note": "Direct access is available across Tailscale at https://mont-pc.taild6b5fe.ts.net:8188 (or https://mont-pc.taild6b5fe.ts.net) without needing an SSH tunnel. Legacy SSH tunnel: ssh -N -L 8188:127.0.0.1:8188 Mont@100.66.190.100. Watchdog on mont-pc is hardened (quote-escape fixed, sibling python services protected). Thermal limit 210W enforced."
   },
   "profiles": {
     "character": {

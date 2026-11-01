@@ -2168,11 +2168,12 @@
     "from_idea": "I-247",
     "created_at": "2026-11-01T10:48:08.412274+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.19",
     "claimed_at": "2026-11-01T10:48:25.119725+00:00",
     "shipped_at": "2026-11-01T15:42:20.944690+00:00",
-    "shipped_sha": "fbd396ac40e686ef1523d3519e3c28c9e96d2248"
+    "shipped_sha": "fbd396ac40e686ef1523d3519e3c28c9e96d2248",
+    "promoted_at": "2026-11-01T18:21:38.896305+00:00"
   },
   {
     "id": "F-168",
@@ -2180,10 +2181,11 @@
     "from_idea": "I-246",
     "created_at": "2026-11-01T15:42:44.045329+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.19",
     "claimed_at": "2026-11-01T15:43:01.367664+00:00",
     "shipped_at": "2026-11-01T17:55:02.678937+00:00",
-    "shipped_sha": "1021fb7452052d84674287a2a5ca7362d6cda21b"
+    "shipped_sha": "1021fb7452052d84674287a2a5ca7362d6cda21b",
+    "promoted_at": "2026-11-01T18:21:46.807282+00:00"
   }
 ]

@@ -14,32 +14,30 @@ notes this recipe was transcribed from.
 
 ## Stage: ACCESS (mont-pc, interactive)
 
-Generation runs on the owner's PC, **mont-pc** — Windows, 2× RTX 3090,
-reachable over Tailscale at `100.66.190.100`.
+Generation runs on the owner's PC, **mont-pc** — Windows, 2× RTX 3090.
 
-1. **SSH** as user `mont` — key auth already works, no password needed:
+1. **Direct Tailscale Endpoint (No SSH Tunnel Required)**:
+   ComfyUI is directly reachable across the Tailscale mesh:
+   - Web / API: `https://mont-pc.taild6b5fe.ts.net:8188` (or direct HTTPS on `https://mont-pc.taild6b5fe.ts.net`)
+   - Direct HTTP requests (`POST /prompt`, `GET /queue`, `GET /history/<id>`) work out of the box without needing an SSH tunnel.
 
-   ```bash
-   ssh mont@100.66.190.100
-   ```
-
-2. **Tunnel** ComfyUI's web/API port to localhost before doing anything
-   else:
-
+2. **Legacy SSH Access (Alternative)**:
+   If direct Tailscale HTTPS is unreachable:
    ```bash
    ssh -f -N -L 8188:127.0.0.1:8188 -o ServerAliveInterval=30 mont@100.66.190.100
    ```
 
-3. **Launch ComfyUI** (if `http://127.0.0.1:8188/system_stats` doesn't
-   respond) via the Windows launch script:
-
-   ```
+3. **Launch ComfyUI** (if `https://mont-pc.taild6b5fe.ts.net:8188/system_stats` doesn't respond):
+   The watchdog `C:\Users\Mont\workspace\joy-agent-team\scripts\comfyui-watchdog.ps1` runs automatically every 3 minutes.
+   To launch manually:
+   ```cmd
    C:\Users\Mont\run-comfy-gpu0.cmd
    ```
 
    > **GPU 1 : 8189 is the owner's own ComfyUI instance — do not touch
    > it.** Our instance is pinned to **GPU 0, port 8188**. Never launch,
    > kill, or send jobs to anything on port 8189.
+   > **Never kill naive `python.exe` on mont-pc**: it hosts Kokoro TTS (:8770), Hermes (:9119), and browser harness. Filter by command line `*ComfyUI*main.py*`.
 
 ## Config shape: `forge.config.json` v2 — named profiles, no default
 
@@ -62,6 +60,27 @@ place for host/port/GPU, since that's shared across profiles.
 > schnell + depth-ControlNet graph, using `generate/blockin.mjs` to produce
 > the depth control image — see "Stage: GENERATE" below and the "CI
 > status" section for why neither runs in CI.
+
+## Stage: GENERATE — FLUX.1-dev Two-Stage Draft-to-Polish (`profiles.twostage`)
+
+For masterpiece-grade fidelity (closing the gap with GPT Web / DALL-E 3) without the 3-minute generation penalty, use the **Two-Stage FLUX.1-dev Pipeline** documented in [`atelier/ABP-twostage-flux-pipeline.md`](../ABP-twostage-flux-pipeline.md):
+
+- **Stage 1 (Base Draft):** `608×912`, 10 steps, `euler`/`simple`, `guidance: 3.5`, `cfg: 1.0` (~10.4s). Rapid visual verification of composition, pose, silhouette, and costume.
+- **Stage 2 (Hi-Res Polish):** Upscale via `4x-UltraSharp.pth` downscaled Lanczos to `912×1368` (1.5x), `VAEEncode`, 14 steps, `euler`/`simple`, `guidance: 3.5`, `denoise: 0.30` (~33.6s). Delivers fine surface micro-textures, armor filigree, and eye reflections.
+- **Total turnaround:** **~44.0s** (4x faster than a single-pass 24-step high-res render).
+
+### Running Two-Stage Generation
+Use the ready-to-run script:
+```bash
+python3 atelier/art-forge/generate/twostage.py \
+  --prompt "Full-body concept art of a high elf knight in pearl-white plate armor with golden filigree, sunlit cathedral, 8k render" \
+  --out /tmp/elf_knight.png
+```
+
+### Hyper-FLUX LoRA Scaling Rule
+When using `Hyper-FLUX.1-dev-8steps-lora.safetensors` on `F:\comfy-ui\loras\`:
+- Set `strength_model: 0.125`, `strength_clip: 0.0`.
+- **Never load at 1.0** — causes latent saturation and NaN output.
 
 ## Stage: GENERATE — the winning v3 recipe (`profiles.character`)
 
