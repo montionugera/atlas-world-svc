@@ -58,7 +58,7 @@ export const SCHEMA_TOOLS = [
 export const SCHEMA_VERDICTS = ["unreviewed", "approve", "reject", "rebuild"];
 
 export const MAX_FILE_BYTES = 800 * 1024; // 800 KB
-export const MAX_IMAGE_LONGEST_SIDE = 2800; // 2x the 1K source, sharp on tablets
+export const MAX_IMAGE_LONGEST_SIDE = 2800; // sharp on 2x tablets
 export const MAX_THUMB_WIDTH = 960; // card width at 2x pixel density
 
 // Superseded Undertow canon terms forbidden by web-contract.md
