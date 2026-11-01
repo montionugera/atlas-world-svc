@@ -37,9 +37,6 @@ A high-performance real-time multiplayer game built with a modern high-density a
   - **Tabbed Equipment Grid (Right 55%):** Category tabs (`Weapons`, `Armor`, `Hair`, `Sets`) with rarity color borders (Epic purple, Rare blue), level requirements, stat diffs (`+140 M.ATK`, `+65 P.ATK`), **[Try On]** tween preview, and **[Equip]** real-time avatar mutation.
   - **Input Isolation:** Disables background joystick and hero movement while typing in chat or inspecting gear in modals.
 
-### Legacy Core Simulation Engine (Colyseus TypeScript — Migration to Rust in progress)
-- **Authoritative 2.5D Model:** Per-floor 2D physics using `Planck.js`. Being replaced by `server-rs` in release 1.11 (Epic E-002).
-
 ### Native Rust Meta & Persistence Engine (`server-rs/src/meta/` — Feature F-091)
 - **Zero-Overhead Single-Binary Meta Engine:** Built directly into `server-rs` to replace the Go/Goja Nakama + CockroachDB stack while preserving 100% `/v2/*` HTTP wire compatibility (`POST /v2/account/authenticate/device`, `GET /v2/account`, `POST /v2/storage`, `GET|POST /v2/rpc/{id}`).
 - **In-Process `NakamaStorage` Implementation:** `RustMetaEngine` implements `NakamaStorage` directly in-memory/in-process so join-time `get_loadout`, match-event reporting (`report_match_events`), and character-state checkpointing (`save_character_state`) execute with zero HTTP S2S round-trip overhead.
@@ -203,14 +200,7 @@ export AGONES_ENABLED="false"
 cargo run --release
 ```
 
-### 2. Start Legacy Colyseus Game Server (Optional)
-```bash
-cd colyseus-server
-npm install
-npm run dev
-```
-
-### 3. Start React Client
+### 2. Start React Client
 ```bash
 cd client/react-client
 npm install
@@ -218,7 +208,7 @@ npm start
 ```
 Play the game at `http://localhost:3001` (Use WASD/Arrows to move).
 
-### 4. Build & Run Godot Mobile MMORPG Client (iOS / iPad)
+### 3. Build & Run Godot Mobile MMORPG Client (iOS / iPad)
 ```bash
 # 1. Export Godot PCK pack
 godot --headless --path game-client --export-pack "iOS" game-client/builds/AtlasWorld.pck
@@ -240,7 +230,6 @@ xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.clie
 | ---| --- | --- |
 | **server-rs WebSocket & Meta API** | `ws://localhost:2567/ws` / `http://localhost:2567/v2/*` | Binary FlatBuffers WebSocket + Nakama `/v2/*` HTTP API |
 | **Secondary Meta HTTP Listener** | `http://localhost:7350/v2/*` | Optional (`META_BIND_ADDR=0.0.0.0:7350`) drop-in Nakama HTTP port |
-| **Colyseus Server (WS)** | `ws://localhost:2567/game` | Legacy binary websocket connection |
 | **REST API (Static Data)** | `http://localhost:2567/api` | Mob types, configs, stats |
 | **Metrics (Prometheus)** | `http://localhost:2567/metrics`| Live server tick & entity diagnostic metrics |
 | **Dashboards (Grafana)** | `http://localhost:3000` | Analytics dashboards (admin/admin) |
@@ -259,7 +248,6 @@ xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.clie
 | `game-client/` | Godot 4.7 C# NativeAOT Mobile MMORPG client (scenes, scripts, shaders, assets). |
 | `game-client/src/UI/Widgets/` | Ragnarok-style UI components: `PlayerFrame`, `TopBar`, `ChatBox`, `WardrobeModal`, `MobileControlsOverlay`. |
 | `server-rs/` | Authoritative Rust ECS simulation engine + Native Rust Meta & Persistence Engine (`server-rs/src/meta/`). |
-| `colyseus-server/` | Legacy Node.js authoritative game server. |
 | `client/react-client/` | Web-based client implementation for quick prototyping. |
 | `monitoring/` | Prometheus & Grafana configuration stacks. |
 | `docker-compose.yml` | Complete local orchestration setup. |
@@ -301,7 +289,7 @@ The real-time game state replication protocol uses schema-compiled Google FlatBu
 - Passing `ESLint` and `Prettier` configurations (`npm run format`).
 - Unit & E2E Quality Gates (`npm run test:unit`, `npm run test:coverage:gate`, `npm run test:e2e`).
 - Precheck Gate: `./scripts/precheck.sh` enforces coverage thresholds (55% branch, 70% functions, 70% lines, 70% statements; 80%+ on core interest/time modules), linter, contracts, and full test suites.
-- **Deterministic Simulation Oracle:** `colyseus-server/src/tests/fixtures/golden_sim_trace_1000.json` records 1,000 ticks of authoritative simulation driven by `SimClock` and Mulberry32 PRNG. Verified by `npm test -- src/tests/sim-trace-determinism.test.ts` to ensure zero drift during the high-density Rust server migration (Epic `E-001`).
+- **Deterministic Simulation Oracle:** `server-rs/tests/fixtures/golden_sim_trace_1000.json` records 1,000 ticks of authoritative simulation driven by `SimClock` and Mulberry32 PRNG. Verified by the determinism tests under `server-rs/tests/`.
 - Commit to the 2.5D Physical limitations (never blindly trust Client elevation inputs, always audit slope coordinates).
 
 ---
