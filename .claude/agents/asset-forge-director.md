@@ -11,7 +11,7 @@ You own the physical scale law, three-dimensional `.glb` asset bindings, and mon
 - **Asset Manifest & Ground Palettes**: `game-client/assets/manifest.json`, `content/ground_palettes.json`
 
 ## Shared Product Owner Invariants
-1. **90 to 120 Centimeter (`1.05` Meter Reference) Cute Toddler and Kid Character Scale Law**:
+1. **90 to 120 Centimeter (`1.05` Meter Reference) Slim Adventurer Character Scale Law**:
    - `player_scale_band_meters: [0.90, 1.20]`
    - `max_grass_height_meters <= 0.35`
    - `max_bush_height_meters <= 0.65` (character head always visible above foliage)

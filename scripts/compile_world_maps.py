@@ -17,7 +17,7 @@ all 10 Story Regions, and all 116 Bestiary creatures across 44 playable v3 maps:
 - 4 Frontier Continent Anchor Maps (`rimewall-cap` on `c01`, `quillreef-atoll` on `c11`,
   `skerryfast-fjord` on `c12`, `loamspit-bar` on `c13`)
 
-Enforces the Chibi Scale Anchor:
+Enforces the Player Scale Anchor:
 - playerScaleBandM: [0.90, 1.20]
 - grass maxHeightM <= 0.35m
 - bush maxHeightM <= 0.65m
@@ -51,7 +51,7 @@ GROUND_PALETTES_PATH = CONTENT_DIR / "ground_palettes.json"
 DERIVED_SPINE_PATH = CONTENT_DIR / "spine" / "derived.json"
 STORY_REGIONS_PATH = CONTENT_DIR / "story" / "regions.json"
 
-CHIBI_PLAYER_SCALE_BAND = [0.9, 1.2]
+PLAYER_SCALE_BAND = [0.9, 1.2]
 
 # Authoritative configuration for all 9 compiled Wealdmarch (c02) surveyed zone maps
 # (plus freja-south-gate which binds the 10th Wealdmarch surveyed zone: meltwash-terrace / c02/r16).
@@ -996,7 +996,7 @@ def validate_and_normalize_palettes(
         if k not in raw_palettes:
             raise ValueError(f"Missing ground palette '{k}' in content/ground_palettes.json")
         pal = json.loads(json.dumps(raw_palettes[k]))
-        pal["playerScaleBandM"] = list(CHIBI_PLAYER_SCALE_BAND)
+        pal["playerScaleBandM"] = list(PLAYER_SCALE_BAND)
         scatter = pal.get("scatter") or {}
         for rule_key, rule in scatter.items():
             rule.setdefault("minSpacingMeters", 1.5)
@@ -1009,11 +1009,11 @@ def validate_and_normalize_palettes(
             if role == "ground_cover" or rule_key == "grass":
                 max_h = tag_pool.get("maxHeightM", 0.35)
                 if max_h > 0.35:
-                    raise ValueError(f"Chibi guardrail violation: {k}.{rule_key} maxHeightM {max_h} > 0.35")
+                    raise ValueError(f"Scale guardrail violation: {k}.{rule_key} maxHeightM {max_h} > 0.35")
             if role == "understory" or rule_key == "bush":
                 max_h = tag_pool.get("maxHeightM", 0.65)
                 if max_h > 0.65:
-                    raise ValueError(f"Chibi guardrail violation: {k}.{rule_key} maxHeightM {max_h} > 0.65")
+                    raise ValueError(f"Scale guardrail violation: {k}.{rule_key} maxHeightM {max_h} > 0.65")
         out[k] = pal
     return out
 
@@ -2016,8 +2016,8 @@ def verify_compiled_maps(
             bound_story_regions.add(binding["storyRegionId"])
 
         for gid, pal in (doc.get("groundPalettes") or {}).items():
-            if pal.get("playerScaleBandM") != CHIBI_PLAYER_SCALE_BAND:
-                errors.append(f"{mid}: palette '{gid}' playerScaleBandM != {CHIBI_PLAYER_SCALE_BAND}")
+            if pal.get("playerScaleBandM") != PLAYER_SCALE_BAND:
+                errors.append(f"{mid}: palette '{gid}' playerScaleBandM != {PLAYER_SCALE_BAND}")
 
         for sp in doc.get("spawnAreas") or []:
             mob_type = sp.get("mobType", "")

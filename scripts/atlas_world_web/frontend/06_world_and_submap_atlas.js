@@ -1169,7 +1169,7 @@ function renderFieldOrFortressTacticalBlueprintAtlas(targetIdOrEntry, tatlas) {
       <!-- 10 Canonical Area Biome Themes (Lineage II Background Making / Interlude Environmental Standard) -->
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(74,222,128,0.22)">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px">
-          <span style="font-size:11.5px;font-weight:900;color:#86efac">🌍 10 CANONICAL AREA BIOME THEMES (2D CARTOGRAPHIC SHADER + 3D .GLB KIT + 1.05M CHIBI SCALE LAW)</span>
+          <span style="font-size:11.5px;font-weight:900;color:#86efac">🌍 10 CANONICAL AREA BIOME THEMES (2D CARTOGRAPHIC SHADER + 3D .GLB KIT + 1.05M PLAYER SCALE LAW)</span>
           <span class="mono" style="font-size:10px;color:#fde047">Ref: legacy-lineage2.com/background/making.html &amp; interludelist.html</span>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:6px">

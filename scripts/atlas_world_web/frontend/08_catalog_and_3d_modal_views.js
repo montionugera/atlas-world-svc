@@ -8,7 +8,7 @@ function renderBiomeBrushes() {
         <div class="page-hero__eyebrow">STAGE 4 DECLARATIVE GROUND_ID BRUSHES · SMART TAG POOLS + CHECKBOX OVERRIDE</div>
         <h1 class="page-hero__title">Biome Brush &amp; Smart Tag-Pool Composer (<code>content/ground_palettes.json</code>)</h1>
         <p class="page-hero__sub">
-          Each <code>ground_id</code> brush auto-populates 3D models by tag and enforces the <strong>1.05m Chibi Player Scale</strong>
+          Each <code>ground_id</code> brush auto-populates 3D models by tag and enforces the <strong>1.05m Player Scale</strong>
           (grass ≤ 0.35m, bush ≤ 0.65m). Uncheck any 3D asset below to immediately exclude it from <code>freja-south-gate.json</code> chunk scatter.
         </p>
       </div>
@@ -34,7 +34,7 @@ function renderBiomeBrushes() {
                 ${pal.clearColliders ? `<span class="joy-badge joy-badge--warning joy-badge--sm">CLEAR COLLIDERS (ROAD)</span>` : ''}
               </div>
               <div class="chip-row">
-                <span class="joy-badge joy-badge--success joy-badge--sm">Chibi Band: ${(pal.playerScaleBandM || [0.9, 1.2]).join('m–')}m</span>
+                <span class="joy-badge joy-badge--success joy-badge--sm">Player Band: ${(pal.playerScaleBandM || [0.9, 1.2]).join('m–')}m</span>
                 ${inspectBtnHtml('palette', pid, pal)}
               </div>
             </div>

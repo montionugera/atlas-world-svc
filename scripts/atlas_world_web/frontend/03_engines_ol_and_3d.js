@@ -4048,7 +4048,7 @@ function renderCartoShellHtml({
                    data-scale-label="${escapeHtml(sb.label)}"
                    data-spatial-context="${escapeHtml(curCtx)}"
                    style="position:absolute;bottom:48px;right:14px;z-index:16;display:inline-flex;align-items:center;gap:8px;padding:5px 11px;border-radius:7px;background:rgba(15,23,42,0.92);border:1px solid rgba(226,232,240,0.34);box-shadow:0 4px 12px rgba(0,0,0,0.45);color:#f8fafc;font-family:monospace;pointer-events:auto"
-                   title="Google Maps–Style Live Metric Scale Bar (1.05m Chibi Character Reference · ${escapeHtml(stepLabel)})">
+                   title="Google Maps–Style Live Metric Scale Bar (1.05m Player Character Reference · ${escapeHtml(stepLabel)})">
                 <span id="studioGoogleScaleBarLabel" style="font-size:11.5px;font-weight:900;color:#ffffff;letter-spacing:0.02em;white-space:nowrap">${escapeHtml(sb.label)}</span>
                 <div id="studioGoogleScaleBarLine"
                      style="width:${sb.barWidthPx}px;height:7px;border-bottom:2.5px solid #ffffff;border-left:2.5px solid #ffffff;border-right:2.5px solid #ffffff;box-sizing:border-box;position:relative;transition:width 140ms ease-out">
