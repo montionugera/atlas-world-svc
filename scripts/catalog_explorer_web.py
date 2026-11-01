@@ -1138,6 +1138,15 @@ def apply_review_verdict(payload: dict) -> dict:
     return result
 
 
+def boss_height_and_scale(take: dict) -> tuple[float, float]:
+    """Boss height clamped to the 7.35-40 m law; scale follows when clamped."""
+    raw_height = float(take.get("heightM") or 7.35)
+    height = max(7.35, min(40.0, raw_height))
+    if height != raw_height or not take.get("visualScale"):
+        return height, round(height / 1.72, 2)
+    return height, float(take["visualScale"])
+
+
 def _apply_review_verdict(payload: dict, tx) -> dict:
     import time
     prop_id = str(payload.get("id") or "")
@@ -1172,8 +1181,7 @@ def _apply_review_verdict(payload: dict, tx) -> dict:
         # Pillar B: DB Entity & 3D Asset (e.g., rq-pilot-101 orc_warlord)
         if kind == "db_entity":
             new_scene = selected_take.get("assetPath") or "res://assets/characters/orc_brute.glb"
-            new_scale = float(selected_take.get("visualScale") or 1.22)
-            new_height = float(selected_take.get("heightM") or 2.10)
+            new_height, new_scale = boss_height_and_scale(selected_take)
             new_col_r = float(selected_take.get("colliderRadiusM") or 0.95)
             entity_id = target_prop.get("targetId") or "orc_warlord"
             manifest_key = target_prop.get("assetStudioKey") or "mob:aggressive"

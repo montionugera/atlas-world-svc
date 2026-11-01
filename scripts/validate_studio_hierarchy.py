@@ -190,6 +190,11 @@ def _validate_character_scale_law(
     if not isinstance(boss_law, dict):
         errors.append(f"{source_label}: character_scale_law.boss_scale_law must be an object")
     else:
+        boss_tiers = boss_law.get("applies_to_tiers")
+        if not isinstance(boss_tiers, list) or "RAID_BOSS" not in boss_tiers:
+            errors.append(
+                f"{source_label}: boss_scale_law.applies_to_tiers must include RAID_BOSS, got {boss_tiers!r}"
+            )
         boss_multiple = boss_law.get("min_multiple_of_reference_height")
         if not isinstance(boss_multiple, (int, float)) or boss_multiple < 7.0:
             errors.append(
