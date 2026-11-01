@@ -4,6 +4,7 @@
 !pnpm-lock.yaml
 !contracts/**
 !content/bestiary/**
+!content/dungeons/**
 !content/generated/**
 !content/towns/**
 !content/maps/**
