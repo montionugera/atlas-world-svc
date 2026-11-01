@@ -1521,5 +1521,29 @@
     "title": "Atlas explorer phone: map legend overlay covers most of the map at 390px; make it collapsible or compact",
     "created_at": "2026-10-24T07:53:56.781912+00:00",
     "promoted_to": "F-161"
+  },
+  {
+    "id": "I-243",
+    "title": "Selective Gate 1: skip server-rs gate when no rust-relevant path changed",
+    "created_at": "2026-11-01T04:22:04.198444+00:00",
+    "promoted_to": "F-164"
+  },
+  {
+    "id": "I-244",
+    "title": "Docs cleanup: fix stale Colyseus text, archive completed plans and dead docs",
+    "created_at": "2026-11-01T04:44:57.938704+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-245",
+    "title": "Concept art regenerated with ChatGPT: replace all 24 images, queen boss redesign",
+    "created_at": "2026-11-01T04:47:00.645365+00:00",
+    "promoted_to": "F-165"
+  },
+  {
+    "id": "I-246",
+    "title": "Atlas web app in local k8s deployed via release: images and Game DB",
+    "created_at": "2026-11-01T04:47:50.184957+00:00",
+    "promoted_to": null
   }
 ]
