@@ -1539,5 +1539,11 @@
     "title": "Concept art regenerated with ChatGPT: replace all 24 images, queen boss redesign",
     "created_at": "2026-11-01T04:47:00.645365+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-246",
+    "title": "Atlas web app in local k8s deployed via release: images and Game DB",
+    "created_at": "2026-11-01T04:47:50.184957+00:00",
+    "promoted_to": null
   }
 ]
