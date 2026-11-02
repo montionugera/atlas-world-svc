@@ -25,8 +25,12 @@ node atelier/map-builder/server.mjs                      # optional: the Map Bui
 ```
 
 The explorer serves this directory read-only through an allowlist
-(`scripts/atlas_world_web/static_mounts.py`); the only writes are the review-queue
-endpoints and the Map Builder proxy (`scripts/atlas_world_web/routes.py`).
+(`scripts/atlas_world_web/static_mounts.py`). When running on the edit host
+(`Editable · <host>`), the active write endpoints are the review-queue
+endpoints (`/api/review-queue/asset-verdicts`, `/api/review-queue/work-orders`)
+and the Map Builder proxy (`/api/map-builder/*`, `scripts/atlas_world_web/routes.py`).
+On the read-only cluster release (`Read-only · <release> · <sha7>`), all write
+controls carrying `[data-write-control]` are hidden and write endpoints return 403 Forbidden.
 
 ## Panels (storybook tab → atlas-world tab)
 

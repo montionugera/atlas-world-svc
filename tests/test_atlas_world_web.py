@@ -232,49 +232,6 @@ class TestReviewQueueWriter(QueueEnvCase):
         self.assertEqual(self.disk()["proposals"], SHARED_QUEUE["proposals"])
 
 
-class TestExplorerWritersUseTheSingleWriter(QueueEnvCase):
-    def setUp(self) -> None:
-        super().setUp()
-        snaps = tempfile.TemporaryDirectory()
-        self.addCleanup(snaps.cleanup)
-        p = mock.patch.object(web, "STUDIO_SNAPSHOTS_DIR", Path(snaps.name))
-        p.start()
-        self.addCleanup(p.stop)
-
-    def test_reject_with_an_asset_key_writes_a_canonical_verdict_and_keeps_proposals(self) -> None:
-        out = web.apply_review_verdict({"id": "rq-1", "verdict": "reject", "feedbackText": "off-canon silhouette"})
-        self.assertTrue(out["ok"])
-        doc = self.disk()
-        self.assertEqual(doc["proposals"][0]["status"], "rejected")
-        rec = doc["verdicts"]["mob:aggressive"]
-        self.assertEqual((rec["verdict"], rec["note"], rec["source"]), ("reject", "off-canon silhouette", "proposal:rq-1"))
-        self.assertNotIn("orc_warlord", doc["verdicts"], "the old {status, notes} shape keyed by targetId is gone")
-        self.assertEqual(doc["playerScaleAnchor"], SHARED_QUEUE["playerScaleAnchor"])
-
-    def test_reject_without_an_asset_key_writes_no_verdict(self) -> None:
-        doc = self.disk()
-        del doc["proposals"][0]["assetStudioKey"]
-        self.path.write_text(json.dumps(doc), encoding="utf-8")
-        web.apply_review_verdict({"id": "rq-1", "verdict": "reject"})
-        after = self.disk()
-        self.assertEqual(after["verdicts"], {})
-        self.assertEqual(after["proposals"][0]["status"], "rejected")
-
-    def test_feedback_queues_a_proposal_reroll_with_a_server_id(self) -> None:
-        out = web.apply_review_verdict({"id": "rq-1", "verdict": "feedback", "feedbackText": "less orange"})
-        self.assertTrue(out["ok"])
-        wo = self.disk()["workOrders"][0]
-        self.assertEqual((wo["id"], wo["kind"], wo["proposalId"], wo["feedback"]), ("wo-0001", "proposal-reroll", "rq-1", "less orange"))
-
-    def test_bundle_reads_the_overridden_queue(self) -> None:
-        self.assertEqual(len(review_queue.load()["proposals"]), 1)
-
-    def test_unknown_proposal_leaves_the_file_untouched(self) -> None:
-        before = self.path.read_bytes()
-        self.assertFalse(web.apply_review_verdict({"id": "nope", "verdict": "reject"})["ok"])
-        self.assertEqual(self.path.read_bytes(), before)
-
-
 class HttpCase(QueueEnvCase):
     """Runs the real ObservatoryHandler on an ephemeral port."""
 

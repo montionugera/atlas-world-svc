@@ -98,8 +98,6 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIn("LONG-TERM GOVERNANCE CHECKLIST (GOV-01..GOV-06)", html)
         self.assertIn("6 Playable & Mob Races", html)
         self.assertIn("Strict Boss Power Hierarchy", html)
-        self.assertIn("/api/studio/rationale/update", html)
-        self.assertIn("/api/studio/generate-children", html)
         self.assertIn("renderWhcBigPictureSvg", html)
         self.assertIn("renderContinentBigPictureSvg", html)
         self.assertIn("renderDistrictBigPictureSvg", html)
@@ -125,93 +123,6 @@ class TestStudioWebPerspectives(unittest.TestCase):
         self.assertIsNotNone(resolved_fallback)
         resolved_strict = web.resolve_thumb_file("/thumbs/nonexistent_fake_asset_12345.webp", allow_fallback=False)
         self.assertIsNone(resolved_strict)
-
-    def test_rationale_update_blocks_canon_when_parent_not_canon_or_checklist_incomplete(self) -> None:
-        # 1. hunting-area-solstice-chain-causeway has parent district-solstice-pendulum-atoll (status: draft)
-        res, code = web.update_studio_rationale(
-            {
-                "nodeId": "hunting-area-solstice-chain-causeway",
-                "status": "canon",
-            }
-        )
-        self.assertEqual(code, 400)
-        self.assertFalse(res["ok"])
-        self.assertIn("parent", res["error"].lower())
-
-        # 2. district-solstice-pendulum-atoll has parent continent-03-shattered-halo (canon), but incomplete checklist pillars
-        res2, code2 = web.update_studio_rationale(
-            {
-                "nodeId": "district-solstice-pendulum-atoll",
-                "status": "canon",
-            }
-        )
-        self.assertEqual(code2, 400)
-        self.assertFalse(res2["ok"])
-        self.assertIn("quality_checklist", res2["error"])
-
-    def test_rationale_update_and_undo_snapshot_roundtrip(self) -> None:
-        _, orig_doc, _ = web.find_studio_node_and_path("district-solstice-pendulum-atoll")
-        self.assertIsNotNone(orig_doc)
-        orig_rationale = orig_doc["core_rationale"]
-
-        new_rationale = (
-            "Twelfth floating basalt-and-starlight pendulum island of Continent 03 where Vesper's longest inverted gravity chain swings between the summer and winter solstice beacons."
-        )
-        res, code = web.update_studio_rationale(
-            {
-                "nodeId": "district-solstice-pendulum-atoll",
-                "core_rationale": new_rationale,
-                "status": "draft",
-            }
-        )
-        self.assertEqual(code, 200)
-        self.assertTrue(res["ok"])
-        self.assertEqual(res["node"]["core_rationale"], new_rationale)
-
-        # Undo snapshot to restore original file state cleanly
-        undo_res = web.undo_latest_snapshot()
-        self.assertTrue(undo_res["ok"])
-        _, restored_doc, _ = web.find_studio_node_and_path("district-solstice-pendulum-atoll")
-        self.assertEqual(restored_doc["core_rationale"], orig_rationale)
-
-    def test_generate_children_enforces_canon_and_five_pillar_checklist_gate(self) -> None:
-        # 1. Mystery parent district-cardamom-kiln-caldera must fail with 400
-        res_mystery, code_mystery = web.generate_studio_children(
-            {
-                "parentId": "district-cardamom-kiln-caldera",
-                "childName": "Forbidden Cardamom Kiln",
-                "persist": False,
-            }
-        )
-        self.assertEqual(code_mystery, 400)
-        self.assertFalse(res_mystery["ok"])
-
-        # 2. Draft parent district-solstice-pendulum-atoll must fail with 400
-        res_draft, code_draft = web.generate_studio_children(
-            {
-                "parentId": "district-solstice-pendulum-atoll",
-                "childName": "Solstice Pendulum Sanctuary",
-                "persist": False,
-            }
-        )
-        self.assertEqual(code_draft, 400)
-        self.assertFalse(res_draft["ok"])
-
-        # 3. Canon parent district-thermal-compensator-basin (with 5/5 checklist verified) must succeed with 200
-        res_canon, code_canon = web.generate_studio_children(
-            {
-                "parentId": "district-thermal-compensator-basin",
-                "childId": "hunting-area-thermal-east-bellows",
-                "childName": "Thermal East Bellows",
-                "childStatus": "mystery",
-                "persist": False,
-            }
-        )
-        self.assertEqual(code_canon, 200)
-        self.assertTrue(res_canon["ok"])
-        self.assertEqual(res_canon["childLayer"], "town-or-hunting-area")
-        self.assertEqual(res_canon["childNode"]["parent_district_id"], "district-thermal-compensator-basin")
-        self.assertEqual(res_canon["childNode"]["status"], "mystery")
 
     def test_semantic_world_atlas_town_blueprints_and_multifloor_dungeons(self) -> None:
         errors, report = gov.validate_world_governance()
@@ -5429,10 +5340,6 @@ console.log(JSON.stringify(sandbox.__TEST_OUT));
         self.assertTrue(v16["hasComposable3dParity"])
         self.assertTrue(v16["questPoiOpened"])
         self.assertTrue(v16["transitionIncremented"])
-
-        # Verify Python disk persistence helper round-trip
-        res = web.save_studio_map_feature_layers_patch({"persisted_custom_features": {"walkways": [], "rivers": [], "trees": [], "quest_rings": []}})
-        self.assertTrue(res.get("ok"))
 
     def test_world_scale_30min_town_shapes_irregular_zones_and_mob_farm_structures(self) -> None:
         """Verify 30-min town-to-town scale (~8.0km road), 12+ distinct town shapes/sizes (0.95x-2.20x), irregular watershed polygons, Aion 2 sub-biome pockets, and 32 mob-farm sub-structures + L2Hub blue raid level pins."""

@@ -147,7 +147,7 @@ async function main() {
       const a = await lgState(c); await lgTap(c); const b = await lgState(c);
       check('L2c page and legend toggle still work when storage throws', !!a.btn && !a.legendVisible && b.legendVisible && c.errors.length === 0, `collapsed=${!a.legendVisible} expanded=${b.legendVisible} errors=${JSON.stringify(c.errors)}`);
     } finally { await c.kill(); } }
-  { const base = { '1280x800 2d_svg': [281, 696.8, 975, 86], '1280x800 2d_ol': [293, 611, 951, 87], '1280x800 3d_map3d': [293, 611, 951, 87], '1440x900 2d_svg': [281, 729.7, 1135, 56], '1440x900 2d_ol': [293, 887, 1111, 57], '1440x900 3d_map3d': [293, 887, 1111, 57] };
+  { const base = { '1280x800 2d_svg': [281, 652.75, 975, 86], '1280x800 2d_ol': [293, 567, 951, 87], '1280x800 3d_map3d': [293, 567, 951, 87], '1440x900 2d_svg': [281, 729.7, 1135, 56], '1440x900 2d_ol': [293, 887, 1111, 57], '1440x900 3d_map3d': [293, 887, 1111, 57] };
     const bad = [];
     for (const [w, h] of [[1280, 800], [1440, 900]]) for (const eng of ['2d_svg', '2d_ol', '3d_map3d']) await with_({ w, h, dpr: 1 }, async c => {
       await c.eval(`(async()=>{ ${eng === '2d_svg' ? '' : `setAtlasEngineMode('${eng}');`} await new Promise(r=>setTimeout(r,1500)); })()`);

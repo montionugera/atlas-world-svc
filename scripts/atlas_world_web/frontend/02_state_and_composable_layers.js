@@ -30,12 +30,16 @@ if (typeof window !== 'undefined' && typeof window.addEventListener === 'functio
   });
 }
 
-function renderVersionLine(text) {
+function renderVersionLine(text, isReadOnly = true) {
   const status = document.getElementById('topbarStatus');
-  const link = document.createElement('a');
-  link.href = ATLAS_EDIT_URL;
-  link.textContent = text;
-  status.replaceChildren(link);
+  if (isReadOnly) {
+    const link = document.createElement('a');
+    link.href = ATLAS_EDIT_URL;
+    link.textContent = text;
+    status.replaceChildren(link);
+  } else {
+    status.textContent = text;
+  }
   const footer = document.getElementById('sidebarVersion');
   if (footer) footer.textContent = text;
 }
@@ -44,19 +48,34 @@ async function loadRuntime() {
   if (atlasIsReadOnly()) document.getElementById('topbarStatus').textContent = 'Loading release…';
   try {
     const res = await fetch('/api/runtime');
-    // A pre-merge edit host has no such route; a read-only image always has it.
-    if (res.status === 404) { if (atlasIsReadOnly()) renderVersionLine('Version unknown'); return; }
+    if (res.status === 404) {
+      if (atlasIsReadOnly()) {
+        renderVersionLine('Version unknown', true);
+      } else {
+        renderVersionLine(`Editable · ${location.host || 'local'}`, false);
+      }
+      return;
+    }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const rt = await res.json();
     if (rt.readOnly) {
-      renderVersionLine(rt.release && rt.commit
-        ? `Read-only · ${rt.release} · ${String(rt.commit).slice(0, 7)}`
-        : 'Version unknown');
+      renderVersionLine(
+        rt.release && rt.commit
+          ? `Read-only · ${rt.release} · ${String(rt.commit).slice(0, 7)}`
+          : 'Version unknown',
+        true
+      );
+    } else {
+      renderVersionLine(`Editable · ${location.host || 'local'}`, false);
     }
   } catch {
     const local = ['localhost', '127.0.0.1'].includes(location.hostname);
     if (!local) document.body.setAttribute('data-read-only', '1');
-    if (atlasIsReadOnly()) renderVersionLine('Version unknown');
+    if (atlasIsReadOnly()) {
+      renderVersionLine('Version unknown', true);
+    } else {
+      renderVersionLine(`Editable · ${location.host || 'local'}`, false);
+    }
   }
 }
 
@@ -580,7 +599,9 @@ function writeUrlState(pushHistory = true) {
     if (pushHistory) history.pushState(null, '', targetUrl);
     else history.replaceState(null, '', targetUrl);
   }
-  window.dispatchEvent(new CustomEvent('atlas-zone-change'));
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+    window.dispatchEvent(new CustomEvent('atlas-zone-change'));
+  }
 }
 
 function setDropRate(val) {
@@ -653,7 +674,7 @@ async function init() {
   window.addEventListener('hashchange', () => { syncUrlState(); renderSidebar(); render(); });
   window.addEventListener('popstate', () => { window.LAST_WORLD_TILE_ID = ''; syncUrlState(); renderSidebar(); render(); });
   // registry.mjs is a deferred module: it may finish before or after the bundle fetch below.
-  window.addEventListener('atlas-panels-ready', () => { if (DATA) { renderSidebar(); render(); } });
+  window.addEventListener('atlas-panels-ready', () => { if (DATA) { renderSidebar(); if (window.ATLAS_PANELS?.has(CURRENT_TAB)) render(); } });
   window.addEventListener('atlas-panels-updated', () => { if (DATA) renderSidebar(); });
   await loadRuntime();
   let res;
@@ -768,49 +789,6 @@ function openInspector(kind, title, obj) {
 function closeInspector() {
   document.getElementById('inspectorBackdrop').classList.remove('open');
   document.getElementById('inspectorDrawer').classList.remove('open');
-}
-
-async function rebuildDb() {
-  const status = document.getElementById('topbarStatus');
-  status.textContent = 'Rebuilding SQLite...';
-  let rebuilt;
-  try {
-    rebuilt = await atlasWrite('/api/rebuild', { method: 'POST' });
-  } catch (err) {
-    if (!err.readOnly) status.textContent = 'SQLite rebuild failed'; // a refusal already set the line
-    return;
-  }
-  if (!rebuilt.ok) { status.textContent = 'SQLite rebuild failed'; return; }
-  const res = await fetch('/api/bundle');
-  DATA = await res.json();
-  buildThumbIndex();
-  status.textContent = 'SQLite Rebuilt';
-  renderSidebar();
-  render();
-}
-
-async function triggerBalanceSim() {
-  if (SIM_RUNNING) return;
-  const prevSimOutput = SIM_OUTPUT;
-  SIM_RUNNING = true;
-  SIM_OUTPUT = 'Running cargo run --quiet --manifest-path server-rs/Cargo.toml --bin balance_sim...';
-  document.getElementById('topbarStatus').textContent = 'Running Balance Sim...';
-  render();
-  let res;
-  try {
-    res = await atlasWrite('/api/sim', { method: 'POST' });
-  } catch (err) {
-    SIM_RUNNING = false; // a refused run must not leave the button disabled
-    SIM_OUTPUT = prevSimOutput;
-    render();
-    if (!err.readOnly) throw err;
-    return;
-  }
-  const payload = await res.json();
-  SIM_RUNNING = false;
-  SIM_OUTPUT = payload.output || '(no output)';
-  document.getElementById('topbarStatus').textContent = payload.ok ? 'Balance Sim Complete' : 'Balance Sim Failed';
-  render();
 }
 
 function render() {
@@ -979,118 +957,6 @@ function renderStatusBadgeHtml(status) {
   return '<span class="joy-badge joy-badge--warning joy-badge--sm">🟡 Draft</span>';
 }
 
-async function submitStudioRationaleUpdate(nodeId, patchPayload) {
-  const statusEl = document.getElementById('studioDrawerStatusMsg');
-  if (statusEl) statusEl.textContent = 'Saving studio update...';
-  let res;
-  try {
-    res = await atlasWrite('/api/studio/rationale/update', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nodeId, ...patchPayload })
-    });
-  } catch (err) {
-    if (statusEl) statusEl.textContent = ''; // the refusal is shown in the top bar
-    if (!err.readOnly) throw err;
-    return;
-  }
-  const data = await res.json();
-  if (!res.ok || !data.ok) {
-    if (statusEl) {
-      statusEl.style.color = '#f87171';
-      statusEl.textContent = data.error || 'Failed to update studio node.';
-    }
-    return;
-  }
-  if (data.studioPerspectives) {
-    DATA.studioPerspectives = data.studioPerspectives;
-  }
-  render();
-  const afterEl = document.getElementById('studioDrawerStatusMsg');
-  if (afterEl) {
-    afterEl.style.color = '#34d399';
-    afterEl.textContent = 'Saved & snapshot recorded (' + ((data.snapshot && data.snapshot.id) || 'ok') + ').';
-  }
-}
-
-async function saveStudioRationaleForm(nodeId) {
-  const ratEl = document.getElementById('studioRationaleTextarea');
-  const stEl = document.getElementById('studioStatusSelect');
-  const rumorEl = document.getElementById('studioMysteryRumorInput');
-  const silEl = document.getElementById('studioMysterySilhouetteInput');
-  const qEl = document.getElementById('studioMysteryQuestionInput');
-  const payload = {};
-  if (ratEl) payload.core_rationale = ratEl.value;
-  if (stEl) payload.status = stEl.value;
-  if (rumorEl || silEl || qEl) {
-    payload.mystery_hook = {
-      in_world_rumor: rumorEl ? rumorEl.value : '',
-      visual_silhouette: silEl ? silEl.value : '',
-      unanswered_question: qEl ? qEl.value : ''
-    };
-  }
-  await submitStudioRationaleUpdate(nodeId, payload);
-}
-
-async function toggleStudioQualityPillar(nodeId, pillarKey, verified, currentEvidence) {
-  const ev = (currentEvidence && currentEvidence.length >= 15)
-    ? currentEvidence
-    : 'Verified against 90 to 120 centimeter scale and parent rationale.';
-  await submitStudioRationaleUpdate(nodeId, {
-    quality_checklist: {
-      [pillarKey]: { verified: !!verified, evidence: ev }
-    }
-  });
-}
-
-async function triggerStudioChildGeneration(parentId) {
-  const statusEl = document.getElementById('studioDrawerStatusMsg');
-  const childNameEl = document.getElementById('studioChildNameInput');
-  const childName = (childNameEl && childNameEl.value.trim()) || 'Uncharted Horizon Sector';
-  if (statusEl) statusEl.textContent = 'Validating parent Canon & 5-pillar gate...';
-  let res;
-  try {
-    res = await atlasWrite('/api/studio/generate-children', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ parentId, childName, childStatus: 'mystery', persist: false })
-    });
-  } catch (err) {
-    if (statusEl) statusEl.textContent = '';
-    if (!err.readOnly) throw err;
-    return;
-  }
-  const data = await res.json();
-  if (!res.ok || !data.ok) {
-    if (statusEl) {
-      statusEl.style.color = '#f87171';
-      statusEl.textContent = data.error || 'Child generation blocked.';
-    }
-    return;
-  }
-  if (statusEl) {
-    statusEl.style.color = '#34d399';
-    statusEl.textContent = 'Generated ' + data.childLayer + ' candidate: ' + data.childNode.id + ' (' + data.childNode.status + ')';
-  }
-  openInspector(data.childLayer, 'Generated Child Preview: ' + data.childNode.name, data.childNode);
-}
-
-async function undoStudioSnapshotAction() {
-  const res = await atlasWrite('/api/studio/undo', { method: 'POST' });
-  const data = await res.json();
-  const bundleRes = await fetch('/api/studio/perspectives');
-  const bundleData = await bundleRes.json();
-  if (bundleData.ok) {
-    DATA.studioPerspectives = bundleData;
-  }
-  render();
-  const statusEl = document.getElementById('studioDrawerStatusMsg');
-  if (statusEl) {
-    statusEl.style.color = data.ok ? '#34d399' : '#f87171';
-    statusEl.textContent = data.ok ? ('Reverted snapshot ' + data.restoredSnapshot) : (data.error || 'Nothing to undo.');
-  }
-}
-
 function renderQualityChecklistCardHtml(node) {
   const nodeId = (node && node.id) || '';
   const curStatus = (node && node.status) || 'draft';
@@ -1104,43 +970,28 @@ function renderQualityChecklistCardHtml(node) {
     ['intentional_mystery_discipline', '5. Intentional Mystery Discipline (Zero Filler Slop)'],
   ];
   const passedCount = labels.filter(([k]) => qc[k] && qc[k].verified).length;
-  const isLeaf = Boolean(node && node.node_type);
 
   return `
     <div style="margin-top:12px;display:flex;flex-direction:column;gap:12px">
-      <!-- Interactive Core Rationale & Status Editor -->
+      <!-- Read-Only Core Rationale & Status -->
       <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <strong style="font-size:12px">Human-in-the-Loop Rationale &amp; Status Gate</strong>
-          <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="undoStudioSnapshotAction()">
-            ↶ Undo Last Snapshot
-          </button>
+          <strong style="font-size:12px">Core Rationale &amp; Status</strong>
+          <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(curStatus)}</span>
         </div>
 
-        <label class="mono" style="display:block;font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">NODE STATUS (CANON REQUIRES 5/5 CHECKLIST + CANON PARENT)</label>
-        <select id="studioStatusSelect" class="joy-select">
-          <option value="canon" ${curStatus === 'canon' ? 'selected' : ''}>🟢 Canon (Approved for Downward Generation)</option>
-          <option value="draft" ${curStatus === 'draft' ? 'selected' : ''}>🟡 Draft (Work in Progress)</option>
-          <option value="mystery" ${curStatus === 'mystery' ? 'selected' : ''}>🟣 Mystery / Fog of Lore (Intentional Uncharted Hook)</option>
-        </select>
+        <label class="mono" style="display:block;font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">CORE RATIONALE</label>
+        <div style="padding:8px;border-radius:6px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-default);font-size:11.5px;margin-bottom:8px">${escapeHtml((node && node.core_rationale) || '')}</div>
 
-        <label class="mono" style="display:block;font-size:10px;color:var(--joy-text-secondary);margin-bottom:4px">CORE RATIONALE (MINIMUM 20 CHARACTERS)</label>
-        <textarea id="studioRationaleTextarea" rows="3" style="width:100%;padding:8px;border-radius:6px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-default);font-size:11.5px;margin-bottom:8px">${escapeHtml((node && node.core_rationale) || '')}</textarea>
-
-        <div style="padding:8px;border-radius:6px;background:rgba(168,85,247,0.08);border:1px dashed rgba(168,85,247,0.4);margin-bottom:8px">
+        <div style="padding:8px;border-radius:6px;background:rgba(168,85,247,0.08);border:1px dashed rgba(168,85,247,0.4)">
           <div class="mono" style="font-size:10px;color:#c084fc;margin-bottom:4px">INTENTIONAL MYSTERY / FOG OF LORE HOOK</div>
-          <input id="studioMysteryRumorInput" type="text" placeholder="In-world rumor..." value="${escapeHtml(mh.in_world_rumor || '')}" style="width:100%;padding:5px 7px;border-radius:4px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11px;margin-bottom:4px" />
-          <input id="studioMysterySilhouetteInput" type="text" placeholder="Visual silhouette..." value="${escapeHtml(mh.visual_silhouette || '')}" style="width:100%;padding:5px 7px;border-radius:4px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11px;margin-bottom:4px" />
-          <input id="studioMysteryQuestionInput" type="text" placeholder="Unanswered question..." value="${escapeHtml(mh.unanswered_question || '')}" style="width:100%;padding:5px 7px;border-radius:4px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11px" />
+          <div style="font-size:11px;color:var(--joy-text-secondary);margin-bottom:2px">Rumor: ${escapeHtml(mh.in_world_rumor || '(none)')}</div>
+          <div style="font-size:11px;color:var(--joy-text-secondary);margin-bottom:2px">Silhouette: ${escapeHtml(mh.visual_silhouette || '(none)')}</div>
+          <div style="font-size:11px;color:var(--joy-text-secondary)">Question: ${escapeHtml(mh.unanswered_question || '(none)')}</div>
         </div>
-
-        <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="saveStudioRationaleForm('${escapeHtml(nodeId)}')">
-          Save Rationale, Mystery Hook &amp; Status
-        </button>
-        <div id="studioDrawerStatusMsg" class="mono" style="font-size:10.5px;margin-top:6px;min-height:14px;color:var(--joy-text-secondary)"></div>
       </div>
 
-      <!-- Step-by-Step Five-Pillar Quality Checklist -->
+      <!-- Five-Pillar Quality Checklist (Read-Only) -->
       <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <strong style="font-size:12px">Step-by-Step Five-Pillar Quality Checklist</strong>
@@ -1149,35 +1000,21 @@ function renderQualityChecklistCardHtml(node) {
         <div style="display:flex;flex-direction:column;gap:6px">
           ${labels.map(([k, title]) => {
             const item = qc[k] || { verified: false, evidence: 'Not verified yet.' };
-            const safeEv = escapeHtml(item.evidence || '').replace(/'/g, "\'");
             return `
-              <label style="padding:7px 9px;border-radius:6px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle);font-size:11.5px;cursor:pointer;display:block">
+              <div style="padding:7px 9px;border-radius:6px;background:var(--joy-surface-card);border:1px solid var(--joy-border-subtle);font-size:11.5px;display:block">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
                   <span style="font-weight:700;color:${item.verified ? '#34d399' : '#fbbf24'};display:flex;align-items:center;gap:6px">
-                    <input type="checkbox" ${item.verified ? 'checked' : ''} onchange="toggleStudioQualityPillar('${escapeHtml(nodeId)}', '${k}', this.checked, '${safeEv}')" />
+                    <input type="checkbox" ${item.verified ? 'checked' : ''} disabled />
                     ${escapeHtml(title)}
                   </span>
                   <span class="mono" style="font-size:10px">${item.verified ? 'VERIFIED' : 'PENDING'}</span>
                 </div>
                 <div style="color:var(--joy-text-secondary);margin-top:3px;font-size:11px">${escapeHtml(item.evidence || '')}</div>
-              </label>
+              </div>
             `;
           }).join('')}
         </div>
       </div>
-
-      <!-- Top-Down Child Layer Generation Gate -->
-      ${!isLeaf ? `
-        <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-default)">
-          <div class="mono" style="font-size:10.5px;font-weight:700;color:var(--joy-text-secondary);margin-bottom:6px">
-            TOP-DOWN CHILD LAYER GENERATION GATE
-          </div>
-          <input id="studioChildNameInput" type="text" placeholder="New child region name..." value="Uncharted Horizon Sector" style="width:100%;padding:6px 8px;border-radius:6px;background:var(--joy-surface-card);color:var(--joy-text-primary);border:1px solid var(--joy-border-subtle);font-size:11.5px;margin-bottom:8px" />
-          <button type="button" class="joy-button ${curStatus === 'canon' && passedCount === 5 ? 'joy-button--solid' : 'joy-button--outline'} joy-button--sm" onclick="triggerStudioChildGeneration('${escapeHtml(nodeId)}')">
-            ${curStatus === 'canon' && passedCount === 5 ? '✨ Generate Child Layer Candidate ➔' : '🔒 Child Generation Locked (Requires Canon + 5/5 Checklist)'}
-          </button>
-        </div>
-      ` : ''}
     </div>
   `;
 }

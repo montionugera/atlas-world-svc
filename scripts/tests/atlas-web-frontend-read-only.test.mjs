@@ -11,8 +11,8 @@ const shell = slices.find(([f]) => f.startsWith('01_'))[1];
 const all = slices.map(([, s]) => s).join('\n');
 const panel = (p) => readFileSync(path.join(ROOT, 'atelier/atlas-world-panels/js', p), 'utf8');
 
-// spec "Hidden controls", in spec order. Every handler that reaches a write route.
-const HIDDEN_HANDLERS = [
+// spec "Hidden controls", in spec order. Every handler that previously reached a write route.
+const REMOVED_HANDLERS = [
   'rebuildDb', 'triggerBalanceSim', 'submitReviewVerdict', 'togglePaletteAsset',
   'undoStudioSnapshot', 'runAiStudioAgent', 'applyInteractiveMapStructure', 'launch3dClient',
   'saveStudioRationaleForm', 'toggleStudioQualityPillar', 'triggerStudioChildGeneration',
@@ -28,16 +28,43 @@ function eventAttrsCalling(handler) {
   return attrs;
 }
 
-test('every listed write control is hidden by the read-only rule, for every event attribute', () => {
+test('read-only stylesheet hides data-write-control', () => {
   const rule = shell.slice(shell.indexOf('/* read-only controls */'), shell.indexOf('/* end read-only controls */'));
-  assert.ok(rule.includes('body[data-read-only]'));
-  for (const h of HIDDEN_HANDLERS) {
+  assert.ok(rule.includes('body[data-read-only] [data-write-control] { display: none !important; }'));
+});
+
+test('no removed write handlers appear in frontend event attributes', () => {
+  for (const h of REMOVED_HANDLERS) {
     const attrs = eventAttrsCalling(h);
-    assert.ok(attrs.size > 0, `${h} no longer exists in an event attribute`);
-    for (const attr of attrs) {
-      assert.ok(rule.includes(`[${attr}*="${h}"]`), `${h} is called from ${attr} but no selector hides it`);
+    assert.equal(attrs.size, 0, `${h} still exists in event attributes: ${[...attrs].join(', ')}`);
+  }
+});
+
+test('no removed studio write routes appear anywhere in frontend slices', () => {
+  const removedRoutes = [
+    '/api/rebuild',
+    '/api/sim',
+    '/api/review-queue/verdict',
+    '/api/palette/toggle-asset',
+    '/api/studio/undo',
+    '/api/studio/ai-edit',
+    '/api/map/update-structure',
+    '/api/studio/launch-3d',
+    '/api/studio/rationale/update',
+    '/api/studio/generate-children',
+    '/api/studio/map-layers',
+  ];
+  for (const [file, sliceContent] of slices) {
+    for (const route of removedRoutes) {
+      assert.ok(!sliceContent.includes(route), `Frontend slice ${file} still references deleted route ${route}`);
     }
   }
+});
+
+test('loadRuntime formats read-only badge with release/commit and editable badge with host', () => {
+  const code = slices.find(([f]) => f.startsWith('02_state'))[1];
+  assert.ok(code.includes('Read-only · ${rt.release} · ${String(rt.commit).slice(0, 7)}'), 'Must format read-only release status');
+  assert.ok(code.includes("Editable · ${location.host || 'local'}") || (code.includes('Editable · ') && code.includes('location.host')), 'Must format editable status with host');
 });
 
 test('panel write controls carry the marker', () => {

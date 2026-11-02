@@ -1557,5 +1557,11 @@
     "title": "Atlas DB unified wiki: every artifact as one record with tags, relations, search and a relation graph view",
     "created_at": "2026-11-01T16:00:33.558466+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-249",
+    "title": "Simplify Atlas web: one read-only page, agents edit files, retire the Mac edit host except Map Builder",
+    "created_at": "2026-11-02T01:25:46.364130+00:00",
+    "promoted_to": "F-169"
   }
 ]

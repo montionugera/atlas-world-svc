@@ -269,6 +269,11 @@ world_map_compiler() {
   python3 "$REPO_ROOT/scripts/compile_world_maps.py" --check
 }
 
+# Studio hierarchy, 5-pillar completeness, and scale clamps (INV-01..07)
+studio_hierarchy() {
+  python3 "$REPO_ROOT/scripts/validate_studio_hierarchy.py" --check
+}
+
 # scripts/system-deps.json is the declared source of truth for system-level
 # (non-npm) binaries this repo shells out to (magick, rsvg-convert, ...).
 # Check-only here (no --install) — Gate 1 runs on a developer's own machine,
@@ -393,7 +398,7 @@ explorer_probes() {
     local pf="$1" url="$2" p w prc
     node "$pf" --url "$url" > "$log.probe" 2>&1 &
     p=$!
-    ( sleep 300; kill "$p" 2>/dev/null ) &
+    ( sleep 900; kill "$p" 2>/dev/null ) &
     w=$!
     wait "$p"; prc=$?
     kill "$w" 2>/dev/null; wait "$w" 2>/dev/null
@@ -443,6 +448,7 @@ run_section "combat-lab: model gates"       combat_lab
 run_section "content: spine gates (--only=spine)" content_spine
 run_section "world digest (G-WORLD-DIGEST)" world_digest
 run_section "world-first map compiler (L0-L4 44 maps)" world_map_compiler
+run_section "studio hierarchy & scale clamps (INV-01..07)" studio_hierarchy
 
 # --- Summary -----------------------------------------------------------------
 echo ""

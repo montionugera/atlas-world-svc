@@ -56,6 +56,104 @@ CARDINAL_VECTORS = {
 }
 
 
+def boss_height_and_scale(take: dict) -> tuple[float, float]:
+    """Boss height clamped to the 7.35-40 m law; scale follows when clamped."""
+    raw_height = float(take.get("heightM") or 7.35)
+    height = max(7.35, min(40.0, raw_height))
+    if height != raw_height or not take.get("visualScale"):
+        return height, round(height / 1.72, 2)
+    return height, float(take["visualScale"])
+
+
+def _in_range(val: object, low: float, high: float) -> bool:
+    return isinstance(val, (int, float)) and not isinstance(val, bool) and low <= val <= high
+
+
+def _validate_map_scale_clamps(map_doc: dict, map_path: str, errors: list[str]) -> None:
+    """Validate road corridor widths and structure bounds against spatial scale clamps."""
+    for rt in map_doc.get("routes") or []:
+        if not isinstance(rt, dict):
+            continue
+        rt_id = rt.get("id")
+        if rt_id == "prontera_south_highway":
+            w = rt.get("width")
+            if w is not None and not _in_range(w, 3.5, 12.0):
+                errors.append(
+                    f"{map_path}: route 'prontera_south_highway' width must be within [3.5, 12.0], got {w!r}"
+                )
+        elif rt_id == "watchtower_east_spur":
+            w = rt.get("width")
+            if w is not None and not _in_range(w, 2.5, 8.0):
+                errors.append(
+                    f"{map_path}: route 'watchtower_east_spur' width must be within [2.5, 8.0], got {w!r}"
+                )
+
+    for st in map_doc.get("structures") or []:
+        if not isinstance(st, dict):
+            continue
+        st_id = st.get("id")
+        if st_id == "freja_west_watchtower_01":
+            for coord in ("x", "z"):
+                v = st.get(coord)
+                if v is not None and not _in_range(v, -35.0, 35.0):
+                    errors.append(
+                        f"{map_path}: structure 'freja_west_watchtower_01.{coord}' must be within [-35.0, 35.0], got {v!r}"
+                    )
+            radius = st.get("radius")
+            if radius is not None and not _in_range(radius, 2.5, 7.0):
+                errors.append(
+                    f"{map_path}: structure 'freja_west_watchtower_01.radius' must be within [2.5, 7.0], got {radius!r}"
+                )
+            upper_floor = st.get("upperFloorHeight")
+            if upper_floor is not None and not _in_range(upper_floor, 2.2, 4.5):
+                errors.append(
+                    f"{map_path}: structure 'freja_west_watchtower_01.upperFloorHeight' must be within [2.2, 4.5], got {upper_floor!r}"
+                )
+        elif st_id == "freja_east_crystal_cave_01":
+            for coord in ("x", "z"):
+                v = st.get(coord)
+                if v is not None and not _in_range(v, -35.0, 35.0):
+                    errors.append(
+                        f"{map_path}: structure 'freja_east_crystal_cave_01.{coord}' must be within [-35.0, 35.0], got {v!r}"
+                    )
+            radius = st.get("radius")
+            if radius is not None and not _in_range(radius, 2.8, 7.5):
+                errors.append(
+                    f"{map_path}: structure 'freja_east_crystal_cave_01.radius' must be within [2.8, 7.5], got {radius!r}"
+                )
+
+
+def _validate_mobs_scale_clamps(mobs_path: Path, errors: list[str]) -> None:
+    """Validate mob scale clamps in contracts/content/mobs.json."""
+    if not mobs_path.exists():
+        return
+    try:
+        mobs_data = json.loads(mobs_path.read_text(encoding="utf-8"))
+        if not isinstance(mobs_data, list):
+            return
+        for idx, mob in enumerate(mobs_data):
+            if not isinstance(mob, dict):
+                continue
+            is_mvp = bool(mob.get("isMvp"))
+            rank = mob.get("rank")
+            if is_mvp or rank in ("boss", "S", "A"):
+                if "heightM" in mob and mob["heightM"] is not None:
+                    try:
+                        h = float(mob["heightM"])
+                        if h < 7.35 or h > 40.0:
+                            mob_id = mob.get("id", f"index_{idx}")
+                            errors.append(
+                                f"{mobs_path}: boss mob '{mob_id}' heightM must be within [7.35, 40.0], got {h}"
+                            )
+                    except (ValueError, TypeError):
+                        mob_id = mob.get("id", f"index_{idx}")
+                        errors.append(
+                            f"{mobs_path}: boss mob '{mob_id}' heightM must be a valid float"
+                        )
+    except Exception as exc:
+        errors.append(f"{mobs_path}: failed to parse JSON: {exc}")
+
+
 def _check_forbidden_boilerplate(raw_text: str, source_label: str, errors: list[str]) -> None:
     lowered = raw_text.lower()
     for term in FORBIDDEN_BOILERPLATE_TERMS:
@@ -201,9 +299,9 @@ def _validate_character_scale_law(
                 f"{source_label}: boss_scale_law.min_multiple_of_reference_height must be >= 7.0, got {boss_multiple!r}"
             )
         boss_height = boss_law.get("min_height_meters")
-        if not isinstance(boss_height, (int, float)) or boss_height < 7.35:
+        if not isinstance(boss_height, (int, float)) or boss_height < 7.35 or boss_height > 40.0:
             errors.append(
-                f"{source_label}: boss_scale_law.min_height_meters must be >= 7.35, got {boss_height!r}"
+                f"{source_label}: boss_scale_law.min_height_meters must be within [7.35, 40.0], got {boss_height!r}"
             )
 
     metrics = scale_law.get("environment_metrics")
@@ -1000,6 +1098,24 @@ def validate_studio_directory(studio_dir: Path) -> list[str]:
         from studio_world_governance import validate_world_governance  # type: ignore
     gov_errors, _ = validate_world_governance(studio_dir)
     errors.extend(gov_errors)
+
+    # Pilot map scale clamps (road and structure scale clamps)
+    map_path = studio_dir.parent / "maps" / "freja-south-gate.json"
+    if not map_path.exists() and studio_dir == DEFAULT_STUDIO_DIR:
+        map_path = REPO_ROOT / "content" / "maps" / "freja-south-gate.json"
+    if map_path.exists():
+        try:
+            map_doc = json.loads(map_path.read_text(encoding="utf-8"))
+            _validate_map_scale_clamps(map_doc, str(map_path), errors)
+        except Exception as exc:
+            errors.append(f"{map_path}: failed to parse JSON: {exc}")
+
+    # Mob scale clamps (contracts/content/mobs.json)
+    mobs_path = studio_dir.parent.parent / "contracts" / "content" / "mobs.json"
+    if not mobs_path.exists() and studio_dir == DEFAULT_STUDIO_DIR:
+        mobs_path = REPO_ROOT / "contracts" / "content" / "mobs.json"
+    if mobs_path.exists():
+        _validate_mobs_scale_clamps(mobs_path, errors)
 
     return errors
 

@@ -1153,7 +1153,6 @@ function renderFieldOrFortressTacticalBlueprintAtlas(targetIdOrEntry, tatlas) {
           <button type="button" onclick="addIncrementalComposableFeature('trees')" style="padding:4px 9px;border-radius:6px;border:1px solid #4ade80;background:#052e16;color:#dcfce7;font-size:10px;font-weight:800;cursor:pointer">+ Add Tree Canopy Grove (Layer 4 Only)</button>
           <button type="button" onclick="addIncrementalComposableFeature('quest_rings')" style="padding:4px 9px;border-radius:6px;border:1px solid #f59e0b;background:#451a03;color:#fde68a;font-size:10px;font-weight:800;cursor:pointer">+ Add l2sanctum Quest Ring (Layer 5 Only)</button>
           <button type="button" onclick="undoLastIncrementalComposableFeature()" style="padding:4px 9px;border-radius:6px;border:1px solid #f87171;background:#450a0a;color:#fecaca;font-size:10px;font-weight:800;cursor:pointer">↩️ Undo Last</button>
-          <button type="button" onclick="saveIncrementalComposableFeaturesToDisk()" style="padding:4px 9px;border-radius:6px;border:1px solid #34d399;background:#064e3b;color:#d1fae5;font-size:10px;font-weight:800;cursor:pointer">💾 Save Layer Diff to JSON</button>
           <span style="font-size:9.5px;color:#94a3b8;margin-left:4px">Toggle Layers:</span>
           ${[
             ['layer_1_hydrology_splines', '🌊 L1 Rivers'],

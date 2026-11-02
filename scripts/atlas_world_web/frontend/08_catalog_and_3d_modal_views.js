@@ -12,11 +12,6 @@ function renderBiomeBrushes() {
           (grass ≤ 0.35m, bush ≤ 0.65m). Uncheck any 3D asset below to immediately exclude it from <code>freja-south-gate.json</code> chunk scatter.
         </p>
       </div>
-      <div class="chip-row">
-        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="undoStudioSnapshot()" ${snaps.length === 0 ? 'disabled' : ''}>
-          ↩ Undo Last Brush Edit (${snaps.length})
-        </button>
-      </div>
     </div>
 
     ${renderAiCopilotBar()}
@@ -59,7 +54,7 @@ function renderBiomeBrushes() {
                             max="0.60"
                             step="0.005"
                             value="${rule.weight}"
-                            onchange="togglePaletteAsset('${escapeHtml(pid)}', '${escapeHtml(rname)}', '', this.value)"
+                            disabled
                           />
                           <span class="mono" style="font-weight:700">${rule.weight}</span>
                         </div>
@@ -77,14 +72,14 @@ function renderBiomeBrushes() {
                             const shortName = sp.replace('res://assets/nature/', '');
                             const tUrl = (DATA.assetSceneThumbs && DATA.assetSceneThumbs[sp]) || '';
                             return `
-                              <label class="tag-asset-card ${isDisabled ? 'disabled' : ''}" onclick="togglePaletteAsset('${escapeHtml(pid)}', '${escapeHtml(rname)}', '${escapeHtml(sp)}')">
-                                <input type="checkbox" ${!isDisabled ? 'checked' : ''} onclick="event.stopPropagation(); togglePaletteAsset('${escapeHtml(pid)}', '${escapeHtml(rname)}', '${escapeHtml(sp)}')" />
+                              <div class="tag-asset-card ${isDisabled ? 'disabled' : ''}">
+                                <input type="checkbox" ${!isDisabled ? 'checked' : ''} disabled />
                                 ${tUrl ? `<img src="${escapeHtml(tUrl)}" alt="${escapeHtml(shortName)}" />` : ''}
                                 <div>
                                   <div class="mono" style="font-weight:600;font-size:11.5px">${escapeHtml(shortName)}</div>
                                   <div class="observatory-card__meta">${isDisabled ? 'Unchecked (Disabled)' : 'Checked (Active)'}</div>
                                 </div>
-                              </label>
+                              </div>
                             `;
                           }).join('')}
                         </div>
@@ -2729,9 +2724,6 @@ function renderSim() {
         <h1 class="page-hero__title">Headless Balance Simulator (server-rs / balance_sim)</h1>
         <p class="page-hero__sub">Executes <code>cargo run --bin balance_sim</code> to verify TTK, EXP/hour, refine +0..+15 curves, and WoE Emperium breach pacing.</p>
       </div>
-      <button type="button" class="joy-button joy-button--solid" onclick="triggerBalanceSim()" ${SIM_RUNNING ? 'disabled' : ''}>
-        ${SIM_RUNNING ? 'Running Simulator...' : 'Re-Run Balance Simulator'}
-      </button>
     </div>
 
     <div class="joy-code-block">

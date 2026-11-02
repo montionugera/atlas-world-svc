@@ -161,12 +161,51 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             )
 
     def test_approve_path_never_writes_a_boss_below_the_law(self) -> None:
-        from scripts.catalog_explorer_web import boss_height_and_scale
+        from scripts.validate_studio_hierarchy import boss_height_and_scale
 
         self.assertEqual(boss_height_and_scale({"heightM": 2.1, "visualScale": 1.22}), (7.35, 4.27))
         self.assertEqual(boss_height_and_scale({}), (7.35, 4.27))
         self.assertEqual(boss_height_and_scale({"heightM": 9.0, "visualScale": 5.0}), (9.0, 5.0))
         self.assertEqual(boss_height_and_scale({"heightM": 99}), (40.0, 23.26))
+
+    def test_validate_studio_hierarchy_rejects_boss_height_out_of_clamp(self) -> None:
+        from scripts.validate_studio_hierarchy import validate_studio_directory
+        import tempfile, shutil
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            shutil.copytree(DEFAULT_STUDIO_DIR, tmp_path / "studio")
+            whc_file = tmp_path / "studio" / "world_history_and_concept.json"
+            whc_data = json.loads(whc_file.read_text())
+            whc_data["character_scale_law"]["boss_scale_law"]["min_height_meters"] = 45.0
+            whc_file.write_text(json.dumps(whc_data, indent=2))
+
+            errors = validate_studio_directory(tmp_path / "studio")
+            self.assertTrue(any("boss_scale_law.min_height_meters must be within [7.35, 40.0]" in e for e in errors), f"Expected clamp error, got {errors}")
+
+    def test_validate_studio_hierarchy_rejects_pilot_map_road_out_of_clamp(self) -> None:
+        from scripts.validate_studio_hierarchy import _validate_map_scale_clamps
+
+        # Violate prontera_south_highway width (< 3.5m or > 12.0m)
+        bad_map = {
+            "routes": [{"id": "prontera_south_highway", "width": 14.5}],
+            "structures": []
+        }
+        errors = []
+        _validate_map_scale_clamps(bad_map, "content/maps/freja-south-gate.json", errors)
+        self.assertTrue(any("prontera_south_highway" in e and "[3.5, 12.0]" in e for e in errors), f"Expected road clamp error, got {errors}")
+
+    def test_validate_studio_hierarchy_rejects_pilot_map_structure_out_of_clamp(self) -> None:
+        from scripts.validate_studio_hierarchy import _validate_map_scale_clamps
+
+        # Violate freja_west_watchtower_01 radius (< 2.5m or > 7.0m)
+        bad_map = {
+            "routes": [],
+            "structures": [{"id": "freja_west_watchtower_01", "x": 0.0, "z": 0.0, "radius": 9.0, "upperFloorHeight": 3.0}]
+        }
+        errors = []
+        _validate_map_scale_clamps(bad_map, "content/maps/freja-south-gate.json", errors)
+        self.assertTrue(any("freja_west_watchtower_01.radius" in e and "[2.5, 7.0]" in e for e in errors), f"Expected structure clamp error, got {errors}")
 
     def test_asset_forge_boss_band_matches_scale_law(self) -> None:
         repo = Path(__file__).resolve().parents[1]

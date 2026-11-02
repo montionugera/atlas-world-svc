@@ -2059,134 +2059,9 @@ function renderPlayerLineupSvg(proposal) {
   return pilotMap ? `<div style="display:flex;justify-content:center">${renderMinimapSvg(pilotMap)}</div>` : '';
 }
 
-async function submitReviewVerdict(propId, verdict, takeIdx) {
-  const fbInput = document.getElementById('fb-input-' + propId);
-  const feedbackText = fbInput ? fbInput.value.trim() : '';
-  const statusEl = document.getElementById('topbarStatus');
-  if (statusEl) statusEl.textContent = 'Applying Review Verdict...';
-
-  const res = await atlasWrite('/api/review-queue/verdict', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: propId, verdict, selectedTakeIdx: takeIdx, feedbackText })
-  });
-  const out = await res.json();
-  const bRes = await fetch('/api/bundle');
-  DATA = await bRes.json();
-  buildThumbIndex();
-  if (statusEl) statusEl.textContent = out.ok ? `Verdict: ${out.verdict.toUpperCase()}` : 'Verdict Error';
-  renderSidebar();
-  render();
-}
-
 async function selectProposalTake(propId, takeIdx) {
   const prop = ((DATA.reviewQueue && DATA.reviewQueue.proposals) || []).find(p => p.id === propId);
   if (prop) prop.selectedTakeIdx = takeIdx;
-  render();
-}
-
-async function togglePaletteAsset(paletteId, ruleName, assetPath, weightVal) {
-  const statusEl = document.getElementById('topbarStatus');
-  if (statusEl) statusEl.textContent = 'Updating Palette Brush...';
-  const payload = { paletteId, ruleName };
-  if (assetPath) payload.assetPath = assetPath;
-  if (weightVal !== undefined && weightVal !== null) payload.weight = parseFloat(weightVal);
-  await atlasWrite('/api/palette/toggle-asset', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  const bRes = await fetch('/api/bundle');
-  DATA = await bRes.json();
-  buildThumbIndex();
-  if (statusEl) statusEl.textContent = `Updated ${paletteId}.${ruleName}`;
-  renderSidebar();
-  render();
-}
-
-async function undoStudioSnapshot() {
-  const statusEl = document.getElementById('topbarStatus');
-  if (statusEl) statusEl.textContent = 'Restoring Snapshot...';
-  const res = await atlasWrite('/api/studio/undo', { method: 'POST' });
-  const out = await res.json();
-  const bRes = await fetch('/api/bundle');
-  DATA = await bRes.json();
-  buildThumbIndex();
-  if (statusEl) statusEl.textContent = out.ok ? `Restored ${out.restoredSnapshot}` : (out.error || 'Nothing to undo');
-  renderSidebar();
-  render();
-}
-
-let LAST_AI_AGENT_RESULT = null;
-
-async function launch3dClient(mode) {
-  const statusEl = document.getElementById('topbarStatus');
-  if (statusEl) statusEl.textContent = mode === 'map_builder' ? '🗺️ Launching 3D Map Builder...' : '🎮 Launching 3D Game Client...';
-  const res = await atlasWrite('/api/studio/launch-3d', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mode })
-  });
-  const out = await res.json();
-  if (statusEl) statusEl.textContent = out.ok ? `Launched ${out.script}` : ('Launch Error: ' + (out.error || ''));
-}
-
-async function runAiStudioAgent(presetPrompt) {
-  const inp = document.getElementById('aiStudioPromptInput');
-  const prompt = (presetPrompt !== undefined && presetPrompt !== null)
-    ? String(presetPrompt)
-    : (inp ? inp.value.trim() : '');
-  if (!prompt) return;
-  const statusEl = document.getElementById('topbarStatus');
-  if (statusEl) statusEl.textContent = '🤖 AI Agent applying edit...';
-
-  const res = await atlasWrite('/api/studio/ai-edit', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt })
-  });
-  const out = await res.json();
-  if (out.ok && out.agentAction) {
-    LAST_AI_AGENT_RESULT = out.agentAction;
-  }
-  const bRes = await fetch('/api/bundle');
-  DATA = await bRes.json();
-  buildThumbIndex();
-  if (statusEl) statusEl.textContent = out.ok ? '✨ AI Agent Edit Committed' : 'AI Edit Error';
-  renderSidebar();
-  render();
-}
-
-async function applyInteractiveMapStructure(prefix) {
-  const gv = (id) => {
-    const el = document.getElementById(prefix + '-' + id);
-    return el ? parseFloat(el.value) : null;
-  };
-  const payload = {
-    highwayWidth: gv('hw'),
-    spurWidth: gv('spur'),
-    watchtowerX: gv('wtx'),
-    watchtowerZ: gv('wtz'),
-    watchtowerRadius: gv('wtr'),
-    watchtower2F: gv('wt2f'),
-    caveX: gv('cvx'),
-    caveZ: gv('cvz'),
-    caveRadius: gv('cvr'),
-    reason: 'Interactive Map Structure & Route Update via AI Studio Agent'
-  };
-  const statusEl = document.getElementById('topbarStatus');
-  if (statusEl) statusEl.textContent = '🤖 Updating Map Structure...';
-  const res = await atlasWrite('/api/map/update-structure', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  const out = await res.json();
-  const bRes = await fetch('/api/bundle');
-  DATA = await bRes.json();
-  buildThumbIndex();
-  if (statusEl) statusEl.textContent = out.ok ? '✨ Map Blueprint Updated' : 'Map Update Error';
-  renderSidebar();
   render();
 }
 
@@ -2201,46 +2076,28 @@ function renderMapStructureEditor(m, prefix) {
     <div style="padding:12px;border-radius:8px;background:var(--joy-surface-sunken);border:1px solid var(--joy-border-strong);display:flex;flex-direction:column;gap:10px">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div style="font-size:12px;font-weight:700;color:var(--joy-accent-text)">
-          🛠️ Interactive Map Structure &amp; Route Editor (Wrapped by AI Scale Guardrails)
+          🛠️ Map Structure &amp; Route Layout (Read-Only)
         </div>
-        <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="applyInteractiveMapStructure('${escapeHtml(prefix)}')">
-          ✨ Apply Structure Changes
-        </button>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:8px;font-size:11.5px">
-        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
-          <div style="display:flex;justify-content:space-between"><span class="mono">Highway Width (m)</span><strong class="mono">${hw}m</strong></div>
-          <input id="${escapeHtml(prefix)}-hw" type="range" min="3.5" max="10.0" step="0.1" value="${hw}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-        </label>
-        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
-          <div style="display:flex;justify-content:space-between"><span class="mono">East Spur Width (m)</span><strong class="mono">${spur}m</strong></div>
-          <input id="${escapeHtml(prefix)}-spur" type="range" min="2.5" max="7.0" step="0.1" value="${spur}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-        </label>
-        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+        <div class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;justify-content:space-between"><span class="mono">Highway Width</span><strong class="mono">${hw}m</strong></div>
+        </div>
+        <div class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;justify-content:space-between"><span class="mono">East Spur Width</span><strong class="mono">${spur}m</strong></div>
+        </div>
+        <div class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
           <div style="display:flex;justify-content:space-between"><span class="mono">Watchtower X / Z</span><strong class="mono">(${wt.x}, ${wt.z})</strong></div>
-          <div style="display:flex;gap:4px">
-            <input id="${escapeHtml(prefix)}-wtx" class="joy-input mono" type="number" step="0.5" value="${wt.x}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-            <input id="${escapeHtml(prefix)}-wtz" class="joy-input mono" type="number" step="0.5" value="${wt.z}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-          </div>
-        </label>
-        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+        </div>
+        <div class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
           <div style="display:flex;justify-content:space-between"><span class="mono">Watchtower r / 2F</span><strong class="mono">r=${wt.radius}m · 2F=${wt.upperFloorHeight || 3.2}m</strong></div>
-          <div style="display:flex;gap:4px">
-            <input id="${escapeHtml(prefix)}-wtr" class="joy-input mono" type="number" step="0.2" value="${wt.radius}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-            <input id="${escapeHtml(prefix)}-wt2f" class="joy-input mono" type="number" step="0.1" value="${wt.upperFloorHeight || 3.2}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-          </div>
-        </label>
-        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+        </div>
+        <div class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
           <div style="display:flex;justify-content:space-between"><span class="mono">Crystal Cave X / Z</span><strong class="mono">(${cv.x}, ${cv.z})</strong></div>
-          <div style="display:flex;gap:4px">
-            <input id="${escapeHtml(prefix)}-cvx" class="joy-input mono" type="number" step="0.5" value="${cv.x}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-            <input id="${escapeHtml(prefix)}-cvz" class="joy-input mono" type="number" step="0.5" value="${cv.z}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-          </div>
-        </label>
-        <label class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
+        </div>
+        <div class="gate-pill-row" style="flex-direction:column;align-items:stretch;gap:4px">
           <div style="display:flex;justify-content:space-between"><span class="mono">Crystal Cave Radius</span><strong class="mono">${cv.radius}m</strong></div>
-          <input id="${escapeHtml(prefix)}-cvr" type="range" min="3.0" max="7.0" step="0.2" value="${cv.radius}" onchange="applyInteractiveMapStructure('${escapeHtml(prefix)}')" />
-        </label>
+        </div>
       </div>
     </div>
   `;
@@ -2250,66 +2107,19 @@ function renderAiCopilotBar() {
   const rq = DATA.reviewQueue || {};
   const logs = rq.agentEditLog || [];
   const latestLog = LAST_AI_AGENT_RESULT || logs[0] || null;
-  const snaps = DATA.studioSnapshots || [];
-
-  const presets = [
-    { label: '✨ Entity: Orc Warlord -> Raider 7.35m (Take A)', prompt: 'Swap Orc Warlord to Take A Orc Raider at 7.35m' },
-    { label: '✨ Entity: Orc Warlord -> Colossal Golem 9.00m + 1800 HP', prompt: 'Swap Orc Warlord to Colossal Golem 9.00m and set HP to 1800' },
-    { label: '✨ Entity: Orc Warlord -> Brute 7.35m (Recommended)', prompt: 'Reset Orc Warlord to Take B Orc Brute 7.35m and HP 1445' },
-    { label: '✨ Brush: Sunlit Woods (Tree 2.5% + Exclude Dead Pine)', prompt: 'Open sunlit sparse woods: set pine tree density to 2.5% and disable dead pine' },
-    { label: '✨ Brush: Balanced Border (Tree 4.0%, Bush 10%)', prompt: 'Set pine forest border to balanced 4.0% canopy tree and exclude dead pine' },
-    { label: '✨ Map: Widen Highway to 7.5m + Expand Watchtower', prompt: 'Widen highway to 7.5m and expand Watchtower 2F to 3.5m at (-11.0, -2.5)' },
-    { label: '✨ Map: Move Crystal Cave to (13.5, -4.0) r=5.0m', prompt: 'Move Crystal Cave to (13.5, -4.0) with radius 5.0m' },
-  ];
 
   return `
     <div class="observatory-card" style="background:linear-gradient(135deg, rgba(212,175,55,0.12), rgba(19,34,56,0.92));border:1px solid var(--joy-border-strong);padding:14px 18px">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <div>
-          <div class="page-hero__eyebrow" style="margin-bottom:2px">🤖 AI STUDIO CO-PILOT AGENT · NATURAL-LANGUAGE EDIT WRAPPER (3 PILLARS)</div>
+          <div class="page-hero__eyebrow" style="margin-bottom:2px">🤖 AI STUDIO CO-PILOT AGENT · SCALE GUARDRAILS (3 PILLARS)</div>
           <div style="font-size:13px;color:var(--joy-text-secondary)">
-            Type any natural-language instruction (or click a 1-click preset below) to edit <strong>3D Entities &amp; Stats</strong>, <strong>Biome Brushes</strong>, or <strong>Map Routes &amp; 3D Structures</strong>. Automatically validates Player <code>1.05m</code> scale guardrails and saves a 1-click Undo snapshot.
+            Scale and hierarchy guardrails are enforced on disk via <code>validate_studio_hierarchy.py --check</code> in Gate 1.
           </div>
         </div>
         <div class="chip-row">
           <span class="joy-badge joy-badge--success joy-badge--sm">Player 1.05m Guardrail Active</span>
-          <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="launch3dClient('map_builder')">
-            🗺️ Preview in 3D Map Builder
-          </button>
-          <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="launch3dClient('game')">
-            🎮 Preview in 3D Game Client
-          </button>
-          <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="undoStudioSnapshot()" ${snaps.length === 0 ? 'disabled' : ''}>
-            ↩ Undo Last AI Edit (${snaps.length})
-          </button>
         </div>
-      </div>
-
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">
-        <input
-          id="aiStudioPromptInput"
-          class="joy-input"
-          type="text"
-          placeholder="Tell the AI Agent what to edit (e.g., 'Swap Orc Warlord to Golem 9.00m with 1800 HP', 'Widen highway to 7.5m and move Watchtower to (-11, -2.5)', 'Set pine tree density to 2.5% and disable dead pine')..."
-          style="flex:1;min-width:280px;height:36px;font-size:12.5px"
-          onkeydown="if(event.key==='Enter'){event.preventDefault();runAiStudioAgent();}"
-        />
-        <button type="button" class="joy-button joy-button--solid" onclick="runAiStudioAgent()">
-          ✨ Edit via AI Agent
-        </button>
-      </div>
-
-      <div class="chip-row" style="margin-top:4px">
-        ${presets.map(pr => `
-          <button
-            type="button"
-            class="joy-button joy-button--outline joy-button--sm"
-            style="font-size:11px;height:26px;padding:0 9px"
-            onclick="runAiStudioAgent('${escapeHtml(pr.prompt.replace(/'/g, "\'"))}')"
-          >
-            ${escapeHtml(pr.label)}
-          </button>
-        `).join('')}
       </div>
 
       ${latestLog ? `
@@ -2333,7 +2143,6 @@ function renderAiCopilotBar() {
 function renderReviewInbox() {
   const rq = DATA.reviewQueue || {};
   const proposals = (rq.proposals || []).filter(matchesSearch);
-  const snaps = DATA.studioSnapshots || [];
   const scaleAnchor = rq.playerScaleAnchor || { heightRangeM: [0.90, 1.20], referenceHeightM: 1.05 };
 
   return `
@@ -2349,9 +2158,6 @@ function renderReviewInbox() {
       <div class="chip-row">
         <span class="joy-badge joy-badge--brand">Slim Player: ${scaleAnchor.referenceHeightM.toFixed(2)}m</span>
         <span class="joy-badge joy-badge--success">${proposals.filter(p => p.status === 'approved').length}/${proposals.length} Approved</span>
-        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="undoStudioSnapshot()" ${snaps.length === 0 ? 'disabled' : ''}>
-          ↩ Undo Last Commit (${snaps.length})
-        </button>
       </div>
     </div>
 
@@ -2483,14 +2289,14 @@ function renderReviewInbox() {
                         const shortName = sp.replace('res://assets/nature/', '');
                         const tUrl = (DATA.assetSceneThumbs && DATA.assetSceneThumbs[sp]) || '';
                         return `
-                          <label class="tag-asset-card ${isDisabled ? 'disabled' : ''}" onclick="togglePaletteAsset('${escapeHtml(palId)}', 'canopy_tree', '${escapeHtml(sp)}')">
-                            <input type="checkbox" ${!isDisabled ? 'checked' : ''} onclick="event.stopPropagation(); togglePaletteAsset('${escapeHtml(palId)}', 'canopy_tree', '${escapeHtml(sp)}')" />
+                          <div class="tag-asset-card ${isDisabled ? 'disabled' : ''}">
+                            <input type="checkbox" ${!isDisabled ? 'checked' : ''} disabled />
                             ${tUrl ? `<img src="${escapeHtml(tUrl)}" alt="${escapeHtml(shortName)}" />` : ''}
                             <div>
                               <div class="mono" style="font-weight:600;font-size:11.5px">${escapeHtml(shortName)}</div>
                               <div class="observatory-card__meta">${isDisabled ? 'Excluded from scatter' : 'Active in chunk scatter'}</div>
                             </div>
-                          </label>
+                          </div>
                         `;
                       }).join('')}
                     </div>
@@ -2506,25 +2312,10 @@ function renderReviewInbox() {
                   `).join('')}
                 </div>
 
-                <!-- Reviewer Feedback Input + Approve / Re-Roll / Reject Bar -->
+                <!-- Reviewer Status -->
                 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px;padding-top:8px;border-top:1px solid var(--joy-border-subtle)">
-                  <input
-                    id="fb-input-${escapeHtml(prop.id)}"
-                    class="joy-input"
-                    type="text"
-                    placeholder="Optional feedback note (e.g., 'Make tusks 20% larger' or 'Lower bush height to 0.55m')..."
-                    value="${escapeHtml(prop.lastFeedback || '')}"
-                    style="flex:1;min-width:220px;height:32px;font-size:12px"
-                  />
-                  <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="submitReviewVerdict('${escapeHtml(prop.id)}', 'approve', ${selIdx})">
-                    ✓ Approve &amp; Commit
-                  </button>
-                  <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="submitReviewVerdict('${escapeHtml(prop.id)}', 'feedback', ${selIdx})">
-                    ↻ Send Feedback &amp; Re-Roll
-                  </button>
-                  <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="submitReviewVerdict('${escapeHtml(prop.id)}', 'reject', ${selIdx})">
-                    ✕ Reject
-                  </button>
+                  ${prop.lastFeedback ? `<div style="font-size:12px;color:var(--joy-text-secondary)">Feedback: <em>${escapeHtml(prop.lastFeedback)}</em></div>` : ''}
+                  <span class="joy-badge joy-badge--neutral joy-badge--sm">Status: ${escapeHtml(prop.status || 'pending')}</span>
                 </div>
               </div>
             </div>

@@ -2479,24 +2479,7 @@
       #atlasShapeToggle, .atlas-shape-target { min-height: 44px; }
     }
     /* read-only controls */
-    body[data-read-only] [data-write-control],
-    body[data-read-only] [onclick*="rebuildDb"],
-    body[data-read-only] [onclick*="triggerBalanceSim"],
-    body[data-read-only] [onclick*="submitReviewVerdict"],
-    body[data-read-only] input[onclick*="togglePaletteAsset"],
-    body[data-read-only] [onclick*="undoStudioSnapshot"],
-    body[data-read-only] [onclick*="runAiStudioAgent"],
-    body[data-read-only] [onclick*="applyInteractiveMapStructure"],
-    body[data-read-only] [onchange*="applyInteractiveMapStructure"],
-    body[data-read-only] [onchange*="togglePaletteAsset"],
-    body[data-read-only] [onkeydown*="runAiStudioAgent"],
-    body[data-read-only] [onclick*="launch3dClient"],
-    body[data-read-only] [onclick*="saveStudioRationaleForm"],
-    body[data-read-only] [onclick*="toggleStudioQualityPillar"],
-    body[data-read-only] [onchange*="toggleStudioQualityPillar"],
-    body[data-read-only] [onclick*="triggerStudioChildGeneration"],
-    body[data-read-only] [onclick*="saveIncrementalComposableFeaturesToDisk"] { display: none !important; }
-    body[data-read-only] label[onclick*="togglePaletteAsset"] { pointer-events: none; }
+    body[data-read-only] [data-write-control] { display: none !important; }
     /* end read-only controls */
   </style>
 </head>
@@ -2576,14 +2559,6 @@
 
         <button type="button" class="joy-button joy-button--ghost joy-button--sm" onclick="toggleTheme()" id="themeToggleBtn">
           Theme: Dark
-        </button>
-
-        <button type="button" class="joy-button joy-button--outline joy-button--sm" onclick="rebuildDb()">
-          Rebuild SQLite
-        </button>
-
-        <button type="button" class="joy-button joy-button--solid joy-button--sm" onclick="switchTab('sim'); triggerBalanceSim();">
-          Run Balance Sim
         </button>
       </div>
     </header>

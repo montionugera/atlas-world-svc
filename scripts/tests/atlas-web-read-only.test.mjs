@@ -56,10 +56,13 @@ function treeHash(dir) {
 
 test('write route list is derived and non-trivial', () => {
   const routes = writeRoutes();
-  assert.ok(routes.includes('/api/rebuild'));
+  assert.ok(!routes.includes('/api/rebuild'), '/api/rebuild must be removed');
+  assert.ok(!routes.includes('/api/sim'), '/api/sim must be removed');
+  assert.ok(!routes.includes('/api/studio/undo'), '/api/studio/undo must be removed');
   assert.ok(routes.includes('/api/review-queue/asset-verdicts'));
+  assert.ok(routes.includes('/api/review-queue/work-orders'));
   assert.ok(routes.includes('/api/map-builder/x'));
-  assert.ok(routes.length >= 14, String(routes.length));
+  assert.ok(routes.length >= 3, `Expected at least 3 active write routes, got ${routes.length}`);
 });
 
 test('read-only refuses every write, leaves the tree alone', async (t) => {

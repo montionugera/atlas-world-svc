@@ -238,17 +238,30 @@ xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.clie
 | **Atlas Edit (Edit Host)** | `http://atlas-edit.joymify.local.com/` (`:8788`) | Host process for interactive editing, writing reviews, and running tools (`python3 scripts/catalog_explorer_web.py --port 8788`) |
 | **Asset Library (formerly storybook)** | `http://atlas-world.joymify.local.com/?tab=assets` | 3D/2D asset classes, SFX & music, concept art, coverage, map sheets (the read-only host does not offer Map Builder or verdicts). `atlas-storybook.joymify.local.com` redirects here |
 
-### Atlas Web Hostnames & Operational Lifecycle
+### Atlas Web Single-Program Architecture & Operational Lifecycle
 
-The atlas web surface operates on two distinct hostnames:
+The atlas web surface is powered by a single web program (`scripts/catalog_explorer_web.py`) operating in two distinct modes:
 1. **Release Host (`http://atlas-world.joymify.local.com/`):**
    - Cluster workload (`deployment/atlas-world-web` in namespace `atlas-world`).
-   - Served in read-only mode (`ATLAS_READ_ONLY=1`) from the image built from the release commit (`atlas-world-web:local`).
-   - Write actions return HTTP 403 Forbidden; write controls (buttons, forms) are hidden in the UI; top bar displays `Read-only · <release> · <short-commit>`.
+   - Served in read-only mode (`ATLAS_READ_ONLY=1`) from the container image baked from the release commit (`atlas-world-web:local`).
+   - Write actions return HTTP 403 Forbidden; write controls (`[data-write-control]`) are hidden in the UI via CSS.
+   - Top bar `#topbarStatus` and footer `#sidebarVersion` display `Read-only · <release> · <sha7>` linking to the edit host.
 2. **Edit Host (`http://atlas-edit.joymify.local.com/` or `http://localhost:8788`):**
-   - Host process on the developer's machine running with write access enabled.
+   - Local host process running with write access enabled (`ATLAS_READ_ONLY` unset).
    - Start command: `python3 scripts/catalog_explorer_web.py --port 8788`
+   - Top bar `#topbarStatus` and footer `#sidebarVersion` display `Editable · <host>` (e.g. `Editable · atlas-edit.joymify.local.com` or `Editable · localhost:8788`).
    - **502 Bad Gateway:** If `http://atlas-edit.joymify.local.com/` returns `502 Bad Gateway`, it simply means the local host process is not running on port 8788.
+
+#### Active Write Routes & Content Editing
+- **Active Edit Host Endpoints:**
+  - `/api/map-builder/*`: Proxy to local Map Builder service (`atelier/map-builder/server.mjs` on port 6016) with its own undo system.
+  - `/api/review-queue/asset-verdicts`: Submits asset review marks to `content/review-queue.json`.
+  - `/api/review-queue/work-orders`: Saves draft work orders to `content/review-queue.json`.
+- **Legacy Inline Writes & Studio Snapshots Retired:** Legacy inline studio write routes and `build/studio_snapshots/*` have been removed.
+- **Direct File Edits & Scale Clamp Verification:** Content edits by developers and autonomous agents happen directly on disk files (`content/studio/*.json`, `content/maps/*.json`, `contracts/content/mobs.json`). All edits are strictly gated by `python3 scripts/validate_studio_hierarchy.py --check` in Gate 1 (`scripts/precheck.sh`), which validates node hierarchy and enforces physical clamps:
+  - Boss height (`boss_scale_law.min_height_meters` and boss mobs `heightM`): `[7.35, 40.0]` meters (`boss_height_and_scale` scales `visualScale` accordingly).
+  - Road corridor widths (`content/maps/freja-south-gate.json`): `prontera_south_highway` width `[3.5, 12.0]` meters; `watchtower_east_spur` width `[2.5, 8.0]` meters.
+  - Structure bounds (`content/maps/freja-south-gate.json`): `freja_west_watchtower_01` coordinates `[-35.0, 35.0]` m, radius `[2.5, 7.0]` m, upper floor height `[2.2, 4.5]` m; `freja_east_crystal_cave_01` coordinates `[-35.0, 35.0]` m, radius `[2.8, 7.5]` m.
 
 #### Build & Verification Tooling
 - **Build Image:** `scripts/build-atlas-web-image.sh <commit>` builds the container image `atlas-world-web:local` for the specified git commit.
