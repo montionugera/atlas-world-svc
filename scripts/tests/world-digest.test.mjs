@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { computeWorldDigest, checkWorldDigest, WORLD_DIGEST_INPUTS }
@@ -93,6 +94,13 @@ test("scripts/precheck.sh runs check_world_digest.mjs --check as its own Gate 1 
   const sh = readFileSync(join(ROOT, "scripts/precheck.sh"), "utf8");
   assert.match(sh, /check_world_digest\.mjs["']?\s+--check/,
     "precheck.sh never calls check_world_digest.mjs --check");
-  assert.match(sh, /run_section\s+"[^"]*world digest[^"]*"\s+world_digest/i,
-    "world_digest has no run_section line — it's defined but never invoked");
+  // F-170: sections are listed in a plan (serial + parallel groups), not as
+  // literal run_section lines; ask the script for its real plan instead.
+  const plan = execFileSync("bash", [join(ROOT, "scripts/precheck.sh"), "--print-plan"],
+    { cwd: ROOT, encoding: "utf8" }).split("\n");
+  const rows = plan.filter((l) => /\|world_digest$/.test(l)).map((l) => l.split("\t")[0]);
+  assert.ok(rows.includes("serial"),
+    "world_digest is not in precheck.sh's serial plan — it's defined but never invoked");
+  assert.ok(rows.some((g) => g !== "serial"),
+    "world_digest is in no parallel group — the default (parallel) Gate 1 would never run it");
 });

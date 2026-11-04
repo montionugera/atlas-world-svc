@@ -77,20 +77,36 @@ async function ensureSharedBrowser() {
       await sleep(150);
     }
   }
-  _sharedBrowser = { port, chrome, profile, cleanup };
+  // Browser-level CDP connection: lets every launch() own an isolated browser context.
+  const info = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+  const cdp = new Cdp(info.webSocketDebuggerUrl);
+  await cdp.open();
+  _sharedBrowser = { port, chrome, profile, cleanup, cdp };
   return _sharedBrowser;
 }
 
+// Each launch() gets its OWN browser context (separate cookies/localStorage/cache), so concurrent
+// tabs of one Chrome cannot see each other's persisted app state; kill() disposes the context.
+async function openIsolatedPage(browser) {
+  const { browserContextId } = await browser.cdp.send('Target.createBrowserContext', {}, 5000);
+  const { targetId } = await browser.cdp.send('Target.createTarget', { url: 'about:blank', browserContextId }, 5000);
+  return { browserContextId, page: { id: targetId, webSocketDebuggerUrl: `ws://127.0.0.1:${browser.port}/devtools/page/${targetId}` } };
+}
+export function closeSharedBrowser() {
+  const b = _sharedBrowser; _sharedBrowser = null;
+  if (!b) return;
+  try { b.cdp.ws.close(); } catch {}
+  try { b.cleanup(); } catch {}
+}
 export async function launch({ w, h, dpr = 1, mobile = false, touch = false, url }) {
   let browser = await ensureSharedBrowser();
-  let page;
+  let page, browserContextId;
   try {
-    page = await (await fetch(`http://127.0.0.1:${browser.port}/json/new?about:blank`, { method: 'PUT', signal: AbortSignal.timeout(5000) })).json();
+    ({ page, browserContextId } = await openIsolatedPage(browser));
   } catch {
-    try { browser.cleanup(); } catch {}
-    _sharedBrowser = null;
+    closeSharedBrowser();
     browser = await ensureSharedBrowser();
-    page = await (await fetch(`http://127.0.0.1:${browser.port}/json/new?about:blank`, { method: 'PUT', signal: AbortSignal.timeout(5000) })).json();
+    ({ page, browserContextId } = await openIsolatedPage(browser));
   }
   const cdp = new Cdp(page.webSocketDebuggerUrl);
   await cdp.open();
@@ -102,33 +118,46 @@ export async function launch({ w, h, dpr = 1, mobile = false, touch = false, url
   if (touch) { await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }); }
   if (url && url !== 'about:blank') {
     await cdp.send('Page.navigate', { url });
-    for (let i = 0; i < 80; i++) {
-      await sleep(150);
-      const ok = await cdp.eval(`!!document.getElementById('dedicatedWorldAtlasSvg') && typeof zoomStudioMap==='function'`, 3000).catch(() => false);
-      if (ok) break;
-    }
+    // condition wait (not a fixed sleep): the atlas svg and its zoom API exist
+    await waitFor(cdp, `!!document.getElementById('dedicatedWorldAtlasSvg') && typeof zoomStudioMap==='function'`, 15000);
   }
-  await sleep(150);
   cdp.kill = async () => {
-    try { await cdp.eval(`try{localStorage.clear()}catch(_e){}`, 1000); } catch {}
     try { cdp?.ws?.close(); } catch {}
-    await fetch(`http://127.0.0.1:${browser.port}/json/close/${page.id}`, { signal: AbortSignal.timeout(3000) }).catch(() => {});
+    await browser.cdp.send('Target.disposeBrowserContext', { browserContextId }, 3000).catch(() => {});
   };
   cdp.shot = async (path) => { const r = await cdp.send('Page.captureScreenshot', { format: 'png' }); writeFileSync(path, Buffer.from(r.data, 'base64')); };
   return cdp;
 }
+// In-page condition poll (30 ms timer, bounded). Resolves true when `expr` is truthy, false on expiry; it never throws on
+// a timeout, so the caller's assertion still reads the real state and FAILS if the condition was not reached.
+export async function waitFor(c, expr, timeoutMs = 8000) {
+  const body = `new Promise(res=>{const t0=performance.now(); const f=()=>{let v=false; try{v=!!(${expr})}catch(_e){} if(v) res(true); else if(performance.now()-t0>${timeoutMs}) res(false); else setTimeout(f,30)}; f()})`;
+  for (let i = 0; i < 3; i++) {
+    try { return await c.eval(body, timeoutMs + 5000); }
+    catch (e) { if (!/Execution context cleared|Cannot find context/.test(e.message)) return false; await sleep(100); } // navigation in flight: retry
+  }
+  return false;
+}
+// Layout settled: the rects of `sel` (default: body) identical for 3 consecutive 40 ms samples (bounded 3 s).
+export const settle = (c, sel = 'body') => waitFor(c, `(()=>{const s=JSON.stringify([...document.querySelectorAll(${JSON.stringify(sel)})].map(e=>{const r=e.getBoundingClientRect();return [r.left,r.top,r.width,r.height]})); const w=(window.__aSet=window.__aSet||{s:'',n:0,t:0}); const now=performance.now(); if(now-w.t<35) return w.n>=3; w.t=now; if(w.s===s) w.n++; else {w.s=s; w.n=0} return w.n>=3})()`, 3000);
+// Navigate/reload and wait for the NEW document: loadEventFired, then the atlas API is present (bounded, never throws).
+export async function navigate(c, url, reload = false) {
+  const loaded = new Promise(res => { const t = setTimeout(() => res(false), 20000); t.unref?.(); const f = m => { if (m.method === 'Page.loadEventFired') { clearTimeout(t); c.ls = c.ls.filter(x => x !== f); res(true); } }; c.ls.push(f); });
+  await (reload ? c.send('Page.reload') : c.send('Page.navigate', { url }));
+  await loaded;
+  return waitFor(c, `!!document.getElementById('dedicatedWorldAtlasSvg') && typeof zoomStudioMap==='function'`, 15000);
+}
 export async function tap(c, x, y) {
   await c.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }] });
-  await sleep(40);
   await c.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await sleep(350);
+  await settle(c); // handlers ran and layout is stable; callers waitFor the state their assertion needs
 }
 export async function touchSeq(c, pts0, pts1, steps = 8, hold = 0) {
   // pts: arrays of {x,y}; interpolates each finger linearly
   const mk = (t) => pts0.map((p, i) => ({ x: p.x + (pts1[i].x - p.x) * t, y: p.y + (pts1[i].y - p.y) * t, id: i + 1 }));
   await c.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: mk(0) });
-  for (let i = 1; i <= steps; i++) { await c.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: mk(i / steps) }); await sleep(25); }
+  for (let i = 1; i <= steps; i++) await c.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: mk(i / steps) });
   if (hold) await sleep(hold);
   await c.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await sleep(300);
+  await settle(c);
 }

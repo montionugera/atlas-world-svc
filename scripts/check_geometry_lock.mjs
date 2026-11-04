@@ -40,7 +40,9 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 
 import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { availableParallelism } from "node:os";
 import { loadSpine, buildTree, gridIntersectionArea, SPINE_CELL_KM, SPINE_CELL_U } from "./lib/spine.mjs";
+import { computePairAreas } from "./lib/geometry-lock-worker.mjs";
 
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // Exported so scripts/tests/geometry-exact.test.mjs and
@@ -141,12 +143,12 @@ export function computeGeometryLock({ repoRoot }) {
 // and reports every disagreement — version, generator, nodesHash, and each
 // pair's area, both directions (locked-but-gone and built-but-unlocked), same
 // three-way shape as check_render_lock.mjs's drift/missing/extra.
-export function checkGeometryLock({ repoRoot, write = false }) {
+export function checkGeometryLock({ repoRoot, write = false, computed: provided }) {
   const problem = spineRootProblem({ repoRoot });
   if (problem) return { ok: false, drifted: problem.messages, skip: problem.skip };
 
   const lockPath = join(repoRoot, LOCK_REL);
-  const computed = computeGeometryLock({ repoRoot });
+  const computed = provided ?? computeGeometryLock({ repoRoot });
 
   if (write) {
     mkdirSync(dirname(lockPath), { recursive: true });
@@ -209,7 +211,7 @@ export function checkGeometryLock({ repoRoot, write = false }) {
   return { ok: drifted.length === 0, drifted, skip: false };
 }
 
-function main() {
+async function main() {
   const argv = process.argv.slice(2);
   let mode = "check";
   let root = DEFAULT_ROOT;
@@ -232,7 +234,21 @@ function main() {
     }
   }
 
-  const { ok, drifted, skip } = checkGeometryLock({ repoRoot: root, write: mode === "write" });
+  const problem = spineRootProblem({ repoRoot: root });
+  let computed;
+  if (!problem) {
+    const pairs = collectSiblingPairs({ repoRoot: root });
+    const configured = Number(process.env.GEOMETRY_LOCK_WORKERS);
+    const limit = Number.isInteger(configured) && configured > 0 ? configured : 6;
+    const workers = Math.max(1, Math.min(availableParallelism() - 1, limit, 6));
+    const values = await computePairAreas(pairs, workers);
+    const areas = {};
+    pairs.forEach((pair, index) => { areas[pair.key] = values[index]; });
+    computed = { version: 1, generator: GENERATOR, nodesHash: hashNodesDir({ repoRoot: root }), pairs: areas };
+  }
+  const { ok, drifted, skip } = problem
+    ? { ok: false, drifted: problem.messages, skip: problem.skip }
+    : checkGeometryLock({ repoRoot: root, write: mode === "write", computed });
 
   // A bad ROOT (missing content/spine/) is misuse, not drift — exit 2, same
   // as --repo-root with no value above, and refuses --write too (fix round 1
@@ -255,4 +271,4 @@ function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
-  main();
+  main().catch((error) => { console.error(error); process.exitCode = 1; });

@@ -1,11 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const EVIDENCE_PATH = path.join(ROOT, '.claude/refined_backlog/F-169-simplify-atlas-web-one-read-only-page-ag/route-evidence.md');
+// Release cleanup moves a shipped feature folder into _archive/<version>/, so
+// look in the live backlog first, then in any archived release.
+const F169 = 'F-169-simplify-atlas-web-one-read-only-page-ag/route-evidence.md';
+const BACKLOG = path.join(ROOT, '.claude/refined_backlog');
+const ARCHIVE = path.join(BACKLOG, '_archive');
+const EVIDENCE_PATH = [path.join(BACKLOG, F169),
+  ...(existsSync(ARCHIVE) ? readdirSync(ARCHIVE).sort().map((v) => path.join(ARCHIVE, v, F169)) : [])]
+  .find((p) => existsSync(p)) ?? path.join(BACKLOG, F169);
 
 test('route-evidence.md exists and documents all 14 write routes with explicit dispositions', () => {
   assert.ok(existsSync(EVIDENCE_PATH), 'route-evidence.md must exist in the backlog directory');

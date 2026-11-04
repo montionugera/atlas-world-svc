@@ -353,7 +353,7 @@ async function main() {
   await cdp.eval(PAGE_HELPERS); // re-install if render() replaced nothing global (idempotent)
 
   const result = { url: URL_ARG, simulateFix: SIMULATE_FIX, simulateBug: SIMULATE_BUG, tolerancePx: TOL, viewport: '1440x900@2x', zoomRuns: [], wheel: null, assertions: [] };
-  const tStart = Date.now(); const assert = (name, pass, detail) => { console.error(((Date.now()-tStart)/1000).toFixed(1)+"s", pass ? 'PASS' : 'FAIL', name); result.assertions.push({ name, status: pass ? 'PASS' : 'FAIL', detail }); };
+  const tStart = Date.now(); let tPrev = tStart; const timings = []; const assert = (name, pass, detail) => { const now = Date.now(); timings.push([now - tPrev, name]); tPrev = now; console.error(((Date.now()-tStart)/1000).toFixed(1)+"s", pass ? 'PASS' : 'FAIL', name); result.assertions.push({ name, status: pass ? 'PASS' : 'FAIL', detail }); };
   const skip = (name, detail) => result.assertions.push({ name, status: 'SKIP', detail });
 
   // ---------------------------------------------------------------- 1+2. drift per zoom
@@ -938,6 +938,8 @@ true;`;
   if (OUT) writeFileSync(OUT, json);
   console.log(json);
   console.error('\n' + result.assertions.map(a => `${a.status}  ${a.name}`).join('\n'));
+  for (const [ms, n] of timings) if (ms >= 1000) console.error(`[probe-timing] ${ms}ms (since previous assertion) ${n.slice(0, 80)}`);
+  console.error(`[probe-timing] total ${Date.now() - tStart}ms`);
   console.error(`\nVERDICT: ${result.verdict} (${result.failed} failed)`);
   cdp.ws.close();
   cleanup();

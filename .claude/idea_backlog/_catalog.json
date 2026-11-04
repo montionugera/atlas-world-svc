@@ -1563,5 +1563,23 @@
     "title": "Simplify Atlas web: one read-only page, agents edit files, retire the Mac edit host except Map Builder",
     "created_at": "2026-11-02T01:25:46.364130+00:00",
     "promoted_to": "F-169"
+  },
+  {
+    "id": "I-250",
+    "title": "Faster ship gates: selective, cached, parallel Gate 1 and faster Gate 2",
+    "created_at": "2026-11-03T17:49:21.009380+00:00",
+    "promoted_to": "F-170"
+  },
+  {
+    "id": "I-251",
+    "title": "Gate 1 parallel follow-ups from F-170 review: test-seam guard, kill_tree STOP-walk race, swap-aware memory guard (6 GB floor kept every real run serial)",
+    "created_at": "2026-11-03T20:49:26.115461+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-252",
+    "title": "mapforge promote.test.mjs writes a fixed tmpdir filename (outside-the-draft.json) and flakes when two runs overlap",
+    "created_at": "2026-11-03T20:49:26.697812+00:00",
+    "promoted_to": null
   }
 ]
