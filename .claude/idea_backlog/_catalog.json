@@ -1574,7 +1574,7 @@
     "id": "I-251",
     "title": "Gate 1 parallel follow-ups from F-170 review: test-seam guard, kill_tree STOP-walk race, swap-aware memory guard (6 GB floor kept every real run serial)",
     "created_at": "2026-11-03T20:49:26.115461+00:00",
-    "promoted_to": null
+    "promoted_to": "F-171"
   },
   {
     "id": "I-252",

@@ -218,16 +218,18 @@ GROUP_NAME=""
 GROUP_RES=""      # set inside a parallel group: file receiving "RESULT<TAB>name" lines
 SKIP_REASON=""
 
-# descendants <pid>: every transitive child pid (pgrep -P works on macOS and Linux).
-descendants() { local c; for c in $(pgrep -P "$1" 2>/dev/null); do echo "$c"; descendants "$c"; done; }
-# kill_tree <pid>...: snapshot each pid's whole descendant tree first (so re-parenting
-# cannot hide it), TERM everything, then KILL what is left. Always returns 0.
+# stop_walk <pid>: SIGSTOP the pid BEFORE listing its children, then recurse, printing every
+# pid it froze. A frozen process cannot fork, so nothing spawned mid-walk escapes the list
+# (a plain snapshot-then-TERM missed children forked between the two; I-251/F-171).
+stop_walk() { local c; kill -STOP "$1" 2>/dev/null || return 0; echo "$1"; for c in $(pgrep -P "$1" 2>/dev/null); do stop_walk "$c"; done; }
+# kill_tree <pid>...: freeze each whole tree, TERM it, CONT it (so the TERM is delivered and
+# nothing is left stopped), then KILL what is left. Always returns 0.
 kill_tree() {
   local all="" p
-  for p in "$@"; do [ -n "$p" ] || continue; all="$all $p $(descendants "$p")"; done
+  for p in "$@"; do [ -n "$p" ] || continue; all="$all $(stop_walk "$p")"; done
   [ -n "${all// /}" ] || return 0
   # shellcheck disable=SC2086
-  kill $all 2>/dev/null; sleep 1; kill -9 $all 2>/dev/null
+  { kill -TERM $all; kill -CONT $all; } 2>/dev/null; sleep 1; kill -9 $all 2>/dev/null
   return 0
 }
 
@@ -660,7 +662,7 @@ group_entries() { eval "printf '%s\\n' \"\${GROUP_$1[@]}\""; }
 if [ "$PRINT_PLAN" -eq 1 ]; then
   for e in "${SERIAL_PLAN[@]}"; do printf 'serial\t%s\n' "$e"; done
   for g in $GROUP_ORDER; do group_entries "$g" | while IFS= read -r e; do printf '%s\t%s\n' "$g" "$e"; done; done
-  exit 0
+  exit $((TEST_MODE ? 3 : 0)) # test mode never exits 0 (psrw reads exit codes)
 fi
 
 run_entry() { run_section "${1%%|*}" "${1#*|}"; }
@@ -720,7 +722,10 @@ available_gb() {
 }
 # 0 = enough memory to run the groups in parallel. Unknown or low -> 1 (serial is the safe mode).
 parallel_memory_ok() {
-  local have min="${ATLAS_PARALLEL_MIN_FREE_GB:-6}"
+  # Default floor 3 GB = 1.5 x the 2.0 GB drop in available memory measured during a full
+  # parallel Gate 1 on the 36 GB dev Mac (F-171 research.md; swap did not grow). The old 6 GB
+  # guess kept every real run serial (readings 4.1-5.2 GB).
+  local have min="${ATLAS_PARALLEL_MIN_FREE_GB:-3}"
   have=$(available_gb)
   case "$have" in
     ''|*[!0-9.]*) echo "🐢 available memory unknown — running serially (safe mode)"; return 1 ;;
@@ -762,6 +767,12 @@ for i in "${!SECTION_NAMES[@]}"; do
 done
 echo "======================================================================"
 echo "[gate-timing] total ${SECONDS}s"
+if [ "$TEST_MODE" -eq 1 ]; then
+  # Test seam: psrw decides Gate 1 by exit code only, so a leaked ATLAS_PRECHECK_TEST_MODE must
+  # never exit 0 or print the real PASS line. A passing stub run exits 3.
+  if [ "$EXIT" -eq 0 ]; then echo "RESULT: TEST MODE PASS — not a Gate 1 result"; exit 3; fi
+  echo "RESULT: TEST MODE FAILURES — not a Gate 1 result"; exit 1
+fi
 if [ "$EXIT" -eq 0 ]; then
   echo "RESULT: GATE 1 PASS — feature is ship-clean"
 else
