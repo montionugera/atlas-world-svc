@@ -66,8 +66,14 @@ jobs:
       # consistent with committed content/generated/asset-keys.json and the
       # files on disk. Stage-0: unmapped keys are warnings, broken paths /
       # missing licenses are hard failures.
+      # F-174: CI cannot reach the local Asset Studio, so pull-only entries are SKIPPED here, loudly.
+      # Local Gate 1 refuses ATLAS_SKIP_STUDIO (scripts/precheck.sh pipeline_char_section).
       - name: Asset manifest drift-gate (keys ↔ manifest ↔ files ↔ license)
-        run: node scripts/check_asset_manifest.mjs
+        env:
+          ATLAS_SKIP_STUDIO: "1"
+        run: |
+          echo "::warning title=F-174 pull-only checks skipped::ATLAS_SKIP_STUDIO=1 in CI: pull-only entries (the sergeant) are NOT verified here; local Gate 1 verifies them against Asset Studio."
+          node scripts/check_asset_manifest.mjs
 
       # Content gate (F-005): character sheets must validate against schema
       # and stay linked to real asset keys / manifest tiers. Coverage gaps

@@ -19,6 +19,7 @@ const readJson = (p) => JSON.parse(readFileSync(resolve(ROOT, p), "utf8"));
 // Load real content files
 const worldHistory = readJson("content/studio/world_history_and_concept.json");
 const atlas = readJson("content/studio/t_shaped_world_atlas.json");
+const gameSystems = readJson("content/studio/game-systems.json");
 const continents = [
   readJson("content/studio/continents/continent-01-hearthbloom-basin.json"),
   readJson("content/studio/continents/continent-02-clockwork-steppe.json"),
@@ -493,7 +494,16 @@ test("lore.mjs panel mounts DOM, renders stat chips without raw HTML tags, and h
     }
     appendChild(child) {
       this.children.push(child);
+      if (child && typeof child === "object") child.parentNode = this;
       return child;
+    }
+    replaceWith(node) {
+      const p = this.parentNode;
+      const i = p ? p.children.indexOf(this) : -1;
+      if (i >= 0) {
+        p.children[i] = node;
+        node.parentNode = p;
+      }
     }
     append(...nodes) {
       for (const n of nodes) {
@@ -574,6 +584,7 @@ test("lore.mjs panel mounts DOM, renders stat chips without raw HTML tags, and h
       "/content/studio/continents/continent-02-clockwork-steppe.json": continents[1],
       "/content/studio/continents/continent-03-shattered-halo.json": continents[2],
       "/content/concept-art/index.json": conceptArtIndex,
+      "/content/studio/game-systems.json": gameSystems,
     };
     if (url in map) {
       return { ok: true, status: 200, json: async () => map[url] };
@@ -589,7 +600,7 @@ test("lore.mjs panel mounts DOM, renders stat chips without raw HTML tags, and h
   assert.equal(panelEl.querySelector(".lore-banner--error"), null, "must not show error banner on chapter=1.1");
 
   const statChips = panelEl.querySelectorAll(".lore-stat-chip");
-  assert.equal(statChips.length, 6, "must render 6 stat chips");
+  assert.equal(statChips.length, 7, "must render 7 stat chips (F-174 adds Game Systems)");
   for (const chip of statChips) {
     assert.ok(!chip.textContent.includes("<strong>"), `stat chip must not render raw <strong> tag: ${chip.textContent}`);
     assert.ok(chip.querySelector("strong"), "stat chip must contain a child <strong> DOM element");
@@ -600,6 +611,30 @@ test("lore.mjs panel mounts DOM, renders stat chips without raw HTML tags, and h
   const dwarfCard = panelEl.querySelector("#lore-ref-dwarf");
   assert.ok(dwarfCard, "must render #lore-ref-dwarf anchor on race card");
   assert.equal(dwarfCard.scrolledIntoView, true, "show({ ref: 'dwarf' }) must scroll to referenced lore card");
+
+  // F-174: the Game Systems card is a deep-link target and its strip frame is keyboard-reachable.
+  await globalThis.window.ATLAS_PANELS.show("lore", { ref: "system-combat-stances" });
+  const sysCard = panelEl.querySelector("#lore-ref-system-combat-stances");
+  assert.ok(sysCard, "must render #lore-ref-system-combat-stances");
+  assert.equal(sysCard.scrolledIntoView, true, "show({ ref: 'system-combat-stances' }) must scroll to the card");
+  const strip = panelEl.querySelector(".lore-strip");
+  assert.ok(strip, "strip figure must render");
+  assert.equal(strip.getAttribute("role"), "region");
+  assert.match(strip.getAttribute("aria-label"), /scrolls sideways/);
+
+  // F-174 review I1: a missing strip (release image) swaps the WHOLE figure for the fallback line.
+  const stripImg = strip.querySelector("img");
+  stripImg.listeners.error[0]();
+  assert.equal(panelEl.querySelector(".lore-strip"), null, "img error must remove the strip figure");
+  assert.equal(panelEl.querySelector(".lore-strip-caps"), null, "img error must not leave an orphan caption row");
+  assert.match(sysCard.textContent, /private render and is not part of this build/);
+
+  // F-174 review I1: a failed game-systems fetch stays inside the chapter, never the panel banner.
+  const { loadGameSystems, buildSystemsSection } = await import("../js/panels/lore.mjs");
+  assert.deepEqual(await loadGameSystems(async () => ({ ok: false, status: 404, json: async () => ({}) })), { gameSystems: { systems: [] }, failed: true });
+  assert.equal((await loadGameSystems(async () => { throw new Error("offline"); })).failed, true);
+  assert.equal((await loadGameSystems(async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError("bad json"); } }))).failed, true);
+  assert.match(buildSystemsSection([], true).textContent, /Game systems archive unavailable/);
 
   // Item 1: Deep links for beast_animal_brute, mystery-*, and race-* resolve and scroll to specific DOM cards/steps
   dwarfCard.scrolledIntoView = false;
@@ -746,3 +781,61 @@ test("Mysteries keep teasing without revealing hidden answers", () => {
   }
 });
 
+
+// --- F-174 Game Systems chapter ----------------------------------------------
+
+test("Game Systems: chapter exists, is last, and refs route to it", async () => {
+  assert.equal(CHAPTERS.at(-1).id, "systems");
+  const { chapterForRef } = await import("../js/panels/lore-refs.mjs");
+  assert.equal(chapterForRef("system-combat-stances"), "systems");
+  assert.equal(chapterForRef("god-x"), "gods");
+});
+
+test("Game Systems: F-174 page is built from content/studio/game-systems.json", () => {
+  const model = buildLoreModel({ worldHistory, atlas, continents, conceptArtIndex, gameSystems });
+  const page = model.systems.find((s) => s.id === "system-combat-stances");
+  assert.ok(page, "combat stances page missing");
+  assert.equal(page.featureId, "F-174");
+  assert.ok(page.sections.length >= 3);
+  assert.equal(page.strip.frames.length, 9);
+  assert.equal(model.stats.systemCount, model.systems.length);
+});
+
+test("Game Systems: the flinch limit does not claim it plays on monsters (F-174 final review)", () => {
+  const page = gameSystems.systems.find((s) => s.id === "system-combat-stances");
+  const text = page.limits.join(" ");
+  assert.ok(!/flinch plays on monsters/i.test(text), "false claim: flinch on monsters");
+  assert.ok(/flinch/i.test(text) && /preview/i.test(text), "limit must say where the flinch is seen");
+});
+
+test("Game Systems: captions use player words, never internal state names", () => {
+  const page = gameSystems.systems.find((s) => s.id === "system-combat-stances");
+  assert.deepEqual(page.strip.frames, ["Idle", "Walk", "Run", "Guard", "Attack", "Block", "Hit", "Fallen", "Attack (axe)"]);
+  assert.ok(!/combat_idle/.test(JSON.stringify(page)));
+});
+
+test("Game Systems: the strip points into the gitignored render cache and carries a fallback for builds without it", () => {
+  const page = gameSystems.systems.find((s) => s.id === "system-combat-stances");
+  // Pull-only (F-174): the strip renders a private asset and is never committed, so the release
+  // image (git archive) never has it. The page must say where to see it instead of a broken image.
+  assert.match(page.strip.src, /^\/game-client\/studio-cache\/renders\/[0-9a-f]{64}\.strip\.png$/);
+  assert.match(page.strip.fallback, /atlas-edit\.joymify\.local\.com\/\?tab=lore&chapter=systems&ref=system-combat-stances/);
+  const model = buildLoreModel({ worldHistory, atlas, continents, conceptArtIndex, gameSystems });
+  assert.equal(model.systems.find((s) => s.id === page.id).strip.fallback, page.strip.fallback);
+});
+
+test("Game Systems: badly shaped entries degrade field by field, never throw (review I2)", () => {
+  const bad = { systems: [{ id: "system-x", title: "X", sections: "oops", limits: "some text", strip: { src: 1 } }, { id: "system-y", title: "Y", sections: [null, { heading: "H" }], limits: [3, "ok"] }] };
+  const model = buildLoreModel({ worldHistory, atlas, continents, conceptArtIndex, gameSystems: bad });
+  assert.deepEqual(model.systems[0].sections, []);
+  assert.deepEqual(model.systems[0].limits, []);
+  assert.equal(model.systems[0].strip, null);
+  assert.deepEqual(model.systems[1].sections, [{ heading: "H", body: "" }]);
+  assert.deepEqual(model.systems[1].limits, ["ok"]);
+});
+
+test("Game Systems: absent input degrades to an empty chapter, never throws", () => {
+  const model = buildLoreModel({ worldHistory, atlas, continents, conceptArtIndex });
+  assert.deepEqual(model.systems, []);
+  assert.equal(buildLoreModel(null).systems.length, 0);
+});

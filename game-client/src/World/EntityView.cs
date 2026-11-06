@@ -75,14 +75,21 @@ namespace AtlasWorld.Client.World
         {
             _kind = kind;
             _typeId = typeId;
-            _visualScale = ResolveChibiScaleFactor(kind, typeId);
+            // F-174: pipeline characters are authored at true size (validate kind pipelineCharacter,
+            // 0.95-1.15 u). The chibi factors were tuned for 1.6-2.0 u Kenney/KayKit bodies, and the
+            // 0.68 NPC factor would shrink the 1.05 u sergeant to ~0.71 m.
+            _visualScale = AssetRegistry.Instance?.ResolveKind(typeId) == "pipelineCharacter"
+                ? 1.0f
+                : ResolveChibiScaleFactor(kind, typeId);
             _root = BuildVisualRoot(kind, typeId);
 
             // Same seam as the visual node itself: ask the registry for any per-entry clip
             // overrides for this type id. Null/empty when there is no manifest entry (or no
             // "anims" object on it) — the controller then just uses the shared Kenney default.
-            IReadOnlyDictionary<string, string>? animOverrides = AssetRegistry.Instance?.ResolveAnimOverrides(typeId);
-            _animController = new AnimationController(_root, animOverrides);
+            AssetRegistry? registry = AssetRegistry.Instance;
+            IReadOnlyDictionary<string, string>? animOverrides = registry?.ResolveAnimOverrides(typeId);
+            IReadOnlyDictionary<string, IReadOnlyList<string>>? animVariants = registry?.ResolveAnimVariants(typeId);
+            _animController = new AnimationController(_root, animOverrides, animVariants);
 
             // Rediscover the mutable capsule-tier parts by name. They exist on the procedural
             // capsule (player/npc/mob carry an HpBar); bespoke/seed scenes may omit them, in
@@ -367,12 +374,33 @@ namespace AtlasWorld.Client.World
             _root.Rotation = new Vector3(0f, -headingRadians, 0f);
         }
 
+        public AnimationController Animation => _animController;
+
         /// <summary>
         /// Drive this frame's animation from the entity's velocity. Alive/attacking state is
         /// read from the cache kept up to date by <see cref="ApplyLife"/> — this method only
         /// needs the per-frame velocity, which lives with pose (interpolator), not life.
+        /// <c>_isAttacking</c> is the server's target_id != 0 (EntityManager). Combat-mapped
+        /// entries (F-174) read it as a stance (InCombat); the server sends no attack flag for
+        /// remote entities yet (I-255). Legacy entries keep reading it as "attacking".
         /// </summary>
-        public void UpdateAnimation(Vector3 velocity) => _animController.Update(Alive, velocity, _isAttacking);
+        public void UpdateAnimation(Vector3 velocity)
+        {
+            if (_animController.IsCombatMapped)
+            {
+                _animController.InCombat = _isAttacking;
+                _animController.Update(Alive, velocity);
+                return;
+            }
+            _animController.Update(Alive, velocity, _isAttacking);
+        }
+
+        /// <summary>Server GameEvent.Hit landed on this entity. Plays hit on combat-mapped entries only.</summary>
+        public void NotifyHit()
+        {
+            if (_animController.IsCombatMapped)
+                _animController.Hit();
+        }
 
         /// <summary>Apply a life entity's VISUAL state (Player / Mob / NPC) — no pose here.</summary>
         public void ApplyLife(WorldLife e)

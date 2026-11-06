@@ -68,6 +68,11 @@ function makeResourceLoader(glbPath) {
   };
 }
 
+/** Every anims key a kind accepts: requiredStates, then optionalStates. */
+export function stateKeysForKind(kindConfig) {
+  return [...kindConfig.requiredStates, ...(kindConfig.optionalStates ?? [])];
+}
+
 /**
  * Loads forge.config.json plus derived paths, relative to configDir (never
  * cwd) -- defaults to the directory this file lives in.
@@ -127,7 +132,9 @@ function checkSkeleton(rigReferencePaths, joints, warnings) {
     }
     references.push({ path: refPath, ...loadRigReference(refPath) });
   }
-  const matched = references.some((ref) => jointArraysEqual(joints, ref.joints));
+  const matched = references.some((ref) =>
+    jointArraysEqual(joints, ref.joints),
+  );
   return { references, matched };
 }
 
@@ -154,7 +161,9 @@ function weightSumTolerance(accessor) {
 /** The reference with the smallest symmetric joint difference (first wins ties). */
 function closestReference(references, joints) {
   return references.reduce((best, ref) =>
-    jointSetDistance(joints, ref.joints) < jointSetDistance(joints, best.joints) ? ref : best,
+    jointSetDistance(joints, ref.joints) < jointSetDistance(joints, best.joints)
+      ? ref
+      : best,
   );
 }
 
@@ -167,7 +176,9 @@ function engagedExtrasReference(references, joints) {
   const closest = closestReference(references, joints);
   if (!closest.allowExtras) return null;
   const hasIntent = joints.some((n) => /^(sec_|prop_)/.test(n));
-  return hasIntent || closest.joints.every((n) => joints.includes(n)) ? closest : null;
+  return hasIntent || closest.joints.every((n) => joints.includes(n))
+    ? closest
+    : null;
 }
 
 /**
@@ -182,7 +193,11 @@ function checkSkeletonExtras(ref, joints, parents) {
 
   // S1: core present, every core parent link unchanged.
   const missing = ref.joints.filter((n) => !jointSet.has(n));
-  if (missing.length) violations.push(["skeleton-core", `missing core joints: ${missing.join(", ")}`]);
+  if (missing.length)
+    violations.push([
+      "skeleton-core",
+      `missing core joints: ${missing.join(", ")}`,
+    ]);
   for (const name of ref.joints) {
     const expected = ref.parents?.[name];
     if (!jointSet.has(name) || expected === undefined) continue;
@@ -201,32 +216,57 @@ function checkSkeletonExtras(ref, joints, parents) {
   const propParents = new Set(ref.propParents ?? []);
   for (const name of extras) {
     const parent = parents[name] ?? null;
+    if (Object.hasOwn(ref.fixedExtras ?? {}, name)) {
+      const expected = ref.fixedExtras[name];
+      if (parent !== expected) {
+        violations.push([
+          "skeleton-topology",
+          `${name} parent is ${parent ?? "none"}, expected ${expected}`,
+        ]);
+      }
+      continue;
+    }
     const sec = SEC_BONE_RE.exec(name);
     if (sec) {
       const k = Number(sec[5]);
       if (k === 1) {
         const allowed = sec[1] === "sleeve" ? sleeveParents : secParents;
         if (!allowed.has(parent)) {
-          violations.push(["skeleton-topology", `${name} parent ${parent ?? "none"} not in [${[...allowed].join(", ")}]`]);
+          violations.push([
+            "skeleton-topology",
+            `${name} parent ${parent ?? "none"} not in [${[...allowed].join(", ")}]`,
+          ]);
         }
       } else {
         const expected = name.replace(/_[1-3]$/, `_${k - 1}`);
         if (parent !== expected) {
-          violations.push(["skeleton-topology", `${name} parent is ${parent ?? "none"}, expected ${expected}`]);
+          violations.push([
+            "skeleton-topology",
+            `${name} parent is ${parent ?? "none"}, expected ${expected}`,
+          ]);
         }
       }
     } else if (PROP_BONE_RE.test(name)) {
       if (!propParents.has(parent)) {
-        violations.push(["skeleton-topology", `${name} parent ${parent ?? "none"} not in [${[...propParents].join(", ")}]`]);
+        violations.push([
+          "skeleton-topology",
+          `${name} parent ${parent ?? "none"} not in [${[...propParents].join(", ")}]`,
+        ]);
       }
     } else {
-      violations.push(["skeleton-grammar", `${name} matches neither sec_<kind>_<side><chain>_<1-3> nor prop_<kind>_<side>`]);
+      violations.push([
+        "skeleton-grammar",
+        `${name} matches neither sec_<kind>_<side><chain>_<1-3> nor prop_<kind>_<side>`,
+      ]);
     }
   }
 
   // S4 cap.
   if (extras.length > EXTRA_BONE_CAP) {
-    violations.push(["skeleton-cap", `${extras.length} extra bones > ${EXTRA_BONE_CAP} cap`]);
+    violations.push([
+      "skeleton-cap",
+      `${extras.length} extra bones > ${EXTRA_BONE_CAP} cap`,
+    ]);
   }
   return violations;
 }
@@ -249,18 +289,29 @@ function checkSkinWeights(doc) {
     for (const prim of mesh.listPrimitives()) {
       if (seen.has(prim)) continue;
       seen.add(prim);
-      const weights1 = prim.getAttribute("JOINTS_1") ? prim.getAttribute("WEIGHTS_1") : null;
+      const weights1 = prim.getAttribute("JOINTS_1")
+        ? prim.getAttribute("WEIGHTS_1")
+        : null;
       if (prim.getAttribute("JOINTS_1")) {
-        warnings.push(`skin-weights: ${mesh.getName()} has JOINTS_1 (>4 influences not checked)`);
-        if (!weights1) warnings.push(`skin-weights: ${mesh.getName()} has JOINTS_1 but no WEIGHTS_1`);
+        warnings.push(
+          `skin-weights: ${mesh.getName()} has JOINTS_1 (>4 influences not checked)`,
+        );
+        if (!weights1)
+          warnings.push(
+            `skin-weights: ${mesh.getName()} has JOINTS_1 but no WEIGHTS_1`,
+          );
       }
       const weights = prim.getAttribute("WEIGHTS_0");
       if (!weights) {
-        violations.push(`${mesh.getName()}: skinned primitive has no WEIGHTS_0`);
+        violations.push(
+          `${mesh.getName()}: skinned primitive has no WEIGHTS_0`,
+        );
         continue;
       }
       // Rounding error adds up across both weight sets.
-      const tolerance = weightSumTolerance(weights) + (weights1 ? weightSumTolerance(weights1) : 0);
+      const tolerance =
+        weightSumTolerance(weights) +
+        (weights1 ? weightSumTolerance(weights1) : 0);
       const buf1 = [0, 0, 0, 0];
       let zero = 0;
       let off = 0;
@@ -274,8 +325,14 @@ function checkSkinWeights(doc) {
         if (sum === 0) zero++;
         else if (!Number.isFinite(sum) || Math.abs(sum - 1) > tolerance) off++;
       }
-      if (zero) violations.push(`${mesh.getName()}: ${zero} vertices have all-zero weights`);
-      if (off) violations.push(`${mesh.getName()}: ${off} vertices have weights not summing to 1`);
+      if (zero)
+        violations.push(
+          `${mesh.getName()}: ${zero} vertices have all-zero weights`,
+        );
+      if (off)
+        violations.push(
+          `${mesh.getName()}: ${off} vertices have weights not summing to 1`,
+        );
     }
   }
   return { violations, warnings };
@@ -314,10 +371,17 @@ export function textureBudgetStatus(doc, budgetPx) {
  * @returns {Promise<{failures: string[], warnings: string[]}>}
  */
 export async function validateGlb(glbPath, opts = {}) {
-  const { kind, tier = "bespoke", anims = null, configDir, licenseLedger } =
-    opts;
+  const {
+    kind,
+    tier = "bespoke",
+    anims = null,
+    configDir,
+    licenseLedger,
+  } = opts;
   const config = loadConfig(configDir);
-  const kindConfig = Object.hasOwn(config.kinds, kind) ? config.kinds[kind] : null;
+  const kindConfig = Object.hasOwn(config.kinds, kind)
+    ? config.kinds[kind]
+    : null;
   if (!kindConfig) {
     throw new Error(`validateGlb: unknown kind "${kind}"`);
   }
@@ -390,41 +454,83 @@ export async function validateGlb(glbPath, opts = {}) {
     );
   }
 
-  // 4. Required animation clips, mapped via anims (if given) else defaultClipMap.
+  // 4. Animation clips: every required state, plus every optional state the
+  // map names. A value is one clip name or a list of variants (all must exist).
   const clipMap = anims ?? config.defaultClipMap;
   const clipNames = listClipNames(doc);
-  for (const state of kindConfig.requiredStates) {
-    const mappedName = clipMap[state];
-    if (!mappedName || !clipNames.includes(mappedName)) {
-      report(
-        "clips",
-        `state '${state}' -> expected clip '${mappedName}' not found (have: ${
-          clipNames.join(", ") || "none"
-        })`,
-      );
+  const optionalMapped = (kindConfig.optionalStates ?? []).filter(
+    (s) => clipMap[s] != null,
+  );
+  for (const state of [...kindConfig.requiredStates, ...optionalMapped]) {
+    const mapped = clipMap[state];
+    const names = Array.isArray(mapped) ? [...mapped] : [mapped];
+    if (names.length === 0) {
+      report("clips", `anims.${state} is empty`);
+      continue;
+    }
+    for (const mappedName of names) {
+      if (!mappedName || !clipNames.includes(mappedName)) {
+        report(
+          "clips",
+          `state '${state}' -> expected clip '${mappedName}' not found (have: ${
+            clipNames.join(", ") || "none"
+          })`,
+        );
+      }
     }
   }
 
   // 5. Skeleton: joint set must exactly match ANY reference in the list.
-  // A reference file that doesn't exist on disk (e.g. one still being
-  // authored in a parallel workstream) is skipped with a warning rather than
-  // failing the whole rule.
+  // For kinds with a shared reference list, a missing file is skipped with a
+  // warning; a kind that declares its own rigReference must have it (below).
   const joints = jointNames(doc);
+  const rigReferencePaths = Array.isArray(kindConfig.rigReference)
+    ? kindConfig.rigReference.map((p) => path.join(config.configDir, p))
+    : config.rigReferencePaths;
+  // A kind that declares its own rigReference must have it: a missing or
+  // empty file fails (never skips), or a broken checkout would pass everything.
+  let rigReferenceBroken = false;
+  if (Array.isArray(kindConfig.rigReference)) {
+    for (const refPath of rigReferencePaths) {
+      let ok = false;
+      try {
+        ok = existsSync(refPath) && loadRigReference(refPath).joints.length > 0;
+      } catch {
+        ok = false;
+      }
+      if (!ok) {
+        rigReferenceBroken = true;
+        report(
+          "skeleton",
+          `rig reference missing for kind ${kind} (${path.basename(refPath)} missing, empty or unreadable)`,
+        );
+      }
+    }
+  }
   const { references: rigReferences, matched: skeletonMatched } =
-    checkSkeleton(config.rigReferencePaths, joints, warnings);
-  const extrasRef = skeletonMatched ? null : engagedExtrasReference(rigReferences, joints);
+    rigReferenceBroken
+      ? { references: [], matched: false }
+      : checkSkeleton(rigReferencePaths, joints, warnings);
+  const extrasRef = skeletonMatched
+    ? null
+    : engagedExtrasReference(rigReferences, joints);
   if (extrasRef) {
     if (!extrasRef.parents) {
       warnings.push(
         `skeleton-core: reference ${path.basename(extrasRef.path)} has no parents map, parent checks skipped`,
       );
     }
-    for (const [rule, detail] of checkSkeletonExtras(extrasRef, joints, jointParents(doc))) {
+    for (const [rule, detail] of checkSkeletonExtras(
+      extrasRef,
+      joints,
+      jointParents(doc),
+    )) {
       report(rule, detail);
     }
     if (joints.some((n) => !extrasRef.joints.includes(n))) {
       const weightCheck = checkSkinWeights(doc);
-      for (const detail of weightCheck.violations) report("skin-weights", detail);
+      for (const detail of weightCheck.violations)
+        report("skin-weights", detail);
       warnings.push(...weightCheck.warnings);
     }
   } else if (rigReferences.length > 0 && !skeletonMatched) {
@@ -454,6 +560,11 @@ export async function validateGlb(glbPath, opts = {}) {
   const triangles = countTriangles(doc);
   if (triangles > kindConfig.maxTriangles) {
     report("triangles", `${triangles} > ${kindConfig.maxTriangles} budget`);
+  }
+
+  // 6b. Byte budget (kinds that declare one).
+  if (kindConfig.maxBytes != null && bytes.length > kindConfig.maxBytes) {
+    report("bytes", `${bytes.length} > ${kindConfig.maxBytes} budget`);
   }
 
   // 7. Texture budget. "Unreadable" (no decodable image data) is always a

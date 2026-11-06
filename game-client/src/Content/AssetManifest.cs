@@ -39,6 +39,14 @@ namespace AtlasWorld.Client.Content
         /// controller then falls back to the shared Kenney default for every state.
         /// </summary>
         public IReadOnlyDictionary<string, string> Anims { get; init; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Per-state clip variants (F-174): a manifest value may be one clip name or a list
+        /// (attack variants). <see cref="Anims"/> keeps the first variant so existing callers
+        /// are unchanged. Empty (never null) when the entry has no <c>anims</c> object.
+        /// </summary>
+        public IReadOnlyDictionary<string, IReadOnlyList<string>> AnimVariants { get; init; } =
+            new Dictionary<string, IReadOnlyList<string>>();
     }
 
     /// <summary>
@@ -185,6 +193,7 @@ namespace AtlasWorld.Client.Content
                             string tier = "";
                             string kind = "";
                             var anims = new Dictionary<string, string>();
+                            var animVariants = new Dictionary<string, IReadOnlyList<string>>();
 
                             if (entryProp.Value.ValueKind == JsonValueKind.Object)
                             {
@@ -221,7 +230,26 @@ namespace AtlasWorld.Client.Content
                                         foreach (JsonProperty animProp in field.Value.EnumerateObject())
                                         {
                                             if (animProp.Value.ValueKind == JsonValueKind.String)
-                                                anims[animProp.Name] = animProp.Value.GetString() ?? "";
+                                            {
+                                                string clip = animProp.Value.GetString() ?? "";
+                                                anims[animProp.Name] = clip;
+                                                animVariants[animProp.Name] = new[] { clip };
+                                            }
+                                            else if (animProp.Value.ValueKind == JsonValueKind.Array)
+                                            {
+                                                var list = new List<string>();
+                                                foreach (JsonElement item in animProp.Value.EnumerateArray())
+                                                {
+                                                    string? s = item.ValueKind == JsonValueKind.String ? item.GetString() : null;
+                                                    if (!string.IsNullOrEmpty(s))
+                                                        list.Add(s);
+                                                }
+                                                if (list.Count > 0)
+                                                {
+                                                    anims[animProp.Name] = list[0];
+                                                    animVariants[animProp.Name] = list;
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -236,6 +264,7 @@ namespace AtlasWorld.Client.Content
                                 Tier = tier,
                                 Kind = kind,
                                 Anims = anims,
+                                AnimVariants = animVariants,
                             };
                         }
                     }

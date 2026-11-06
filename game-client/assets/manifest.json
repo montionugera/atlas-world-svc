@@ -200,6 +200,39 @@
       "tier": "seed",
       "kind": "vfx",
       "render": "model3d"
+    },
+    "npc:lantern_hollow_watch_sergeant": {
+      "scene": "res://studio-cache/7f1c54c3707359dc12d3ed3582be1f60460f19d9fbd01930c49f406e1fbfc75f.glb",
+      "source": "Asset Studio library asset 01a1a97a-8e45-71d6-885f-459aa1cebf7f (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "kind": "pipelineCharacter",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1a97a-8e45-71d6-885f-459aa1cebf7f",
+        "tag": "p4b-11050912",
+        "sha256": "7f1c54c3707359dc12d3ed3582be1f60460f19d9fbd01930c49f406e1fbfc75f"
+      },
+      "gen": {
+        "model": "tripo",
+        "provider": "tripo",
+        "rig": "mixamo",
+        "clips": "mixamo"
+      },
+      "anims": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "attack": [
+          "attack",
+          "attack_2",
+          "attack_3"
+        ],
+        "death": "death",
+        "combat_idle": "block_idle",
+        "block": "block",
+        "hit": "hit"
+      }
     }
   }
 }

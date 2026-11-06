@@ -167,6 +167,7 @@ export const CHAPTERS = Object.freeze([
   { id: "continents", label: "Continents & Scars", icon: "🗺️", anchor: "lore-chapter-continents" },
   { id: "bosses", label: "Boss Hierarchy", icon: "⚔️", anchor: "lore-chapter-bosses" },
   { id: "mysteries", label: "Open Mysteries", icon: "🔮", anchor: "lore-chapter-mysteries" },
+  { id: "systems", label: "Game Systems", icon: "🛡️", anchor: "lore-chapter-systems" },
 ]);
 
 /**
@@ -188,11 +189,12 @@ export function buildLoreModel(inputs) {
       continents: [],
       bossLadder: { strictOrderLaw: "", tiers: [], chains: [] },
       mysteries: { summary: "", items: [] },
-      stats: { epochCount: 0, godCount: 0, raceCount: 0, continentCount: 0, bossChainCount: 0, mysteryCount: 0 },
+      systems: [],
+      stats: { epochCount: 0, godCount: 0, raceCount: 0, continentCount: 0, bossChainCount: 0, mysteryCount: 0, systemCount: 0 },
     };
   }
 
-  const { worldHistory = {}, atlas = {}, continents = [], conceptArtIndex = null } = inputs;
+  const { worldHistory = {}, atlas = {}, continents = [], conceptArtIndex = null, gameSystems = null } = inputs;
   const rawContinents = Array.isArray(continents) ? continents : Object.values(continents);
 
   // 1. Premise
@@ -484,6 +486,23 @@ export function buildLoreModel(inputs) {
     items: mysteryItems,
   };
 
+  const systems = (Array.isArray(gameSystems?.systems) ? gameSystems.systems : [])
+    .filter((s) => s && typeof s.id === "string" && typeof s.title === "string")
+    .map((s) => ({
+      id: s.id,
+      featureId: s.featureId ?? "",
+      title: applyNameMap(s.title),
+      summary: applyNameMap(s.summary ?? ""),
+      sections: (Array.isArray(s.sections) ? s.sections : [])
+        .filter((x) => x && typeof x === "object")
+        .map((x) => ({ heading: applyNameMap(x.heading ?? ""), body: applyNameMap(x.body ?? "") })),
+      limits: (Array.isArray(s.limits) ? s.limits : []).filter((l) => typeof l === "string").map((l) => applyNameMap(l)),
+      strip:
+        s.strip && typeof s.strip.src === "string"
+          ? { src: s.strip.src, alt: s.strip.alt ?? "", fallback: s.strip.fallback ?? "", frames: Array.isArray(s.strip.frames) ? s.strip.frames : [] }
+          : null,
+    }));
+
   return {
     premise,
     epochs,
@@ -492,6 +511,7 @@ export function buildLoreModel(inputs) {
     continents: continentsList,
     bossLadder,
     mysteries,
+    systems,
     stats: {
       epochCount: epochs.length,
       godCount: gods.all.length,
@@ -499,6 +519,7 @@ export function buildLoreModel(inputs) {
       continentCount: continentsList.length,
       bossChainCount: bossChains.length,
       mysteryCount: mysteryItems.length,
+      systemCount: systems.length,
     },
   };
 }

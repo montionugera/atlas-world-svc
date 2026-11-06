@@ -28,7 +28,21 @@
       "maxTriangles": 12000,
       "maxTextureSize": 1024,
       "requiredStates": ["idle", "walk", "run", "attack", "death"]
+    },
+    "pipelineCharacter": {
+      "heightRange": [0.95, 1.15],
+      "maxTriangles": 15000,
+      "maxBytes": 2936012,
+      "maxTextureSize": 1024,
+      "requiredStates": ["idle", "walk", "run", "attack", "death"],
+      "optionalStates": ["combat_idle", "block", "hit", "ready_in", "ready_out"],
+      "rigReference": ["rig-reference/mixamo-65.bones.json"]
     }
+  },
+  "pipelineClips": ["attack", "attack_2", "attack_3", "block", "block_idle", "cast", "death", "hit", "idle", "idle_look", "run", "walk"],
+  "pipelineClipMap": {
+    "idle": "idle", "walk": "walk", "run": "run", "attack": ["attack", "attack_2", "attack_3"], "death": "death",
+    "combat_idle": "block_idle", "block": "block", "hit": "hit"
   },
   "defaultClipMap": {
     "idle": "idle",

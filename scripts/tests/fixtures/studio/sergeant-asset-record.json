@@ -1,0 +1,13 @@
+{
+  "_note": "Copied from GET /v1/library/assets/01a1a97a-8e45-71d6-885f-459aa1cebf7f?clientId=atlas-world on 2026-11-06. The signed query string of mediaUrl is dropped. Metadata only: the bytes are never in this repo.",
+  "asset": {
+    "id": "01a1a97a-8e45-71d6-885f-459aa1cebf7f",
+    "name": "Lantern Hollow Watch Sergeant p4b-11050912",
+    "mime": "model/gltf-binary",
+    "size": 2645916,
+    "sha256": "7f1c54c3707359dc12d3ed3582be1f60460f19d9fbd01930c49f406e1fbfc75f",
+    "rights": "reference",
+    "tags": ["atlas", "slice", "tripo", "mixamo", "town-guards", "round-6", "p4b-11050912"],
+    "mediaUrl": "/v1/library/assets/01a1a97a-8e45-71d6-885f-459aa1cebf7f/media"
+  }
+}

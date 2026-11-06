@@ -42,6 +42,13 @@ set -uo pipefail
 # tree and untracked files. An unavailable base, diff, or include scan runs
 # the section to fail closed.
 #
+# PIPELINE CHARACTERS (F-174): the "pipeline char" section (manifest clip gate, pull-only
+# asset checks, asset-forge suite, Godot probes on the pinned mono build) runs only when a
+# game-client/, atelier/asset-forge/ or manifest-gate path changed (PIPELINE_CHAR_PATHS;
+# PRECHECK_FULL=1 forces it). Asset Studio runs on this machine, so it never skips the
+# studio: cold cache + unreachable studio, a refused token, or ATLAS_SKIP_STUDIO=1 all FAIL.
+# Only ci.yml sets the skip, with a ::warning:: line. ATLAS_GODOT_MONO overrides the binary.
+#
 # Exit code: 0 only if every section passes; 1 if any section fails.
 # =============================================================================
 
@@ -180,6 +187,14 @@ if [ "${1:-}" = "--print-rust-selector" ]; then
   REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
   paths=$(cat) || exit 1
   if rust_paths_relevant "$paths"; then echo RUN; else echo SKIP; fi
+  exit 0
+fi
+
+# F-174: the pipeline-character section runs only when one of these paths changed.
+PIPELINE_CHAR_PATHS='^(game-client/|atelier/asset-forge/|\.gitignore$|\.github/workflows/ci\.yml$|content/asset-taxonomy\.json$|content/generated/asset-keys\.json$|art-source/LICENSES\.md$|scripts/check_asset_manifest\.mjs$|scripts/bake_thumbnails\.mjs$|scripts/lib/(anim-clips|pull-entry|studio-pull|studio-token|license-policy|thumbkey)\.mjs$|scripts/studio-pull\.mjs$|scripts/godot-verify\.sh$|scripts/precheck\.sh$|scripts/tests/(studio-pull|pull-entry|godot-verify|anim-clips|precheck-pipeline-char|bake-thumbnails-pull)\.test\.mjs$|scripts/tests/fixtures/studio/)'
+if [ "${1:-}" = "--print-pipeline-char-selector" ]; then
+  paths=$(cat) || exit 1
+  if grep -qE "$PIPELINE_CHAR_PATHS" <<<"$paths"; then echo RUN; else echo SKIP; fi
   exit 0
 fi
 
@@ -502,6 +517,43 @@ atlas_web_tests() {
   ( cd "$REPO_ROOT/scripts" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" tests/atlas-web-*.test.mjs )
 }
 
+# F-174 pull-only assets: fill game-client/studio-cache/ from Asset Studio (sha256-verified).
+# Asset Studio runs on this machine, so Gate 1 never skips: a cold cache with the studio
+# unreachable FAILS, a refused token (studio auth failed) FAILS, a sha mismatch FAILS.
+studio_pull_required() {
+  node "$REPO_ROOT/scripts/studio-pull.mjs"; local rc=$?
+  [ "$rc" -eq 0 ] && return 0
+  [ "$rc" -eq 2 ] && echo "❌ Asset Studio unreachable and the cache is cold. Start Asset Studio or set STUDIO_TOKEN; Gate 1 never skips pull-only checks."
+  return 1
+}
+
+# F-174: manifest clip gate (V), the pull-only rules, the asset-forge suite, and the Godot probes
+# on the pinned mono build. Requires the "[PipelineCharVerify] VERDICT PASS" line; an exit code
+# alone is never accepted (PATH godot exits 0 on C# failure). Fails closed if the mono build is absent.
+pipeline_char_section() {
+  # Binding (F-174 rev 3): only ci.yml may skip the studio, and it says so with ::warning::.
+  # Checked before the path gate, so a stray export can never ride along on any run.
+  if [ "${ATLAS_SKIP_STUDIO:-}" = "1" ]; then
+    echo "❌ studio skip not allowed in Gate 1 (unset ATLAS_SKIP_STUDIO; Asset Studio runs on this machine)"
+    return 1
+  fi
+  if [ "${PRECHECK_FULL:-0}" != "1" ]; then
+    local changed
+    if changed=$(changed_paths) && ! grep -qE "$PIPELINE_CHAR_PATHS" <<<"$changed"; then
+      SKIP_REASON="no game-client/, asset-forge or manifest-gate path changed; PRECHECK_FULL=1 to force"
+      return "$SKIP_RC"
+    fi
+  fi
+  studio_pull_required || return 1
+  node "$REPO_ROOT/scripts/check_asset_manifest.mjs" || return 1
+  ( cd "$REPO_ROOT" && node --test scripts/tests/anim-clips.test.mjs scripts/tests/godot-verify.test.mjs \
+      scripts/tests/precheck-pipeline-char.test.mjs scripts/tests/studio-pull.test.mjs scripts/tests/pull-entry.test.mjs \
+      scripts/tests/bake-thumbnails-pull.test.mjs ) || return 1
+  ( cd "$REPO_ROOT/atelier/asset-forge" && { [ -d node_modules ] || npm ci --no-audit --no-fund; } && npm test ) || return 1
+  "$REPO_ROOT/scripts/godot-verify.sh" ATLAS_VERIFY_ANIM '^\[AnimationVerify\] RESULT: PASS' || return 1
+  "$REPO_ROOT/scripts/godot-verify.sh" ATLAS_VERIFY_PIPELINE_CHAR '^\[PipelineCharVerify\] VERDICT PASS$'
+}
+
 map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/map-builder/tests/*.test.mjs ) }
 
 # F-156: atlas explorer probes (scripts/probes/). atlas_ux_probe.py is pure Python (no server, no browser);
@@ -611,10 +663,12 @@ explorer_probes() {
 #     world digest (--check) and both Python checks (--check) only read the repo.
 #   - client / nakama / contracts jest + tsc write only their own caches
 #     (node_modules/.cache, ts-jest cache); contracts/dist is built before the groups.
+#   - the godot group (pipeline char) writes only game-client/.godot and game-client/.godot/mono
+#     build output, and the gitignored game-client/studio-cache; no other group reads them.
 #   - ports: the panels smoke and the explorer server bind a free port, and the two
 #     probes use private Chrome profiles + free debugging ports.
 # Group order is fixed; each group's log prints whole in this order.
-GROUP_ORDER="ts rust node explorer py"
+GROUP_ORDER="ts rust node explorer py godot"
 GROUP_ts=(
   "nakama: tsc --noEmit|nakama_typecheck"
   "nakama: jest suite|nakama_tests"
@@ -641,6 +695,9 @@ GROUP_py=(
   "world-first map compiler (L0-L4 44 maps)|world_map_compiler"
   "studio hierarchy & scale clamps (INV-01..07)|studio_hierarchy"
 )
+GROUP_godot=(
+  "pipeline char: manifest clips + asset-forge + Godot probes (F-174)|pipeline_char_section"
+)
 # The exact old serial order (every entry of every group, once).
 SERIAL_PLAN=(
   "contracts: jest suite|contracts_tests"
@@ -659,6 +716,7 @@ SERIAL_PLAN=(
   "world digest (G-WORLD-DIGEST)|world_digest"
   "world-first map compiler (L0-L4 44 maps)|world_map_compiler"
   "studio hierarchy & scale clamps (INV-01..07)|studio_hierarchy"
+  "pipeline char: manifest clips + asset-forge + Godot probes (F-174)|pipeline_char_section"
 )
 # Test seam (scripts/tests/precheck-parallel.test.mjs): with ATLAS_PRECHECK_TEST_MODE=1 the
 # plan, groups and section functions come from ATLAS_PRECHECK_TEST_PLAN and the heavy

@@ -30,6 +30,7 @@ MOUNT_DIRS: tuple[str, ...] = (
     "atelier/art-forge/runs",
     "atelier/art-forge/briefs",
     "atelier/art-forge/out",
+    "game-client/studio-cache/renders",
     "atelier/story-explorer",
     "docs/story/undertow",
     "atelier/combat-lab",

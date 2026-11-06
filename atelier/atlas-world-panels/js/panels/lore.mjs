@@ -6,6 +6,7 @@ import {
   buildLoreModel,
   CHAPTERS,
 } from "../lore-model.mjs";
+import { chapterForRef } from "./lore-refs.mjs";
 import { register } from "./registry.mjs";
 
 const WORLD_HISTORY_URL = "/content/studio/world_history_and_concept.json";
@@ -15,10 +16,12 @@ const CONTINENT_URLS = [
   "/content/studio/continents/continent-02-clockwork-steppe.json",
   "/content/studio/continents/continent-03-shattered-halo.json",
 ];
+const GAME_SYSTEMS_URL = "/content/studio/game-systems.json";
 const CONCEPT_ART_URL = "/content/concept-art/index.json";
 
 let containerEl = null;
 let model = null;
+let systemsError = false;
 let activeChapterId = "premise";
 let activeRef = "";
 let navButtons = {};
@@ -77,25 +80,6 @@ function statChip(count, label) {
   chip.appendChild(el("strong", "", String(count)));
   chip.append(` ${label}`);
   return chip;
-}
-
-/**
- * Resolves which chapter ID owns a given loreRef.
- */
-function chapterForRef(ref) {
-  if (!ref || typeof ref !== "string") return "premise";
-  if (ref.startsWith("epoch-")) return "epochs";
-  if (ref.startsWith("god-")) return "gods";
-  if (
-    ref.startsWith("race-") ||
-    ["human_demi_human", "dwarf", "ogre_orc", "furral", "lunar", "dark_lunar"].includes(ref)
-  ) {
-    return "races";
-  }
-  if (ref.startsWith("continent-")) return "continents";
-  if (ref === "beast_animal_brute" || ref.startsWith("boss-")) return "bosses";
-  if (ref.startsWith("mystery-")) return "mysteries";
-  return "premise";
 }
 
 /**
@@ -640,6 +624,90 @@ function buildMysteriesSection(mysteries) {
   return sec;
 }
 
+/** Fetches the Game Systems archive. Never throws: a failure only marks this chapter unavailable. */
+export async function loadGameSystems(fetchImpl) {
+  try {
+    const res = await fetchImpl(GAME_SYSTEMS_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return { gameSystems: await res.json(), failed: false };
+  } catch {
+    return { gameSystems: { systems: [] }, failed: true };
+  }
+}
+
+/**
+ * Chapter 8: Game Systems (F-174). The strip is a private pull-only render, so on a build
+ * without it the whole figure is swapped for the fallback line, never a broken image.
+ */
+export function buildSystemsSection(systems, failed) {
+  const sec = el("section", "lore-chapter");
+  sec.id = "lore-chapter-systems";
+
+  const header = el("div", "lore-chapter-header");
+  header.appendChild(el("span", "lore-chapter-eyebrow", "How the World Works"));
+  header.appendChild(el("h2", "lore-chapter-title", "🛡️ Game Systems"));
+  header.appendChild(el("p", "lore-chapter-desc", "How fighters move, guard, strike and fall, and what you will see in the client."));
+  sec.appendChild(header);
+
+  if (failed || systems.length === 0) {
+    sec.appendChild(
+      el(
+        "p",
+        "lore-chapter-desc",
+        failed
+          ? "Game systems archive unavailable — the rest of the World Bible is unaffected."
+          : "No game systems are documented yet.",
+      ),
+    );
+    return sec;
+  }
+
+  for (const s of systems) {
+    const card = el("article", "lore-card lore-system");
+    card.id = `lore-ref-${s.id}`;
+
+    const cardHeader = el("div", "lore-card-header");
+    cardHeader.appendChild(el("h3", "lore-card-title", s.title));
+    if (s.featureId) cardHeader.appendChild(el("span", "lore-badge", s.featureId));
+    card.appendChild(cardHeader);
+    card.appendChild(el("p", "lore-card-body", s.summary));
+
+    if (s.strip) {
+      const frame = el("figure", "lore-strip");
+      frame.tabIndex = 0;
+      frame.setAttribute("role", "region");
+      frame.setAttribute("aria-label", "Combat stance frames, scrolls sideways");
+      const img = el("img");
+      img.src = s.strip.src;
+      img.alt = s.strip.alt;
+      img.loading = "lazy";
+      img.addEventListener(
+        "error",
+        () => frame.replaceWith(el("p", "lore-chapter-desc", s.strip.fallback)),
+        { once: true },
+      );
+      frame.appendChild(img);
+      const caps = el("figcaption", "lore-strip-caps");
+      for (const f of s.strip.frames) caps.appendChild(el("span", "", f));
+      frame.appendChild(caps);
+      card.appendChild(frame);
+    }
+
+    for (const x of s.sections) {
+      card.appendChild(el("h4", "lore-card-subtitle", x.heading));
+      card.appendChild(el("p", "lore-card-body", x.body));
+    }
+    if (s.limits.length) {
+      card.appendChild(el("h4", "lore-card-subtitle", "Known limits"));
+      const ul = el("ul");
+      for (const l of s.limits) ul.appendChild(el("li", "", l));
+      card.appendChild(ul);
+    }
+    sec.appendChild(card);
+  }
+  return sec;
+}
+
 /**
  * Renders the full Lore and History reading page.
  */
@@ -661,6 +729,7 @@ function renderLorePage(m) {
   stats.appendChild(statChip(m.stats.continentCount, "Continents"));
   stats.appendChild(statChip(m.stats.bossChainCount, "Boss Chains"));
   stats.appendChild(statChip(m.stats.mysteryCount, "Open Mysteries"));
+  stats.appendChild(statChip(m.stats.systemCount, "Game Systems"));
   header.appendChild(stats);
   container.appendChild(header);
 
@@ -675,6 +744,7 @@ function renderLorePage(m) {
   container.appendChild(buildContinentsSection(m.continents));
   container.appendChild(buildBossSection(m.bossLadder));
   container.appendChild(buildMysteriesSection(m.mysteries));
+  container.appendChild(buildSystemsSection(m.systems, systemsError));
 
   containerEl.appendChild(container);
 
@@ -735,6 +805,10 @@ register("lore", {
         conceptArtIndex = { version: 1, items: [] };
       }
 
+      const loaded = await loadGameSystems(fetch);
+      const gameSystems = loaded.gameSystems;
+      systemsError = loaded.failed;
+
       if (!worldHistory || !atlas) {
         renderBanner("warning", "Lore Archive Empty", "The studio lore archives contain no records. Please check the content pipeline.");
         return;
@@ -745,6 +819,7 @@ register("lore", {
         atlas,
         continents: continentResults,
         conceptArtIndex,
+        gameSystems,
       });
 
       renderLorePage(model);

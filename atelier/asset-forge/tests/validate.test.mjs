@@ -141,7 +141,15 @@ test("multi-rig: skeleton passes when it matches the SECOND reference in the lis
     writeFileSync(
       path.join(dir, "rig-reference/kenney-mini.bones.json"),
       JSON.stringify({
-        joints: ["arm-left", "arm-right", "head", "leg-left", "leg-right", "root", "torso"],
+        joints: [
+          "arm-left",
+          "arm-right",
+          "head",
+          "leg-left",
+          "leg-right",
+          "root",
+          "torso",
+        ],
       }),
     );
     writeFileSync(
@@ -170,7 +178,15 @@ test("multi-rig: a listed reference missing on disk warns and is skipped, not a 
     writeFileSync(
       path.join(dir, "rig-reference/kenney-mini.bones.json"),
       JSON.stringify({
-        joints: ["arm-left", "arm-right", "head", "leg-left", "leg-right", "root", "torso"],
+        joints: [
+          "arm-left",
+          "arm-right",
+          "head",
+          "leg-left",
+          "leg-right",
+          "root",
+          "torso",
+        ],
       }),
     );
     const r = await validateGlb(fx("good.glb"), { kind, configDir: dir });
@@ -193,7 +209,15 @@ test("multi-rig: backward compat -- a plain string rigReference still works", as
     writeFileSync(
       path.join(dir, "rig-reference/kenney-mini.bones.json"),
       JSON.stringify({
-        joints: ["arm-left", "arm-right", "head", "leg-left", "leg-right", "root", "torso"],
+        joints: [
+          "arm-left",
+          "arm-right",
+          "head",
+          "leg-left",
+          "leg-right",
+          "root",
+          "torso",
+        ],
       }),
     );
     const r = await validateGlb(fx("good.glb"), { kind, configDir: dir });
@@ -213,7 +237,9 @@ const KNIGHT_REPRO =
 
 test(
   "pivot: skinned-only bounds ignore bone-parented attachments (knight repro)",
-  { skip: !existsSync(KNIGHT_REPRO) && "repro glb not present on this machine" },
+  {
+    skip: !existsSync(KNIGHT_REPRO) && "repro glb not present on this machine",
+  },
   async () => {
     const r = await validateGlb(KNIGHT_REPRO, {
       kind,
@@ -392,4 +418,235 @@ test("manifest mode: missing file is skipped silently (drift-gate's job)", async
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// --- F-174 pipelineCharacter -------------------------------------------------
+import { NodeIO } from "@gltf-transform/core";
+import { stateKeysForKind } from "../validate.mjs";
+
+const REPO = path.resolve(new URL("../../..", import.meta.url).pathname);
+// Pull-only (F-174): the sergeant is never in git. Task 1a's `node scripts/studio-pull.mjs` fills
+// the gitignored cache; ATLAS_SERGEANT_GLB overrides the path.
+const SERGEANT_SHA =
+  "7f1c54c3707359dc12d3ed3582be1f60460f19d9fbd01930c49f406e1fbfc75f";
+const SERGEANT =
+  process.env.ATLAS_SERGEANT_GLB ??
+  path.join(REPO, `game-client/studio-cache/${SERGEANT_SHA}.glb`);
+// ATLAS_SKIP_STUDIO=1 with a cold cache: the sergeant cases are SKIPPED (visible in the TAP
+// output), never silently passed. Without it, a missing cache fails loudly in assertRealGlb.
+// Only CI sets the variable; local Gate 1 refuses it before this suite runs (Task 8).
+const SERGEANT_SKIP =
+  process.env.ATLAS_SKIP_STUDIO === "1" && !existsSync(SERGEANT)
+    ? "ATLAS_SKIP_STUDIO=1 and the sergeant is not in game-client/studio-cache"
+    : false;
+const SERGEANT_ANIMS = {
+  idle: "idle",
+  walk: "walk",
+  run: "run",
+  attack: ["attack", "attack_2", "attack_3"],
+  death: "death",
+  combat_idle: "block_idle",
+  block: "block",
+  hit: "hit",
+};
+
+function assertRealGlb(p) {
+  assert.ok(
+    existsSync(p),
+    `${p} missing (the pull-only sergeant: run node scripts/studio-pull.mjs)`,
+  );
+  assert.notEqual(
+    readFileSync(p).subarray(0, 4).toString(),
+    "vers",
+    `${p} is a Git LFS pointer — run git lfs pull`,
+  );
+}
+
+test(
+  "pipelineCharacter: the sergeant passes with list + optional anims",
+  { skip: SERGEANT_SKIP },
+  async () => {
+    assertRealGlb(SERGEANT);
+    // validate under the shipped basename so the naming rule is exercised for real
+    const dir = mkdtempSync(path.join(tmpdir(), "pc-"));
+    const staged = path.join(dir, "lantern_hollow_watch_sergeant.glb");
+    writeFileSync(staged, readFileSync(SERGEANT));
+    try {
+      const r = await validateGlb(staged, {
+        kind: "pipelineCharacter",
+        anims: SERGEANT_ANIMS,
+      });
+      assert.deepEqual(r.failures, []);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  "pipelineCharacter: a missing attack variant clip fails naming the clip",
+  { skip: SERGEANT_SKIP },
+  async () => {
+    assertRealGlb(SERGEANT);
+    const r = await validateGlb(SERGEANT, {
+      kind: "pipelineCharacter",
+      anims: { ...SERGEANT_ANIMS, attack: ["attack", "attack_9"] },
+    });
+    assert.match(r.failures.join("\n"), /attack.*attack_9/);
+  },
+);
+
+test(
+  "pipelineCharacter: an optional state mapped to a missing clip fails",
+  { skip: SERGEANT_SKIP },
+  async () => {
+    assertRealGlb(SERGEANT);
+    const r = await validateGlb(SERGEANT, {
+      kind: "pipelineCharacter",
+      anims: { ...SERGEANT_ANIMS, hit: "hit_RENAMED" },
+    });
+    assert.match(r.failures.join("\n"), /hit.*hit_RENAMED/);
+  },
+);
+
+test("pipelineCharacter: a KayKit mob glb fails on skeleton (per-kind rig ref)", async () => {
+  const orc = path.join(REPO, "game-client/assets/characters/orc_brute.glb");
+  assertRealGlb(orc);
+  const r = await validateGlb(orc, {
+    kind: "pipelineCharacter",
+    tier: "bespoke",
+  });
+  assert.match(r.failures.join("\n"), /^skeleton/m);
+});
+
+test(
+  "pipelineCharacter: a 16k-triangle copy of the sergeant fails the triangle budget",
+  { skip: SERGEANT_SKIP },
+  async () => {
+    assertRealGlb(SERGEANT);
+    const io = new NodeIO();
+    const doc = await io.read(SERGEANT);
+    const prim = doc
+      .getRoot()
+      .listMeshes()
+      .flatMap((m) => m.listPrimitives())
+      .find((p) => p.getAttribute("JOINTS_0") && p.getIndices());
+    const idx = prim.getIndices();
+    const src = idx.getArray();
+    const extra = 1600 * 3; // 14,448 + 1,600 = 16,048 triangles
+    const grown = new src.constructor(src.length + extra);
+    grown.set(src);
+    grown.set(src.subarray(0, extra), src.length);
+    idx.setArray(grown);
+    const dir = mkdtempSync(path.join(tmpdir(), "pc16k-"));
+    const out = path.join(dir, "sergeant_16k.glb");
+    await io.write(out, doc);
+    try {
+      const r = await validateGlb(out, {
+        kind: "pipelineCharacter",
+        anims: SERGEANT_ANIMS,
+      });
+      assert.match(r.failures.join("\n"), /triangles: 16048 > 15000/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  "pipelineCharacter: bytes over maxBytes fail; handslot.r with a wrong parent fails topology",
+  { skip: SERGEANT_SKIP },
+  async () => {
+    assertRealGlb(SERGEANT);
+    const cfgDir = mkdtempSync(path.join(tmpdir(), "pccfg-"));
+    const real = JSON.parse(
+      readFileSync(new URL("../forge.config.json", import.meta.url), "utf8"),
+    );
+    const ref = JSON.parse(
+      readFileSync(
+        new URL("../rig-reference/mixamo-65.bones.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    mkdirSync(path.join(cfgDir, "rig-reference"));
+    writeFileSync(
+      path.join(cfgDir, "rig-reference/mixamo-65.bones.json"),
+      JSON.stringify({
+        ...ref,
+        fixedExtras: { "handslot.r": "mixamorig:Head" },
+      }),
+    );
+    real.kinds.pipelineCharacter.maxBytes = 1000;
+    writeFileSync(path.join(cfgDir, "forge.config.json"), JSON.stringify(real));
+    try {
+      const r = await validateGlb(SERGEANT, {
+        kind: "pipelineCharacter",
+        anims: SERGEANT_ANIMS,
+        configDir: cfgDir,
+      });
+      const all = r.failures.join("\n");
+      assert.match(all, /bytes: \d+ > 1000 budget/);
+      assert.match(
+        all,
+        /skeleton-topology: handslot\.r parent is prop_weapon_r, expected mixamorig:Head/,
+      );
+    } finally {
+      rmSync(cfgDir, { recursive: true, force: true });
+    }
+  },
+);
+
+test("pipelineCharacter: a missing rig reference file fails (never skips)", async () => {
+  const orc = path.join(REPO, "game-client/assets/characters/orc_brute.glb");
+  assertRealGlb(orc);
+  const cfgDir = mkdtempSync(path.join(tmpdir(), "pccfg-missing-"));
+  const real = JSON.parse(
+    readFileSync(new URL("../forge.config.json", import.meta.url), "utf8"),
+  );
+  writeFileSync(path.join(cfgDir, "forge.config.json"), JSON.stringify(real));
+  try {
+    const r = await validateGlb(orc, {
+      kind: "pipelineCharacter",
+      configDir: cfgDir,
+    });
+    assert.match(
+      r.failures.join("\n"),
+      /rig reference missing for kind pipelineCharacter/,
+    );
+    // empty reference file fails too
+    mkdirSync(path.join(cfgDir, "rig-reference"));
+    writeFileSync(path.join(cfgDir, "rig-reference/mixamo-65.bones.json"), "");
+    const r2 = await validateGlb(orc, {
+      kind: "pipelineCharacter",
+      configDir: cfgDir,
+    });
+    assert.match(
+      r2.failures.join("\n"),
+      /rig reference missing for kind pipelineCharacter/,
+    );
+  } finally {
+    rmSync(cfgDir, { recursive: true, force: true });
+  }
+});
+
+test("empty anims list fails with anims.<state> is empty and leaves the caller's array alone", async () => {
+  const orc = path.join(REPO, "game-client/assets/characters/orc_brute.glb");
+  assertRealGlb(orc);
+  const anims = { idle: [] };
+  const r = await validateGlb(orc, { kind: "pipelineCharacter", anims });
+  assert.match(r.failures.join("\n"), /anims\.idle is empty/);
+  assert.deepEqual(anims.idle, []);
+});
+
+test("stateKeysForKind lists required then optional states", () => {
+  assert.deepEqual(
+    stateKeysForKind({ requiredStates: ["idle"], optionalStates: ["hit"] }),
+    ["idle", "hit"],
+  );
+  assert.deepEqual(stateKeysForKind({ requiredStates: ["idle"] }), ["idle"]);
+});
+
+test("existing character kind is unchanged: good.glb still passes", async () => {
+  const r = await validateGlb(fx("good.glb"), { kind: "character" });
+  assert.deepEqual(r.failures, []);
 });

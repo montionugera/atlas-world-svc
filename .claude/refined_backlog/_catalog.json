@@ -2252,5 +2252,17 @@
     "shipped_at": "2026-11-06T06:29:04.113715+00:00",
     "shipped_sha": "a7d4c53ad7b7340274d3241d98e0d761436fd63c",
     "promoted_at": "2026-11-06T06:34:16.058852+00:00"
+  },
+  {
+    "id": "F-174",
+    "title": "Godot client loads pipeline characters: combat states and runtime weapon swap",
+    "from_idea": "I-254",
+    "created_at": "2026-11-06T11:19:59.065292+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.25",
+    "claimed_at": "2026-11-06T11:20:15.674086+00:00",
+    "shipped_at": "2026-11-06T14:26:58.323298+00:00",
+    "shipped_sha": "eea7d49f44fadba9694f40ded11e5a03adbb0486"
   }
 ]

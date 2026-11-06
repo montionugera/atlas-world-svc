@@ -61,6 +61,41 @@
         "install": "sudo apt-get update -qq && sudo apt-get install -y -qq google-chrome-stable || sudo apt-get install -y -qq chromium-browser",
         "note": "Not expected to run in CI — ubuntu-latest runners already carry google-chrome-stable. Declared here so a bare/self-hosted runner or container has a documented install path instead of the smoke step failing with an undeclared dependency."
       }
+    },
+    {
+      "name": "kubectl",
+      "package": "kubectl (Kubernetes CLI)",
+      "required": false,
+      "requiredNote": "Only scripts/lib/studio-token.mjs uses it (each call bounded to 20 s), and only when STUDIO_TOKEN is unset, to mint an Asset Studio dev token from the local orbstack cluster. A missing kubectl means studio-pull exits 2 (unreachable), which Gate 1 FAILS on.",
+      "usedBy": [
+        "scripts/lib/studio-token.mjs"
+      ],
+      "verify": "kubectl version --client",
+      "macos": {
+        "install": "brew install kubectl"
+      },
+      "debian": {
+        "install": "sudo apt-get update -qq && sudo apt-get install -y -qq kubectl"
+      }
+    },
+    {
+      "name": "dotnet",
+      "package": ".NET 8 SDK",
+      "required": false,
+      "requiredNote": "Only the path-gated Gate 1 pipeline-character section (scripts/godot-verify.sh) builds game-client/GameClient.csproj; that section fails closed without it.",
+      "usedBy": ["scripts/godot-verify.sh"],
+      "verify": "dotnet --version",
+      "macos": { "install": "brew install --cask dotnet-sdk" },
+      "debian": { "install": "sudo apt-get update -qq && sudo apt-get install -y -qq dotnet-sdk-8.0" }
+    },
+    {
+      "name": "godot-mono",
+      "package": "Godot 4.7.2 .NET (mono) build — NOT the PATH godot",
+      "required": false,
+      "requiredNote": "Not on PATH: scripts/godot-verify.sh runs $ATLAS_GODOT_MONO (default ~/Applications/godot-mono-4.7.2/Godot_mono.app/Contents/MacOS/Godot) and refuses any binary whose --version lacks '.mono.'. PATH godot is non-mono and exits 0 on C# failure.",
+      "usedBy": ["scripts/godot-verify.sh"],
+      "verify": "\"$HOME/Applications/godot-mono-4.7.2/Godot_mono.app/Contents/MacOS/Godot\" --version",
+      "macos": { "install": "download Godot_v4.7.2-stable_mono_macos.universal.zip from godotengine.org and unzip to ~/Applications/godot-mono-4.7.2/" }
     }
   ]
 }

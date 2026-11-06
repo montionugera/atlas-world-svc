@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "entries": {
+    "npc:lantern_hollow_watch_sergeant": {
+      "scene": "res://studio-cache/7f1c54c3707359dc12d3ed3582be1f60460f19d9fbd01930c49f406e1fbfc75f.glb",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1a97a-8e45-71d6-885f-459aa1cebf7f",
+        "tag": "p4b-11050912",
+        "sha256": "7f1c54c3707359dc12d3ed3582be1f60460f19d9fbd01930c49f406e1fbfc75f"
+      }
+    }
+  }
+}

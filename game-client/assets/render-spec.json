@@ -99,7 +99,7 @@
       "require": ["license"]
     }
   },
-  "kindDefaultRender": { "character": "model3d", "audio": "audio" },
+  "kindDefaultRender": { "character": "model3d", "pipelineCharacter": "model3d", "audio": "audio" },
   "extRender": {
     ".glb": "model3d",
     ".gltf": "model3d",

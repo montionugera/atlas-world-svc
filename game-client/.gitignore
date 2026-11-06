@@ -6,3 +6,4 @@ obj/
 builds/
 *.tmp
 export_presets.cfg
+*.csproj.old

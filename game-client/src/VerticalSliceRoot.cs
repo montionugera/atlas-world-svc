@@ -164,6 +164,29 @@ namespace AtlasWorld.Client
                 return;
             }
 
+            // Env-gated F-174 probe (ATLAS_VERIFY_PIPELINE_CHAR=1). Unlike the probes above it
+            // spans frames (bone attachments update on process), so it is a child Node that
+            // quits the tree itself. Stop this root's own frame work so nothing else runs.
+            if (OS.GetEnvironment("ATLAS_VERIFY_PIPELINE_CHAR") == "1")
+            {
+                SetProcess(false);
+                SetPhysicsProcess(false);
+                SetProcessInput(false);
+                SetProcessUnhandledInput(false);
+                AddChild(new PipelineCharVerify { Name = "PipelineCharVerify" });
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(OS.GetEnvironment("ATLAS_RENDER_PIPELINE_STRIP")))
+            {
+                SetProcess(false);
+                SetPhysicsProcess(false);
+                SetProcessInput(false);
+                SetProcessUnhandledInput(false);
+                AddChild(new PipelineStripRender { Name = "PipelineStripRender" });
+                return;
+            }
+
             GD.Print("[VerticalSliceRoot] Initializing Unified Godot 4 Mobile MMORPG Slice...");
 
             _config = Config.Load();
@@ -1555,6 +1578,8 @@ namespace AtlasWorld.Client
                         if (!_entityManager.TryGetEntityView(ev.TargetId.ToString(), out EntityView? hitView) ||
                             hitView == null || !GodotObject.IsInstanceValid(hitView.Root))
                             continue;
+
+                        hitView.NotifyHit(); // F-174: hit clip on combat-mapped entries (no-op otherwise)
 
                         float distSq = hitView.Root.Position.DistanceSquaredTo(PlayerAvatar.Position);
                         if (distSq > 14.0f * 14.0f)

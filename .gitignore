@@ -138,3 +138,7 @@ references/
 
 # Per-session cargo build caches
 .claude/cargo-target-*/
+
+# F-174 pull-only Asset Studio assets. This repo is PUBLIC: owner-generated glbs, their Godot
+# .import sidecars, extracted textures and renders live here and must never be committed.
+game-client/studio-cache/

@@ -6,7 +6,7 @@
       "id": "character",
       "label": "Characters",
       "order": 10,
-      "kinds": ["character"]
+      "kinds": ["character", "pipelineCharacter"]
     },
     {
       "id": "creature",

@@ -16,7 +16,7 @@ from atlas_world_web.static_mounts import MOUNT_DIRS, MOUNT_FILES
 
 ROOT = Path(os.environ.get("ATLAS_WEB_IMAGE_ROOT") or Path(__file__).resolve().parent.parent)
 # Gitignored, so no commit can hold it. Forge shows its missing-render notice instead.
-ABSENT_MOUNTS = frozenset({"atelier/art-forge/out"})
+ABSENT_MOUNTS = frozenset({"atelier/art-forge/out", "game-client/studio-cache/renders"})
 REQUIRED = (
     "contracts/content/jobs.json",
     "contracts/content/items.json",

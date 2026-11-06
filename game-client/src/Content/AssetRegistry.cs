@@ -108,6 +108,20 @@ namespace AtlasWorld.Client.Content
 
         private static readonly Dictionary<string, string> EmptyAnims = new();
 
+        /// <summary>Manifest <c>kind</c> of a type id ("" when there is no entry). Total, never throws.</summary>
+        public string ResolveKind(string typeId) =>
+            _manifest != null && _manifest.TryGet(typeId, out AssetEntry entry) ? entry.Kind : "";
+
+        /// <summary>Per-state clip variants for a type id (F-174). Empty, never null. Total, never throws.</summary>
+        public IReadOnlyDictionary<string, IReadOnlyList<string>> ResolveAnimVariants(string typeId)
+        {
+            if (_manifest != null && _manifest.TryGet(typeId, out AssetEntry entry))
+                return entry.AnimVariants;
+            return EmptyAnimVariants;
+        }
+
+        private static readonly Dictionary<string, IReadOnlyList<string>> EmptyAnimVariants = new();
+
         /// <summary>
         /// Load a <see cref="PackedScene"/> by <c>res://</c> path, cached. Returns null (no
         /// throw, no error spam) for a blank or nonexistent path — the caller falls back.

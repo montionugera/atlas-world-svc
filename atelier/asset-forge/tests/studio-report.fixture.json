@@ -1,0 +1,10 @@
+{
+  "name": "fixture",
+  "credit_cap": 100,
+  "credits_est": 40,
+  "credits_spent": 35,
+  "characters": [
+    { "slug": "npc-fixture-ok", "status": "PASS", "seconds": 209.4, "asset": "a-1", "tag": "t-1" },
+    { "slug": "npc-fixture-failed", "status": "FAIL", "seconds": 12.0, "asset": "a-2", "tag": "t-2" }
+  ]
+}

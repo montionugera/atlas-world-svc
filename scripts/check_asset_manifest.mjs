@@ -28,6 +28,11 @@
 //       Godot-scene-loadable render type (spec.renderers[render].sceneLoadable)
 //       — otherwise AssetRegistry.Resolve's ResourceLoader.Load<PackedScene>
 //       silently capsule-falls back at runtime with a green gate.
+//   (V) F-174: every `anims` value names a clip that exists in the entry's glb
+//       (string or list of variants), and an entry that maps `combat_idle`
+//       maps the whole base set (idle, walk, run, attack, death). See
+//       scripts/lib/anim-clips.mjs. A clip renamed in the pipeline otherwise
+//       ships green and the client silently skips that state.
 //   (B) the render's path field (scene|stream) is a res:// path, resolves to
 //       an existing, non-empty file.
 //   (C) every field in render-spec's `require` list is non-empty.
@@ -57,6 +62,10 @@
 //       game-client/assets/.thumbs/ whose recorded source hash matches the
 //       source bytes on disk — the storybook renders every card from one, so a
 //       stale thumbnail is a card that lies about the asset (F-038).
+//   (W) F-174: nothing under game-client/studio-cache/ is tracked, .thumbs/index.json has no row
+//       from it, and no tracked .import/.tscn/.tres names res://studio-cache/ (the repo is public).
+//       (B) for a pull-only entry checks the cache file's sha256; an empty cache fails unless
+//       ATLAS_SKIP_STUDIO=1 (set by CI only; local Gate 1 refuses it), which prints SKIP.
 //   (T) every manifest `kind` must have a section in
 //       content/asset-taxonomy.json, so atelier/atlas-world-panels can never fall
 //       back to a munged label like "Model3d:dungeons" (F-038). Letters L/M
@@ -96,9 +105,14 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve, join, relative } from "node:path";
 import { checkLicensePolicy } from "./lib/license-policy.mjs";
 import { thumbFilename, sourceHash } from "./lib/thumbkey.mjs";
+import { checkAnimClips } from "./lib/anim-clips.mjs";
+import { checkPullEntry, checkNoTrackedCache } from "./lib/pull-entry.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
+// F-174: CI cannot reach the local Asset Studio, so it sets this and pull-only entries are SKIPPED
+// (printed). Local Gate 1 refuses the variable.
+const SKIP_STUDIO = process.env.ATLAS_SKIP_STUDIO === "1";
 
 function parseArgs(argv) {
   const opts = {
@@ -455,10 +469,16 @@ function validateEntry(id, entry, source, gameClient, spec, failures) {
       `entry "${id}": ${r.pathField} must be res:// (got ${JSON.stringify(pathVal)})`,
     );
   } else {
-    if (!existsSync(fsPath) || !statSync(fsPath).isFile()) {
+    // F-174: a pull-only entry's file is the gitignored cache; the pull rule owns its checks.
+    const pullState = entry.pull !== undefined
+      ? checkPullEntry(id, entry, gameClient, failures, { skipStudio: SKIP_STUDIO })
+      : null;
+    if (pullState === null && (!existsSync(fsPath) || !statSync(fsPath).isFile())) {
       failures.push(`entry "${id}": file missing — ${pathVal}`);
-    } else if (statSync(fsPath).size === 0) {
+    } else if (pullState === null && statSync(fsPath).size === 0) {
       failures.push(`entry "${id}": file is empty — ${pathVal}`);
+    } else if (pullState === null || pullState === "ok") {
+      checkAnimClips(id, entry, fsPath, failures); // (V) F-174
     }
     const dot = pathVal.lastIndexOf(".");
     const ext = dot === -1 ? "" : pathVal.slice(dot).toLowerCase();
@@ -606,6 +626,7 @@ function assertThumbFreshness(sourcesEntries, gameClient, failures) {
 
   for (const { entries } of sourcesEntries) {
     for (const [id, entry] of Object.entries(entries)) {
+      if (entry && entry.pull !== undefined) continue; // F-174 pull-only: no tracked thumbnail of a private asset in a public repo
       // `scene` only, never `stream`. render-spec.json gives audio and music
       // pathField "stream", and the storybook renders those as soundboard
       // tiles (js/audio.mjs) rather than thumbnail cards — an .ogg has
@@ -828,6 +849,7 @@ function main() {
   const sources = manifestSources(opts);
   const sourcesEntries = []; // for the disjointness guard
   let codegenEntries = null; // the driftGated source's entries (for guard J)
+  const pullShas = new Set(); // (W) every pull-only sha256, for the plain-copy leak check
 
   for (const source of sources) {
     const doc = readJson(source.path, source.label, failures);
@@ -841,6 +863,9 @@ function main() {
     }
     sourcesEntries.push({ label: source.label, entries });
     if (source.driftGated) codegenEntries = entries;
+    for (const e of Object.values(entries)) {
+      if (typeof e?.pull?.sha256 === "string") pullShas.add(e.pull.sha256);
+    }
 
     for (const [id, entry] of Object.entries(entries)) {
       if (source.validator === "art") {
@@ -882,6 +907,7 @@ function main() {
   const taxonomyDoc = readJson(opts.taxonomy, "asset-taxonomy", failures);
   assertTaxonomyCoverage(sourcesEntries, taxonomyDoc, failures);
   assertThumbFreshness(sourcesEntries, opts.gameClient, failures);
+  checkNoTrackedCache(REPO_ROOT, failures, { pullShas }); // (W) F-174
   assertKindRenderable(keys, spec, codegenEntries, failures);
 
   return report(failures, warnings, opts);

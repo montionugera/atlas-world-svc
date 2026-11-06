@@ -106,6 +106,19 @@ non-zero iff there are failures. `bespoke`-tier entries fail hard on game
 rules; `seed`-tier entries only warn (the known seed-scale bug is tracked
 as an F-002 follow-up, not something CI should redden today).
 
+Kind `pipelineCharacter` (F-174, Tripo + Mixamo characters pulled from Asset
+Studio): height 0.95-1.15, at most 15,000 triangles, at most 2,936,012 bytes
+(`maxBytes`), textures up to 1024. `requiredStates` are idle/walk/run/attack/death;
+`optionalStates` (combat_idle, block, hit, ready_in, ready_out) are checked
+only when `--anims` maps them, and any `--anims` value may be a list of clip
+names (all must exist). The kind carries its own `rigReference`
+(`rig-reference/mixamo-65.bones.json`); `fixedExtras` in a rig reference pins
+an extra joint to one exact parent (`handslot.r` under `prop_weapon_r`).
+
+```bash
+node atelier/asset-forge/validate.mjs <glb> --kind pipelineCharacter --anims '<json>'
+```
+
 ## Stage: INTAKE (transactional)
 
 Runs VALIDATE first (any failure aborts with zero side effects), then
@@ -113,6 +126,9 @@ copies the glb into `game-client/assets/characters/` and writes the
 manifest entry atomically, then runs the drift-gate
 (`scripts/check_asset_manifest.mjs`). Any failure after validation rolls
 back the manifest and removes the staged glb — re-running is always safe.
+The drift-gate also checks clip names (F-174, guard V): every manifest `anims`
+value must name a clip that exists in the entry's glb, and an entry that maps
+`combat_idle` must map idle, walk, run, attack and death too.
 
 ```bash
 node atelier/asset-forge/intake.mjs <out.glb> --key <manifest-key> --license "<license text>" [--dry-run]
@@ -132,6 +148,33 @@ node atelier/asset-forge/intake.mjs <out.glb> --key <manifest-key> --license "<l
   asset; that file is normal git (not LFS — see `.gitattributes`) and must
   land in the same commit as the glb.
 
+### Studio mode (F-174, pull-only, nothing committed)
+
+The repo is public, so an owner-generated Tripo + Mixamo character is never committed.
+Intake records where it lives in Asset Studio and lets `studio-pull` fetch the bytes.
+
+```bash
+node atelier/asset-forge/intake.mjs --from-report <batches/NAME/report.json> --slug <slug> \
+  --key <manifest-key> --kind pipelineCharacter --dest-name <file.glb> [--dry-run] [--anims '<json>']
+node atelier/asset-forge/intake.mjs --studio-asset <id> --tag <tag> --key <k> --kind pipelineCharacter --dest-name <file.glb>
+```
+
+- The sha256 comes from the Asset Studio API record of the asset (never from `sheet.json`, never from
+  hashing the local file). The tag must be one of the record's tags. Bytes land in the gitignored
+  `game-client/studio-cache/<sha256>.glb`, verified against that sha256. Nothing is copied into
+  `game-client/assets/`, and no `.import` reminder is printed (nothing is committed).
+- The entry is pull-only: `pull{from, assetStudioAsset, tag, sha256}`, `scene res://studio-cache/<sha256>.glb`,
+  `license: "studio-private"` (`--license` is not taken). Rollback restores the manifest and never
+  deletes the cache file. Normalize runs in memory only; an asset that needs it is refused.
+- `anims` defaults to `pipelineClipMap` in `forge.config.json` (clip names in `pipelineClips`), so a new
+  pipeline character needs no hand-written JSON. Unknown state keys (a typo such as `combat_idel`)
+  and empty clip lists are refused; allowed keys come from the kind's required + optional states.
+- `--dest-name` is required: the cache file is named by sha256, but the naming and ledger rules need
+  the shipped name (add its `art-source/LICENSES.md` row first, licence `studio-private`).
+- `--dry-run` reads the record and checks the tag, never downloads the media, and writes nothing.
+- The last line is `intake: done in N.N s · credits spent S / est E (batch NAME total) · gen G s`
+  (wall time plus the batch's Tripo credits), or `· credits n/a (no batch report)`.
+
 ## Command block (end-to-end)
 
 ```bash
@@ -150,6 +193,16 @@ node atelier/asset-forge/intake.mjs /tmp/<name>.glb --key mob:aggressive --licen
 node atelier/asset-forge/intake.mjs /tmp/<name>.glb --key mob:aggressive --license "CC0 (Kenney Mini Characters, kitbashed)"
 
 # 6. Commit the glb + its .glb.import sidecar together, plus the LICENSES.md and manifest.json changes
+```
+
+Pipeline character from Asset Studio (the sergeant), pull-only:
+
+```bash
+node atelier/asset-forge/intake.mjs \
+  --from-report ~/asset-studio-private/atlas-3d-plan/batches/p5-existing/report.json \
+  --slug npc-lantern-hollow-watch-sergeant \
+  --key npc:lantern_hollow_watch_sergeant --kind pipelineCharacter \
+  --dest-name lantern_hollow_watch_sergeant.glb
 ```
 
 ## Troubleshooting (by VALIDATE rule name)

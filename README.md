@@ -222,6 +222,37 @@ xcrun devicectl device install app --device <DEVICE_UUID> <PATH_TO_APP>/AtlasWor
 xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.client
 ```
 
+**Pull-only assets (F-174).** This repo is public, so owner-generated glbs (the Tripo + Mixamo characters) are never committed. A manifest entry with a `pull` block records only the Asset Studio asset id, tag and sha256. Fetch the bytes with:
+
+```bash
+node scripts/studio-pull.mjs        # [--manifest <path>] [--cache-dir <dir>]
+```
+
+- Cache: `game-client/studio-cache/<sha256>.glb` (gitignored, a local `export_presets.cfg` (gitignored, holds a team id) must list it in `exclude_filter`, and with no such file no export is possible; override with `ATLAS_STUDIO_CACHE_DIR`). A cache file is trusted only after it re-hashes to the recorded sha256.
+- Exit codes: `0` every entry cached or pulled; `1` sha mismatch, bad record or `studio auth failed`; `2` Asset Studio unreachable or no token. Local Gate 1 never skips on exit 2; only CI sets `ATLAS_SKIP_STUDIO=1`.
+- Token: `STUDIO_TOKEN`, else a dev token minted from the local orbstack cluster (`kubectl`, needs Asset Studio running). Never printed.
+
+**Verify probes (pinned mono).** Env-gated C# probes run through `scripts/godot-verify.sh`, which uses the pinned Godot 4.7.2 .NET build (`$ATLAS_GODOT_MONO`), imports a fresh worktree first, bounds every call with a timeout, and passes only on exit 0 **and** a matching PASS line:
+
+```bash
+scripts/godot-verify.sh ATLAS_VERIFY_ANIM '^\[AnimationVerify\] RESULT: PASS'
+scripts/godot-verify.sh ATLAS_VERIFY_PIPELINE_CHAR '^\[PipelineCharVerify\] VERDICT PASS$'
+```
+
+Combat-mapped manifest entries (those mapping `combat_idle`) run the F-174 combat states `idle`, `combat_idle`, `block`, `attack` (variants rotate), `hit`, `ready_in`, `ready_out`, `death`; entries without `combat_idle` keep the legacy states.
+
+**Render strip (review artifact).** A 2880x480 PNG of the pipeline sergeant in 9 states (idle, walk, run, combat_idle, attack, block, hit, death, attack + axe). Windowed only (`--headless` has no pixels), so the screen must be unlocked. Run `node scripts/studio-pull.mjs` and `godot --headless --path game-client --import` first, or it fails `resolved to Capsule, not Bespoke`. Every cell must change at least 3 % of its pixels against an empty stage. The output stays in the gitignored `game-client/studio-cache/renders/` (a render of a private asset) and is served by the edit host:
+
+```bash
+ATLAS_RENDER_PIPELINE_STRIP="$PWD/game-client/studio-cache/renders/<sha>.strip.png" \
+  "$ATLAS_GODOT_MONO" --path game-client --resolution 1280x720 \
+  --write-movie "$(mktemp -d)/frame.png" --fixed-fps 30 --quit-after 600
+```
+
+Warning: the `godot` on PATH is the non-mono build. It prints "Can't load script" on C# and still exits 0, so never use it to verify a probe.
+
+Gate 1 runs these when `game-client/`, `atelier/asset-forge/` or the manifest gate changes (the "pipeline char" section); `ATLAS_GODOT_MONO` overrides the binary. That section never skips Asset Studio: a cold cache with the studio unreachable, a refused token, or `ATLAS_SKIP_STUDIO=1` all fail it (only `ci.yml` skips, with a `::warning::`).
+
 ---
 
 ## 🔗 Main Service Endpoints

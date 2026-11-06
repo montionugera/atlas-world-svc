@@ -106,18 +106,21 @@ function isModel3d(entry, spec) {
 // `srcPath` is the string the storybook will look up in the index — a res://
 // path for manifest entries, a plain art-relative path for concept art, which
 // mirrors how the page already resolves each (ASSET_ROOT vs ART_ROOT).
-function collectJobs(spec) {
+export function collectJobs(spec, { assets = ASSETS, gameClient = GAME_CLIENT, artRoot = ART_ROOT } = {}) {
   const jobs = [];
 
   for (const rel of ["manifest.json", "catalog-manifest.json"]) {
-    const doc = readJson(join(ASSETS, rel));
+    const doc = readJson(join(assets, rel));
     for (const [key, entry] of Object.entries(doc.entries || {})) {
       const srcPath = entry.scene ?? entry.stream;
       if (!srcPath) continue;
+      // F-174: a pull-only entry's bytes are private (gitignored studio-cache/). Its thumbnail
+      // would land in the TRACKED .thumbs/ and ship in the release image. Guard (W) backs this up.
+      if (entry.pull) continue;
       // Baked-preview types (theme/material) have no readable source image;
       // their `preview` PNG is the thing to thumbnail.
       const imageSource = entry.preview || srcPath;
-      const absSrc = join(GAME_CLIENT, imageSource.replace(/^res:\/\//, ""));
+      const absSrc = join(gameClient, imageSource.replace(/^res:\/\//, ""));
       jobs.push({
         key,
         srcPath,
@@ -127,7 +130,7 @@ function collectJobs(spec) {
     }
   }
 
-  const artPath = join(ART_ROOT, "art-manifest.json");
+  const artPath = join(artRoot, "art-manifest.json");
   if (existsSync(artPath)) {
     for (const [key, entry] of Object.entries(
       readJson(artPath).entries || {},
@@ -136,7 +139,7 @@ function collectJobs(spec) {
       jobs.push({
         key,
         srcPath: entry.file,
-        absSrc: join(ART_ROOT, entry.file),
+        absSrc: join(artRoot, entry.file),
         is3d: false,
       });
     }
@@ -374,10 +377,12 @@ async function main() {
   return failed > 0 ? 1 : 0;
 }
 
-main().then(
-  (code) => process.exit(code),
-  (err) => {
-    console.error("bake_thumbnails: fatal:", err);
-    process.exit(1);
-  },
-);
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  main().then(
+    (code) => process.exit(code),
+    (err) => {
+      console.error("bake_thumbnails: fatal:", err);
+      process.exit(1);
+    },
+  );
+}

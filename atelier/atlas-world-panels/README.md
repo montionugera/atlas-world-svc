@@ -41,6 +41,7 @@ controls carrying `[data-write-control]` are hidden and write endpoints return 4
 | `panels/art.mjs` | `?tab=art[&group=…]` | Concept art over `game-client/assets/art/` — reference art, not assets the client loads |
 | `panels/coverage.mjs` | `?tab=coverage` | Codegen asset keys (`content/generated/asset-keys.json`) with no manifest entry yet |
 | `panels/story.mjs` | `?tab=story&view=reader\|graph\|undertow` | Story explorer and Undertow novel (iframes from `story-views.json`); `view=nodes` stays the inline story graph |
+| `panels/lore.mjs` | `?tab=lore[&chapter=…&ref=…]` | World Bible + Game Systems wiki (`content/studio/*.json`; F-174 adds `game-systems.json`) |
 | `panels/map-sheets.mjs` | `?tab=map-sheets` | Every mapforge sheet with pan/zoom viewer, fabric census and vocabulary |
 | `panels/map-builder.mjs` | `?tab=map-builder` | F-052 Map Builder UI over the `/api/map-builder/*` proxy; "Builder service not running" while `:6016` is down |
 | `panels/combat-lab.mjs` | `?tab=combat-lab` | The combat design model (`atelier/combat-lab`), beside the Rust Balance Simulator |
