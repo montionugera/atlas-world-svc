@@ -6,7 +6,7 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync, rmSync, statSync, symlinkSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { promoteWorld, classifyLiveNodes, parseArgs, listFiles, reportLines, REPLACED_FAMILIES,
@@ -687,18 +687,21 @@ test("a FAITHFUL promotion of the committed draft leaves every integrity rule gr
 // command is built for. They are here because "verify the draft against its
 // own manifest" was satisfiable by files that are not the draft, and a check
 // that can be satisfied by the wrong file is not the check the header claims.
-test("a manifest key that escapes the run dir is REFUSED, not verified elsewhere", T, () => {
+test("a manifest key that escapes the run dir is REFUSED, not verified elsewhere", T, (t) => {
   const repo = scratchRepo(), run = copyRun();
-  const outside = join(run, "..", "outside-the-draft.json");
+  // Named after the (unique) run dir: `..` is the shared $TMPDIR, so a fixed name collides
+  // between overlapping runs (F-172). Removed in t.after so a failing run cleans up too.
+  const name = `outside-the-draft-${basename(run)}.json`;
+  const outside = join(run, "..", name);
+  t.after(() => rmSync(outside, { force: true }));
   writeFileSync(outside, "{}\n");
   const mp = join(run, "manifest.json");
   const man = JSON.parse(readFileSync(mp, "utf8"));
-  man.hashes["../outside-the-draft.json"] = "sha256:" + shaOf(outside);
+  man.hashes[`../${name}`] = "sha256:" + shaOf(outside);
   writeFileSync(mp, JSON.stringify(man, null, 2));
   const r = promoteWorld({ repoRoot: repo, runDir: run, dryRun: true });
   assert.ok(r.errors.some((e) => /resolves OUTSIDE the run dir/.test(e)),
     `a file outside the draft was accepted as verification: ${JSON.stringify(r.errors)}`);
-  rmSync(outside);
 });
 
 test("a SYMLINK in the draft is REFUSED — readFileSync follows it on both sides", T, () => {

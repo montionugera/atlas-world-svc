@@ -1580,6 +1580,6 @@
     "id": "I-252",
     "title": "mapforge promote.test.mjs writes a fixed tmpdir filename (outside-the-draft.json) and flakes when two runs overlap",
     "created_at": "2026-11-03T20:49:26.697812+00:00",
-    "promoted_to": null
+    "promoted_to": "F-172"
   }
 ]
