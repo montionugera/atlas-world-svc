@@ -222,14 +222,26 @@ SKIP_REASON=""
 # pid it froze. A frozen process cannot fork, so nothing spawned mid-walk escapes the list
 # (a plain snapshot-then-TERM missed children forked between the two; I-251/F-171).
 stop_walk() { local c; kill -STOP "$1" 2>/dev/null || return 0; echo "$1"; for c in $(pgrep -P "$1" 2>/dev/null); do stop_walk "$c"; done; }
+# pgid_of <pid>: the pid's process group id (empty when the pid is gone).
+pgid_of() { ps -o pgid= -p "$1" 2>/dev/null | tr -d ' '; }
 # kill_tree <pid>...: freeze each whole tree, TERM it, CONT it (so the TERM is delivered and
-# nothing is left stopped), then KILL what is left. Always returns 0.
+# nothing is left stopped), then KILL what is left. A pid that leads its own process group
+# (each group runner starts under `set -m`) is also frozen and killed AS A GROUP, which
+# catches children re-parented away from the tree when a mid-tree process exits (F-173).
+# Never group-signals the caller's own process group. Always returns 0.
 kill_tree() {
-  local all="" p
-  for p in "$@"; do [ -n "$p" ] || continue; all="$all $(stop_walk "$p")"; done
-  [ -n "${all// /}" ] || return 0
+  local all="" leaders="" p own
+  own=$(pgid_of $$)
+  for p in "$@"; do
+    [ -n "$p" ] || continue
+    if [ "$(pgid_of "$p")" = "$p" ] && [ "$p" != "$own" ]; then
+      kill -STOP -- "-$p" 2>/dev/null && leaders="$leaders -$p"
+    fi
+    all="$all $(stop_walk "$p")"
+  done
+  [ -n "${all// /}${leaders// /}" ] || return 0
   # shellcheck disable=SC2086
-  { kill -TERM $all; kill -CONT $all; } 2>/dev/null; sleep 1; kill -9 $all 2>/dev/null
+  { kill -TERM -- $leaders $all; kill -CONT -- $leaders $all; } 2>/dev/null; sleep 1; kill -9 -- $leaders $all 2>/dev/null
   return 0
 }
 
@@ -675,25 +687,43 @@ run_group() { # run_group <name>: runs in a background subshell; log + results g
   echo "[gate-timing] group $g $((SECONDS - start))s"
 }
 
+# run_groups_parallel [group...]: run the groups (default $GROUP_ORDER) as background
+# subshells, each leading its own process group, and collect their results fail-closed.
+# The serial plan runs through here too, as the single group "serial" (F-173), so it gets
+# the same INT/TERM cleanup.
 run_groups_parallel() {
+  local order="${*:-$GROUP_ORDER}"
   GROUP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/atlas-gate1.XXXXXX") || { echo "❌ cannot create a temp dir for the parallel groups (TMPDIR=${TMPDIR:-unset})"; return 1; }
   local g pids="" pid line res name found tab
   tab=$(printf '\t')
   trap 'kill_tree $pids; rm -rf "$GROUP_DIR"; exit 130' INT TERM
-  for g in $GROUP_ORDER; do
-    ( run_group "$g" ) 3>&1 > "$GROUP_DIR/$g.log" 2>&1 < /dev/null &
+  # Job control: each group subshell leads its own process group (see kill_tree). The gate's
+  # INT/TERM trap is what reaches them; psrw runs the gate with a plain subprocess.run (no
+  # timeout, no group kill), so a SIGKILL sent to the gate's own process group would NOT reach
+  # the groups — kill the gate with TERM/INT, never `kill -9 -- -<gate pgid>`.
+  # A lone "serial" group streams its output live instead of to a log file (F-173 review).
+  local live=0
+  [ "$order" = "serial" ] && live=1
+  set -m
+  for g in $order; do
+    if [ "$live" -eq 1 ]; then
+      ( run_group "$g" ) 3>/dev/null 2>&1 < /dev/null &
+    else
+      ( run_group "$g" ) 3>&1 > "$GROUP_DIR/$g.log" 2>&1 < /dev/null &
+    fi
     pids="$pids $!"
     echo "🚦 group $g started (pid $!)"
   done
+  set +m
   # Wait for every pid; the per-group results files, not exit codes, decide.
   for pid in $pids; do wait "$pid"; done
   trap - INT TERM
-  for g in $GROUP_ORDER; do
+  for g in $order; do
     echo ""
     echo "######################################################################"
     echo "# GROUP: $g"
     echo "######################################################################"
-    cat "$GROUP_DIR/$g.log"
+    [ "$live" -eq 1 ] || cat "$GROUP_DIR/$g.log"
     # Fail closed: every expected section needs a recorded result; a group whose
     # subshell died leaves FAIL entries instead of silently dropping sections.
     while IFS= read -r line; do
@@ -740,7 +770,9 @@ if [ "$TEST_MODE" -eq 0 ]; then
   run_section "contracts: tsc build" contracts_build
 fi
 if [ "${GATE_PARALLEL:-1}" = "0" ] || ! parallel_memory_ok; then
-  for e in "${SERIAL_PLAN[@]}"; do run_entry "$e"; done
+  # shellcheck disable=SC2034 # read via group_entries' eval
+  GROUP_serial=("${SERIAL_PLAN[@]}")
+  run_groups_parallel serial || { echo "RESULT: GATE 1 FAILURES ABOVE ☝ — serial runner could not start; do not ship"; exit 1; }
 else
   run_groups_parallel || { echo "RESULT: GATE 1 FAILURES ABOVE ☝ — parallel runner could not start; do not ship"; exit 1; }
 fi

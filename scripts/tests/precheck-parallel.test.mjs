@@ -24,6 +24,7 @@ sec_ok() { return 0; }
 sec_crash() { sh -c 'kill -9 $PPID'; return 0; }
 sec_child() { sh -c 'sleep 300 & echo $! > "$ATLAS_TEST_PIDFILE"; wait'; }
 sec_fail() { return 1; }
+sec_orphan() { sh -c 'sleep 300 & echo $! > "$ATLAS_TEST_PIDFILE"'; sleep 300; }
 sec_forker() { local n=0; while [ $n -lt 400 ]; do sleep 20 & echo $! >> "$ATLAS_TEST_PIDFILE"; n=$((n+1)); sleep 0.005; done; wait; }
 `;
 const OK_PLAN = `
@@ -243,6 +244,7 @@ test("AC4: kill_tree returns 0 with an exited pid and leaves no stopped or live 
   assert.ok(fns && kt, "stop_walk and kill_tree must be top-level functions");
   const sh = `${fns}${kt}
 bash -c 'sleep 300 & sleep 300 & wait' & tree=$!
+trap 'kill -9 $tree $kids 2>/dev/null' EXIT
 sleep 0.3; kids=$(pgrep -P $tree | tr '\\n' ' ')
 true & dead=$!; wait $dead
 kill_tree "$dead" "$tree"; echo "rc=$?"
@@ -256,5 +258,112 @@ sleep 0.2; for p in $tree $kids; do ps -o pid=,stat= -p $p; done; echo end`;
     left,
     [],
     "processes left (live or stopped): " + left.join(";"),
+  );
+});
+
+// ── F-173: serial mode stop handler, re-parented orphans, never the caller's group ──
+const SERIAL = { ATLAS_PARALLEL_FREE_GB_OVERRIDE: "1" };
+async function termLeavesNothing(t, plan, extraEnv, minPids) {
+  const { dir, env } = fixture(t, plan);
+  const pidfile = join(dir, "child.pid");
+  t.after(() => {
+    for (const p of readPids(pidfile))
+      if (isAlive(p))
+        try {
+          process.kill(p, "SIGKILL");
+        } catch {}
+  });
+  const child = spawn("bash", [script, "--no-install"], {
+    env: { ...env, ...extraEnv },
+    stdio: "ignore",
+  });
+  const exited = new Promise((res) => child.on("exit", res));
+  for (let i = 0; i < 100 && readPids(pidfile).length < minPids; i++)
+    await new Promise((r) => setTimeout(r, 50));
+  assert.ok(
+    readPids(pidfile).length >= minPids,
+    "section never started its children",
+  );
+  child.kill("SIGTERM");
+  await exited;
+  let alive = [];
+  for (let i = 0; i < 30; i++) {
+    alive = readPids(pidfile).filter(isAlive);
+    if (alive.length === 0) break;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  assert.deepEqual(alive, [], `${alive.length} process(es) survived TERM`);
+}
+const withA = (sec) =>
+  OK_PLAN.replace(
+    'GROUP_a=("one|sec_ok" "two|sec_ok")',
+    `GROUP_a=("one|${sec}" "two|sec_ok")`,
+  ).replace('SERIAL_PLAN=("one|sec_ok"', `SERIAL_PLAN=("one|${sec}"`);
+
+test("F-173 AC1: serial mode — TERM leaves no descendant of a section alive", async (t) => {
+  await termLeavesNothing(t, withA("sec_child"), SERIAL, 1);
+});
+test("F-173 AC1: serial mode — TERM during a tight fork loop leaves no child alive", async (t) => {
+  await termLeavesNothing(t, withA("sec_forker"), SERIAL, 50);
+});
+test("F-173 AC3: a grandchild orphaned before TERM is killed (parallel)", async (t) => {
+  await termLeavesNothing(t, withA("sec_orphan"), {}, 1);
+});
+test("F-173 AC3: a grandchild orphaned before TERM is killed (serial)", async (t) => {
+  await termLeavesNothing(t, withA("sec_orphan"), SERIAL, 1);
+});
+test("F-173 AC2: serial mode keeps plan order and fails closed on a crashing section", (t) => {
+  const ok = run(t, OK_PLAN, SERIAL);
+  assert.equal(ok.status, TEST_PASS, ok.stdout);
+  const order = [...ok.stdout.matchAll(/^ (?:PASS|FAIL|SKIP)\s+(\S+)$/gm)].map(
+    (m) => m[1],
+  );
+  assert.deepEqual(order, ["one", "three", "two"]);
+  const r = run(t, withA("sec_crash"), SERIAL);
+  assert.equal(r.status, 1, r.stdout);
+  assert.match(r.stdout, /FAIL\s+one/);
+  assert.match(r.stdout, /FAIL\s+three/);
+  assert.match(r.stdout, /FAIL\s+two/);
+  assert.doesNotMatch(r.stdout, /PASS — /);
+});
+test("F-173 AC4: kill_tree never group-signals the caller's own process group", () => {
+  const src = readFileSync(script, "utf8");
+  const fns = [
+    ...src.matchAll(
+      /^(?:stop_walk|pgid_of|kill_tree)\(\) \{[\s\S]*?^\}\n|^(?:stop_walk|pgid_of)\(\)[^\n]*\n/gm,
+    ),
+  ]
+    .map((m) => m[0])
+    .join("");
+  // Shims: pgid_of says the target pid 4242 leads the CALLER's own group; kill only records.
+  // Without the own-group guard kill_tree would send "-STOP -- -4242" (a group signal).
+  const sh = `${fns}
+pgid_of() { echo 4242; }
+kill() { echo "kill $*"; }
+kill_tree 4242`;
+  const r = spawnSync("bash", ["-c", sh], { encoding: "utf8", timeout: 10000 });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /kill -STOP 4242/, "the tree itself is still frozen");
+  assert.doesNotMatch(
+    r.stdout,
+    /-- -4242|-4242/,
+    `group-signalled the caller's own group:
+${r.stdout}`,
+  );
+});
+
+test("F-173: serial mode streams section output live, not from a log file at the end", (t) => {
+  const r = run(t, OK_PLAN, SERIAL);
+  assert.equal(r.status, TEST_PASS, r.stdout);
+  assert.match(r.stdout, /group serial started/);
+  assert.doesNotMatch(
+    r.stdout,
+    /# GROUP: serial[\s\S]*▶ one/,
+    "serial output was replayed from a log after the run",
+  );
+  assert.match(
+    r.stdout,
+    /▶ one[\s\S]*# GROUP: serial/,
+    "section output must appear before the group footer",
   );
 });
