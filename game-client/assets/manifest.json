@@ -202,16 +202,16 @@
       "render": "model3d"
     },
     "npc:lantern_hollow_watch_sergeant": {
-      "scene": "res://studio-cache/42a07e62e7321e9781d3e1b2619c60a0af47c8382c940ad756cdbdfe62788da2.glb",
-      "source": "Asset Studio library asset 01a1b35e-11e3-7243-8e4b-b39f87fb9a95 (client atlas-world); bytes not in this repo",
+      "scene": "res://studio-cache/bec60a2994f76864c029a127334bfba61f47711f2038d563218d8d51a4a7eb96.glb",
+      "source": "Asset Studio library asset 01a1b4af-c079-7332-a54e-1455ee52e2aa (client atlas-world); bytes not in this repo",
       "license": "studio-private",
       "tier": "bespoke",
       "kind": "pipelineCharacter",
       "pull": {
         "from": "asset-studio",
-        "assetStudioAsset": "01a1b35e-11e3-7243-8e4b-b39f87fb9a95",
-        "tag": "p6c-11070720",
-        "sha256": "42a07e62e7321e9781d3e1b2619c60a0af47c8382c940ad756cdbdfe62788da2"
+        "assetStudioAsset": "01a1b4af-c079-7332-a54e-1455ee52e2aa",
+        "tag": "p6s-11071330",
+        "sha256": "bec60a2994f76864c029a127334bfba61f47711f2038d563218d8d51a4a7eb96"
       },
       "gen": {
         "model": "tripo",

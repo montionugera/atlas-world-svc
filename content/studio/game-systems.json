@@ -17,7 +17,7 @@
         "Only the Lantern Hollow watch sergeant uses this body today."
       ],
       "strip": {
-        "src": "/game-client/studio-cache/renders/42a07e62e7321e9781d3e1b2619c60a0af47c8382c940ad756cdbdfe62788da2.strip.png",
+        "src": "/game-client/studio-cache/renders/bec60a2994f76864c029a127334bfba61f47711f2038d563218d8d51a4a7eb96.strip.png",
         "fallback": "This picture is a private render and is not part of this build. See it on the edit host: http://atlas-edit.joymify.local.com/?tab=lore&chapter=systems&ref=system-combat-stances",
         "alt": "The Lantern Hollow watch sergeant in nine poses: idle, walk, run, guard, attack, block, hit, fallen, and attack holding a swapped-in axe.",
         "frames": ["Idle", "Walk", "Run", "Guard", "Attack", "Block", "Hit", "Fallen", "Attack (axe)"]
