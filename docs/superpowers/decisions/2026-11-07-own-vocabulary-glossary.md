@@ -20,7 +20,7 @@ The premise and names came out of a 7-round discussion between Claudia (our agen
 
 ## 2. Naming rule
 
-**Title stays `Atlas: The Cala Knight`.** Every new proper name follows the same pattern as *Cala Knight*: **an Elvish root (Tolkien's Quenya or Sindarin) plus a plain English word**, or plain evocative English.
+**Title stays `Atlas: The Cala Knight`.** Every new proper name follows the same pattern as _Cala Knight_: **an Elvish root (Tolkien's Quenya or Sindarin) plus a plain English word**, or plain evocative English.
 
 - Build names from roots, never from existing Tolkien names (no Gondor, Elrond, Silmaril, Voronwë, Tamar).
 - At most two names per first letter across races, gods and the Architect. No near-twins such as Nira/Nara.
@@ -53,48 +53,48 @@ Root language: **Q** = Quenya, **S** = Sindarin. A root marked † was picked fr
 
 ### Player order
 
-| Old | New | Root / meaning |
-|---|---|---|
-| Expedition Member | **Cala Knight(s)** | Q *cala*, light |
-| — (order HQ) | **Cala Keep** | Q *cala* + Keep |
+| Old               | New                | Root / meaning  |
+| ----------------- | ------------------ | --------------- |
+| Expedition Member | **Cala Knight(s)** | Q _cala_, light |
+| — (order HQ)      | **Cala Keep**      | Q _cala_ + Keep |
 
 ### Races and home towns
 
-| Old race | New race | Home town (display) | Root / meaning | Time & loss theme |
-|---|---|---|---|---|
-| Human / Demi-Human | **Maro Folk** | **Maro Bell** | Q *már*, home | The Short Candle: begin what you cannot finish |
-| Dwarf (Tontatta) | **Ondo Forge** | **Ondo Kiln** | Q *ondo*, stone | The Things We Leave: make what is loved after you are gone |
-| Lunar (elf-like) | **Linde Folk** | **Linde Glaze** | Q *lindë*, song | The Endless Farewell: choose to love what you will outlive |
-| Ogre / Orc | **Daro Guard** | **Daro Post** | S *daro*, halt | The Unbroken Watch: when does loyalty become a prison? |
-| Furral (Mink) | **Tava Kin** | **Tava Fair** | Q *tavar*, wood / forest † | The Passing Spark: imperfect remembrance beats silence |
-| Dark-Lunar | **Silme Seers** | **Silme Echo** | Q *silmë*, starlight (fallback *Hise Seers*, Q *hísë*, mist) | The Burden of Knowing: truth does not always bring peace |
+| Old race           | New race        | Home town (display) | Root / meaning                                               | Time & loss theme                                          |
+| ------------------ | --------------- | ------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- |
+| Human / Demi-Human | **Maro Folk**   | **Maro Bell**       | Q _már_, home                                                | The Short Candle: begin what you cannot finish             |
+| Dwarf (Tontatta)   | **Ondo Forge**  | **Ondo Kiln**       | Q _ondo_, stone                                              | The Things We Leave: make what is loved after you are gone |
+| Lunar (elf-like)   | **Linde Folk**  | **Linde Glaze**     | Q _lindë_, song                                              | The Endless Farewell: choose to love what you will outlive |
+| Ogre / Orc         | **Daro Guard**  | **Daro Post**       | S _daro_, halt                                               | The Unbroken Watch: when does loyalty become a prison?     |
+| Furral (Mink)      | **Tava Kin**    | **Tava Fair**       | Q _tavar_, wood / forest †                                   | The Passing Spark: imperfect remembrance beats silence     |
+| Dark-Lunar         | **Silme Seers** | **Silme Echo**      | Q _silmë_, starlight (fallback _Hise Seers_, Q _hísë_, mist) | The Burden of Knowing: truth does not always bring peace   |
 
 **Kilnwatch Bastion** stays as the shared hub where all races meet. The start region is **Maro Valley**.
 
 ### Gods and the Architect
 
-| Old | New | Root / meaning |
-|---|---|---|
-| Vesper (memory) | **Rena, the Memory Keeper** | Q *ren-*, remember † |
-| Krono (brass / time) | **Luma, the Still Hour** | Q *lúmë*, time / hour |
-| Thalassor / dream-tide | **Olo, the Dreamtide** | Q *olor*, dream |
-| Malphas (fire) | **Nara, the Last Ember** | Q *nár*, fire |
-| Fenrir-Kael / Sola (growth) | **Vinya, the Everroot** | Q *vinya*, new |
-| Seraphiel / Bahamut-Triad (watch) | **Tira, the Final Watch** | Q *tir-*, watch |
-| Aethelgard, The Architect | **Yara, the Architect** | Q *yára*, ancient |
+| Old                               | New                         | Root / meaning        |
+| --------------------------------- | --------------------------- | --------------------- |
+| Vesper (memory)                   | **Rena, the Memory Keeper** | Q _ren-_, remember †  |
+| Krono (brass / time)              | **Luma, the Still Hour**    | Q _lúmë_, time / hour |
+| Thalassor / dream-tide            | **Olo, the Dreamtide**      | Q _olor_, dream       |
+| Malphas (fire)                    | **Nara, the Last Ember**    | Q _nár_, fire         |
+| Fenrir-Kael / Sola (growth)       | **Vinya, the Everroot**     | Q _vinya_, new        |
+| Seraphiel / Bahamut-Triad (watch) | **Tira, the Final Watch**   | Q _tir-_, watch       |
+| Aethelgard, The Architect         | **Yara, the Architect**     | Q _yára_, ancient     |
 
 The old→new god rows are **replacements, not lineage**. Each new god is defined by its title, not by the old god it replaces.
 
 ### Economy, items, events
 
-| Old (borrowed) | New | Meaning |
-|---|---|---|
-| Adena | **Daymarks** | everyday coin |
-| Ancient Adena | **Firstmarks** | pre-Seal coin |
-| Soulshot | **Timeflint** | physical attack booster |
-| Spiritshot | **Spellglaze** | magic attack booster |
-| Mammon | **The Unstamped** | itinerant black-market trader |
-| Seven Signs | **The Bell Reckoning** | recurring world event |
+| Old (borrowed) | New                    | Meaning                       |
+| -------------- | ---------------------- | ----------------------------- |
+| Adena          | **Daymarks**           | everyday coin                 |
+| Ancient Adena  | **Firstmarks**         | pre-Seal coin                 |
+| Soulshot       | **Timeflint**          | physical attack booster       |
+| Spiritshot     | **Spellglaze**         | magic attack booster          |
+| Mammon         | **The Unstamped**      | itinerant black-market trader |
+| Seven Signs    | **The Bell Reckoning** | recurring world event         |
 
 ### Regions
 
@@ -104,13 +104,13 @@ Maro Valley · Ondo Heights · Tava Grove · Silme Deep · The First Kiln.
 
 Each chapter has a visible wound, a buried truth, a choice that is not neatly resolved, and a boss. Every choice has a personal outcome, while the shared world state stays the same for everyone.
 
-| Ch | Title | Region / race focus | Reveals | Boss |
-|---|---|---|---|---|
-| 0 | The Lanterns of Maro | Maro Valley / Maro Folk | Time is **damaged**, and porcelain stores fragments of it. No theft is shown yet. | The Bellkeeper: its bell rewinds the arena, and players keep their memory of the attack pattern. |
-| I | The Hours That Would Not Pass | Ondo Heights / Ondo Forge + Daro Guard; Luma's Still Kiln | The first volunteers' sacrifice was not enough, and Yara knew it. | The Brass Castellan: steals seconds from player abilities. |
-| II | The Festival of Second Chances (warm, funny) | Tava Grove / Tava Kin + Linde Folk; Rena's Remembrance Kiln | The gods are still conscious inside the kilns. | The Jubilant Collector: repeats the last combat phase. |
-| III | The Years Beneath the Glaze | Silme Deep / Silme Seers; Olo's Glass Kiln | **The theft from the unborn.** | The Unborn Witness: shows several futures, then one becomes real. |
-| IV | The Architect's Silence | The First Kiln / all six | Yara's reasons. The kilns only postponed the Waning. | The First Regulator: players spread finite stored years across six failing conduits. |
+| Ch  | Title                                        | Region / race focus                                         | Reveals                                                                           | Boss                                                                                             |
+| --- | -------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| 0   | The Lanterns of Maro                         | Maro Valley / Maro Folk                                     | Time is **damaged**, and porcelain stores fragments of it. No theft is shown yet. | The Bellkeeper: its bell rewinds the arena, and players keep their memory of the attack pattern. |
+| I   | The Hours That Would Not Pass                | Ondo Heights / Ondo Forge + Daro Guard; Luma's Still Kiln   | The first volunteers' sacrifice was not enough, and Yara knew it.                 | The Brass Castellan: steals seconds from player abilities.                                       |
+| II  | The Festival of Second Chances (warm, funny) | Tava Grove / Tava Kin + Linde Folk; Rena's Remembrance Kiln | The gods are still conscious inside the kilns.                                    | The Jubilant Collector: repeats the last combat phase.                                           |
+| III | The Years Beneath the Glaze                  | Silme Deep / Silme Seers; Olo's Glass Kiln                  | **The theft from the unborn.**                                                    | The Unborn Witness: shows several futures, then one becomes real.                                |
+| IV  | The Architect's Silence                      | The First Kiln / all six                                    | Yara's reasons. The kilns only postponed the Waning.                              | The First Regulator: players spread finite stored years across six failing conduits.             |
 
 Chapter IV ends with Yara still bound in the regulator and all six gods alive. The next saga asks what caused the Waning.
 
@@ -127,6 +127,6 @@ Chapter IV ends with Yara still bound in the regulator and all six gods alive. T
 ## 7. Open items
 
 1. **Check the roots against a lexicon** (for example eldamo.org) before commercial use, especially those marked †. ChatGPT's "confident" labels are its own claims.
-2. **Silme vs Hise** for the seal-listeners: Silme is a real root but sits close to *Silmaril*. Swap if a reviewer flags it.
+2. **Silme vs Hise** for the seal-listeners: Silme is a real root but sits close to _Silmaril_. Swap if a reviewer flags it.
 3. **No trademark or name-collision search** has been run on the compounds (Cala Keep, Timeflint, Spellglaze, ...).
 4. **The existing concept art** uses the old race designs. New prompts should use the new names and themes.
