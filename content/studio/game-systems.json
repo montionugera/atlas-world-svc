@@ -8,7 +8,7 @@
       "summary": "Fighters drop into a guard stance when they pick a target, swing in turn, flinch when struck, and can change the weapon in their hand without a new body.",
       "sections": [
         { "heading": "Moving", "body": "Out of a fight a character stands, walks and runs in a relaxed way. Walking and running loop smoothly for as long as the character keeps moving." },
-        { "heading": "Fighting stance", "body": "The moment a fighter has a target, the guard comes up: the knees bend, the sword lifts and the shield comes forward to the side, so you still see the fighter. When the fight ends, the fighter relaxes and goes back to standing." },
+        { "heading": "Fighting stance", "body": "The moment a fighter has a target, the guard comes up: the knees bend, the sword lifts and the shield comes up in front, covering the body the way a real guard does. The face stays in view over the shield rim. When the fight ends, the fighter relaxes and goes back to standing." },
         { "heading": "Attack, block, hit", "body": "A fighter with several attacks swings them in turn: first, second, third, then back to the first. After each swing the guard comes back up. A block holds the shield high for as long as it lasts. A hit plays a short flinch, then the fighter returns to guard. A fallen fighter stays down." },
         { "heading": "Swapping weapons", "body": "The same body can take a different weapon in hand while the game runs. The last picture shows the spear swapped for an axe, with every move still working." }
       ],

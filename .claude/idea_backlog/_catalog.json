@@ -1605,5 +1605,11 @@
     "title": "Sergeant combat stance clip: combat_idle shows the body",
     "created_at": "2026-11-07T00:18:18.060392+00:00",
     "promoted_to": "F-175"
+  },
+  {
+    "id": "I-257",
+    "title": "Combat stance wiki: shield covers the body",
+    "created_at": "2026-11-07T00:54:00.113013+00:00",
+    "promoted_to": "F-176"
   }
 ]
