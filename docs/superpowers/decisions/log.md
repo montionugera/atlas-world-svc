@@ -11,3 +11,5 @@
 2026-11-01 | I-246 Atlas Game DB | "Atlas Game DB" is the existing Atlas World DB studio, served read-only from a release image in local k8s; the Mac host stays for editing at atlas-edit.joymify.local.com | .claude/idea_backlog/I-246-atlas-web-app-in-local-k8s-deployed-via/spec.md
 2026-11-01 | I-247 demi-human mobs | Shape tag upright_monster on existing wild races, no new race; Normal 15, Mini-boss 30, Raid 40, MVP 50 percent of dungeon rows; filler boss rows repaired | .claude/idea_backlog/I-247-demi-human-mob-share-rising-by-tier/spec.md
 2026-11-01 | Atlas promote | No release PR: psrw promote --direct, no waiting on CI, until there is a live product | owner, session release-79
+| 2026-11-07 | R0 | Official Game Title & Player Archetype | **Atlas: The Cala Knight** (Player title: *The Cala Knight* / *The Cala Knights*). High Elven *Cala* ("Light") + *Knight* ("Protector / Champion") resolving the open-archetype identity requirement and providing a distinct, memorable brand. | `docs/superpowers/decisions/2026-11-07-game-title-and-player-identity.md` (Owner explicit approval). |
+

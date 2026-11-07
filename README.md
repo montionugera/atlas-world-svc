@@ -1,6 +1,6 @@
-# 🚀 Atlas World - Real-time Multiplayer Game
+# 🚀 Atlas: The Cala Knight
 
-A high-performance real-time multiplayer game built with a modern high-density architecture: **server-rs** (authoritative Rust ECS game server with FlatBuffers binary delta replication and native in-process **Rust Meta & Persistence Engine**).
+**Atlas: The Cala Knight** is a high-performance real-time multiplayer MMORPG built with a modern high-density architecture: **server-rs** (authoritative Rust ECS game server with FlatBuffers binary delta replication and native in-process **Rust Meta & Persistence Engine**).
 
 ---
 

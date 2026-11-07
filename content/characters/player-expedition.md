@@ -18,9 +18,12 @@ links:
 
 You. One of the party that reopened the meadow — not a chosen hero, just the
 one still standing at the tent line when the training dummies stopped being
-enough. The expedition kit is practical: what you can carry, swing, and repair
-in the field. Everything past the meadow is someone else's territory; the
-player is the one deciding to walk into it anyway.
+enough. Across the frontier, those who bear this mantle are known as the
+**Cala Knights** (*Knights of Light* / *Protectors of the Light*, from High
+Elven *Cala*), an open order of guardians holding the line against the Void.
+The expedition kit is practical: what you can carry, swing, and repair in
+the field. Everything past the meadow is someone else's territory; the player
+is the one deciding to walk into it anyway.
 
 ## Visual Brief
 
