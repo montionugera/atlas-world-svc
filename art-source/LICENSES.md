@@ -715,6 +715,6 @@ cheap now, painful to reconstruct later.
 | `nature/tree_bare_2_a_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Tree_Bare_2_A_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:tree_bare_2_a_color1` |
 | `nature/tree_bare_2_b_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Tree_Bare_2_B_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:tree_bare_2_b_color1` |
 | `nature/tree_bare_2_c_color1.glb` | market | KayKit Forest Nature Pack 1.0 (Kay Lousberg) — Tree_Bare_2_C_Color1.gltf | CC0 | Kay Lousberg | 2026-07-18 | seed tier — `nature:tree_bare_2_c_color1` |
-| `studio-cache/lantern_hollow_watch_sergeant.glb` (pull-only, not in repo) | studio | Asset Studio asset 01a1a97a-8e45-71d6-885f-459aa1cebf7f, tag p4b-11050912 (Tripo mesh + Mixamo rig/clips); owner-generated, private | studio-private | owner | 2026-11-06 | pull-only — `npc:lantern_hollow_watch_sergeant`, bytes fetched by sha256 7f1c54c3… (F-174) |
+| `studio-cache/lantern_hollow_watch_sergeant.glb` (pull-only, not in repo) | studio | Asset Studio asset 01a1b35e-11e3-7243-8e4b-b39f87fb9a95, tag p6c-11070720 (Tripo mesh + Mixamo rig/clips; 2026-11-07 adds the Mixamo Sword And Shield Idle stance clip); owner-generated, private | studio-private | owner | 2026-11-06 | pull-only — `npc:lantern_hollow_watch_sergeant`, bytes fetched by sha256 42a07e62… (F-174, F-175) |
 
 <!-- Source ∈ ai | market | commission. License must be commercial-safe (prefer CC0). -->

@@ -54,7 +54,7 @@ namespace AtlasWorld.Client.World
             Report($"{Key} resolves to the bespoke glb (tier={tier})", tier == ResolveTier.Bespoke);
             IReadOnlyDictionary<string, string> anims = reg.ResolveAnimOverrides(Key);
             IReadOnlyDictionary<string, IReadOnlyList<string>> variants = reg.ResolveAnimVariants(Key);
-            Report("anims maps combat_idle → block_idle", anims.GetValueOrDefault("combat_idle") == "block_idle");
+            Report("anims maps combat_idle → combat_idle", anims.GetValueOrDefault("combat_idle") == "combat_idle");
             Report("attack variants are [attack, attack_2, attack_3]",
                 variants.TryGetValue("attack", out IReadOnlyList<string>? a) && string.Join(",", a) == "attack,attack_2,attack_3");
             Report("anims[attack] keeps the first variant for legacy callers", anims.GetValueOrDefault("attack") == "attack");
@@ -107,7 +107,7 @@ namespace AtlasWorld.Client.World
             var loops = new (string clip, Animation.LoopModeEnum mode)[]
             {
                 ("idle", Animation.LoopModeEnum.Linear), ("walk", Animation.LoopModeEnum.Linear),
-                ("run", Animation.LoopModeEnum.Linear), ("block_idle", Animation.LoopModeEnum.Linear),
+                ("run", Animation.LoopModeEnum.Linear), ("combat_idle", Animation.LoopModeEnum.Linear),
                 ("block", Animation.LoopModeEnum.Linear), ("attack", Animation.LoopModeEnum.None),
                 ("attack_2", Animation.LoopModeEnum.None), ("attack_3", Animation.LoopModeEnum.None),
                 ("hit", Animation.LoopModeEnum.None), ("death", Animation.LoopModeEnum.None),
@@ -124,13 +124,13 @@ namespace AtlasWorld.Client.World
 
             s.Anim.InCombat = true;
             s.Anim.Update(true, Vector3.Zero);
-            Expect(s, "InCombat", "combat_idle", "block_idle");
+            Expect(s, "InCombat", "combat_idle", "combat_idle");
             s.Anim.Block(true);
             s.Anim.Update(true, Vector3.Zero);
             Expect(s, "Block(true)", "block", "block");
             s.Anim.Block(false);
             s.Anim.Update(true, Vector3.Zero);
-            Expect(s, "Block(false)", "combat_idle", "block_idle");
+            Expect(s, "Block(false)", "combat_idle", "combat_idle");
 
             foreach (string want in new[] { "attack", "attack_2", "attack_3", "attack" })
             {
@@ -143,7 +143,7 @@ namespace AtlasWorld.Client.World
                 Expect(s, "attack still playing (no restart)", "attack", want);
                 FinishOneShot(s.Player);
                 s.Anim.Update(true, Vector3.Zero);
-                Expect(s, "attack ended in combat", "combat_idle", "block_idle");
+                Expect(s, "attack ended in combat", "combat_idle", "combat_idle");
             }
 
             s.Anim.Hit();
@@ -151,7 +151,7 @@ namespace AtlasWorld.Client.World
             Expect(s, "Hit()", "hit", "hit");
             FinishOneShot(s.Player);
             s.Anim.Update(true, Vector3.Zero);
-            Expect(s, "hit ended in combat", "combat_idle", "block_idle");
+            Expect(s, "hit ended in combat", "combat_idle", "combat_idle");
 
             // Spec sequence: idle → combat_idle → attack → combat_idle → idle
             var seq = new List<string>();

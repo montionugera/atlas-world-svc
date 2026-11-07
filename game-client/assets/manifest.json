@@ -202,16 +202,16 @@
       "render": "model3d"
     },
     "npc:lantern_hollow_watch_sergeant": {
-      "scene": "res://studio-cache/7f1c54c3707359dc12d3ed3582be1f60460f19d9fbd01930c49f406e1fbfc75f.glb",
-      "source": "Asset Studio library asset 01a1a97a-8e45-71d6-885f-459aa1cebf7f (client atlas-world); bytes not in this repo",
+      "scene": "res://studio-cache/42a07e62e7321e9781d3e1b2619c60a0af47c8382c940ad756cdbdfe62788da2.glb",
+      "source": "Asset Studio library asset 01a1b35e-11e3-7243-8e4b-b39f87fb9a95 (client atlas-world); bytes not in this repo",
       "license": "studio-private",
       "tier": "bespoke",
       "kind": "pipelineCharacter",
       "pull": {
         "from": "asset-studio",
-        "assetStudioAsset": "01a1a97a-8e45-71d6-885f-459aa1cebf7f",
-        "tag": "p4b-11050912",
-        "sha256": "7f1c54c3707359dc12d3ed3582be1f60460f19d9fbd01930c49f406e1fbfc75f"
+        "assetStudioAsset": "01a1b35e-11e3-7243-8e4b-b39f87fb9a95",
+        "tag": "p6c-11070720",
+        "sha256": "42a07e62e7321e9781d3e1b2619c60a0af47c8382c940ad756cdbdfe62788da2"
       },
       "gen": {
         "model": "tripo",
@@ -229,7 +229,7 @@
           "attack_3"
         ],
         "death": "death",
-        "combat_idle": "block_idle",
+        "combat_idle": "combat_idle",
         "block": "block",
         "hit": "hit"
       }

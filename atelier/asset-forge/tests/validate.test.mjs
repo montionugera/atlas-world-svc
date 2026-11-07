@@ -428,7 +428,7 @@ const REPO = path.resolve(new URL("../../..", import.meta.url).pathname);
 // Pull-only (F-174): the sergeant is never in git. Task 1a's `node scripts/studio-pull.mjs` fills
 // the gitignored cache; ATLAS_SERGEANT_GLB overrides the path.
 const SERGEANT_SHA =
-  "7f1c54c3707359dc12d3ed3582be1f60460f19d9fbd01930c49f406e1fbfc75f";
+  "42a07e62e7321e9781d3e1b2619c60a0af47c8382c940ad756cdbdfe62788da2";
 const SERGEANT =
   process.env.ATLAS_SERGEANT_GLB ??
   path.join(REPO, `game-client/studio-cache/${SERGEANT_SHA}.glb`);
@@ -445,7 +445,7 @@ const SERGEANT_ANIMS = {
   run: "run",
   attack: ["attack", "attack_2", "attack_3"],
   death: "death",
-  combat_idle: "block_idle",
+  combat_idle: "combat_idle",
   block: "block",
   hit: "hit",
 };

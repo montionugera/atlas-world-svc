@@ -8,17 +8,16 @@
       "summary": "Fighters drop into a guard stance when they pick a target, swing in turn, flinch when struck, and can change the weapon in their hand without a new body.",
       "sections": [
         { "heading": "Moving", "body": "Out of a fight a character stands, walks and runs in a relaxed way. Walking and running loop smoothly for as long as the character keeps moving." },
-        { "heading": "Fighting stance", "body": "The moment a fighter has a target, the guard comes up: the knees bend and the shield rises. When the fight ends, the fighter relaxes and goes back to standing." },
+        { "heading": "Fighting stance", "body": "The moment a fighter has a target, the guard comes up: the knees bend, the sword lifts and the shield comes forward to the side, so you still see the fighter. When the fight ends, the fighter relaxes and goes back to standing." },
         { "heading": "Attack, block, hit", "body": "A fighter with several attacks swings them in turn: first, second, third, then back to the first. After each swing the guard comes back up. A block holds the shield high for as long as it lasts. A hit plays a short flinch, then the fighter returns to guard. A fallen fighter stays down." },
         { "heading": "Swapping weapons", "body": "The same body can take a different weapon in hand while the game runs. The last picture shows the spear swapped for an axe, with every move still working." }
       ],
       "limits": [
         "The server does not send attack or block yet, so those show only in the preview and the render. The hit flinch only plays on fighters that use this body, and the watch sergeant is not standing in the live game yet, so for now you see the flinch in the preview and the render.",
-        "The guard pose holds the shield high and hides much of the body.",
         "Only the Lantern Hollow watch sergeant uses this body today."
       ],
       "strip": {
-        "src": "/game-client/studio-cache/renders/7f1c54c3707359dc12d3ed3582be1f60460f19d9fbd01930c49f406e1fbfc75f.strip.png",
+        "src": "/game-client/studio-cache/renders/42a07e62e7321e9781d3e1b2619c60a0af47c8382c940ad756cdbdfe62788da2.strip.png",
         "fallback": "This picture is a private render and is not part of this build. See it on the edit host: http://atlas-edit.joymify.local.com/?tab=lore&chapter=systems&ref=system-combat-stances",
         "alt": "The Lantern Hollow watch sergeant in nine poses: idle, walk, run, guard, attack, block, hit, fallen, and attack holding a swapped-in axe.",
         "frames": ["Idle", "Walk", "Run", "Guard", "Attack", "Block", "Hit", "Fallen", "Attack (axe)"]
