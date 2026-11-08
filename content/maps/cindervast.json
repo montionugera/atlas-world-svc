@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "cindervast",
   "name": "Cindervast \u2014 The Intact Ruin & Dead Gate",
   "seed": 278693,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "cobble_road",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -433,136 +434,136 @@
   "spawnAreas": [
     {
       "id": "cindervast_relicglow_moth",
-      "x": 2144.8,
-      "y": 1933.8,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 214.48,
+      "y": 193.38,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-relicglow-moth",
       "count": 3
     },
     {
       "id": "cindervast_soot_wrapped_scavenger",
-      "x": 1662.9,
-      "y": 1920.4,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 166.29,
+      "y": 192.04,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-soot-wrapped-scavenger",
       "count": 4
     },
     {
       "id": "cindervast_broken_crown_sentinel",
-      "x": 2008.5,
-      "y": 1657.7,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 200.85,
+      "y": 165.77,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-broken-crown-sentinel",
       "count": 1
     },
     {
       "id": "cindervast_cindered_revenant",
-      "x": 1959.5,
-      "y": 2265.5,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 195.95,
+      "y": 226.55,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-cindered-revenant",
       "count": 2
     },
     {
       "id": "cindervast_relicslag_crawler",
-      "x": 1756.4,
-      "y": 1612.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 175.64,
+      "y": 161.26,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-relicslag-crawler",
       "count": 2
     },
     {
       "id": "cindervast_rebellion_echo",
-      "x": 2328.4,
-      "y": 1836.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 232.84,
+      "y": 183.6,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-rebellion-echo",
       "count": 2
     },
     {
       "id": "cindervast_relic_hulk",
-      "x": 1604.5,
-      "y": 2229.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 160.45,
+      "y": 222.97,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-relic-hulk",
       "count": 2
     },
     {
       "id": "cindervast_violet_ash_drake",
-      "x": 1935.5,
-      "y": 1455.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 193.55,
+      "y": 145.5,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-violet-ash-drake",
       "count": 2
     },
     {
       "id": "cindervast_afterglow_shade",
-      "x": 2206.7,
-      "y": 2391.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 220.67,
+      "y": 239.1,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-afterglow-shade",
       "count": 1
     },
     {
       "id": "cindervast_cinderfall_giant",
-      "x": 1402.7,
-      "y": 1830.3,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 140.27,
+      "y": 183.03,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-cinderfall-giant",
       "count": 1
     },
     {
       "id": "cindervast_crownfall_automaton",
-      "x": 2368.3,
-      "y": 1532.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 236.83,
+      "y": 153.2,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crownfall-automaton",
       "count": 1
     },
     {
       "id": "cindervast_ashcrown_drake",
-      "x": 1891.0,
-      "y": 2571.2,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 189.1,
+      "y": 257.12,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-ashcrown-drake",
       "count": 1
     },
     {
       "id": "cindervast_relicdrawn_siege_hulk",
-      "x": 1855.0,
-      "y": 1285.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 185.5,
+      "y": 128.54,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-relicdrawn-siege-hulk",
       "count": 1
     },
     {
       "id": "cindervast_crownash_wyrm",
-      "x": 2635.7,
-      "y": 1814.7,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 263.57,
+      "y": 181.47,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crownash-wyrm",
       "count": 1
     },
     {
       "id": "cindervast_relicshell_colossus",
-      "x": 1392.6,
-      "y": 2437.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 139.26,
+      "y": 243.74,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-relicshell-colossus",
       "count": 1
     }
@@ -570,31 +571,31 @@
   "staticObstacles": [
     {
       "id": "landmark_giving_king_statue_plinth",
-      "min_x": 1993.7,
-      "min_y": 1833.7,
-      "max_x": 2006.3,
-      "max_y": 1846.3
+      "min_x": 199.37,
+      "min_y": 183.37,
+      "max_x": 200.63,
+      "max_y": 184.63
     },
     {
       "id": "landmark_dead_gate_pillar_w",
-      "min_x": 1942.6,
-      "min_y": 2194.6,
-      "max_x": 1953.4,
-      "max_y": 2205.4
+      "min_x": 194.26,
+      "min_y": 219.46,
+      "max_x": 195.34,
+      "max_y": 220.54
     },
     {
       "id": "landmark_dead_gate_pillar_e",
-      "min_x": 2046.6,
-      "min_y": 2194.6,
-      "max_x": 2057.4,
-      "max_y": 2205.4
+      "min_x": 204.66,
+      "min_y": 219.46,
+      "max_x": 205.74,
+      "max_y": 220.54
     },
     {
       "id": "cliff_relic_crater_sheer_rim",
-      "min_x": 2198.0,
-      "min_y": 1678.0,
-      "max_x": 2362.0,
-      "max_y": 1842.0
+      "min_x": 219.8,
+      "min_y": 167.8,
+      "max_x": 236.2,
+      "max_y": 184.2
     }
   ]
 }

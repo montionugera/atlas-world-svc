@@ -4,6 +4,8 @@
 **Status:** Approved (Owner decision)  
 **Tier:** R0 / Brand & Narrative Core  
 
+> **Superseded in part (2026-11-07):** items 2 and 3 of §4 are replaced by [2026-11-07-cala-knight-legendary-title.md](2026-11-07-cala-knight-legendary-title.md). Cala Knight is an exclusive legendary title; players are never Cala Knights. The title in §1 stays.
+
 ---
 
 ## 1. Approved Title
@@ -36,5 +38,5 @@ Prior worldbuilding established the core setting of **Atlas** and the narrative 
 ## 4. Key Usages Across the Project
 
 1. **Official Game Title:** `Atlas: The Cala Knight` (or `Atlas: Cala Knight`)
-2. **Player Archetype / Role:** The player character is a **Cala Knight** (stepping beyond the initial working title of *Expedition Member*).
-3. **In-World Order / Faction:** The order of knights dedicated to the defense of the light against the encroaching Void.
+~~2. **Player Archetype / Role:** The player character is a **Cala Knight** (stepping beyond the initial working title of *Expedition Member*).~~ **SUPERSEDED** by the legendary-title decision.
+~~3. **In-World Order / Faction:** The order of knights dedicated to the defense of the light against the encroaching Void.~~ **SUPERSEDED** by the legendary-title decision.

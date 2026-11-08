@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "millcross-ford",
   "name": "Millcross Ford \u2014 The Meltwash Crossing",
   "seed": 749135,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "meadow_grass",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -508,172 +509,172 @@
   "spawnAreas": [
     {
       "id": "millcross_ford_chaff_crawler",
-      "x": 2101.8,
-      "y": 2078.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 210.18,
+      "y": 207.84,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-chaff-crawler",
       "count": 2
     },
     {
       "id": "millcross_ford_ditchlight_wisp",
-      "x": 1676.2,
-      "y": 1920.4,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 167.62,
+      "y": 192.04,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-ditchlight-wisp",
       "count": 3
     },
     {
       "id": "millcross_ford_hedgerow_thorn",
-      "x": 2055.2,
-      "y": 1684.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 205.52,
+      "y": 168.46,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hedgerow-thorn",
       "count": 2
     },
     {
       "id": "millcross_ford_lampwing_moth",
-      "x": 1993.1,
-      "y": 2224.0,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 199.31,
+      "y": 222.4,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-lampwing-moth",
       "count": 3
     },
     {
       "id": "millcross_ford_millpond_gnawer",
-      "x": 1602.0,
-      "y": 1812.8,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 160.2,
+      "y": 181.28,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-millpond-gnawer",
       "count": 4
     },
     {
       "id": "millcross_ford_roadcrow_flock",
-      "x": 2278.3,
-      "y": 1986.5,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 227.83,
+      "y": 198.65,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-roadcrow-flock",
       "count": 4
     },
     {
       "id": "millcross_ford_sackrat_swarm",
-      "x": 1553.0,
-      "y": 2061.6,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 155.3,
+      "y": 206.16,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-sackrat-swarm",
       "count": 4
     },
     {
       "id": "millcross_ford_strayling_pup",
-      "x": 2126.5,
-      "y": 1551.7,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 212.65,
+      "y": 155.17,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-strayling-pup",
       "count": 4
     },
     {
       "id": "millcross_ford_tallgrass_tick",
-      "x": 2342.2,
-      "y": 2079.0,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 234.22,
+      "y": 207.9,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-tallgrass-tick",
       "count": 4
     },
     {
       "id": "millcross_ford_cordknot_effigy",
-      "x": 1451.8,
-      "y": 1844.5,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 145.18,
+      "y": 184.45,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-cordknot-effigy",
       "count": 3
     },
     {
       "id": "millcross_ford_millrace_lurker",
-      "x": 2238.0,
-      "y": 1526.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 223.8,
+      "y": 152.61,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-millrace-lurker",
       "count": 2
     },
     {
       "id": "millcross_ford_strayling_yearling",
-      "x": 1970.4,
-      "y": 2455.4,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 197.04,
+      "y": 245.54,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-strayling-yearling",
       "count": 4
     },
     {
       "id": "millcross_ford_tollroad_wrecker",
-      "x": 1594.1,
-      "y": 1482.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 159.41,
+      "y": 148.24,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-tollroad-wrecker",
       "count": 2
     },
     {
       "id": "millcross_ford_gallows_meadow_shade",
-      "x": 2520.3,
-      "y": 1909.3,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 252.03,
+      "y": 190.93,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-gallows-meadow-shade",
       "count": 3
     },
     {
       "id": "millcross_ford_millroad_brigand",
-      "x": 1309.0,
-      "y": 2049.0,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 130.9,
+      "y": 204.9,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-millroad-brigand",
       "count": 4
     },
     {
       "id": "millcross_ford_quarrystone_beetle",
-      "x": 2282.7,
-      "y": 1381.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 228.27,
+      "y": 138.19,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-quarrystone-beetle",
       "count": 2
     },
     {
       "id": "millcross_ford_ashfang_pack_leader",
-      "x": 2353.5,
-      "y": 2473.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 235.35,
+      "y": 247.37,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-ashfang-pack-leader",
       "count": 2
     },
     {
       "id": "millcross_ford_millstone_warden",
-      "x": 1428.9,
-      "y": 1455.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 142.89,
+      "y": 145.58,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-millstone-warden",
       "count": 1
     },
     {
       "id": "millcross_ford_crossroads_reaver",
-      "x": 2489.9,
-      "y": 1445.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 248.99,
+      "y": 144.54,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-crossroads-reaver",
       "count": 2
     }
@@ -681,143 +682,143 @@
   "staticObstacles": [
     {
       "id": "mill-house",
-      "min_x": 1954.0,
-      "min_y": 1954.0,
-      "max_x": 1972.0,
-      "max_y": 1968.0
+      "min_x": 195.4,
+      "min_y": 195.4,
+      "max_x": 197.2,
+      "max_y": 196.8
     },
     {
       "id": "victual-shed",
-      "min_x": 1924.0,
-      "min_y": 1987.0,
-      "max_x": 1946.0,
-      "max_y": 2001.0
+      "min_x": 192.4,
+      "min_y": 198.7,
+      "max_x": 194.6,
+      "max_y": 200.1
     },
     {
       "id": "ford-stable",
-      "min_x": 1924.0,
-      "min_y": 2015.0,
-      "max_x": 1948.0,
-      "max_y": 2029.0
+      "min_x": 192.4,
+      "min_y": 201.5,
+      "max_x": 194.8,
+      "max_y": 202.9
     },
     {
       "id": "west-row-a",
-      "min_x": 1898.0,
-      "min_y": 2015.0,
-      "max_x": 1918.0,
-      "max_y": 2027.0
+      "min_x": 189.8,
+      "min_y": 201.5,
+      "max_x": 191.8,
+      "max_y": 202.7
     },
     {
       "id": "west-row-b",
-      "min_x": 1898.0,
-      "min_y": 1985.0,
-      "max_x": 1918.0,
-      "max_y": 2001.0
+      "min_x": 189.8,
+      "min_y": 198.5,
+      "max_x": 191.8,
+      "max_y": 200.1
     },
     {
       "id": "ford-store",
-      "min_x": 2029.0,
-      "min_y": 1996.0,
-      "max_x": 2049.0,
-      "max_y": 2005.0
+      "min_x": 202.9,
+      "min_y": 199.6,
+      "max_x": 204.9,
+      "max_y": 200.5
     },
     {
       "id": "ferry-shed",
-      "min_x": 2024.0,
-      "min_y": 2011.0,
-      "max_x": 2040.0,
-      "max_y": 2021.0
+      "min_x": 202.4,
+      "min_y": 201.1,
+      "max_x": 204.0,
+      "max_y": 202.1
     },
     {
       "id": "terrace-row-a",
-      "min_x": 2050.0,
-      "min_y": 1953.0,
-      "max_x": 2070.0,
-      "max_y": 1967.0
+      "min_x": 205.0,
+      "min_y": 195.3,
+      "max_x": 207.0,
+      "max_y": 196.7
     },
     {
       "id": "terrace-row-b",
-      "min_x": 2080.0,
-      "min_y": 1953.0,
-      "max_x": 2100.0,
-      "max_y": 1967.0
+      "min_x": 208.0,
+      "min_y": 195.3,
+      "max_x": 210.0,
+      "max_y": 196.7
     },
     {
       "id": "terrace-row-c",
-      "min_x": 2054.0,
-      "min_y": 1981.0,
-      "max_x": 2074.0,
-      "max_y": 1995.0
+      "min_x": 205.4,
+      "min_y": 198.1,
+      "max_x": 207.4,
+      "max_y": 199.5
     },
     {
       "id": "terrace-row-d",
-      "min_x": 2084.0,
-      "min_y": 1981.0,
-      "max_x": 2098.0,
-      "max_y": 1993.0
+      "min_x": 208.4,
+      "min_y": 198.1,
+      "max_x": 209.8,
+      "max_y": 199.3
     },
     {
       "id": "inn",
-      "min_x": 1918.0,
-      "min_y": 1987.0,
-      "max_x": 1924.0,
-      "max_y": 2001.0
+      "min_x": 191.8,
+      "min_y": 198.7,
+      "max_x": 192.4,
+      "max_y": 200.1
     },
     {
       "id": "weapon-smithy",
-      "min_x": 1918.0,
-      "min_y": 2015.0,
-      "max_x": 1924.0,
-      "max_y": 2027.0
+      "min_x": 191.8,
+      "min_y": 201.5,
+      "max_x": 192.4,
+      "max_y": 202.7
     },
     {
       "id": "general-store",
-      "min_x": 2051.0,
-      "min_y": 1996.0,
-      "max_x": 2067.0,
-      "max_y": 2005.0
+      "min_x": 205.1,
+      "min_y": 199.6,
+      "max_x": 206.7,
+      "max_y": 200.5
     },
     {
       "id": "bakehouse",
-      "min_x": 2069.0,
-      "min_y": 1996.0,
-      "max_x": 2085.0,
-      "max_y": 2005.0
+      "min_x": 206.9,
+      "min_y": 199.6,
+      "max_x": 208.5,
+      "max_y": 200.5
     },
     {
       "id": "herbalist",
-      "min_x": 2087.0,
-      "min_y": 1996.0,
-      "max_x": 2103.0,
-      "max_y": 2005.0
+      "min_x": 208.7,
+      "min_y": 199.6,
+      "max_x": 210.3,
+      "max_y": 200.5
     },
     {
       "id": "adventurer-guild",
-      "min_x": 2069.0,
-      "min_y": 2011.0,
-      "max_x": 2085.0,
-      "max_y": 2022.0
+      "min_x": 206.9,
+      "min_y": 201.1,
+      "max_x": 208.5,
+      "max_y": 202.2
     },
     {
       "id": "provisioner",
-      "min_x": 2103.0,
-      "min_y": 1996.0,
-      "max_x": 2109.0,
-      "max_y": 2005.0
+      "min_x": 210.3,
+      "min_y": 199.6,
+      "max_x": 210.9,
+      "max_y": 200.5
     },
     {
       "id": "landmark_the_cart_queue_pillar",
-      "min_x": 1714.9,
-      "min_y": 2034.9,
-      "max_x": 1725.1,
-      "max_y": 2045.1
+      "min_x": 171.49,
+      "min_y": 203.49,
+      "max_x": 172.51,
+      "max_y": 204.51
     },
     {
       "id": "cliff_west_quarry_face_cliff",
-      "min_x": 1573.9,
-      "min_y": 1733.9,
-      "max_x": 1746.1,
-      "max_y": 1906.1
+      "min_x": 157.39,
+      "min_y": 173.39,
+      "max_x": 174.61,
+      "max_y": 190.61
     }
   ]
 }

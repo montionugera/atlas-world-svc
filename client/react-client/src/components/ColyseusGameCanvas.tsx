@@ -545,7 +545,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
       if (!canvas || !currentGameState) return;
 
       const view = viewRef.current;
-      const viewportSize = currentGameState.viewportSize ?? 50;
+      const viewportSize = currentGameState.viewportSize ?? 5;
       const scale = calculateScale(currentGameState, view, viewportSize);
 
       let cameraX = currentGameState.width / 2;
@@ -613,7 +613,7 @@ export const ColyseusGameCanvas: React.FC<ColyseusGameCanvasProps> = ({
           // Pick against the interpolated position that is drawn on screen.
           const pos = samplePosition(mob, renderTime);
           const dist = Math.hypot(pos.x - wx, pos.y - wy);
-          if (dist <= (mob.radius || 14) + 16) {
+          if (dist <= (mob.radius || 1.4) + 1.6) {
             targetMobId = Number(mob.id);
           }
         });

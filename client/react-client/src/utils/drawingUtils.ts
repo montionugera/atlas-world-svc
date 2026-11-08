@@ -1,5 +1,5 @@
-import { GameState } from '../types/game';
-import { CANVAS_CONFIG } from '../config/gameConfig';
+import { GameState } from "../types/game";
+import { CANVAS_CONFIG } from "../config/gameConfig";
 
 export interface Camera {
   x: number;
@@ -11,7 +11,11 @@ export interface Camera {
  * Calculate the scale factor to fit the game world into the canvas
  * while maintaining aspect ratio, OR for fixed viewport size
  */
-export const calculateScale = (gameState: GameState, canvas: { width: number; height: number }, viewportSize: number = 50): number => {
+export const calculateScale = (
+  gameState: GameState,
+  canvas: { width: number; height: number },
+  viewportSize: number = 5,
+): number => {
   // If viewportSize is provided, scale is based on fitting that many units into the smaller canvas dimension
   const scaleX = canvas.width / viewportSize;
   const scaleY = canvas.height / viewportSize;
@@ -21,7 +25,10 @@ export const calculateScale = (gameState: GameState, canvas: { width: number; he
 /**
  * Clear the canvas with the configured background color
  */
-export const clearCanvas = (ctx: CanvasRenderingContext2D, canvas: { width: number; height: number }): void => {
+export const clearCanvas = (
+  ctx: CanvasRenderingContext2D,
+  canvas: { width: number; height: number },
+): void => {
   ctx.fillStyle = CANVAS_CONFIG.backgroundColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 };
@@ -30,11 +37,11 @@ export const clearCanvas = (ctx: CanvasRenderingContext2D, canvas: { width: numb
  * Draw a circle at the specified position with the given radius and color
  */
 export const drawCircle = (
-  ctx: CanvasRenderingContext2D, 
-  x: number, 
-  y: number, 
-  radius: number, 
-  color: string
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+  color: string,
 ): void => {
   ctx.fillStyle = color;
   ctx.beginPath();
@@ -52,7 +59,7 @@ export const drawLine = (
   x2: number,
   y2: number,
   color: string,
-  lineWidth: number = 2
+  lineWidth: number = 2,
 ): void => {
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;
@@ -72,20 +79,20 @@ export const drawHeading = (
   angle: number,
   radius: number,
   scale: number = 1,
-  color: string = '#ffffff',
+  color: string = "#ffffff",
   lineWidth: number = 3,
   sizeMultiplier: number = 0.6,
-  viewScale: number = 1 // New parameter for inverse scaling
+  viewScale: number = 1, // New parameter for inverse scaling
 ): void => {
   const scaledRadius = radius * scale;
-  
+
   // Main line length - ensure tip is well within the circle
   const mainLineLength = scaledRadius * sizeMultiplier;
-  
+
   // Calculate the tip of the arrow
   const tipX = x + Math.cos(angle) * mainLineLength;
   const tipY = y + Math.sin(angle) * mainLineLength;
-  
+
   // Calculate points for the base of the arrowhead, slightly behind the tip
   const arrowHeadBaseLength = scaledRadius * (sizeMultiplier * 0.67); // Proportional to arrow length
   const basePointX = x + Math.cos(angle) * arrowHeadBaseLength;
@@ -93,13 +100,13 @@ export const drawHeading = (
 
   // Calculate the perpendicular offset for the wings
   const wingWidth = scaledRadius * 0.08; // 8% of radius for wing spread
-  
+
   const wing1X = basePointX + Math.cos(angle - Math.PI / 2) * wingWidth; // Perpendicular to main line
   const wing1Y = basePointY + Math.sin(angle - Math.PI / 2) * wingWidth;
-  
+
   const wing2X = basePointX + Math.cos(angle + Math.PI / 2) * wingWidth; // Perpendicular to main line
   const wing2Y = basePointY + Math.sin(angle + Math.PI / 2) * wingWidth;
-  
+
   // Draw main line
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth / viewScale; // Inverse scale line width
@@ -127,7 +134,7 @@ export const drawText = (
   x: number,
   y: number,
   color: string,
-  font: string
+  font: string,
 ): void => {
   ctx.fillStyle = color;
   ctx.font = font;
@@ -145,9 +152,9 @@ export const drawHealthBar = (
   maxHealth: number,
   entityRadius: number,
   scale: number = 1,
-  backgroundColor: string = '#ff0000',
-  healthColor: string = '#00ff00',
-  borderColor: string = '#000000',
+  backgroundColor: string = "#ff0000",
+  healthColor: string = "#00ff00",
+  borderColor: string = "#000000",
   options: {
     minWidth?: number;
     maxWidth?: number;
@@ -158,14 +165,14 @@ export const drawHealthBar = (
     widthMultiplier?: number;
     heightMultiplier?: number;
   } = {},
-  viewScale: number = 1 // New parameter for inverse scaling
+  viewScale: number = 1, // New parameter for inverse scaling
 ): void => {
   if (maxHealth <= 0) return;
-  
+
   const scaledRadius = entityRadius * scale;
   const healthPercentage = Math.min(1, Math.max(0, currentHealth / maxHealth));
   const inverseScale = 1 / viewScale;
-  
+
   // Destructure options with defaults (these are unscaled base values)
   const {
     minWidth: baseMinWidth = 8,
@@ -175,7 +182,7 @@ export const drawHealthBar = (
     minOffset: baseMinOffset = 4,
     maxOffset: baseMaxOffset = 20,
     widthMultiplier = 2.5,
-    heightMultiplier = 0.3
+    heightMultiplier = 0.3,
   } = options;
 
   // Apply inverse scaling to all dimensional constraints so they remain constant in screen space
@@ -185,30 +192,30 @@ export const drawHealthBar = (
   const maxHeight = baseMaxHeight * inverseScale;
   const minOffset = baseMinOffset * inverseScale;
   const maxOffset = baseMaxOffset * inverseScale;
-  
+
   // Calculate health bar size based on entity radius with constraints
   const baseWidth = scaledRadius * widthMultiplier;
   const baseHeight = scaledRadius * heightMultiplier;
-  
+
   const barWidth = Math.max(minWidth, Math.min(maxWidth, baseWidth));
   const barHeight = Math.max(minHeight, Math.min(maxHeight, baseHeight));
-  
+
   // Calculate offset with constraints
-  const baseOffset = scaledRadius + (8 * inverseScale); // Base offset relative to radius
+  const baseOffset = scaledRadius + 8 * inverseScale; // Base offset relative to radius
   const offset = Math.max(minOffset, Math.min(maxOffset, baseOffset));
-  
+
   // Position health bar above the entity
   const barX = x - barWidth / 2;
   const barY = y - offset;
-  
+
   // Draw background
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(barX, barY, barWidth, barHeight);
-  
+
   // Draw current health
   ctx.fillStyle = healthColor;
   ctx.fillRect(barX, barY, barWidth * healthPercentage, barHeight);
-  
+
   // Draw border
   ctx.strokeStyle = borderColor;
   ctx.lineWidth = 1 * inverseScale;
@@ -225,29 +232,29 @@ export const drawAttackCone = (
   heading: number,
   range: number,
   scale: number = 1,
-  color: string = '#ff4444',
-  alpha: number = 0.3
+  color: string = "#ff4444",
+  alpha: number = 0.3,
 ): void => {
   const scaledRange = range * scale;
   const coneAngle = Math.PI / 4; // 45-degree attack cone
-  
+
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.fillStyle = color;
   ctx.beginPath();
-  
+
   // Start from player center
   ctx.moveTo(x, y);
-  
+
   // Calculate cone edges
   const leftAngle = heading - coneAngle / 2;
   const rightAngle = heading + coneAngle / 2;
-  
+
   // Draw arc from left edge to right edge
   ctx.arc(x, y, scaledRange, leftAngle, rightAngle);
   ctx.lineTo(x, y); // Close the cone
   ctx.fill();
-  
+
   ctx.restore();
 };
 
@@ -260,16 +267,16 @@ export const drawAttackSlash = (
   y: number,
   heading: number,
   playerScaledRadius: number,
-  color: string = '#ffff00',
+  color: string = "#ffff00",
   lineWidth: number = 10,
-  viewScale: number = 1
+  viewScale: number = 1,
 ): void => {
   // Calculate slash line endpoints - shorter arc
-  const startX = x ;
-  const startY = y ;
-  const endX = x + Math.cos(heading)*playerScaledRadius*2.2 ;
-  const endY = y + Math.sin(heading)*playerScaledRadius*2.2;
-  
+  const startX = x;
+  const startY = y;
+  const endX = x + Math.cos(heading) * playerScaledRadius * 2.2;
+  const endY = y + Math.sin(heading) * playerScaledRadius * 2.2;
+
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth / viewScale;
   ctx.beginPath();

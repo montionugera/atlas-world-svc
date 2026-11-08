@@ -1,5 +1,6 @@
 use crate::combat::{DamageType, Element, SkillEffect};
 use crate::content::races::AtlasRace;
+use crate::core::speed::scaled_speed;
 use bevy_ecs::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -203,12 +204,12 @@ impl Default for Mass {
 /// `vel *= exp(-rate * dt)`, so the shove eases out instead of snapping at timer end.
 pub const KNOCKBACK_DECAY_PER_SEC: f32 = 6.0;
 
-/// Speed (u/s) a hit shoves its victim away at, tuned for the 10x world scale
-/// (run speed 200, dash 450): 120..=240 for a player (mass 15), 72..=144 for a
-/// standard mob (mass 25), reaching the cap at 12 damage. With the decay above over the
-/// 0.2 s knockback timer a live mob melee hit moves a player about 18..=36 u.
+/// Speed (m/s) a hit shoves its victim away at (1 unit = 1 m; `scaled_speed` takes the
+/// pre-F-185 value, run speed 200, dash 450): 1.8..=3.6 for a player (mass 15), 1.08..=2.16
+/// for a standard mob (mass 25), reaching the cap at 12 damage. With the decay above over the
+/// 0.2 s knockback timer a live mob melee hit moves a player about 1.8..=3.6 m.
 pub fn knockback_speed(damage: f32, victim_mass: f32) -> f32 {
-    (damage * 300.0).clamp(1800.0, 3600.0) / victim_mass
+    scaled_speed((damage * 300.0).clamp(1800.0, 3600.0) / victim_mass)
 }
 
 #[derive(Component, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -236,7 +237,7 @@ impl PlayerAvatar {
 pub struct MobTag;
 
 /// Default follow distance in units (`<= 5.0`) within which a companion settles near its owner (E-007 Slice 9).
-pub const COMPANION_FOLLOW_DISTANCE: f32 = 4.0;
+pub const COMPANION_FOLLOW_DISTANCE: f32 = 0.4;
 /// Default delay in seconds (`10.0s`) before a defeated companion respawns near its owner (E-007 Slice 10).
 pub const COMPANION_RESPAWN_DELAY_SEC: f32 = 10.0;
 
@@ -261,20 +262,20 @@ impl CompanionAi {
         Self {
             owner,
             follow_distance: COMPANION_FOLLOW_DISTANCE,
-            move_speed: 220.0,
-            aggro_range: 180.0,
+            move_speed: scaled_speed(220.0),
+            aggro_range: 18.0,
             respawn_delay_sec: COMPANION_RESPAWN_DELAY_SEC,
             respawn_timer_sec: 0.0,
         }
     }
 
     pub fn with_follow_distance(mut self, follow_distance: f32) -> Self {
-        self.follow_distance = follow_distance.max(0.5);
+        self.follow_distance = follow_distance.max(0.05);
         self
     }
 
     pub fn with_move_speed(mut self, move_speed: f32) -> Self {
-        self.move_speed = move_speed.max(10.0);
+        self.move_speed = move_speed.max(scaled_speed(10.0));
         self
     }
 
@@ -285,11 +286,11 @@ impl CompanionAi {
 }
 
 /// Player body radius (px). Matches the client's `SERVER_RS_PLAYER_RADIUS`.
-pub const PLAYER_BODY_RADIUS: f32 = 12.0;
+pub const PLAYER_BODY_RADIUS: f32 = 1.2;
 /// Mob body radius (px). Matches the client's `SERVER_RS_MOB_RADIUS`.
-pub const MOB_BODY_RADIUS: f32 = 14.0;
+pub const MOB_BODY_RADIUS: f32 = 1.4;
 /// Boss collision body radius (px) (`1.5x` standard mob body radius) (E-007 Slice 7).
-pub const BOSS_BODY_RADIUS: f32 = 21.0;
+pub const BOSS_BODY_RADIUS: f32 = 2.1;
 /// Boss visual/model scale multiplier (`1.5x`) (E-007 Slice 7).
 pub const BOSS_VISUAL_SCALE: f32 = 1.5;
 
@@ -459,6 +460,9 @@ pub struct MobAttackAbility {
     pub effects: Vec<SkillEffect>,
 }
 
+/// Melee swing hitbox speed: an attack, not movement, so F-184 does not scale it.
+pub const MELEE_SWING_SPEED: f32 = 40.0;
+
 impl MobAttackAbility {
     pub fn melee_cleave(max_range: f32) -> Self {
         Self {
@@ -467,8 +471,8 @@ impl MobAttackAbility {
             max_range,
             damage_multiplier: 1.25,
             is_ranged: false,
-            projectile_speed: 400.0,
-            projectile_radius: 14.0,
+            projectile_speed: MELEE_SWING_SPEED,
+            projectile_radius: 1.4,
             aoe_radius: 0.0,
             effects: Vec::new(),
         }
@@ -481,8 +485,8 @@ impl MobAttackAbility {
             max_range,
             damage_multiplier: 1.0,
             is_ranged: true,
-            projectile_speed: 220.0,
-            projectile_radius: 8.0,
+            projectile_speed: scaled_speed(220.0),
+            projectile_radius: 0.8,
             aoe_radius: 0.0,
             effects: Vec::new(),
         }
@@ -530,14 +534,14 @@ impl MobAi {
         Self {
             state: AiState::Idle,
             home_pos,
-            leash_distance: 300.0,
+            leash_distance: 30.0,
             chase_range,
             attack_range,
             is_ranged,
             wander_timer: 0.0,
             wander_target: home_pos,
             // Bestiary "mid" speed (8 legacy units * 10).
-            move_speed: 80.0,
+            move_speed: scaled_speed(80.0),
             windup_duration_sec: 0.0,
             windup_timer: 0.0,
             windup_facing: (1.0, 0.0),
@@ -617,7 +621,7 @@ impl MobAi {
 
 impl Default for MobAi {
     fn default() -> Self {
-        Self::new(Position::new(0.0, 0.0), 200.0, 25.0, false)
+        Self::new(Position::new(0.0, 0.0), 20.0, 2.5, false)
     }
 }
 
@@ -732,7 +736,7 @@ impl Default for CombatStats {
         Self {
             attack_power: 10.0,
             defense: 0.0,
-            attack_range: 30.0,
+            attack_range: 3.0,
             attack_cooldown: 1.0,
             cooldown_timer: 0.0,
             is_player: false,
@@ -1209,7 +1213,7 @@ impl EquippedWeapon {
             weapon_id: "w_sword".to_string(),
             kind: WeaponKind::Melee,
             projectile_speed: 0.0,
-            projectile_range: 40.0,
+            projectile_range: 4.0,
             projectile_radius: 0.0,
         }
     }
@@ -1218,9 +1222,9 @@ impl EquippedWeapon {
         Self {
             weapon_id: "w_bow".to_string(),
             kind: WeaponKind::Bow,
-            projectile_speed: 250.0,
-            projectile_range: 300.0,
-            projectile_radius: 4.0,
+            projectile_speed: scaled_speed(250.0),
+            projectile_range: 30.0,
+            projectile_radius: 0.4,
         }
     }
 
@@ -1228,9 +1232,9 @@ impl EquippedWeapon {
         Self {
             weapon_id: "w_staff".to_string(),
             kind: WeaponKind::Staff,
-            projectile_speed: 200.0,
-            projectile_range: 280.0,
-            projectile_radius: 5.0,
+            projectile_speed: scaled_speed(200.0),
+            projectile_range: 28.0,
+            projectile_radius: 0.5,
         }
     }
 
@@ -1523,8 +1527,8 @@ impl Default for BindPoint {
     fn default() -> Self {
         Self {
             region_id: "millcross-ford".to_string(),
-            position: Position::new(200.0, 200.0),
-            discovered_waypoints: vec![("millcross-ford".to_string(), Position::new(200.0, 200.0))],
+            position: Position::new(20.0, 20.0),
+            discovered_waypoints: vec![("millcross-ford".to_string(), Position::new(20.0, 20.0))],
         }
     }
 }
@@ -1657,7 +1661,7 @@ mod tests {
         let ai = MobAi::new(home, 150.0, 25.0, false);
         assert_eq!(ai.state, AiState::Idle);
         assert_eq!(ai.home_pos, home);
-        assert_eq!(ai.leash_distance, 300.0);
+        assert_eq!(ai.leash_distance, 30.0);
         assert_eq!(ai.chase_range, 150.0);
         assert_eq!(ai.attack_range, 25.0);
         assert!(!ai.is_ranged);

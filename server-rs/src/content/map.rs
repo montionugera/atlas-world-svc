@@ -5,9 +5,13 @@ pub const SPAWN_AREAS_JSON: &str = include_str!("../../../content/generated/spaw
 pub const TOWN_MILLCROSS_JSON: &str = include_str!("../../../content/towns/town-millcross.json");
 pub const FREJA_SOUTH_GATE_JSON: &str = include_str!("../../../content/maps/freja-south-gate.json");
 
-/// Maximum walkable terrain slope angle in degrees (38°).
+// F-185 unit contract: 1 game unit = 1 m for every length, position and speed in this crate
+// (`docs/unit-contract.md`). `coord_scale` is 1.0; map JSON in `content/maps` is metres
+// F-185 Phase 2 (all committed maps carry `"unitContract": "metres-v1"`).
+
+/// Maximum walkable terrain slope angle in degrees (35°).
 /// Slopes steeper than 38° act as impassable cliff walls that slide movement along the contour tangent.
-pub const MAX_WALKABLE_SLOPE_DEG: f32 = 38.0;
+pub const MAX_WALKABLE_SLOPE_DEG: f32 = 35.0;
 
 /// Every room the server runs. `ROOM_IDS[0]` is where unknown or missing ids land.
 pub const ROOM_IDS: [&str; 5] = [
@@ -163,9 +167,9 @@ pub struct TerrainHeightfield {
 impl Default for TerrainHeightfield {
     fn default() -> Self {
         Self {
-            arena_width: 1000.0,
-            arena_height: 1000.0,
-            coord_scale: 0.1,
+            arena_width: 100.0,
+            arena_height: 100.0,
+            coord_scale: 1.0,
             terrain_amplitude: 0.0,
             height_terraces: Vec::new(),
             max_walkable_slope_deg: MAX_WALKABLE_SLOPE_DEG,
@@ -178,7 +182,7 @@ impl TerrainHeightfield {
         Self {
             arena_width: cfg.width,
             arena_height: cfg.height,
-            coord_scale: 0.1,
+            coord_scale: 1.0,
             terrain_amplitude: cfg.terrain_amplitude,
             height_terraces: cfg.height_terraces.clone(),
             max_walkable_slope_deg: MAX_WALKABLE_SLOPE_DEG,
@@ -256,7 +260,7 @@ impl TerrainHeightfield {
         ny.clamp(-1.0, 1.0).acos().to_degrees()
     }
 
-    /// Pushes an entity in server coordinates `(sx, sy)` out of any impassable sheer cliff wall (`slope > 38°`).
+    /// Pushes an entity in server coordinates `(sx, sy)` out of any impassable sheer cliff wall (`slope > 35°`).
     pub fn resolve_against_cliffs(&self, sx: &mut f32, sy: &mut f32) -> bool {
         if self.height_terraces.is_empty() && self.terrain_amplitude <= 0.001 {
             return false;
@@ -333,6 +337,12 @@ pub struct MapConfig {
 }
 
 #[derive(Deserialize)]
+struct SpawnPoint {
+    x: f32,
+    y: f32,
+}
+
+#[derive(Deserialize)]
 struct UnifiedMapDoc {
     #[serde(rename = "mapId", default)]
     map_id: String,
@@ -348,10 +358,13 @@ struct UnifiedMapDoc {
     spawn_areas: Vec<MapSpawnArea>,
     #[serde(rename = "staticObstacles", default)]
     static_obstacles: Vec<StaticObstacle>,
+    /// Optional authored join point in server units; absent means the loader's map-centre default.
+    #[serde(rename = "playerSpawn", default)]
+    player_spawn: Option<SpawnPoint>,
 }
 
 fn default_map_dim() -> f32 {
-    1000.0
+    100.0
 }
 
 #[derive(Deserialize)]
@@ -401,22 +414,22 @@ impl MapConfig {
 
     fn default_play_terrain_zones() -> Vec<TerrainZone> {
         vec![
-            TerrainZone::rect(TerrainType::Ice, 0.0, 0.0, 1000.0, 250.0),
-            TerrainZone::rect(TerrainType::Forest, 680.0, 240.0, 320.0, 520.0),
-            TerrainZone::rect(TerrainType::Sand, 540.0, 390.0, 150.0, 220.0),
-            TerrainZone::rect(TerrainType::Mud, 390.0, 590.0, 230.0, 170.0),
-            TerrainZone::rect(TerrainType::Road, 485.0, 0.0, 30.0, 390.0),
-            TerrainZone::rect(TerrainType::Road, 485.0, 610.0, 30.0, 390.0),
-            TerrainZone::rect(TerrainType::Road, 0.0, 485.0, 390.0, 30.0),
-            TerrainZone::rect(TerrainType::Road, 610.0, 485.0, 390.0, 30.0),
-            TerrainZone::rect(TerrainType::Road, 390.0, 390.0, 220.0, 220.0),
+            TerrainZone::rect(TerrainType::Ice, 0.0, 0.0, 100.0, 25.0),
+            TerrainZone::rect(TerrainType::Forest, 68.0, 24.0, 32.0, 52.0),
+            TerrainZone::rect(TerrainType::Sand, 54.0, 39.0, 15.0, 22.0),
+            TerrainZone::rect(TerrainType::Mud, 39.0, 59.0, 23.0, 17.0),
+            TerrainZone::rect(TerrainType::Road, 48.5, 0.0, 3.0, 39.0),
+            TerrainZone::rect(TerrainType::Road, 48.5, 61.0, 3.0, 39.0),
+            TerrainZone::rect(TerrainType::Road, 0.0, 48.5, 39.0, 3.0),
+            TerrainZone::rect(TerrainType::Road, 61.0, 48.5, 39.0, 3.0),
+            TerrainZone::rect(TerrainType::Road, 39.0, 39.0, 22.0, 22.0),
             // Town Trade Road and its bridge, painted over the Ice.
-            TerrainZone::rect(TerrainType::Road, 0.0, 172.0, 195.0, 16.0),
-            TerrainZone::rect(TerrainType::Road, 188.0, 170.0, 30.0, 20.0),
+            TerrainZone::rect(TerrainType::Road, 0.0, 17.2, 19.5, 1.6),
+            TerrainZone::rect(TerrainType::Road, 18.8, 17.0, 3.0, 2.0),
         ]
     }
 
-    /// Scale-testing map, 4000 x 4000: three big zones of each slow terrain, a road cross
+    /// Scale-testing map, 400 x 400: three big zones of each slow terrain, a road cross
     /// through the centre plaza (the player spawn) plus a ring road, four clusters of
     /// blocks beside the ring's corners, and a 4 x 4 grid of mob camps (12 mobs each).
     fn large_test_map(map_id: &str) -> Self {
@@ -436,25 +449,25 @@ impl MapConfig {
                 let n = row * 4 + col;
                 spawn_areas.push(MapSpawnArea {
                     id: format!("large_camp_{n}"),
-                    x: 350.0 + 1000.0 * col as f32,
-                    y: 350.0 + 1000.0 * row as f32,
-                    width: 300.0,
-                    height: 300.0,
+                    x: 35.0 + 100.0 * col as f32,
+                    y: 35.0 + 100.0 * row as f32,
+                    width: 30.0,
+                    height: 30.0,
                     mob_type: MOB_TYPES[n % MOB_TYPES.len()].to_string(),
                     count: 12,
                 });
             }
         }
         for (c, (cx, cy)) in [
-            (1200.0, 1200.0),
-            (2800.0, 1200.0),
-            (1200.0, 2800.0),
-            (2800.0, 2800.0),
+            (120.0, 120.0),
+            (280.0, 120.0),
+            (120.0, 280.0),
+            (280.0, 280.0),
         ]
         .into_iter()
         .enumerate()
         {
-            for (b, (dx, dy)) in [(0.0, 0.0), (90.0, 20.0), (30.0, 100.0), (130.0, 110.0)]
+            for (b, (dx, dy)) in [(0.0, 0.0), (9.0, 2.0), (3.0, 10.0), (13.0, 11.0)]
                 .into_iter()
                 .enumerate()
             {
@@ -462,42 +475,42 @@ impl MapConfig {
                     id: format!("large_block_{c}_{b}"),
                     min_x: cx + dx,
                     min_y: cy + dy,
-                    max_x: cx + dx + 40.0,
-                    max_y: cy + dy + 40.0,
+                    max_x: cx + dx + 4.0,
+                    max_y: cy + dy + 4.0,
                 });
             }
         }
         Self {
             map_id: map_id.to_string(),
-            width: 4000.0,
-            height: 4000.0,
+            width: 400.0,
+            height: 400.0,
             terrain_amplitude: 0.0,
             height_terraces: Vec::new(),
             spawn_areas,
             static_obstacles,
             terrain_zones: vec![
-                TerrainZone::rect(Ice, 0.0, 0.0, 1400.0, 800.0),
-                TerrainZone::rect(Ice, 2600.0, 3200.0, 1400.0, 800.0),
-                TerrainZone::rect(Ice, 1500.0, 300.0, 900.0, 500.0),
-                TerrainZone::rect(Forest, 2700.0, 100.0, 1200.0, 1100.0),
-                TerrainZone::rect(Forest, 100.0, 2700.0, 1100.0, 1200.0),
-                TerrainZone::rect(Forest, 1400.0, 3100.0, 900.0, 700.0),
-                TerrainZone::rect(Sand, 100.0, 1100.0, 800.0, 1200.0),
-                TerrainZone::rect(Sand, 3100.0, 1500.0, 800.0, 1300.0),
-                TerrainZone::rect(Sand, 2200.0, 2200.0, 600.0, 600.0),
-                TerrainZone::rect(Mud, 1200.0, 1200.0, 600.0, 600.0),
-                TerrainZone::rect(Mud, 2200.0, 1100.0, 700.0, 500.0),
-                TerrainZone::rect(Mud, 1100.0, 2200.0, 700.0, 700.0),
+                TerrainZone::rect(Ice, 0.0, 0.0, 140.0, 80.0),
+                TerrainZone::rect(Ice, 260.0, 320.0, 140.0, 80.0),
+                TerrainZone::rect(Ice, 150.0, 30.0, 90.0, 50.0),
+                TerrainZone::rect(Forest, 270.0, 10.0, 120.0, 110.0),
+                TerrainZone::rect(Forest, 10.0, 270.0, 110.0, 120.0),
+                TerrainZone::rect(Forest, 140.0, 310.0, 90.0, 70.0),
+                TerrainZone::rect(Sand, 10.0, 110.0, 80.0, 120.0),
+                TerrainZone::rect(Sand, 310.0, 150.0, 80.0, 130.0),
+                TerrainZone::rect(Sand, 220.0, 220.0, 60.0, 60.0),
+                TerrainZone::rect(Mud, 120.0, 120.0, 60.0, 60.0),
+                TerrainZone::rect(Mud, 220.0, 110.0, 70.0, 50.0),
+                TerrainZone::rect(Mud, 110.0, 220.0, 70.0, 70.0),
                 // Roads paint over everything: the cross, the ring, the plaza.
-                TerrainZone::rect(Road, 1970.0, 0.0, 60.0, 4000.0),
-                TerrainZone::rect(Road, 0.0, 1970.0, 4000.0, 60.0),
-                TerrainZone::rect(Road, 1000.0, 970.0, 2000.0, 60.0),
-                TerrainZone::rect(Road, 1000.0, 2970.0, 2000.0, 60.0),
-                TerrainZone::rect(Road, 970.0, 1000.0, 60.0, 2000.0),
-                TerrainZone::rect(Road, 2970.0, 1000.0, 60.0, 2000.0),
-                TerrainZone::rect(Road, 1850.0, 1850.0, 300.0, 300.0),
+                TerrainZone::rect(Road, 197.0, 0.0, 6.0, 400.0),
+                TerrainZone::rect(Road, 0.0, 197.0, 400.0, 6.0),
+                TerrainZone::rect(Road, 100.0, 97.0, 200.0, 6.0),
+                TerrainZone::rect(Road, 100.0, 297.0, 200.0, 6.0),
+                TerrainZone::rect(Road, 97.0, 100.0, 6.0, 200.0),
+                TerrainZone::rect(Road, 297.0, 100.0, 6.0, 200.0),
+                TerrainZone::rect(Road, 185.0, 185.0, 30.0, 30.0),
             ],
-            player_spawn: Some((2000.0, 2000.0)),
+            player_spawn: Some((200.0, 200.0)),
             dungeon_portals: Vec::new(),
         }
     }
@@ -522,7 +535,7 @@ impl MapConfig {
             spawn_areas: doc.spawn_areas,
             static_obstacles: doc.static_obstacles,
             terrain_zones: Self::default_play_terrain_zones(),
-            player_spawn: None,
+            player_spawn: doc.player_spawn.map(|p| (p.x, p.y)),
             dungeon_portals: Self::portals_for_map(resolved_id),
         })
     }
@@ -533,16 +546,16 @@ impl MapConfig {
             "map-for-test-large" => Self::large_test_map(map_id),
             "map-for-test-deflect" => Self {
                 map_id: map_id.to_string(),
-                width: 100.0,
-                height: 100.0,
+                width: 10.0,
+                height: 10.0,
                 terrain_amplitude: 0.0,
                 height_terraces: Vec::new(),
                 spawn_areas: vec![MapSpawnArea {
                     id: "deflect_single_mob".to_string(),
-                    x: 30.0,
-                    y: 30.0,
-                    width: 40.0,
-                    height: 40.0,
+                    x: 3.0,
+                    y: 3.0,
+                    width: 4.0,
+                    height: 4.0,
                     mob_type: "mob-veil-spearling".to_string(),
                     count: 1,
                 }],
@@ -553,16 +566,16 @@ impl MapConfig {
             },
             "map-for-test-projectile" => Self {
                 map_id: map_id.to_string(),
-                width: 1000.0,
-                height: 1000.0,
+                width: 100.0,
+                height: 100.0,
                 terrain_amplitude: 0.0,
                 height_terraces: Vec::new(),
                 spawn_areas: vec![MapSpawnArea {
                     id: "proj_spear_thrower_area".to_string(),
-                    x: 400.0,
-                    y: 400.0,
-                    width: 200.0,
-                    height: 200.0,
+                    x: 40.0,
+                    y: 40.0,
+                    width: 20.0,
+                    height: 20.0,
                     mob_type: "mob-veil-spearling".to_string(),
                     count: 6,
                 }],
@@ -577,43 +590,43 @@ impl MapConfig {
             // range of the spawn, for knockback/AoE testing.
             "map-for-test-terrain" => Self {
                 map_id: map_id.to_string(),
-                width: 1000.0,
-                height: 1000.0,
+                width: 100.0,
+                height: 100.0,
                 terrain_amplitude: 0.0,
                 height_terraces: Vec::new(),
                 spawn_areas: vec![MapSpawnArea {
                     id: "terrain_sandbox_mobs".to_string(),
-                    x: 450.0,
-                    y: 880.0,
-                    width: 100.0,
-                    height: 60.0,
+                    x: 45.0,
+                    y: 88.0,
+                    width: 10.0,
+                    height: 6.0,
                     mob_type: "mob-chaff-crawler".to_string(),
                     count: 2,
                 }],
                 static_obstacles: vec![
                     StaticObstacle {
                         id: "terrain_sandbox_block_w".to_string(),
-                        min_x: 300.0,
-                        min_y: 760.0,
-                        max_x: 340.0,
-                        max_y: 800.0,
+                        min_x: 30.0,
+                        min_y: 76.0,
+                        max_x: 34.0,
+                        max_y: 80.0,
                     },
                     StaticObstacle {
                         id: "terrain_sandbox_block_e".to_string(),
-                        min_x: 660.0,
-                        min_y: 760.0,
-                        max_x: 700.0,
-                        max_y: 800.0,
+                        min_x: 66.0,
+                        min_y: 76.0,
+                        max_x: 70.0,
+                        max_y: 80.0,
                     },
                 ],
                 terrain_zones: TerrainType::ALL
                     .iter()
                     .enumerate()
                     .map(|(i, &terrain)| {
-                        TerrainZone::rect(terrain, 50.0 + 150.0 * i as f32, 0.0, 150.0, 700.0)
+                        TerrainZone::rect(terrain, 5.0 + 15.0 * i as f32, 0.0, 15.0, 70.0)
                     })
                     .collect(),
-                player_spawn: Some((25.0, 350.0)),
+                player_spawn: Some((2.5, 35.0)),
                 dungeon_portals: Vec::new(),
             },
             "freja-south-gate" => {
@@ -651,15 +664,15 @@ impl MapConfig {
         if let Ok(doc) = serde_json::from_str::<SpawnAreasJsonDoc>(SPAWN_AREAS_JSON) {
             for entry in doc.areas {
                 let (x, y, width, height) = match entry.id.as_str() {
-                    "boss_area" => (450.0, 450.0, 100.0, 100.0),
-                    "center_courtyard" => (400.0, 400.0, 200.0, 200.0),
-                    "east_dunes" => (550.0, 400.0, 150.0, 200.0),
-                    "north_ice_fields" => (400.0, 250.0, 200.0, 150.0),
-                    "south_mud_pit" => (400.0, 600.0, 200.0, 150.0),
-                    "thornveil_route_stalkers" => (700.0, 300.0, 150.0, 200.0),
-                    "thornveil_route_spearlings" => (700.0, 550.0, 150.0, 200.0),
-                    "thornveil_interior" => (820.0, 420.0, 150.0, 150.0),
-                    _ => (400.0, 400.0, 200.0, 200.0),
+                    "boss_area" => (45.0, 45.0, 10.0, 10.0),
+                    "center_courtyard" => (40.0, 40.0, 20.0, 20.0),
+                    "east_dunes" => (55.0, 40.0, 15.0, 20.0),
+                    "north_ice_fields" => (40.0, 25.0, 20.0, 15.0),
+                    "south_mud_pit" => (40.0, 60.0, 20.0, 15.0),
+                    "thornveil_route_stalkers" => (70.0, 30.0, 15.0, 20.0),
+                    "thornveil_route_spearlings" => (70.0, 55.0, 15.0, 20.0),
+                    "thornveil_interior" => (82.0, 42.0, 15.0, 15.0),
+                    _ => (40.0, 40.0, 20.0, 20.0),
                 };
                 let resolved_mob_type = match entry.mob_type.as_str() {
                     "balanced" | "bramble_stalker" => "mob-bramble-stalker",
@@ -685,14 +698,17 @@ impl MapConfig {
         // Load town static obstacles from content/towns/town-millcross.json
         let mut static_obstacles = Vec::new();
         if let Ok(town) = serde_json::from_str::<TownPlanJson>(TOWN_MILLCROSS_JSON) {
-            let origin_x = 100.0;
-            let origin_y = 100.0;
+            // shortcut: content/towns/town-millcross.json stays in its own 0.1 m design frame
+            // (the atelier art tools read it too), so footprints are scaled here; drop the
+            // `* 0.1` if the town plan itself is ever rescaled.
+            let origin_x = 10.0;
+            let origin_y = 10.0;
             for fp in town.footprints {
                 if fp.rect.len() >= 4 {
-                    let x0 = fp.rect[0] + origin_x;
-                    let y0 = fp.rect[1] + origin_y;
-                    let x1 = fp.rect[2] + origin_x;
-                    let y1 = fp.rect[3] + origin_y;
+                    let x0 = fp.rect[0] * 0.1 + origin_x;
+                    let y0 = fp.rect[1] * 0.1 + origin_y;
+                    let x1 = fp.rect[2] * 0.1 + origin_x;
+                    let y1 = fp.rect[3] * 0.1 + origin_y;
                     static_obstacles.push(StaticObstacle {
                         id: fp.id,
                         min_x: x0.min(x1),
@@ -706,8 +722,8 @@ impl MapConfig {
 
         Self {
             map_id: map_id.to_string(),
-            width: 1000.0,
-            height: 1000.0,
+            width: 100.0,
+            height: 100.0,
             terrain_amplitude: 0.0,
             height_terraces: Vec::new(),
             spawn_areas,
@@ -727,8 +743,8 @@ mod tests {
     fn loads_unified_freja_south_gate_map_with_props_and_spawn_areas() {
         let cfg = MapConfig::load("freja-south-gate");
         assert_eq!(cfg.map_id, "freja-south-gate");
-        assert_eq!(cfg.width, 1000.0);
-        assert_eq!(cfg.height, 1000.0);
+        assert_eq!(cfg.width, 100.0);
+        assert_eq!(cfg.height, 100.0);
         assert_eq!(cfg.spawn_areas.len(), 8);
         assert_eq!(cfg.static_obstacles.len(), 12);
         assert_eq!(cfg.height_terraces.len(), 5);
@@ -736,6 +752,18 @@ mod tests {
             .static_obstacles
             .iter()
             .any(|o| o.id == "sanctuary_pillar_w"));
+    }
+
+    #[test]
+    fn loads_maro_bell_grey_box_map_with_authored_spawn() {
+        let cfg = MapConfig::load("maro-bell");
+        assert_eq!(cfg.map_id, "maro-bell");
+        assert_eq!(cfg.width, 80.0);
+        assert_eq!(cfg.height, 160.0);
+        assert!(!cfg.static_obstacles.is_empty());
+        assert!(cfg.static_obstacles.iter().any(|o| o.id == "cliff-west"));
+        // Arrival gate at the south end, not the map centre.
+        assert_eq!(cfg.player_spawn, Some((40.0, 151.0)));
     }
 
     #[test]
@@ -747,7 +775,7 @@ mod tests {
         assert!(hf.sample_height_world(0.0, 0.0).abs() < 0.05);
         assert!(hf.sample_slope_deg_world(0.0, 0.0) < 2.0);
 
-        // Sanctuary north acropolis (0, -18) is elevated (> 3.0m) and its ramp at (0, -10.5) is walkable (<= 38 deg)
+        // Sanctuary north acropolis (0, -18) is elevated (> 3.0m) and its ramp at (0, -10.5) is walkable (<= 35 deg)
         assert!(hf.sample_height_world(0.0, -18.0) > 3.0);
         assert!(hf.sample_slope_deg_world(0.0, -10.5) <= MAX_WALKABLE_SLOPE_DEG);
 
@@ -757,7 +785,7 @@ mod tests {
         let rim_slope = hf.sample_slope_deg_world(cliff_rim_x, cliff_rim_z);
         assert!(
             rim_slope > MAX_WALKABLE_SLOPE_DEG,
-            "Expected sheer cliff rim slope > 38 deg, got {rim_slope}"
+            "Expected sheer cliff rim slope > 35 deg, got {rim_slope}"
         );
 
         let (mut sx, mut sy) = hf.world_to_server(cliff_rim_x, cliff_rim_z);

@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "grykefell-stack",
   "name": "Grykefell Stack \u2014 Stonemoor (c04/r15)",
   "seed": 151744,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "barren_cliff",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -442,73 +443,73 @@
   "spawnAreas": [
     {
       "id": "grykefell_stack_bell_scoured_penitent",
-      "x": 2144.5,
-      "y": 2002.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 214.45,
+      "y": 200.21,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bell-scoured-penitent",
       "count": 2
     },
     {
       "id": "grykefell_stack_flagrot_swarm",
-      "x": 1649.3,
-      "y": 2005.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.93,
+      "y": 200.54,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-flagrot-swarm",
       "count": 2
     },
     {
       "id": "grykefell_stack_harbor_assessor",
-      "x": 2136.2,
-      "y": 1626.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 213.62,
+      "y": 162.62,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-harbor-assessor",
       "count": 2
     },
     {
       "id": "grykefell_stack_hollowmoor_giant",
-      "x": 2109.1,
-      "y": 2342.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 210.91,
+      "y": 234.22,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hollowmoor-giant",
       "count": 2
     },
     {
       "id": "grykefell_stack_bound_war_beast",
-      "x": 1644.8,
-      "y": 1506.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.48,
+      "y": 150.69,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "grykefell_stack_shroudweaver",
-      "x": 2480.5,
-      "y": 1706.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 248.05,
+      "y": 170.66,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-shroudweaver",
       "count": 2
     },
     {
       "id": "grykefell_stack_siege_rot_hulk",
-      "x": 1357.1,
-      "y": 2257.2,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 135.71,
+      "y": 225.72,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-siege-rot-hulk",
       "count": 1
     },
     {
       "id": "grykefell_stack_warscar_maw",
-      "x": 2203.3,
-      "y": 1245.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 220.33,
+      "y": 124.53,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-warscar-maw",
       "count": 2
     }
@@ -516,24 +517,24 @@
   "staticObstacles": [
     {
       "id": "landmark_karnstone_sink_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_roads_of_slatesink_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_grykefell_stack_sheer_scarp_cliff",
-      "min_x": 1368.8,
-      "min_y": 2418.8,
-      "max_x": 1631.2,
-      "max_y": 2681.2
+      "min_x": 136.88,
+      "min_y": 241.88,
+      "max_x": 163.12,
+      "max_y": 268.12
     }
   ]
 }

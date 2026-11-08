@@ -29,10 +29,10 @@ namespace AtlasWorld.Client
     /// </summary>
     public partial class VerticalSliceRoot : Node3D
     {
-        public const float ServerCoordScale = 0.1f;
+        public const float ServerCoordScale = 1.0f;
         public const float MeleeAttackRangeWorld = 3.5f;
         public const int PlayerScaleMultiplier = 148;
-        public static Vector2 ServerArenaCenter { get; private set; } = new(500f, 500f);
+        public static Vector2 ServerArenaCenter { get; private set; } = new(50f, 50f);
 
         [Export] public ServerRsConnection Connection = null!;
         [Export] public Node3D PlayerAvatar = null!;
@@ -62,8 +62,8 @@ namespace AtlasWorld.Client
         private Node3D? _meadowRingRoot;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
-        private float _basePlayerSpeed = 6.5f; // Matches server-rs default derived speed (46.0 * 0.1 = 4.6 u/s)
-        private float _playerSpeed = 6.5f;
+        private float _basePlayerSpeed = 3.0f; // F-184: player run is 3 m/s (server SPEED_SCALE 0.15 of the old 20)
+        private float _playerSpeed = 3.0f;
         private float _meleeRangeWorld = MeleeAttackRangeWorld;
         private float _customSafeInset = 18.0f;
         private float _actionClusterScale = 1.0f;
@@ -177,6 +177,28 @@ namespace AtlasWorld.Client
                 return;
             }
 
+            // F-183 grey-box probe (ATLAS_VERIFY_MARO_BELL=1; ATLAS_RENDER_MARO_BELL=<dir> also saves screenshots).
+            if (OS.GetEnvironment("ATLAS_VERIFY_MARO_BELL") == "1")
+            {
+                SetProcess(false);
+                SetPhysicsProcess(false);
+                SetProcessInput(false);
+                SetProcessUnhandledInput(false);
+                AddChild(new MaroBellVerify { Name = "MaroBellVerify" });
+                return;
+            }
+
+            // F-188 interactive Playtest Sandbox probe (ATLAS_VERIFY_PLAYTEST_SANDBOX=1).
+            if (OS.GetEnvironment("ATLAS_VERIFY_PLAYTEST_SANDBOX") == "1")
+            {
+                SetProcess(false);
+                SetPhysicsProcess(false);
+                SetProcessInput(false);
+                SetProcessUnhandledInput(false);
+                AddChild(new PlaytestSandboxVerify { Name = "PlaytestSandboxVerify" });
+                return;
+            }
+
             if (!string.IsNullOrEmpty(OS.GetEnvironment("ATLAS_RENDER_PIPELINE_STRIP")))
             {
                 SetProcess(false);
@@ -192,15 +214,39 @@ namespace AtlasWorld.Client
             _config = Config.Load();
 
             // 2. Initialize Player Avatar & AnimationController from internal library
+            string activeMapId = ResolveMapId(OS.GetEnvironment("ATLAS_MAP_ID"));
+            bool useMaroGirlAvatar = activeMapId == "maro-bell" ||
+                OS.GetEnvironment("ATLAS_PLAYER_KEY") == PipelineCharVerify.MaroGirlKey;
+            if (PlayerAvatar != null && useMaroGirlAvatar && AssetRegistry.Instance != null)
+            {
+                PackedScene maroGirlScene = AssetRegistry.Instance.Resolve(PipelineCharVerify.MaroGirlKey, out ResolveTier maroTier);
+                if (maroTier == ResolveTier.Bespoke && maroGirlScene.Instantiate() is Node3D maroGirlNode)
+                {
+                    Node? parent = PlayerAvatar.GetParent();
+                    Transform3D oldXf = PlayerAvatar.Transform;
+                    if (parent != null)
+                    {
+                        parent.RemoveChild(PlayerAvatar);
+                        PlayerAvatar.QueueFree();
+                        maroGirlNode.Name = "PlayerAvatar";
+                        maroGirlNode.Transform = new Transform3D(Basis.Identity, oldXf.Origin);
+                        parent.AddChild(maroGirlNode);
+                        PlayerAvatar = maroGirlNode;
+                    }
+                    new WeaponSocket(PlayerAvatar).EquipByKey("sword");
+                }
+            }
+
             if (PlayerAvatar != null)
             {
                 // Apply Ragnarok Origin anime cel-shading + warm rim light to local PlayerAvatar
                 EntityView.ApplyAnimeToonShading(PlayerAvatar, EntityKind.Player);
 
-                // player_knight.glb faces +Z in model space; rotating Y by Pi faces -Z (away from camera into the world)
+                // player_knight.glb and maro_folk_girl.glb face +Z in model space; rotating Y by Pi faces -Z (away from camera into the world)
                 PlayerAvatar.Rotation = new Vector3(0f, Mathf.Pi, 0f);
 
-                var animOverrides = AssetRegistry.Instance?.ResolveAnimOverrides("player") ?? new Dictionary<string, string>
+                string avatarKey = useMaroGirlAvatar ? PipelineCharVerify.MaroGirlKey : "player";
+                var animOverrides = AssetRegistry.Instance?.ResolveAnimOverrides(avatarKey) ?? new Dictionary<string, string>
                 {
                     ["idle"] = "Idle",
                     ["walk"] = "Walking_A",
@@ -208,8 +254,9 @@ namespace AtlasWorld.Client
                     ["attack"] = "1H_Melee_Attack_Slice_Diagonal",
                     ["death"] = "Death_A"
                 };
+                var animVariants = AssetRegistry.Instance?.ResolveAnimVariants(avatarKey);
 
-                _playerAnimController = new AnimationController(PlayerAvatar, animOverrides);
+                _playerAnimController = new AnimationController(PlayerAvatar, animOverrides, animVariants);
                 _animPlayer = PlayerAvatar.FindChild("AnimationPlayer", true, false) as AnimationPlayer;
 
                 if (_animPlayer != null)
@@ -245,11 +292,11 @@ namespace AtlasWorld.Client
             // Position PlayerAvatar right at the foot of the Watchtower East Staircase facing West (-X) so 2F stair climbing can be tested immediately
             if (PlayerAvatar != null && OS.GetEnvironment("ATLAS_AUTO_COMBAT_ON_START") != "1")
             {
-                float startX = -2.4f;
-                float startZ = -2.0f;
+                float startX = activeMapId == "maro-bell" ? 0.0f : -2.4f;
+                float startZ = activeMapId == "maro-bell" ? -15.0f : -2.0f;
                 float startY = TerrainElevation.SampleHeight(startX, startZ, _mapDoc, 0f);
                 PlayerAvatar.Position = new Vector3(startX, startY, startZ);
-                PlayerAvatar.Rotation = new Vector3(0f, -Mathf.Pi * 0.5f, 0f);
+                PlayerAvatar.Rotation = new Vector3(0f, activeMapId == "maro-bell" ? Mathf.Pi : -Mathf.Pi * 0.5f, 0f);
                 _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position, forceReload: true);
             }
 
@@ -897,6 +944,9 @@ namespace AtlasWorld.Client
         /// the On-Demand Spatial Chunk Streamer (MapChunkStreamer), and registers all 3D props
         /// with SmartCameraOccluder so any prop blocking the camera auto-fades cleanly.
         /// </summary>
+        /// <summary>F-183: ATLAS_MAP_ID picks the map document; unset keeps the default meadow.</summary>
+        public static string ResolveMapId(string? env) => string.IsNullOrWhiteSpace(env) ? "freja-south-gate" : env.Trim();
+
         private void PopulateMeadowEnvironment()
         {
             var envProps = GetNodeOrNull<Node3D>("EnvironmentProps");
@@ -910,7 +960,7 @@ namespace AtlasWorld.Client
             _meadowRingRoot = new Node3D { Name = "MeadowRing" };
             envProps.AddChild(_meadowRingRoot);
 
-            _mapDoc = UnifiedMapDocument.LoadOrDefault("freja-south-gate");
+            _mapDoc = UnifiedMapDocument.LoadOrDefault(ResolveMapId(OS.GetEnvironment("ATLAS_MAP_ID")));
             SyncMapFloorAndBounds();
 
             _chunkStreamer = new MapChunkStreamer(_meadowRingRoot, _mapDoc, _cameraOccluder);
@@ -1250,9 +1300,9 @@ namespace AtlasWorld.Client
             else if (@event is InputEventMouseButton wheel)
             {
                 if (wheel.ButtonIndex == MouseButton.WheelUp && wheel.Pressed)
-                    _cameraDistance = Mathf.Clamp(_cameraDistance - 0.45f, 3.5f, 11.0f);
+                    _cameraDistance = CameraZoom.Zoomed(_cameraDistance, -1);
                 else if (wheel.ButtonIndex == MouseButton.WheelDown && wheel.Pressed)
-                    _cameraDistance = Mathf.Clamp(_cameraDistance + 0.45f, 3.5f, 11.0f);
+                    _cameraDistance = CameraZoom.Zoomed(_cameraDistance, +1);
             }
 
             if (@event is InputEventKey keyEvent && keyEvent.Pressed && !keyEvent.Echo)
@@ -1835,7 +1885,7 @@ namespace AtlasWorld.Client
             if (_dashDuration > 0f)
             {
                 _dashDuration -= dt;
-                _playerSpeed = 16.0f;
+                _playerSpeed = 7.4f;
             }
             else
             {
@@ -1848,7 +1898,7 @@ namespace AtlasWorld.Client
             if (isMoving && PlayerAvatar != null)
             {
                 Vector3 normDir = direction.Normalized();
-                Vector3 velocity = normDir * (_playerSpeed * 2.0f); // Exceeds 8.0f sprint threshold in AnimationController
+                Vector3 velocity = normDir * (_playerSpeed * 2.0f); // Exceeds the 1.2f sprint threshold in AnimationController
                 float curX = PlayerAvatar.Position.X;
                 float curY = PlayerAvatar.Position.Y;
                 float curZ = PlayerAvatar.Position.Z;
@@ -2055,7 +2105,19 @@ namespace AtlasWorld.Client
                 }
             }
 
-            _playerAnimController?.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: true);
+            if (_playerAnimController != null)
+            {
+                if (_playerAnimController.IsCombatMapped)
+                {
+                    _playerAnimController.Attack();
+                    Vector3 moveVel = _wasMovingLastFrame ? new Vector3(0f, 0f, _playerSpeed) : Vector3.Zero;
+                    _playerAnimController.Update(isAlive: true, velocity: moveVel, isAttacking: true);
+                }
+                else
+                {
+                    _playerAnimController.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: true);
+                }
+            }
             AudioRegistry.Instance?.Play("sfx:attack", PlayerAvatar?.GlobalPosition ?? Vector3.Zero);
 
             var (targetId, targetX, targetY) = ResolveServerAimTarget();

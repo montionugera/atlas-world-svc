@@ -26,7 +26,7 @@ pub struct PhysicsWorld {
 
 impl Default for PhysicsWorld {
     fn default() -> Self {
-        Self::new(1200.0, 1200.0)
+        Self::new(120.0, 120.0)
     }
 }
 
@@ -45,7 +45,7 @@ impl PhysicsWorld {
         let ccd_solver = CCDSolver::new();
 
         // Build static boundary colliders around arena
-        let wall_thickness = 50.0;
+        let wall_thickness = 5.0;
         let half_w = arena_width / 2.0;
         let half_h = arena_height / 2.0;
         let half_t = wall_thickness / 2.0;

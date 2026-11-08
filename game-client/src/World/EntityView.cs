@@ -89,7 +89,13 @@ namespace AtlasWorld.Client.World
             AssetRegistry? registry = AssetRegistry.Instance;
             IReadOnlyDictionary<string, string>? animOverrides = registry?.ResolveAnimOverrides(typeId);
             IReadOnlyDictionary<string, IReadOnlyList<string>>? animVariants = registry?.ResolveAnimVariants(typeId);
-            _animController = new AnimationController(_root, animOverrides, animVariants);
+            _animController = new AnimationController(_root, animOverrides, animVariants)
+            {
+                UseFeminineRelaxedPosture = !string.IsNullOrEmpty(typeId) &&
+                    (typeId.Contains("maro_folk_girl", System.StringComparison.OrdinalIgnoreCase) ||
+                     typeId.Contains("girl", System.StringComparison.OrdinalIgnoreCase) ||
+                     typeId.Contains("female", System.StringComparison.OrdinalIgnoreCase))
+            };
 
             // Rediscover the mutable capsule-tier parts by name. They exist on the procedural
             // capsule (player/npc/mob carry an HpBar); bespoke/seed scenes may omit them, in

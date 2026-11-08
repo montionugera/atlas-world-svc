@@ -6,6 +6,7 @@ Builds build/catalog.sqlite and build/catalog_summary.json from:
 - content/world/** (premises, fabric/world.json, civil/pinned-roster.json, civil/pinned, civil/bound)
 - content/spine/nodes/*.json
 - content/story/*.json (acts, regions, factions, characters, arcs, quests, events, dialogue, lore)
+- content/studio/canon/glossary.json (canon_entries), content/concept-art/index.json (concept_art)
 - content/zones/*.json, content/dungeons/*.json, content/bestiary/bestiary.json
 
 Provides a single observable SQLite + JSONB-style catalog database for:
@@ -30,6 +31,9 @@ ZONES_DIR = ROOT / "content" / "zones"
 DUNGEONS_DIR = ROOT / "content" / "dungeons"
 STUDIO_DIR = ROOT / "content" / "studio"
 COMPILED_DUNGEONS_PATH = DUNGEONS_DIR / "_compiled_catalog.json"
+CANON_PATH = STUDIO_DIR / "canon" / "glossary.json"
+DECISIONS_PATH = STUDIO_DIR / "canon" / "decisions.json"
+CONCEPT_ART_PATH = ROOT / "content" / "concept-art" / "index.json"
 BESTIARY_PATH = ROOT / "content" / "bestiary" / "bestiary.json"
 BUILD_DIR = ROOT / "build"
 DB_PATH = BUILD_DIR / "catalog.sqlite"
@@ -39,6 +43,47 @@ SUMMARY_PATH = BUILD_DIR / "catalog_summary.json"
 def load_json(path: Path):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def canon_rows(g):
+    """Flatten canon/glossary.json into (kind, id, name, parent_id, status, raw) rows."""
+    rows = []
+
+    def add(kind, id_, name, parent, status, raw):
+        rows.append((kind, str(id_), name, parent, status, json.dumps(raw, ensure_ascii=False)))
+
+    for c in g.get("chapters", []):
+        add("chapter", c["ch"], c["title"], None, None, c)
+    for x in g.get("gods", []):
+        add("god", x["id"], x["name"], None, None, x)
+    for x in g.get("races", []):
+        add("race", x["id"], x["name"], None, None, x)
+    for x in g.get("regions", []):
+        add("region", x["name"], x["name"], None, x.get("status"), x)
+    for x in g.get("titles", []):
+        add("title", x["name"], x["name"], None, None, x)
+    for k, v in g.get("landmarks", {}).items():
+        add("landmark", k, v["name"], None, None, v)
+    for x in g.get("npcs", {}).get("travellers", []):
+        add("npc", x["name"], x["name"], x.get("home_town"), None, x)
+    if g.get("architect"):
+        a = g["architect"]
+        add("architect", a["name"], a["name"], None, None, a)
+    if g.get("wardens"):
+        add("faction", "kilnwatch_wardens", g["wardens"]["name"], None, None, g["wardens"])
+    for n in g.get("retired_names", []):
+        add("retired_name", n, n, None, "retired", {"name": n})
+    return rows
+
+
+def concept_art_rows(idx):
+    return [
+        (
+            i["id"], i["title"], i.get("category"), i.get("zoneId"), i.get("loreRef"),
+            i.get("file"), i.get("thumb"), i.get("caption"), json.dumps(i, ensure_ascii=False),
+        )
+        for i in idx.get("items", [])
+    ]
 
 
 def main() -> int:
@@ -381,6 +426,10 @@ def main() -> int:
                 }
             )
 
+    decisions = load_json(DECISIONS_PATH)["decisions"] if DECISIONS_PATH.exists() else []
+    canon = canon_rows(load_json(CANON_PATH)) if CANON_PATH.exists() else []
+    concept_art = concept_art_rows(load_json(CONCEPT_ART_PATH)) if CONCEPT_ART_PATH.exists() else []
+
     # Load Story Narrative Graph (content/story/*.json)
     story_nodes = []
     story_files = [
@@ -698,6 +747,32 @@ def main() -> int:
             frozen INTEGER NOT NULL,
             lore_reason TEXT NOT NULL,
             composition_json TEXT NOT NULL,
+            raw_json TEXT NOT NULL
+        );
+
+        CREATE TABLE canon_entries (
+            kind TEXT NOT NULL,
+            id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            parent_id TEXT,
+            status TEXT,
+            raw_json TEXT NOT NULL,
+            PRIMARY KEY (kind, id)
+        );
+
+        CREATE TABLE canon_decisions (
+            id TEXT PRIMARY KEY, text TEXT, source_chat TEXT, date TEXT,
+            status TEXT, applied_in TEXT, owner_answer TEXT
+        );
+        CREATE TABLE concept_art (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            category TEXT,
+            zone_id TEXT,
+            lore_ref TEXT,
+            file TEXT,
+            thumb TEXT,
+            caption TEXT,
             raw_json TEXT NOT NULL
         );
 
@@ -1061,6 +1136,13 @@ def main() -> int:
             ),
         )
 
+    cur.executemany(
+        "INSERT INTO canon_decisions VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [(d["id"], d["text"], d.get("source_chat"), d.get("date"), d["status"], d.get("applied_in"), d.get("owner_answer")) for d in decisions],
+    )
+    cur.executemany("INSERT INTO canon_entries VALUES (?, ?, ?, ?, ?, ?)", canon)
+    cur.executemany("INSERT INTO concept_art VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", concept_art)
+
     for st in story_nodes:
         cur.execute(
             "INSERT INTO story_nodes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -1244,6 +1326,8 @@ def main() -> int:
             "worldBestiary": len(world_bestiary),
             "spineNodes": len(spine_nodes),
             "storyNodes": len(story_nodes),
+            "canonEntries": len(canon),
+            "conceptArt": len(concept_art),
         },
         "jobProgression": job_prog,
         "mobEconomy": mob_econ,

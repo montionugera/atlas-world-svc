@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "shalegill-fenster",
   "name": "Shalegill Fenster \u2014 Stonemoor (c04/r07)",
   "seed": 785853,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "barren_cliff",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -441,73 +442,73 @@
   "spawnAreas": [
     {
       "id": "shalegill_fenster_ashen_drum_caller",
-      "x": 2137.6,
-      "y": 2020.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 213.76,
+      "y": 202.07,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-ashen-drum-caller",
       "count": 2
     },
     {
       "id": "shalegill_fenster_bell_scoured_penitent",
-      "x": 1647.9,
-      "y": 1999.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.79,
+      "y": 199.97,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bell-scoured-penitent",
       "count": 2
     },
     {
       "id": "shalegill_fenster_flagrot_swarm",
-      "x": 2021.7,
-      "y": 1576.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 202.17,
+      "y": 157.68,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-flagrot-swarm",
       "count": 2
     },
     {
       "id": "shalegill_fenster_bound_war_beast",
-      "x": 2037.7,
-      "y": 2365.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 203.77,
+      "y": 236.58,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "shalegill_fenster_crateyard_colossus",
-      "x": 1453.3,
-      "y": 1784.7,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 145.33,
+      "y": 178.47,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "shalegill_fenster_shroudweaver",
-      "x": 2481.2,
-      "y": 2161.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 248.12,
+      "y": 216.17,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-shroudweaver",
       "count": 2
     },
     {
       "id": "shalegill_fenster_siege_rot_hulk",
-      "x": 1567.7,
-      "y": 2493.5,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 156.77,
+      "y": 249.35,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-siege-rot-hulk",
       "count": 1
     },
     {
       "id": "shalegill_fenster_warscar_maw",
-      "x": 1884.0,
-      "y": 1196.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 188.4,
+      "y": 119.68,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-warscar-maw",
       "count": 2
     }
@@ -515,24 +516,24 @@
   "staticObstacles": [
     {
       "id": "landmark_scarlack_geo_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_pot_under_sinkgrike_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_shalegill_fenster_sheer_scarp_cliff",
-      "min_x": 1048.8,
-      "min_y": 2488.8,
-      "max_x": 1311.2,
-      "max_y": 2751.2
+      "min_x": 104.88,
+      "min_y": 248.88,
+      "max_x": 131.12,
+      "max_y": 275.12
     }
   ]
 }

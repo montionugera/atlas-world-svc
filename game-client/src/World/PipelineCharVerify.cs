@@ -16,6 +16,7 @@ namespace AtlasWorld.Client.World
     public sealed partial class PipelineCharVerify : Node
     {
         public const string Key = "npc:lantern_hollow_watch_sergeant";
+        public const string MaroGirlKey = "npc:maro_folk_girl";
         public const string MobKey = "mob:aggressive";
         private const string Tag = "[PipelineCharVerify]";
         private int _failures;
@@ -45,6 +46,7 @@ namespace AtlasWorld.Client.World
             await CheckStates(reg!); CheckReadyTransitions(reg!); CheckMobBlend(reg!); CheckFallbackOrder();
             await CheckWeaponSwap(reg!);
             CheckEntityViewWiring();
+            await CheckMaroFolkGirl(reg!);
             await NextFrames(1);
         }
 
@@ -117,7 +119,7 @@ namespace AtlasWorld.Client.World
 
             s.Anim.Update(true, Vector3.Zero);
             Expect(s, "still", "idle", "idle");
-            s.Anim.Update(true, new Vector3(1.5f, 0f, 0f));
+            s.Anim.Update(true, new Vector3(0.5f, 0f, 0f));
             Expect(s, "slow", "walk", "walk");
             s.Anim.Update(true, new Vector3(12f, 0f, 0f));
             Expect(s, "fast", "run", "run");
@@ -341,6 +343,128 @@ namespace AtlasWorld.Client.World
             Report($"legacy mob: target_id still → attack, Hit is a no-op (state={mob.Animation.CurrentState})",
                 mob.Animation.CurrentState == "attack" && !mob.Animation.InCombat);
             mob.Root.QueueFree();
+        }
+
+        private async Task CheckMaroFolkGirl(AssetRegistry reg)
+        {
+            reg.Resolve(MaroGirlKey, out ResolveTier tier);
+            if (!Report($"{MaroGirlKey} resolves to bespoke Meshy glb (tier={tier})", tier == ResolveTier.Bespoke))
+                return;
+
+            var view = new EntityView(EntityKind.Npc, MaroGirlKey);
+            AddChild(view.Root);
+            float h = WorldHeight(view.Root);
+            Report($"maro_folk_girl world height {h:F3} m (want 0.94 m ±5%)", Mathf.Abs(h - 0.94f) <= 0.047f);
+
+            // Runtime hair color customization: tint Hair surface across presets without mutating Body surface.
+            Color? initialBody = CharacterCustomization.GetBodyColor(view.Root);
+            Report("maro_folk_girl has a Body surface color", initialBody.HasValue);
+            foreach ((string presetName, Color presetColor) in CharacterCustomization.HairColorPresets)
+            {
+                int updated = CharacterCustomization.SetHairColor(view.Root, presetColor);
+                Color? hairNow = CharacterCustomization.GetHairColor(view.Root);
+                Color? bodyNow = CharacterCustomization.GetBodyColor(view.Root);
+                bool ok = updated >= 1 && hairNow.HasValue && hairNow.Value.IsEqualApprox(presetColor)
+                    && initialBody.HasValue && bodyNow.HasValue && bodyNow.Value.IsEqualApprox(initialBody.Value);
+                Report($"hair tint '{presetName}' updates Hair surface ({updated}) and preserves Body surface", ok);
+            }
+            view.Root.QueueFree();
+
+            Spawned? s = Spawn(reg, MaroGirlKey);
+            if (s == null)
+                return;
+
+            // Locomotion at F-184 pace (0.8 m/s walk, 3.0 m/s run)
+            s.Anim.Update(true, Vector3.Zero);
+            Expect(s, "maro_folk_girl idle", "idle", "idle");
+            s.Anim.Update(true, new Vector3(0.8f, 0f, 0f));
+            Expect(s, "maro_folk_girl walk (0.8 m/s)", "walk", "walk");
+            s.Anim.Update(true, new Vector3(3.0f, 0f, 0f));
+            Expect(s, "maro_folk_girl run (3.0 m/s)", "run", "run");
+
+            // Upper-body attack while running at 3.0 m/s: base player stays on "run" while upper-body plays "attack"
+            Skeleton3D? skel = FindFirst<AnimationPlayer>(s.Root) != null ? FindFirst<Skeleton3D>(s.Root) : null;
+            int rightArm = skel?.FindBone("RightArm") ?? -1;
+            int rightHand = skel?.FindBone("RightHand") ?? -1;
+            int leftUpLeg = skel?.FindBone("LeftUpLeg") ?? -1;
+            Report("Meshy humanoid bones RightArm, RightHand, LeftUpLeg found",
+                rightArm >= 0 && rightHand >= 0 && leftUpLeg >= 0);
+
+            s.Player.Play("run");
+            s.Player.Seek(0.25, true);
+            Quaternion pureRunArm = skel!.GetBonePoseRotation(rightArm);
+            Quaternion legPoseA = skel.GetBonePoseRotation(leftUpLeg);
+
+            s.Anim.Attack();
+            s.Anim.Update(true, new Vector3(3.0f, 0f, 0f));
+            Report("moving Attack() keeps base state=run and activates upper-body attack layer",
+                s.Anim.CurrentState == "run" && s.Player.CurrentAnimation == "run" &&
+                s.Anim.IsUpperBodyAttackActive && s.Anim.UpperBodyAttackClip == "attack" &&
+                Math.Abs(s.Anim.LastBlendSec - 0.10) < 1e-6);
+
+            s.Player.Seek(0.25, true);
+            s.Anim.SeekUpperBody(s.Anim.UpperBodyAttackLength * 0.45);
+            Quaternion layeredArm = skel.GetBonePoseRotation(rightArm);
+            Quaternion legPoseAWithUpperAttack = skel.GetBonePoseRotation(leftUpLeg);
+
+            s.Player.Seek(0.55, true);
+            s.Anim.SeekUpperBody(s.Anim.UpperBodyAttackLength * 0.65);
+            Quaternion legPoseBWithUpperAttack = skel.GetBonePoseRotation(leftUpLeg);
+
+            Report("lower-body LeftUpLeg preserves exact run pose during upper-body attack",
+                legPoseA.IsEqualApprox(legPoseAWithUpperAttack) && !legPoseAWithUpperAttack.IsEqualApprox(legPoseBWithUpperAttack));
+            Report("upper-body RightArm swings into attack pose while running",
+                !pureRunArm.IsEqualApprox(layeredArm));
+
+            // Advance past end of upper-body attack -> layer clears automatically while run continues
+            s.Anim.AdvanceUpperBody(s.Anim.UpperBodyAttackLength + 0.1);
+            Report("upper-body attack layer clears after clip length while run continues",
+                !s.Anim.IsUpperBodyAttackActive && s.Anim.CurrentState == "run");
+
+            // Foot-grounding regression check: across locomotion & combat clips, lowest ankle bone (LeftFoot/RightFoot)
+            // must never sink into the ground relative to rest ankle height (~0.078 m above sole).
+            int leftFoot = skel.FindBone("LeftFoot");
+            int rightFoot = skel.FindBone("RightFoot");
+            if (Report("Meshy humanoid LeftFoot and RightFoot bones found", leftFoot >= 0 && rightFoot >= 0))
+            {
+                float restFootY = Mathf.Min(skel.GetBoneGlobalRest(leftFoot).Origin.Y, skel.GetBoneGlobalRest(rightFoot).Origin.Y);
+                foreach (string clipName in new[] { "idle", "walk", "run", "combat_idle", "attack", "attack_2", "attack_3" })
+                {
+                    s.Player.Play(clipName);
+                    double cLen = s.Player.GetAnimation(clipName).Length;
+                    float minDeltaY = float.MaxValue;
+                    foreach (double norm in new[] { 0.0, 0.25, 0.50, 0.75 })
+                    {
+                        s.Player.Seek(cLen * norm, true);
+                        float ly = (skel.GlobalTransform * skel.GetBoneGlobalPose(leftFoot)).Origin.Y;
+                        float ry = (skel.GlobalTransform * skel.GetBoneGlobalPose(rightFoot)).Origin.Y;
+                        minDeltaY = Mathf.Min(minDeltaY, Mathf.Min(ly, ry) - restFootY);
+                    }
+                    Report($"maro_folk_girl '{clipName}' feet stay grounded (min ankle delta {minDeltaY * 100f:+0.1;-0.1;0.0} cm >= -2.5 cm)",
+                        minDeltaY >= -0.025f && minDeltaY <= 0.12f);
+                }
+            }
+
+            // Runtime sword look swap across multiple 1H sword variants on handslot_r
+            var socket = new WeaponSocket(s.Root);
+            foreach (string swordKey in WeaponSocket.SwordVariantKeys)
+            {
+                Node3D? weaponNode = socket.EquipByKey(swordKey);
+                Report($"maro_folk_girl equips sword variant '{swordKey}' on {socket.Attachment?.BoneName}",
+                    weaponNode != null && socket.Attachment != null && socket.Attachment.GetChildCount() == 1);
+            }
+
+            Node3D? finalSword = socket.EquipByKey("sword");
+            double atkLen = s.Player.GetAnimation("attack").Length;
+            (Vector3 sp1, Vector3 so1) = await SampleAxe(s, skel, rightHand, finalSword!, atkLen * 0.2);
+            (Vector3 sp2, Vector3 so2) = await SampleAxe(s, skel, rightHand, finalSword!, atkLen * 0.6);
+            float swordMoved = sp1.DistanceTo(sp2);
+            float swordDrift = so1.DistanceTo(so2);
+            Report($"maro_folk_girl sword moved {swordMoved * 100f:F1} cm across attack frames (> 1 cm)", swordMoved > 0.01f);
+            Report($"maro_folk_girl sword offset to RightHand drifted {swordDrift * 1000f:F2} mm (<= 1 mm)", swordDrift <= 0.001f);
+
+            s.Root.QueueFree();
+            await NextFrames(1);
         }
 
         private static bool IsUnderSkeleton(Node n, Node root)

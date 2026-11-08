@@ -123,7 +123,7 @@ namespace AtlasWorld.Client.World
         /// ephemeral projectiles, pushes one <see cref="PoseSample"/> per entity into
         /// <see cref="SnapshotInterpolator"/>, and despawns <c>RemovedIds</c>.
         /// </summary>
-        public void IngestServerRsSnapshot(WorldSnapshot snapshot, float coordScale = 0.1f, Vector2? serverOrigin = null)
+        public void IngestServerRsSnapshot(WorldSnapshot snapshot, float coordScale = 1.0f, Vector2? serverOrigin = null)
         {
             long tick = snapshot.Tick;
             long nowMs = MonotonicClock.NowMs;

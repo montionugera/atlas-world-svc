@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "unitContract": "metres-v1",
   "worldHistoryId": "world-history-cradle-of-embers",
   "characterScaleBandMeters": [
     0.9,
@@ -9,8 +10,8 @@
   "starterSpawns": {
     "lantern-hollow": {
       "nodeId": "town-lantern-hollow",
-      "x": 2000.0,
-      "y": 2000.0,
+      "x": 200.0,
+      "y": 200.0,
       "z": 0.0,
       "safeZoneRadiusMeters": 40.0
     }
@@ -1774,14 +1775,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3820.0,
-        "width": 20.0,
-        "height": 14.0
+        "x": 200.0,
+        "y": 382.0,
+        "width": 2.0,
+        "height": 1.4
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3760.0
+        "x": 200.0,
+        "y": 376.0
       },
       "lockMessage": null
     },
@@ -1795,14 +1796,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -1816,14 +1817,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 500.0,
-        "y": 900.0,
-        "width": 14.0,
-        "height": 14.0
+        "x": 50.0,
+        "y": 90.0,
+        "width": 1.4,
+        "height": 1.4
       },
       "arrivalPointMeters": {
-        "x": 500.0,
-        "y": 860.0
+        "x": 50.0,
+        "y": 86.0
       },
       "lockMessage": null
     },
@@ -1837,14 +1838,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3820.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 200.0,
+        "y": 382.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -1858,14 +1859,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 2000.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 200.0,
+        "y": 200.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 2040.0
+        "x": 200.0,
+        "y": 204.0
       },
       "lockMessage": null
     },
@@ -1879,14 +1880,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3820.0,
-        "width": 20.0,
-        "height": 14.0
+        "x": 200.0,
+        "y": 382.0,
+        "width": 2.0,
+        "height": 1.4
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3760.0
+        "x": 200.0,
+        "y": 376.0
       },
       "lockMessage": null
     },
@@ -1900,14 +1901,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -1921,14 +1922,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3820.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 200.0,
+        "y": 382.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -1942,14 +1943,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -1963,14 +1964,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 1600.0,
-        "y": 2980.0,
-        "width": 20.0,
-        "height": 20.0
+        "x": 160.0,
+        "y": 298.0,
+        "width": 2.0,
+        "height": 2.0
       },
       "arrivalPointMeters": {
-        "x": 1600.0,
-        "y": 2920.0
+        "x": 160.0,
+        "y": 292.0
       },
       "lockMessage": null
     },
@@ -1984,14 +1985,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 1000.0,
-        "y": 1840.0,
-        "width": 12.0,
-        "height": 12.0
+        "x": 100.0,
+        "y": 184.0,
+        "width": 1.2,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 1000.0,
-        "y": 1800.0
+        "x": 100.0,
+        "y": 180.0
       },
       "lockMessage": null
     },
@@ -2005,14 +2006,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2026,14 +2027,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3820.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 200.0,
+        "y": 382.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2047,14 +2048,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2068,14 +2069,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 500.0,
-        "y": 900.0,
-        "width": 14.0,
-        "height": 14.0
+        "x": 50.0,
+        "y": 90.0,
+        "width": 1.4,
+        "height": 1.4
       },
       "arrivalPointMeters": {
-        "x": 500.0,
-        "y": 860.0
+        "x": 50.0,
+        "y": 86.0
       },
       "lockMessage": null
     },
@@ -2089,14 +2090,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2110,14 +2111,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 1600.0,
-        "y": 2980.0,
-        "width": 20.0,
-        "height": 20.0
+        "x": 160.0,
+        "y": 298.0,
+        "width": 2.0,
+        "height": 2.0
       },
       "arrivalPointMeters": {
-        "x": 1600.0,
-        "y": 2920.0
+        "x": 160.0,
+        "y": 292.0
       },
       "lockMessage": null
     },
@@ -2131,14 +2132,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 500.0,
-        "y": 900.0,
-        "width": 14.0,
-        "height": 14.0
+        "x": 50.0,
+        "y": 90.0,
+        "width": 1.4,
+        "height": 1.4
       },
       "arrivalPointMeters": {
-        "x": 500.0,
-        "y": 860.0
+        "x": 50.0,
+        "y": 86.0
       },
       "lockMessage": null
     },
@@ -2152,14 +2153,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3820.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 200.0,
+        "y": 382.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2173,14 +2174,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2194,14 +2195,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2215,14 +2216,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2236,14 +2237,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3820.0,
-        "width": 20.0,
-        "height": 14.0
+        "x": 200.0,
+        "y": 382.0,
+        "width": 2.0,
+        "height": 1.4
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3760.0
+        "x": 200.0,
+        "y": 376.0
       },
       "lockMessage": null
     },
@@ -2257,14 +2258,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2278,14 +2279,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3820.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 200.0,
+        "y": 382.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2299,14 +2300,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 2000.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 200.0,
+        "y": 200.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 2040.0
+        "x": 200.0,
+        "y": 204.0
       },
       "lockMessage": null
     },
@@ -2320,14 +2321,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 2000.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 200.0,
+        "y": 200.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 2040.0
+        "x": 200.0,
+        "y": 204.0
       },
       "lockMessage": null
     },
@@ -2341,14 +2342,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2362,14 +2363,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3780.0
+        "x": 200.0,
+        "y": 378.0
       },
       "lockMessage": null
     },
@@ -2383,14 +2384,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3820.0,
-        "width": 20.0,
-        "height": 14.0
+        "x": 200.0,
+        "y": 382.0,
+        "width": 2.0,
+        "height": 1.4
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3760.0
+        "x": 200.0,
+        "y": 376.0
       },
       "lockMessage": null
     },
@@ -2404,14 +2405,14 @@
       "targetDirection": "Dungeon",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 2000.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 200.0,
+        "y": 200.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 2040.0
+        "x": 200.0,
+        "y": 204.0
       },
       "lockMessage": null
     },
@@ -2425,14 +2426,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2446,14 +2447,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2467,14 +2468,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2488,14 +2489,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2509,14 +2510,14 @@
       "targetDirection": "South",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": null
     },
@@ -2530,14 +2531,14 @@
       "targetDirection": "North",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3800.0
+        "x": 200.0,
+        "y": 380.0
       },
       "lockMessage": null
     },
@@ -2551,14 +2552,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2572,14 +2573,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2593,14 +2594,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2614,14 +2615,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2635,14 +2636,14 @@
       "targetDirection": "South",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": null
     },
@@ -2656,14 +2657,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2677,14 +2678,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2698,14 +2699,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2719,14 +2720,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2740,14 +2741,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2761,14 +2762,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2782,14 +2783,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2803,14 +2804,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2824,14 +2825,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2845,14 +2846,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2866,14 +2867,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Superheated porcelain glaze-steam billows from the northern Slag Chasm; the Guild of Potters has sealed the bridge until the Great Damper is cooled."
     },
@@ -2887,14 +2888,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2908,14 +2909,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2929,14 +2930,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2950,14 +2951,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -2971,14 +2972,14 @@
       "targetDirection": "South",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": null
     },
@@ -2992,14 +2993,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3013,14 +3014,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3034,14 +3035,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3055,14 +3056,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3076,14 +3077,14 @@
       "targetDirection": "South",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": null
     },
@@ -3097,14 +3098,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3118,14 +3119,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3139,14 +3140,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3160,14 +3161,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3181,14 +3182,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3202,14 +3203,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3223,14 +3224,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3244,14 +3245,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3265,14 +3266,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3286,14 +3287,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3307,14 +3308,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3328,14 +3329,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3349,14 +3350,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3370,14 +3371,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3391,14 +3392,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3412,14 +3413,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3433,14 +3434,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3454,14 +3455,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3475,14 +3476,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3496,14 +3497,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3517,14 +3518,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3538,14 +3539,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3559,14 +3560,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3580,14 +3581,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3601,14 +3602,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3622,14 +3623,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3643,14 +3644,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3664,14 +3665,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3685,14 +3686,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3706,14 +3707,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3727,14 +3728,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3748,14 +3749,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3769,14 +3770,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3790,14 +3791,14 @@
       "targetDirection": "North",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3800.0
+        "x": 200.0,
+        "y": 380.0
       },
       "lockMessage": null
     },
@@ -3811,14 +3812,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3832,14 +3833,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3853,14 +3854,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3874,14 +3875,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Sub-zero comet-tail shear sweeps the northern Outer Orbit Drift; Buoy-Keeper Astraea requires the Geode Resonance Prism before unlocking the outer mooring."
     },
@@ -3895,14 +3896,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3916,14 +3917,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -3937,14 +3938,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -3958,14 +3959,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Charged solar-wind curtains across Magnetosphere Ribbon Arch repel unshielded gliders; Chime-Keeper Aether requires the Stalactite Bell-Clapper before opening the northern arch."
     },
@@ -3979,14 +3980,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4000,14 +4001,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4021,14 +4022,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4042,14 +4043,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Scalding golden exhaust plumes vent through the Cinder Chimney Damper; the Bellows Guild requires the Master Damper Crank from Ash-Valve Vault before opening the northern flue."
     },
@@ -4063,14 +4064,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4084,14 +4085,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4105,14 +4106,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4126,14 +4127,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Concentrated solar-noon thermal expansion across Solar-Coil Overlook warps uncalibrated gear; Chronometer-Master Vane requires the Zero-Expansion Invar Key before opening the northern heliostat gate."
     },
@@ -4147,14 +4148,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4168,14 +4169,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4189,14 +4190,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4210,14 +4211,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Harmonic gale-shear across Flute-Crest Promontory buffets unshielded travelers; Carillon-Master Elian requires the Porcelain Tuning Fork before opening the northern promontory."
     },
@@ -4231,14 +4232,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4252,14 +4253,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4273,14 +4274,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4294,14 +4295,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Shearing orbital starlight across Equinox-Zenith Arch buffets unanchored gliders; Astrolabe-Keeper Caelum requires the Celestial Vernier Key before unlocking the northern equinox gate."
     },
@@ -4315,14 +4316,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4336,14 +4337,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4357,14 +4358,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Swirling aromatic spice-drafts across Star-Anise Promontory cloud unshielded sightlines; Mill-Steward Clove requires the Star-Pod Lantern before opening the northern promontory."
     },
@@ -4378,14 +4379,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4399,14 +4400,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4420,14 +4421,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4441,14 +4442,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Zero-gravity star-shear along the Solstice Anchor Chain repels uncalibrated gliders; the Beacon Wardens require the Nave Aurora-Key before opening the northern anchor pier."
     },
@@ -4462,14 +4463,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4483,14 +4484,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4504,14 +4505,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4525,14 +4526,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Molten celadon glaze-vapor vents through the northern Glaze Flue; the Draft-Kiln Masons require the Bellows Counterweight Key before unbolting the northern louver."
     },
@@ -4546,14 +4547,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4567,14 +4568,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4588,14 +4589,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4609,14 +4610,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Superheated solar-brass updrafts swirl around the Sun-Coil Spire; the Master Clockmakers have locked the lift until the barometer stabilizers are calibrated."
     },
@@ -4630,14 +4631,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4651,14 +4652,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4672,14 +4673,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 2000.0,
-        "width": 14.0,
-        "height": 14.0
+        "x": 200.0,
+        "y": 200.0,
+        "width": 1.4,
+        "height": 1.4
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 2040.0
+        "x": 200.0,
+        "y": 204.0
       },
       "lockMessage": null
     },
@@ -4693,14 +4694,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Centrifugal wind-shear across Gyroscope-Rim Overlook buffets uncalibrated gliders; Governor-Master Torque requires the Flywheel Ballast Key before unlocking the northern rim bridge."
     },
@@ -4714,14 +4715,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4735,14 +4736,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4756,14 +4757,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4777,14 +4778,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Dense aromatic steam clouds across Cardamom-Cloud Overlook obscure the upper travertine ledges; Bathhouse-Matron Yuzu requires the Porcelain Whistle Valve before opening the northern gate."
     },
@@ -4798,14 +4799,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4819,14 +4820,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4840,14 +4841,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Boiling glaze-steam geysers curtain the northern Kiln-Lighthouse Spit; Barge-Master Cobalt requires the Porcelain Rudder Pin before opening the spit causeway."
     },
@@ -4861,14 +4862,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4882,14 +4883,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4903,14 +4904,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -4924,14 +4925,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Unclutched bevel-pinion teeth spin at gale-force speeds across the northern Bevel-Pinion Overlook; Torque-Master Helix requires the Bronze Worm-Clutch Key before engaging the safety brake."
     },
@@ -4945,14 +4946,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4966,14 +4967,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -4987,14 +4988,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -5008,14 +5009,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Unshielded cyan corona arcs bridge the northern Corona-Arc Cliff; Switch-Master Voltair requires the Faraday Grounding Rod before opening the northern gate."
     },
@@ -5029,14 +5030,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5050,14 +5051,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5071,14 +5072,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -5092,14 +5093,14 @@
       "targetDirection": "North",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3800.0
+        "x": 200.0,
+        "y": 380.0
       },
       "lockMessage": null
     },
@@ -5113,14 +5114,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5134,14 +5135,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5155,14 +5156,14 @@
       "targetDirection": "North",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 3800.0
+        "x": 200.0,
+        "y": 380.0
       },
       "lockMessage": null
     },
@@ -5176,14 +5177,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5197,14 +5198,14 @@
       "targetDirection": "East",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": "The western teapot-sluice bridge is shrouded in silver steam-fog; Lantern-Keepers forbid crossing until the Great Kiln is relit."
     },
@@ -5218,14 +5219,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2120.0,
-        "y": 1880.0,
-        "width": 8.0,
-        "height": 8.0
+        "x": 212.0,
+        "y": 188.0,
+        "width": 0.8,
+        "height": 0.8
       },
       "arrivalPointMeters": {
-        "x": 2110.0,
-        "y": 1880.0
+        "x": 211.0,
+        "y": 188.0
       },
       "lockMessage": null
     },
@@ -5239,14 +5240,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Focused starlight glare from Crescent Reflector Reef blinds unshielded navigators; Tide-Balancer Selene requires the Syzygy Smoked-Glass Lens before unlocking the northern reef."
     },
@@ -5260,14 +5261,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5281,14 +5282,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5302,14 +5303,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -5323,14 +5324,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Extreme thermal-bellows pressure swings across Thermocouple-Ridge Overlook unseat uncalibrated valves; Bellows-Director Quicksilver requires the Mercury Barometer Key before opening the northern manifold gate."
     },
@@ -5344,14 +5345,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5365,14 +5366,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -5386,14 +5387,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "The hundred-meter brass pallet-arms of Deadbeat Escapement Bluff slam shut every second; Pendulum-Keeper Horolog requires the Ruby Pallet Pin before unlocking the northern gate."
     },
@@ -5407,14 +5408,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5428,14 +5429,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5449,14 +5450,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -5470,14 +5471,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Pressurized turquoise coolant cascades over the northern Teal Spillway; the Lock-Keepers Guild has bolted the weir gate until the monsoon sluices subside."
     },
@@ -5491,14 +5492,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5512,14 +5513,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5533,14 +5534,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 2000.0,
-        "width": 14.0,
-        "height": 14.0
+        "x": 200.0,
+        "y": 200.0,
+        "width": 1.4,
+        "height": 1.4
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 2040.0
+        "x": 200.0,
+        "y": 204.0
       },
       "lockMessage": null
     },
@@ -5554,14 +5555,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Blinding corona-glare across Corona-Flare Arch disorients unshielded gliders; Prism-Navigator Lyra requires the Penumbral Filter Lens before opening the northern arch."
     },
@@ -5575,14 +5576,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5596,14 +5597,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5617,14 +5618,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -5638,14 +5639,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Crushing inverted tidal shear along the Maelstrom Eye Lip snaps unreinforced tether-lines; Dive-Master Corin requires the Keel Gyro-Compass before opening the northern sea-lip."
     },
@@ -5659,14 +5660,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5680,14 +5681,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5701,14 +5702,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -5722,14 +5723,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5743,14 +5744,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5764,14 +5765,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 2000.0,
-        "width": 14.0,
-        "height": 14.0
+        "x": 200.0,
+        "y": 200.0,
+        "width": 1.4,
+        "height": 1.4
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 2040.0
+        "x": 200.0,
+        "y": 204.0
       },
       "lockMessage": null
     },
@@ -5785,14 +5786,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Boiling lotus-glaze steam curtains seal the northern Lotus Kiln Rim; Loom-Mother Cera requires the Medallion Heart-Chime before opening the northern terrace."
     },
@@ -5806,14 +5807,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5827,14 +5828,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5848,14 +5849,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -5869,14 +5870,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Unfocused solar-eclipse rays at Apogee Lens Spire burn through unshielded gliders; the Zenith Astronomers require the Sanctum Prism-Gyro before opening the northern stair."
     },
@@ -5890,14 +5891,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5911,14 +5912,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5932,14 +5933,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -5953,14 +5954,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Thick golden resin webs curtain the northern Banyan Canopy Spur; Stationmaster Bramble requires the Cistern Sap-Valve Key before opening the canopy turntable."
     },
@@ -5974,14 +5975,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -5995,14 +5996,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6016,14 +6017,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -6037,14 +6038,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Boiling amber glaze-steam vents across Honeycomb-Kiln Ridge; Orchard-Steward Marigold requires the Golden Comb Seal before unsealing the northern kiln ridge."
     },
@@ -6058,14 +6059,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6079,14 +6080,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6100,14 +6101,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -6121,14 +6122,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Upward-pouring silver cataracts at Mirror Cascade Basin have frozen the northern tether-lock; the Cartographer Guild requires the Belfry Star-Chime before unsealing the gate."
     },
@@ -6142,14 +6143,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6163,14 +6164,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6184,14 +6185,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -6205,14 +6206,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Counter-rotating sun-gear teeth across Sun-Gear Escarpment shear unshielded gliders; Carrier-Warden Bram requires the Epicyclic Carrier Pin before locking the northern gear-bridge."
     },
@@ -6226,14 +6227,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6247,14 +6248,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6268,14 +6269,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -6289,14 +6290,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Standing indigo caustic beams across Indigo Caustic Arch blind unshielded travelers; Prism-Warden Lyra requires the Umbral Diffraction Grating before opening the northern arch."
     },
@@ -6310,14 +6311,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6331,14 +6332,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6352,14 +6353,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     },
@@ -6373,14 +6374,14 @@
       "targetDirection": "South",
       "gateState": "fog_of_lore",
       "triggerBoxMeters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrivalPointMeters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": "Inverted tidal pressure along the Abyssal Barometer Ridge crushes uncalibrated diving bells; the Undertide Bell-Keepers require the Cradle Star-Heart before unsealing the northern coral lock."
     },
@@ -6394,14 +6395,14 @@
       "targetDirection": "West",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6415,14 +6416,14 @@
       "targetDirection": "East",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrivalPointMeters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       },
       "lockMessage": null
     },
@@ -6436,14 +6437,14 @@
       "targetDirection": "Exit",
       "gateState": "open",
       "triggerBoxMeters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrivalPointMeters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       },
       "lockMessage": null
     }

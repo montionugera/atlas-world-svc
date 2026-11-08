@@ -9,7 +9,7 @@ use server_rs::{
 fn spawn_enemy_projectile(world: &mut World, target: Entity) -> Entity {
     world
         .spawn((
-            Position::new(60.0, 50.0),
+            Position::new(6.0, 5.0),
             Velocity::new(-200.0, 0.0),
             Projectile {
                 owner: Entity::PLACEHOLDER,
@@ -18,8 +18,8 @@ fn spawn_enemy_projectile(world: &mut World, target: Entity) -> Entity {
                 damage_type: DamageType::Physical,
                 element: Element::Neutral,
                 speed: 200.0,
-                radius: 4.0,
-                max_range: 300.0,
+                radius: 0.4,
+                max_range: 30.0,
                 traveled_distance: 0.0,
                 lifetime: 1.5,
                 effects: vec![],
@@ -44,7 +44,7 @@ fn holding_attack_past_parry_window_fatigues_parry_and_lets_projectile_hit() {
 
     let player = world
         .spawn((
-            Position::new(50.0, 50.0),
+            Position::new(5.0, 5.0),
             Velocity::zero(),
             Health::new(100.0),
             ElementalAttributes::default(),
@@ -113,7 +113,7 @@ fn parry_charges_cap_consecutive_deflections_and_reflected_projectile_staggers_m
 
     let player = world
         .spawn((
-            Position::new(50.0, 50.0),
+            Position::new(5.0, 5.0),
             Velocity::zero(),
             Health::new(100.0),
             ElementalAttributes::default(),
@@ -131,7 +131,7 @@ fn parry_charges_cap_consecutive_deflections_and_reflected_projectile_staggers_m
 
     let mob = world
         .spawn((
-            Position::new(80.0, 50.0),
+            Position::new(8.0, 5.0),
             Velocity::zero(),
             Health::new(100.0),
             ElementalAttributes::default(),
@@ -152,7 +152,7 @@ fn parry_charges_cap_consecutive_deflections_and_reflected_projectile_staggers_m
     assert_eq!(world.get::<Health>(player).unwrap().current, 100.0);
 
     // Move reflected proj1 onto the mob so it strikes the mob and staggers it.
-    *world.get_mut::<Position>(proj1).unwrap() = Position::new(80.0, 50.0);
+    *world.get_mut::<Position>(proj1).unwrap() = Position::new(8.0, 5.0);
     collision_schedule.run(&mut world);
     assert!(world.get::<Health>(mob).unwrap().current < 100.0);
     let mob_status = world.get::<StatusEffects>(mob).unwrap();

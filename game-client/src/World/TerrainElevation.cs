@@ -179,6 +179,8 @@ namespace AtlasWorld.Client.World
                 for (int i = 0; i < doc.Structures.Count; i++)
                 {
                     var s = doc.Structures[i];
+                    if (s.Kind == "block")
+                        continue;
                     float dx = wx - s.X;
                     float dz = wz - s.Z;
                     float dist = Mathf.Sqrt(dx * dx + dz * dz);
@@ -388,7 +390,7 @@ namespace AtlasWorld.Client.World
                         }
                     }
                 }
-                else // "watchtower" (2-Story Stone Watchtower with Wide East Exterior Stair Ramp)
+                else if (s.Kind == "watchtower") // "watchtower" (2-Story Stone Watchtower with Wide East Exterior Stair Ramp)
                 {
                     float upperDeckY = structBaseY + Mathf.Max(2.2f, s.UpperFloorHeight);
                     float midFloorThresholdY = structBaseY + Mathf.Max(2.2f, s.UpperFloorHeight) * 0.42f;
@@ -444,7 +446,7 @@ namespace AtlasWorld.Client.World
                     if (Mathf.Abs(wx - s.X) <= r - 0.35f && wz >= s.Z - r + 0.35f && wz <= s.Z + r + 1.8f)
                         return true;
                 }
-                else
+                else if (s.Kind == "watchtower")
                 {
                     // Inside watchtower footprint or on its exterior East stair ramp [s.X - r .. s.X + r + 3.6m]
                     if (wx >= s.X - r - 0.5f && wx <= s.X + r + 3.8f && Mathf.Abs(wz - s.Z) <= r + 1.0f)

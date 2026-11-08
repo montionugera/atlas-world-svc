@@ -1,5 +1,6 @@
 use crate::core::clock::SimClock;
 use crate::core::prng::Mulberry32;
+use crate::core::speed::scaled_speed;
 use crate::ecs::components::{BotAgent, EntityId, Health, Position, Velocity};
 use bevy_ecs::prelude::*;
 
@@ -13,9 +14,9 @@ pub struct ArenaBounds {
 impl Default for ArenaBounds {
     fn default() -> Self {
         Self {
-            width: 1200.0,
-            height: 1200.0,
-            margin: 25.0,
+            width: 120.0,
+            height: 120.0,
+            margin: 2.5,
         }
     }
 }
@@ -25,7 +26,7 @@ impl ArenaBounds {
         Self {
             width,
             height,
-            margin: 25.0,
+            margin: 2.5,
         }
     }
 }
@@ -46,7 +47,7 @@ pub fn bot_steering_system(
     let width = bounds.width;
     let height = bounds.height;
     let tick = clock.tick();
-    let max_linear_speed = 20.0;
+    let max_linear_speed = scaled_speed(20.0);
     let accel_gain = 15.0;
 
     // Only sort on ticks where wander turn occurs (1 out of every 50 ticks)

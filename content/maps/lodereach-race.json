@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "lodereach-race",
   "name": "Lodereach Race \u2014 Coldreach (c03/r22)",
   "seed": 331687,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "glacier_snow_crust",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -468,73 +469,73 @@
   "spawnAreas": [
     {
       "id": "lodereach_race_frostfell_stalker",
-      "x": 2077.9,
-      "y": 2073.1,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 207.79,
+      "y": 207.31,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-frostfell-stalker",
       "count": 4
     },
     {
       "id": "lodereach_race_hoarfrost_wisp",
-      "x": 1680.7,
-      "y": 2089.1,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 168.07,
+      "y": 208.91,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-hoarfrost-wisp",
       "count": 3
     },
     {
       "id": "lodereach_race_ledger_hound",
-      "x": 1959.6,
-      "y": 1553.6,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 195.96,
+      "y": 155.36,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-ledger-hound",
       "count": 4
     },
     {
       "id": "lodereach_race_oathtablet_sentry",
-      "x": 1936.8,
-      "y": 2377.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 193.68,
+      "y": 237.79,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-oathtablet-sentry",
       "count": 2
     },
     {
       "id": "lodereach_race_harbor_assessor",
-      "x": 1528.1,
-      "y": 1615.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 152.81,
+      "y": 161.59,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-harbor-assessor",
       "count": 2
     },
     {
       "id": "lodereach_race_hollowmoor_giant",
-      "x": 2480.5,
-      "y": 1706.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 248.05,
+      "y": 170.66,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hollowmoor-giant",
       "count": 2
     },
     {
       "id": "lodereach_race_icelocked_oathkeeper",
-      "x": 1391.2,
-      "y": 2314.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 139.12,
+      "y": 231.44,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-icelocked-oathkeeper",
       "count": 1
     },
     {
       "id": "lodereach_race_rime_drake",
-      "x": 2017.0,
-      "y": 1199.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 201.7,
+      "y": 119.96,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-rime-drake",
       "count": 2
     }
@@ -542,24 +543,24 @@
   "staticObstacles": [
     {
       "id": "landmark_haulholt_geo_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_confluence_north_of_fastbreak_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_lodereach_race_sheer_scarp_cliff",
-      "min_x": 1188.8,
-      "min_y": 2618.8,
-      "max_x": 1451.2,
-      "max_y": 2881.2
+      "min_x": 118.88,
+      "min_y": 261.88,
+      "max_x": 145.12,
+      "max_y": 288.12
     }
   ]
 }

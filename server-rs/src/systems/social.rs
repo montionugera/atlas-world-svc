@@ -21,14 +21,14 @@ use crate::content::MobTier;
 use crate::ecs::components::{CombatStats, Health, PlayerProgression, Position, Velocity};
 use crate::systems::progression::{grant_xp_and_scale_stats, mob_xp_reward, GrantLedger};
 
-/// Maximum Euclidean distance (`50.0` world units) for `ChatChannel::Nearby` delivery (E-008 Slice 1).
-pub const NEARBY_CHAT_RADIUS: f32 = 50.0;
+/// Maximum Euclidean distance (`5.0` world units) for `ChatChannel::Nearby` delivery (E-008 Slice 1).
+pub const NEARBY_CHAT_RADIUS: f32 = 5.0;
 
 /// Maximum chat messages allowed per sender within any rolling `1000ms` window (E-008 Slice 1).
 pub const MAX_CHAT_MESSAGES_PER_SECOND: usize = 5;
 
-/// Maximum Euclidean distance (`300.0` world units) within the same region for party XP/kill sharing (E-008 Slice 3).
-pub const PARTY_SHARE_RADIUS: f32 = 300.0;
+/// Maximum Euclidean distance (`30.0` world units) within the same region for party XP/kill sharing (E-008 Slice 3).
+pub const PARTY_SHARE_RADIUS: f32 = 30.0;
 
 #[inline]
 fn distance_2d(a: Position, b: Position) -> f32 {
@@ -518,7 +518,7 @@ pub fn sync_party_member_snapshots(
 }
 
 /// Grants shared kill credit and XP to all alive party members of `killer` in the same region
-/// within `PARTY_SHARE_RADIUS` (`300.0` units), idempotently guarded by `GrantLedger` (E-008 Slice 3).
+/// within `PARTY_SHARE_RADIUS` (`30.0` units), idempotently guarded by `GrantLedger` (E-008 Slice 3).
 ///
 /// Returns the list of `(player_id, xp_granted)` for all party members who received credit.
 pub fn grant_party_kill_rewards(

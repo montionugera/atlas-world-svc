@@ -23,7 +23,7 @@ export const SKILL_DEFINITIONS: Record<string, SkillConfig> = {
     castTime: 1.5,
     cooldown: 5.0,
     gcd: 5.0,
-    aoeRadius: 60,
+    aoeRadius: 6,
     color: "#e67e22",
     description: "Launches a fiery meteor dealing 20 magical fire damage.",
   },
@@ -48,7 +48,7 @@ export const SKILL_DEFINITIONS: Record<string, SkillConfig> = {
     castTime: 1.0,
     cooldown: 4.0,
     gcd: 1.5,
-    aoeRadius: 50,
+    aoeRadius: 5,
     color: "#3498db",
     description:
       "Freezes enemies dealing 30 magical water damage and slows for 5s.",
@@ -62,7 +62,7 @@ export const SKILL_DEFINITIONS: Record<string, SkillConfig> = {
     castTime: 0.5,
     cooldown: 5.0,
     gcd: 1.0,
-    aoeRadius: 40,
+    aoeRadius: 4,
     color: "#f1c40f",
     description:
       "Calls down lightning dealing 25 wind damage and stuns for 1.2s.",

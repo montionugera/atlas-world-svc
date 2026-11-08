@@ -449,22 +449,22 @@ describe("GameRenderer frame loop", () => {
   describe("local prediction", () => {
     type P = GameState["players"] extends Map<string, infer T> ? T : never;
     const player = (id: string, x: number) =>
-      ({ id, x, y: 100, vx: 0, vy: 0, radius: 10, isAlive: true }) as P;
+      ({ id, x, y: 10, vx: 0, vy: 0, radius: 1, isAlive: true }) as P;
     const setup = (on: boolean, ack = 1) => {
       const state = stateAt(1);
-      state.players.set("1", player("1", 100));
-      state.players.set("2", player("2", 300));
+      state.players.set("1", player("1", 10));
+      state.players.set("2", player("2", 30));
       const prediction = createPrediction();
       const { calls, frame } = mount(state, {
         gameStateRef: { current: state },
         prediction,
         debug: { ...DEFAULT_DEBUG_TOGGLES, prediction: on },
       });
-      // Mid-correction: drawn 40 units from where the server has the player.
+      // Mid-correction: drawn 4 units from where the server has the player.
       prediction.ack = ack;
       prediction.ready = true;
-      prediction.x = 140;
-      prediction.y = 100;
+      prediction.x = 14;
+      prediction.y = 10;
       prediction.at = performance.now();
       frame();
       const players = (drawPlayers as jest.Mock).mock.calls.pop()![1] as Map<
@@ -477,17 +477,17 @@ describe("GameRenderer frame loop", () => {
 
     it("draws the local player and the camera at the predicted position", () => {
       const { prediction, players, cameraX } = setup(true);
-      expect(prediction.x).toBeGreaterThan(130);
-      expect(prediction.x).toBeLessThanOrEqual(140);
+      expect(prediction.x).toBeGreaterThan(13);
+      expect(prediction.x).toBeLessThanOrEqual(14);
       expect(players.get("1")!.x).toBe(prediction.x);
-      expect(players.get("2")!.x).toBe(300);
-      // Further right than a camera on the server position (100) would be.
+      expect(players.get("2")!.x).toBe(30);
+      // Further right than a camera on the server position (10) would be.
       expect(cameraX).toBeLessThan(setup(false).cameraX);
     });
 
     it("draws the interpolated position when the server echoes no input", () => {
       const { prediction, players, cameraX } = setup(true, 0);
-      expect(players.get("1")!.x).toBe(100);
+      expect(players.get("1")!.x).toBe(10);
       expect(prediction.yielding).toBe("unacked");
       expect(prediction.ready).toBe(false);
       expect(cameraX).toBe(setup(false).cameraX);
@@ -495,7 +495,7 @@ describe("GameRenderer frame loop", () => {
 
     it("draws the interpolated position when the toggle is off", () => {
       const { prediction, players } = setup(false);
-      expect(players.get("1")!.x).toBe(100);
+      expect(players.get("1")!.x).toBe(10);
       expect(prediction.enabled).toBe(false);
       expect(prediction.ready).toBe(false);
     });

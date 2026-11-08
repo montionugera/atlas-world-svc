@@ -1,4 +1,5 @@
 {
+  "unitContract": "metres-v1",
   "schema_version": "1.0.0",
   "id": "town-celestial-astrolabe-sanctuary",
   "name": "Celestial Astrolabe Sanctuary",
@@ -21,8 +22,8 @@
   "terrain_tile": {
     "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",
     "dimensions_meters": {
-      "width": 4000.0,
-      "height": 4000.0
+      "width": 400.0,
+      "height": 400.0
     },
     "biome_palette": "shattered_halo_celestial_astrolabe_sanctuary",
     "max_terrace_step_meters": 0.14,
@@ -38,14 +39,14 @@
       "gate_state": "fog_of_lore",
       "lock_message": "Shearing orbital starlight across Equinox-Zenith Arch buffets unanchored gliders; Astrolabe-Keeper Caelum requires the Celestial Vernier Key before unlocking the northern equinox gate.",
       "trigger_box_meters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrival_point_meters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       }
     },
     "South": null,
@@ -58,14 +59,14 @@
       "target_direction": "East",
       "gate_state": "open",
       "trigger_box_meters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrival_point_meters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       }
     },
     "Dungeon": {
@@ -76,14 +77,14 @@
       "target_direction": "Exit",
       "gate_state": "open",
       "trigger_box_meters": {
-        "x": 2180.0,
-        "y": 2140.0,
-        "width": 16.0,
-        "height": 16.0
+        "x": 218.0,
+        "y": 214.0,
+        "width": 1.6,
+        "height": 1.6
       },
       "arrival_point_meters": {
-        "x": 2150.0,
-        "y": 2140.0
+        "x": 215.0,
+        "y": 214.0
       }
     },
     "Exit": null
@@ -98,7 +99,7 @@
         "y": 2010.0
       },
       "counter_height_meters": 0.58,
-      "dialogue_greeting": "Welcome to Celestial Astrolabe Sanctuary! Step up to my 0.58 meter brass star-globe—every ring of the Shattered Halo is charted from this plaza."
+      "dialogue_greeting": "Welcome to Celestial Astrolabe Sanctuary! Step up to my 0.58 meter brass star-globe\u2014every ring of the Shattered Halo is charted from this plaza."
     },
     {
       "npc_id": "npc-vernier-wright-selene",

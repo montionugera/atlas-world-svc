@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "charwaste-race",
   "name": "Charwaste Race \u2014 Thirstwold (c05/r15)",
   "seed": 316428,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "cinder_ash_waste",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -440,73 +441,73 @@
   "spawnAreas": [
     {
       "id": "charwaste_race_broken_crown_sentinel",
-      "x": 2073.0,
-      "y": 2124.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 207.3,
+      "y": 212.4,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-broken-crown-sentinel",
       "count": 1
     },
     {
       "id": "charwaste_race_cindered_revenant",
-      "x": 1641.9,
-      "y": 1961.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.19,
+      "y": 196.19,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-cindered-revenant",
       "count": 2
     },
     {
       "id": "charwaste_race_flagrot_swarm",
-      "x": 2133.1,
-      "y": 1624.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 213.31,
+      "y": 162.42,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-flagrot-swarm",
       "count": 2
     },
     {
       "id": "charwaste_race_relicslag_crawler",
-      "x": 1972.2,
-      "y": 2376.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 197.22,
+      "y": 237.63,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-relicslag-crawler",
       "count": 2
     },
     {
       "id": "charwaste_race_mourning_cloth_wight",
-      "x": 1477.5,
-      "y": 1693.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 147.75,
+      "y": 169.39,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-mourning-cloth-wight",
       "count": 2
     },
     {
       "id": "charwaste_race_rebellion_echo",
-      "x": 2513.0,
-      "y": 2060.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 251.3,
+      "y": 206.03,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-rebellion-echo",
       "count": 2
     },
     {
       "id": "charwaste_race_shroudweaver",
-      "x": 1494.7,
-      "y": 2434.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 149.47,
+      "y": 243.43,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-shroudweaver",
       "count": 2
     },
     {
       "id": "charwaste_race_warscar_maw",
-      "x": 2002.2,
-      "y": 1198.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 200.22,
+      "y": 119.81,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-warscar-maw",
       "count": 2
     }
@@ -514,24 +515,24 @@
   "staticObstacles": [
     {
       "id": "landmark_glasswold_barchan_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_confluence_beyond_dunespar_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_charwaste_race_sheer_scarp_cliff",
-      "min_x": 1038.8,
-      "min_y": 2318.8,
-      "max_x": 1301.2,
-      "max_y": 2581.2
+      "min_x": 103.88,
+      "min_y": 231.88,
+      "max_x": 130.12,
+      "max_y": 258.12
     }
   ]
 }

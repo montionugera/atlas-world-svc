@@ -92,7 +92,7 @@ impl RegionAdjacencyGraph {
 }
 
 /// Extracts alive players and mobs from a neighbor region's snapshot that lie within `band_units`
-/// (`250.0` by default) of the shared border and projects their positions into the local region's
+/// (`25.0` by default) of the shared border and projects their positions into the local region's
 /// coordinate space (`E-004` Slice 9).
 ///
 /// Projected coordinates lie just outside `[0..region_width, 0..region_height]`:
@@ -155,7 +155,7 @@ pub fn extract_border_ghosts(
 }
 
 /// Collects border ghosts for `local_region_id` from all connected cardinal neighbors in `adjacency`
-/// using the canonical `REGION_SIZE_UNITS` (`4000.0`) and `BORDER_GHOST_BAND_UNITS` (`250.0`).
+/// using the canonical `REGION_SIZE_UNITS` (`400.0`) and `BORDER_GHOST_BAND_UNITS` (`25.0`).
 pub fn collect_region_border_ghosts(
     local_region_id: &str,
     adjacency: &RegionAdjacencyGraph,
@@ -228,20 +228,20 @@ mod tests {
     #[test]
     fn extract_border_ghosts_projects_coordinates_across_all_four_borders() {
         let east_entities = vec![
-            sample_entity(101, EntityType::Player, 120.0, 2000.0), // within 250 of west edge
-            sample_entity(102, EntityType::Mob, 300.0, 2000.0),    // outside 250 band
+            sample_entity(101, EntityType::Player, 12.0, 200.0), // within 25 of west edge
+            sample_entity(102, EntityType::Mob, 30.0, 200.0),    // outside 25 band
         ];
         let ghosts = extract_border_ghosts(
             &east_entities,
             CardinalBorder::East,
-            4000.0,
-            4000.0,
+            400.0,
+            400.0,
             BORDER_GHOST_BAND_UNITS,
         );
         assert_eq!(ghosts.len(), 1);
         assert_eq!(ghosts[0].id, 101);
-        assert_eq!(ghosts[0].x, 4120.0);
-        assert_eq!(ghosts[0].y, 2000.0);
+        assert_eq!(ghosts[0].x, 412.0);
+        assert_eq!(ghosts[0].y, 200.0);
         assert_eq!(ghosts[0].input_ack, 0);
     }
 }

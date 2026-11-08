@@ -29,13 +29,13 @@ export const drawCompanions = (
       ctx.fillStyle = `rgba(155, 89, 182, ${pulseAlpha})`;
       ctx.beginPath();
       const radiusPulse = 1 + (Math.sin(pulsePhase * Math.PI * 2) * 0.1);
-      ctx.arc(x, y, (comp.radius + 4) * scale * radiusPulse, 0, Math.PI * 2);
+      ctx.arc(x, y, (comp.radius + 0.4) * scale * radiusPulse, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.strokeStyle = `rgba(142, 68, 173, ${1 - pulsePhase})`;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(x, y, (comp.radius + 2 + (pulsePhase * 10)) * scale, 0, Math.PI * 2);
+      ctx.arc(x, y, (comp.radius + 0.2 + (pulsePhase * 1)) * scale, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
     }

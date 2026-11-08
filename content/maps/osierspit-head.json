@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "osierspit-head",
   "name": "Osierspit Head \u2014 Driftholt (c07/r01)",
   "seed": 697616,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "pine_forest_border",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -532,73 +533,73 @@
   "spawnAreas": [
     {
       "id": "osierspit_head_cordknot_effigy",
-      "x": 2142.2,
-      "y": 1960.1,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 214.22,
+      "y": 196.01,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-cordknot-effigy",
       "count": 3
     },
     {
       "id": "osierspit_head_stakeline_hound",
-      "x": 1670.9,
-      "y": 2076.7,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 167.09,
+      "y": 207.67,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-stakeline-hound",
       "count": 4
     },
     {
       "id": "osierspit_head_bramble_warden",
-      "x": 1992.8,
-      "y": 1571.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 199.28,
+      "y": 157.1,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bramble-warden",
       "count": 2
     },
     {
       "id": "osierspit_head_gallows_meadow_shade",
-      "x": 2066.0,
-      "y": 2344.8,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 206.6,
+      "y": 234.48,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-gallows-meadow-shade",
       "count": 3
     },
     {
       "id": "osierspit_head_millroad_brigand",
-      "x": 1706.4,
-      "y": 1449.0,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 170.64,
+      "y": 144.9,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-millroad-brigand",
       "count": 4
     },
     {
       "id": "osierspit_head_palisade_breaker",
-      "x": 2500.6,
-      "y": 1762.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 250.06,
+      "y": 176.22,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-palisade-breaker",
       "count": 2
     },
     {
       "id": "osierspit_head_sapdrinker_swarm",
-      "x": 1309.0,
-      "y": 2184.3,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 130.9,
+      "y": 218.43,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-sapdrinker-swarm",
       "count": 4
     },
     {
       "id": "osierspit_head_thornveil_spearhand",
-      "x": 1766.5,
-      "y": 1196.1,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 176.65,
+      "y": 119.61,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-thornveil-spearhand",
       "count": 4
     }
@@ -606,24 +607,24 @@
   "staticObstacles": [
     {
       "id": "landmark_withyshallow_saddle_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_geo_at_merefall_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_osierspit_head_sheer_scarp_cliff",
-      "min_x": 1098.8,
-      "min_y": 2758.8,
-      "max_x": 1361.2,
-      "max_y": 3021.2
+      "min_x": 109.88,
+      "min_y": 275.88,
+      "max_x": 136.12,
+      "max_y": 302.12
     }
   ]
 }

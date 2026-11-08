@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "emberdown",
   "name": "Emberdown \u2014 The Terraced Ledges & Coal Adits",
   "seed": 790558,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "meadow_grass",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -433,64 +434,64 @@
   "spawnAreas": [
     {
       "id": "emberdown_cinderhen",
-      "x": 2133.7,
-      "y": 1972.3,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 213.37,
+      "y": 197.23,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-cinderhen",
       "count": 4
     },
     {
       "id": "emberdown_slagheap_grub",
-      "x": 1693.0,
-      "y": 2123.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 169.3,
+      "y": 212.34,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-slagheap-grub",
       "count": 2
     },
     {
       "id": "emberdown_emberpit_digger",
-      "x": 2221.9,
-      "y": 1666.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 222.19,
+      "y": 166.6,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-emberpit-digger",
       "count": 2
     },
     {
       "id": "emberdown_forge_ash_hound",
-      "x": 2054.5,
-      "y": 2380.8,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 205.45,
+      "y": 238.08,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-forge-ash-hound",
       "count": 4
     },
     {
       "id": "emberdown_slagpit_hulk",
-      "x": 1598.5,
-      "y": 1479.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 159.85,
+      "y": 147.9,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-slagpit-hulk",
       "count": 2
     },
     {
       "id": "emberdown_slag_drake",
-      "x": 2540.1,
-      "y": 1688.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 254.01,
+      "y": 168.87,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-slag-drake",
       "count": 2
     },
     {
       "id": "emberdown_mourning_cloth_wight",
-      "x": 1434.6,
-      "y": 2480.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 143.46,
+      "y": 248.02,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-mourning-cloth-wight",
       "count": 2
     }
@@ -498,24 +499,24 @@
   "staticObstacles": [
     {
       "id": "landmark_adit_mouth_pillar_w",
-      "min_x": 2089.6,
-      "min_y": 1854.6,
-      "max_x": 2100.4,
-      "max_y": 1865.4
+      "min_x": 208.96,
+      "min_y": 185.46,
+      "max_x": 210.04,
+      "max_y": 186.54
     },
     {
       "id": "landmark_adit_mouth_pillar_e",
-      "min_x": 2139.6,
-      "min_y": 1854.6,
-      "max_x": 2150.4,
-      "max_y": 1865.4
+      "min_x": 213.96,
+      "min_y": 185.46,
+      "max_x": 215.04,
+      "max_y": 186.54
     },
     {
       "id": "cliff_the_adits_coal_face_cliff",
-      "min_x": 2188.0,
-      "min_y": 1718.0,
-      "max_x": 2352.0,
-      "max_y": 1882.0
+      "min_x": 218.8,
+      "min_y": 171.8,
+      "max_x": 235.2,
+      "max_y": 188.2
     }
   ]
 }

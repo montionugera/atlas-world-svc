@@ -1,6 +1,7 @@
 use crate::ai::ThreatTable;
 use crate::content::{derive_mob_stats, BestiaryCatalog, MobTier};
 use crate::core::clock::SimClock;
+use crate::core::speed::scaled_speed;
 use crate::ecs::components::{
     BodyRadius, BossTag, CombatStats, DeadMobTracker, DespawnedIds, ElementalAttributes, EntityId,
     Health, LiveRules, Mass, MobAi, MobCorpse, MobSpawnAnchor, MobTag, Position, StatusEffects,
@@ -48,7 +49,7 @@ pub fn mob_bundle(catalog: &BestiaryCatalog, anchor: &MobSpawnAnchor, id: String
                 20.0,
                 200.0,
                 false,
-                80.0,
+                scaled_speed(80.0),
                 25.0,
             ),
         };

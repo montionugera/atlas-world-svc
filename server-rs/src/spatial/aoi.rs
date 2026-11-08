@@ -26,7 +26,7 @@ impl Default for AoiTracker {
 
 impl AoiTracker {
     pub fn new(enter_radius: f32, exit_radius: f32) -> Self {
-        let enter = enter_radius.max(1.0);
+        let enter = enter_radius.max(0.1);
         let exit = exit_radius.max(enter);
         Self {
             enter_radius_sq: enter * enter,

@@ -1,4 +1,5 @@
 use crate::core::clock::SimClock;
+use crate::core::speed::scaled_speed;
 use crate::ecs::components::{
     BodyRadius, Health, LiveRules, PlayerRespawnTimer, PlayerTag, Position, SpawnPoint, Velocity,
 };
@@ -9,7 +10,7 @@ use bevy_ecs::prelude::*;
 /// the cap keep resolving on following ticks.
 const COLLISION_ITERATIONS: usize = 32;
 /// Tiny slop so a resolved pair is not re-detected from float error.
-const COLLISION_SLOP: f32 = 1e-3;
+const COLLISION_SLOP: f32 = 1e-4;
 
 fn clamp_to(bounds: &ArenaBounds, x: f32, y: f32) -> (f32, f32) {
     (x.clamp(0.0, bounds.width), y.clamp(0.0, bounds.height))
@@ -205,9 +206,9 @@ pub fn live_bot_ai_system(
     let margin = bounds.margin;
     let width = bounds.width;
     let height = bounds.height;
-    let max_chase_speed = 100.0;
+    let max_chase_speed = scaled_speed(100.0);
     let accel_gain = 15.0;
-    let vision_range = 300.0;
+    let vision_range = 30.0;
 
     for (_id, pos, mut bot, mut vel, health, combat) in &mut bots {
         if !health.is_alive {
@@ -271,8 +272,8 @@ pub fn live_bot_ai_system(
             bot.vx = current_angle.cos();
             bot.vy = current_angle.sin();
 
-            let desired_vx = bot.vx * 20.0 * terrain_mult;
-            let desired_vy = bot.vy * 20.0 * terrain_mult;
+            let desired_vx = bot.vx * 2.0 * terrain_mult;
+            let desired_vy = bot.vy * 2.0 * terrain_mult;
             vel.vx += accel_gain * (desired_vx - vel.vx) * dt;
             vel.vy += accel_gain * (desired_vy - vel.vy) * dt;
         }

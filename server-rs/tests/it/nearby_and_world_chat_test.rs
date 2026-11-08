@@ -13,23 +13,23 @@ fn nearby_chat_delivers_only_within_50_units_and_world_chat_reaches_all_online_p
     let alice = world
         .spawn((
             SocialSession::new("p-alice", "Alice", "region-hearthstone"),
-            Position::new(100.0, 100.0),
+            Position::new(10.0, 10.0),
             ChatInbox::default(),
         ))
         .id();
-    // Bob is 30 units away in the same region (within 50.0 radius)
+    // Bob is 30 units away in the same region (within 5.0 radius)
     let bob = world
         .spawn((
             SocialSession::new("p-bob", "Bob", "region-hearthstone"),
-            Position::new(130.0, 100.0),
+            Position::new(13.0, 10.0),
             ChatInbox::default(),
         ))
         .id();
-    // Cara is 80 units away in the same region (outside 50.0 radius)
+    // Cara is 80 units away in the same region (outside 5.0 radius)
     let cara = world
         .spawn((
             SocialSession::new("p-cara", "Cara", "region-hearthstone"),
-            Position::new(180.0, 100.0),
+            Position::new(18.0, 10.0),
             ChatInbox::default(),
         ))
         .id();
@@ -37,7 +37,7 @@ fn nearby_chat_delivers_only_within_50_units_and_world_chat_reaches_all_online_p
     let dan = world
         .spawn((
             SocialSession::new("p-dan", "Dan", "region-embervale"),
-            Position::new(100.0, 100.0),
+            Position::new(10.0, 10.0),
             ChatInbox::default(),
         ))
         .id();
@@ -80,14 +80,14 @@ fn sending_more_than_5_chat_messages_per_second_triggers_rate_limiting() {
     let alice = world
         .spawn((
             SocialSession::new("p-alice", "Alice", "region-hearthstone"),
-            Position::new(100.0, 100.0),
+            Position::new(10.0, 10.0),
             ChatInbox::default(),
         ))
         .id();
     let bob = world
         .spawn((
             SocialSession::new("p-bob", "Bob", "region-hearthstone"),
-            Position::new(110.0, 100.0),
+            Position::new(11.0, 10.0),
             ChatInbox::default(),
         ))
         .id();

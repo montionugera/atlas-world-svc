@@ -72,9 +72,9 @@ fn test_damage_calculator_defense_cap_and_elemental_scaling() {
 
 #[test]
 fn test_simulation_player_dash_execution() {
-    let mut sim = AtlasSimulation::new(42, 1200.0, 1200.0);
+    let mut sim = AtlasSimulation::new(42, 120.0, 120.0);
     let session_id = "test_player_dash";
-    sim.spawn_player_avatar(session_id, 100.0, 100.0);
+    sim.spawn_player_avatar(session_id, 10.0, 10.0);
 
     // Trigger dash (skill_slot = 5) via serialized FlatBuffers ClientInput
     let bytes = serialize_client_input(1, 1.0, 0.0, false, 5, 0);
@@ -92,8 +92,8 @@ fn test_simulation_player_dash_execution() {
     for (avatar, vel, cooldowns) in query.iter(&sim.world) {
         if avatar.session_id == session_id {
             assert!(
-                vel.vx >= 150.0,
-                "Expected dash velocity >= 150.0, got {}",
+                vel.vx >= 2.25,
+                "Expected dash velocity >= 2.25, got {}",
                 vel.vx
             );
             assert!(
@@ -108,14 +108,14 @@ fn test_simulation_player_dash_execution() {
 
 #[test]
 fn test_projectile_flight_collision_and_status_effects() {
-    let mut sim = AtlasSimulation::new(99, 1200.0, 1200.0);
+    let mut sim = AtlasSimulation::new(99, 120.0, 120.0);
 
     // Spawn a target mob at (200.0, 200.0) with Earth element
     let mob = sim
         .world
         .spawn((
             MobTag,
-            Position::new(200.0, 200.0),
+            Position::new(20.0, 20.0),
             Velocity::zero(),
             Health::new(100.0),
             ElementalAttributes {
@@ -129,12 +129,12 @@ fn test_projectile_flight_collision_and_status_effects() {
         .id();
 
     // Spawn a player avatar
-    let player = sim.spawn_player_avatar("p_caster", 100.0, 200.0);
+    let player = sim.spawn_player_avatar("p_caster", 10.0, 20.0);
 
     // Spawn a Fire projectile flying from (180.0, 200.0) towards mob at (200.0, 200.0)
     let blizzard_skill = get_skill("skill_3").unwrap();
     sim.world.spawn((
-        Position::new(180.0, 200.0), // very close to mob (radius 20.0 hit)
+        Position::new(18.0, 20.0), // very close to mob (radius 2.0 hit)
         Velocity::new(100.0, 0.0),
         Projectile {
             owner: player,
@@ -143,9 +143,9 @@ fn test_projectile_flight_collision_and_status_effects() {
             damage_type: DamageType::Magical,
             element: Element::Fire, // Fire vs Earth = 2.0x
             speed: 100.0,
-            radius: 15.0,
-            max_range: 500.0,
-            traveled_distance: 80.0,
+            radius: 1.5,
+            max_range: 50.0,
+            traveled_distance: 8.0,
             lifetime: 5.0,
             effects: blizzard_skill.effects.clone(),
             is_player_projectile: true,
@@ -189,9 +189,9 @@ fn test_projectile_flight_collision_and_status_effects() {
 
 #[test]
 fn test_stun_status_locks_movement() {
-    let mut sim = AtlasSimulation::new(123, 1200.0, 1200.0);
+    let mut sim = AtlasSimulation::new(123, 120.0, 120.0);
     let session_id = "test_stunned_player";
-    let p_entity = sim.spawn_player_avatar(session_id, 100.0, 100.0);
+    let p_entity = sim.spawn_player_avatar(session_id, 10.0, 10.0);
 
     // Apply Stun status effect
     sim.world.entity_mut(p_entity).insert(StatusEffects {

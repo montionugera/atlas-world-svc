@@ -132,7 +132,7 @@ impl Default for SpatialGrid {
 
 impl SpatialGrid {
     pub fn new(cell_size: f32) -> Self {
-        Self::new_with_bounds(cell_size, 2000.0, 2000.0)
+        Self::new_with_bounds(cell_size, 200.0, 200.0)
     }
 
     pub fn new_with_bounds(cell_size: f32, width: f32, height: f32) -> Self {

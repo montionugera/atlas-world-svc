@@ -191,7 +191,7 @@ if [ "${1:-}" = "--print-rust-selector" ]; then
 fi
 
 # F-174: the pipeline-character section runs only when one of these paths changed.
-PIPELINE_CHAR_PATHS='^(game-client/|atelier/asset-forge/|\.gitignore$|\.github/workflows/ci\.yml$|content/asset-taxonomy\.json$|content/generated/asset-keys\.json$|art-source/LICENSES\.md$|scripts/check_asset_manifest\.mjs$|scripts/bake_thumbnails\.mjs$|scripts/lib/(anim-clips|pull-entry|studio-pull|studio-token|license-policy|thumbkey)\.mjs$|scripts/studio-pull\.mjs$|scripts/godot-verify\.sh$|scripts/precheck\.sh$|scripts/tests/(studio-pull|pull-entry|godot-verify|anim-clips|precheck-pipeline-char|bake-thumbnails-pull)\.test\.mjs$|scripts/tests/fixtures/studio/)'
+PIPELINE_CHAR_PATHS='^(game-client/|atelier/asset-forge/|\.gitignore$|\.github/workflows/ci\.yml$|content/asset-taxonomy\.json$|content/generated/asset-keys\.json$|art-source/LICENSES\.md$|scripts/check_asset_manifest\.mjs$|scripts/bake_thumbnails\.mjs$|scripts/lib/(anim-clips|pull-entry|studio-pull|studio-token|license-policy|thumbkey)\.mjs$|scripts/studio-pull\.mjs$|scripts/godot-verify\.sh$|scripts/precheck\.sh$|content/maps/maro-bell\.json$|scripts/tests/maro-bell\.test\.mjs$|scripts/tests/(studio-pull|pull-entry|godot-verify|anim-clips|precheck-pipeline-char|bake-thumbnails-pull)\.test\.mjs$|scripts/tests/fixtures/studio/)'
 if [ "${1:-}" = "--print-pipeline-char-selector" ]; then
   paths=$(cat) || exit 1
   if grep -qE "$PIPELINE_CHAR_PATHS" <<<"$paths"; then echo RUN; else echo SKIP; fi
@@ -548,10 +548,12 @@ pipeline_char_section() {
   node "$REPO_ROOT/scripts/check_asset_manifest.mjs" || return 1
   ( cd "$REPO_ROOT" && node --test scripts/tests/anim-clips.test.mjs scripts/tests/godot-verify.test.mjs \
       scripts/tests/precheck-pipeline-char.test.mjs scripts/tests/studio-pull.test.mjs scripts/tests/pull-entry.test.mjs \
-      scripts/tests/bake-thumbnails-pull.test.mjs ) || return 1
+      scripts/tests/bake-thumbnails-pull.test.mjs scripts/tests/maro-bell.test.mjs ) || return 1
   ( cd "$REPO_ROOT/atelier/asset-forge" && { [ -d node_modules ] || npm ci --no-audit --no-fund; } && npm test ) || return 1
   "$REPO_ROOT/scripts/godot-verify.sh" ATLAS_VERIFY_ANIM '^\[AnimationVerify\] RESULT: PASS' || return 1
-  "$REPO_ROOT/scripts/godot-verify.sh" ATLAS_VERIFY_PIPELINE_CHAR '^\[PipelineCharVerify\] VERDICT PASS$'
+  "$REPO_ROOT/scripts/godot-verify.sh" ATLAS_VERIFY_MARO_BELL '^\[MaroBellVerify\] VERDICT PASS$' || return 1
+  "$REPO_ROOT/scripts/godot-verify.sh" ATLAS_VERIFY_PIPELINE_CHAR '^\[PipelineCharVerify\] VERDICT PASS$' || return 1
+  "$REPO_ROOT/scripts/godot-verify.sh" ATLAS_VERIFY_PLAYTEST_SANDBOX '^\[PlaytestSandboxVerify\] VERDICT PASS$'
 }
 
 map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/map-builder/tests/*.test.mjs ) }
@@ -591,6 +593,7 @@ explorer_probes() {
     return 0
   fi
   export CHROME_BIN="$chrome"
+  export ATLAS_PROBE_TABS="${ATLAS_PROBE_TABS:-2}"
   # Each probe runs in the background with its OWN log file and its OWN watchdog
   # (not `timeout(1)`: that moves node into its own process group and the Chrome
   # probe stalls). Both hit the same server; each launches its own Chrome with a
@@ -625,8 +628,8 @@ explorer_probes() {
   start_probe "$REPO_ROOT/scripts/probes/atlas_zoom_drift_check.mjs" "http://127.0.0.1:$port/" "$zoom_out" "$zoom_rc"; zp=$!
   start_probe "$REPO_ROOT/scripts/probes/atlas_phone_touch_audit.mjs" "http://127.0.0.1:$port/" "$touch_out" "$touch_rc"; tp=$!
   wait "$zp" "$tp"
-  echo "--- atlas_zoom_drift_check.mjs"; tail -9 "$zoom_out"
-  echo "--- atlas_phone_touch_audit.mjs"; tail -9 "$touch_out"
+  echo "--- atlas_zoom_drift_check.mjs"; grep -E "^FAIL" "$zoom_out" || true; tail -9 "$zoom_out"
+  echo "--- atlas_phone_touch_audit.mjs"; grep -E "^FAIL" "$touch_out" || true; tail -9 "$touch_out"
   # a missing rc file (probe subshell died) is a failure, never a pass
   [ "$(cat "$zoom_rc" 2>/dev/null)" = "0" ] || rc=1
   [ "$(cat "$touch_rc" 2>/dev/null)" = "0" ] || rc=1

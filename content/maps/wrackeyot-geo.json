@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "wrackeyot-geo",
   "name": "Wrackeyot Geo \u2014 Reedstrand (c06/r08)",
   "seed": 104408,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "coastal_tidal_flat",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -528,73 +529,73 @@
   "spawnAreas": [
     {
       "id": "wrackeyot_geo_bramble_warden",
-      "x": 2111.5,
-      "y": 2066.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 211.15,
+      "y": 206.64,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bramble-warden",
       "count": 2
     },
     {
       "id": "wrackeyot_geo_gallows_meadow_shade",
-      "x": 1634.9,
-      "y": 1875.7,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 163.49,
+      "y": 187.57,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-gallows-meadow-shade",
       "count": 3
     },
     {
       "id": "wrackeyot_geo_millroad_brigand",
-      "x": 2010.3,
-      "y": 1562.7,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 201.03,
+      "y": 156.27,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-millroad-brigand",
       "count": 4
     },
     {
       "id": "wrackeyot_geo_quarrystone_beetle",
-      "x": 1945.7,
-      "y": 2377.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 194.57,
+      "y": 237.77,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-quarrystone-beetle",
       "count": 2
     },
     {
       "id": "wrackeyot_geo_ashfang_pack_leader",
-      "x": 1428.7,
-      "y": 1829.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 142.87,
+      "y": 182.97,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-ashfang-pack-leader",
       "count": 2
     },
     {
       "id": "wrackeyot_geo_bramble_drake",
-      "x": 2475.9,
-      "y": 1695.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 247.59,
+      "y": 169.57,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bramble-drake",
       "count": 2
     },
     {
       "id": "wrackeyot_geo_briar_caller",
-      "x": 1318.8,
-      "y": 2187.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 131.88,
+      "y": 218.7,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-briar-caller",
       "count": 2
     },
     {
       "id": "wrackeyot_geo_millstone_warden",
-      "x": 1975.3,
-      "y": 1205.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 197.53,
+      "y": 120.56,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-millstone-warden",
       "count": 1
     }
@@ -602,24 +603,24 @@
   "staticObstacles": [
     {
       "id": "landmark_osierholm_quag_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_head_between_bitternstrand_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_wrackeyot_geo_sheer_scarp_cliff",
-      "min_x": 1088.8,
-      "min_y": 2568.8,
-      "max_x": 1351.2,
-      "max_y": 2831.2
+      "min_x": 108.88,
+      "min_y": 256.88,
+      "max_x": 135.12,
+      "max_y": 283.12
     }
   ]
 }

@@ -87,6 +87,6 @@ export function derivedStats({
     mAtk: atk * 2 * (1 - weapon.rho),
     pDef: def,
     mDef: def,
-    maxMoveSpeed: 20 + 0.2 * agi,
+    maxMoveSpeed: 3 + 0.03 * agi, // F-184: (20 + 0.2 * agi) * 0.15, mirrors server SPEED_SCALE
   };
 }

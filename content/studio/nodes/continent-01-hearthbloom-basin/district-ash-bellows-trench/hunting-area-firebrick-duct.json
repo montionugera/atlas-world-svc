@@ -1,4 +1,5 @@
 {
+  "unitContract": "metres-v1",
   "schema_version": "1.0.0",
   "id": "hunting-area-firebrick-duct",
   "name": "Firebrick Intake Duct",
@@ -20,8 +21,8 @@
   "terrain_tile": {
     "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
     "dimensions_meters": {
-      "width": 4000.0,
-      "height": 4000.0
+      "width": 400.0,
+      "height": 400.0
     },
     "biome_palette": "hearthbloom_firebrick_duct",
     "max_terrace_step_meters": 0.14,
@@ -36,14 +37,14 @@
       "target_direction": "South",
       "gate_state": "open",
       "trigger_box_meters": {
-        "x": 2000.0,
-        "y": 160.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrival_point_meters": {
-        "x": 2000.0,
-        "y": 200.0
+        "x": 200.0,
+        "y": 20.0
       }
     },
     "South": null,
@@ -55,14 +56,14 @@
       "target_direction": "West",
       "gate_state": "open",
       "trigger_box_meters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrival_point_meters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       }
     },
     "West": null,

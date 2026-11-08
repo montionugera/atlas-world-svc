@@ -232,11 +232,19 @@ node scripts/studio-pull.mjs        # [--manifest <path>] [--cache-dir <dir>]
 - Exit codes: `0` every entry cached or pulled; `1` sha mismatch, bad record or `studio auth failed`; `2` Asset Studio unreachable or no token. Local Gate 1 never skips on exit 2; only CI sets `ATLAS_SKIP_STUDIO=1`.
 - Token: `STUDIO_TOKEN`, else a dev token minted from the local orbstack cluster (`kubectl`, needs Asset Studio running). Never printed.
 
+**Interactive Playtest Sandbox Client (F-188).** Launch the clean 1440×900 desktop Playtest Sandbox (`res://scenes/PlaytestSandbox.tscn`) sharing the real `AtlasWorld.Client.World` engine (`AnimationController`, `CharacterCustomization`, `WeaponSocket`, `MapChunkStreamer`, `TerrainElevation`) without legacy mobile HUD overlays:
+
+```bash
+./scripts/run_playtest.sh
+```
+
 **Verify probes (pinned mono).** Env-gated C# probes run through `scripts/godot-verify.sh`, which uses the pinned Godot 4.7.2 .NET build (`$ATLAS_GODOT_MONO`), imports a fresh worktree first, bounds every call with a timeout, and passes only on exit 0 **and** a matching PASS line:
 
 ```bash
 scripts/godot-verify.sh ATLAS_VERIFY_ANIM '^\[AnimationVerify\] RESULT: PASS'
+scripts/godot-verify.sh ATLAS_VERIFY_MARO_BELL '^\[MaroBellVerify\] VERDICT PASS$'
 scripts/godot-verify.sh ATLAS_VERIFY_PIPELINE_CHAR '^\[PipelineCharVerify\] VERDICT PASS$'
+scripts/godot-verify.sh ATLAS_VERIFY_PLAYTEST_SANDBOX '^\[PlaytestSandboxVerify\] VERDICT PASS$'
 ```
 
 Combat-mapped manifest entries (those mapping `combat_idle`) run the F-174 combat states `idle`, `combat_idle`, `block`, `attack` (variants rotate), `hit`, `ready_in`, `ready_out`, `death`; entries without `combat_idle` keep the legacy states.

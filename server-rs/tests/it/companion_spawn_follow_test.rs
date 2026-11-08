@@ -25,7 +25,7 @@ fn spawned_companion_follows_owner_across_region_and_settles_within_five_units()
         .spawn((
             EntityId("player-owner".to_string()),
             PlayerTag,
-            Position::new(100.0, 100.0),
+            Position::new(10.0, 10.0),
             Velocity::zero(),
             Health::new(200.0),
         ))
@@ -35,21 +35,21 @@ fn spawned_companion_follows_owner_across_region_and_settles_within_five_units()
         &mut world,
         player,
         "companion-wolf",
-        Position::new(100.0, 100.0),
+        Position::new(10.0, 10.0),
     );
 
     let comp_ai = world.get::<CompanionAi>(companion).unwrap();
     assert!(
-        comp_ai.follow_distance <= 5.0,
-        "Companion follow_distance ({}) must be <= 5.0 units",
+        comp_ai.follow_distance <= 0.5,
+        "Companion follow_distance ({}) must be <= 0.5 units",
         comp_ai.follow_distance
     );
 
-    // Move the player across the region to (340.0, 280.0) (300 units away).
-    *world.get_mut::<Position>(player).expect("player position") = Position::new(340.0, 280.0);
+    // Move the player across the region to (34.0, 28.0) (30 m away).
+    *world.get_mut::<Position>(player).expect("player position") = Position::new(34.0, 28.0);
 
-    // Step simulation for 2.5 seconds (25 ticks at 100ms).
-    for _ in 0..25 {
+    // Step simulation for 17 seconds (170 ticks at 100ms; F-184 pace needs 1/0.15 the ticks).
+    for _ in 0..170 {
         world.resource_mut::<SimClock>().advance();
         schedule.run(&mut world);
     }
@@ -63,8 +63,8 @@ fn spawned_companion_follows_owner_across_region_and_settles_within_five_units()
     let dist = (dx * dx + dy * dy).sqrt();
 
     assert!(
-        dist <= 5.0,
-        "Expected companion to settle within <= 5.0 units of owner, got dist={} (comp={:?}, owner={:?})",
+        dist <= 0.5,
+        "Expected companion to settle within <= 0.5 units of owner, got dist={} (comp={:?}, owner={:?})",
         dist,
         comp_pos,
         owner_pos
@@ -80,7 +80,7 @@ fn companion_stops_when_already_within_follow_distance() {
         .spawn((
             EntityId("player-owner".to_string()),
             PlayerTag,
-            Position::new(200.0, 200.0),
+            Position::new(20.0, 20.0),
             Velocity::zero(),
             Health::new(200.0),
         ))
@@ -90,7 +90,7 @@ fn companion_stops_when_already_within_follow_distance() {
         &mut world,
         player,
         "companion-owl",
-        Position::new(203.0, 200.0),
+        Position::new(20.3, 20.0),
     );
 
     for _ in 0..5 {
@@ -100,6 +100,6 @@ fn companion_stops_when_already_within_follow_distance() {
 
     let comp_pos = *world.get::<Position>(companion).unwrap();
     let comp_vel = *world.get::<Velocity>(companion).unwrap();
-    assert_eq!(comp_pos, Position::new(203.0, 200.0));
+    assert_eq!(comp_pos, Position::new(20.3, 20.0));
     assert_eq!(comp_vel, Velocity::zero());
 }

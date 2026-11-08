@@ -1,7 +1,7 @@
 import { SKILL_DEFINITIONS } from "../config/skills";
 
 /** Mirrors server-rs skill_execution.rs `max_cast_range`. */
-export const MAX_CAST_RANGE = 200;
+export const MAX_CAST_RANGE = 20;
 
 export interface AoeReticle {
   x: number;

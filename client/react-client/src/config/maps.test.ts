@@ -4,23 +4,23 @@ describe("maps config", () => {
   // World sizes are a hand-kept copy of `MapConfig::load` (server-rs/src/content/map.rs).
   it("offers the five server rooms, each with the server's world size", () => {
     expect(MAPS.map((m) => [m.id, m.width, m.height])).toEqual([
-      ["map-for-play", 1000, 1000],
-      ["map-for-test-terrain", 1000, 1000],
-      ["map-for-test-projectile", 1000, 1000],
-      ["map-for-test-deflect", 100, 100],
-      ["map-for-test-large", 4000, 4000],
+      ["map-for-play", 100, 100],
+      ["map-for-test-terrain", 100, 100],
+      ["map-for-test-projectile", 100, 100],
+      ["map-for-test-deflect", 10, 10],
+      ["map-for-test-large", 400, 400],
     ]);
   });
 
   it("mapDef returns the room, or the default room for unknown ids", () => {
     expect(mapDef("map-for-test-deflect")).toMatchObject({
-      width: 100,
-      height: 100,
-      viewportSize: 100,
+      width: 10,
+      height: 10,
+      viewportSize: 10,
     });
     expect(mapDef("map-for-test-large")).toMatchObject({
-      width: 4000,
-      height: 4000,
+      width: 400,
+      height: 400,
       art: "plain",
     });
     expect(mapDef("bogus").id).toBe(DEFAULT_MAP_ID);

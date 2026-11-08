@@ -43,15 +43,15 @@ const BLEND_MS = 100;
 /** Time constant of the stop: the last `speed x this` units are eased out. */
 const STOP_MS = 50;
 /** The ease ends at this speed (u/s), so a stop arrives instead of creeping. */
-const STOP_MIN_SPEED = 6;
+const STOP_MIN_SPEED = 0.09;
 /** A stop whose rest point moved on may speed up again, to this at most (u/s). */
-const STOP_FLOOR_SPEED = 60;
+const STOP_FLOOR_SPEED = 0.9;
 /** A larger error is a teleport (respawn / reset): same rule as the sample history. */
-const TELEPORT_UNITS = 100;
+const TELEPORT_UNITS = 10;
 /** A snapshot this far beyond what its velocity explains moved the player by fiat. */
-const WARP_UNITS = 20;
+const WARP_UNITS = 2;
 /** Slower than this is standing still (u/s). */
-const STILL_SPEED = 5;
+const STILL_SPEED = 0.075;
 /** Server speed may differ from the expected speed by this fraction before it disagrees. */
 const SPEED_TOLERANCE = 0.25;
 /** Consecutive disagreeing snapshots before the server takes over. */
@@ -488,9 +488,9 @@ export function observeServer(
       if (
         len === 1 &&
         mult === s.serverMult &&
-        Math.abs(speed - s.serverSpeed) < 1 &&
-        estimate > 100 &&
-        estimate < 800 &&
+        Math.abs(speed - s.serverSpeed) < 0.015 &&
+        estimate > 1.5 &&
+        estimate < 12 &&
         sameWay(snap.vx, snap.vy, input.mx, input.my, 0.99)
       ) {
         s.baseSpeed += (estimate - s.baseSpeed) * CALIBRATE_ALPHA;

@@ -99,109 +99,109 @@ describe("client terrain tables match server-rs/src/content/map.rs", () => {
 
   it("map-for-play zones, in paint order", () => {
     expect(rects("map-for-play")).toEqual([
-      ["ice", 0, 0, 1000, 250],
-      ["forest", 680, 240, 320, 520],
-      ["sand", 540, 390, 150, 220],
-      ["mud", 390, 590, 230, 170],
-      ["road", 485, 0, 30, 390],
-      ["road", 485, 610, 30, 390],
-      ["road", 0, 485, 390, 30],
-      ["road", 610, 485, 390, 30],
-      ["road", 390, 390, 220, 220],
-      ["road", 0, 172, 195, 16],
-      ["road", 188, 170, 30, 20],
+      ["ice", 0, 0, 100, 25],
+      ["forest", 68, 24, 32, 52],
+      ["sand", 54, 39, 15, 22],
+      ["mud", 39, 59, 23, 17],
+      ["road", 48.5, 0, 3, 39],
+      ["road", 48.5, 61, 3, 39],
+      ["road", 0, 48.5, 39, 3],
+      ["road", 61, 48.5, 39, 3],
+      ["road", 39, 39, 22, 22],
+      ["road", 0, 17.2, 19.5, 1.6],
+      ["road", 18.8, 17, 3, 2],
     ]);
   });
 
   it("map-for-test-terrain strips and blocks", () => {
     expect(rects("map-for-test-terrain")).toEqual([
-      ["road", 50, 0, 150, 700],
-      ["grass", 200, 0, 150, 700],
-      ["forest", 350, 0, 150, 700],
-      ["sand", 500, 0, 150, 700],
-      ["ice", 650, 0, 150, 700],
-      ["mud", 800, 0, 150, 700],
+      ["road", 5, 0, 15, 70],
+      ["grass", 20, 0, 15, 70],
+      ["forest", 35, 0, 15, 70],
+      ["sand", 50, 0, 15, 70],
+      ["ice", 65, 0, 15, 70],
+      ["mud", 80, 0, 15, 70],
     ]);
     expect(staticBlocksFor("map-for-test-terrain")).toEqual([
-      { x: 300, y: 760, width: 40, height: 40 },
-      { x: 660, y: 760, width: 40, height: 40 },
+      { x: 30, y: 76, width: 4, height: 4 },
+      { x: 66, y: 76, width: 4, height: 4 },
     ]);
     expect(staticBlocksFor("map-for-play")).toEqual([]);
   });
 
   it("map-for-test-large zones (MapConfig::large_test_map), in paint order", () => {
     expect(rects("map-for-test-large")).toEqual([
-      ["ice", 0, 0, 1400, 800],
-      ["ice", 2600, 3200, 1400, 800],
-      ["ice", 1500, 300, 900, 500],
-      ["forest", 2700, 100, 1200, 1100],
-      ["forest", 100, 2700, 1100, 1200],
-      ["forest", 1400, 3100, 900, 700],
-      ["sand", 100, 1100, 800, 1200],
-      ["sand", 3100, 1500, 800, 1300],
-      ["sand", 2200, 2200, 600, 600],
-      ["mud", 1200, 1200, 600, 600],
-      ["mud", 2200, 1100, 700, 500],
-      ["mud", 1100, 2200, 700, 700],
-      ["road", 1970, 0, 60, 4000],
-      ["road", 0, 1970, 4000, 60],
-      ["road", 1000, 970, 2000, 60],
-      ["road", 1000, 2970, 2000, 60],
-      ["road", 970, 1000, 60, 2000],
-      ["road", 2970, 1000, 60, 2000],
-      ["road", 1850, 1850, 300, 300],
+      ["ice", 0, 0, 140, 80],
+      ["ice", 260, 320, 140, 80],
+      ["ice", 150, 30, 90, 50],
+      ["forest", 270, 10, 120, 110],
+      ["forest", 10, 270, 110, 120],
+      ["forest", 140, 310, 90, 70],
+      ["sand", 10, 110, 80, 120],
+      ["sand", 310, 150, 80, 130],
+      ["sand", 220, 220, 60, 60],
+      ["mud", 120, 120, 60, 60],
+      ["mud", 220, 110, 70, 50],
+      ["mud", 110, 220, 70, 70],
+      ["road", 197, 0, 6, 400],
+      ["road", 0, 197, 400, 6],
+      ["road", 100, 97, 200, 6],
+      ["road", 100, 297, 200, 6],
+      ["road", 97, 100, 6, 200],
+      ["road", 297, 100, 6, 200],
+      ["road", 185, 185, 30, 30],
     ]);
   });
 
   it("map-for-test-large blocks: four clusters of four", () => {
     const blocks = staticBlocksFor("map-for-test-large");
     expect(blocks.map((b) => [b.x, b.y])).toEqual([
-      [1200, 1200],
-      [1290, 1220],
-      [1230, 1300],
-      [1330, 1310],
-      [2800, 1200],
-      [2890, 1220],
-      [2830, 1300],
-      [2930, 1310],
-      [1200, 2800],
-      [1290, 2820],
-      [1230, 2900],
-      [1330, 2910],
-      [2800, 2800],
-      [2890, 2820],
-      [2830, 2900],
-      [2930, 2910],
+      [120, 120],
+      [129, 122],
+      [123, 130],
+      [133, 131],
+      [280, 120],
+      [289, 122],
+      [283, 130],
+      [293, 131],
+      [120, 280],
+      [129, 282],
+      [123, 290],
+      [133, 291],
+      [280, 280],
+      [289, 282],
+      [283, 290],
+      [293, 291],
     ]);
-    for (const b of blocks) expect([b.width, b.height]).toEqual([40, 40]);
+    for (const b of blocks) expect([b.width, b.height]).toEqual([4, 4]);
   });
 
   it("resolves the large map's overlaps: roads over biomes, grass where bare", () => {
     const large = terrainZonesFor("map-for-test-large") ?? [];
-    expect(terrainAt(large, 2000, 2000).id).toBe("road"); // plaza at the spawn
-    expect(terrainAt(large, 2000, 500).id).toBe("road"); // cross over ice
-    expect(terrainAt(large, 1500, 1000).id).toBe("road"); // ring over mud
-    expect(terrainAt(large, 1600, 500).id).toBe("ice");
-    expect(terrainAt(large, 3000, 500).id).toBe("forest");
-    expect(terrainAt(large, 500, 1500).id).toBe("sand");
-    expect(terrainAt(large, 1500, 1500).id).toBe("mud");
-    expect(terrainAt(large, 2500, 1800).id).toBe("grass");
+    expect(terrainAt(large, 200, 200).id).toBe("road"); // plaza at the spawn
+    expect(terrainAt(large, 200, 50).id).toBe("road"); // cross over ice
+    expect(terrainAt(large, 150, 100).id).toBe("road"); // ring over mud
+    expect(terrainAt(large, 160, 50).id).toBe("ice");
+    expect(terrainAt(large, 300, 50).id).toBe("forest");
+    expect(terrainAt(large, 50, 150).id).toBe("sand");
+    expect(terrainAt(large, 150, 150).id).toBe("mud");
+    expect(terrainAt(large, 250, 180).id).toBe("grass");
   });
 
   it("resolves the play map's overlaps the way the server does (last painted wins)", () => {
     const play = terrainZonesFor("map-for-play") ?? [];
-    expect(terrainAt(play, 500, 100).id).toBe("road"); // north road over ice
-    expect(terrainAt(play, 600, 400).id).toBe("road"); // plaza over sand
-    expect(terrainAt(play, 685, 245).id).toBe("forest"); // forest over ice
-    expect(terrainAt(play, 685, 500).id).toBe("road"); // east road over forest and sand
-    expect(terrainAt(play, 650, 450).id).toBe("sand");
-    expect(terrainAt(play, 300, 300).id).toBe("grass");
-    expect(terrainAt(play, 100, 180).id).toBe("road"); // trade road over ice
-    expect(terrainAt(play, 210, 171).id).toBe("road"); // bridge over ice
-    expect(terrainAt(play, 100, 160).id).toBe("ice");
+    expect(terrainAt(play, 50, 10).id).toBe("road"); // north road over ice
+    expect(terrainAt(play, 60, 40).id).toBe("road"); // plaza over sand
+    expect(terrainAt(play, 68.5, 24.5).id).toBe("forest"); // forest over ice
+    expect(terrainAt(play, 68.5, 50).id).toBe("road"); // east road over forest and sand
+    expect(terrainAt(play, 65, 45).id).toBe("sand");
+    expect(terrainAt(play, 30, 30).id).toBe("grass");
+    expect(terrainAt(play, 10, 18).id).toBe("road"); // trade road over ice
+    expect(terrainAt(play, 21, 17.1).id).toBe("road"); // bridge over ice
+    expect(terrainAt(play, 10, 16).id).toBe("ice");
   });
 
   it("reference run speed is the 0-AGI walking speed", () => {
-    expect(REFERENCE_RUN_SPEED).toBe(200);
+    expect(REFERENCE_RUN_SPEED).toBe(3);
   });
 });

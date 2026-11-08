@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "northern-icefield",
   "name": "Northern Icefield \u2014 The Oath-Gate Shelf",
   "seed": 573196,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "barren_cliff",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -434,118 +435,118 @@
   "spawnAreas": [
     {
       "id": "northern_icefield_frostbitten_ox",
-      "x": 2155.0,
-      "y": 1935.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 215.5,
+      "y": 193.5,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-frostbitten-ox",
       "count": 2
     },
     {
       "id": "northern_icefield_rime_shrike",
-      "x": 1690.4,
-      "y": 2048.9,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 169.04,
+      "y": 204.89,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-rime-shrike",
       "count": 4
     },
     {
       "id": "northern_icefield_frostfell_stalker",
-      "x": 2121.6,
-      "y": 1688.9,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 212.16,
+      "y": 168.89,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-frostfell-stalker",
       "count": 4
     },
     {
       "id": "northern_icefield_hoarfrost_wisp",
-      "x": 1912.4,
-      "y": 2274.8,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 191.24,
+      "y": 227.48,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-hoarfrost-wisp",
       "count": 3
     },
     {
       "id": "northern_icefield_oathtablet_sentry",
-      "x": 1635.5,
-      "y": 1680.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 163.55,
+      "y": 168.01,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-oathtablet-sentry",
       "count": 2
     },
     {
       "id": "northern_icefield_icelocked_oathkeeper",
-      "x": 2375.8,
-      "y": 2016.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 237.58,
+      "y": 201.61,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-icelocked-oathkeeper",
       "count": 1
     },
     {
       "id": "northern_icefield_rime_drake",
-      "x": 1782.8,
-      "y": 2390.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 178.28,
+      "y": 239.02,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-rime-drake",
       "count": 2
     },
     {
       "id": "northern_icefield_hoarfell_giant",
-      "x": 2129.6,
-      "y": 1449.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 212.96,
+      "y": 144.92,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hoarfell-giant",
       "count": 2
     },
     {
       "id": "northern_icefield_snowblind_shade",
-      "x": 2392.8,
-      "y": 2268.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 239.28,
+      "y": 226.89,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-snowblind-shade",
       "count": 2
     },
     {
       "id": "northern_icefield_icefloe_wyrm",
-      "x": 1380.5,
-      "y": 1713.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 138.05,
+      "y": 171.39,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-icefloe-wyrm",
       "count": 1
     },
     {
       "id": "northern_icefield_oathgate_sentinel",
-      "x": 2483.1,
-      "y": 1574.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 248.31,
+      "y": 157.44,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-oathgate-sentinel",
       "count": 1
     },
     {
       "id": "northern_icefield_whitewaste_colossus",
-      "x": 1975.6,
-      "y": 2641.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 197.56,
+      "y": 264.1,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-whitewaste-colossus",
       "count": 1
     },
     {
       "id": "northern_icefield_deepfrost_wyrm",
-      "x": 1511.7,
-      "y": 1345.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 151.17,
+      "y": 134.51,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepfrost-wyrm",
       "count": 1
     }
@@ -553,24 +554,24 @@
   "staticObstacles": [
     {
       "id": "landmark_oath_gate_pillar_w",
-      "min_x": 1946.4,
-      "min_y": 1834.4,
-      "max_x": 1957.6,
-      "max_y": 1845.6
+      "min_x": 194.64,
+      "min_y": 183.44,
+      "max_x": 195.76,
+      "max_y": 184.56
     },
     {
       "id": "landmark_oath_gate_pillar_e",
-      "min_x": 2042.4,
-      "min_y": 1834.4,
-      "max_x": 2053.6,
-      "max_y": 1845.6
+      "min_x": 204.24,
+      "min_y": 183.44,
+      "max_x": 205.36,
+      "max_y": 184.56
     },
     {
       "id": "cliff_the_crevasse_shelf_wall",
-      "min_x": 1639.8,
-      "min_y": 1709.8,
-      "max_x": 1820.2,
-      "max_y": 1890.2
+      "min_x": 163.98,
+      "min_y": 170.98,
+      "max_x": 182.02,
+      "max_y": 189.02
     }
   ]
 }

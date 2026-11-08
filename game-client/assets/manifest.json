@@ -233,6 +233,33 @@
         "block": "block",
         "hit": "hit"
       }
+    },
+    "npc:maro_folk_girl": {
+      "scene": "res://studio-cache/b6ca879a29f94c47a5794bff2ee36770200203fb914ec6ee22030151bf397697.glb",
+      "source": "Asset Studio library asset 01a1ba63-927f-7342-b439-662d64f68bbb (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "kind": "pipelineCharacter",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1ba63-927f-7342-b439-662d64f68bbb",
+        "tag": "f186-meshy-1108",
+        "sha256": "b6ca879a29f94c47a5794bff2ee36770200203fb914ec6ee22030151bf397697"
+      },
+      "anims": {
+        "idle": "idle",
+        "walk": "walk",
+        "run": "run",
+        "attack": [
+          "attack",
+          "attack_2",
+          "attack_3"
+        ],
+        "death": "death",
+        "combat_idle": "combat_idle",
+        "block": "block",
+        "hit": "hit"
+      }
     }
   }
 }

@@ -110,6 +110,7 @@
           "minLength": 20
         },
         "spawn_point_meters": {
+          "description": "True metres from the map's north-west corner (F-185: 1 unit = 1 m; a 400 m map's centre is 200, 200).",
           "type": "object",
           "required": [
             "x",
@@ -148,6 +149,7 @@
           "type": "string"
         },
         "dimensions_meters": {
+          "description": "True metres (F-185): a standard district tile is 400 x 400.",
           "type": "object",
           "required": [
             "width",
@@ -156,11 +158,11 @@
           "properties": {
             "width": {
               "type": "number",
-              "minimum": 200
+              "minimum": 100
             },
             "height": {
               "type": "number",
-              "minimum": 200
+              "minimum": 100
             }
           }
         },

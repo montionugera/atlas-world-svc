@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "loamspit-bar",
   "name": "Loamspit Bar \u2014 The Migrating Mangrove Spit",
   "seed": 268985,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "coastal_tidal_flat",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -518,73 +519,73 @@
   "spawnAreas": [
     {
       "id": "loamspit_bar_hedgerow_thorn",
-      "x": 2124.8,
-      "y": 2046.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 212.48,
+      "y": 204.62,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hedgerow-thorn",
       "count": 2
     },
     {
       "id": "loamspit_bar_cordknot_effigy",
-      "x": 1631.1,
-      "y": 1910.8,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 163.11,
+      "y": 191.08,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-cordknot-effigy",
       "count": 3
     },
     {
       "id": "loamspit_bar_millrace_lurker",
-      "x": 2248.6,
-      "y": 1741.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 224.86,
+      "y": 174.13,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-millrace-lurker",
       "count": 2
     },
     {
       "id": "loamspit_bar_saltmarsh_wisp",
-      "x": 1979.8,
-      "y": 2364.5,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 197.98,
+      "y": 236.45,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-saltmarsh-wisp",
       "count": 3
     },
     {
       "id": "loamspit_bar_strayling_yearling",
-      "x": 1423.7,
-      "y": 1774.6,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 142.37,
+      "y": 177.46,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-strayling-yearling",
       "count": 4
     },
     {
       "id": "loamspit_bar_tideline_drowner",
-      "x": 2516.2,
-      "y": 1825.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 251.62,
+      "y": 182.53,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-tideline-drowner",
       "count": 2
     },
     {
       "id": "loamspit_bar_tollroad_wrecker",
-      "x": 1643.9,
-      "y": 2533.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.39,
+      "y": 253.37,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-tollroad-wrecker",
       "count": 2
     },
     {
       "id": "loamspit_bar_millroad_brigand",
-      "x": 1592.1,
-      "y": 1256.6,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 159.21,
+      "y": 125.66,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-millroad-brigand",
       "count": 4
     }
@@ -592,24 +593,24 @@
   "staticObstacles": [
     {
       "id": "landmark_c_lm_loamspit_bars_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_loamspit_bar_west_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_loamspit_bar_sheer_scarp_cliff",
-      "min_x": 1358.8,
-      "min_y": 2778.8,
-      "max_x": 1621.2,
-      "max_y": 3041.2
+      "min_x": 135.88,
+      "min_y": 277.88,
+      "max_x": 162.12,
+      "max_y": 304.12
     }
   ]
 }

@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "grikepot-head",
   "name": "Grikepot Head \u2014 Stonemoor (c04/r01)",
   "seed": 235934,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "barren_cliff",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -442,73 +443,73 @@
   "spawnAreas": [
     {
       "id": "grikepot_head_bellwarden_revenant",
-      "x": 2086.7,
-      "y": 2094.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 208.67,
+      "y": 209.43,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bellwarden-revenant",
       "count": 2
     },
     {
       "id": "grikepot_head_bound_war_beast",
-      "x": 1718.0,
-      "y": 2133.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 171.8,
+      "y": 213.38,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "grikepot_head_crateyard_colossus",
-      "x": 2080.9,
-      "y": 1602.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 208.09,
+      "y": 160.24,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "grikepot_head_shroudweaver",
-      "x": 2200.9,
-      "y": 2289.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 220.09,
+      "y": 228.91,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-shroudweaver",
       "count": 2
     },
     {
       "id": "grikepot_head_siege_rot_hulk",
-      "x": 1646.3,
-      "y": 1522.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 164.63,
+      "y": 152.28,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-siege-rot-hulk",
       "count": 1
     },
     {
       "id": "grikepot_head_warscar_maw",
-      "x": 2498.9,
-      "y": 1756.5,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 249.89,
+      "y": 175.65,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-warscar-maw",
       "count": 2
     },
     {
       "id": "grikepot_head_deepwater_hauler",
-      "x": 1319.2,
-      "y": 2172.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 131.92,
+      "y": 217.21,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "grikepot_head_frontline_devourer",
-      "x": 1953.1,
-      "y": 1205.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 195.31,
+      "y": 120.5,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-frontline-devourer",
       "count": 1
     }
@@ -516,24 +517,24 @@
   "staticObstacles": [
     {
       "id": "landmark_paverake_fenster_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_geo_under_dolinflow_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_grikepot_head_sheer_scarp_cliff",
-      "min_x": 1168.8,
-      "min_y": 2728.8,
-      "max_x": 1431.2,
-      "max_y": 2991.2
+      "min_x": 116.88,
+      "min_y": 272.88,
+      "max_x": 143.12,
+      "max_y": 299.12
     }
   ]
 }

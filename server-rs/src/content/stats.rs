@@ -1,5 +1,6 @@
 use crate::content::races::AtlasRace;
 use crate::content::weapons::{weapon_offence, AtkStat};
+use crate::core::speed::scaled_speed;
 use crate::storage::PrimaryStats;
 use serde::{Deserialize, Serialize};
 
@@ -97,6 +98,7 @@ pub fn derived_stats_with_race(
         100.0 + (level as f32) + (allocated.dex as f32) * 1.0 + (allocated.luk as f32) * 0.2;
     let flee_rate =
         100.0 + (level as f32) + (allocated.agi as f32) * 1.0 + (allocated.luk as f32) * 0.2;
+    let agi = allocated.agi as f32;
     let max_weight = 2000 + (allocated.vit * 30) + (allocated.str * 20) + race_weight_bonus;
 
     DerivedStats {
@@ -105,7 +107,7 @@ pub fn derived_stats_with_race(
         m_atk: atk * 2.0 * (1.0 - weapon.rho),
         p_def: def,
         m_def: def,
-        max_move_speed: 20.0 + 0.2 * (allocated.agi as f32) + race_speed_bonus,
+        max_move_speed: scaled_speed(10.0 * (20.0 + 0.2 * agi + race_speed_bonus)),
         aspd,
         cast_time_reduction_pct,
         crit_rate_pct,
@@ -129,7 +131,7 @@ mod tests {
         assert_eq!(derived.m_atk, 0.0);
         assert!((derived.p_def - 6.0).abs() < 1e-4);
         assert!((derived.m_def - 6.0).abs() < 1e-4);
-        assert!((derived.max_move_speed - 20.2).abs() < 1e-4);
+        assert!((derived.max_move_speed - 3.03).abs() < 1e-4);
     }
 
     #[test]

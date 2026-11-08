@@ -1076,30 +1076,30 @@ def build_spawn_areas_for_mobs(
         # Determine mob count per spawn area based on tier & archetype
         if lv_min >= 51 or (archetype == "tank" and lv_min >= 31):
             count = 1
-            w, h = 110.0, 110.0
+            w, h = 11.0, 11.0
         elif lv_min >= 31 or archetype in ("bruiser", "tank"):
             count = 2
-            w, h = 130.0, 130.0
+            w, h = 13.0, 13.0
         elif archetype in ("caster", "support"):
             count = 3
-            w, h = 150.0, 150.0
+            w, h = 15.0, 15.0
         else:
             count = 4
-            w, h = 160.0, 160.0
+            w, h = 16.0, 16.0
 
         ring_t = idx / max(1, total - 1)
-        radius = 220.0 + ring_t * 520.0
+        radius = 22.0 + ring_t * 52.0
         angle = (idx * 2.399963229728653) + (int(hashlib.md5(f"{map_id}:{mob_id}".encode()).hexdigest()[:6], 16) % 100) * 0.01
 
-        sx = round(cx + math.cos(angle) * radius - w * 0.5, 1)
-        sy = round(cy + math.sin(angle) * radius - h * 0.5, 1)
+        sx = round(cx + math.cos(angle) * radius - w * 0.5, 2)
+        sy = round(cy + math.sin(angle) * radius - h * 0.5, 2)
 
-        sx = max(120.0, min(map_width - w - 120.0, sx))
-        sy = max(120.0, min(map_height - h - 120.0, sy))
+        sx = max(12.0, min(map_width - w - 12.0, sx))
+        sy = max(12.0, min(map_height - h - 12.0, sy))
 
         for ox0, oy0, ox1, oy1 in avoid:
-            if sx < ox1 + 20.0 and sx + w > ox0 - 20.0 and sy < oy1 + 20.0 and sy + h > oy0 - 20.0:
-                sy = round(oy1 + 35.0, 1)
+            if sx < ox1 + 2.0 and sx + w > ox0 - 2.0 and sy < oy1 + 2.0 and sy + h > oy0 - 2.0:
+                sy = round(oy1 + 3.5, 2)
 
         spawn_areas.append(
             {
@@ -1122,7 +1122,7 @@ def build_static_obstacles(
     map_width: float,
     map_height: float,
     extra_obstacles: list[tuple[str, float, float, float, float]] | list[dict[str, Any]] | None = None,
-    coord_scale: float = 0.1,
+    coord_scale: float = 1.0,  # F-185: server unit = metre
 ) -> list[dict[str, Any]]:
     cx = map_width * 0.5
     cy = map_height * 0.5
@@ -1139,10 +1139,10 @@ def build_static_obstacles(
         half_world = max(0.25, half_ext * scale * 0.72)
         wx = float(p["x"])
         wz = float(p["z"])
-        sx_min = round(cx + (wx - half_world) / coord_scale, 1)
-        sy_min = round(cy + (wz - half_world) / coord_scale, 1)
-        sx_max = round(cx + (wx + half_world) / coord_scale, 1)
-        sy_max = round(cy + (wz + half_world) / coord_scale, 1)
+        sx_min = round(cx + (wx - half_world) / coord_scale, 2)
+        sy_min = round(cy + (wz - half_world) / coord_scale, 2)
+        sx_max = round(cx + (wx + half_world) / coord_scale, 2)
+        sy_max = round(cy + (wz + half_world) / coord_scale, 2)
         obstacles.append(
             {
                 "id": p["id"],
@@ -1161,10 +1161,10 @@ def build_static_obstacles(
             obstacles.append(
                 {
                     "id": f"cliff_{t['id']}",
-                    "min_x": round(cx + (tx - half_box) / coord_scale, 1),
-                    "min_y": round(cy + (tz - half_box) / coord_scale, 1),
-                    "max_x": round(cx + (tx + half_box) / coord_scale, 1),
-                    "max_y": round(cy + (tz + half_box) / coord_scale, 1),
+                    "min_x": round(cx + (tx - half_box) / coord_scale, 2),
+                    "min_y": round(cy + (tz - half_box) / coord_scale, 2),
+                    "max_x": round(cx + (tx + half_box) / coord_scale, 2),
+                    "max_y": round(cy + (tz + half_box) / coord_scale, 2),
                 }
             )
 
@@ -1180,8 +1180,8 @@ def compile_millcross_ford(
     derived_spine: dict[str, Any],
 ) -> dict[str, Any]:
     map_id = cfg["mapId"]
-    width = 4000.0
-    height = 4000.0
+    width = 400.0
+    height = 400.0
     cx = width * 0.5
     cy = height * 0.5
 
@@ -1221,15 +1221,19 @@ def compile_millcross_ford(
 
     town_obstacles: list[dict[str, Any]] = []
     avoid_rects: list[tuple[float, float, float, float]] = []
-    origin_sx = cx - town_cx
-    origin_sy = cy - town_cy
+    # shortcut: content/towns/town-millcross.json stays in its own 0.1 m design frame (atelier
+    # tools read it), so footprints are scaled to metres here and in map.rs; drop when the
+    # town plan is rescaled too.
+    town_u = 0.1
+    origin_sx = cx - town_cx * town_u
+    origin_sy = cy - town_cy * town_u
     for fp in building_footprints:
         rect = fp["rect"]
         x0, y0, x1, y1 = float(rect[0]), float(rect[1]), float(rect[2]), float(rect[3])
-        min_x = round(origin_sx + min(x0, x1), 1)
-        min_y = round(origin_sy + min(y0, y1), 1)
-        max_x = round(origin_sx + max(x0, x1), 1)
-        max_y = round(origin_sy + max(y0, y1), 1)
+        min_x = round(origin_sx + town_u * min(x0, x1), 2)
+        min_y = round(origin_sy + town_u * min(y0, y1), 2)
+        max_x = round(origin_sx + town_u * max(x0, x1), 2)
+        max_y = round(origin_sy + town_u * max(y0, y1), 2)
         town_obstacles.append(
             {
                 "id": fp["id"],
@@ -1381,6 +1385,7 @@ def compile_millcross_ford(
 
     return {
         "version": 3,
+        "unitContract": "metres-v1",
         "mapId": map_id,
         "name": cfg["displayName"],
         "seed": deterministic_seed(map_id, derived_spine, cfg["spineNodeId"]),
@@ -1433,8 +1438,8 @@ def compile_surveyed_zone_map(
     derived_spine: dict[str, Any],
 ) -> dict[str, Any]:
     map_id = cfg["mapId"]
-    width = 4000.0
-    height = 4000.0
+    width = 400.0
+    height = 400.0
 
     bands = [parse_level_band(m.get("levelBand", "1-10")) for m in mobs]
     min_lv = min((b[0] for b in bands), default=1)
@@ -1461,6 +1466,7 @@ def compile_surveyed_zone_map(
 
     return {
         "version": 3,
+        "unitContract": "metres-v1",
         "mapId": map_id,
         "name": cfg["displayName"],
         "seed": deterministic_seed(map_id, derived_spine, cfg["spineNodeId"]),
@@ -1526,8 +1532,8 @@ def compile_continent_zone_or_anchor_map(
     Deterministically compiles a playable v3 3D map for any auto-discovered `c03..c10`
     surveyed zone or `c01/c11/c12/c13` frontier continent anchor map.
     """
-    width = 4000.0
-    height = 4000.0
+    width = 400.0
+    height = 400.0
     bcfg = CONTINENT_BIOME_CONFIGS[continent_id]
     biome = biome_override or bcfg["biome"]
     spine_node_id = cont_meta["spineNodeId"]
@@ -1732,6 +1738,7 @@ def compile_continent_zone_or_anchor_map(
 
     return {
         "version": 3,
+        "unitContract": "metres-v1",
         "mapId": map_id,
         "name": display_name,
         "seed": deterministic_seed(map_id, derived_spine, spine_node_id),
@@ -1781,7 +1788,7 @@ def compile_continent_zone_or_anchor_map(
 
 def update_freja_south_gate(palettes_doc: dict[str, Any], check_only: bool = False) -> dict[str, Any]:
     """
-    Preserves `content/maps/freja-south-gate.json`'s exact `width: 1000.0`, `height: 1000.0`,
+    Preserves `content/maps/freja-south-gate.json`'s exact `width: 100.0`, `height: 100.0` (metres),
     8 `spawnAreas`, 12 `staticObstacles`, and 5 `heightTerraces` asserted by `server-rs` unit tests,
     while binding it to the 10th Wealdmarch surveyed zone (`meltwash-terrace` / `c02/r16` / `n-frontier-shelf` / `region-spawn-meadow`).
     """
@@ -1790,29 +1797,29 @@ def update_freja_south_gate(palettes_doc: dict[str, Any], check_only: bool = Fal
     meltwash_doc = load_json(ZONES_DIR / "zone-meltwash-terrace.json")
 
     spawn_areas = [
-        {"id": "boss_area", "x": 450.0, "y": 450.0, "width": 100.0, "height": 100.0, "mobType": "mob-thorncrown-drake", "count": 1},
-        {"id": "center_courtyard", "x": 400.0, "y": 400.0, "width": 200.0, "height": 200.0, "mobType": "mob-bramble-stalker", "count": 3},
-        {"id": "east_dunes", "x": 550.0, "y": 400.0, "width": 150.0, "height": 200.0, "mobType": "mob-veil-spearling", "count": 4},
-        {"id": "north_ice_fields", "x": 400.0, "y": 250.0, "width": 200.0, "height": 150.0, "mobType": "mob-bramble-stalker", "count": 2},
-        {"id": "south_mud_pit", "x": 400.0, "y": 600.0, "width": 200.0, "height": 150.0, "mobType": "mob-bramble-warden", "count": 2},
-        {"id": "thornveil_interior", "x": 820.0, "y": 420.0, "width": 150.0, "height": 150.0, "mobType": "mob-bramble-drake", "count": 1},
-        {"id": "thornveil_route_spearlings", "x": 700.0, "y": 550.0, "width": 150.0, "height": 200.0, "mobType": "mob-veil-spearling", "count": 2},
-        {"id": "thornveil_route_stalkers", "x": 700.0, "y": 300.0, "width": 150.0, "height": 200.0, "mobType": "mob-bramble-stalker", "count": 2},
+        {"id": "boss_area", "x": 45.0, "y": 45.0, "width": 10.0, "height": 10.0, "mobType": "mob-thorncrown-drake", "count": 1},
+        {"id": "center_courtyard", "x": 40.0, "y": 40.0, "width": 20.0, "height": 20.0, "mobType": "mob-bramble-stalker", "count": 3},
+        {"id": "east_dunes", "x": 55.0, "y": 40.0, "width": 15.0, "height": 20.0, "mobType": "mob-veil-spearling", "count": 4},
+        {"id": "north_ice_fields", "x": 40.0, "y": 25.0, "width": 20.0, "height": 15.0, "mobType": "mob-bramble-stalker", "count": 2},
+        {"id": "south_mud_pit", "x": 40.0, "y": 60.0, "width": 20.0, "height": 15.0, "mobType": "mob-bramble-warden", "count": 2},
+        {"id": "thornveil_interior", "x": 82.0, "y": 42.0, "width": 15.0, "height": 15.0, "mobType": "mob-bramble-drake", "count": 1},
+        {"id": "thornveil_route_spearlings", "x": 70.0, "y": 55.0, "width": 15.0, "height": 20.0, "mobType": "mob-veil-spearling", "count": 2},
+        {"id": "thornveil_route_stalkers", "x": 70.0, "y": 30.0, "width": 15.0, "height": 20.0, "mobType": "mob-bramble-stalker", "count": 2},
     ]
 
     static_obstacles = [
-        {"id": "tree_ring_01", "min_x": 329.0, "min_y": 349.0, "max_x": 351.0, "max_y": 371.0},
-        {"id": "tree_ring_02", "min_x": 639.0, "min_y": 339.0, "max_x": 661.0, "max_y": 361.0},
-        {"id": "tree_ring_03", "min_x": 288.0, "min_y": 448.0, "max_x": 312.0, "max_y": 472.0},
-        {"id": "tree_ring_04", "min_x": 679.0, "min_y": 469.0, "max_x": 701.0, "max_y": 491.0},
-        {"id": "tree_ring_05", "min_x": 340.0, "min_y": 620.0, "max_x": 360.0, "max_y": 640.0},
-        {"id": "tree_ring_06", "min_x": 648.5, "min_y": 628.5, "max_x": 671.5, "max_y": 651.5},
-        {"id": "tree_ring_07", "min_x": 429.0, "min_y": 669.0, "max_x": 451.0, "max_y": 691.0},
-        {"id": "tree_ring_08", "min_x": 567.5, "min_y": 267.5, "max_x": 592.5, "max_y": 292.5},
-        {"id": "rock_mid_01", "min_x": 366.0, "min_y": 386.0, "max_x": 384.0, "max_y": 404.0},
-        {"id": "rock_mid_02", "min_x": 611.5, "min_y": 381.5, "max_x": 628.5, "max_y": 398.5},
-        {"id": "sanctuary_pillar_w", "min_x": 447.5, "min_y": 388.5, "max_x": 460.5, "max_y": 401.5},
-        {"id": "sanctuary_pillar_e", "min_x": 539.5, "min_y": 388.5, "max_x": 552.5, "max_y": 401.5},
+        {"id": "tree_ring_01", "min_x": 32.9, "min_y": 34.9, "max_x": 35.1, "max_y": 37.1},
+        {"id": "tree_ring_02", "min_x": 63.9, "min_y": 33.9, "max_x": 66.1, "max_y": 36.1},
+        {"id": "tree_ring_03", "min_x": 28.8, "min_y": 44.8, "max_x": 31.2, "max_y": 47.2},
+        {"id": "tree_ring_04", "min_x": 67.9, "min_y": 46.9, "max_x": 70.1, "max_y": 49.1},
+        {"id": "tree_ring_05", "min_x": 34.0, "min_y": 62.0, "max_x": 36.0, "max_y": 64.0},
+        {"id": "tree_ring_06", "min_x": 64.85, "min_y": 62.85, "max_x": 67.15, "max_y": 65.15},
+        {"id": "tree_ring_07", "min_x": 42.9, "min_y": 66.9, "max_x": 45.1, "max_y": 69.1},
+        {"id": "tree_ring_08", "min_x": 56.75, "min_y": 26.75, "max_x": 59.25, "max_y": 29.25},
+        {"id": "rock_mid_01", "min_x": 36.6, "min_y": 38.6, "max_x": 38.4, "max_y": 40.4},
+        {"id": "rock_mid_02", "min_x": 61.15, "min_y": 38.15, "max_x": 62.85, "max_y": 39.85},
+        {"id": "sanctuary_pillar_w", "min_x": 44.75, "min_y": 38.85, "max_x": 46.05, "max_y": 40.15},
+        {"id": "sanctuary_pillar_e", "min_x": 53.95, "min_y": 38.85, "max_x": 55.25, "max_y": 40.15},
     ]
 
     height_terraces = [
@@ -1828,8 +1835,8 @@ def update_freja_south_gate(palettes_doc: dict[str, Any], check_only: bool = Fal
     updated["mapId"] = "freja-south-gate"
     updated["name"] = "Prontera South Gate — Freja Meadow"
     updated["seed"] = updated.get("seed", 104729)
-    updated["width"] = 1000.0
-    updated["height"] = 1000.0
+    updated["width"] = 100.0
+    updated["height"] = 100.0
     updated["baseGroundId"] = updated.get("baseGroundId", "meadow_grass")
     updated["worldSpineBinding"] = {
         "continentId": "c02",
@@ -1870,28 +1877,30 @@ def build_client_world_maps_manifest(
     directly from `content/towns/town-millcross.json`, `content/generated/spawn-areas.json`, and
     the compiled v3 world region documents (`content/maps/<regionId>.json`) with zero hand copies.
     """
-    origin_x = 100.0
-    origin_y = 100.0
+    # Metres (F-185): the town plan is in 0.1 m design units (x0.1), origin (10, 10) m.
+    town_u = 0.1
+    origin_x = 10.0
+    origin_y = 10.0
     footprints: list[dict[str, Any]] = []
     for fp in town_millcross.get("footprints", []):
         rect = fp.get("rect", [])
         if len(rect) >= 4:
-            x0 = float(rect[0]) + origin_x
-            y0 = float(rect[1]) + origin_y
-            x1 = float(rect[2]) + origin_x
-            y1 = float(rect[3]) + origin_y
-            min_x = round(min(x0, x1), 1)
-            min_y = round(min(y0, y1), 1)
-            max_x = round(max(x0, x1), 1)
-            max_y = round(max(y0, y1), 1)
+            x0 = float(rect[0]) * town_u + origin_x
+            y0 = float(rect[1]) * town_u + origin_y
+            x1 = float(rect[2]) * town_u + origin_x
+            y1 = float(rect[3]) * town_u + origin_y
+            min_x = round(min(x0, x1), 2)
+            min_y = round(min(y0, y1), 2)
+            max_x = round(max(x0, x1), 2)
+            max_y = round(max(y0, y1), 2)
             footprints.append(
                 {
                     "id": fp["id"],
                     "kind": fp.get("kind", "dwelling"),
                     "x": min_x,
                     "y": min_y,
-                    "width": round(max_x - min_x, 1),
-                    "height": round(max_y - min_y, 1),
+                    "width": round(max_x - min_x, 2),
+                    "height": round(max_y - min_y, 2),
                     "min_x": min_x,
                     "min_y": min_y,
                     "max_x": max_x,
@@ -1900,14 +1909,14 @@ def build_client_world_maps_manifest(
             )
 
     play_geometry = {
-        "boss_area": (450.0, 450.0, 100.0, 100.0),
-        "center_courtyard": (400.0, 400.0, 200.0, 200.0),
-        "east_dunes": (550.0, 400.0, 150.0, 200.0),
-        "north_ice_fields": (400.0, 250.0, 200.0, 150.0),
-        "south_mud_pit": (400.0, 600.0, 200.0, 150.0),
-        "thornveil_route_stalkers": (700.0, 300.0, 150.0, 200.0),
-        "thornveil_route_spearlings": (700.0, 550.0, 150.0, 200.0),
-        "thornveil_interior": (820.0, 420.0, 150.0, 150.0),
+        "boss_area": (45.0, 45.0, 10.0, 10.0),
+        "center_courtyard": (40.0, 40.0, 20.0, 20.0),
+        "east_dunes": (55.0, 40.0, 15.0, 20.0),
+        "north_ice_fields": (40.0, 25.0, 20.0, 15.0),
+        "south_mud_pit": (40.0, 60.0, 20.0, 15.0),
+        "thornveil_route_stalkers": (70.0, 30.0, 15.0, 20.0),
+        "thornveil_route_spearlings": (70.0, 55.0, 15.0, 20.0),
+        "thornveil_interior": (82.0, 42.0, 15.0, 15.0),
     }
     mob_type_map = {
         "balanced": "mob-bramble-stalker",
@@ -1924,7 +1933,7 @@ def build_client_world_maps_manifest(
         raw_spawns = load_json(SPAWN_AREAS_PATH)
         for entry in raw_spawns.get("areas", []):
             aid = entry["id"]
-            x, y, w, h = play_geometry.get(aid, (400.0, 400.0, 200.0, 200.0))
+            x, y, w, h = play_geometry.get(aid, (40.0, 40.0, 20.0, 20.0))
             raw_mob = entry["mobType"]
             play_spawns.append(
                 {
@@ -1950,14 +1959,14 @@ def build_client_world_maps_manifest(
             "name": doc["name"],
             "width": w,
             "height": h,
-            "playerSpawn": {"x": round(w * 0.5, 1), "y": round(h * 0.5, 1)},
+            "playerSpawn": {"x": round(w * 0.5, 2), "y": round(h * 0.5, 2)},
             "staticObstacles": doc.get("staticObstacles", []),
             "spawnAreas": doc.get("spawnAreas", []),
         }
 
     return {
         "millcrossTownFootprints": footprints,
-        "playMapPlayerSpawn": {"x": 500.0, "y": 500.0},
+        "playMapPlayerSpawn": {"x": 50.0, "y": 50.0},
         "playMapSpawnAreas": play_spawns,
         "regions": regions,
     }

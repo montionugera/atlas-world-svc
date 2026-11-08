@@ -1,4 +1,5 @@
 use crate::combat::Element;
+use crate::core::speed::scaled_speed;
 use bevy_ecs::prelude::Resource;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -173,9 +174,9 @@ impl DerivedMobStats {
 
     pub fn attack_range(&self) -> f32 {
         if self.is_ranged {
-            150.0
+            15.0
         } else {
-            20.0
+            2.0
         }
     }
 }
@@ -199,13 +200,14 @@ pub fn derive_mob_stats(entry: &BestiaryEntry, tier: MobTier) -> DerivedMobStats
         "mid" => 8.0,
         "high" => 11.0,
         _ => 8.0,
-    } * 10.0;
+    };
+    let speed = scaled_speed(speed * 10.0);
 
     let (radius, p_def, armor, chase_range) = match entry.archetype.as_str() {
-        "skirmisher" => (3.0, 1.0, 1.0, 20.0 * 10.0),
-        "bruiser" => (5.0, 3.0, 2.0, 25.0 * 10.0),
-        "tank" => (5.0, 4.0, 3.0, 15.0 * 10.0),
-        _ => (4.0, 2.0, 1.0, 20.0 * 10.0),
+        "skirmisher" => (0.3, 1.0, 1.0, 20.0),
+        "bruiser" => (0.5, 3.0, 2.0, 25.0),
+        "tank" => (0.5, 4.0, 3.0, 15.0),
+        _ => (0.4, 2.0, 1.0, 20.0),
     };
 
     let radius = if tier == MobTier::Boss {
@@ -268,9 +270,9 @@ mod tests {
         assert_eq!(stats.p_def, 1.0);
         assert_eq!(stats.m_def, 1.0);
         assert_eq!(stats.armor, 1.0);
-        assert_eq!(stats.speed, 110.0);
-        assert_eq!(stats.radius, 3.0);
-        assert_eq!(stats.chase_range, 200.0);
+        assert!((stats.speed - 1.65).abs() < 1e-4);
+        assert_eq!(stats.radius, 0.3);
+        assert_eq!(stats.chase_range, 20.0);
         assert_eq!(stats.element, Element::Earth);
         assert!(!stats.is_ranged);
     }
@@ -296,9 +298,9 @@ mod tests {
         assert_eq!(stats.p_def, 1.0);
         assert_eq!(stats.m_def, 1.0);
         assert_eq!(stats.armor, 1.0);
-        assert_eq!(stats.speed, 110.0);
-        assert_eq!(stats.radius, 3.0);
-        assert_eq!(stats.chase_range, 200.0);
+        assert!((stats.speed - 1.65).abs() < 1e-4);
+        assert_eq!(stats.radius, 0.3);
+        assert_eq!(stats.chase_range, 20.0);
         assert_eq!(stats.element, Element::Wind);
         assert!(stats.is_ranged);
     }
@@ -325,9 +327,9 @@ mod tests {
         assert_eq!(stats.p_def, 3.0);
         assert_eq!(stats.m_def, 1.0);
         assert_eq!(stats.armor, 2.0);
-        assert_eq!(stats.speed, 80.0);
-        assert_eq!(stats.radius, 5.0);
-        assert_eq!(stats.chase_range, 250.0);
+        assert!((stats.speed - 1.2).abs() < 1e-4);
+        assert_eq!(stats.radius, 0.5);
+        assert_eq!(stats.chase_range, 25.0);
         assert_eq!(stats.element, Element::Earth);
         assert!(!stats.is_ranged);
     }

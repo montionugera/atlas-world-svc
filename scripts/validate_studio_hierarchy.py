@@ -750,11 +750,11 @@ def build_runtime_manifest(studio_dir: Path = DEFAULT_STUDIO_DIR) -> dict[str, A
         map_id = node["map_id"]
         if node.get("is_starter_town"):
             binding = node.get("starter_arrival_binding") or {}
-            pt = binding.get("spawn_point_meters") or {"x": 2000.0, "y": 2000.0, "z": 0.0}
+            pt = binding.get("spawn_point_meters") or {"x": 200.0, "y": 200.0, "z": 0.0}
             starter_spawns[map_id] = {
                 "nodeId": nid,
-                "x": float(pt.get("x", 2000.0)),
-                "y": float(pt.get("y", 2000.0)),
+                "x": float(pt.get("x", 200.0)),
+                "y": float(pt.get("y", 200.0)),
                 "z": float(pt.get("z", 0.0)),
                 "safeZoneRadiusMeters": float(binding.get("safe_zone_radius_meters", 40.0)),
             }
@@ -796,6 +796,7 @@ def build_runtime_manifest(studio_dir: Path = DEFAULT_STUDIO_DIR) -> dict[str, A
 
     return {
         "schemaVersion": 1,
+        "unitContract": "metres-v1",  # F-185: *Meters coordinates are true metres (1 unit = 1 m)
         "worldHistoryId": whc["id"],
         "characterScaleBandMeters": whc["character_scale_law"]["height_range_meters"],
         "defaultStarterMapId": default_starter_map_id,

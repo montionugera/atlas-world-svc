@@ -22,7 +22,7 @@ fn killing_mob_spawns_loot_drop_at_death_location_and_walking_over_picks_it_up()
     let player = world
         .spawn((
             PlayerTag,
-            Position::new(100.0, 100.0),
+            Position::new(10.0, 10.0),
             Health::new(200.0),
             PlayerInventory::default(),
             PlayerWallet::default(),
@@ -33,10 +33,10 @@ fn killing_mob_spawns_loot_drop_at_death_location_and_walking_over_picks_it_up()
         .spawn((
             MobTag,
             EntityId("mob-interior-1".to_string()),
-            Position::new(140.0, 100.0),
+            Position::new(14.0, 10.0),
             Health::new(150.0),
             MobSpawnAnchor::new(
-                Position::new(140.0, 100.0),
+                Position::new(14.0, 10.0),
                 "bramble_stalker",
                 MobTier::Interior,
                 15.0,
@@ -69,20 +69,20 @@ fn killing_mob_spawns_loot_drop_at_death_location_and_walking_over_picks_it_up()
         drops.len()
     );
     let (drop_entity, drop_pos, drop_data) = &drops[0];
-    assert_eq!(drop_pos.x, 140.0);
-    assert_eq!(drop_pos.y, 100.0);
+    assert_eq!(drop_pos.x, 14.0);
+    assert_eq!(drop_pos.y, 10.0);
     assert_eq!(drop_data.item_id, "a_leather");
     assert_eq!(drop_data.quantity, 1);
     assert!(drop_data.gold > 0);
 
-    // 2. Player is at (100, 100), distance = 40.0 > LOOT_PICKUP_RADIUS (25.0) -> not picked up yet.
+    // 2. Player is at (100, 100), distance = 4.0 > LOOT_PICKUP_RADIUS (2.5) -> not picked up yet.
     let mut pickup_schedule = Schedule::default();
     pickup_schedule.add_systems(loot_pickup_system);
     pickup_schedule.run(&mut world);
 
     assert!(
         world.get_entity(*drop_entity).is_ok(),
-        "Drop at distance 40.0 (> {}) should remain in world",
+        "Drop at distance 4.0 (> {}) should remain in world",
         LOOT_PICKUP_RADIUS
     );
     assert_eq!(
@@ -93,8 +93,8 @@ fn killing_mob_spawns_loot_drop_at_death_location_and_walking_over_picks_it_up()
         0
     );
 
-    // 3. Walk player within pickup radius (distance = 12.0 <= 25.0).
-    world.get_mut::<Position>(player).unwrap().x = 128.0;
+    // 3. Walk player within pickup radius (distance = 1.2 <= 2.5).
+    world.get_mut::<Position>(player).unwrap().x = 12.8;
     pickup_schedule.run(&mut world);
 
     assert!(

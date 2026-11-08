@@ -1,4 +1,5 @@
 {
+  "unitContract": "metres-v1",
   "schema_version": "1.0.0",
   "id": "hunting-area-armillary-ring-causeway",
   "name": "Armillary Ring Causeway",
@@ -21,8 +22,8 @@
   "terrain_tile": {
     "preview_thumbnail": "/thumbs/buildings/bridge_wood.webp",
     "dimensions_meters": {
-      "width": 4000.0,
-      "height": 4000.0
+      "width": 400.0,
+      "height": 400.0
     },
     "biome_palette": "shattered_halo_armillary_ring_causeway",
     "max_terrace_step_meters": 0.14,
@@ -39,14 +40,14 @@
       "target_direction": "West",
       "gate_state": "open",
       "trigger_box_meters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrival_point_meters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       }
     },
     "West": {
@@ -57,14 +58,14 @@
       "target_direction": "East",
       "gate_state": "open",
       "trigger_box_meters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrival_point_meters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       }
     },
     "Dungeon": null,

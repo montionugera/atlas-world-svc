@@ -59,6 +59,8 @@ MIME: dict[str, str] = {
     ".bin": "application/octet-stream",
     ".webp": "image/webp",
     ".png": "image/png",
+    ".gif": "image/gif",
+    ".mp4": "video/mp4",
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
     ".svg": "image/svg+xml",

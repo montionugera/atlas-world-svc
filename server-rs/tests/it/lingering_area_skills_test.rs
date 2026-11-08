@@ -28,7 +28,7 @@ fn standing_in_blizzard_field_takes_damage_across_three_distinct_intervals() {
     let _player = world
         .spawn((
             Position::new(0.0, 0.0),
-            PlayerInputState::new(0.0, 0.0, false, 0).with_target_pos(100.0, 0.0),
+            PlayerInputState::new(0.0, 0.0, false, 0).with_target_pos(10.0, 0.0),
             CooldownTracker::new(),
             casting,
             Velocity::zero(),
@@ -39,7 +39,7 @@ fn standing_in_blizzard_field_takes_damage_across_three_distinct_intervals() {
     // Mob standing inside the Blizzard field at (100, 0), plus a distant mob outside at (250, 0)
     let mob_inside = world
         .spawn((
-            Position::new(110.0, 0.0),
+            Position::new(11.0, 0.0),
             Health::new(200.0),
             ElementalAttributes::new(Element::Neutral, 0.0, 0.0, 0.0),
             StatusEffects::default(),
@@ -49,7 +49,7 @@ fn standing_in_blizzard_field_takes_damage_across_three_distinct_intervals() {
 
     let mob_outside = world
         .spawn((
-            Position::new(250.0, 0.0),
+            Position::new(25.0, 0.0),
             Health::new(200.0),
             ElementalAttributes::new(Element::Neutral, 0.0, 0.0, 0.0),
             StatusEffects::default(),
@@ -72,7 +72,7 @@ fn standing_in_blizzard_field_takes_damage_across_three_distinct_intervals() {
         1,
         "casting Blizzard must spawn 1 LingeringZone"
     );
-    assert_eq!(zones[0].1, Position::new(100.0, 0.0));
+    assert_eq!(zones[0].1, Position::new(10.0, 0.0));
     assert_eq!(
         zones[0].2.remaining_duration_sec,
         LINGERING_ZONE_DURATION_SEC
@@ -154,7 +154,7 @@ fn meteor_strike_lingering_zone_ticks_three_times_and_stops_after_expiry() {
     let _player = world
         .spawn((
             Position::new(0.0, 0.0),
-            PlayerInputState::new(0.0, 0.0, false, 0).with_target_pos(80.0, 0.0),
+            PlayerInputState::new(0.0, 0.0, false, 0).with_target_pos(8.0, 0.0),
             CooldownTracker::new(),
             casting,
             Velocity::zero(),
@@ -164,7 +164,7 @@ fn meteor_strike_lingering_zone_ticks_three_times_and_stops_after_expiry() {
 
     let mob = world
         .spawn((
-            Position::new(80.0, 0.0),
+            Position::new(8.0, 0.0),
             Health::new(150.0),
             ElementalAttributes::new(Element::Neutral, 0.0, 0.0, 0.0),
             MobTag,

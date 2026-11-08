@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "regflat-waste",
   "name": "Regflat Waste \u2014 Thirstwold (c05/r23)",
   "seed": 589592,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "cinder_ash_waste",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -441,73 +442,73 @@
   "spawnAreas": [
     {
       "id": "regflat_waste_broken_crown_sentinel",
-      "x": 2099.8,
-      "y": 2101.3,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 209.98,
+      "y": 210.13,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-broken-crown-sentinel",
       "count": 1
     },
     {
       "id": "regflat_waste_gravetide_wight",
-      "x": 1665.3,
-      "y": 2052.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 166.53,
+      "y": 205.27,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-gravetide-wight",
       "count": 2
     },
     {
       "id": "regflat_waste_slag_drake",
-      "x": 2123.7,
-      "y": 1618.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 212.37,
+      "y": 161.84,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-slag-drake",
       "count": 2
     },
     {
       "id": "regflat_waste_rebellion_echo",
-      "x": 1950.1,
-      "y": 2377.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 195.01,
+      "y": 237.76,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-rebellion-echo",
       "count": 2
     },
     {
       "id": "regflat_waste_relic_hulk",
-      "x": 1599.6,
-      "y": 1541.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 159.96,
+      "y": 154.14,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-relic-hulk",
       "count": 2
     },
     {
       "id": "regflat_waste_shroudweaver",
-      "x": 2463.2,
-      "y": 1669.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 246.32,
+      "y": 166.9,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-shroudweaver",
       "count": 2
     },
     {
       "id": "regflat_waste_violet_ash_drake",
-      "x": 1711.4,
-      "y": 2562.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 171.14,
+      "y": 256.2,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-violet-ash-drake",
       "count": 2
     },
     {
       "id": "regflat_waste_warscar_maw",
-      "x": 2046.3,
-      "y": 1203.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 204.63,
+      "y": 120.34,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-warscar-maw",
       "count": 2
     }
@@ -515,24 +516,24 @@
   "staticObstacles": [
     {
       "id": "landmark_regwind_horn_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_yardang_across_emberwater_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_regflat_waste_sheer_scarp_cliff",
-      "min_x": 1378.8,
-      "min_y": 2588.8,
-      "max_x": 1641.2,
-      "max_y": 2851.2
+      "min_x": 137.88,
+      "min_y": 258.88,
+      "max_x": 164.12,
+      "max_y": 285.12
     }
   ]
 }

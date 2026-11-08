@@ -12,7 +12,7 @@ test("ANCHOR: level 1, all primaries 1, basic_sword reproduces the pre-F018 numb
   expect(r.pAtk).toBeCloseTo(22, 6); //      was 10 + 2*1 + 10
   expect(r.pDef).toBeCloseTo(6, 6); //       was 5 + 1
   expect(r.mDef).toBeCloseTo(6, 6); //       D7: mDef == pDef now
-  expect(r.maxMoveSpeed).toBeCloseTo(20.2, 6); // unchanged formula
+  expect(r.maxMoveSpeed).toBeCloseTo(3.03, 6); // F-184 pace: (20 + 0.2 * agi) * 0.15
   // INTENDED CHANGE: a blade yields no magical output at all (was 12).
   expect(r.mAtk).toBe(0);
 });

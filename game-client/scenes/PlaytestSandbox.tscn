@@ -1,0 +1,115 @@
+[gd_scene load_steps=11 format=3 uid="uid://cplaytestsandbox188"]
+
+[ext_resource type="Script" path="res://src/World/PlaytestSandboxRoot.cs" id="1_root"]
+[ext_resource type="Script" path="res://src/Net/ServerRsConnection.cs" id="2_net"]
+[ext_resource type="Script" path="res://src/UI/Widgets/FloatingCombatText.cs" id="3_fct"]
+[ext_resource type="Shader" path="res://assets/shaders/stylized_grass_floor.gdshader" id="4_grass_shader"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+sky_top_color = Color(0.28, 0.58, 0.96, 1)
+sky_horizon_color = Color(0.82, 0.92, 1.0, 1)
+ground_bottom_color = Color(0.24, 0.42, 0.22, 1)
+ground_horizon_color = Color(0.78, 0.9, 0.96, 1)
+sun_angle_max = 35.0
+
+[sub_resource type="Sky" id="Sky_env"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_sandbox"]
+background_mode = 2
+sky = SubResource("Sky_env")
+ambient_light_source = 3
+ambient_light_color = Color(0.95, 0.92, 0.88, 1)
+ambient_light_sky_contribution = 0.55
+ambient_light_energy = 1.15
+tonemap_mode = 2
+tonemap_exposure = 1.08
+glow_enabled = true
+glow_intensity = 0.45
+glow_strength = 0.85
+glow_bloom = 0.08
+fog_enabled = true
+fog_light_color = Color(0.78, 0.9, 0.98, 1)
+fog_sun_scatter = 0.22
+fog_density = 0.0038
+adjustment_enabled = true
+adjustment_brightness = 1.03
+adjustment_contrast = 1.06
+adjustment_saturation = 1.16
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(200, 200)
+subdivide_width = 64
+subdivide_depth = 64
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_floor"]
+render_priority = 0
+shader = ExtResource("4_grass_shader")
+shader_parameter/grass_base_color = Color(0.32, 0.6, 0.25, 1)
+shader_parameter/grass_highlight_color = Color(0.58, 0.8, 0.3, 1)
+shader_parameter/grass_shadow_color = Color(0.2, 0.44, 0.22, 1)
+shader_parameter/path_dirt_color = Color(0.7, 0.58, 0.44, 1)
+shader_parameter/path_stone_color = Color(0.82, 0.78, 0.7, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_shadow"]
+top_radius = 0.17
+bottom_radius = 0.17
+height = 0.008
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shadow"]
+transparency = 1
+albedo_color = Color(0.06, 0.12, 0.08, 0.28)
+roughness = 1.0
+
+[node name="PlaytestSandbox" type="Node3D" node_paths=PackedStringArray("Connection", "MainCamera", "FloorMesh", "EnvironmentProps", "CombatText")]
+script = ExtResource("1_root")
+Connection = NodePath("ServerRsConnection")
+MainCamera = NodePath("Camera3D")
+FloorMesh = NodePath("Floor")
+EnvironmentProps = NodePath("EnvironmentProps")
+CombatText = NodePath("UI/FloatingCombatText")
+
+[node name="ServerRsConnection" type="Node" parent="."]
+script = ExtResource("2_net")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sandbox")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 18, 0)
+light_color = Color(1, 0.95, 0.84, 1)
+light_energy = 1.28
+shadow_enabled = true
+shadow_opacity = 0.68
+shadow_blur = 1.4
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.927184, 0.374607, 0, -0.374607, 0.927184, 0, 2.2, -11.5)
+current = true
+fov = 52.0
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_floor")
+surface_material_override/0 = SubResource("ShaderMaterial_floor")
+
+[node name="EnvironmentProps" type="Node3D" parent="."]
+
+[node name="PlayerAvatar" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -15.5)
+
+[node name="DropShadow" type="MeshInstance3D" parent="PlayerAvatar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.004, 0)
+mesh = SubResource("CylinderMesh_shadow")
+surface_material_override/0 = SubResource("StandardMaterial3D_shadow")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="FloatingCombatText" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_fct")

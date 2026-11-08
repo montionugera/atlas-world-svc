@@ -112,6 +112,20 @@ namespace AtlasWorld.Client.Content
         public string ResolveKind(string typeId) =>
             _manifest != null && _manifest.TryGet(typeId, out AssetEntry entry) ? entry.Kind : "";
 
+        /// <summary>Returns all character / pipelineCharacter type ids registered in the manifest (F-188).</summary>
+        public IReadOnlyList<string> GetPlayableAvatarKeys()
+        {
+            var keys = new List<string>();
+            if (_manifest == null)
+                return keys;
+            foreach (AssetEntry entry in _manifest.All)
+            {
+                if (entry.Kind == "pipelineCharacter" || entry.TypeId == "player" || entry.TypeId == "npc")
+                    keys.Add(entry.TypeId);
+            }
+            return keys;
+        }
+
         /// <summary>Per-state clip variants for a type id (F-174). Empty, never null. Total, never throws.</summary>
         public IReadOnlyDictionary<string, IReadOnlyList<string>> ResolveAnimVariants(string typeId)
         {

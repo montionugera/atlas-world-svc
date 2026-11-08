@@ -284,13 +284,12 @@ test("matchConceptArt matches by loreRef and zoneId and handles empty index", ()
   assert.deepEqual(matchConceptArt({ items: [] }, { loreRef: "any" }), []);
   assert.deepEqual(matchConceptArt(conceptArtIndex, { loreRef: "nonexistent-lore-ref" }), []);
   if (conceptArtIndex.items.length > 0) {
-    const realEpochArt = matchConceptArt(conceptArtIndex, { loreRef: "epoch-1-1-creation" });
-    assert.equal(realEpochArt.length, 1);
-    assert.equal(realEpochArt[0].id, "key-art-epoch-1-1-creation");
+    // F-187: the retired-world epoch key art was removed from the real index.
+    assert.equal(matchConceptArt(conceptArtIndex, { loreRef: "epoch-1-1-creation" }).length, 0);
   }
 });
 
-test("Continent cards match their concept art and Human/Dwarf race cards exclude town building art", () => {
+test("Human/Dwarf race cards show only their race portrait and gods pull no continent art", () => {
   const model = buildLoreModel({
     worldHistory,
     atlas,
@@ -298,27 +297,11 @@ test("Continent cards match their concept art and Human/Dwarf race cards exclude
     conceptArtIndex,
   });
 
-  // Direct loreRef match for each continent without ID-stripping cheat
-  assert.equal(
-    matchConceptArt(conceptArtIndex, { loreRef: "continent-01-hearthbloom-basin" })[0]?.id,
-    "continent-hearthbloom-basin",
-    "continent-hearthbloom-basin in index.json must have loreRef 'continent-01-hearthbloom-basin'",
-  );
-  assert.equal(
-    matchConceptArt(conceptArtIndex, { loreRef: "continent-02-clockwork-steppe" })[0]?.id,
-    "continent-clockwork-steppe",
-    "continent-clockwork-steppe in index.json must have loreRef 'continent-02-clockwork-steppe'",
-  );
-  assert.equal(
-    matchConceptArt(conceptArtIndex, { loreRef: "continent-03-shattered-halo" })[0]?.id,
-    "continent-shattered-halo",
-    "continent-shattered-halo in index.json must have loreRef 'continent-03-shattered-halo'",
-  );
-
+  // F-187: continent landscape art was removed from the real index.
   assert.deepEqual(
     model.continents.map((c) => c.arts.length),
-    [1, 1, 1],
-    "Each of the 3 continents in Chapter 5 must match its continent concept art",
+    [0, 0, 0],
+    "Continents have no concept art after the retired-world cleanup",
   );
 
   // God cards must not pull in continent landscape vistas
@@ -331,10 +314,6 @@ test("Continent cards match their concept art and Human/Dwarf race cards exclude
   }
 
   const humanArts = model.races[0].arts.map((a) => a.id);
-  assert.ok(
-    !humanArts.includes("town-lantern-hollow-hearth-forge"),
-    "Human race card must not pull in Dwarf forgehouse art via shared home_town_id",
-  );
   assert.ok(
     humanArts.includes("character-race-human-hearth-keeper"),
     "Human race card must include Human Hearth-Keeper portrait",

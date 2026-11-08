@@ -97,6 +97,22 @@ fn test_golden_trace_parity() {
                 .iter()
                 .find(|e| e.id == expected.id)
                 .unwrap();
+            // F-184: the golden was recorded at the pre-rescale pace. A free bot starts at
+            // rest and its velocity is linear in the speed cap, so the displacement from
+            // its start and its velocity scale by exactly SPEED_SCALE.
+            let start = golden_tick0
+                .entities
+                .iter()
+                .find(|e| e.id == expected.id)
+                .unwrap();
+            let k = server_rs::core::speed::SPEED_SCALE;
+            let expected = &server_rs::simulation::EntityTraceSnapshot {
+                x: start.x + (expected.x - start.x) * k,
+                y: start.y + (expected.y - start.y) * k,
+                vx: expected.vx * k,
+                vy: expected.vy * k,
+                ..expected.clone()
+            };
             assert!(
                 (actual.x - expected.x).abs() <= 0.05,
                 "Tick 100 x mismatch for {}: actual={}, expected={}",

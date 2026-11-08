@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "clintlack-fenster",
   "name": "Clintlack Fenster \u2014 Stonemoor (c04/r25)",
   "seed": 922277,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "barren_cliff",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -442,73 +443,73 @@
   "spawnAreas": [
     {
       "id": "clintlack_fenster_ash_sermon_speaker",
-      "x": 2117.4,
-      "y": 2081.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 211.74,
+      "y": 208.16,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-ash-sermon-speaker",
       "count": 1
     },
     {
       "id": "clintlack_fenster_deepwater_hauler",
-      "x": 1651.7,
-      "y": 1969.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 165.17,
+      "y": 196.9,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "clintlack_fenster_frontline_devourer",
-      "x": 2031.7,
-      "y": 1586.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 203.17,
+      "y": 158.68,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-frontline-devourer",
       "count": 1
     },
     {
       "id": "clintlack_fenster_hollow_bell_wight",
-      "x": 1946.8,
-      "y": 2387.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 194.68,
+      "y": 238.79,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-hollow-bell-wight",
       "count": 1
     },
     {
       "id": "clintlack_fenster_scar_drake",
-      "x": 1497.5,
-      "y": 1685.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 149.75,
+      "y": 168.58,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-scar-drake",
       "count": 1
     },
     {
       "id": "clintlack_fenster_unburied_host",
-      "x": 2533.7,
-      "y": 1888.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 253.37,
+      "y": 188.8,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-unburied-host",
       "count": 1
     },
     {
       "id": "clintlack_fenster_boneorchard_warden",
-      "x": 1475.6,
-      "y": 2417.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 147.56,
+      "y": 241.7,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-boneorchard-warden",
       "count": 1
     },
     {
       "id": "clintlack_fenster_hallowed_toll_warden",
-      "x": 2070.9,
-      "y": 1215.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 207.09,
+      "y": 121.58,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-hallowed-toll-warden",
       "count": 1
     }
@@ -516,24 +517,24 @@
   "staticObstacles": [
     {
       "id": "landmark_paveshaft_geo_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_pot_at_limerake_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_clintlack_fenster_sheer_scarp_cliff",
-      "min_x": 1068.8,
-      "min_y": 2458.8,
-      "max_x": 1331.2,
-      "max_y": 2721.2
+      "min_x": 106.88,
+      "min_y": 245.88,
+      "max_x": 133.12,
+      "max_y": 272.12
     }
   ]
 }

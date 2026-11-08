@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "emberburn-cone",
   "name": "Emberburn Cone \u2014 Ashen Spar (c10/r01)",
   "seed": 691584,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "cinder_ash_waste",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -361,73 +362,73 @@
   "spawnAreas": [
     {
       "id": "emberburn_cone_broken_crown_sentinel",
-      "x": 2154.5,
-      "y": 2012.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 215.45,
+      "y": 201.21,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-broken-crown-sentinel",
       "count": 1
     },
     {
       "id": "emberburn_cone_cindered_revenant",
-      "x": 1658.7,
-      "y": 2036.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 165.87,
+      "y": 203.64,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-cindered-revenant",
       "count": 2
     },
     {
       "id": "emberburn_cone_relicslag_crawler",
-      "x": 2218.5,
-      "y": 1699.5,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 221.85,
+      "y": 169.95,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-relicslag-crawler",
       "count": 2
     },
     {
       "id": "emberburn_cone_slag_drake",
-      "x": 2071.8,
-      "y": 2356.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 207.18,
+      "y": 235.62,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-slag-drake",
       "count": 2
     },
     {
       "id": "emberburn_cone_mourning_cloth_wight",
-      "x": 1603.5,
-      "y": 1538.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 160.35,
+      "y": 153.8,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-mourning-cloth-wight",
       "count": 2
     },
     {
       "id": "emberburn_cone_rebellion_echo",
-      "x": 2493.9,
-      "y": 2128.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 249.39,
+      "y": 212.86,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-rebellion-echo",
       "count": 2
     },
     {
       "id": "emberburn_cone_relic_hulk",
-      "x": 1360.0,
-      "y": 2270.5,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 136.0,
+      "y": 227.05,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-relic-hulk",
       "count": 2
     },
     {
       "id": "emberburn_cone_violet_ash_drake",
-      "x": 1796.0,
-      "y": 1208.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 179.6,
+      "y": 120.82,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-violet-ash-drake",
       "count": 2
     }
@@ -435,24 +436,24 @@
   "staticObstacles": [
     {
       "id": "landmark_searflat_cleft_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_tube_within_regspar_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_emberburn_cone_sheer_scarp_cliff",
-      "min_x": 1088.8,
-      "min_y": 2538.8,
-      "max_x": 1351.2,
-      "max_y": 2801.2
+      "min_x": 108.88,
+      "min_y": 253.88,
+      "max_x": 135.12,
+      "max_y": 280.12
     }
   ]
 }

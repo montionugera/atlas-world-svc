@@ -19,7 +19,7 @@ namespace AtlasWorld.Client.UI.Widgets
             public float CameraPitch { get; set; } = 0.56f;
             public float CameraDistance { get; set; } = 6.2f;
             public float CameraFov { get; set; } = 60.0f;
-            public float PlayerSpeed { get; set; } = 6.5f;
+            public float PlayerSpeed { get; set; } = 3.0f;
             public float MeleeRange { get; set; } = 3.5f;
             public float SafeAreaInset { get; set; } = 18.0f;
             public float ActionClusterScale { get; set; } = 1.0f;
@@ -145,7 +145,7 @@ namespace AtlasWorld.Client.UI.Widgets
                 _values.CameraPitch = v;
                 NotifyChanged();
             });
-            (_distSlider, _distValueLabel) = AddSliderRow(vbox, "Cam Dist", 3.5f, 11.0f, 0.1f, _values.CameraDistance, v =>
+            (_distSlider, _distValueLabel) = AddSliderRow(vbox, "Cam Dist", CameraZoom.MinDistance, CameraZoom.MaxDistance, 0.1f, _values.CameraDistance, v =>
             {
                 _values.CameraDistance = v;
                 NotifyChanged();
@@ -336,7 +336,7 @@ namespace AtlasWorld.Client.UI.Widgets
             _values.CameraPitch = 0.56f;
             _values.CameraDistance = 6.2f;
             _values.CameraFov = 60.0f;
-            _values.PlayerSpeed = 4.6f;
+            _values.PlayerSpeed = 3.0f;
             _values.MeleeRange = 3.5f;
             _values.SafeAreaInset = 18.0f;
             _values.ActionClusterScale = 1.0f;

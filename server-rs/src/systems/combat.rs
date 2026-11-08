@@ -3,6 +3,7 @@ use crate::combat::buffs::{AuraEmitter, BuffContainer};
 use crate::combat::damage::{DamageCalculator, DamageOptions};
 use crate::combat::{DamageType, Element};
 use crate::core::clock::SimClock;
+use crate::core::speed::scaled_speed;
 use crate::ecs::components::{
     knockback_speed, CastingState, CombatStats, CooldownTracker, ElementalAttributes, EntityId,
     EquippedWeapon, Health, HealthRegen, HitLog, HitRecord, Mass, MobAi, MobSpawnAnchor,
@@ -120,9 +121,9 @@ pub fn combat_system(
                     WeaponKind::Staff => (DamageType::Magical, "staff_bolt"),
                     WeaponKind::Melee => (DamageType::Physical, "melee"),
                 };
-                let speed = weapon.projectile_speed.max(150.0);
-                let max_range = weapon.projectile_range.max(150.0);
-                let radius = weapon.projectile_radius.max(3.0);
+                let speed = weapon.projectile_speed.max(scaled_speed(150.0));
+                let max_range = weapon.projectile_range.max(15.0);
+                let radius = weapon.projectile_radius.max(0.3);
                 commands.spawn((
                     Position::new(pos.x, pos.y),
                     Velocity::new(aim_x * speed, aim_y * speed),
@@ -610,8 +611,8 @@ mod tests {
         // Mob velocity should have received knockback impulse along +X axis
         let mob_vel = world.get::<Velocity>(mob).unwrap();
         assert!(
-            mob_vel.vx > 10.0,
-            "expected mob velocity vx > 10.0 from impulse, got {}",
+            mob_vel.vx > 1.0,
+            "expected mob velocity vx > 1.0 from impulse, got {}",
             mob_vel.vx
         );
         assert_eq!(mob_vel.vy, 0.0);

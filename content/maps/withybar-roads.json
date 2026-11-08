@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "withybar-roads",
   "name": "Withybar Roads \u2014 Wracklow (c08/r08)",
   "seed": 645343,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "coastal_tidal_flat",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -461,73 +462,73 @@
   "spawnAreas": [
     {
       "id": "withybar_roads_bramble_drake",
-      "x": 2114.1,
-      "y": 2062.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 211.41,
+      "y": 206.28,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bramble-drake",
       "count": 2
     },
     {
       "id": "withybar_roads_bound_war_beast",
-      "x": 1645.0,
-      "y": 1985.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.5,
+      "y": 198.53,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "withybar_roads_bramble_mother",
-      "x": 2028.1,
-      "y": 1585.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 202.81,
+      "y": 158.59,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-bramble-mother",
       "count": 1
     },
     {
       "id": "withybar_roads_crateyard_colossus",
-      "x": 1867.5,
-      "y": 2381.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 186.75,
+      "y": 238.1,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "withybar_roads_deepwater_hauler",
-      "x": 1551.2,
-      "y": 1609.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 155.12,
+      "y": 160.98,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "withybar_roads_thorncrown_drake",
-      "x": 2531.9,
-      "y": 2017.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 253.19,
+      "y": 201.78,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-thorncrown-drake",
       "count": 1
     },
     {
       "id": "withybar_roads_harbor_war_beast",
-      "x": 1647.9,
-      "y": 2540.7,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 164.79,
+      "y": 254.07,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-harbor-war-beast",
       "count": 1
     },
     {
       "id": "withybar_roads_heartwood_tyrant",
-      "x": 1864.5,
-      "y": 1209.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 186.45,
+      "y": 120.94,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-heartwood-tyrant",
       "count": 1
     }
@@ -535,24 +536,24 @@
   "staticObstacles": [
     {
       "id": "landmark_brightspit_skerry_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_stack_at_willowshallow_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_withybar_roads_sheer_scarp_cliff",
-      "min_x": 1098.8,
-      "min_y": 2688.8,
-      "max_x": 1361.2,
-      "max_y": 2951.2
+      "min_x": 109.88,
+      "min_y": 268.88,
+      "max_x": 136.12,
+      "max_y": 295.12
     }
   ]
 }

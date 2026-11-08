@@ -315,8 +315,8 @@ namespace AtlasWorld.Client.World
                 EntityDelta.StartEntityDelta(builder);
                 EntityDelta.AddId(builder, ownWireId);
                 EntityDelta.AddEntityType(builder, EntityType.Player);
-                EntityDelta.AddPos(builder, Vec2.CreateVec2(builder, 500f, 500f));
-                EntityDelta.AddVel(builder, Vec2.CreateVec2(builder, 20f, 0f));
+                EntityDelta.AddPos(builder, Vec2.CreateVec2(builder, 50f, 50f));
+                EntityDelta.AddVel(builder, Vec2.CreateVec2(builder, 2f, 0f));
                 EntityDelta.AddHealth(builder, 92f);
                 EntityDelta.AddMaxHealth(builder, 100f);
                 EntityDelta.AddStateFlags(builder, 1);
@@ -325,8 +325,8 @@ namespace AtlasWorld.Client.World
                 EntityDelta.StartEntityDelta(builder);
                 EntityDelta.AddId(builder, 701);
                 EntityDelta.AddEntityType(builder, EntityType.Player);
-                EntityDelta.AddPos(builder, Vec2.CreateVec2(builder, 540f, 470f));
-                EntityDelta.AddVel(builder, Vec2.CreateVec2(builder, 0f, -15f));
+                EntityDelta.AddPos(builder, Vec2.CreateVec2(builder, 54f, 47f));
+                EntityDelta.AddVel(builder, Vec2.CreateVec2(builder, 0f, -1.5f));
                 EntityDelta.AddHealth(builder, 100f);
                 EntityDelta.AddMaxHealth(builder, 100f);
                 EntityDelta.AddStateFlags(builder, 3); // ALIVE | BOT
@@ -335,8 +335,8 @@ namespace AtlasWorld.Client.World
                 EntityDelta.StartEntityDelta(builder);
                 EntityDelta.AddId(builder, 801);
                 EntityDelta.AddEntityType(builder, EntityType.Mob);
-                EntityDelta.AddPos(builder, Vec2.CreateVec2(builder, 560f, 460f));
-                EntityDelta.AddVel(builder, Vec2.CreateVec2(builder, -10f, 10f));
+                EntityDelta.AddPos(builder, Vec2.CreateVec2(builder, 56f, 46f));
+                EntityDelta.AddVel(builder, Vec2.CreateVec2(builder, -1f, 1f));
                 EntityDelta.AddHealth(builder, 150f);
                 EntityDelta.AddMaxHealth(builder, 200f);
                 EntityDelta.AddStateFlags(builder, 1);
@@ -346,8 +346,8 @@ namespace AtlasWorld.Client.World
                 EntityDelta.StartEntityDelta(builder);
                 EntityDelta.AddId(builder, 901);
                 EntityDelta.AddEntityType(builder, EntityType.Projectile);
-                EntityDelta.AddPos(builder, Vec2.CreateVec2(builder, 550f, 465f));
-                EntityDelta.AddVel(builder, Vec2.CreateVec2(builder, -80f, 20f));
+                EntityDelta.AddPos(builder, Vec2.CreateVec2(builder, 55f, 46.5f));
+                EntityDelta.AddVel(builder, Vec2.CreateVec2(builder, -8f, 2f));
                 EntityDelta.AddStateFlags(builder, 1);
                 EntityDelta.AddMobType(builder, projType);
                 var eProj = EntityDelta.EndEntityDelta(builder);
@@ -361,7 +361,7 @@ namespace AtlasWorld.Client.World
                 builder.Finish(snap1Off.Value);
 
                 WorldSnapshot snap1 = PacketCodec.DecodeSnapshot(builder.SizedByteArray());
-                mgr.IngestServerRsSnapshot(snap1, 0.1f, new Vector2(500f, 500f));
+                mgr.IngestServerRsSnapshot(snap1, 1.0f, new Vector2(50f, 50f));
                 mgr._Process(0.016);
 
                 // OwnPlayer view is suppressed, so 3 views (Bot 701, Mob 801, Projectile 901) should exist,
@@ -387,7 +387,7 @@ namespace AtlasWorld.Client.World
                 EntityDelta.StartEntityDelta(builder2);
                 EntityDelta.AddId(builder2, 701);
                 EntityDelta.AddEntityType(builder2, EntityType.Player);
-                EntityDelta.AddPos(builder2, Vec2.CreateVec2(builder2, 540f, 465f));
+                EntityDelta.AddPos(builder2, Vec2.CreateVec2(builder2, 54f, 46.5f));
                 EntityDelta.AddHealth(builder2, 100f);
                 EntityDelta.AddMaxHealth(builder2, 100f);
                 EntityDelta.AddStateFlags(builder2, 3);
@@ -404,7 +404,7 @@ namespace AtlasWorld.Client.World
                 builder2.Finish(snap2Off.Value);
 
                 WorldSnapshot snap2 = PacketCodec.DecodeSnapshot(builder2.SizedByteArray());
-                mgr.IngestServerRsSnapshot(snap2, 0.1f, new Vector2(500f, 500f));
+                mgr.IngestServerRsSnapshot(snap2, 1.0f, new Vector2(50f, 50f));
 
                 if (mgr.Count != 1 || mgr.TryGetEntityView("801", out _) || mgr.TryGetEntityView("901", out _))
                 {

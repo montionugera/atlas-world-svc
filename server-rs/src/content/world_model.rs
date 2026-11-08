@@ -1,19 +1,19 @@
 use serde::{Deserialize, Serialize};
 
-/// Canonical region width and height in world units (`4000 × 4000`), matching compiled zone maps.
-pub const REGION_SIZE_UNITS: f32 = 4000.0;
+/// Canonical region width and height in world units (`400 × 400`), matching compiled zone maps.
+pub const REGION_SIZE_UNITS: f32 = 400.0;
 
-/// Per-player Area-of-Interest (AOI) enter radius in world units (`1.5 × SERVER_RS_VIEWPORT`).
-pub const AOI_ENTER_RADIUS_UNITS: f32 = 600.0;
+/// Per-player Area-of-Interest (AOI) enter radius in world units (`60 m`).
+pub const AOI_ENTER_RADIUS_UNITS: f32 = 60.0;
 
-/// Per-player Area-of-Interest (AOI) exit radius in world units (includes 40-unit hysteresis band).
-pub const AOI_EXIT_RADIUS_UNITS: f32 = 640.0;
+/// Per-player Area-of-Interest (AOI) exit radius in world units (includes 4-unit hysteresis band).
+pub const AOI_EXIT_RADIUS_UNITS: f32 = 64.0;
 
 /// Distance from a region edge within which entities are replicated as border ghosts to the neighbour.
-pub const BORDER_GHOST_BAND_UNITS: f32 = 250.0;
+pub const BORDER_GHOST_BAND_UNITS: f32 = 25.0;
 
 /// Hysteresis distance past a region border required to trigger seamless authority handoff.
-pub const HANDOFF_HYSTERESIS_UNITS: f32 = 32.0;
+pub const HANDOFF_HYSTERESIS_UNITS: f32 = 3.2;
 
 /// Authoritative simulation tick rate in Hz.
 pub const WORLD_TICK_RATE_HZ: u32 = 20;
@@ -65,12 +65,12 @@ impl Default for WorldModelConfig {
 impl WorldModelConfig {
     /// Validates geometric and timing invariants required by the continuous open world model.
     pub fn validate(&self) -> Result<(), String> {
-        if self.region_size_units < 1000.0 {
-            return Err("region_size_units must be at least 1000.0".to_string());
+        if self.region_size_units < 100.0 {
+            return Err("region_size_units must be at least 100.0".to_string());
         }
-        if self.aoi_enter_radius_units <= 200.0 {
+        if self.aoi_enter_radius_units <= 20.0 {
             return Err(
-                "aoi_enter_radius_units must exceed half of client viewport (200.0)".to_string(),
+                "aoi_enter_radius_units must exceed half of client viewport (20.0)".to_string(),
             );
         }
         if self.aoi_exit_radius_units <= self.aoi_enter_radius_units {
@@ -100,11 +100,11 @@ mod tests {
     fn default_world_model_config_satisfies_all_invariants() {
         let cfg = WorldModelConfig::default();
         assert_eq!(cfg.validate(), Ok(()));
-        assert_eq!(cfg.region_size_units, 4000.0);
-        assert_eq!(cfg.aoi_enter_radius_units, 600.0);
-        assert_eq!(cfg.aoi_exit_radius_units, 640.0);
-        assert_eq!(cfg.border_ghost_band_units, 250.0);
-        assert_eq!(cfg.handoff_hysteresis_units, 32.0);
+        assert_eq!(cfg.region_size_units, 400.0);
+        assert_eq!(cfg.aoi_enter_radius_units, 60.0);
+        assert_eq!(cfg.aoi_exit_radius_units, 64.0);
+        assert_eq!(cfg.border_ghost_band_units, 25.0);
+        assert_eq!(cfg.handoff_hysteresis_units, 3.2);
         assert_eq!(cfg.tick_rate_hz, 20);
         assert_eq!(cfg.tick_budget_ms, 50);
     }

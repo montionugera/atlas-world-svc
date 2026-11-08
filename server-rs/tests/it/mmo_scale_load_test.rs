@@ -10,8 +10,8 @@ use std::time::Instant;
 fn test_concurrent_20hz_tick_timing_scale_invariants() {
     let mut sim = AtlasSimulation::live(LiveConfig {
         seed: 1337,
-        arena_width: 2000.0,
-        arena_height: 2000.0,
+        arena_width: 200.0,
+        arena_height: 200.0,
         bot_count: 0,
         mob_count: 50,
         mob_respawn_sec: 5.0,
@@ -24,8 +24,8 @@ fn test_concurrent_20hz_tick_timing_scale_invariants() {
         let sid = format!("scale_player_{:03}", i);
         sim.spawn_player_avatar(
             &sid,
-            120.0 + (i as f32 % 10.0) * 15.0,
-            120.0 + (i as f32 / 10.0) * 15.0,
+            12.0 + (i as f32 % 10.0) * 1.5,
+            12.0 + (i as f32 / 10.0) * 1.5,
         );
     }
 

@@ -955,27 +955,19 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
   const container = panelEl.querySelector(".concept-arts-container");
   assert.ok(container, "renderUI() must mount .concept-arts-container");
 
-  // Item 7: Hero key-art renders real first key-art item ("key-art-epoch-1-1-creation") with title, caption, image, and links (kills M3)
-  const hero = panelEl.querySelector(".concept-hero");
-  assert.ok(hero, "Must render .concept-hero section");
+  // F-187: the retired-world key art was removed, so the real index has no hero.
   assert.equal(
-    hero.dataset.heroId,
-    "key-art-epoch-1-1-creation",
-    "Hero must render key-art-epoch-1-1-creation",
+    panelEl.querySelector(".concept-hero"),
+    null,
+    "No key-art items in index.json means no .concept-hero section",
   );
-  const heroTitle = hero.querySelector(".concept-hero-title");
-  assert.ok(
-    heroTitle && heroTitle.textContent.includes("Epoch 1.1"),
-    "Hero must render title text",
-  );
-  assert.ok(hero.querySelector(".lore-link"), "Hero must render .lore-link");
 
-  // Item 7: Grid renders all 24 cards from index.json with titles and badges (kills M3)
+  // Item 7: Grid renders every card from index.json with titles and badges (kills M3)
   const cards = panelEl.querySelectorAll(".concept-card");
   assert.equal(
     cards.length,
-    24,
-    "Must render all 24 concept cards from index.json",
+    realDoc.items.length,
+    "Must render all concept cards from index.json",
   );
   assert.equal(
     cards.length,
@@ -1042,26 +1034,25 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
   paramCalls.length = 0;
   const searchInput = panelEl.querySelector(".concept-search-input");
   assert.ok(searchInput, "Must render .concept-search-input");
-  searchInput.listeners.input[0]({ target: { value: "kiln cellar" } });
+  searchInput.listeners.input[0]({ target: { value: "grey box" } });
   const filteredCards = panelEl.querySelectorAll(".concept-card");
   assert.ok(
-    filteredCards.length > 0 && filteredCards.length < 24,
-    "Search input 'kiln cellar' must filter cards",
+    filteredCards.length > 0 && filteredCards.length < realDoc.items.length,
+    "Search input 'grey box' must filter cards",
   );
   assert.ok(
     paramCalls.some(
-      (c) => c.patch.search === "kiln cellar" && c.opts?.push === false,
+      (c) => c.patch.search === "grey box" && c.opts?.push === false,
     ),
-    "Search input must call updateParams({ search: 'kiln cellar' }, { push: false })",
+    "Search input must call updateParams({ search: 'grey box' }, { push: false })",
   );
 
   // Item 4.3 & 4.4: Deep-link show({ category, zone, search, id }) does not duplicate-push history on renderUI, and Back show({}) clears filters & closes lightbox
   paramCalls.length = 0;
   await globalThis.window.ATLAS_PANELS.show("concept-arts", {
     category: "town",
-    zone: "town-lantern-hollow",
-    search: "lantern",
-    id: "town-lantern-hollow-meridian-plaza",
+    search: "grey box",
+    id: "maro-bell-grey-box-eye-gate",
   });
   assert.ok(
     body.querySelector("#conceptLightboxOverlay"),
@@ -1070,8 +1061,7 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
   assert.equal(
     paramCalls.filter(
       (c) =>
-        c.patch.id === "town-lantern-hollow-meridian-plaza" &&
-        c.opts?.push === true,
+        c.patch.id === "maro-bell-grey-box-eye-gate" && c.opts?.push === true,
     ).length,
     0,
     "Programmatic show({ id }) / renderUI() must not push duplicate history entry",
@@ -1086,8 +1076,8 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
   );
   assert.equal(
     panelEl.querySelectorAll(".concept-card").length,
-    24,
-    "Browser Back show({}) must clear category/zone/search filters and restore all 24 cards",
+    realDoc.items.length,
+    "Browser Back show({}) must clear category/zone/search filters and restore all cards",
   );
 });
 

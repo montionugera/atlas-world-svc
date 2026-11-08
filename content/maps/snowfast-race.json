@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "snowfast-race",
   "name": "Snowfast Race \u2014 Coldreach (c03/r10)",
   "seed": 623670,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "glacier_snow_crust",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -468,73 +469,73 @@
   "spawnAreas": [
     {
       "id": "snowfast_race_crateyard_colossus",
-      "x": 2129.0,
-      "y": 2065.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 212.9,
+      "y": 206.56,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "snowfast_race_hoarfell_giant",
-      "x": 1654.0,
-      "y": 2022.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 165.4,
+      "y": 202.24,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hoarfell-giant",
       "count": 2
     },
     {
       "id": "snowfast_race_deepwater_hauler",
-      "x": 2262.4,
-      "y": 1757.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 226.24,
+      "y": 175.76,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "snowfast_race_hollow_bell_wight",
-      "x": 2139.3,
-      "y": 2343.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 213.93,
+      "y": 234.3,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-hollow-bell-wight",
       "count": 1
     },
     {
       "id": "snowfast_race_icefloe_wyrm",
-      "x": 1625.6,
-      "y": 1538.3,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 162.56,
+      "y": 153.83,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-icefloe-wyrm",
       "count": 1
     },
     {
       "id": "snowfast_race_oathgate_sentinel",
-      "x": 2462.2,
-      "y": 1658.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 246.22,
+      "y": 165.81,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-oathgate-sentinel",
       "count": 1
     },
     {
       "id": "snowfast_race_harbor_war_beast",
-      "x": 1373.4,
-      "y": 2286.2,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 137.34,
+      "y": 228.62,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-harbor-war-beast",
       "count": 1
     },
     {
       "id": "snowfast_race_whitewaste_colossus",
-      "x": 1938.3,
-      "y": 1205.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 193.83,
+      "y": 120.5,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-whitewaste-colossus",
       "count": 1
     }
@@ -542,24 +543,24 @@
   "staticObstacles": [
     {
       "id": "landmark_keelshore_reach_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_confluence_beyond_stormhold_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_snowfast_race_sheer_scarp_cliff",
-      "min_x": 1108.8,
-      "min_y": 2698.8,
-      "max_x": 1371.2,
-      "max_y": 2961.2
+      "min_x": 110.88,
+      "min_y": 269.88,
+      "max_x": 137.12,
+      "max_y": 296.12
     }
   ]
 }

@@ -3340,6 +3340,21 @@
     object-fit: cover;
   }
 
+  & .lore-art-img {
+    cursor: zoom-in;
+  }
+
+  & .lore-full-overlay {
+    cursor: zoom-out;
+  }
+
+  & .lore-full-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+
   & .lore-art-caption {
     font-size: 0.74rem;
     color: var(--text-faint);

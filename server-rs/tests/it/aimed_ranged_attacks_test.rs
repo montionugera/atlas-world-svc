@@ -16,7 +16,7 @@ fn build_ranged_world(
     world.insert_resource(SpatialGrid::new(50.0));
 
     world.spawn((
-        Position::new(100.0, 100.0),
+        Position::new(10.0, 10.0),
         Velocity::zero(),
         Health::new(100.0),
         PlayerTag,
@@ -26,7 +26,7 @@ fn build_ranged_world(
         CombatStats {
             attack_power: 25.0,
             defense: 5.0,
-            attack_range: 40.0,
+            attack_range: 4.0,
             attack_cooldown: 0.8,
             cooldown_timer: 0.0,
             is_player: true,
@@ -57,8 +57,8 @@ fn bow_shot_fired_45_degrees_away_from_mob_travels_in_aimed_direction_and_misses
     // Mob sits due East at (200, 100), while player at (100, 100) aims 45 degrees North-East (200, 200).
     let (mut world, mut schedule, mob) = build_ranged_world(
         EquippedWeapon::bow(),
-        Position::new(200.0, 100.0),
-        Position::new(200.0, 200.0),
+        Position::new(20.0, 10.0),
+        Position::new(20.0, 20.0),
     );
 
     // Tick 1: Bow fires a projectile along the 45-degree vector (+0.7071, +0.7071)
@@ -70,12 +70,12 @@ fn bow_shot_fired_45_degrees_away_from_mob_travels_in_aimed_direction_and_misses
     let (_, vel, proj) = projs[0];
     assert_eq!(proj.skill_id.as_deref(), Some("bow_shot"));
     assert!(proj.target.is_none(), "bow projectile must not auto-home");
-    let diag = 250.0 * std::f32::consts::FRAC_1_SQRT_2;
-    assert!((vel.vx - diag).abs() < 0.5);
-    assert!((vel.vy - diag).abs() < 0.5);
+    let diag = 3.75 * std::f32::consts::FRAC_1_SQRT_2;
+    assert!((vel.vx - diag).abs() < 0.05);
+    assert!((vel.vy - diag).abs() < 0.05);
 
     // Run 30 more ticks until projectile reaches max range and despawns
-    for _ in 0..30 {
+    for _ in 0..200 {
         schedule.run(&mut world);
     }
 
@@ -90,13 +90,10 @@ fn bow_shot_fired_45_degrees_away_from_mob_travels_in_aimed_direction_and_misses
 fn bow_and_staff_shots_aimed_at_mob_travel_and_hit_target() {
     for weapon in [EquippedWeapon::bow(), EquippedWeapon::staff()] {
         assert!(matches!(weapon.kind, WeaponKind::Bow | WeaponKind::Staff));
-        let (mut world, mut schedule, mob) = build_ranged_world(
-            weapon,
-            Position::new(200.0, 100.0),
-            Position::new(200.0, 100.0),
-        );
+        let (mut world, mut schedule, mob) =
+            build_ranged_world(weapon, Position::new(20.0, 10.0), Position::new(20.0, 10.0));
 
-        for _ in 0..15 {
+        for _ in 0..100 {
             schedule.run(&mut world);
             if world.get::<Health>(mob).unwrap().current < 100.0 {
                 break;

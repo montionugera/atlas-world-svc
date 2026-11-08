@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "yardburn-confluence",
   "name": "Yardburn Confluence \u2014 Thirstwold (c05/r20)",
   "seed": 746629,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "cinder_ash_waste",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -441,73 +442,73 @@
   "spawnAreas": [
     {
       "id": "yardburn_confluence_bellwarden_revenant",
-      "x": 2140.1,
-      "y": 2014.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 214.01,
+      "y": 201.46,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bellwarden-revenant",
       "count": 2
     },
     {
       "id": "yardburn_confluence_mourning_cloth_wight",
-      "x": 1641.2,
-      "y": 1917.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.12,
+      "y": 191.78,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-mourning-cloth-wight",
       "count": 2
     },
     {
       "id": "yardburn_confluence_relic_hulk",
-      "x": 2101.1,
-      "y": 1606.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 210.11,
+      "y": 160.6,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-relic-hulk",
       "count": 2
     },
     {
       "id": "yardburn_confluence_shroudweaver",
-      "x": 1932.4,
-      "y": 2377.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 193.24,
+      "y": 237.78,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-shroudweaver",
       "count": 2
     },
     {
       "id": "yardburn_confluence_siege_rot_hulk",
-      "x": 1637.9,
-      "y": 1528.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 163.79,
+      "y": 152.89,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-siege-rot-hulk",
       "count": 1
     },
     {
       "id": "yardburn_confluence_violet_ash_drake",
-      "x": 2501.1,
-      "y": 2106.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 250.11,
+      "y": 210.61,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-violet-ash-drake",
       "count": 2
     },
     {
       "id": "yardburn_confluence_warscar_maw",
-      "x": 1530.7,
-      "y": 2463.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 153.07,
+      "y": 246.39,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-warscar-maw",
       "count": 2
     },
     {
       "id": "yardburn_confluence_afterglow_shade",
-      "x": 1982.7,
-      "y": 1206.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 198.27,
+      "y": 120.6,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-afterglow-shade",
       "count": 1
     }
@@ -515,24 +516,24 @@
   "staticObstacles": [
     {
       "id": "landmark_cindersea_pan_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_race_within_siroccwaste_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_yardburn_confluence_sheer_scarp_cliff",
-      "min_x": 1278.8,
-      "min_y": 2468.8,
-      "max_x": 1541.2,
-      "max_y": 2731.2
+      "min_x": 127.88,
+      "min_y": 246.88,
+      "max_x": 154.12,
+      "max_y": 273.12
     }
   ]
 }

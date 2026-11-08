@@ -2,12 +2,33 @@ use crate::ai::ThreatTable;
 use crate::combat::{DamageType, Element};
 use crate::content::map::TerrainZones;
 use crate::core::clock::SimClock;
+use crate::core::speed::{scaled_lifetime, scaled_speed};
 use crate::ecs::components::{
     AiState, AttackFacingCone, CombatStats, ElementalAttributes, Health, MobAi, MobAttackAbility,
     MobWindupConfig, PlayerTag, Position, Projectile, StatusEffects, Velocity,
-    KNOCKBACK_DECAY_PER_SEC,
+    KNOCKBACK_DECAY_PER_SEC, MELEE_SWING_SPEED,
 };
 use bevy_ecs::prelude::*;
+
+// Melee swings are attacks, not movement: F-184 leaves their hitbox speed/lifetime unscaled.
+const MELEE_SWING_LIFETIME: f32 = 0.2;
+const MELEE_SWING_MIN_SPEED: f32 = 15.0;
+const MELEE_ABILITY_LIFETIME: f32 = 0.25;
+
+/// (speed, lifetime) of a mob ability projectile; only ranged ones follow the rescale.
+fn ability_projectile_motion(ability: &MobAttackAbility) -> (f32, f32) {
+    if ability.is_ranged {
+        (
+            ability.projectile_speed.max(scaled_speed(150.0)),
+            scaled_lifetime(2.0),
+        )
+    } else {
+        (
+            ability.projectile_speed.max(MELEE_SWING_MIN_SPEED),
+            MELEE_ABILITY_LIFETIME,
+        )
+    }
+}
 
 #[allow(clippy::too_many_arguments)]
 fn spawn_mob_ability_projectile(
@@ -23,13 +44,12 @@ fn spawn_mob_ability_projectile(
     facing_cone_cos: f32,
 ) {
     let cone = AttackFacingCone::new(pos, dir_x, dir_y, facing_cone_cos);
-    let speed = ability.projectile_speed.max(150.0);
+    let (speed, lifetime) = ability_projectile_motion(ability);
     let max_range = if ability.is_ranged {
-        ability.max_range + 50.0
+        ability.max_range + 5.0
     } else {
-        ability.max_range + 20.0
+        ability.max_range + 2.0
     };
-    let lifetime = if ability.is_ranged { 2.0 } else { 0.25 };
     commands.spawn((
         Projectile {
             owner: mob_entity,
@@ -38,7 +58,7 @@ fn spawn_mob_ability_projectile(
             damage_type: DamageType::Physical,
             element: mob_element,
             speed,
-            radius: ability.projectile_radius.max(6.0),
+            radius: ability.projectile_radius.max(0.6),
             max_range,
             traveled_distance: 0.0,
             lifetime,
@@ -70,7 +90,7 @@ fn spawn_mob_attack_projectile(
 ) {
     let cone = AttackFacingCone::new(pos, dir_x, dir_y, facing_cone_cos);
     if is_ranged {
-        let speed = 200.0;
+        let speed = scaled_speed(200.0);
         commands.spawn((
             Projectile {
                 owner: mob_entity,
@@ -79,10 +99,10 @@ fn spawn_mob_attack_projectile(
                 damage_type: DamageType::Physical,
                 element: mob_element,
                 speed,
-                radius: 8.0,
-                max_range: attack_range + 50.0,
+                radius: 0.8,
+                max_range: attack_range + 5.0,
                 traveled_distance: 0.0,
-                lifetime: 2.0,
+                lifetime: scaled_lifetime(2.0),
                 effects: Vec::new(),
                 is_player_projectile: false,
                 aoe_radius: 0.0,
@@ -94,7 +114,7 @@ fn spawn_mob_attack_projectile(
             cone,
         ));
     } else {
-        let speed = 400.0;
+        let speed = MELEE_SWING_SPEED;
         commands.spawn((
             Projectile {
                 owner: mob_entity,
@@ -103,10 +123,10 @@ fn spawn_mob_attack_projectile(
                 damage_type: DamageType::Physical,
                 element: mob_element,
                 speed,
-                radius: 12.0,
-                max_range: attack_range + 20.0,
+                radius: 1.2,
+                max_range: attack_range + 2.0,
                 traveled_distance: 0.0,
-                lifetime: 0.2,
+                lifetime: MELEE_SWING_LIFETIME,
                 effects: Vec::new(),
                 is_player_projectile: false,
                 aoe_radius: 0.0,
@@ -272,7 +292,7 @@ pub fn mob_ai_system(
                         stats.cooldown_timer = stats.attack_cooldown;
                         let (locked_dx, locked_dy) = mob_ai.windup_facing;
                         let in_cone = mob_ai.is_in_facing_cone(*pos, target_pos);
-                        let in_melee_reach = dist <= mob_ai.attack_range + 20.0;
+                        let in_melee_reach = dist <= mob_ai.attack_range + 2.0;
 
                         if mob_ai.is_ranged || (in_cone && in_melee_reach) {
                             spawn_mob_attack_projectile(
@@ -360,7 +380,7 @@ pub fn mob_ai_system(
             let home_dy = mob_ai.home_pos.y - pos.y;
             let home_dist = (home_dx * home_dx + home_dy * home_dy).sqrt();
 
-            if home_dist <= 10.0 {
+            if home_dist <= 1.0 {
                 mob_ai.state = AiState::Idle;
                 vel.vx = 0.0;
                 vel.vy = 0.0;
@@ -381,7 +401,7 @@ pub fn mob_ai_system(
                         + (mob_entity.to_bits() % 1000) as f32)
                         .sin()
                         * std::f32::consts::PI;
-                    let offset_dist = 25.0;
+                    let offset_dist = 2.5;
                     mob_ai.wander_target = Position::new(
                         mob_ai.home_pos.x + offset_angle.cos() * offset_dist,
                         mob_ai.home_pos.y + offset_angle.sin() * offset_dist,
@@ -399,7 +419,7 @@ pub fn mob_ai_system(
                 let wdy = mob_ai.wander_target.y - pos.y;
                 let wdist = (wdx * wdx + wdy * wdy).sqrt();
 
-                if wdist <= 5.0 {
+                if wdist <= 0.5 {
                     mob_ai.state = AiState::Idle;
                     vel.vx = 0.0;
                     vel.vy = 0.0;
@@ -419,6 +439,20 @@ mod tests {
     use super::*;
 
     #[test]
+    fn melee_swing_keeps_pre_f184_speed_and_lifetime() {
+        let melee = MobAttackAbility::melee_cleave(4.0);
+        assert_eq!(melee.projectile_speed, 40.0);
+        assert_eq!(ability_projectile_motion(&melee), (40.0, 0.25));
+        let ranged = MobAttackAbility::ranged_bolt(0.0, 20.0);
+        assert_eq!(
+            ability_projectile_motion(&ranged),
+            (scaled_speed(220.0), scaled_lifetime(2.0))
+        );
+        assert_eq!(MELEE_SWING_LIFETIME, 0.2);
+        assert_eq!(MELEE_SWING_SPEED, 40.0);
+    }
+
+    #[test]
     fn test_mob_ai_idle_to_chase() {
         let mut world = World::new();
         let clock = SimClock::default();
@@ -428,11 +462,11 @@ mod tests {
             .spawn((
                 Position::new(0.0, 0.0),
                 Velocity::zero(),
-                MobAi::new(Position::new(0.0, 0.0), 200.0, 20.0, false),
+                MobAi::new(Position::new(0.0, 0.0), 20.0, 2.0, false),
                 ThreatTable::new(),
                 CombatStats {
                     attack_power: 50.0,
-                    attack_range: 20.0,
+                    attack_range: 2.0,
                     ..Default::default()
                 },
                 Health::new(100.0),
@@ -440,7 +474,7 @@ mod tests {
             .id();
 
         let player = world
-            .spawn((Position::new(100.0, 0.0), Health::new(100.0), PlayerTag))
+            .spawn((Position::new(10.0, 0.0), Health::new(100.0), PlayerTag))
             .id();
 
         // Add threat so mob targets player
@@ -569,12 +603,12 @@ mod tests {
         let clock = SimClock::default();
         world.insert_resource(clock);
 
-        let mut ai = MobAi::new(Position::new(0.0, 0.0), 200.0, 20.0, false);
+        let mut ai = MobAi::new(Position::new(0.0, 0.0), 20.0, 2.0, false);
         ai.state = AiState::ReturnHome;
 
         let mob = world
             .spawn((
-                Position::new(6.0, 0.0), // <= 10.0 from home
+                Position::new(0.6, 0.0), // <= 1.0 from home
                 Velocity::new(-20.0, 0.0),
                 ai,
                 ThreatTable::new(),

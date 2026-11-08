@@ -22,6 +22,38 @@
         "alt": "The Lantern Hollow watch sergeant in nine poses: idle, walk, run, guard, attack, block, hit, fallen, and attack holding a swapped-in axe.",
         "frames": ["Idle", "Walk", "Run", "Guard", "Attack", "Block", "Hit", "Fallen", "Attack (axe)"]
       }
+    },
+    {
+      "id": "system-kilnwatch-wardens",
+      "featureId": "F-180",
+      "title": "Kilnwatch Wardens",
+      "summary": "An optional community-service fellowship at Kilnwatch Bastion open to Level 10 travellers, offering board quests, extra storage, and modest conveniences without gating core progression.",
+      "sections": [
+        {
+          "heading": "Who the Wardens are",
+          "body": "The Kilnwatch Wardens are an optional community-service fellowship based at Kilnwatch Bastion, open to any traveller who reaches Level 10. They are ordinary people — scouts, couriers, and craftspeople — who watch the valley roads and keep signal lanterns lit. Nobody in the fellowship becomes a Cala Knight, as that legendary title belongs strictly to history. The Wardens do preserve an incomplete ledger associated with the Last Cala Knight, but membership confers no claim to her name, station, or ancient deeds."
+        },
+        {
+          "heading": "Joining",
+          "body": "Joining the fellowship requires completing the introductory quest 'A Place on the Watch' upon reaching Level 10. A candidate simply repairs a damaged signal-post lantern along the valley road, delivers the incident report from Maro Bell, and signs the public service ledger. There is no entrance exam, no divine prophecy, and no pedigree or birth check required to enter. Anyone willing to lend a hand to fellow travellers is welcomed into the ranks as an equal."
+        },
+        {
+          "heading": "Ranks and what they give",
+          "body": "The fellowship advances through three distinct tiers: Runner upon joining, Warden at 100 reputation, and Elder Warden at 350 reputation. Higher ranks reward extra storage capacity up to thirty slots total, distinctive cosmetic gear like the Warden cloak and lantern accessory, a consumable store discount, and a convenience teleport back to Kilnwatch Bastion. Reputation is earned exclusively by completing repeatable community-service board quests posted at the bastion. Main-story milestones and combat milestones never grant Warden standing, ensuring service remains a matter of everyday civic help."
+        },
+        {
+          "heading": "What is never locked behind the Wardens",
+          "body": "No core game content is ever locked behind membership or rank in the Kilnwatch Wardens. The main story chapters, dungeons, raids, world bosses, and public markets remain fully accessible whether you join or not. Standard equipment progression, ordinary vault storage, and discoveries concerning the historical Cala Knights are never restricted by faction standing. The Wardens grant useful conveniences and civic honors, but provide zero faction-exclusive combat power or competitive player advantages."
+        },
+        {
+          "heading": "Leaving and coming back",
+          "body": "You may step down from the Kilnwatch Wardens at any time simply by speaking with the registrar at the bastion. Your earned rank and accumulated reputation points are preserved permanently in the ledger rather than wiped. Any rank bonuses and cosmetic privileges simply pause while you are away, and they resume immediately with no re-entry fee whenever you choose to return."
+        }
+      ],
+      "limits": [
+        "Not in the live game yet: this page records the design (F-180); board quests, storage bonus, cosmetics, discount and teleport are not wired into the server.",
+        "Rank names and unlocks are working decisions the owner may still amend."
+      ]
     }
   ]
 }

@@ -23,7 +23,7 @@ fn party_members_share_live_health_position_snapshots_and_mob_kill_credit() {
             },
             CombatStats::default(),
             PlayerProgression::new(),
-            Position::new(200.0, 200.0),
+            Position::new(20.0, 20.0),
         ))
         .id();
 
@@ -38,7 +38,7 @@ fn party_members_share_live_health_position_snapshots_and_mob_kill_credit() {
             },
             CombatStats::default(),
             PlayerProgression::new(),
-            Position::new(350.0, 200.0), // 150 units from Alice (within 300.0 PARTY_SHARE_RADIUS)
+            Position::new(35.0, 20.0), // 150 units from Alice (within 30.0 PARTY_SHARE_RADIUS)
         ))
         .id();
 
@@ -49,7 +49,7 @@ fn party_members_share_live_health_position_snapshots_and_mob_kill_credit() {
             Health::new(100.0),
             CombatStats::default(),
             PlayerProgression::new(),
-            Position::new(1000.0, 200.0),
+            Position::new(100.0, 20.0),
         ))
         .id();
 
@@ -69,9 +69,9 @@ fn party_members_share_live_health_position_snapshots_and_mob_kill_credit() {
     assert_eq!(snapshots.len(), 3);
     assert_eq!(snapshots[0].player_id, "p-alice");
     assert_eq!(snapshots[0].current_hp, 85.0);
-    assert_eq!(snapshots[0].position, Position::new(200.0, 200.0));
+    assert_eq!(snapshots[0].position, Position::new(20.0, 20.0));
     assert_eq!(snapshots[1].player_id, "p-bob");
-    assert_eq!(snapshots[1].position, Position::new(350.0, 200.0));
+    assert_eq!(snapshots[1].position, Position::new(35.0, 20.0));
 
     // Alice kills a mob at (250, 200): both Alice (50u) and Bob (100u) get kill credit & XP, while Cara (750u) does not
     let awarded = grant_party_kill_rewards(
@@ -79,7 +79,7 @@ fn party_members_share_live_health_position_snapshots_and_mob_kill_credit() {
         alice,
         "mob-ember-wolf-1",
         MobTier::Route,
-        Position::new(250.0, 200.0),
+        Position::new(25.0, 20.0),
     )
     .expect("granting party kill rewards should succeed");
 
@@ -103,7 +103,7 @@ fn party_members_share_live_health_position_snapshots_and_mob_kill_credit() {
         alice,
         "mob-ember-wolf-1",
         MobTier::Route,
-        Position::new(250.0, 200.0),
+        Position::new(25.0, 20.0),
     )
     .unwrap();
     assert!(replay.is_empty());

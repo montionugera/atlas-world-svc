@@ -167,7 +167,7 @@ impl AtlasSimulation {
                 let room = MAX_MOBS.saturating_sub(self.debug_mob_slots());
                 for _ in 0..(*count).min(room) {
                     let mut prng = self.world.resource_mut::<Mulberry32>();
-                    let (dx, dy) = (prng.range(-40.0, 40.0), prng.range(-40.0, 40.0));
+                    let (dx, dy) = (prng.range(-4.0, 4.0), prng.range(-4.0, 4.0));
                     self.debug_spawn_mob(mob_type, centre.x + dx, centre.y + dy);
                 }
             }
@@ -291,8 +291,8 @@ impl AtlasSimulation {
         }
         for _ in bots.len()..count {
             let mut prng = self.world.resource_mut::<Mulberry32>();
-            let x = prng.range(100.0, self.arena_width - 100.0);
-            let y = prng.range(100.0, self.arena_height - 100.0);
+            let x = prng.range(10.0, self.arena_width - 10.0);
+            let y = prng.range(10.0, self.arena_height - 10.0);
             let angle = prng.range(0.0, std::f32::consts::TAU);
             self.spawn_bot(x, y, angle);
         }
@@ -336,16 +336,16 @@ impl AtlasSimulation {
         for _ in slots..count {
             let mut prng = self.world.resource_mut::<Mulberry32>();
             let pick = (prng.range(0.0, mob_types.len() as f32) as usize).min(mob_types.len() - 1);
-            let x = prng.range(50.0, self.arena_width - 50.0);
-            let y = prng.range(50.0, self.arena_height - 50.0);
+            let x = prng.range(5.0, self.arena_width - 5.0);
+            let y = prng.range(5.0, self.arena_height - 5.0);
             self.debug_spawn_mob(&mob_types[pick], x, y);
         }
     }
 
     fn debug_spawn_mob(&mut self, mob_type: &str, x: f32, y: f32) {
         let pos = Position::new(
-            x.clamp(5.0, self.arena_width - 5.0),
-            y.clamp(5.0, self.arena_height - 5.0),
+            x.clamp(0.5, self.arena_width - 0.5),
+            y.clamp(0.5, self.arena_height - 0.5),
         );
         let anchor = MobSpawnAnchor::new(pos, mob_type, MobTier::Route, self.mob_respawn_sec);
         self.debug_mob_seq += 1;

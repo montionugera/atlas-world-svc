@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "rimewall-cap",
   "name": "Rimewall Cap \u2014 The Ice Divide & Rimewall Margin",
   "seed": 449343,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "glacier_snow_crust",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -459,73 +460,73 @@
   "spawnAreas": [
     {
       "id": "rimewall_cap_boneorchard_warden",
-      "x": 2129.0,
-      "y": 2065.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 212.9,
+      "y": 206.56,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-boneorchard-warden",
       "count": 1
     },
     {
       "id": "rimewall_cap_hallowed_toll_warden",
-      "x": 1650.9,
-      "y": 1933.7,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 165.09,
+      "y": 193.37,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-hallowed-toll-warden",
       "count": 1
     },
     {
       "id": "rimewall_cap_scarfield_sovereign",
-      "x": 2178.9,
-      "y": 1660.2,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 217.89,
+      "y": 166.02,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-scarfield-sovereign",
       "count": 1
     },
     {
       "id": "rimewall_cap_whitewaste_colossus",
-      "x": 2210.9,
-      "y": 2299.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 221.09,
+      "y": 229.91,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-whitewaste-colossus",
       "count": 1
     },
     {
       "id": "rimewall_cap_deepfrost_wyrm",
-      "x": 1659.1,
-      "y": 1514.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 165.91,
+      "y": 151.41,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepfrost-wyrm",
       "count": 1
     },
     {
       "id": "rimewall_cap_gravefield_maw",
-      "x": 2534.8,
-      "y": 1988.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 253.48,
+      "y": 198.84,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-gravefield-maw",
       "count": 1
     },
     {
       "id": "rimewall_cap_lastbell_choir",
-      "x": 1466.2,
-      "y": 2407.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 146.62,
+      "y": 240.76,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-lastbell-choir",
       "count": 1
     },
     {
       "id": "rimewall_cap_warscar_titan",
-      "x": 1813.2,
-      "y": 1216.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 181.32,
+      "y": 121.68,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-warscar-titan",
       "count": 1
     }
@@ -533,24 +534,24 @@
   "staticObstacles": [
     {
       "id": "landmark_c_lm_rimewall_margin_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_c_lm_the_ice_divide_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_rimewall_cap_sheer_scarp_cliff",
-      "min_x": 1288.8,
-      "min_y": 2338.8,
-      "max_x": 1551.2,
-      "max_y": 2601.2
+      "min_x": 128.88,
+      "min_y": 233.88,
+      "max_x": 155.12,
+      "max_y": 260.12
     }
   ]
 }

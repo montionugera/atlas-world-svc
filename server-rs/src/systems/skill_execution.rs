@@ -1,6 +1,7 @@
 use crate::ai::ThreatTable;
 use crate::combat::{get_skill, DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
+use crate::core::speed::{scaled_lifetime, scaled_speed};
 use crate::ecs::components::{
     CastingState, CooldownTracker, DashState, ElementalAttributes, Health, HitLog, HitRecord,
     LingeringZone, MobTag, PlayerInputState, PlayerTag, Position, Projectile, SkillLoadout,
@@ -141,12 +142,12 @@ pub fn skill_execution_system(
                     }
 
                     let is_aoe = skill.radius > 2.5;
-                    let aoe_radius = if is_aoe { skill.radius * 10.0 } else { 0.0 };
+                    let aoe_radius = if is_aoe { skill.radius } else { 0.0 };
 
                     let (proj_pos, proj_vel, speed, max_range, lifetime) = if is_aoe {
                         // Ground-targeted AoE skill (Meteor, Blizzard, Thunder):
                         // Detonates directly at the aimed target location!
-                        let max_cast_range = 200.0;
+                        let max_cast_range = 20.0;
                         let (impact_x, impact_y) = if let Some(t_pos) = input.target_pos {
                             let dx = t_pos.x - pos.x;
                             let dy = t_pos.y - pos.y;
@@ -177,10 +178,10 @@ pub fn skill_execution_system(
                                     (pos.x, pos.y)
                                 }
                             } else {
-                                (pos.x + dir_x * 80.0, pos.y + dir_y * 80.0)
+                                (pos.x + dir_x * 8.0, pos.y + dir_y * 8.0)
                             }
                         } else {
-                            (pos.x + dir_x * 80.0, pos.y + dir_y * 80.0)
+                            (pos.x + dir_x * 8.0, pos.y + dir_y * 8.0)
                         };
 
                         (
@@ -192,9 +193,9 @@ pub fn skill_execution_system(
                         )
                     } else {
                         // Directional projectile / skillshot (Precision Strike, Spear, etc.)
-                        let speed = 150.0;
-                        let max_range = 300.0;
-                        let lifetime = 5.0;
+                        let speed = scaled_speed(150.0);
+                        let max_range = 30.0;
+                        let lifetime = scaled_lifetime(5.0);
                         (
                             Position::new(pos.x, pos.y),
                             Velocity::new(dir_x * speed, dir_y * speed),
@@ -298,7 +299,7 @@ pub fn skill_execution_system(
                             }
                         };
 
-                        let dash_speed = 450.0;
+                        let dash_speed = scaled_speed(450.0);
                         let dash_duration = 0.22;
                         if let Some(ref mut dash) = dash_opt {
                             dash.remaining_sec = dash_duration;
@@ -558,7 +559,7 @@ mod tests {
 
         let vel = world.get::<Velocity>(entity).unwrap();
         assert_eq!(vel.vx, 0.0);
-        assert_eq!(vel.vy, 450.0);
+        assert!((vel.vy - 6.75).abs() < 1e-4);
 
         let cd = world.get::<CooldownTracker>(entity).unwrap();
         assert_eq!(cd.get_remaining("skill_dash"), 0.5);
@@ -625,8 +626,8 @@ mod tests {
         schedule.run(&mut world);
 
         let vel = world.get::<Velocity>(entity).unwrap();
-        // Default facing (1.0, 0.0) -> vel.vx = 450.0, vel.vy = 0.0
-        assert_eq!(vel.vx, 450.0);
+        // Default facing (1.0, 0.0) -> vel.vx = 67.5, vel.vy = 0.0
+        assert!((vel.vx - 6.75).abs() < 1e-4);
         assert_eq!(vel.vy, 0.0);
     }
 
@@ -680,7 +681,7 @@ mod tests {
         casting.start_cast("skill_1", 1.5, 0.0); // was casting until 1.5s
 
         let mob = world
-            .spawn((Position::new(100.0, 0.0), Health::new(100.0), MobTag))
+            .spawn((Position::new(10.0, 0.0), Health::new(100.0), MobTag))
             .id();
 
         let player = world
@@ -703,7 +704,7 @@ mod tests {
         assert!(!player_casting.is_casting(1.5));
         assert!(player_casting.skill_id.is_none());
 
-        // A ground AoE projectile entity was spawned at the mob's location (100.0, 0.0) with zero velocity
+        // A ground AoE projectile entity was spawned at the mob's location (10.0, 0.0) with zero velocity
         let mut proj_query = world.query::<(&Position, &Velocity, &Projectile)>();
         let mut found = false;
         for (p_pos, p_vel, proj) in proj_query.iter(&world) {
@@ -711,11 +712,11 @@ mod tests {
             assert_eq!(proj.target, Some(mob));
             assert_eq!(proj.damage, 20.0);
             assert_eq!(proj.element, Element::Fire);
-            assert_eq!(p_pos.x, 100.0);
+            assert_eq!(p_pos.x, 10.0);
             assert_eq!(p_pos.y, 0.0);
             assert_eq!(p_vel.vx, 0.0);
             assert_eq!(p_vel.vy, 0.0);
-            assert_eq!(proj.aoe_radius, 60.0);
+            assert_eq!(proj.aoe_radius, 6.0);
             found = true;
         }
         assert!(

@@ -10,7 +10,7 @@ pub const HP_GAIN_PER_LEVEL: f32 = 20.0;
 /// Attack power bonus granted per player level-up (`+3.0` ATK/level) (E-005 Slice 1).
 pub const ATK_GAIN_PER_LEVEL: f32 = 3.0;
 /// Maximum pickup distance (`25.0` units) for world loot drops (E-005 Slice 3).
-pub const LOOT_PICKUP_RADIUS: f32 = 25.0;
+pub const LOOT_PICKUP_RADIUS: f32 = 2.5;
 /// Percentage (`10%`) of current level threshold deducted on death, clamped so the player never de-levels (E-005 Slice 7).
 pub const DEATH_XP_PENALTY_PERCENT: u32 = 10;
 
@@ -169,7 +169,7 @@ pub fn loot_drop_on_kill_system(
     }
 }
 
-/// Picks up unclaimed `LootDrop` entities within `LOOT_PICKUP_RADIUS` (`<= 25.0` units) of an alive player,
+/// Picks up unclaimed `LootDrop` entities within `LOOT_PICKUP_RADIUS` (`<= 2.5` units) of an alive player,
 /// enforcing idempotent single-winner ownership when multiple players race for the same drop (E-005 Slices 3 & 4).
 #[allow(clippy::type_complexity)]
 pub fn loot_pickup_system(
@@ -432,7 +432,7 @@ pub fn apply_death_penalty_and_bind_respawn(world: &mut World, player: Entity) -
     let bind_pos = world
         .get::<BindPoint>(player)
         .map(|bp| bp.position)
-        .unwrap_or(Position::new(200.0, 200.0));
+        .unwrap_or(Position::new(20.0, 20.0));
 
     if let Some(mut pos) = world.get_mut::<Position>(player) {
         *pos = bind_pos;

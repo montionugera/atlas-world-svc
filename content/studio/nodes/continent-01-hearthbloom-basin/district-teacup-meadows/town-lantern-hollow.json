@@ -1,4 +1,5 @@
 {
+  "unitContract": "metres-v1",
   "schema_version": "1.0.0",
   "id": "town-lantern-hollow",
   "name": "Lantern Hollow",
@@ -21,8 +22,8 @@
     "world_history_id": "world-history-cradle-of-embers",
     "arrival_rationale": "Falling Hearth-Sparks condense gently inside the warm ceramic plaza of Lantern Hollow, where Lantern-Keepers outfit new Sprouts before they venture through the South or East gates.",
     "spawn_point_meters": {
-      "x": 2000.0,
-      "y": 2000.0,
+      "x": 200.0,
+      "y": 200.0,
       "z": 0.0
     },
     "safe_zone_radius_meters": 40.0
@@ -30,8 +31,8 @@
   "terrain_tile": {
     "preview_thumbnail": "/thumbs/dungeon/wall_arched.webp",
     "dimensions_meters": {
-      "width": 4000.0,
-      "height": 4000.0
+      "width": 400.0,
+      "height": 400.0
     },
     "biome_palette": "hearthbloom_terracotta_village",
     "max_terrace_step_meters": 0.15,
@@ -47,14 +48,14 @@
       "target_direction": "North",
       "gate_state": "open",
       "trigger_box_meters": {
-        "x": 2000.0,
-        "y": 3840.0,
-        "width": 24.0,
-        "height": 12.0
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
       },
       "arrival_point_meters": {
-        "x": 2000.0,
-        "y": 3800.0
+        "x": 200.0,
+        "y": 380.0
       }
     },
     "East": {
@@ -65,14 +66,14 @@
       "target_direction": "West",
       "gate_state": "open",
       "trigger_box_meters": {
-        "x": 3840.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 384.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrival_point_meters": {
-        "x": 3800.0,
-        "y": 2000.0
+        "x": 380.0,
+        "y": 200.0
       }
     },
     "West": {
@@ -84,14 +85,14 @@
       "gate_state": "fog_of_lore",
       "lock_message": "The western teapot-sluice bridge is shrouded in silver steam-fog; Lantern-Keepers forbid crossing until the Great Kiln is relit.",
       "trigger_box_meters": {
-        "x": 160.0,
-        "y": 2000.0,
-        "width": 12.0,
-        "height": 24.0
+        "x": 16.0,
+        "y": 200.0,
+        "width": 1.2,
+        "height": 2.4
       },
       "arrival_point_meters": {
-        "x": 200.0,
-        "y": 2000.0
+        "x": 20.0,
+        "y": 200.0
       }
     },
     "Dungeon": {
@@ -102,14 +103,14 @@
       "target_direction": "Exit",
       "gate_state": "open",
       "trigger_box_meters": {
-        "x": 2120.0,
-        "y": 1880.0,
-        "width": 8.0,
-        "height": 8.0
+        "x": 212.0,
+        "y": 188.0,
+        "width": 0.8,
+        "height": 0.8
       },
       "arrival_point_meters": {
-        "x": 2110.0,
-        "y": 1880.0
+        "x": 211.0,
+        "y": 188.0
       }
     },
     "Exit": null

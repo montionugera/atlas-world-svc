@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "sedgebar-roads",
   "name": "Sedgebar Roads \u2014 Reedstrand (c06/r07)",
   "seed": 819269,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "coastal_tidal_flat",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -527,73 +528,73 @@
   "spawnAreas": [
     {
       "id": "sedgebar_roads_millroad_brigand",
-      "x": 2081.0,
-      "y": 2070.0,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 208.1,
+      "y": 207.0,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-millroad-brigand",
       "count": 4
     },
     {
       "id": "sedgebar_roads_quarrystone_beetle",
-      "x": 1645.4,
-      "y": 1882.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.54,
+      "y": 188.28,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-quarrystone-beetle",
       "count": 2
     },
     {
       "id": "sedgebar_roads_sapdrinker_swarm",
-      "x": 2191.4,
-      "y": 1670.6,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 219.14,
+      "y": 167.06,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-sapdrinker-swarm",
       "count": 4
     },
     {
       "id": "sedgebar_roads_thornveil_spearhand",
-      "x": 2178.8,
-      "y": 2279.4,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 217.88,
+      "y": 227.94,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-thornveil-spearhand",
       "count": 4
     },
     {
       "id": "sedgebar_roads_ashfang_pack_leader",
-      "x": 1653.4,
-      "y": 1501.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 165.34,
+      "y": 150.12,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-ashfang-pack-leader",
       "count": 2
     },
     {
       "id": "sedgebar_roads_bramble_drake",
-      "x": 2478.2,
-      "y": 1701.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 247.82,
+      "y": 170.11,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bramble-drake",
       "count": 2
     },
     {
       "id": "sedgebar_roads_briar_caller",
-      "x": 1626.0,
-      "y": 2524.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 162.6,
+      "y": 252.47,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-briar-caller",
       "count": 2
     },
     {
       "id": "sedgebar_roads_millstone_warden",
-      "x": 2004.9,
-      "y": 1207.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 200.49,
+      "y": 120.74,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-millstone-warden",
       "count": 1
     }
@@ -601,24 +602,24 @@
   "staticObstacles": [
     {
       "id": "landmark_quillfall_reach_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_stack_below_brightlobe_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_sedgebar_roads_sheer_scarp_cliff",
-      "min_x": 1018.8,
-      "min_y": 2598.8,
-      "max_x": 1281.2,
-      "max_y": 2861.2
+      "min_x": 101.88,
+      "min_y": 259.88,
+      "max_x": 128.12,
+      "max_y": 286.12
     }
   ]
 }

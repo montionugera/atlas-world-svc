@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "flaggrike-geo",
   "name": "Flaggrike Geo \u2014 Stonemoor (c04/r28)",
   "seed": 162272,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "barren_cliff",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -442,73 +443,73 @@
   "spawnAreas": [
     {
       "id": "flaggrike_geo_bound_war_beast",
-      "x": 2119.0,
-      "y": 2055.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 211.9,
+      "y": 205.56,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "flaggrike_geo_crateyard_colossus",
-      "x": 1656.1,
-      "y": 2001.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 165.61,
+      "y": 200.1,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "flaggrike_geo_ash_sermon_speaker",
-      "x": 2213.9,
-      "y": 1692.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 221.39,
+      "y": 169.29,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-ash-sermon-speaker",
       "count": 1
     },
     {
       "id": "flaggrike_geo_deepwater_hauler",
-      "x": 1850.1,
-      "y": 2377.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 185.01,
+      "y": 237.76,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "flaggrike_geo_frontline_devourer",
-      "x": 1489.9,
-      "y": 1699.3,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 148.99,
+      "y": 169.93,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-frontline-devourer",
       "count": 1
     },
     {
       "id": "flaggrike_geo_hollow_bell_wight",
-      "x": 2536.3,
-      "y": 1935.2,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 253.63,
+      "y": 193.52,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-hollow-bell-wight",
       "count": 1
     },
     {
       "id": "flaggrike_geo_scar_drake",
-      "x": 1418.4,
-      "y": 2352.2,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 141.84,
+      "y": 235.22,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-scar-drake",
       "count": 1
     },
     {
       "id": "flaggrike_geo_unburied_host",
-      "x": 1691.9,
-      "y": 1249.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 169.19,
+      "y": 124.96,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-unburied-host",
       "count": 1
     }
@@ -516,24 +517,24 @@
   "staticObstacles": [
     {
       "id": "landmark_scarclint_pot_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_head_below_slatemoor_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_flaggrike_geo_sheer_scarp_cliff",
-      "min_x": 1048.8,
-      "min_y": 2598.8,
-      "max_x": 1311.2,
-      "max_y": 2861.2
+      "min_x": 104.88,
+      "min_y": 259.88,
+      "max_x": 131.12,
+      "max_y": 286.12
     }
   ]
 }

@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "fastholt-ford",
   "name": "Fastholt Ford \u2014 Coldreach (c03/r06)",
   "seed": 141629,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "glacier_snow_crust",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -468,73 +469,73 @@
   "spawnAreas": [
     {
       "id": "fastholt_ford_crateyard_colossus",
-      "x": 2124.1,
-      "y": 2072.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 212.41,
+      "y": 207.28,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "fastholt_ford_hoarfell_giant",
-      "x": 1701.0,
-      "y": 2113.5,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 170.1,
+      "y": 211.35,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hoarfell-giant",
       "count": 2
     },
     {
       "id": "fastholt_ford_snowblind_shade",
-      "x": 1992.8,
-      "y": 1571.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 199.28,
+      "y": 157.1,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-snowblind-shade",
       "count": 2
     },
     {
       "id": "fastholt_ford_deepwater_hauler",
-      "x": 2081.8,
-      "y": 2366.2,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 208.18,
+      "y": 236.62,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "fastholt_ford_hollow_bell_wight",
-      "x": 1703.6,
-      "y": 1487.7,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 170.36,
+      "y": 148.77,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-hollow-bell-wight",
       "count": 1
     },
     {
       "id": "fastholt_ford_icefloe_wyrm",
-      "x": 2528.5,
-      "y": 2041.2,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 252.85,
+      "y": 204.12,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-icefloe-wyrm",
       "count": 1
     },
     {
       "id": "fastholt_ford_oathgate_sentinel",
-      "x": 1461.6,
-      "y": 2402.7,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 146.16,
+      "y": 240.27,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-oathgate-sentinel",
       "count": 1
     },
     {
       "id": "fastholt_ford_whitewaste_colossus",
-      "x": 1967.9,
-      "y": 1205.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 196.79,
+      "y": 120.54,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-whitewaste-colossus",
       "count": 1
     }
@@ -542,24 +543,24 @@
   "staticObstacles": [
     {
       "id": "landmark_halehaven_roads_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_reach_out_of_coldwall_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_fastholt_ford_sheer_scarp_cliff",
-      "min_x": 1128.8,
-      "min_y": 2708.8,
-      "max_x": 1391.2,
-      "max_y": 2971.2
+      "min_x": 112.88,
+      "min_y": 270.88,
+      "max_x": 139.12,
+      "max_y": 297.12
     }
   ]
 }

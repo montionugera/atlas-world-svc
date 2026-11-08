@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using AtlasWorld.Client.Audio;
@@ -10,7 +11,7 @@ namespace AtlasWorld.Client.World
     /// client input. One controller per <see cref="EntityView"/>, created alongside the
     /// view's visual root and updated every frame from <see cref="EntityManager"/>.
     /// </summary>
-    public sealed class AnimationController
+    public sealed partial class AnimationController
     {
         public const string StateDeath = "death";
         public const string StateAttack = "attack";
@@ -24,6 +25,9 @@ namespace AtlasWorld.Client.World
         public const string StateReadyOut = "ready_out";
         // F-174: a softer blend into attack, only for entries that map combat_idle.
         private const double CombatAttackBlendSec = 0.15;
+        // F-186: upper-body attack layer blend timings while moving (walk/run).
+        private const double UpperBodyAttackBlendInSec = 0.10;
+        private const double UpperBodyAttackBlendOutSec = 0.15;
 
         /// <summary>Shared default clip map — the same AnimationPlayer clip set ships on all 8 Kenney seed models.</summary>
         public static readonly IReadOnlyDictionary<string, string> DefaultClipMap = new Dictionary<string, string>
@@ -35,8 +39,10 @@ namespace AtlasWorld.Client.World
             [StateDeath] = "die",
         };
 
-        private const float WalkSpeedThreshold = 0.2f;
-        private const float SprintSpeedThreshold = 8f;
+        // F-184: world m/s. The player runs at 3 m/s now (was 20), so the old 0.2 / 8 cut-offs
+        // are scaled by the same 0.15 factor as the server (SPEED_SCALE): 0.03 / 2.4 (allowing walk up to 2.2 m/s).
+        private const float WalkSpeedThreshold = 0.03f;
+        private const float SprintSpeedThreshold = 2.4f;
 
         private const double LoopBlendSec = 0.15;
         private const double OneShotBlendSec = 0.05;
@@ -46,6 +52,7 @@ namespace AtlasWorld.Client.World
         private const string SfxDeath = "sfx:death";
 
         private readonly AnimationPlayer? _player;
+        private readonly Skeleton3D? _skeleton;
         private readonly IReadOnlyDictionary<string, string> _clipMap;
         private readonly HashSet<string> _warnedMissingClips = new();
         private readonly Node3D? _modelRoot;
@@ -66,6 +73,7 @@ namespace AtlasWorld.Client.World
         {
             _modelRoot = modelRoot as Node3D;
             _player = FindAnimationPlayer(modelRoot);
+            _skeleton = FindSkeleton(modelRoot);
             _clipMap = PreferPipelineNames(MergeClipMap(clipOverrides), clipOverrides);
             IsCombatMapped = clipOverrides != null &&
                 clipOverrides.TryGetValue(StateCombatIdle, out string? ci) && !string.IsNullOrEmpty(ci);
@@ -75,6 +83,8 @@ namespace AtlasWorld.Client.World
 
             if (_player != null)
                 ConfigureLoopModes();
+            if (_modelRoot != null && _skeleton != null && _player != null)
+                AttachUpperBodyDriver(_modelRoot);
         }
 
         /// <summary>True when the manifest entry maps combat_idle; only then does the combat path run.</summary>
@@ -84,6 +94,11 @@ namespace AtlasWorld.Client.World
         public string CurrentState => _lastState;
         public string CurrentClip { get; private set; } = "";
         public double LastBlendSec { get; private set; }
+        /// <summary>F-186: True when an attack clip is playing on the upper-body layer over walk/run locomotion.</summary>
+        public bool IsUpperBodyAttackActive { get; private set; }
+        public string UpperBodyAttackClip { get; private set; } = "";
+        public double UpperBodyAttackTime { get; private set; }
+        public double UpperBodyAttackLength { get; private set; }
         /// <summary>Queue one attack one-shot; variants rotate. No server signal for remote entities yet (I-255).</summary>
         public void Attack() => _pendingAttack = true;
         /// <summary>Hold or release the block loop while InCombat. No server signal yet (I-255).</summary>
@@ -93,6 +108,61 @@ namespace AtlasWorld.Client.World
 
         public bool HasPlayer => _player != null;
         public bool EnableStateAudio { get; set; } = false;
+        /// <summary>
+        /// When true, replaces the wide-stance boxing idle with an upright feminine relaxed standing posture
+        /// (when not in combat) and applies arm adduction, narrower leg tracking, feminine hip sway, and
+        /// exponential quaternion smoothing during walk/run locomotion.
+        /// </summary>
+        public bool UseFeminineRelaxedPosture { get; set; } = false;
+        /// <summary>
+        /// When true, _player.CallbackModeProcess is set to Manual and Tick(delta) advances _player,
+        /// ApplyRelaxedLocomotionPosture, and AdvanceUpperBody deterministically in one call.
+        /// </summary>
+        public bool IsManualTickEnabled { get; private set; } = false;
+
+        public void EnableManualTick(bool enabled = true)
+        {
+            IsManualTickEnabled = enabled;
+            if (_player != null && GodotObject.IsInstanceValid(_player))
+            {
+                _player.CallbackModeProcess = enabled
+                    ? AnimationMixer.AnimationCallbackModeProcess.Manual
+                    : AnimationMixer.AnimationCallbackModeProcess.Idle;
+            }
+        }
+
+        /// <summary>
+        /// Deterministically advances AnimationPlayer, applies feminine relaxed posture / locomotion smoothing,
+        /// and blends any active upper-body attack in exact sequential order.
+        /// </summary>
+        public void Tick(double delta)
+        {
+            if (_player != null && GodotObject.IsInstanceValid(_player) && IsManualTickEnabled)
+            {
+                double remaining = Math.Max(0.0, delta);
+                if (remaining == 0.0)
+                {
+                    _player.Advance(0.0);
+                }
+                else
+                {
+                    while (remaining > 1e-6)
+                    {
+                        double step = Math.Min(remaining, 0.04);
+                        _player.Advance(step);
+                        remaining -= step;
+                    }
+                }
+            }
+            if (UseFeminineRelaxedPosture)
+            {
+                ApplyRelaxedLocomotionPosture(delta);
+            }
+            if (IsUpperBodyAttackActive)
+            {
+                AdvanceUpperBody(delta);
+            }
+        }
 
         public void Update(bool isAlive, Vector3 velocity, bool isAttacking = false)
         {
@@ -127,33 +197,54 @@ namespace AtlasWorld.Client.World
             PlayState(state);
         }
 
-        // Priority: death > running one-shot > hit > attack > locomotion > stance.
+        // Priority: death > running one-shot > hit > attack (upper-body when moving, full-body when still) > locomotion > stance.
         private string ResolveCombatState(bool isAlive, Vector3 velocity, ref bool restart)
         {
             if (!isAlive)
             {
                 _oneShotState = null;
+                ClearUpperBodyAttack();
                 return StateDeath;
             }
+            float speed = velocity.Length();
+            bool isMoving = speed >= WalkSpeedThreshold;
+
             if (_oneShotState != null)
             {
-                if (OneShotPlaying())
+                if (_oneShotState == StateAttack && isMoving && _oneShotClip != null)
+                {
+                    PromoteOneShotToUpperBody(_oneShotClip, _player?.CurrentAnimationPosition ?? 0.0);
+                    _oneShotState = null;
+                }
+                else if (OneShotPlaying())
+                {
                     return _oneShotState;
-                _oneShotState = null;
+                }
+                else
+                {
+                    _oneShotState = null;
+                }
             }
             if (_pendingHit)
             {
                 _pendingHit = false;
+                ClearUpperBodyAttack();
                 if (HasClip(StateHit))
                     return StartOneShot(StateHit, ref restart);
             }
             if (_pendingAttack)
             {
                 _pendingAttack = false;
-                return StartOneShot(StateAttack, ref restart);
+                if (isMoving)
+                {
+                    StartUpperBodyAttack();
+                }
+                else
+                {
+                    return StartOneShot(StateAttack, ref restart);
+                }
             }
 
-            float speed = velocity.Length();
             if (speed >= SprintSpeedThreshold)
                 return StateRun;
             if (speed >= WalkSpeedThreshold)
@@ -176,6 +267,140 @@ namespace AtlasWorld.Client.World
                     return StartOneShot(StateReadyOut, ref restart);
             }
             return StateIdle;
+        }
+
+        private void StartUpperBodyAttack()
+        {
+            if (_player == null || _attackClips.Count == 0)
+                return;
+            string clip = _attackClips[_attackIndex++ % _attackClips.Count];
+            if (!_player.HasAnimation(clip))
+                return;
+            IsUpperBodyAttackActive = true;
+            UpperBodyAttackClip = clip;
+            UpperBodyAttackTime = 0.0;
+            UpperBodyAttackLength = _player.GetAnimation(clip).Length;
+            LastBlendSec = UpperBodyAttackBlendInSec;
+            FireAudioForState(StateAttack);
+            ApplyUpperBodyPose();
+        }
+
+        private void PromoteOneShotToUpperBody(string clip, double currentTime)
+        {
+            if (_player == null || !_player.HasAnimation(clip))
+                return;
+            IsUpperBodyAttackActive = true;
+            UpperBodyAttackClip = clip;
+            UpperBodyAttackTime = Math.Clamp(currentTime, 0.0, _player.GetAnimation(clip).Length);
+            UpperBodyAttackLength = _player.GetAnimation(clip).Length;
+            LastBlendSec = UpperBodyAttackBlendInSec;
+        }
+
+        public void ClearUpperBodyAttack()
+        {
+            IsUpperBodyAttackActive = false;
+            UpperBodyAttackClip = "";
+            UpperBodyAttackTime = 0.0;
+            UpperBodyAttackLength = 0.0;
+        }
+
+        /// <summary>
+        /// Advances the active upper-body attack clip by <paramref name="delta"/> seconds and blends
+        /// its upper-body bone rotations over the current lower-body locomotion pose.
+        /// </summary>
+        public void AdvanceUpperBody(double delta)
+        {
+            if (!IsUpperBodyAttackActive)
+                return;
+            UpperBodyAttackTime += Math.Max(0.0, delta);
+            if (UpperBodyAttackTime >= UpperBodyAttackLength)
+            {
+                ClearUpperBodyAttack();
+                return;
+            }
+            ApplyUpperBodyPose();
+        }
+
+        /// <summary>Seeks the active upper-body attack clip to <paramref name="timeSec"/> and applies its pose immediately.</summary>
+        public void SeekUpperBody(double timeSec)
+        {
+            if (!IsUpperBodyAttackActive || UpperBodyAttackLength <= 0.0)
+                return;
+            UpperBodyAttackTime = Math.Clamp(timeSec, 0.0, UpperBodyAttackLength);
+            ApplyUpperBodyPose();
+        }
+
+        public void ApplyUpperBodyPose()
+        {
+            if (!IsUpperBodyAttackActive || _player == null || _skeleton == null)
+                return;
+            if (!GodotObject.IsInstanceValid(_player) || !GodotObject.IsInstanceValid(_skeleton))
+                return;
+            if (!_player.HasAnimation(UpperBodyAttackClip))
+                return;
+
+            Animation? anim = _player.GetAnimation(UpperBodyAttackClip);
+            if (anim == null)
+                return;
+
+            float weight = ComputeUpperBodyWeight(UpperBodyAttackTime, UpperBodyAttackLength);
+            int trackCount = anim.GetTrackCount();
+            for (int t = 0; t < trackCount; t++)
+            {
+                if (anim.TrackGetType(t) != Animation.TrackType.Rotation3D || anim.TrackGetKeyCount(t) == 0)
+                    continue;
+                NodePath path = anim.TrackGetPath(t);
+                if (path.GetSubNameCount() == 0)
+                    continue;
+                string boneName = path.GetSubName(0).ToString();
+                if (!IsUpperBodyBone(boneName))
+                    continue;
+                int boneIdx = _skeleton.FindBone(boneName);
+                if (boneIdx < 0)
+                    continue;
+
+                Quaternion baseRot = _skeleton.GetBonePoseRotation(boneIdx);
+                Quaternion atkRot = anim.RotationTrackInterpolate(t, UpperBodyAttackTime);
+                if (!baseRot.IsFinite() || baseRot.LengthSquared() < 1e-6f ||
+                    !atkRot.IsFinite() || atkRot.LengthSquared() < 1e-6f)
+                    continue;
+                _skeleton.SetBonePoseRotation(boneIdx, baseRot.Normalized().Slerp(atkRot.Normalized(), weight));
+            }
+        }
+
+        private static float ComputeUpperBodyWeight(double time, double length)
+        {
+            if (length <= 0.001)
+                return 0f;
+            float fadeIn = UpperBodyAttackBlendInSec > 0.0
+                ? Mathf.Clamp((float)(time / UpperBodyAttackBlendInSec), 0.25f, 1.0f)
+                : 1.0f;
+            double remaining = Math.Max(0.0, length - time);
+            float fadeOut = UpperBodyAttackBlendOutSec > 0.0
+                ? Mathf.Clamp((float)(remaining / UpperBodyAttackBlendOutSec), 0.0f, 1.0f)
+                : 1.0f;
+            return Math.Min(fadeIn, fadeOut);
+        }
+
+        /// <summary>
+        /// Portable upper/lower-body split across Meshy, Mixamo, KayKit, Linde Folk (Elf), and Silme Seer rigs:
+        /// Lower body (Hips/Pelvis/Root + Legs/Feet/Toes + hem chains) stays driven by walk/run locomotion;
+        /// Upper body (Spine/Chest/Torso, Neck/Head, Shoulders/Arms/Hands, weapon sockets, hair/cape/ear chains)
+        /// blends the attack animation.
+        /// </summary>
+        public static bool IsUpperBodyBone(string boneName)
+        {
+            if (string.IsNullOrEmpty(boneName))
+                return false;
+            string lower = boneName.ToLowerInvariant();
+            if (lower == "hips" || lower == "mixamorig_hips" || lower == "mixamorig:hips" ||
+                lower == "pelvis" || lower == "root")
+                return false;
+            if (lower.Contains("upleg") || lower.Contains("leg") || lower.Contains("foot") ||
+                lower.Contains("toe") || lower.Contains("thigh") || lower.Contains("calf") ||
+                lower.Contains("ankle") || lower.StartsWith("sec_hem_"))
+                return false;
+            return true;
         }
 
         private string StartOneShot(string state, ref bool restart)
@@ -365,6 +590,41 @@ namespace AtlasWorld.Client.World
                     return found;
             }
             return null;
+        }
+
+        private static Skeleton3D? FindSkeleton(Node node)
+        {
+            if (node is Skeleton3D skel)
+                return skel;
+            foreach (Node child in node.GetChildren())
+            {
+                Skeleton3D? found = FindSkeleton(child);
+                if (found != null)
+                    return found;
+            }
+            return null;
+        }
+
+        private void AttachUpperBodyDriver(Node3D modelRoot)
+        {
+            if (modelRoot.GetNodeOrNull("UpperBodyLayerDriver") != null)
+                return;
+            var driver = new UpperBodyLayerDriver(this)
+            {
+                Name = "UpperBodyLayerDriver",
+                ProcessPriority = 100,
+                ProcessPhysicsPriority = 100,
+            };
+            modelRoot.AddChild(driver);
+        }
+
+        /// <summary>
+        /// Retained for API compatibility; locomotion and idle now play baked human preset clips
+        /// (Idle_4, Walking_Woman, run_fast_9) directly from AnimationPlayer without procedural sine-wave overrides.
+        /// </summary>
+        public void ApplyRelaxedLocomotionPosture(double delta)
+        {
+            _ = delta;
         }
     }
 }

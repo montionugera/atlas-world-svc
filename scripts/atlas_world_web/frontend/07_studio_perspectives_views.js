@@ -564,7 +564,7 @@ function renderDistrictBigPictureSvg(activeContinent, activeDistrict, allDistric
 
 function renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, activeMonster) {
   const tile = activeNode.terrain_tile || {};
-  const dims = tile.dimensions_meters || { width: 4000, height: 4000 };
+  const dims = tile.dimensions_meters || { width: 400, height: 400 };
   const portals = activeNode.portals || {};
   const kit = activeNode.asset_kit_bindings || {};
   const spawns = activeNode.resident_spawns || [];
@@ -588,8 +588,8 @@ function renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, active
     category: isTown ? 'Monument Statue & Central Sanctuary Plaza' : 'Landmark Monument & Survey Anchor',
     thumb: assets[0] ? `/thumbs/buildings/${assets[0].split('/').pop().replace('.glb', '.webp')}` : thumb,
     hoursOrStatus: 'Open 24 Hours · 1.05m Kid Sightline Landmark',
-    summary: `Central architectural focal point at [2000m, 2000m] surrounded by a ${roadWidth}m wide stone roundabout and ${pathWidth}m pedestrian walkways.`,
-    address: `2000m E, 2000m N · Central Plaza · ${activeNode.name} · ${activeDistrict.name || ''}`,
+    summary: `Central architectural focal point at [200m, 200m] surrounded by a ${roadWidth}m wide stone roundabout and ${pathWidth}m pedestrian walkways.`,
+    address: `200m E, 200m N · Central Plaza · ${activeNode.name} · ${activeDistrict.name || ''}`,
     coordinates: `Map ID: ${activeNode.map_id || activeNode.id} · Elevation Step ≤ ${tile.max_terrace_step_meters || 0.14}m`,
     scaleSpecs: `Pedestal Riser: ${riserH}m (≤0.15m player scale law) · Plaza Road: ${roadWidth}m · Walkway: ${pathWidth}m · Unobstructed 12m camera sightline`,
     inspectId: activeNode.id,
@@ -699,7 +699,7 @@ function renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, active
       thumb: '/thumbs/buildings/wall_arched.webp',
       hoursOrStatus: isFog ? 'LOCKED · Fog of Lore Gate' : 'OPEN 24 HOURS · Bidirectional Portal',
       summary: isFog ? (p.lock_message || 'Sealed by Fog of Lore.') : `Connects ${activeNode.name} (${pd.dir}) directly to ${p.target_node_id} (${p.target_direction}).`,
-      address: `Trigger Box: X=${(p.trigger_box_meters && p.trigger_box_meters.x) || 2000}m, Y=${(p.trigger_box_meters && p.trigger_box_meters.y) || 160}m · ${activeNode.name}`,
+      address: `Trigger Box: X=${(p.trigger_box_meters && p.trigger_box_meters.x) || 200}m, Y=${(p.trigger_box_meters && p.trigger_box_meters.y) || 16}m · ${activeNode.name}`,
       coordinates: `Portal ID: ${p.portal_id} · Target Map: ${p.target_map_id || 'null (mystery)'}`,
       scaleSpecs: `Gate Trigger Width: ${(p.trigger_box_meters && p.trigger_box_meters.width) || 12}m × ${(p.trigger_box_meters && p.trigger_box_meters.height) || 24}m · Approach Road: ${roadWidth}m`,
       drillPerspective: 'town-or-hunting-area',
@@ -708,7 +708,7 @@ function renderTownOrHuntingAreaBigPictureSvg(activeDistrict, activeNode, active
       inspectId: p.target_node_id || activeNode.id,
       connections: [
         { label: `🧭 Direction: ${pd.dir} ➔ ${p.target_direction}`, badge: p.gate_state.toUpperCase() },
-        { label: `📍 Arrival: X=${(p.arrival_point_meters && p.arrival_point_meters.x) || 2000}m, Y=${(p.arrival_point_meters && p.arrival_point_meters.y) || 200}m`, badge: 'ARRIVAL' }
+        { label: `📍 Arrival: X=${(p.arrival_point_meters && p.arrival_point_meters.x) || 200}m, Y=${(p.arrival_point_meters && p.arrival_point_meters.y) || 20}m`, badge: 'ARRIVAL' }
       ]
     };
     return `
@@ -1724,7 +1724,7 @@ function renderStudioTownOrHuntingAreaPerspective(activeDistrict, nodes, activeN
     .filter(n => STUDIO_STATUS_FILTER === 'all' || n.status === STUDIO_STATUS_FILTER);
   const isMystery = activeNode.status === 'mystery';
   const tile = activeNode.terrain_tile || {};
-  const dims = tile.dimensions_meters || { width: 4000, height: 4000 };
+  const dims = tile.dimensions_meters || { width: 400, height: 400 };
   const portals = activeNode.portals || {};
   const portalDirs = ['North', 'South', 'East', 'West', 'Dungeon', 'Exit'];
   const kit = activeNode.asset_kit_bindings || {};

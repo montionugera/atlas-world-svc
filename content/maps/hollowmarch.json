@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "hollowmarch",
   "name": "Hollowmarch \u2014 The Palisade Line & Tally Boards",
   "seed": 338034,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "pine_forest_border",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -434,64 +435,64 @@
   "spawnAreas": [
     {
       "id": "hollowmarch_graveturf_creeper",
-      "x": 2042.5,
-      "y": 2102.7,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 204.25,
+      "y": 210.27,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-graveturf-creeper",
       "count": 4
     },
     {
       "id": "hollowmarch_palisade_borer",
-      "x": 1628.7,
-      "y": 1920.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 162.87,
+      "y": 192.02,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-palisade-borer",
       "count": 2
     },
     {
       "id": "hollowmarch_stakeline_hound",
-      "x": 2057.7,
-      "y": 1551.5,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 205.77,
+      "y": 155.15,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-stakeline-hound",
       "count": 4
     },
     {
       "id": "hollowmarch_tallyknot_wight",
-      "x": 1946.2,
-      "y": 2404.5,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 194.62,
+      "y": 240.45,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-tallyknot-wight",
       "count": 3
     },
     {
       "id": "hollowmarch_palisade_breaker",
-      "x": 1617.0,
-      "y": 1465.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 161.7,
+      "y": 146.59,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-palisade-breaker",
       "count": 2
     },
     {
       "id": "hollowmarch_hollowmoor_giant",
-      "x": 2558.5,
-      "y": 2130.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 255.85,
+      "y": 213.02,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hollowmoor-giant",
       "count": 2
     },
     {
       "id": "hollowmarch_hollow_bell_wight",
-      "x": 1355.1,
-      "y": 2391.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 135.51,
+      "y": 239.18,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-hollow-bell-wight",
       "count": 1
     }
@@ -499,24 +500,24 @@
   "staticObstacles": [
     {
       "id": "landmark_the_tally_boards_post_w",
-      "min_x": 1949.6,
-      "min_y": 1874.6,
-      "max_x": 1960.4,
-      "max_y": 1885.4
+      "min_x": 194.96,
+      "min_y": 187.46,
+      "max_x": 196.04,
+      "max_y": 188.54
     },
     {
       "id": "landmark_the_tally_boards_post_e",
-      "min_x": 2039.6,
-      "min_y": 1874.6,
-      "max_x": 2050.4,
-      "max_y": 1885.4
+      "min_x": 203.96,
+      "min_y": 187.46,
+      "max_x": 205.04,
+      "max_y": 188.54
     },
     {
       "id": "cliff_the_ore_heads_crag",
-      "min_x": 2188.0,
-      "min_y": 1708.0,
-      "max_x": 2352.0,
-      "max_y": 1872.0
+      "min_x": 218.8,
+      "min_y": 170.8,
+      "max_x": 235.2,
+      "max_y": 187.2
     }
   ]
 }

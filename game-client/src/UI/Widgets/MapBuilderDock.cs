@@ -401,7 +401,7 @@ namespace AtlasWorld.Client.UI.Widgets
 
             _statsSummaryLabel = new Label
             {
-                Text = "Map: freja-south-gate (4000x4000)",
+                Text = "Map: freja-south-gate (400x400)",
                 Modulate = new Color(0.72f, 0.86f, 0.98f)
             };
             _statsSummaryLabel.AddThemeFontSizeOverride("font_size", 10);
@@ -442,9 +442,9 @@ namespace AtlasWorld.Client.UI.Widgets
             sizeBtnRow.AddThemeConstantOverride("separation", 5);
             (float size, string label)[] mapSizes =
             {
-                (1000f, "1000\u00b2 (100m)"),
-                (2000f, "2000\u00b2 (200m)"),
-                (4000f, "4000\u00b2 (400m)")
+                (100f, "100\u00b2 (100m)"),
+                (200f, "200\u00b2 (200m)"),
+                (400f, "400\u00b2 (400m)")
             };
             foreach (var (sz, lbl) in mapSizes)
             {

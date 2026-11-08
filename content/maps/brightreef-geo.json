@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "brightreef-geo",
   "name": "Brightreef Geo \u2014 Driftholt (c07/r06)",
   "seed": 435755,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "pine_forest_border",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -531,73 +532,73 @@
   "spawnAreas": [
     {
       "id": "brightreef_geo_bramble_stalker",
-      "x": 2095.1,
-      "y": 2053.1,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 209.51,
+      "y": 205.31,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-bramble-stalker",
       "count": 4
     },
     {
       "id": "brightreef_geo_bramble_warden",
-      "x": 1641.2,
-      "y": 1917.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.12,
+      "y": 191.78,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bramble-warden",
       "count": 2
     },
     {
       "id": "brightreef_geo_gallows_meadow_shade",
-      "x": 2107.3,
-      "y": 1604.7,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 210.73,
+      "y": 160.47,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-gallows-meadow-shade",
       "count": 3
     },
     {
       "id": "brightreef_geo_millroad_brigand",
-      "x": 2126.1,
-      "y": 2312.0,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 212.61,
+      "y": 231.2,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-millroad-brigand",
       "count": 4
     },
     {
       "id": "brightreef_geo_palisade_breaker",
-      "x": 1580.3,
-      "y": 1558.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 158.03,
+      "y": 155.86,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-palisade-breaker",
       "count": 2
     },
     {
       "id": "brightreef_geo_quarrystone_beetle",
-      "x": 2478.2,
-      "y": 1701.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 247.82,
+      "y": 170.11,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-quarrystone-beetle",
       "count": 2
     },
     {
       "id": "brightreef_geo_sapdrinker_swarm",
-      "x": 1526.4,
-      "y": 2456.9,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 152.64,
+      "y": 245.69,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-sapdrinker-swarm",
       "count": 4
     },
     {
       "id": "brightreef_geo_thornveil_spearhand",
-      "x": 2067.7,
-      "y": 1194.9,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 206.77,
+      "y": 119.49,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-thornveil-spearhand",
       "count": 4
     }
@@ -605,24 +606,24 @@
   "staticObstacles": [
     {
       "id": "landmark_siltbar_rake_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_head_below_tidallobe_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_brightreef_geo_sheer_scarp_cliff",
-      "min_x": 1258.8,
-      "min_y": 2428.8,
-      "max_x": 1521.2,
-      "max_y": 2691.2
+      "min_x": 125.88,
+      "min_y": 242.88,
+      "max_x": 152.12,
+      "max_y": 269.12
     }
   ]
 }

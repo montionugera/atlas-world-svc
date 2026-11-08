@@ -4,6 +4,7 @@
 **Status:** Approved (owner: "Lock it")
 **Tier:** R0 / Brand & Narrative Core
 **Builds on:** [2026-11-07-game-title-and-player-identity.md](2026-11-07-game-title-and-player-identity.md)
+**Amended 2026-11-07:** [2026-11-07-cala-knight-legendary-title.md](2026-11-07-cala-knight-legendary-title.md) (Cala Knight is a legendary title, not the player order); chapter roadmap, NPCs and regions updated from F-178.
 
 ---
 
@@ -14,7 +15,7 @@ The world data and generators borrowed names from Lineage II (Adena, Mammon, Sou
 - **Intense, not cliché.** Real stakes and hard choices, with no chosen-one plot.
 - **Romantic and melancholic**: long lives against short ones, memory, gentle grief.
 - **A ruined world revealed in chapters.** Each chapter adds a new region and a deeper layer of the same truth.
-- **MMORPG-safe.** Thousands of players hold the same title, so no player is unique.
+- **MMORPG-safe.** Players are ordinary independent adventurers; no player is the chosen one or a Cala Knight.
 
 The premise and names came out of a 7-round discussion between Claudia (our agent) and ChatGPT in the project "Atlas: The Cala knight", 2026-11-07. The transcript is kept outside the repo, at `~/.local/state/atlas-lane/lore-discussion.md`.
 
@@ -36,7 +37,7 @@ The premise and names came out of a 7-round discussion between Claudia (our agen
 - **Yara, the Architect**, a mortal, sealed the gods in the **Great Kilns** and fired years of time into porcelain to keep the world going.
 - **Material language:** kilns store time, porcelain holds it, brass measures it, and lanterns burn what leaks out.
 - **The gods are conscious** inside the kilns, not burned as fuel. No god dies by Chapter IV.
-- **Hidden truth (Chapter III, never in player-facing text before it):** the volunteers' years ran out centuries ago. Yara secretly extended the Seal into the unborn generations' future, without their consent.
+- **Hidden truth (Chapter V, never in player-facing text before it):** the volunteers' years ran out centuries ago. Yara secretly extended the Seal into the unborn generations' future, without their consent.
 - **The long-running mystery:** what caused the Waning in the first place. The kilns only postponed it.
 
 ### Player-facing opening (spoiler-safe)
@@ -45,7 +46,7 @@ The premise and names came out of a 7-round discussion between Claudia (our agen
 > Six gods tried to save it, each in their own way. But their miracles clashed, and the world began to break. A mortal known as the Architect built the Great Kilns, sealing the gods away and restoring the passage of time.
 > Centuries passed. Brass clocks measured the hours, porcelain held them, and lanterns lit the kingdoms. People lived, laughed, and forgot how close the world had come to ending.
 > Now the porcelain is cracking. Forgotten memories are awakening, and entire villages are losing hours.
-> You are a new Cala Knight. Your first duty is simple: mend what is broken.
+> You are an independent traveller. Your first duty is simple: mend what is broken.
 
 ## 4. Glossary (locked)
 
@@ -53,10 +54,26 @@ Root language: **Q** = Quenya, **S** = Sindarin. A root marked † was picked fr
 
 ### Player order
 
-| Old               | New                | Root / meaning  |
-| ----------------- | ------------------ | --------------- |
-| Expedition Member | **Cala Knight(s)** | Q _cala_, light |
-| — (order HQ)      | **Cala Keep**      | Q _cala_ + Keep |
+| Old                | New                   | Root / meaning                                                                                                                                      |
+| ------------------ | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Expedition Member  | **Cala Knight(s)**    | Q _cala_, light. A rare legendary title held by a handful of historical heroes, numbered by person. NOT the player order; players never earn it.   |
+| — (player faction) | **Kilnwatch Wardens** | Plain English. Optional player faction at Kilnwatch Bastion, joinable at Lv 10.                                                                     |
+| — (order HQ)       | **Cala Keep**         | Q _cala_ + Keep. Kept as the historical Cala Knights' keep; unassigned in play until a story needs it.                                              |
+
+### Named NPCs (locked)
+
+Model: **18 town NPCs** (Heart / Spark / Scar per home town; names still proposals) + these **6 travellers** who cross towns. Identity, age, gender, race and home are locked; visuals, outfits and questlines are open.
+
+| NPC        | Gender / age | Race        | Home town   |
+| ---------- | ------------ | ----------- | ----------- |
+| **Pip**    | M 19         | Maro Folk   | Maro Bell   |
+| **Mika**   | F 23         | Ondo Forge  | Ondo Kiln   |
+| **Elin**   | F 27         | Linde Folk  | Linde Glaze |
+| **Garran** | M 42         | Daro Guard  | Daro Post   |
+| **Kiko**   | M 21         | Tava Kin    | Tava Fair   |
+| **Isil**   | F 20         | Silme Seers | Silme Echo  |
+
+Isil: Q _isil_, moon (owner-approved rename).
 
 ### Races and home towns
 
@@ -98,21 +115,42 @@ The old→new god rows are **replacements, not lineage**. Each new god is define
 
 ### Regions
 
-Maro Valley · Ondo Heights · Tava Grove · Silme Deep · The First Kiln.
+Maro Valley · Ondo Heights · Tava Grove · Silme Deep · The First Kiln · Nara Reach · Vinya Hollow · Tira Ridge · Kilnwatch Bastion.
+
+Nara Reach, Vinya Hollow and Tira Ridge are proposed region names.
+
+### Retired names
+
+**Lumi** (near-twin of Luma; the Silme traveller is now Isil). Borrowed names retired in §1: Adena, Mammon, Soulshot, Spiritshot, Giran, Seven Signs, Tontatta, Mink, Lunarian, Bahamut, Fenrir.
 
 ## 5. Chapter roadmap
 
-Each chapter has a visible wound, a buried truth, a choice that is not neatly resolved, and a boss. Every choice has a personal outcome, while the shared world state stays the same for everyone.
+Structure (owner "Lock", 2026-11-07): **Prologue** (race home town, Lv 1-10) -> **Kilnwatch Bastion** (Lv 10, shared hub; joining the Kilnwatch Wardens is offered, not forced) -> **Ch 0-VIII**. Each chapter has a visible wound, a buried truth, a choice that is not neatly resolved, and a boss. One canonical world outcome; personal instances, relationships and regional support may differ. **Build Ch 0-II first; III-VIII are roadmap, not a launch commitment.** Full detail: F-178 spec.
 
-| Ch  | Title                                        | Region / race focus                                         | Reveals                                                                           | Boss                                                                                             |
-| --- | -------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| 0   | The Lanterns of Maro                         | Maro Valley / Maro Folk                                     | Time is **damaged**, and porcelain stores fragments of it. No theft is shown yet. | The Bellkeeper: its bell rewinds the arena, and players keep their memory of the attack pattern. |
-| I   | The Hours That Would Not Pass                | Ondo Heights / Ondo Forge + Daro Guard; Luma's Still Kiln   | The first volunteers' sacrifice was not enough, and Yara knew it.                 | The Brass Castellan: steals seconds from player abilities.                                       |
-| II  | The Festival of Second Chances (warm, funny) | Tava Grove / Tava Kin + Linde Folk; Rena's Remembrance Kiln | The gods are still conscious inside the kilns.                                    | The Jubilant Collector: repeats the last combat phase.                                           |
-| III | The Years Beneath the Glaze                  | Silme Deep / Silme Seers; Olo's Glass Kiln                  | **The theft from the unborn.**                                                    | The Unborn Witness: shows several futures, then one becomes real.                                |
-| IV  | The Architect's Silence                      | The First Kiln / all six                                    | Yara's reasons. The kilns only postponed the Waning.                              | The First Regulator: players spread finite stored years across six failing conduits.             |
+| Ch   | Title                          | Region / Kiln                        | Lv    | Shared event                                                       | Personal outcome                        | Boss                   |
+| ---- | ------------------------------ | ------------------------------------ | ----- | ------------------------------------------------------------------ | --------------------------------------- | ---------------------- |
+| 0    | The Lanterns of Maro           | Maro Valley                          | 10-15 | disturbance contained; porcelain stores damaged time               | help a family                           | The Bellkeeper         |
+| I    | The Hours That Would Not Pass  | Ondo Heights / Luma's Still Kiln     | 15-25 | volunteers' sacrifice revealed; Yara knew it would eventually fail | finish a craftsperson's legacy          | The Brass Castellan    |
+| II   | The Festival of Second Chances | Tava Grove / Rena's Remembrance Kiln | 25-35 | Rena conscious; divine speech can be bound by oaths                | restore a friendship's memory           | The Jubilant Collector |
+| III  | The Ember Debt                 | Nara Reach / Nara's Ember Kiln       | 35-45 | mending is zero-sum                                                | resolve a failed watch                  | The Tithe Warden       |
+| IV   | What Will Not Wilt             | Vinya Hollow / Vinya's Green Kiln    | 45-55 | six miracles active and contained; more evidence of Tira's oath    | resolve a long farewell                 | The Unwilting          |
+| V    | The Years Beneath the Glaze    | Silme Deep / Olo's Glass Kiln        | 55-65 | **theft from the unborn revealed** (was Ch III); records preserved | reinterpret birth token                 | The Unborn Witness     |
+| VI   | The Sworn Hour                 | Tira Ridge / Tira's Sentinel Kiln    | 65-75 | Tira knows the cause, cannot disclose                              | competing interpretations of the oath   | The Sworn Sentinel     |
+| VII  | The Unstamped Hours            | Kilnwatch Bastion / The Unstamped    | 75-87 | rationing records exposed; reforms debated                         | support a village; carries into Ch VIII | The Counterfeit Hour   |
+| VIII | The Architect's Silence        | The First Kiln / all six             | 87-99 | Yara's reasons; Regulator contained; kilns postponed, not cured    | how to remember Yara                    | The First Regulator    |
 
-Chapter IV ends with Yara still bound in the regulator and all six gods alive. The next saga asks what caused the Waning.
+Chapter VIII ends with Yara still bound in the regulator and all six gods alive. The next saga asks what caused the Waning.
+
+### Locked rules (owner "Lock", 2026-11-07)
+
+- **Birth token:** many millions were born in the lean years and carry a brass-edged porcelain token with a short-stamped counting mark. Ordinary keepsake: no power, no lifespan prediction, never required or checked by any quest or mechanic. Optional dialogue may acknowledge it generically.
+- **Volunteers' Road:** the route through the chapter regions is the road the first volunteers walked. Regional memorials, markers and customs each tell a different human story; not every region needs an identical memorial.
+- **Ch VII personal choice:** the player's relief-allocation choice changes their own village's presented condition and which NPCs support them in Ch VIII; never shared world state or other players' outcomes. Launch minimum: one personalised follow-up conversation + one returning NPC who acknowledges the choice.
+- **Deferred:** Yara's motherhood (imagery only: the recording beside a sleeping child, "she chose the children in front of her"; not promised as a mystery). A god voluntarily holding a seal (unapproved Exp II possibility only).
+
+### Tone C (locked)
+
+Warm adventure and friendship first, painful truth revealed gradually. Early-game guideline: 70% adventure / friendship / humour, 30% mystery and unease (a guideline, not a formula). Not every town is sad; not every NPC has a cruel past.
 
 **Tone guard:** not every quest should be tragic. Warm taverns, festivals and ridiculous friendships make the grief land.
 
@@ -130,3 +168,5 @@ Chapter IV ends with Yara still bound in the regulator and all six gods alive. T
 2. **Silme vs Hise** for the seal-listeners: Silme is a real root but sits close to _Silmaril_. Swap if a reviewer flags it.
 3. **No trademark or name-collision search** has been run on the compounds (Cala Keep, Timeflint, Spellglaze, ...).
 4. **The existing concept art** uses the old race designs. New prompts should use the new names and themes.
+5. **Individual Cala Knights' identities and timelines are not locked.** Expansion I follows the Last Cala Knight (female, unnumbered; see the legendary-title decision).
+6. **18 town NPC names are proposals.** Mira (near-twin of Mika/Maro) and Thessa (uses `th`) must be renamed.

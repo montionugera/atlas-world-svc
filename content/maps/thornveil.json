@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "thornveil",
   "name": "Thornveil \u2014 The Heartwood Bramble",
   "seed": 954625,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "pine_forest_border",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -422,127 +423,127 @@
   "spawnAreas": [
     {
       "id": "thornveil_bramble_shoot",
-      "x": 2078.5,
-      "y": 2101.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 207.85,
+      "y": 210.17,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bramble-shoot",
       "count": 2
     },
     {
       "id": "thornveil_thicket_hopper",
-      "x": 1666.2,
-      "y": 1863.7,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 166.62,
+      "y": 186.37,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-thicket-hopper",
       "count": 4
     },
     {
       "id": "thornveil_veil_cub",
-      "x": 1967.1,
-      "y": 1623.7,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 196.71,
+      "y": 162.37,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-veil-cub",
       "count": 4
     },
     {
       "id": "thornveil_bramble_stalker",
-      "x": 1962.1,
-      "y": 2257.4,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 196.21,
+      "y": 225.74,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-bramble-stalker",
       "count": 4
     },
     {
       "id": "thornveil_thornhusk_weaver",
-      "x": 1554.6,
-      "y": 1840.2,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 155.46,
+      "y": 184.02,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-thornhusk-weaver",
       "count": 3
     },
     {
       "id": "thornveil_veil_spearling",
-      "x": 2304.1,
-      "y": 1750.1,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 230.41,
+      "y": 175.01,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-veil-spearling",
       "count": 4
     },
     {
       "id": "thornveil_bramble_warden",
-      "x": 1678.1,
-      "y": 2316.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 167.81,
+      "y": 231.66,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bramble-warden",
       "count": 2
     },
     {
       "id": "thornveil_sapdrinker_swarm",
-      "x": 2105.9,
-      "y": 1455.9,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 210.59,
+      "y": 145.59,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-sapdrinker-swarm",
       "count": 4
     },
     {
       "id": "thornveil_thornveil_spearhand",
-      "x": 2303.8,
-      "y": 2299.8,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 230.38,
+      "y": 229.98,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-thornveil-spearhand",
       "count": 4
     },
     {
       "id": "thornveil_bramble_drake",
-      "x": 1356.4,
-      "y": 1895.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 135.64,
+      "y": 189.53,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bramble-drake",
       "count": 2
     },
     {
       "id": "thornveil_briar_caller",
-      "x": 2510.1,
-      "y": 1703.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 251.01,
+      "y": 170.32,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-briar-caller",
       "count": 2
     },
     {
       "id": "thornveil_bramble_mother",
-      "x": 1574.5,
-      "y": 2491.2,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 157.45,
+      "y": 249.12,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-bramble-mother",
       "count": 1
     },
     {
       "id": "thornveil_thorncrown_drake",
-      "x": 1643.3,
-      "y": 1313.3,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 164.33,
+      "y": 131.33,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-thorncrown-drake",
       "count": 1
     },
     {
       "id": "thornveil_heartwood_tyrant",
-      "x": 2667.7,
-      "y": 1786.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 266.77,
+      "y": 178.61,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-heartwood-tyrant",
       "count": 1
     }
@@ -550,24 +551,24 @@
   "staticObstacles": [
     {
       "id": "landmark_the_heartwood_tree",
-      "min_x": 1991.7,
-      "min_y": 1831.7,
-      "max_x": 2008.3,
-      "max_y": 1848.3
+      "min_x": 199.17,
+      "min_y": 183.17,
+      "max_x": 200.83,
+      "max_y": 184.83
     },
     {
       "id": "landmark_crown_thickets_pillar",
-      "min_x": 2059.9,
-      "min_y": 1874.9,
-      "max_x": 2070.1,
-      "max_y": 1885.1
+      "min_x": 205.99,
+      "min_y": 187.49,
+      "max_x": 207.01,
+      "max_y": 188.51
     },
     {
       "id": "cliff_thorn_wall_sheer_crag",
-      "min_x": 2198.0,
-      "min_y": 1698.0,
-      "max_x": 2362.0,
-      "max_y": 1862.0
+      "min_x": 219.8,
+      "min_y": 169.8,
+      "max_x": 236.2,
+      "max_y": 186.2
     }
   ]
 }

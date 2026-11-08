@@ -30,7 +30,7 @@ fn test_derived_stats_parity_with_contracts() {
     assert_eq!(lvl1_sword.m_atk, 0.0);
     assert!((lvl1_sword.p_def - 6.0).abs() < 1e-4);
     assert!((lvl1_sword.m_def - 6.0).abs() < 1e-4);
-    assert!((lvl1_sword.max_move_speed - 20.2).abs() < 1e-4);
+    assert!((lvl1_sword.max_move_speed - 3.03).abs() < 1e-4);
 
     // 2. Archetype: Strength Warrior (Level 10, Str=35, Vit=25)
     let warrior_primary = PrimaryStats {
@@ -59,7 +59,7 @@ fn test_derived_stats_parity_with_contracts() {
         lvl10_warrior.p_def
     );
     assert_eq!(lvl10_warrior.p_def, lvl10_warrior.m_def);
-    assert_eq!(lvl10_warrior.max_move_speed, 22.0);
+    assert!((lvl10_warrior.max_move_speed - 3.3).abs() < 1e-4);
 
     // 3. Archetype: Intelligence Mage (Level 10, Int=40, Vit=15, apprentice_staff)
     let mage_primary = PrimaryStats {
@@ -85,7 +85,7 @@ fn test_derived_stats_parity_with_contracts() {
     };
     let lvl10_rogue = derived_stats(10, &rogue_primary, Some("basic_sword"));
 
-    assert_eq!(lvl10_rogue.max_move_speed, 30.0);
+    assert!((lvl10_rogue.max_move_speed - 4.5).abs() < 1e-4);
 }
 
 #[tokio::test]
@@ -148,7 +148,7 @@ async fn test_nakama_client_mock_rpc() {
 
 #[test]
 fn test_spawn_player_with_persistent_loadout() {
-    let mut sim = AtlasSimulation::new(0x42, 1000.0, 1000.0);
+    let mut sim = AtlasSimulation::new(0x42, 100.0, 100.0);
 
     // 1. Spawn player with custom Level 10 warrior loadout
     let loadout = LoadoutSnapshot {
@@ -174,7 +174,7 @@ fn test_spawn_player_with_persistent_loadout() {
     assert!(expected.p_atk > 30.0);
 
     let session_id = "hero-warrior-10";
-    let entity = sim.spawn_player_avatar_with_loadout(session_id, 350.0, 450.0, Some(&loadout));
+    let entity = sim.spawn_player_avatar_with_loadout(session_id, 35.0, 45.0, Some(&loadout));
 
     // Verify ECS component properties
     let health = sim.world.get::<Health>(entity).unwrap();
@@ -196,14 +196,14 @@ fn test_spawn_player_with_persistent_loadout() {
 
     let avatar = sim.world.get::<PlayerAvatar>(entity).unwrap();
     assert_eq!(avatar.session_id, session_id);
-    assert_eq!(avatar.speed, expected.max_move_speed * 10.0);
+    assert_eq!(avatar.speed, expected.max_move_speed);
 
     let pos = sim.world.get::<Position>(entity).unwrap();
-    assert_eq!(pos.x, 350.0);
-    assert_eq!(pos.y, 450.0);
+    assert_eq!(pos.x, 35.0);
+    assert_eq!(pos.y, 45.0);
 
     // 2. Spawn player with None falls back to Level 1 basic defaults
-    let entity_default = sim.spawn_player_avatar("hero-rookie-1", 100.0, 100.0);
+    let entity_default = sim.spawn_player_avatar("hero-rookie-1", 10.0, 10.0);
     let health_def = sim.world.get::<Health>(entity_default).unwrap();
     assert!((health_def.max - 110.0).abs() < 1e-4);
     let combat_def = sim.world.get::<CombatStats>(entity_default).unwrap();
@@ -347,7 +347,7 @@ async fn test_ws_join_applies_saved_character_loadout_in_live_tick() {
     assert!((combat.defense - expected.p_def).abs() < 1e-3);
     assert!((elem.p_def - expected.p_def).abs() < 1e-3);
     assert!((elem.m_def - expected.m_def).abs() < 1e-3);
-    assert!((avatar.speed - expected.max_move_speed * 10.0).abs() < 1e-3);
+    assert!((avatar.speed - expected.max_move_speed).abs() < 1e-3);
 
     ws_saved.close(None).await.unwrap();
     ws_fresh.close(None).await.unwrap();
@@ -355,16 +355,16 @@ async fn test_ws_join_applies_saved_character_loadout_in_live_tick() {
 
 #[test]
 fn test_mob_kill_records_match_event() {
-    let mut sim = AtlasSimulation::new(0x1337c0de, 1000.0, 1000.0);
+    let mut sim = AtlasSimulation::new(0x1337c0de, 100.0, 100.0);
 
     // Spawn player avatar
     let player_id = "player-slayer-99";
-    let player_entity = sim.spawn_player_avatar(player_id, 500.0, 500.0);
+    let player_entity = sim.spawn_player_avatar(player_id, 50.0, 50.0);
 
     // Buff player attack to ensure single-hit kill and zero cooldown
     if let Some(mut combat) = sim.world.get_mut::<CombatStats>(player_entity) {
         combat.attack_power = 200.0;
-        combat.attack_range = 60.0;
+        combat.attack_range = 6.0;
         combat.attack_cooldown = 0.05;
         combat.cooldown_timer = 0.0;
     }
@@ -378,14 +378,14 @@ fn test_mob_kill_records_match_event() {
     let mob_id = "veil_spearling_alpha";
     sim.world.spawn((
         EntityId(mob_id.to_string()),
-        Position::new(520.0, 500.0),
+        Position::new(52.0, 50.0),
         server_rs::ecs::Velocity::zero(),
         Health::new(50.0),
         MobTag,
         CombatStats {
             attack_power: 5.0,
             defense: 0.0,
-            attack_range: 20.0,
+            attack_range: 2.0,
             attack_cooldown: 1.0,
             cooldown_timer: 1.0,
             is_player: false,
@@ -423,15 +423,15 @@ async fn test_match_event_buffer_flushes_on_leave_and_on_interval_with_nakama_rp
     //    players flush on the buffered interval (`tick`).
     // 4. `NakamaClient::report_match_events` sends JSON matching `nakama/src/rpc/reportMatchEvents.ts`
     //    (`userId`, `matchId`, monotonically increasing `seq`, and `events: [{ type: "MOB_KILLED", userId, targetId, count: 1 }]`).
-    let mut sim = AtlasSimulation::new(0x1337c0de, 1000.0, 1000.0);
+    let mut sim = AtlasSimulation::new(0x1337c0de, 100.0, 100.0);
 
     let uid_leaver = "00000000-0000-4000-8000-000000000141";
     let uid_stayer = "00000000-0000-4000-8000-000000000142";
 
-    let e_leaver = sim.spawn_player_avatar(uid_leaver, 200.0, 200.0);
+    let e_leaver = sim.spawn_player_avatar(uid_leaver, 20.0, 20.0);
     if let Some(mut c) = sim.world.get_mut::<CombatStats>(e_leaver) {
         c.attack_power = 250.0;
-        c.attack_range = 50.0;
+        c.attack_range = 5.0;
         c.cooldown_timer = 0.0;
     }
     sim.world
@@ -439,10 +439,10 @@ async fn test_match_event_buffer_flushes_on_leave_and_on_interval_with_nakama_rp
         .unwrap()
         .attack = true;
 
-    let e_stayer = sim.spawn_player_avatar(uid_stayer, 600.0, 600.0);
+    let e_stayer = sim.spawn_player_avatar(uid_stayer, 60.0, 60.0);
     if let Some(mut c) = sim.world.get_mut::<CombatStats>(e_stayer) {
         c.attack_power = 250.0;
-        c.attack_range = 50.0;
+        c.attack_range = 5.0;
         c.cooldown_timer = 0.0;
     }
     sim.world
@@ -453,15 +453,15 @@ async fn test_match_event_buffer_flushes_on_leave_and_on_interval_with_nakama_rp
     // Spawn two mobs with both runtime EntityId("mob-0"/"mob-1") AND MobSpawnAnchor template IDs
     sim.world.spawn((
         EntityId("mob-0".to_string()),
-        MobSpawnAnchor::new(Position::new(220.0, 200.0), "boar", MobTier::Verge, 5.0),
-        Position::new(220.0, 200.0),
+        MobSpawnAnchor::new(Position::new(22.0, 20.0), "boar", MobTier::Verge, 0.5),
+        Position::new(22.0, 20.0),
         server_rs::ecs::Velocity::zero(),
         Health::new(40.0),
         MobTag,
         CombatStats {
             attack_power: 5.0,
             defense: 0.0,
-            attack_range: 20.0,
+            attack_range: 2.0,
             attack_cooldown: 1.0,
             cooldown_timer: 1.0,
             is_player: false,
@@ -470,19 +470,19 @@ async fn test_match_event_buffer_flushes_on_leave_and_on_interval_with_nakama_rp
     sim.world.spawn((
         EntityId("mob-1".to_string()),
         MobSpawnAnchor::new(
-            Position::new(620.0, 600.0),
+            Position::new(62.0, 60.0),
             "veil_spearling",
             MobTier::Verge,
             5.0,
         ),
-        Position::new(620.0, 600.0),
+        Position::new(62.0, 60.0),
         server_rs::ecs::Velocity::zero(),
         Health::new(40.0),
         MobTag,
         CombatStats {
             attack_power: 5.0,
             defense: 0.0,
-            attack_range: 20.0,
+            attack_range: 2.0,
             attack_cooldown: 1.0,
             cooldown_timer: 1.0,
             is_player: false,
@@ -609,7 +609,7 @@ async fn test_save_and_restore_position_and_health_on_interval_on_leave_and_acro
     let mut state_buf1 = CharacterStateBuffer::new(Duration::from_secs(5)).with_initial_seq(100);
 
     // Player joins and moves to (312.5, 640.0) with 74.5 HP
-    let entity1 = sim1.spawn_player_avatar(uid, 312.5, 640.0);
+    let entity1 = sim1.spawn_player_avatar(uid, 31.25, 64.0);
     sim1.world.get_mut::<Health>(entity1).unwrap().current = 74.5;
 
     // Periodic 5s checkpoint fires before server crash
@@ -618,8 +618,8 @@ async fn test_save_and_restore_position_and_health_on_interval_on_leave_and_acro
     let checkpoint_states = state_buf1.flush_all();
     assert_eq!(checkpoint_states.len(), 1);
     assert_eq!(checkpoint_states[0].0, uid);
-    assert!((checkpoint_states[0].1.x - 312.5).abs() < 1e-3);
-    assert!((checkpoint_states[0].1.y - 640.0).abs() < 1e-3);
+    assert!((checkpoint_states[0].1.x - 31.25).abs() < 1e-3);
+    assert!((checkpoint_states[0].1.y - 64.0).abs() < 1e-3);
     assert!((checkpoint_states[0].1.health - 74.5).abs() < 1e-3);
     assert_eq!(checkpoint_states[0].1.seq, 100);
 
@@ -632,8 +632,8 @@ async fn test_save_and_restore_position_and_health_on_interval_on_leave_and_acro
             &CharacterStateSnapshot {
                 schema_version: 1,
                 map_id: "map-for-play".to_string(),
-                x: 10.0,
-                y: 10.0,
+                x: 1.0,
+                y: 1.0,
                 health: 10.0,
                 seq: 99,
             },
@@ -666,8 +666,8 @@ async fn test_save_and_restore_position_and_health_on_interval_on_leave_and_acro
         .iter()
         .find(|e| e.id == fnv1a_32(uid))
         .expect("rejoined player must appear in snapshot");
-    assert!((wire_player.x - 312.5).abs() < 1e-3);
-    assert!((wire_player.y - 640.0).abs() < 1e-3);
+    assert!((wire_player.x - 31.25).abs() < 1e-3);
+    assert!((wire_player.y - 64.0).abs() < 1e-3);
     assert!((wire_player.health - 74.5).abs() < 1e-3);
 
     // Player moves to (777.0, 222.0) and heals/changes HP to 92.0, then leaves cleanly
@@ -676,8 +676,8 @@ async fn test_save_and_restore_position_and_health_on_interval_on_leave_and_acro
         .query::<(&EntityId, &mut Position, &mut Health)>();
     for (id, mut pos, mut hp) in q.iter_mut(&mut sim2.world) {
         if id.0 == uid {
-            pos.x = 777.0;
-            pos.y = 222.0;
+            pos.x = 77.7;
+            pos.y = 22.2;
             hp.current = 92.0;
         }
     }
@@ -685,8 +685,8 @@ async fn test_save_and_restore_position_and_health_on_interval_on_leave_and_acro
     let frame_leave = sim2.live_tick(&[], &[uid.to_string()]);
     assert_eq!(frame_leave.departed_states.len(), 1);
     assert_eq!(frame_leave.departed_states[0].0, uid);
-    assert!((frame_leave.departed_states[0].1.x - 777.0).abs() < 1e-3);
-    assert!((frame_leave.departed_states[0].1.y - 222.0).abs() < 1e-3);
+    assert!((frame_leave.departed_states[0].1.x - 77.7).abs() < 1e-3);
+    assert!((frame_leave.departed_states[0].1.y - 22.2).abs() < 1e-3);
     assert!((frame_leave.departed_states[0].1.health - 92.0).abs() < 1e-3);
 
     // Flush on leave over real HTTP to NakamaClient
@@ -732,8 +732,8 @@ async fn test_save_and_restore_position_and_health_on_interval_on_leave_and_acro
     assert_eq!(received.len(), 1);
     assert_eq!(received[0]["userId"], uid);
     assert_eq!(received[0]["mapId"], "map-for-play");
-    assert!((received[0]["x"].as_f64().unwrap() - 777.0).abs() < 1e-3);
-    assert!((received[0]["y"].as_f64().unwrap() - 222.0).abs() < 1e-3);
+    assert!((received[0]["x"].as_f64().unwrap() - 77.7).abs() < 1e-3);
+    assert!((received[0]["y"].as_f64().unwrap() - 22.2).abs() < 1e-3);
     assert!((received[0]["health"].as_f64().unwrap() - 92.0).abs() < 1e-3);
     assert_eq!(received[0]["seq"], 200);
 }
@@ -757,7 +757,7 @@ fn test_session_resume_within_grace_window_and_expiry_after_grace() {
     assert_eq!(sim.disconnect_grace_ticks(), 3);
 
     // 1. Spawn player and move them to (420.0, 580.0) with 63.0 HP while holding movement
-    let entity = sim.spawn_player_avatar(uid, 420.0, 580.0);
+    let entity = sim.spawn_player_avatar(uid, 42.0, 58.0);
     sim.world.get_mut::<Health>(entity).unwrap().current = 63.0;
     let move_pkt = server_rs::net::ClientPacket {
         session_id: uid.to_string(),
@@ -771,7 +771,7 @@ fn test_session_resume_within_grace_window_and_expiry_after_grace() {
         .find(|e| e.id == fnv1a_32(uid))
         .unwrap()
         .x;
-    assert!(after_move_x > 420.0);
+    assert!(after_move_x > 42.0);
 
     // 2. Connection drops on tick 2 -> enters 3-tick grace window; velocity is zeroed; avatar stays
     let frame_drop = sim.live_tick(&[], &[uid.to_string()]);
@@ -808,7 +808,7 @@ fn test_session_resume_within_grace_window_and_expiry_after_grace() {
         .find(|e| e.id == fnv1a_32(uid))
         .expect("resumed avatar must remain in snapshot");
     assert!((wire_resumed.x - after_move_x).abs() < 1e-3);
-    assert!((wire_resumed.y - 580.0).abs() < 1e-3);
+    assert!((wire_resumed.y - 58.0).abs() < 1e-3);
     assert!((wire_resumed.health - 63.0).abs() < 1e-3);
 
     // Tick 5 & 6 after resume: avatar does NOT expire because grace countdown was cancelled

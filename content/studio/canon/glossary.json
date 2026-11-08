@@ -1,0 +1,616 @@
+{
+  "version": 1,
+  "source": "docs/superpowers/decisions/2026-11-07-own-vocabulary-glossary.md",
+  "premise": {
+    "canon": "The gods tried to save tomorrow. The Architect stole it.",
+    "opening": [
+      "Long ago, the world began running out of tomorrows.",
+      "Six gods tried to save it, each in their own way. But their miracles clashed, and the world began to break. A mortal known as the Architect built the Great Kilns, sealing the gods away and restoring the passage of time.",
+      "Centuries passed. Brass clocks measured the hours, porcelain held them, and lanterns lit the kingdoms. People lived, laughed, and forgot how close the world had come to ending.",
+      "Now the porcelain is cracking. Forgotten memories are awakening, and entire villages are losing hours.",
+      "You are an independent traveller. Your first duty is simple: mend what is broken."
+    ]
+  },
+  "naming_rule": [
+    "Title stays Atlas: The Cala Knight. Every new proper name is an Elvish root (Tolkien's Quenya or Sindarin) plus a plain English word, or plain evocative English.",
+    "Build names from roots, never from existing Tolkien names (no Gondor, Elrond, Silmaril, Voronwë, Tamar).",
+    "At most two names per first letter across races, gods and the Architect. No near-twins such as Nira/Nara.",
+    "Names must be easy to say in Thai and English. Avoid th and heavy consonant clusters.",
+    "Every key English word (Hearth, Oath, Watch, ...) is used in at most one key name."
+  ],
+  "titles": [
+    {
+      "name": "Cala Knight",
+      "meaning": "Q cala, light. A rare legendary title held by a handful of historical heroes, numbered by person. NOT the player order; players never earn it."
+    },
+    {
+      "name": "Kilnwatch Wardens",
+      "meaning": "Plain English. Optional player faction at Kilnwatch Bastion, joinable at Lv 10."
+    },
+    {
+      "name": "Cala Keep",
+      "meaning": "Q cala + Keep. Kept as the historical Cala Knights' keep; unassigned in play until a story needs it."
+    }
+  ],
+  "races": [
+    {
+      "id": "maro",
+      "name": "Maro Folk",
+      "old_name": "Human / Demi-Human",
+      "home_town": "Maro Bell",
+      "root": "Q már, home",
+      "theme": "The Short Candle: begin what you cannot finish"
+    },
+    {
+      "id": "ondo",
+      "name": "Ondo Forge",
+      "old_name": "Dwarf (Tontatta)",
+      "home_town": "Ondo Kiln",
+      "root": "Q ondo, stone",
+      "theme": "The Things We Leave: make what is loved after you are gone"
+    },
+    {
+      "id": "linde",
+      "name": "Linde Folk",
+      "old_name": "Lunar (elf-like)",
+      "home_town": "Linde Glaze",
+      "root": "Q lindë, song",
+      "theme": "The Endless Farewell: choose to love what you will outlive"
+    },
+    {
+      "id": "daro",
+      "name": "Daro Guard",
+      "old_name": "Ogre / Orc",
+      "home_town": "Daro Post",
+      "root": "S daro, halt",
+      "theme": "The Unbroken Watch: when does loyalty become a prison?"
+    },
+    {
+      "id": "tava",
+      "name": "Tava Kin",
+      "old_name": "Furral (Mink)",
+      "home_town": "Tava Fair",
+      "root": "Q tavar, wood / forest (unchecked)",
+      "theme": "The Passing Spark: imperfect remembrance beats silence"
+    },
+    {
+      "id": "silme",
+      "name": "Silme Seers",
+      "old_name": "Dark-Lunar",
+      "home_town": "Silme Echo",
+      "root": "Q silmë, starlight (fallback Hise Seers, Q hísë, mist)",
+      "theme": "The Burden of Knowing: truth does not always bring peace"
+    }
+  ],
+  "gods": [
+    {
+      "id": "rena",
+      "name": "Rena",
+      "title": "the Memory Keeper",
+      "domain": "memory",
+      "old_name": "Vesper",
+      "root": "Q ren-, remember (unchecked)",
+      "kiln": "Remembrance Kiln",
+      "kiln_region": "Tava Grove"
+    },
+    {
+      "id": "luma",
+      "name": "Luma",
+      "title": "the Still Hour",
+      "domain": "time / brass",
+      "old_name": "Krono",
+      "root": "Q lúmë, time / hour",
+      "kiln": "Still Kiln",
+      "kiln_region": "Ondo Heights"
+    },
+    {
+      "id": "olo",
+      "name": "Olo",
+      "title": "the Dreamtide",
+      "domain": "dream",
+      "old_name": "Thalassor",
+      "root": "Q olor, dream",
+      "kiln": "Glass Kiln",
+      "kiln_region": "Silme Deep"
+    },
+    {
+      "id": "nara",
+      "name": "Nara",
+      "title": "the Last Ember",
+      "domain": "fire",
+      "old_name": "Malphas",
+      "root": "Q nár, fire",
+      "kiln": "Ember Kiln",
+      "kiln_region": "Nara Reach"
+    },
+    {
+      "id": "vinya",
+      "name": "Vinya",
+      "title": "the Everroot",
+      "domain": "growth",
+      "old_name": "Fenrir-Kael / Sola",
+      "root": "Q vinya, new",
+      "kiln": "Green Kiln",
+      "kiln_region": "Vinya Hollow"
+    },
+    {
+      "id": "tira",
+      "name": "Tira",
+      "title": "the Final Watch",
+      "domain": "watch",
+      "old_name": "Seraphiel / Bahamut-Triad",
+      "root": "Q tir-, watch",
+      "kiln": "Sentinel Kiln",
+      "kiln_region": "Tira Ridge"
+    }
+  ],
+  "architect": {
+    "name": "Yara",
+    "title": "the Architect",
+    "alt_title": "The First Kiln",
+    "old_name": "Aethelgard",
+    "root": "Q yára, ancient"
+  },
+  "regions": [
+    {
+      "name": "Maro Valley",
+      "status": "canon"
+    },
+    {
+      "name": "Ondo Heights",
+      "status": "canon"
+    },
+    {
+      "name": "Tava Grove",
+      "status": "canon"
+    },
+    {
+      "name": "Silme Deep",
+      "status": "canon"
+    },
+    {
+      "name": "The First Kiln",
+      "status": "canon"
+    },
+    {
+      "name": "Kilnwatch Bastion",
+      "status": "canon"
+    },
+    {
+      "name": "Nara Reach",
+      "status": "proposed"
+    },
+    {
+      "name": "Vinya Hollow",
+      "status": "proposed"
+    },
+    {
+      "name": "Tira Ridge",
+      "status": "proposed"
+    }
+  ],
+  "economy": [
+    {
+      "old": "Adena",
+      "new": "Daymarks",
+      "meaning": "everyday coin"
+    },
+    {
+      "old": "Ancient Adena",
+      "new": "Firstmarks",
+      "meaning": "pre-Seal coin"
+    },
+    {
+      "old": "Soulshot",
+      "new": "Timeflint",
+      "meaning": "physical attack booster"
+    },
+    {
+      "old": "Spiritshot",
+      "new": "Spellglaze",
+      "meaning": "magic attack booster"
+    },
+    {
+      "old": "Mammon",
+      "new": "The Unstamped",
+      "meaning": "itinerant black-market trader"
+    },
+    {
+      "old": "Seven Signs",
+      "new": "The Bell Reckoning",
+      "meaning": "recurring world event"
+    }
+  ],
+  "chapters": [
+    {
+      "ch": "0",
+      "title": "The Lanterns of Maro",
+      "region": "Maro Valley",
+      "lv": "10-15",
+      "shared_event": "disturbance contained; porcelain stores damaged time",
+      "personal_outcome": "help a family",
+      "boss": "The Bellkeeper"
+    },
+    {
+      "ch": "I",
+      "title": "The Hours That Would Not Pass",
+      "region": "Ondo Heights / Luma's Still Kiln",
+      "lv": "15-25",
+      "shared_event": "volunteers' sacrifice revealed; Yara knew it would eventually fail",
+      "personal_outcome": "finish a craftsperson's legacy",
+      "boss": "The Brass Castellan"
+    },
+    {
+      "ch": "II",
+      "title": "The Festival of Second Chances",
+      "region": "Tava Grove / Rena's Remembrance Kiln",
+      "lv": "25-35",
+      "shared_event": "Rena conscious; divine speech can be bound by oaths",
+      "personal_outcome": "restore a friendship's memory",
+      "boss": "The Jubilant Collector"
+    },
+    {
+      "ch": "III",
+      "title": "The Ember Debt",
+      "region": "Nara Reach / Nara's Ember Kiln",
+      "lv": "35-45",
+      "shared_event": "mending is zero-sum",
+      "personal_outcome": "resolve a failed watch",
+      "boss": "The Tithe Warden"
+    },
+    {
+      "ch": "IV",
+      "title": "What Will Not Wilt",
+      "region": "Vinya Hollow / Vinya's Green Kiln",
+      "lv": "45-55",
+      "shared_event": "six miracles active and contained; more evidence of Tira's oath",
+      "personal_outcome": "resolve a long farewell",
+      "boss": "The Unwilting"
+    },
+    {
+      "ch": "V",
+      "title": "The Years Beneath the Glaze",
+      "region": "Silme Deep / Olo's Glass Kiln",
+      "lv": "55-65",
+      "shared_event": "theft from the unborn revealed (was Ch III); records preserved",
+      "personal_outcome": "reinterpret birth token",
+      "boss": "The Unborn Witness"
+    },
+    {
+      "ch": "VI",
+      "title": "The Sworn Hour",
+      "region": "Tira Ridge / Tira's Sentinel Kiln",
+      "lv": "65-75",
+      "shared_event": "Tira knows the cause, cannot disclose",
+      "personal_outcome": "competing interpretations of the oath",
+      "boss": "The Sworn Sentinel"
+    },
+    {
+      "ch": "VII",
+      "title": "The Unstamped Hours",
+      "region": "Kilnwatch Bastion / The Unstamped",
+      "lv": "75-87",
+      "shared_event": "rationing records exposed; reforms debated",
+      "personal_outcome": "support a village; carries into Ch VIII",
+      "boss": "The Counterfeit Hour"
+    },
+    {
+      "ch": "VIII",
+      "title": "The Architect's Silence",
+      "region": "The First Kiln / all six",
+      "lv": "87-99",
+      "shared_event": "Yara's reasons; Regulator contained; kilns postponed, not cured",
+      "personal_outcome": "how to remember Yara",
+      "boss": "The First Regulator"
+    }
+  ],
+  "npcs": {
+    "model": "18 town NPCs (Heart/Spark/Scar per home town) + 6 travellers; Maro Bell cast is the prototype, other towns still proposals",
+    "travellers": [
+      {
+        "name": "Pip",
+        "gender": "M",
+        "age": 19,
+        "race": "Maro Folk",
+        "home_town": "Maro Bell"
+      },
+      {
+        "name": "Mika",
+        "gender": "F",
+        "age": 23,
+        "race": "Ondo Forge",
+        "home_town": "Ondo Kiln"
+      },
+      {
+        "name": "Elin",
+        "gender": "F",
+        "age": 27,
+        "race": "Linde Folk",
+        "home_town": "Linde Glaze"
+      },
+      {
+        "name": "Garran",
+        "gender": "M",
+        "age": 42,
+        "race": "Daro Guard",
+        "home_town": "Daro Post"
+      },
+      {
+        "name": "Kiko",
+        "gender": "M",
+        "age": 21,
+        "race": "Tava Kin",
+        "home_town": "Tava Fair"
+      },
+      {
+        "name": "Isil",
+        "gender": "F",
+        "age": 20,
+        "race": "Silme Seers",
+        "home_town": "Silme Echo",
+        "root": "Q isil, moon (owner-approved rename)"
+      }
+    ],
+    "town": {
+      "maro_bell": [
+        {
+          "name": "Bram",
+          "thai": "แบรม",
+          "role": "Heart",
+          "age": 60,
+          "want": "keep every family lantern burning",
+          "secret": "one old lantern carries an unexplained, very fine repair",
+          "voice": "A lantern doesn't need to shine forever. Just long enough to help someone home."
+        },
+        {
+          "name": "Pip",
+          "thai": "พิพ",
+          "role": "Spark / traveller",
+          "age": 19,
+          "want": "see all six regions",
+          "secret": "secretly afraid of leaving home",
+          "voice": "Race you to the bell! Winner buys breakfast!"
+        },
+        {
+          "name": "Edda",
+          "thai": "เอ็ดดา",
+          "role": "Scar",
+          "age": 46,
+          "want": "keep the bell schedule exact",
+          "secret": "has heard the bell ring before anyone touched it",
+          "voice": "A bell cannot ring thirteen times in twelve hours. Check again."
+        },
+        {
+          "name": "Amber",
+          "thai": "แอมเบอร์",
+          "role": "Lantern-oil seller",
+          "age": 34,
+          "want": "save Daymarks to expand her shop",
+          "secret": "oil vanishes from sealed jars",
+          "voice": "Good oil, fair price. No refunds for ghosts!"
+        },
+        {
+          "name": "Reed",
+          "thai": "รีด",
+          "role": "Gatekeeper",
+          "age": 38,
+          "want": "keep the valley road safe",
+          "secret": "has logged travellers arriving before they departed",
+          "voice": "Road's open. Mind the loose stones."
+        },
+        {
+          "name": "Tovin",
+          "thai": "โทวิน",
+          "role": "Shrine and kiln-record keeper",
+          "age": 65,
+          "want": "preserve the town's oldest records",
+          "secret": "knows one lantern's repair predates its recorded owner",
+          "voice": "Old things remember more than we do."
+        }
+      ]
+    },
+    "scar_renames": [
+      {
+        "town": "Tava Fair",
+        "role": "Scar",
+        "retired": "Mira",
+        "name": "Lasse",
+        "thai": "ลัสเซ",
+        "root": "Q lassë, leaf"
+      },
+      {
+        "town": "Silme Echo",
+        "role": "Scar",
+        "retired": "Thessa",
+        "name": "Sarn",
+        "thai": "ซาร์น",
+        "root": "S sarn, stone"
+      }
+    ]
+  },
+  "landmarks": {
+    "maro_bell": {
+      "name": "The Great Bell",
+      "thai": "ระฆังใหญ่",
+      "description": "It hangs between two towering cliffs among hundreds of brass lanterns; giant porcelain ribs protrude from the valley walls; a winding lantern-lit road leads tiny travellers to the bell.",
+      "composition": "hanging lanterns (foreground) -> village road (path) -> Great Bell (landmark) -> porcelain ribs (mega-forms)"
+    }
+  },
+  "prologues": {
+    "maro_bell": {
+      "race": "Maro Folk",
+      "lv": "1-10",
+      "skeleton": "arrive -> small job -> time-wound -> escort -> invitation",
+      "rule": "The prologue never reveals the Last Cala Knight's name, race, era or unfinished task.",
+      "quests": [
+        {
+          "id": "q-maro-01",
+          "name": "A Roadside Welcome",
+          "giver": "Pip",
+          "lv": 1,
+          "objective": "talk to 3 villagers; reach the Great Bell",
+          "beat": "arrive as an ordinary traveller",
+          "reward": "coin"
+        },
+        {
+          "id": "q-maro-02",
+          "name": "Light for Tonight",
+          "giver": "Amber",
+          "lv": 2,
+          "objective": "gather 5 oil herbs; deliver 3 lanterns",
+          "beat": "everyday warmth",
+          "reward": "coin"
+        },
+        {
+          "id": "q-maro-03",
+          "name": "The Missing Delivery",
+          "giver": "Pip",
+          "lv": 3,
+          "objective": "recover 4 parcels; defeat 4 Soot Munchers",
+          "beat": "friendship through a playful errand",
+          "reward": "coin"
+        },
+        {
+          "id": "q-maro-04",
+          "name": "Bram's Old Lantern",
+          "giver": "Bram",
+          "lv": 4,
+          "objective": "gather 3 fittings; inspect the repaired lantern",
+          "beat": "FIRST TRACE of the Last Cala Knight: a stranger's careful repair, no identity",
+          "reward": "keepsake (old lantern wick)",
+          "flag": "first_trace"
+        },
+        {
+          "id": "q-maro-05",
+          "name": "A Bell Out of Time",
+          "giver": "Edda",
+          "lv": 5,
+          "objective": "inspect 3 clock markers; compare bell records",
+          "beat": "first undeniable time anomaly",
+          "reward": "coin"
+        },
+        {
+          "id": "q-maro-06",
+          "name": "The Hungry Flame",
+          "giver": "Amber",
+          "lv": "6-7",
+          "objective": "fill 3 lamps; watch them drain; defeat 5 Oil Leeches",
+          "beat": "TIME-WOUND: a lantern burns all its oil in seconds",
+          "reward": "coin",
+          "flag": "time_wound"
+        },
+        {
+          "id": "q-maro-07",
+          "name": "Carry the Light Home",
+          "giver": "Bram",
+          "lv": "8-9",
+          "objective": "escort Bram + 2 villagers through 3 waves",
+          "beat": "ordinary people protect each other",
+          "reward": "keepsake"
+        },
+        {
+          "id": "q-maro-08",
+          "name": "Beyond the Bell",
+          "giver": "Reed",
+          "lv": 10,
+          "objective": "deliver the incident report to Kilnwatch Bastion",
+          "beat": "invitation; Wardens optional",
+          "reward": "none"
+        }
+      ]
+    }
+  },
+  "mob_families": {
+    "lantern_vermin": {
+      "name": "Lantern Vermin",
+      "description": "oil-feeding valley creatures, one shared rig, three silhouettes",
+      "region": "Maro Valley",
+      "mobs": [
+        {
+          "name": "Soot Muncher",
+          "thai": "ซูต มันเชอร์",
+          "lv": "1-3",
+          "behaviour": "weak melee scavenger, groups"
+        },
+        {
+          "name": "Wick Runner",
+          "thai": "วิค รันเนอร์",
+          "lv": "4-6",
+          "behaviour": "fast, short evasive bursts"
+        },
+        {
+          "name": "Oil Leech",
+          "thai": "ออยล์ ลีช",
+          "lv": "7-10",
+          "behaviour": "slow ranged, leaves temporary dim-light zones"
+        }
+      ]
+    }
+  },
+  "wardens": {
+    "name": "Kilnwatch Wardens",
+    "joining_quest": {
+      "id": "q-warden-join-01",
+      "name": "A Place on the Watch",
+      "lv": 10,
+      "objective": "repair a damaged signal-post lantern, deliver the incident report, sign the Wardens' public service ledger",
+      "rule": "No exam, no prophecy, no birth check."
+    },
+    "ranks": [
+      {
+        "name": "Runner",
+        "thai": "รันเนอร์",
+        "requirement": "joining quest",
+        "unlocks": "Warden board quests, +10 storage slots, faction affiliation title"
+      },
+      {
+        "name": "Warden",
+        "thai": "วอร์เดน",
+        "requirement": "100 Warden reputation",
+        "unlocks": "+20 storage total, Warden cloak cosmetic, 5% discount on Warden consumables"
+      },
+      {
+        "name": "Elder Warden",
+        "thai": "เอลเดอร์ วอร์เดน",
+        "requirement": "350 Warden reputation",
+        "unlocks": "+30 storage total, lantern accessory cosmetic, convenience teleport to Kilnwatch Bastion"
+      }
+    ],
+    "reputation": "Reputation comes only from repeatable community-service board quests, never from main-story progress.",
+    "never_gated": [
+      "main story and chapters",
+      "dungeons",
+      "raids",
+      "world bosses",
+      "markets",
+      "ordinary storage",
+      "equipment progression",
+      "every Cala Knight discovery",
+      "no faction-exclusive combat power"
+    ],
+    "leave_return": "resign at the registrar any time; rank and reputation are kept, bonuses pause and resume on rejoining; no fee.",
+    "legend_link": "the Wardens keep an incomplete ledger associated with the Last Cala Knight; membership gives no claim to her title."
+  },
+  "retired_names": [
+    "Lumi",
+    "Adena",
+    "Mammon",
+    "Soulshot",
+    "Spiritshot",
+    "Giran",
+    "Seven Signs",
+    "Tontatta",
+    "Mink",
+    "Lunarian",
+    "Bahamut",
+    "Fenrir",
+    "Ninth Cala Knight",
+    "Mira",
+    "Thessa"
+  ],
+  "last_cala_knight": {
+    "owner_lock": "2026-11-07",
+    "player_facing": "the most recent person to hold the title, a woman. No ordinal is ever stated; how many Cala Knights there were is unknown. Her name, race, era and the thing she left unfinished are revealed only through traces (Ch 0-VIII). Expansion I retraces her story.",
+    "writers_bible": "Personality like Himmel (Frieren): kind, cheerful, charmingly vain, chooses people over glory, remembered through small kindnesses. Strength like Serie: the strongest being of her age, far beyond any living warrior, which is why her leaving work unfinished is the central mystery. Benchmark only; borrow no names, lines or designs."
+  }
+}

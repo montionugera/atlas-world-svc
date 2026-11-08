@@ -55,52 +55,52 @@ const zone = (
 /** Paint order matters: later zones cover earlier ones. Uncovered ground is grass. */
 const TERRAIN_ZONES_BY_MAP: Record<string, readonly TerrainZone[]> = {
   "map-for-play": [
-    zone("ice", 0, 0, 1000, 250),
-    zone("forest", 680, 240, 320, 520),
-    zone("sand", 540, 390, 150, 220),
-    zone("mud", 390, 590, 230, 170),
-    zone("road", 485, 0, 30, 390),
-    zone("road", 485, 610, 30, 390),
-    zone("road", 0, 485, 390, 30),
-    zone("road", 610, 485, 390, 30),
-    zone("road", 390, 390, 220, 220),
+    zone("ice", 0, 0, 100, 25),
+    zone("forest", 68, 24, 32, 52),
+    zone("sand", 54, 39, 15, 22),
+    zone("mud", 39, 59, 23, 17),
+    zone("road", 48.5, 0, 3, 39),
+    zone("road", 48.5, 61, 3, 39),
+    zone("road", 0, 48.5, 39, 3),
+    zone("road", 61, 48.5, 39, 3),
+    zone("road", 39, 39, 22, 22),
     // Town trade road and bridge (the river itself is visual only: no speed effect).
-    zone("road", 0, 172, 195, 16),
-    zone("road", 188, 170, 30, 20),
+    zone("road", 0, 17.2, 19.5, 1.6),
+    zone("road", 18.8, 17, 3, 2),
   ],
   // Six 150-wide strips, y 0..700, from x=50: TerrainType::ALL order.
   "map-for-test-terrain": [
-    zone("road", 50, 0, 150, 700),
-    zone("grass", 200, 0, 150, 700),
-    zone("forest", 350, 0, 150, 700),
-    zone("sand", 500, 0, 150, 700),
-    zone("ice", 650, 0, 150, 700),
-    zone("mud", 800, 0, 150, 700),
+    zone("road", 5, 0, 15, 70),
+    zone("grass", 20, 0, 15, 70),
+    zone("forest", 35, 0, 15, 70),
+    zone("sand", 50, 0, 15, 70),
+    zone("ice", 65, 0, 15, 70),
+    zone("mud", 80, 0, 15, 70),
   ],
   "map-for-test-projectile": [],
   "map-for-test-deflect": [],
   // `MapConfig::large_test_map`: biome patches, then the roads over everything.
   "map-for-test-large": [
-    zone("ice", 0, 0, 1400, 800),
-    zone("ice", 2600, 3200, 1400, 800),
-    zone("ice", 1500, 300, 900, 500),
-    zone("forest", 2700, 100, 1200, 1100),
-    zone("forest", 100, 2700, 1100, 1200),
-    zone("forest", 1400, 3100, 900, 700),
-    zone("sand", 100, 1100, 800, 1200),
-    zone("sand", 3100, 1500, 800, 1300),
-    zone("sand", 2200, 2200, 600, 600),
-    zone("mud", 1200, 1200, 600, 600),
-    zone("mud", 2200, 1100, 700, 500),
-    zone("mud", 1100, 2200, 700, 700),
+    zone("ice", 0, 0, 140, 80),
+    zone("ice", 260, 320, 140, 80),
+    zone("ice", 150, 30, 90, 50),
+    zone("forest", 270, 10, 120, 110),
+    zone("forest", 10, 270, 110, 120),
+    zone("forest", 140, 310, 90, 70),
+    zone("sand", 10, 110, 80, 120),
+    zone("sand", 310, 150, 80, 130),
+    zone("sand", 220, 220, 60, 60),
+    zone("mud", 120, 120, 60, 60),
+    zone("mud", 220, 110, 70, 50),
+    zone("mud", 110, 220, 70, 70),
     // The cross, the ring, the plaza.
-    zone("road", 1970, 0, 60, 4000),
-    zone("road", 0, 1970, 4000, 60),
-    zone("road", 1000, 970, 2000, 60),
-    zone("road", 1000, 2970, 2000, 60),
-    zone("road", 970, 1000, 60, 2000),
-    zone("road", 2970, 1000, 60, 2000),
-    zone("road", 1850, 1850, 300, 300),
+    zone("road", 197, 0, 6, 400),
+    zone("road", 0, 197, 400, 6),
+    zone("road", 100, 97, 200, 6),
+    zone("road", 100, 297, 200, 6),
+    zone("road", 97, 100, 6, 200),
+    zone("road", 297, 100, 6, 200),
+    zone("road", 185, 185, 30, 30),
   ],
 };
 
@@ -145,22 +145,22 @@ const GENERATED_REGIONS = generatedWorldMaps.regions as Record<
 
 const STATIC_BLOCKS_BY_MAP: Record<string, readonly StaticBlock[]> = {
   "map-for-test-terrain": [
-    { x: 300, y: 760, width: 40, height: 40 },
-    { x: 660, y: 760, width: 40, height: 40 },
+    { x: 30, y: 76, width: 4, height: 4 },
+    { x: 66, y: 76, width: 4, height: 4 },
   ],
   // Four clusters of four 40x40 blocks, one inside each corner of the ring road.
   "map-for-test-large": [
-    [1200, 1200],
-    [2800, 1200],
-    [1200, 2800],
-    [2800, 2800],
+    [120, 120],
+    [280, 120],
+    [120, 280],
+    [280, 280],
   ].flatMap(([cx, cy]) =>
     [
       [0, 0],
-      [90, 20],
-      [30, 100],
-      [130, 110],
-    ].map(([dx, dy]) => ({ x: cx + dx, y: cy + dy, width: 40, height: 40 })),
+      [9, 2],
+      [3, 10],
+      [13, 11],
+    ].map(([dx, dy]) => ({ x: cx + dx, y: cy + dy, width: 4, height: 4 })),
   ),
   ...Object.fromEntries(
     Object.entries(GENERATED_REGIONS).map(([regionId, region]) => [
@@ -196,11 +196,11 @@ export function playerSpawnFor(mapId: string): { x: number; y: number } | null {
 }
 
 /**
- * Walking speed of a player with 0 AGI on grass: server `(20 + 0.2 * agi) * 10`
- * (content/stats.rs, simulation.rs). AGI is not on the wire, so expected speeds
- * built from this are a reference, low by 2 u/s per AGI point.
+ * Walking speed of a player with 0 AGI on grass: server `10 * (20 + 0.2 * agi) * SPEED_SCALE`
+ * (content/stats.rs, core/speed.rs, F-185: 1 u = 1 m, 3 m/s = 3 u/s). AGI is not on the wire, so expected
+ * speeds built from this are a reference, low by 0.03 u/s per AGI point.
  */
-export const REFERENCE_RUN_SPEED = 200;
+export const REFERENCE_RUN_SPEED = 3;
 
 /** Zones for a map, or null when the client has no terrain data for it. */
 export function terrainZonesFor(mapId: string): readonly TerrainZone[] | null {

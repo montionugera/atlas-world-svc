@@ -1,5 +1,6 @@
 use crate::content::map::TerrainZones;
 use crate::core::clock::SimClock;
+use crate::core::speed::scaled_speed;
 use crate::ecs::components::{
     CastingState, DashState, Health, PlayerAvatar, PlayerInputState, Position, StatusEffects,
     Velocity, KNOCKBACK_DECAY_PER_SEC,
@@ -87,7 +88,8 @@ pub fn player_input_system(
             if dash.is_dashing() {
                 dash.remaining_sec -= dt;
                 if dash.remaining_sec > 0.0 {
-                    let base_speed = avatar_opt.map_or(20.0, |a| a.speed) * terrain_mult;
+                    let base_speed =
+                        avatar_opt.map_or(scaled_speed(20.0), |a| a.speed) * terrain_mult;
                     let dash_progress = (dash.remaining_sec / 0.22).clamp(0.0, 1.0);
                     let current_speed = base_speed + (dash.speed - base_speed) * dash_progress;
                     vel.vx = dash.dir_x * current_speed;
@@ -100,7 +102,7 @@ pub fn player_input_system(
         }
 
         // 4. Process movement input (respecting avatar speed, freeze and terrain multipliers)
-        let base_speed = avatar_opt.map_or(20.0, |a| a.speed);
+        let base_speed = avatar_opt.map_or(scaled_speed(20.0), |a| a.speed);
         let speed_mult = status_opt.map_or(1.0, |s| s.speed_multiplier());
         let speed = base_speed * speed_mult * terrain_mult;
 
@@ -135,7 +137,7 @@ mod tests {
         schedule.run(&mut world);
 
         let vel = world.get::<Velocity>(entity).unwrap();
-        assert_eq!(vel.vx, 20.0);
+        assert!((vel.vx - 0.3).abs() < 1e-4);
         assert_eq!(vel.vy, 0.0);
     }
 

@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "alderlow-head",
   "name": "Alderlow Head \u2014 Brightfall (c09/r03)",
   "seed": 919057,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "pine_forest_border",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -444,73 +445,73 @@
   "spawnAreas": [
     {
       "id": "alderlow_head_crateyard_colossus",
-      "x": 2139.1,
-      "y": 2048.5,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 213.91,
+      "y": 204.85,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "alderlow_head_crossroads_reaver",
-      "x": 1710.2,
-      "y": 2125.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 171.02,
+      "y": 212.5,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-crossroads-reaver",
       "count": 2
     },
     {
       "id": "alderlow_head_hoarfell_giant",
-      "x": 2050.1,
-      "y": 1584.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 205.01,
+      "y": 158.49,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hoarfell-giant",
       "count": 2
     },
     {
       "id": "alderlow_head_snowblind_shade",
-      "x": 2152.8,
-      "y": 2320.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 215.28,
+      "y": 232.06,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-snowblind-shade",
       "count": 2
     },
     {
       "id": "alderlow_head_deepwater_hauler",
-      "x": 1654.8,
-      "y": 1516.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 165.48,
+      "y": 151.69,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "alderlow_head_icefloe_wyrm",
-      "x": 2483.4,
-      "y": 1700.3,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 248.34,
+      "y": 170.03,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-icefloe-wyrm",
       "count": 1
     },
     {
       "id": "alderlow_head_oathgate_sentinel",
-      "x": 1380.3,
-      "y": 2297.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 138.03,
+      "y": 229.76,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-oathgate-sentinel",
       "count": 1
     },
     {
       "id": "alderlow_head_whitewaste_colossus",
-      "x": 1879.2,
-      "y": 1207.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 187.92,
+      "y": 120.79,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-whitewaste-colossus",
       "count": 1
     }
@@ -518,24 +519,24 @@
   "staticObstacles": [
     {
       "id": "landmark_brightfall_leap_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_geo_between_sedgestrand_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_alderlow_head_sheer_scarp_cliff",
-      "min_x": 1188.8,
-      "min_y": 2768.8,
-      "max_x": 1451.2,
-      "max_y": 3031.2
+      "min_x": 118.88,
+      "min_y": 276.88,
+      "max_x": 145.12,
+      "max_y": 303.12
     }
   ]
 }

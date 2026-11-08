@@ -18,32 +18,32 @@ fn mob_selects_between_close_melee_cleave_and_ranged_bolt_based_on_target_distan
     world.insert_resource(SimClock::new(50));
 
     let abilities = vec![
-        MobAttackAbility::melee_cleave(45.0),
-        MobAttackAbility::ranged_bolt(45.01, 160.0),
+        MobAttackAbility::melee_cleave(4.5),
+        MobAttackAbility::ranged_bolt(4.501, 16.0),
     ];
 
     let mob = world
         .spawn((
-            Position::new(100.0, 100.0),
+            Position::new(10.0, 10.0),
             Velocity::zero(),
             Health::new(200.0),
             MobTag,
             CombatStats {
                 attack_power: 20.0,
                 defense: 2.0,
-                attack_range: 160.0,
+                attack_range: 16.0,
                 attack_cooldown: 1.0,
                 cooldown_timer: 0.0,
                 is_player: false,
             },
             ThreatTable::new(),
-            MobAi::new(Position::new(100.0, 100.0), 250.0, 160.0, false).with_abilities(abilities),
+            MobAi::new(Position::new(10.0, 10.0), 25.0, 16.0, false).with_abilities(abilities),
         ))
         .id();
 
-    // Case 1: Player is at close melee range (dist = 25.0 <= 45.0)
+    // Case 1: Player is at close melee range (dist = 2.5 <= 4.5)
     let player = world
-        .spawn((Position::new(125.0, 100.0), Health::new(100.0), PlayerTag))
+        .spawn((Position::new(12.5, 10.0), Health::new(100.0), PlayerTag))
         .id();
 
     let mut schedule = Schedule::default();
@@ -73,8 +73,8 @@ fn mob_selects_between_close_melee_cleave_and_ranged_bolt_based_on_target_distan
     world.despawn(spawned_close[0].0);
     world.get_mut::<CombatStats>(mob).unwrap().cooldown_timer = 0.0;
 
-    // Case 2: Player moves out to mid/far range (dist = 120.0 in 45.01..=160.0)
-    *world.get_mut::<Position>(player).unwrap() = Position::new(220.0, 100.0);
+    // Case 2: Player moves out to mid/far range (dist = 12.0 in 4.501..=16.0)
+    *world.get_mut::<Position>(player).unwrap() = Position::new(22.0, 10.0);
     schedule.run(&mut world);
 
     assert_eq!(

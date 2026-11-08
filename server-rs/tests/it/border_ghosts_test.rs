@@ -23,14 +23,14 @@ fn border_ghosts_project_across_east_west_north_south_borders_and_emit_removed_o
         AtlasSimulation::from_generated_region("ashvale-front", 102).expect("ashvale-front");
 
     // Spawn Player A near the East border of millcross-ford (x = 3900, y = 2000)
-    sim_millcross.spawn_player_avatar("player-alice", 3900.0, 2000.0);
+    sim_millcross.spawn_player_avatar("player-alice", 390.0, 200.0);
     let local_player_count_before = sim_millcross.active_player_count();
     assert_eq!(local_player_count_before, 1);
 
     // Spawn Player B near the West border of ashvale-front (x = 120 <= 250 band, y = 2000)
     // and Player C outside the 250-unit border band (x = 320 > 250, y = 2000)
-    sim_ashvale.spawn_player_avatar("player-bob", 120.0, 2000.0);
-    sim_ashvale.spawn_player_avatar("player-charlie", 320.0, 2000.0);
+    sim_ashvale.spawn_player_avatar("player-bob", 12.0, 200.0);
+    sim_ashvale.spawn_player_avatar("player-charlie", 32.0, 200.0);
 
     let adjacency = RegionAdjacencyGraph::wealdmarch_default();
     let mut region_snapshots = HashMap::new();
@@ -51,8 +51,8 @@ fn border_ghosts_project_across_east_west_north_south_borders_and_emit_removed_o
         .find(|e| e.id == bob_wire_id)
         .expect("Bob within 250u of shared border must be projected as a ghost");
     assert_eq!(bob_ghost.entity_type, EntityType::Player);
-    assert!((bob_ghost.x - (REGION_SIZE_UNITS + 120.0)).abs() < 1e-3);
-    assert!((bob_ghost.y - 2000.0).abs() < 1e-3);
+    assert!((bob_ghost.x - (REGION_SIZE_UNITS + 12.0)).abs() < 1e-3);
+    assert!((bob_ghost.y - 200.0).abs() < 1e-3);
     assert_eq!(bob_ghost.input_ack, 0);
     assert!(!ghosts.iter().any(|e| e.id == charlie_wire_id));
 
@@ -78,8 +78,8 @@ fn border_ghosts_project_across_east_west_north_south_borders_and_emit_removed_o
     let sample = server_rs::protocol::EntitySnapshotData {
         id: 777,
         entity_type: EntityType::Mob,
-        x: 3850.0,
-        y: 3910.0,
+        x: 385.0,
+        y: 391.0,
         health: 50.0,
         max_health: 50.0,
         state_flags: STATE_FLAG_ALIVE,
@@ -93,8 +93,8 @@ fn border_ghosts_project_across_east_west_north_south_borders_and_emit_removed_o
         BORDER_GHOST_BAND_UNITS,
     );
     assert_eq!(north_ghosts.len(), 1);
-    assert!((north_ghosts[0].x - 3850.0).abs() < 1e-3);
-    assert!((north_ghosts[0].y - (-90.0)).abs() < 1e-3);
+    assert!((north_ghosts[0].x - 385.0).abs() < 1e-3);
+    assert!((north_ghosts[0].y - (-9.0)).abs() < 1e-3);
 
     let west_ghosts = extract_border_ghosts(
         &[sample],
@@ -104,8 +104,8 @@ fn border_ghosts_project_across_east_west_north_south_borders_and_emit_removed_o
         BORDER_GHOST_BAND_UNITS,
     );
     assert_eq!(west_ghosts.len(), 1);
-    assert!((west_ghosts[0].x - (-150.0)).abs() < 1e-3);
-    assert!((west_ghosts[0].y - 3910.0).abs() < 1e-3);
+    assert!((west_ghosts[0].x - (-15.0)).abs() < 1e-3);
+    assert!((west_ghosts[0].y - 391.0).abs() < 1e-3);
 }
 
 #[tokio::test]
@@ -124,8 +124,8 @@ async fn ws_broadcast_aoi_snapshots_with_ghosts_replicates_cross_border_entity_t
     let local_entities = vec![server_rs::protocol::EntitySnapshotData {
         id: alice_id,
         entity_type: EntityType::Player,
-        x: 3920.0,
-        y: 1500.0,
+        x: 392.0,
+        y: 150.0,
         health: 100.0,
         max_health: 100.0,
         state_flags: STATE_FLAG_ALIVE,
@@ -134,8 +134,8 @@ async fn ws_broadcast_aoi_snapshots_with_ghosts_replicates_cross_border_entity_t
     let ashvale_entities = vec![server_rs::protocol::EntitySnapshotData {
         id: ghost_mob_id,
         entity_type: EntityType::Mob,
-        x: 80.0,
-        y: 1500.0,
+        x: 8.0,
+        y: 150.0,
         health: 120.0,
         max_health: 120.0,
         state_flags: STATE_FLAG_ALIVE,
@@ -184,8 +184,8 @@ async fn ws_broadcast_aoi_snapshots_with_ghosts_replicates_cross_border_entity_t
         .map(|i| ents.get(i))
         .find(|e| e.id() == ghost_mob_id)
         .unwrap();
-    assert!((ghost_wire.pos().unwrap().x() - 4080.0).abs() < 1e-3);
-    assert!((ghost_wire.pos().unwrap().y() - 1500.0).abs() < 1e-3);
+    assert!((ghost_wire.pos().unwrap().x() - 408.0).abs() < 1e-3);
+    assert!((ghost_wire.pos().unwrap().y() - 150.0).abs() < 1e-3);
 
     ws_alice.close(None).await.unwrap();
 }

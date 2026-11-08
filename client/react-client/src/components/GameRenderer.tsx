@@ -256,22 +256,22 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           if (!renderProjectiles?.has(id)) {
             prevProjs.delete(id);
             const pType = (p.type || "").toLowerCase();
-            let maxRadius = 15;
+            let maxRadius = 1.5;
             let color = "255, 170, 0";
             let durationMs = 450;
             if (pType.includes("skill_1") || pType.includes("meteor")) {
-              maxRadius = 60; // 60.0 server AoE
+              maxRadius = 6; // 6.0 server AoE
               color = "255, 69, 0";
               durationMs = 700;
             } else if (
               pType.includes("skill_3") ||
               pType.includes("blizzard")
             ) {
-              maxRadius = 50; // 50.0 server AoE
+              maxRadius = 5; // 5.0 server AoE
               color = "0, 210, 211";
               durationMs = 800;
             } else if (pType.includes("skill_4") || pType.includes("thunder")) {
-              maxRadius = 40; // 40.0 server AoE
+              maxRadius = 4; // 4.0 server AoE
               color = "254, 202, 87";
               durationMs = 600;
             }
@@ -279,7 +279,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
               id: `${id}-${Date.now()}`,
               x: p.x,
               y: p.y,
-              radius: 4,
+              radius: 0.4,
               maxRadius,
               color,
               createdAt: Date.now(),
@@ -325,7 +325,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
         lap("interp");
 
         // --- 1. Main Camera View ---
-        const viewportSize = gameState.viewportSize ?? 50;
+        const viewportSize = gameState.viewportSize ?? 5;
         const scale = calculateScale(gameState, view, viewportSize);
 
         // Find player to center camera
@@ -356,7 +356,7 @@ export const GameRenderer: React.FC<GameRendererProps> = (props) => {
           view,
           scale,
         });
-        const gridSize = Math.max(10, Math.round(viewportSize / 5));
+        const gridSize = Math.max(1, Math.round(viewportSize / 5));
         const staticSpec = {
           mapId: gameState.mapId,
           width: gameState.width,

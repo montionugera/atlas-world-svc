@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "skerryfast-fjord",
   "name": "Skerryfast Fjord \u2014 Drowned Glacial Trough",
   "seed": 140937,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "glacier_snow_crust",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -453,73 +454,73 @@
   "spawnAreas": [
     {
       "id": "skerryfast_fjord_bound_war_beast",
-      "x": 2092.9,
-      "y": 2088.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 209.29,
+      "y": 208.81,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "skerryfast_fjord_crateyard_colossus",
-      "x": 1674.1,
-      "y": 2060.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 167.41,
+      "y": 206.0,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "skerryfast_fjord_hoarfell_giant",
-      "x": 2254.3,
-      "y": 1750.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 225.43,
+      "y": 175.08,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hoarfell-giant",
       "count": 2
     },
     {
       "id": "skerryfast_fjord_snowblind_shade",
-      "x": 1805.9,
-      "y": 2358.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 180.59,
+      "y": 235.86,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-snowblind-shade",
       "count": 2
     },
     {
       "id": "skerryfast_fjord_deepwater_hauler",
-      "x": 1633.8,
-      "y": 1532.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 163.38,
+      "y": 153.2,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "skerryfast_fjord_icefloe_wyrm",
-      "x": 2534.4,
-      "y": 1994.3,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 253.44,
+      "y": 199.43,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-icefloe-wyrm",
       "count": 1
     },
     {
       "id": "skerryfast_fjord_oathgate_sentinel",
-      "x": 1702.6,
-      "y": 2565.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 170.26,
+      "y": 256.5,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-oathgate-sentinel",
       "count": 1
     },
     {
       "id": "skerryfast_fjord_whitewaste_colossus",
-      "x": 2004.9,
-      "y": 1207.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 200.49,
+      "y": 120.74,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-whitewaste-colossus",
       "count": 1
     }
@@ -527,24 +528,24 @@
   "staticObstacles": [
     {
       "id": "landmark_c_lm_skerryfast_fjord_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_skerryfast_fjord_west_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_skerryfast_fjord_sheer_scarp_cliff",
-      "min_x": 1188.8,
-      "min_y": 2668.8,
-      "max_x": 1451.2,
-      "max_y": 2931.2
+      "min_x": 118.88,
+      "min_y": 266.88,
+      "max_x": 145.12,
+      "max_y": 293.12
     }
   ]
 }

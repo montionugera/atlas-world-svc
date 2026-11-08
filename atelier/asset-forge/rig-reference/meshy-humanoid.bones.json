@@ -1,0 +1,83 @@
+{
+  "joints": [
+    "Head",
+    "Hips",
+    "LeftArm",
+    "LeftFoot",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftLeg",
+    "LeftShoulder",
+    "LeftToeBase",
+    "LeftUpLeg",
+    "RightArm",
+    "RightFoot",
+    "RightForeArm",
+    "RightHand",
+    "RightLeg",
+    "RightShoulder",
+    "RightToeBase",
+    "RightUpLeg",
+    "Spine",
+    "Spine01",
+    "Spine02",
+    "head_end",
+    "headfront",
+    "neck"
+  ],
+  "parents": {
+    "Head": "neck",
+    "Hips": null,
+    "LeftArm": "LeftShoulder",
+    "LeftFoot": "LeftLeg",
+    "LeftForeArm": "LeftArm",
+    "LeftHand": "LeftForeArm",
+    "LeftLeg": "LeftUpLeg",
+    "LeftShoulder": "Spine",
+    "LeftToeBase": "LeftFoot",
+    "LeftUpLeg": "Hips",
+    "RightArm": "RightShoulder",
+    "RightFoot": "RightLeg",
+    "RightForeArm": "RightArm",
+    "RightHand": "RightForeArm",
+    "RightLeg": "RightUpLeg",
+    "RightShoulder": "Spine",
+    "RightToeBase": "RightFoot",
+    "RightUpLeg": "Hips",
+    "Spine": "Spine01",
+    "Spine01": "Spine02",
+    "Spine02": "Hips",
+    "head_end": "Head",
+    "headfront": "Head",
+    "neck": "Spine"
+  },
+  "allowExtras": true,
+  "secParents": [
+    "Head",
+    "neck",
+    "Spine",
+    "Spine01",
+    "Spine02",
+    "Hips",
+    "LeftShoulder",
+    "RightShoulder"
+  ],
+  "sleeveParents": [
+    "LeftArm",
+    "LeftForeArm",
+    "RightArm",
+    "RightForeArm"
+  ],
+  "propParents": [
+    "RightHand",
+    "LeftHand",
+    "Spine",
+    "Spine01",
+    "Spine02",
+    "Hips"
+  ],
+  "fixedExtras": {
+    "handslot.r": "prop_weapon_r",
+    "handslot.l": "prop_shield_l"
+  }
+}

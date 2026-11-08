@@ -193,7 +193,7 @@ namespace AtlasWorld.Client.World
         {
             switch (state)
             {
-                case "walk": anim.Update(true, new Vector3(1.5f, 0f, 0f)); break;
+                case "walk": anim.Update(true, new Vector3(0.5f, 0f, 0f)); break;
                 case "run": anim.Update(true, new Vector3(12f, 0f, 0f)); break;
                 case "combat_idle": anim.InCombat = true; anim.Update(true, Vector3.Zero); break;
                 case "attack": anim.InCombat = true; anim.Attack(); anim.Update(true, Vector3.Zero); break;

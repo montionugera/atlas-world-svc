@@ -12,13 +12,13 @@ fn build_windup_world(player_pos: Position) -> (World, Schedule, Entity, Entity)
 
     let mob = world
         .spawn((
-            Position::new(100.0, 100.0),
+            Position::new(10.0, 10.0),
             Velocity::zero(),
-            MobAi::new(Position::new(100.0, 100.0), 200.0, 40.0, false).with_default_windup(),
+            MobAi::new(Position::new(10.0, 10.0), 20.0, 4.0, false).with_default_windup(),
             ThreatTable::new(),
             CombatStats {
                 attack_power: 25.0,
-                attack_range: 40.0,
+                attack_range: 4.0,
                 attack_cooldown: 1.0,
                 cooldown_timer: 0.0,
                 is_player: false,
@@ -55,7 +55,7 @@ fn build_windup_world(player_pos: Position) -> (World, Schedule, Entity, Entity)
 #[test]
 fn mob_attack_shows_800ms_windup_tell_and_hits_player_in_facing_cone() {
     assert!((MOB_WINDUP_DURATION_SEC - 0.8).abs() < 1e-6);
-    let (mut world, mut schedule, mob, player) = build_windup_world(Position::new(125.0, 100.0));
+    let (mut world, mut schedule, mob, player) = build_windup_world(Position::new(12.5, 10.0));
 
     // Tick 1: Mob initiates 800 ms wind-up tell facing +X toward the player; no projectile yet.
     world.resource_mut::<SimClock>().advance();
@@ -94,7 +94,7 @@ fn mob_attack_shows_800ms_windup_tell_and_hits_player_in_facing_cone() {
 
 #[test]
 fn mob_attack_misses_when_player_moves_out_of_facing_cone_before_800ms_tell_ends() {
-    let (mut world, mut schedule, mob, player) = build_windup_world(Position::new(125.0, 100.0));
+    let (mut world, mut schedule, mob, player) = build_windup_world(Position::new(12.5, 10.0));
 
     // Tick 1: Mob starts 800 ms wind-up locked toward +X (east).
     world.resource_mut::<SimClock>().advance();
@@ -107,7 +107,7 @@ fn mob_attack_misses_when_player_moves_out_of_facing_cone_before_800ms_tell_ends
         world.resource_mut::<SimClock>().advance();
         schedule.run(&mut world);
     }
-    *world.get_mut::<Position>(player).unwrap() = Position::new(80.0, 100.0); // West of mob (-X)
+    *world.get_mut::<Position>(player).unwrap() = Position::new(8.0, 10.0); // West of mob (-X)
 
     // Finish the remaining 400 ms (8 ticks) + extra ticks for any projectile lifetime.
     for _ in 0..12 {

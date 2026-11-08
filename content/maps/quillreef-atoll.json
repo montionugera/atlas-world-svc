@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "quillreef-atoll",
   "name": "Quillreef Atoll \u2014 The Outer Coral Ring",
   "seed": 565778,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "coastal_tidal_flat",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -419,73 +420,73 @@
   "spawnAreas": [
     {
       "id": "quillreef_atoll_thatch_mite",
-      "x": 2086.8,
-      "y": 2063.4,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 208.68,
+      "y": 206.34,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-thatch-mite",
       "count": 4
     },
     {
       "id": "quillreef_atoll_tideflat_nipper",
-      "x": 1641.7,
-      "y": 2015.8,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 164.17,
+      "y": 201.58,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-tideflat-nipper",
       "count": 4
     },
     {
       "id": "quillreef_atoll_bilge_crawler",
-      "x": 2049.0,
-      "y": 1574.7,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 204.9,
+      "y": 157.47,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-bilge-crawler",
       "count": 4
     },
     {
       "id": "quillreef_atoll_cranehook_automaton",
-      "x": 2152.8,
-      "y": 2320.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 215.28,
+      "y": 232.06,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-cranehook-automaton",
       "count": 2
     },
     {
       "id": "quillreef_atoll_saltmarsh_wisp",
-      "x": 1485.5,
-      "y": 1652.5,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 148.55,
+      "y": 165.25,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-saltmarsh-wisp",
       "count": 3
     },
     {
       "id": "quillreef_atoll_tideline_drowner",
-      "x": 2504.5,
-      "y": 2094.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 250.45,
+      "y": 209.47,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-tideline-drowner",
       "count": 2
     },
     {
       "id": "quillreef_atoll_ledger_hound",
-      "x": 1366.2,
-      "y": 2289.4,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 136.62,
+      "y": 228.94,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-ledger-hound",
       "count": 4
     },
     {
       "id": "quillreef_atoll_harbor_assessor",
-      "x": 1774.2,
-      "y": 1212.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 177.42,
+      "y": 121.27,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-harbor-assessor",
       "count": 2
     }
@@ -493,24 +494,24 @@
   "staticObstacles": [
     {
       "id": "landmark_c_lm_quillreef_ring_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_quillreef_atoll_west_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_quillreef_atoll_sheer_scarp_cliff",
-      "min_x": 1448.8,
-      "min_y": 2458.8,
-      "max_x": 1711.2,
-      "max_y": 2721.2
+      "min_x": 144.88,
+      "min_y": 245.88,
+      "max_x": 171.12,
+      "max_y": 272.12
     }
   ]
 }

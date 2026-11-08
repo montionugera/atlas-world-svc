@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "siltrun-head",
   "name": "Siltrun Head \u2014 Reedstrand (c06/r06)",
   "seed": 358883,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "coastal_tidal_flat",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -527,73 +528,73 @@
   "spawnAreas": [
     {
       "id": "siltrun_head_gallows_meadow_shade",
-      "x": 2126.8,
-      "y": 2012.7,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 212.68,
+      "y": 201.27,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-gallows-meadow-shade",
       "count": 3
     },
     {
       "id": "siltrun_head_quarrystone_beetle",
-      "x": 1701.0,
-      "y": 2113.5,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 170.1,
+      "y": 211.35,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-quarrystone-beetle",
       "count": 2
     },
     {
       "id": "siltrun_head_sapdrinker_swarm",
-      "x": 2079.5,
-      "y": 1587.7,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 207.95,
+      "y": 158.77,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-sapdrinker-swarm",
       "count": 4
     },
     {
       "id": "siltrun_head_thornveil_spearhand",
-      "x": 2126.1,
-      "y": 2312.0,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 212.61,
+      "y": 231.2,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-thornveil-spearhand",
       "count": 4
     },
     {
       "id": "siltrun_head_ashfang_pack_leader",
-      "x": 1702.8,
-      "y": 1472.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 170.28,
+      "y": 147.29,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-ashfang-pack-leader",
       "count": 2
     },
     {
       "id": "siltrun_head_bramble_drake",
-      "x": 2493.9,
-      "y": 2128.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 249.39,
+      "y": 212.86,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bramble-drake",
       "count": 2
     },
     {
       "id": "siltrun_head_briar_caller",
-      "x": 1460.9,
-      "y": 2402.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 146.09,
+      "y": 240.23,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-briar-caller",
       "count": 2
     },
     {
       "id": "siltrun_head_millstone_warden",
-      "x": 2287.4,
-      "y": 1289.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 228.74,
+      "y": 128.9,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-millstone-warden",
       "count": 1
     }
@@ -601,24 +602,24 @@
   "staticObstacles": [
     {
       "id": "landmark_marramlow_carr_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_geo_between_lagoonmere_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_siltrun_head_sheer_scarp_cliff",
-      "min_x": 1208.8,
-      "min_y": 2478.8,
-      "max_x": 1471.2,
-      "max_y": 2741.2
+      "min_x": 120.88,
+      "min_y": 247.88,
+      "max_x": 147.12,
+      "max_y": 274.12
     }
   ]
 }

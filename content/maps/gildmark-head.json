@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "gildmark-head",
   "name": "Gildmark Head \u2014 The Mirror Tower & Mire's Bar",
   "seed": 176986,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "meadow_grass",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -433,91 +434,91 @@
   "spawnAreas": [
     {
       "id": "gildmark_head_tally_walker",
-      "x": 2076.9,
-      "y": 2103.2,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 207.69,
+      "y": 210.32,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-tally-walker",
       "count": 2
     },
     {
       "id": "gildmark_head_wharf_scuttler",
-      "x": 1643.9,
-      "y": 1890.0,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 164.39,
+      "y": 189.0,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-wharf-scuttler",
       "count": 4
     },
     {
       "id": "gildmark_head_bilge_crawler",
-      "x": 2186.5,
-      "y": 1716.1,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 218.65,
+      "y": 171.61,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-bilge-crawler",
       "count": 4
     },
     {
       "id": "gildmark_head_cranehook_automaton",
-      "x": 2158.4,
-      "y": 2258.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 215.84,
+      "y": 225.87,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-cranehook-automaton",
       "count": 2
     },
     {
       "id": "gildmark_head_ledger_hound",
-      "x": 1617.2,
-      "y": 1585.6,
-      "width": 160.0,
-      "height": 160.0,
+      "x": 161.72,
+      "y": 158.56,
+      "width": 16.0,
+      "height": 16.0,
       "mobType": "mob-ledger-hound",
       "count": 4
     },
     {
       "id": "gildmark_head_harbor_assessor",
-      "x": 2425.0,
-      "y": 2072.4,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 242.5,
+      "y": 207.24,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-harbor-assessor",
       "count": 2
     },
     {
       "id": "gildmark_head_bound_war_beast",
-      "x": 1573.2,
-      "y": 2371.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 157.32,
+      "y": 237.11,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "gildmark_head_crateyard_colossus",
-      "x": 1803.2,
-      "y": 1336.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 180.32,
+      "y": 133.69,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "gildmark_head_deepwater_hauler",
-      "x": 2114.2,
-      "y": 2605.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 211.42,
+      "y": 260.59,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "gildmark_head_harbor_war_beast",
-      "x": 1215.9,
-      "y": 2071.3,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 121.59,
+      "y": 207.13,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-harbor-war-beast",
       "count": 1
     }
@@ -525,24 +526,24 @@
   "staticObstacles": [
     {
       "id": "landmark_mirror_tower_beacon_pillar",
-      "min_x": 1993.7,
-      "min_y": 1813.7,
-      "max_x": 2006.3,
-      "max_y": 1826.3
+      "min_x": 199.37,
+      "min_y": 181.37,
+      "max_x": 200.63,
+      "max_y": 182.63
     },
     {
       "id": "landmark_harbour_ledger_pillar",
-      "min_x": 2049.9,
-      "min_y": 2054.9,
-      "max_x": 2060.1,
-      "max_y": 2065.1
+      "min_x": 204.99,
+      "min_y": 205.49,
+      "max_x": 206.01,
+      "max_y": 206.51
     },
     {
       "id": "cliff_seaward_dressed_stone_cliff",
-      "min_x": 1633.9,
-      "min_y": 1693.9,
-      "max_x": 1806.1,
-      "max_y": 1866.1
+      "min_x": 163.39,
+      "min_y": 169.39,
+      "max_x": 180.61,
+      "max_y": 186.61
     }
   ]
 }

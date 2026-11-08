@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "decisions": [
+    {
+      "id": "birth-token",
+      "text": "Story-only. No mechanics attach to it and no quest checks it.",
+      "source_chat": "ChatGPT \"ตัดสินใจโครงเรื่อง\"",
+      "date": "2026-11-07",
+      "status": "applied",
+      "applied_in": "content/studio/canon/glossary.json",
+      "owner_answer": null
+    },
+    {
+      "id": "volunteers-road",
+      "text": "The Volunteers' Road memorials are canon.",
+      "source_chat": "ChatGPT \"ตัดสินใจโครงเรื่อง\"",
+      "date": "2026-11-07",
+      "status": "applied",
+      "applied_in": "content/studio/canon/glossary.json",
+      "owner_answer": null
+    },
+    {
+      "id": "yara-wording",
+      "text": "Yara's canon wording is \"she chose the child in front of her\". Never call her \"mother\".",
+      "source_chat": "ChatGPT \"ตัดสินใจโครงเรื่อง\"",
+      "date": "2026-11-07",
+      "status": "applied",
+      "applied_in": "content/studio/canon/glossary.json",
+      "owner_answer": null
+    },
+    {
+      "id": "no-volunteer-sealed-god",
+      "text": "No god was sealed by volunteers. That is an Expansion II seed only.",
+      "source_chat": "ChatGPT \"ตัดสินใจโครงเรื่อง\"",
+      "date": "2026-11-07",
+      "status": "applied",
+      "applied_in": "content/studio/canon/glossary.json",
+      "owner_answer": null
+    },
+    {
+      "id": "ch7-village-choice",
+      "text": "The Ch VII village choice is design intent only, not part of launch.",
+      "source_chat": "ChatGPT \"ตัดสินใจโครงเรื่อง\"",
+      "date": "2026-11-07",
+      "status": "applied",
+      "applied_in": "content/studio/canon/glossary.json",
+      "owner_answer": null
+    },
+    {
+      "id": "class-swiftblade",
+      "text": "Swiftblade is the 5th base class: resource Tempo; specs Brass Runner (Ch I), Katar Vanguard (Ch III).",
+      "source_chat": "ChatGPT \"Game Roadmap Ideation\"",
+      "date": "2026-11-08",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "taken as recommended (2026-11-08)"
+    },
+    {
+      "id": "katar-exclusive",
+      "text": "Katar is exclusive to Swiftblade; dagger is shared with Ranger.",
+      "source_chat": "ChatGPT \"Game Roadmap Ideation\"",
+      "date": "2026-11-08",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "taken as recommended (2026-11-08)"
+    },
+    {
+      "id": "acolyte-hybrid",
+      "text": "Acolyte is hybrid damage+support: Light resource, Radiant/Lantern stances, ultimate Borrowed Second.",
+      "source_chat": "ChatGPT \"Game Roadmap Ideation\"",
+      "date": "2026-11-08",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "taken as recommended (2026-11-08)"
+    },
+    {
+      "id": "class-specialisations",
+      "text": "Base classes Knight, Ranger, Arcanist, Acolyte; specs at Ch I / Ch III (Guardian/Vanguard->Runic Knight; Sniper/Beastwarden->Windstrider; Elementalist/Spellbinder->Astral Sage; Priest/Oracle->Dawnkeeper).",
+      "source_chat": "ChatGPT \"Game Roadmap Ideation\"",
+      "date": "2026-11-07",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "six-race-prologues",
+      "text": "Six race prologues (time-wound / small job / invitation line).",
+      "source_chat": "ChatGPT \"Write Atlas Storyline\"",
+      "date": "2026-11-07",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "race-hook-threads",
+      "text": "Race hook threads: motive, resolve chapter, keepsake.",
+      "source_chat": "ChatGPT \"Write Atlas Storyline\"",
+      "date": "2026-11-07",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "lean-year-token",
+      "text": "Short-stamped birth token (lean year).",
+      "source_chat": "ChatGPT \"Write Atlas Storyline\"",
+      "date": "2026-11-07",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "volunteers-road-examples",
+      "text": "Volunteers' Road examples: early bell, unfinished hammer, empty stone seat.",
+      "source_chat": "ChatGPT \"Write Atlas Storyline\"",
+      "date": "2026-11-07",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "warden-never-gates",
+      "text": "Warden membership never gates main story, dungeons, markets or combat progression.",
+      "source_chat": "ChatGPT \"ตัดสินใจโครงเรื่อง\"",
+      "date": "2026-11-07",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "no-player-cala-knight",
+      "text": "Players never earn \"Cala Knight\".",
+      "source_chat": "ChatGPT \"ตัดสินใจโครงเรื่อง\"",
+      "date": "2026-11-07",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "expansion-ii-seeds",
+      "text": "Expansion II seeds (see Write Atlas Storyline).",
+      "source_chat": "ChatGPT \"Write Atlas Storyline\"",
+      "date": "2026-11-07",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "physics-2-5d",
+      "text": "Server stays on rapier2d; terrain height is a value that follows the ground. No combat outcome depends on height (no jump dodge, arcing shots, flying bosses). Bridges and multi-level areas are separate layers with portals; caves and dungeons are separate instances.",
+      "source_chat": "ChatGPT \"Game Roadmap Ideation\" + owner answer",
+      "date": "2026-11-08",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "2.5D, locked; no height-dependent combat"
+    },
+    {
+      "id": "tick-30hz",
+      "text": "Target simulation tick is 30 Hz. Code is still 20 Hz (WORLD_TICK_RATE_HZ in server-rs/src/content/world_model.rs, tick_rate_ms in server-rs/src/main.rs); changing it is a separate feature.",
+      "source_chat": "ChatGPT \"Game Roadmap Ideation\" + owner answer",
+      "date": "2026-11-08",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "30 Hz"
+    },
+    {
+      "id": "slope-limit-35",
+      "text": "Walkable slope limit is 35 degrees on both server and client; steeper is a cliff wall that slides movement along the contour.",
+      "source_chat": "ChatGPT \"Game Roadmap Ideation\" + owner answer",
+      "date": "2026-11-08",
+      "status": "applied",
+      "applied_in": "scripts/tests/slope-limit-drift.test.mjs",
+      "owner_answer": "35"
+    }
+  ]
+}

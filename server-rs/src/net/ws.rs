@@ -3138,26 +3138,26 @@ mod tests {
         let entities = vec![
             crate::protocol::EntitySnapshotData {
                 id: west_id,
-                x: 200.0,
-                y: 200.0,
+                x: 20.0,
+                y: 20.0,
                 ..Default::default()
             },
             crate::protocol::EntitySnapshotData {
                 id: 1001,
-                x: 350.0,
-                y: 200.0,
+                x: 35.0,
+                y: 20.0,
                 ..Default::default()
             },
             crate::protocol::EntitySnapshotData {
                 id: east_id,
-                x: 3500.0,
-                y: 3500.0,
+                x: 350.0,
+                y: 350.0,
                 ..Default::default()
             },
             crate::protocol::EntitySnapshotData {
                 id: 2002,
-                x: 3600.0,
-                y: 3500.0,
+                x: 360.0,
+                y: 350.0,
                 ..Default::default()
             },
         ];

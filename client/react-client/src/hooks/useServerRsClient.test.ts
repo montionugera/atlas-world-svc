@@ -1109,7 +1109,7 @@ describe("useServerRsClient", () => {
     player = result.current.gameState!.players.get(localId)!;
     expect(player.isAttacking).toBe(true);
     expect(player.heading).toBeCloseTo(Math.PI / 2);
-    expect(player.attackRange).toBe(40);
+    expect(player.attackRange).toBe(4);
   });
 
   it("preserves heading when stopping movement and not attacking", async () => {

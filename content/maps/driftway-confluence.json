@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "driftway-confluence",
   "name": "Driftway Confluence \u2014 Coldreach (c03/r15)",
   "seed": 667267,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "glacier_snow_crust",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -468,73 +469,73 @@
   "spawnAreas": [
     {
       "id": "driftway_confluence_harbor_assessor",
-      "x": 2139.3,
-      "y": 2016.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 213.93,
+      "y": 201.66,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-harbor-assessor",
       "count": 2
     },
     {
       "id": "driftway_confluence_hollowmoor_giant",
-      "x": 1649.0,
-      "y": 1865.5,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.9,
+      "y": 186.55,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hollowmoor-giant",
       "count": 2
     },
     {
       "id": "driftway_confluence_icelocked_oathkeeper",
-      "x": 2200.9,
-      "y": 1679.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 220.09,
+      "y": 167.98,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-icelocked-oathkeeper",
       "count": 1
     },
     {
       "id": "driftway_confluence_rime_drake",
-      "x": 1985.4,
-      "y": 2375.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 198.54,
+      "y": 237.5,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-rime-drake",
       "count": 2
     },
     {
       "id": "driftway_confluence_bound_war_beast",
-      "x": 1640.6,
-      "y": 1509.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.06,
+      "y": 150.99,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "driftway_confluence_crateyard_colossus",
-      "x": 2525.0,
-      "y": 1829.5,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 252.5,
+      "y": 182.95,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "driftway_confluence_hoarfell_giant",
-      "x": 1632.0,
-      "y": 2527.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 163.2,
+      "y": 252.77,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-hoarfell-giant",
       "count": 2
     },
     {
       "id": "driftway_confluence_snowblind_shade",
-      "x": 1717.0,
-      "y": 1227.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 171.7,
+      "y": 122.78,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-snowblind-shade",
       "count": 2
     }
@@ -542,24 +543,24 @@
   "staticObstacles": [
     {
       "id": "landmark_bearreach_ford_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_race_beyond_skerryspar_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_driftway_confluence_sheer_scarp_cliff",
-      "min_x": 1428.8,
-      "min_y": 2598.8,
-      "max_x": 1691.2,
-      "max_y": 2861.2
+      "min_x": 142.88,
+      "min_y": 259.88,
+      "max_x": 169.12,
+      "max_y": 286.12
     }
   ]
 }

@@ -99,8 +99,8 @@ impl Default for LiveConfig {
     fn default() -> Self {
         Self {
             seed: 0x1337c0de,
-            arena_width: 1000.0,
-            arena_height: 1000.0,
+            arena_width: 100.0,
+            arena_height: 100.0,
             bot_count: 10,
             mob_count: 50,
             mob_respawn_sec: 5.0,
@@ -127,6 +127,11 @@ pub struct LiveFrame {
     pub departed_states: Vec<(String, CharacterStateSnapshot)>,
     /// Drained dungeon portal entry events when players step into spatial portals.
     pub dungeon_portal_events: Vec<crate::ecs::components::DungeonPortalEntryEvent>,
+}
+
+/// Bot / deterministic-player spawn margin: 10% of the arena, at most 100 m (1000 m legacy arenas keep 100).
+fn spawn_margin(extent: f32) -> f32 {
+    (extent * 0.1).min(100.0)
 }
 
 pub struct AtlasSimulation {
@@ -172,7 +177,7 @@ impl AtlasSimulation {
 
         let clock = SimClock::default();
         let prng = Mulberry32::new(seed);
-        let spatial_grid = SpatialGrid::new_with_bounds(25.0, arena_width, arena_height);
+        let spatial_grid = SpatialGrid::new_with_bounds(2.5, arena_width, arena_height);
         let physics_world = PhysicsWorld::new(arena_width, arena_height);
         let arena_bounds = ArenaBounds::new(arena_width, arena_height);
 
@@ -376,8 +381,14 @@ impl AtlasSimulation {
         let mut prng = Mulberry32::new(cfg.seed);
         sim.mob_respawn_sec = cfg.mob_respawn_sec;
         for _ in 0..cfg.bot_count {
-            let x = prng.range(100.0, arena_width - 100.0);
-            let y = prng.range(100.0, arena_height - 100.0);
+            let x = prng.range(
+                spawn_margin(arena_width),
+                arena_width - spawn_margin(arena_width),
+            );
+            let y = prng.range(
+                spawn_margin(arena_height),
+                arena_height - spawn_margin(arena_height),
+            );
             let angle = prng.range(0.0, std::f32::consts::PI * 2.0);
             sim.spawn_bot(x, y, angle);
         }
@@ -391,10 +402,10 @@ impl AtlasSimulation {
                     if spawned_count >= cfg.mob_count {
                         break;
                     }
-                    let min_x = area.x.clamp(5.0, arena_width - 5.0);
-                    let max_x = (area.x + area.width).clamp(min_x, arena_width - 5.0);
-                    let min_y = area.y.clamp(5.0, arena_height - 5.0);
-                    let max_y = (area.y + area.height).clamp(min_y, arena_height - 5.0);
+                    let min_x = area.x.clamp(0.5, arena_width - 0.5);
+                    let max_x = (area.x + area.width).clamp(min_x, arena_width - 0.5);
+                    let min_y = area.y.clamp(0.5, arena_height - 0.5);
+                    let max_y = (area.y + area.height).clamp(min_y, arena_height - 0.5);
                     let pos = Position::new(prng.range(min_x, max_x), prng.range(min_y, max_y));
                     let mob_id = if catalog.get_mob(&area.mob_type).is_some() {
                         &area.mob_type
@@ -418,10 +429,10 @@ impl AtlasSimulation {
         if !mob_ids.is_empty() {
             while spawned_count < cfg.mob_count {
                 let pos = Position::new(
-                    prng.range(50.0, arena_width - 50.0)
-                        .clamp(5.0, arena_width - 5.0),
-                    prng.range(50.0, arena_height - 50.0)
-                        .clamp(5.0, arena_height - 5.0),
+                    prng.range(5.0, arena_width - 5.0)
+                        .clamp(0.5, arena_width - 0.5),
+                    prng.range(5.0, arena_height - 5.0)
+                        .clamp(0.5, arena_height - 0.5),
                 );
                 let pick = (prng.range(0.0, mob_ids.len() as f32) as usize).min(mob_ids.len() - 1);
                 let mob_id = &mob_ids[pick];
@@ -445,8 +456,8 @@ impl AtlasSimulation {
         let id = format!("bot-{}", self.next_bot_index);
         self.next_bot_index += 1;
         let pos = Position::new(
-            x.clamp(10.0, self.arena_width - 10.0),
-            y.clamp(10.0, self.arena_height - 10.0),
+            x.clamp(1.0, self.arena_width - 1.0),
+            y.clamp(1.0, self.arena_height - 1.0),
         );
         self.world.spawn((
             EntityId(id.clone()),
@@ -458,7 +469,7 @@ impl AtlasSimulation {
             CombatStats {
                 // Same edge-to-edge melee reach as mobs (20px + both body radii), so a
                 // bot can answer a mob standing at its own melee reach.
-                attack_range: 20.0 + PLAYER_BODY_RADIUS + MOB_BODY_RADIUS,
+                attack_range: 2.0 + PLAYER_BODY_RADIUS + MOB_BODY_RADIUS,
                 is_player: true,
                 ..Default::default()
             },
@@ -705,7 +716,7 @@ impl AtlasSimulation {
         hysteresis_units: f32,
     ) -> Vec<crate::spatial::PlayerTransferState> {
         use crate::spatial::{CardinalBorder, PlayerTransferState};
-        let hysteresis = hysteresis_units.clamp(1.0, (self.arena_width * 0.25).max(1.0));
+        let hysteresis = hysteresis_units.clamp(0.1, (self.arena_width * 0.25).max(1.0));
         let mut to_extract: Vec<(Entity, PlayerTransferState)> = Vec::new();
 
         {
@@ -745,7 +756,7 @@ impl AtlasSimulation {
                 let move_x = input.map(|i| i.move_x).unwrap_or(0.0);
                 let move_y = input.map(|i| i.move_y).unwrap_or(0.0);
 
-                let crossed = if pos.x >= self.arena_width - 0.5 && move_x >= 0.0 {
+                let crossed = if pos.x >= self.arena_width - 0.05 && move_x >= 0.0 {
                     adjacency
                         .neighbor(&self.map_id, CardinalBorder::East)
                         .map(|to| {
@@ -756,7 +767,7 @@ impl AtlasSimulation {
                                 pos.y.clamp(0.0, self.arena_height),
                             )
                         })
-                } else if pos.x <= 0.5 && move_x <= 0.0 {
+                } else if pos.x <= 0.05 && move_x <= 0.0 {
                     adjacency
                         .neighbor(&self.map_id, CardinalBorder::West)
                         .map(|to| {
@@ -767,7 +778,7 @@ impl AtlasSimulation {
                                 pos.y.clamp(0.0, self.arena_height),
                             )
                         })
-                } else if pos.y >= self.arena_height - 0.5 && move_y >= 0.0 {
+                } else if pos.y >= self.arena_height - 0.05 && move_y >= 0.0 {
                     adjacency
                         .neighbor(&self.map_id, CardinalBorder::South)
                         .map(|to| {
@@ -778,7 +789,7 @@ impl AtlasSimulation {
                                 hysteresis,
                             )
                         })
-                } else if pos.y <= 0.5 && move_y <= 0.0 {
+                } else if pos.y <= 0.05 && move_y <= 0.0 {
                     adjacency
                         .neighbor(&self.map_id, CardinalBorder::North)
                         .map(|to| {
@@ -1270,8 +1281,14 @@ impl AtlasSimulation {
         // Spawn players matching DeterministicSimHarness.ts
         for i in 0..player_count {
             let id = format!("det-p{}", i);
-            let x = prng.range(100.0, self.arena_width - 100.0);
-            let y = prng.range(100.0, self.arena_height - 100.0);
+            let x = prng.range(
+                spawn_margin(self.arena_width),
+                self.arena_width - spawn_margin(self.arena_width),
+            );
+            let y = prng.range(
+                spawn_margin(self.arena_height),
+                self.arena_height - spawn_margin(self.arena_height),
+            );
             let angle = prng.range(0.0, std::f32::consts::PI * 2.0);
             let bot_vx = angle.cos();
             let bot_vy = angle.sin();
@@ -1383,12 +1400,12 @@ impl AtlasSimulation {
                 Velocity::zero(),
                 initial_health,
                 PlayerTag,
-                PlayerAvatar::new(session_id, derived.max_move_speed * 10.0),
+                PlayerAvatar::new(session_id, derived.max_move_speed),
                 PlayerInputState::default(),
                 CombatStats {
                     attack_power: derived.p_atk.max(derived.m_atk).max(1.0),
                     defense: derived.p_def,
-                    attack_range: 40.0,
+                    attack_range: 4.0,
                     attack_cooldown: 0.8,
                     cooldown_timer: 0.0,
                     is_player: true,
@@ -1552,7 +1569,7 @@ impl AtlasSimulation {
     }
 
     /// Maximum Euclidean distance at which a player may legitimately target an entity or ground point.
-    pub const MAX_TARGET_INTENT_RANGE: f32 = 500.0;
+    pub const MAX_TARGET_INTENT_RANGE: f32 = 50.0;
 
     /// Applies client input state to the player avatar, auto-spawning if necessary.
     pub fn apply_player_input(&mut self, session_id: &str, input: &crate::protocol::ClientInput) {
@@ -1943,29 +1960,29 @@ mod tests {
     fn test_player_avatar_input_and_movement() {
         use crate::protocol::{deserialize_client_input, serialize_client_input};
 
-        let mut sim = AtlasSimulation::new(0x1337c0de, 500.0, 500.0);
+        let mut sim = AtlasSimulation::new(0x1337c0de, 50.0, 50.0);
         let session_id = "user-alice-123";
-        let avatar_entity = sim.spawn_player_avatar(session_id, 200.0, 200.0);
+        let avatar_entity = sim.spawn_player_avatar(session_id, 20.0, 20.0);
 
         let initial_pos = sim.world.get::<Position>(avatar_entity).cloned().unwrap();
-        assert_eq!(initial_pos.x, 200.0);
-        assert_eq!(initial_pos.y, 200.0);
+        assert_eq!(initial_pos.x, 20.0);
+        assert_eq!(initial_pos.y, 20.0);
 
         // Send movement input: move right (x=1.0, y=0.0)
         let input_bytes = serialize_client_input(1, 1.0, 0.0, false, 0, 0);
         let client_input = deserialize_client_input(&input_bytes).unwrap();
         sim.apply_player_input(session_id, &client_input);
 
-        // Step simulation (dt = 0.05s, speed = 202.0 => dx = 10.1)
+        // Step simulation (dt = 0.05s, speed = 3.03 => dx = 0.1515)
         sim.step();
 
         let updated_pos = sim.world.get::<Position>(avatar_entity).cloned().unwrap();
         let updated_vel = sim.world.get::<Velocity>(avatar_entity).cloned().unwrap();
 
-        assert!((updated_vel.vx - 202.0).abs() < 2.0);
-        assert!((updated_vel.vy - 0.0).abs() < 0.1);
-        assert!((updated_pos.x - 210.1).abs() < 0.2);
-        assert!((updated_pos.y - 200.0).abs() < 0.1);
+        assert!((updated_vel.vx - 3.03).abs() < 0.02);
+        assert!((updated_vel.vy - 0.0).abs() < 0.01);
+        assert!((updated_pos.x - 20.1515).abs() < 0.01);
+        assert!((updated_pos.y - 20.0).abs() < 0.01);
 
         // Test remove avatar
         let removed = sim.remove_player_avatar(session_id);
@@ -1977,9 +1994,9 @@ mod tests {
     fn test_validate_target_intents_rejects_invalid_target_id_cases() {
         use crate::protocol::{deserialize_client_input, fnv1a_32, serialize_client_input_full};
 
-        let mut sim = AtlasSimulation::new(1, 2000.0, 2000.0);
-        let p_ent = sim.spawn_player_avatar("hero", 200.0, 200.0);
-        let _other_player = sim.spawn_player_avatar("ally", 250.0, 200.0);
+        let mut sim = AtlasSimulation::new(1, 200.0, 200.0);
+        let p_ent = sim.spawn_player_avatar("hero", 20.0, 20.0);
+        let _other_player = sim.spawn_player_avatar("ally", 25.0, 20.0);
 
         // 1. Dead mob nearby
         let mut dead_health = Health::new(100.0);
@@ -1987,27 +2004,27 @@ mod tests {
         dead_health.is_alive = false;
         sim.world.spawn((
             EntityId("dead-mob".to_string()),
-            Position::new(240.0, 200.0),
+            Position::new(24.0, 20.0),
             Velocity::zero(),
             dead_health,
             MobTag,
         ));
 
-        // 2. Living mob out of range (> 500 units away)
+        // 2. Living mob out of range (> 50 m away)
         sim.world.spawn((
             EntityId("far-mob".to_string()),
-            Position::new(900.0, 900.0),
+            Position::new(90.0, 90.0),
             Velocity::zero(),
             Health::new(100.0),
             MobTag,
         ));
 
-        // 3. Living mob in range (<= 500 units away)
+        // 3. Living mob in range (<= 50 m away)
         let valid_mob = sim
             .world
             .spawn((
                 EntityId("valid-mob".to_string()),
-                Position::new(300.0, 200.0),
+                Position::new(30.0, 20.0),
                 Velocity::zero(),
                 Health::new(100.0),
                 MobTag,
@@ -2046,15 +2063,15 @@ mod tests {
     fn test_validate_target_intents_rejects_invalid_target_positions() {
         use crate::protocol::{deserialize_client_input, serialize_client_input_full};
 
-        let mut sim = AtlasSimulation::new(1, 1000.0, 1000.0);
-        let p_ent = sim.spawn_player_avatar("hero", 200.0, 200.0);
+        let mut sim = AtlasSimulation::new(1, 100.0, 100.0);
+        let p_ent = sim.spawn_player_avatar("hero", 20.0, 20.0);
 
         for (bad_x, bad_y) in [
-            (f32::NAN, 200.0),      // NaN
-            (200.0, f32::INFINITY), // Infinity
-            (-10.0, 200.0),         // negative x (out of arena)
-            (200.0, 1200.0),        // > arena_height
-            (900.0, 900.0),         // in arena but > 500 units from player at (200, 200)
+            (f32::NAN, 20.0),      // NaN
+            (20.0, f32::INFINITY), // Infinity
+            (-10.0, 20.0),         // negative x (out of arena)
+            (20.0, 120.0),         // > arena_height
+            (90.0, 90.0),          // in arena but > 50 m from player at (20, 20)
         ] {
             let bytes = serialize_client_input_full(1, 0.0, 0.0, false, 0, 0, bad_x, bad_y, false);
             let input = deserialize_client_input(&bytes).unwrap();
@@ -2067,10 +2084,10 @@ mod tests {
         }
 
         // Valid in-bounds, in-range target position succeeds
-        let bytes = serialize_client_input_full(2, 0.0, 0.0, false, 0, 0, 350.0, 250.0, false);
+        let bytes = serialize_client_input_full(2, 0.0, 0.0, false, 0, 0, 35.0, 25.0, false);
         let input = deserialize_client_input(&bytes).unwrap();
         sim.apply_player_input("hero", &input);
         let st = sim.world.get::<PlayerInputState>(p_ent).unwrap();
-        assert_eq!(st.target_pos, Some(Position::new(350.0, 250.0)));
+        assert_eq!(st.target_pos, Some(Position::new(35.0, 25.0)));
     }
 }

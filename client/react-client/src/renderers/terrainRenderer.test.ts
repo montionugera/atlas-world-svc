@@ -44,7 +44,7 @@ describe("terrainRenderer", () => {
   });
 
   it("draws base terrain, biomes, courtyard, roads, river, and ambient labels", () => {
-    drawTerrain(mockCtx, 1000, 1000, 1, 1, 1000);
+    drawTerrain(mockCtx, 100, 100, 10, 1, 1000); // 100 m at 10 px/m = the old 1000 units at 1 px
 
     // Verify base meadow rect
     expect(mockCtx.fillRect).toHaveBeenCalledWith(0, 0, 1000, 1000);

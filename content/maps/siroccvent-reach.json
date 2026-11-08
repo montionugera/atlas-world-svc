@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "siroccvent-reach",
   "name": "Siroccvent Reach \u2014 Thirstwold (c05/r17)",
   "seed": 215968,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "cinder_ash_waste",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -441,73 +442,73 @@
   "spawnAreas": [
     {
       "id": "siroccvent_reach_bell_scoured_penitent",
-      "x": 2064.8,
-      "y": 2112.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 206.48,
+      "y": 211.27,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bell-scoured-penitent",
       "count": 2
     },
     {
       "id": "siroccvent_reach_broken_crown_sentinel",
-      "x": 1712.8,
-      "y": 2125.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 171.28,
+      "y": 212.58,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-broken-crown-sentinel",
       "count": 1
     },
     {
       "id": "siroccvent_reach_flagrot_swarm",
-      "x": 2229.9,
-      "y": 1713.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 222.99,
+      "y": 171.39,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-flagrot-swarm",
       "count": 2
     },
     {
       "id": "siroccvent_reach_slag_drake",
-      "x": 1892.6,
-      "y": 2375.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 189.26,
+      "y": 237.58,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-slag-drake",
       "count": 2
     },
     {
       "id": "siroccvent_reach_rebellion_echo",
-      "x": 1607.5,
-      "y": 1534.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 160.75,
+      "y": 153.48,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-rebellion-echo",
       "count": 2
     },
     {
       "id": "siroccvent_reach_shroudweaver",
-      "x": 2489.2,
-      "y": 1728.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 248.92,
+      "y": 172.86,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-shroudweaver",
       "count": 2
     },
     {
       "id": "siroccvent_reach_siege_rot_hulk",
-      "x": 1618.5,
-      "y": 2525.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 161.85,
+      "y": 252.51,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-siege-rot-hulk",
       "count": 1
     },
     {
       "id": "siroccvent_reach_violet_ash_drake",
-      "x": 1906.1,
-      "y": 1195.6,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 190.61,
+      "y": 119.56,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-violet-ash-drake",
       "count": 2
     }
@@ -515,24 +516,24 @@
   "staticObstacles": [
     {
       "id": "landmark_fumeflat_yardang_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_ford_past_sabkhpan_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_siroccvent_reach_sheer_scarp_cliff",
-      "min_x": 1268.8,
-      "min_y": 2738.8,
-      "max_x": 1531.2,
-      "max_y": 3001.2
+      "min_x": 126.88,
+      "min_y": 273.88,
+      "max_x": 153.12,
+      "max_y": 300.12
     }
   ]
 }

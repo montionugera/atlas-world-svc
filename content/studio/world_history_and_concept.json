@@ -67,9 +67,9 @@
     }
   },
   "player_arrival_premise": {
-    "player_identity": "A newly awakened scion of one of the Six Mortal Races\u2014Human/Demi-Human, Lunar, Ogre/Orc, Dark-Lunar, Dwarf, or Furral\u2014bearing a resonant fragment of The Architect's God Seal.",
-    "why_enter_world": "Each adventurer begins in their race's ancestral Home Town to master their racial craft, hunt encroaching monsters, farm regional alloys, and register with the Neutral Adventure Guild.",
-    "inciting_phenomenon": "Hairline fractures have appeared across the God Seals forged by The Architect in Chapter 1.4, awakening top-tier MVP Apostles (direct subordinates of the Sealed Gods) and lesser Raid Boss wardens across all three continents."
+    "player_identity": "An independent traveller from one of the six homelands: Maro Folk, Ondo Forge, Linde Folk, Daro Guard, Tava Kin or Silme Seers. Ordinary, with a personal reason to leave home. No chosen one, no special birth, never a Cala Knight.",
+    "why_enter_world": "Each traveller begins in their race's home town (Lv 1-10): a small job, a time-wound nobody can explain, an escort, and an invitation to Kilnwatch Bastion, where the Kilnwatch Wardens offer work and company (joining is optional, from Lv 10).",
+    "inciting_phenomenon": "The porcelain is cracking. Across the six homelands bells ring twice, unfinished work returns to an earlier state and whole villages lose hours. At Kilnwatch Bastion the trail of the Last Cala Knight, the last hero to hold that title, goes cold."
   },
   "primordial_gods": [
     {
@@ -329,9 +329,9 @@
       {
         "id": "race-human-demi-human",
         "race_key": "human_demi_human",
-        "name": "Human / Demi-Human",
+        "name": "Maro Folk",
         "icon": "\ud83e\uddec",
-        "archetype_reference": "Versatile heirs of The Architect runic geometry and adaptive Demi-Human kin",
+        "archetype_reference": "Everyday valley people, the most common race and the base body for the other five. Theme: The Short Candle, begin what you cannot finish.",
         "can_be_player": true,
         "can_be_mob": true,
         "starter_level_band": [
@@ -339,7 +339,7 @@
           10
         ],
         "home_town_id": "town-lantern-hollow",
-        "home_town_name": "Lantern Hollow",
+        "home_town_name": "Maro Bell",
         "continent_id": "continent-01-hearthbloom-basin",
         "district_id": "district-teacup-meadows",
         "hunting_area_id": "hunting-area-clover-south-gate",
@@ -351,15 +351,15 @@
           "Ember-Clover Nectar",
           "Glazed Kiln-Timber"
         ],
-        "niched_story": "Awakening in Lantern Hollow (Lv.1-10), Human and Demi-Human initiates defend the First Meridian Keystone before marching east through Kiln East Orchard at Lv.10 to join all six races at Kilnwatch Bastion for guilding and party quests.",
+        "niched_story": "Awakening in Maro Bell (Lv.1-10), Maro Folk initiates defend the First Meridian Keystone before marching east through Kiln East Orchard at Lv.10 to join all six races at Kilnwatch Bastion for guilding and party quests.",
         "combat_trait": "Balanced Seal-Resonance: +10% adaptability to all weapon classes and Job Quest mastery."
       },
       {
         "id": "race-dwarf",
         "race_key": "dwarf",
-        "name": "Dwarf (Tontatta-Lineage Micro-Titans)",
+        "name": "Ondo Forge",
         "icon": "\ud83d\udd28",
-        "archetype_reference": "One Piece Tontatta-inspired miniature craftsmen with explosive superhuman strength and botanical-mechanical mastery",
+        "archetype_reference": "Short, sturdy, young-looking red-haired makers with work goggles and great strength for their size. Theme: The Things We Leave, make what is loved after you are gone.",
         "can_be_player": true,
         "can_be_mob": true,
         "starter_level_band": [
@@ -367,7 +367,7 @@
           10
         ],
         "home_town_id": "town-root-train-roundhouse",
-        "home_town_name": "Root-Train Roundhouse",
+        "home_town_name": "Ondo Kiln",
         "continent_id": "continent-01-hearthbloom-basin",
         "district_id": "district-amber-root-hollows",
         "hunting_area_id": "hunting-area-cobalt-sandbar-ford",
@@ -379,15 +379,15 @@
           "Deep-Root Iron Ore",
           "High-Density Micro-Springs"
         ],
-        "niched_story": "Tiny, super-strong Dwarf smith-scouts start in Root-Train Roundhouse (Lv.1-10) clearing insectoid swarms from the banyan root-railways, then ride the resin-arch line to Kilnwatch Bastion at Lv.10-20 to forge multi-race guild gear.",
-        "combat_trait": "Tontatta Mighty Impact: Miniature hitbox with colossal hammer/axe knockdown force and +15% Blacksmith forging yield."
+        "niched_story": "Short, strong Ondo Forge smith-scouts start in Ondo Kiln (Lv.1-10) clearing insectoid swarms from the banyan root-railways, then ride the resin-arch line to Kilnwatch Bastion at Lv.10-20 to forge multi-race guild gear.",
+        "combat_trait": "Forge-Weight Impact: small hitbox with heavy hammer/axe knockdown force and +15% Blacksmith forging yield."
       },
       {
         "id": "race-ogre-orc",
         "race_key": "ogre_orc",
-        "name": "Ogre / Orc",
+        "name": "Daro Guard",
         "icon": "\ud83d\udd25",
-        "archetype_reference": "Crucible-hardened Ogre and Orc vanguard clans sworn to contain the subterranean Demon and Dragon vents",
+        "archetype_reference": "The tallest race: broad, green-skinned, horned guardians sworn to hold the subterranean Demon and Dragon vents. Theme: The Unbroken Watch, when does loyalty become a prison?",
         "can_be_player": true,
         "can_be_mob": true,
         "starter_level_band": [
@@ -395,7 +395,7 @@
           10
         ],
         "home_town_id": "town-draft-kiln-post",
-        "home_town_name": "Draft-Kiln Post",
+        "home_town_name": "Daro Post",
         "continent_id": "continent-01-hearthbloom-basin",
         "district_id": "district-ash-bellows-trench",
         "hunting_area_id": "hunting-area-firebrick-duct",
@@ -407,15 +407,15 @@
           "Crucible Basalt Plates",
           "Firebrick Marrow"
         ],
-        "niched_story": "Ogre and Orc vanguard initiates temper their resolve at Draft-Kiln Post (Lv.1-10) in the Ash-Bellows Trench before ascending Firebrick Duct at Lv.10-20 to serve as front-line tanks for multi-race parties in Kilnwatch Bastion.",
+        "niched_story": "Daro Guard initiates temper their resolve at Daro Post (Lv.1-10) in the Ash-Bellows Trench before ascending Firebrick Duct at Lv.10-20 to serve as front-line tanks for multi-race parties in Kilnwatch Bastion.",
         "combat_trait": "Crucible Blood-Fury: High thermal/physical fortitude and heavy cleave damage that scales as HP drops."
       },
       {
         "id": "race-furral",
         "race_key": "furral",
-        "name": "Furral (Electro-Beastfolk Tribe)",
+        "name": "Tava Kin",
         "icon": "\u26a1",
-        "archetype_reference": "One Piece Mink-inspired agile beastfolk warriors who channel bio-static Electro through fur and brass conductors",
+        "archetype_reference": "Quick, cheerful dog-eared beastfolk who carry static charge through fur and brass conductors. Theme: The Passing Spark, imperfect remembrance beats silence.",
         "can_be_player": true,
         "can_be_mob": true,
         "starter_level_band": [
@@ -423,7 +423,7 @@
           10
         ],
         "home_town_id": "town-cinnamon-mill-haven",
-        "home_town_name": "Cinnamon-Mill Haven",
+        "home_town_name": "Tava Fair",
         "continent_id": "continent-01-hearthbloom-basin",
         "district_id": "district-cinnamon-bellows-bluff",
         "hunting_area_id": "hunting-area-ginger-aqueduct-bridge",
@@ -435,15 +435,15 @@
           "Wind-Mill Copper Coils",
           "Static Beast-Pelts"
         ],
-        "niched_story": "Young Furral electro-warriors train atop the wind-turbines of Cinnamon-Mill Haven (Lv.1-10), harvesting static amber before converging at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to form guilds bound for their ancestral Inductor Switchyard.",
-        "combat_trait": "Electro Claw & Sulong Surge: Imbues melee/dash strikes with chain-lightning shock and high evasion."
+        "niched_story": "Young Tava Kin spark-warriors train atop the wind-turbines of Tava Fair (Lv.1-10), harvesting static amber before converging at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to form guilds bound for their ancestral Inductor Switchyard.",
+        "combat_trait": "Spark Claw & Static Surge: melee/dash strikes carry chain-lightning shock, with high evasion."
       },
       {
         "id": "race-lunar",
         "race_key": "lunar",
-        "name": "Lunar (Astral High-Elven Lineage)",
+        "name": "Linde Folk",
         "icon": "\ud83c\udf19",
-        "archetype_reference": "Elf-like celestial navigators and starlight weavers dwelling in porcelain-mirror sanctuaries",
+        "archetype_reference": "Slim, long-lived, pointed-eared star-weavers and singers of the porcelain-mirror sanctuaries. Theme: The Endless Farewell, choose to love what you will outlive.",
         "can_be_player": true,
         "can_be_mob": true,
         "starter_level_band": [
@@ -451,7 +451,7 @@
           10
         ],
         "home_town_id": "town-porcelain-loom-sanctuary",
-        "home_town_name": "Porcelain Loom Sanctuary",
+        "home_town_name": "Linde Glaze",
         "continent_id": "continent-01-hearthbloom-basin",
         "district_id": "district-porcelain-cradle",
         "hunting_area_id": "hunting-area-celadon-causeway",
@@ -463,15 +463,15 @@
           "Celadon Mirror-Quartz",
           "Astral Loom Dew"
         ],
-        "niched_story": "Lunar star-weavers begin their pilgrimage in Porcelain Loom Sanctuary (Lv.1-10), weaving starlight wards across Celadon Causeway before uniting with all six races at Kilnwatch Bastion (Lv.10-20) to prepare for the sky-ascension to Starfall Haven.",
+        "niched_story": "Linde Folk star-weavers begin their pilgrimage in Linde Glaze (Lv.1-10), weaving starlight wards across Celadon Causeway before uniting with all six races at Kilnwatch Bastion (Lv.10-20) to prepare for the sky-ascension to Starfall Haven.",
         "combat_trait": "Astral Grace & Bow/Spell Precision: Extended ranged/spell reach and low-gravity aerial step."
       },
       {
         "id": "race-dark-lunar",
         "race_key": "dark_lunar",
-        "name": "Dark-Lunar (Umbral Eclipse Lineage)",
+        "name": "Silme Seers",
         "icon": "\ud83c\udf11",
-        "archetype_reference": "Dark-Elf-like shadow-refraction scholars and acoustic seal-watchers of the twilight belfries",
+        "archetype_reference": "Pale-haired, violet-skinned shadow scholars and seal-listeners of the twilight belfries. Theme: The Burden of Knowing, truth does not always bring peace.",
         "can_be_player": true,
         "can_be_mob": true,
         "starter_level_band": [
@@ -479,7 +479,7 @@
           10
         ],
         "home_town_id": "town-carillon-hearth-belfry",
-        "home_town_name": "Carillon Hearth Belfry",
+        "home_town_name": "Silme Echo",
         "continent_id": "continent-01-hearthbloom-basin",
         "district_id": "district-terracotta-wind-chimes",
         "hunting_area_id": "hunting-area-apricot-aqueduct-terrace",
@@ -491,7 +491,7 @@
           "Resonant Chime-Obsidian",
           "Eclipse Night-Nectar"
         ],
-        "niched_story": "Dark-Lunar shadow-scholars keep vigil in Carillon Hearth Belfry (Lv.1-10) listening for Demon-seal tremors in the wind-chime canyons, then join multi-race guilds at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to unlock the Umbrage Prism Atolls.",
+        "niched_story": "Silme Seers keep vigil in Silme Echo (Lv.1-10) listening for Demon-seal tremors in the wind-chime canyons, then join multi-race guilds at Kilnwatch Bastion & Glaze-Barge Quay (Lv.10-20) to unlock the Umbrage Prism Atolls.",
         "combat_trait": "Umbral Refraction: Critical backstab/shadow-arts amplification and resistance to abyssal corruption."
       }
     ],

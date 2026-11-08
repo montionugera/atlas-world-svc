@@ -96,7 +96,7 @@ class Cdp {
     const id = ++this.id;
     this.ws.send(JSON.stringify({ id, method, params }));
     return new Promise((res, rej) => {
-      const t = setTimeout(() => { if (this.pending.delete(id)) rej(new Error(`CDP timeout: ${method}`)); }, 45000);
+      const t = setTimeout(() => { if (this.pending.delete(id)) rej(new Error(`CDP timeout: ${method}`)); }, +(process.env.ATLAS_CDP_TIMEOUT_MS || 120000));
       t.unref?.();
       this.pending.set(id, { method, res: v => { clearTimeout(t); res(v); }, rej: e => { clearTimeout(t); rej(e); } });
     });
@@ -650,12 +650,30 @@ true;`;
   assert('OL: zoom range reaches the app max 8x', olAudit.maxZoom >= 7.99, `max ${olAudit.maxZoom}x`);
 
   // One real wheel notch over the OL map is one ladder step (not a 0.85x->8x jump).
-  const olBox = await cdp.eval(`(async () => { zoomStudioMap(0, true); syncAtlasActiveSpatialEngine(); await __qaWaitOl(); const m = window.__ATLAS_OL_MAP_INSTANCE;
-    await new Promise(r => { m.once('rendercomplete', r); m.render(); }); const r = m.getTargetElement().getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), z: STUDIO_MAP_ZOOM }; })()`);
-  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: olBox.x, y: olBox.y });
-  await cdp.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: olBox.x, y: olBox.y, deltaX: 0, deltaY: -100 });
-  await sleep(1200);
-  const olNotch = await cdp.eval('STUDIO_MAP_ZOOM');
+  // Wait for any pending ResizeObserver from the 375x812 -> 1440x900 device-metrics switch to settle first,
+  // otherwise ResizeObserver can recreate the OL map mid-wheel animation under heavy Gate 1 CPU load.
+  await sleep(200);
+  const olBox = await cdp.eval(`(async () => {
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    zoomStudioMap(0, true);
+    syncAtlasActiveSpatialEngine();
+    await __qaWaitOl();
+    const m = window.__ATLAS_OL_MAP_INSTANCE;
+    m.updateSize();
+    await new Promise(r => { m.once('rendercomplete', r); m.render(); });
+    const r = m.getTargetElement().getBoundingClientRect();
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), z: STUDIO_MAP_ZOOM };
+  })()`);
+  let olNotch = olBox.z;
+  for (let attempt = 0; attempt < 2 && Math.abs(olNotch - olBox.z) < 0.01; attempt++) {
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: olBox.x, y: olBox.y });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: olBox.x, y: olBox.y, deltaX: 0, deltaY: -100 });
+    for (let w = 0; w < 15; w++) {
+      await sleep(150);
+      olNotch = await cdp.eval('STUDIO_MAP_ZOOM');
+      if (Math.abs(olNotch - olBox.z) >= 0.01) break;
+    }
+  }
   assert('OL: one wheel notch zooms one step (x1.1-x2.4), not the whole range', olNotch / olBox.z >= 1.1 && olNotch / olBox.z <= 2.4, `${olBox.z}x -> ${olNotch}x`);
 
   // Esc: first press clears the ruler, second leaves theater (real key events).
@@ -810,7 +828,9 @@ true;`;
       sb.reopen = await cdp.eval(`(()=>{ const b = document.getElementById('appSidebarReopenTab'); if (!b) return null; const r = b.getBoundingClientRect(); return r.width > 8 && r.height > 8 && getComputedStyle(b).visibility !== 'hidden' && r.left >= 0 && r.left < innerWidth; })()`);
       sb.stored = await cdp.eval(`(()=>{ try { return localStorage.getItem('atlas-sidebar-collapsed'); } catch (e) { return 'err'; } })()`);
       sb.url = await cdp.eval(`location.search.includes('sidebar=0')`);
-      await cdp.send('Page.reload'); await sleep(2500);
+      await cdp.send('Page.reload');
+      for (let i = 0; i < 60; i++) { await sleep(250); if (await cdp.eval(`typeof toggleAppSidebar === 'function' && !!document.querySelector('.sidebar')`).catch(() => false)) break; }
+      await sleep(500);
       sb.afterReload = await sideW();
       for (const t of ['keyDown', 'keyUp']) await cdp.send('Input.dispatchKeyEvent', { type: t, key: '[', code: 'BracketLeft', text: t === 'keyDown' ? '[' : undefined });
       await sleep(400);

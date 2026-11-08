@@ -54,6 +54,7 @@ export const SCHEMA_TOOLS = [
   "google-flow",
   "chatgpt",
   "asset-studio",
+  "godot-grey-box",
 ];
 export const SCHEMA_VERDICTS = ["unreviewed", "approve", "reject", "rebuild"];
 

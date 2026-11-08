@@ -115,6 +115,14 @@ namespace AtlasWorld.Client.World
     /// - <c>"crystal_cave"</c>: Walk-in Underground Crystal Cavern carved beneath a hill with a southern entrance portal
     ///   (bypasses outer cliff slope blocker inside the tunnel), recessed glowing crystal floor, and automatic cave ceiling cutaway.
     /// </summary>
+    /// <summary>Box size in metres for <c>kind: "block"</c> structures.</summary>
+    public sealed class UnifiedMapBlockSize
+    {
+        [JsonPropertyName("x")] public float X { get; set; } = 1f;
+        [JsonPropertyName("y")] public float Y { get; set; } = 1f;
+        [JsonPropertyName("z")] public float Z { get; set; } = 1f;
+    }
+
     public sealed class UnifiedMapStructureVolume
     {
         [JsonPropertyName("id")] public string Id { get; set; } = "";
@@ -125,6 +133,12 @@ namespace AtlasWorld.Client.World
         [JsonPropertyName("radius")] public float Radius { get; set; } = 4.6f;
         [JsonPropertyName("upperFloorHeight")] public float UpperFloorHeight { get; set; } = 3.2f;
         [JsonPropertyName("ceilingHeight")] public float CeilingHeight { get; set; } = 3.4f;
+        // F-183 grey-box <c>"block"</c> kind: a plain box (size), optional billboard label, optional hover above the ground.
+        [JsonPropertyName("size")] public UnifiedMapBlockSize Size { get; set; } = new();
+        [JsonPropertyName("label")] public string Label { get; set; } = "";
+        [JsonPropertyName("hover")] public float Hover { get; set; }
+        /// <summary>False = walk-through (markers, the hanging bell); true blocks feed the obstacle grid.</summary>
+        [JsonPropertyName("solid")] public bool Solid { get; set; } = true;
     }
 
     public sealed class UnifiedMapSpawnArea
@@ -153,8 +167,8 @@ namespace AtlasWorld.Client.World
         [JsonPropertyName("mapId")] public string MapId { get; set; } = "freja-south-gate";
         [JsonPropertyName("name")] public string Name { get; set; } = "Prontera South Gate \u2014 Freja Meadow";
         [JsonPropertyName("seed")] public int Seed { get; set; } = 104729;
-        [JsonPropertyName("width")] public float Width { get; set; } = 4000.0f;
-        [JsonPropertyName("height")] public float Height { get; set; } = 4000.0f;
+        [JsonPropertyName("width")] public float Width { get; set; } = 400.0f;
+        [JsonPropertyName("height")] public float Height { get; set; } = 400.0f;
         [JsonPropertyName("baseGroundId")] public string BaseGroundId { get; set; } = "meadow_grass";
         [JsonPropertyName("chunkSizeWorld")] public float ChunkSizeWorld { get; set; } = 24.0f;
         [JsonPropertyName("activeChunkRadius")] public int ActiveChunkRadius { get; set; } = 2;
@@ -195,8 +209,8 @@ namespace AtlasWorld.Client.World
         [JsonIgnore]
         public Vector2 ServerCenter => new(Width * 0.5f, Height * 0.5f);
 
-        public float HalfWidthWorld(float serverCoordScale = 0.1f) => Width * 0.5f * serverCoordScale;
-        public float HalfHeightWorld(float serverCoordScale = 0.1f) => Height * 0.5f * serverCoordScale;
+        public float HalfWidthWorld(float serverCoordScale = 1.0f) => Width * 0.5f * serverCoordScale;
+        public float HalfHeightWorld(float serverCoordScale = 1.0f) => Height * 0.5f * serverCoordScale;
 
         public static Vector2I WorldToObstacleCell(float wx, float wz) =>
             new(Mathf.FloorToInt(wx / ObstacleCellSizeWorld), Mathf.FloorToInt(wz / ObstacleCellSizeWorld));
@@ -288,6 +302,8 @@ namespace AtlasWorld.Client.World
             for (int i = 0; i < Structures.Count; i++)
             {
                 var s = Structures[i];
+                if (s.Kind == "block")
+                    continue;
                 if (Mathf.Abs(wx - s.X) <= s.Radius + 3.6f && Mathf.Abs(wz - s.Z) <= s.Radius + 2.2f)
                 {
                     return "structure_foundation";
@@ -780,11 +796,11 @@ namespace AtlasWorld.Client.World
         /// Resizes the map in server units (e.g. 1000x1000 -> 2000x2000 or 4000x4000) while preserving
         /// the relative offset of all server spawn areas from the center of the map so existing content stays aligned.
         /// </summary>
-        public void ResizeMap(float newWidth, float newHeight, float serverCoordScale = 0.1f)
+        public void ResizeMap(float newWidth, float newHeight, float serverCoordScale = 1.0f)
         {
             Vector2 oldCenter = ServerCenter;
-            Width = Mathf.Clamp(newWidth, 500f, 10000f);
-            Height = Mathf.Clamp(newHeight, 500f, 10000f);
+            Width = Mathf.Clamp(newWidth, 50f, 1000f);
+            Height = Mathf.Clamp(newHeight, 50f, 1000f);
             Vector2 newCenter = ServerCenter;
             Vector2 delta = newCenter - oldCenter;
 
@@ -826,7 +842,7 @@ namespace AtlasWorld.Client.World
                     if (doc != null)
                     {
                         doc.EnsureDefaultTerraces();
-                        doc.RebuildStaticObstacles(doc.ServerCenter, 0.1f);
+                        doc.RebuildStaticObstacles(doc.ServerCenter, 1.0f);
                         return doc;
                     }
                 }
@@ -838,7 +854,7 @@ namespace AtlasWorld.Client.World
 
             var fallback = new UnifiedMapDocument { MapId = mapId };
             fallback.EnsureDefaultTerraces();
-            fallback.RebuildStaticObstacles(fallback.ServerCenter, 0.1f);
+            fallback.RebuildStaticObstacles(fallback.ServerCenter, 1.0f);
             return fallback;
         }
 
@@ -906,7 +922,7 @@ namespace AtlasWorld.Client.World
         {
             var worldRect = new Rect2(wx - halfWorld, wz - halfWorld, halfWorld * 2f, halfWorld * 2f);
             Vector2 serverCenter = ServerCenter;
-            const float serverCoordScale = 0.1f;
+            const float serverCoordScale = 1.0f;
             float sxMin = serverCenter.X + (worldRect.Position.X / serverCoordScale);
             float syMin = serverCenter.Y + (worldRect.Position.Y / serverCoordScale);
             float sxMax = serverCenter.X + ((worldRect.Position.X + worldRect.Size.X) / serverCoordScale);
@@ -953,6 +969,15 @@ namespace AtlasWorld.Client.World
         public void IndexStructureWallsIncremental(UnifiedMapStructureVolume s, Vector2 serverCenter, float serverCoordScale)
         {
             float baseY = TerrainElevation.SampleBaseTerrainHeight(s.X, s.Z, this);
+            if (s.Kind == "block")
+            {
+                // F-183: the client derives block obstacles from the structures (same footprint as the authored
+                // server staticObstacles; scripts/tests/maro-bell.test.mjs pins the two together).
+                if (s.Solid)
+                    AddWorldRectObstacle(s.Id, new Rect2(s.X - s.Size.X / 2f, s.Z - s.Size.Z / 2f, s.Size.X, s.Size.Z),
+                        baseY - 0.5f, baseY + s.Hover + s.Size.Y, serverCenter, serverCoordScale);
+                return;
+            }
             float r = Mathf.Max(2.5f, s.Radius);
             float wallThick = 0.55f;
 

@@ -120,8 +120,8 @@ mod tests {
             let cfg = load_generated_region_config(region_id)
                 .unwrap_or_else(|| panic!("failed to load region {region_id}"));
             assert_eq!(cfg.map_id, region_id);
-            assert_eq!(cfg.width, 4000.0);
-            assert_eq!(cfg.height, 4000.0);
+            assert_eq!(cfg.width, 400.0);
+            assert_eq!(cfg.height, 400.0);
             assert!(
                 !cfg.spawn_areas.is_empty(),
                 "{region_id} missing spawn_areas"
@@ -130,13 +130,13 @@ mod tests {
                 !cfg.static_obstacles.is_empty(),
                 "{region_id} missing static_obstacles"
             );
-            assert_eq!(cfg.player_spawn, Some((2000.0, 2000.0)));
+            assert_eq!(cfg.player_spawn, Some((200.0, 200.0)));
         }
 
         // Unknown map still falls back to map-for-play
         assert_eq!(resolve_room_or_region_id("unknown-map"), "map-for-play");
 
-        // Millcross Ford simulation initializes on 4000x4000 with authored mobs
+        // Millcross Ford simulation initializes on 400x400 with authored mobs
         let mut sim =
             AtlasSimulation::from_generated_region("millcross-ford", 0x1337_c0de).unwrap();
         let frame = sim.live_tick(&[], &[]);
@@ -153,11 +153,45 @@ mod tests {
             serde_json::from_str(CLIENT_GENERATED_WORLD_MAPS_JSON).unwrap();
 
         let play_cfg = MapConfig::load("map-for-play");
+        let near = |a: f32, b: f32| (a - b).abs() < 1e-3;
         assert_eq!(
-            client_manifest.millcross_town_footprints,
-            play_cfg.static_obstacles
+            client_manifest.millcross_town_footprints.len(),
+            play_cfg.static_obstacles.len()
         );
-        assert_eq!(client_manifest.play_map_spawn_areas, play_cfg.spawn_areas);
+        for (c, s) in client_manifest
+            .millcross_town_footprints
+            .iter()
+            .zip(&play_cfg.static_obstacles)
+        {
+            assert!(
+                c.id == s.id
+                    && near(c.min_x, s.min_x)
+                    && near(c.min_y, s.min_y)
+                    && near(c.max_x, s.max_x)
+                    && near(c.max_y, s.max_y),
+                "{c:?} vs {s:?}"
+            );
+        }
+        assert_eq!(
+            client_manifest.play_map_spawn_areas.len(),
+            play_cfg.spawn_areas.len()
+        );
+        for (c, s) in client_manifest
+            .play_map_spawn_areas
+            .iter()
+            .zip(&play_cfg.spawn_areas)
+        {
+            assert!(
+                c.id == s.id
+                    && c.mob_type == s.mob_type
+                    && c.count == s.count
+                    && near(c.x, s.x)
+                    && near(c.y, s.y)
+                    && near(c.width, s.width)
+                    && near(c.height, s.height),
+                "{c:?} vs {s:?}"
+            );
+        }
 
         for &region_id in &GENERATED_REGION_IDS {
             let server_cfg = MapConfig::load(region_id);

@@ -1617,5 +1617,137 @@
     "title": "Sergeant republish: smooth combat_idle to attack seam",
     "created_at": "2026-11-07T06:27:19.369695+00:00",
     "promoted_to": "F-177"
+  },
+  {
+    "id": "I-259",
+    "title": "Expansion I story structure + canon source of truth",
+    "created_at": "2026-11-07T08:15:06.832942+00:00",
+    "promoted_to": "F-178"
+  },
+  {
+    "id": "I-260",
+    "title": "Last Cala Knight: unnumbered, female, Himmel heart with Serie strength",
+    "created_at": "2026-11-07T10:15:14.983673+00:00",
+    "promoted_to": "F-179"
+  },
+  {
+    "id": "I-261",
+    "title": "Maro Bell prototype cast + first quests, Kilnwatch Wardens benefits, Scar renames",
+    "created_at": "2026-11-07T11:29:21.719764+00:00",
+    "promoted_to": "F-180"
+  },
+  {
+    "id": "I-262",
+    "title": "Six-race lineup concept art (12 characters, canon names)",
+    "created_at": "2026-11-07T15:43:06.526942+00:00",
+    "promoted_to": "F-181"
+  },
+  {
+    "id": "I-263",
+    "title": "Lineup v2: owner's taller Ondo Forge",
+    "created_at": "2026-11-07T16:00:37.956836+00:00",
+    "promoted_to": "F-182"
+  },
+  {
+    "id": "I-264",
+    "title": "Retire old race + town names in lore prose and world-graph nodes",
+    "created_at": "2026-11-07T16:18:24.857069+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-265",
+    "title": "Maro Bell grey box",
+    "created_at": "2026-11-07T16:58:06.601436+00:00",
+    "promoted_to": "F-183"
+  },
+  {
+    "id": "I-266",
+    "title": "Content folder structure cleanup: one home per data kind (towns, maps, schemas, backlog) and retire old-world files",
+    "created_at": "2026-11-07T16:58:57.105748+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-267",
+    "title": "Game-wide speed rescale: player run 3 m/s",
+    "created_at": "2026-11-07T17:23:37.767524+00:00",
+    "promoted_to": "F-184"
+  },
+  {
+    "id": "I-268",
+    "title": "Unit contract: 1 server unit = 0.1 m; fix studio fields labelled metres (dimensions_meters 4000, spawn_point_meters, safeZoneRadiusMeters) that are really server units",
+    "created_at": "2026-11-07T17:28:40.380990+00:00",
+    "promoted_to": "F-185"
+  },
+  {
+    "id": "I-269",
+    "title": "Maro Folk girl from Meshy AI: portable humanoid rig, upper-body attack blend, hair tint and sword swap in Maro Bell",
+    "created_at": "2026-11-07T17:50:57.884929+00:00",
+    "promoted_to": "F-186"
+  },
+  {
+    "id": "I-270",
+    "title": "Concept art cleanup: drop 18 retired-world images, keep 7 race sheets + Maro Bell grey boxes",
+    "created_at": "2026-11-08T00:41:28.369042+00:00",
+    "promoted_to": "F-187"
+  },
+  {
+    "id": "I-271",
+    "title": "Interactive Playtest Sandbox client: shared World engine scene, live customizer, combat dummies and foot-grounding inspector",
+    "created_at": "2026-11-08T01:36:31.377348+00:00",
+    "promoted_to": "F-188"
+  },
+  {
+    "id": "I-272",
+    "title": "Catalog DB loads new canon (glossary.json) and concept-art index as tables",
+    "created_at": "2026-11-08T01:38:06.849632+00:00",
+    "promoted_to": "F-189"
+  },
+  {
+    "id": "I-273",
+    "title": "Player character in Godot: messy black outline shells over the model (should be a clean anime line); check inverted-hull outline_thickness 0.0065 in EntityView.cs against the pipeline char mesh",
+    "created_at": "2026-11-08T03:37:34.054294+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-274",
+    "title": "Player character floats above the ground in Maro Bell (feet not on the ground); check model pivot/foot offset and block-top ground sampling in VerticalSliceRoot/TerrainElevation",
+    "created_at": "2026-11-08T03:37:35.046814+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-275",
+    "title": "Game client camera zoom limit 3.5-11 m is too tight for a 160 m town: widen max to 30 m with a distance-proportional wheel step (VerticalSliceRoot.cs:1302-1305)",
+    "created_at": "2026-11-08T04:34:47.006545+00:00",
+    "promoted_to": "F-190"
+  },
+  {
+    "id": "I-276",
+    "title": "Share one camera zoom setting between the game scene and the playtest sandbox: one CameraZoom class (3.5-30 m, proportional step) used by VerticalSliceRoot and PlaytestSandboxRoot",
+    "created_at": "2026-11-08T05:28:58.651022+00:00",
+    "promoted_to": "F-191"
+  },
+  {
+    "id": "I-277",
+    "title": "Canon decision ledger: decisions.json + DB table + gate, class/prologue proposals as proposed rows",
+    "created_at": "2026-11-08T09:15:22.109250+00:00",
+    "promoted_to": "F-192"
+  },
+  {
+    "id": "I-278",
+    "title": "Playtest sandbox zoom still uses its own 0.35-22 m clamp and steps (F-191 missed it because F-188 rewrote it): make PlaytestSandboxRoot use CameraZoom; one range 0.35-30 m for game and sandbox",
+    "created_at": "2026-11-08T09:36:14.394182+00:00",
+    "promoted_to": "F-193"
+  },
+  {
+    "id": "I-279",
+    "title": "Ledger: lock 2.5D physics (no height-dependent combat) and 30 Hz tick as owner decisions",
+    "created_at": "2026-11-08T12:54:07.669337+00:00",
+    "promoted_to": "F-194"
+  },
+  {
+    "id": "I-280",
+    "title": "Server walkable slope limit 38 -> 35 deg to match the Godot client, with a drift test",
+    "created_at": "2026-11-08T12:58:11.958437+00:00",
+    "promoted_to": "F-195"
   }
 ]

@@ -62,7 +62,7 @@ impl Default for AuthorityHandoffCoordinator {
 impl AuthorityHandoffCoordinator {
     pub fn new(hysteresis_units: f32) -> Self {
         Self {
-            hysteresis_units: hysteresis_units.max(1.0),
+            hysteresis_units: hysteresis_units.max(0.1),
             next_token_id: 1,
             completed_handoffs: Vec::new(),
         }

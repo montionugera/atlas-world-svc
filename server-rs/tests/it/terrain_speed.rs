@@ -9,7 +9,7 @@ use server_rs::net::ClientPacket;
 use server_rs::protocol::serialize_client_input;
 use server_rs::simulation::{AtlasSimulation, LiveConfig};
 
-const TICKS: usize = 16;
+const TICKS: usize = 107; // F-184: same ground as 16 ticks at the old pace
 
 fn play_map() -> AtlasSimulation {
     AtlasSimulation::live(LiveConfig {
@@ -43,12 +43,12 @@ fn run_distance(session: &str, x: f32, y: f32, terrain: TerrainType, ticks: usiz
 
 #[test]
 fn held_input_covers_terrain_scaled_distance() {
-    let grass = run_distance("p-grass", 50.0, 850.0, TerrainType::Grass, TICKS);
-    let mud = run_distance("p-mud", 520.0, 700.0, TerrainType::Mud, TICKS);
-    let road = run_distance("p-road", 50.0, 500.0, TerrainType::Road, TICKS);
-    let ice = run_distance("p-ice", 50.0, 50.0, TerrainType::Ice, TICKS);
+    let grass = run_distance("p-grass", 5.0, 85.0, TerrainType::Grass, TICKS);
+    let mud = run_distance("p-mud", 52.0, 70.0, TerrainType::Mud, TICKS);
+    let road = run_distance("p-road", 5.0, 50.0, TerrainType::Road, TICKS);
+    let ice = run_distance("p-ice", 5.0, 5.0, TerrainType::Ice, TICKS);
 
-    assert!(grass > 150.0, "grass run actually moved, got {grass}");
+    assert!(grass > 15.0, "grass run actually moved, got {grass}");
     for (name, dist, terrain) in [
         ("mud", mud, TerrainType::Mud),
         ("road", road, TerrainType::Road),
@@ -103,7 +103,7 @@ fn terrain_test_room_has_every_terrain_and_a_straight_run_crosses_them_all() {
     let mut players = sim.world.query::<(Entity, &PlayerAvatar)>();
     let (player, _) = players.single(&sim.world);
     let spawn = sim.player_spawn;
-    assert!(spawn.x < 50.0, "spawns at the west end, got {}", spawn.x);
+    assert!(spawn.x < 5.0, "spawns at the west end, got {}", spawn.x);
 
     // The sandbox mobs stand off to the side: nowhere near the spawn or its aggro range.
     let mut mobs = sim
@@ -116,11 +116,11 @@ fn terrain_test_room_has_every_terrain_and_a_straight_run_crosses_them_all() {
     assert_eq!(mob_list.len(), 2);
     for (pos, chase_range) in &mob_list {
         let d = ((pos.x - spawn.x).powi(2) + (pos.y - spawn.y).powi(2)).sqrt();
-        assert!(d > chase_range + 100.0, "mob {d} from spawn");
+        assert!(d > chase_range + 10.0, "mob {d} from spawn");
     }
 
     let mut crossed = Vec::new();
-    for _ in 0..200 {
+    for _ in 0..1334 {
         sim.live_tick(std::slice::from_ref(&held), &[]);
         let p = *sim.world.get::<Position>(player).unwrap();
         let terrain = zones.terrain_at(p.x, p.y);
@@ -139,15 +139,15 @@ fn terrain_test_room_has_every_terrain_and_a_straight_run_crosses_them_all() {
 /// grass does. Runs are short (8 ticks) so the narrow sand strip fits.
 #[test]
 fn every_terrain_type_covers_its_multiplier_of_grass_distance() {
-    const SHORT: usize = 8;
-    let grass = run_distance("t-grass", 50.0, 850.0, TerrainType::Grass, SHORT);
+    const SHORT: usize = 53;
+    let grass = run_distance("t-grass", 5.0, 85.0, TerrainType::Grass, SHORT);
     let starts = [
-        (TerrainType::Grass, 50.0, 850.0),
-        (TerrainType::Road, 50.0, 500.0),
-        (TerrainType::Forest, 700.0, 300.0),
-        (TerrainType::Sand, 610.0, 420.0),
-        (TerrainType::Ice, 50.0, 50.0),
-        (TerrainType::Mud, 520.0, 700.0),
+        (TerrainType::Grass, 5.0, 85.0),
+        (TerrainType::Road, 5.0, 50.0),
+        (TerrainType::Forest, 70.0, 30.0),
+        (TerrainType::Sand, 61.0, 42.0),
+        (TerrainType::Ice, 5.0, 5.0),
+        (TerrainType::Mud, 52.0, 70.0),
     ];
     assert_eq!(starts.len(), TerrainType::ALL.len());
     for (terrain, x, y) in starts {
@@ -166,12 +166,12 @@ fn overlapping_zones_resolve_to_the_later_painted_one() {
     let sim = play_map();
     let zones = sim.world.resource::<TerrainZones>();
     // plaza over mud, arm over forest, trade road over ice, bridge over ice
-    assert_eq!(zones.terrain_at(500.0, 600.0), TerrainType::Road);
-    assert_eq!(zones.terrain_at(700.0, 500.0), TerrainType::Road);
-    assert_eq!(zones.terrain_at(100.0, 180.0), TerrainType::Road);
-    assert_eq!(zones.terrain_at(200.0, 180.0), TerrainType::Road);
+    assert_eq!(zones.terrain_at(50.0, 60.0), TerrainType::Road);
+    assert_eq!(zones.terrain_at(70.0, 50.0), TerrainType::Road);
+    assert_eq!(zones.terrain_at(10.0, 18.0), TerrainType::Road);
+    assert_eq!(zones.terrain_at(20.0, 18.0), TerrainType::Road);
     // beside the trade road is still ice
-    assert_eq!(zones.terrain_at(100.0, 160.0), TerrainType::Ice);
+    assert_eq!(zones.terrain_at(10.0, 16.0), TerrainType::Ice);
 }
 
 #[test]

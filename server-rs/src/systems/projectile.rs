@@ -1,6 +1,7 @@
 use crate::ai::ThreatTable;
 use crate::combat::{DamageCalculator, DamageOptions, SkillEffect};
 use crate::core::clock::SimClock;
+use crate::core::speed::{scaled_lifetime, scaled_speed};
 use crate::ecs::components::{
     knockback_speed, AttackFacingCone, ElementalAttributes, Health, HitLog, HitRecord, Mass,
     MobTag, Parried, ParryState, PlayerInputState, PlayerTag, Position, Projectile, StatusEffects,
@@ -69,7 +70,7 @@ pub fn projectile_collision_system(
         let hit_radius = if proj.aoe_radius > 0.0 {
             proj.aoe_radius
         } else {
-            proj.radius + 20.0
+            proj.radius + 2.0
         };
         let hit_radius_sq = hit_radius * hit_radius;
         let mut hit_target = None;
@@ -158,7 +159,7 @@ pub fn projectile_collision_system(
                             let dx = pos.x - t_pos.x;
                             let dy = pos.y - t_pos.y;
                             let dist = (dx * dx + dy * dy).sqrt();
-                            if dist <= 55.0 {
+                            if dist <= 5.5 {
                                 let has_move = input.move_x * input.move_x
                                     + input.move_y * input.move_y
                                     > 1e-4;
@@ -243,12 +244,12 @@ pub fn projectile_collision_system(
                     proj.target = None;
                     proj.damage = (proj.damage * 1.2).max(1.0);
                     proj.traveled_distance = 0.0;
-                    proj.lifetime = 4.0;
+                    proj.lifetime = scaled_lifetime(4.0);
 
                     // Apply 20% recoil impulse to player
                     let raw_impulse = (proj.damage * 20.0).clamp(1.0, 2000.0);
                     let victim_mass = opt_mass.map(|m| m.value()).unwrap_or(25.0);
-                    let recoil_mag = (raw_impulse / victim_mass) * 0.2;
+                    let recoil_mag = scaled_speed((raw_impulse / victim_mass) * 0.2);
                     if let Some(ref mut t_vel) = opt_vel {
                         t_vel.vx -= nx * recoil_mag;
                         t_vel.vy -= ny * recoil_mag;
@@ -819,8 +820,8 @@ mod tests {
         // Mob is shoved along +X axis: knockback_speed(25 dmg, mass 25) = 3600 / 25 = 144.0
         let vel = world.get::<Velocity>(mob).unwrap();
         assert!(
-            vel.vx > 10.0,
-            "expected mob velocity vx > 10.0 from projectile impulse, got {}",
+            vel.vx > 1.0,
+            "expected mob velocity vx > 1.0 from projectile impulse, got {}",
             vel.vx
         );
         assert_eq!(vel.vy, 0.0);
@@ -1015,7 +1016,7 @@ mod tests {
 
         let proj = world
             .spawn((
-                Position::new(60.0, 50.0),
+                Position::new(51.0, 50.0),
                 Velocity::new(-200.0, 0.0),
                 Projectile {
                     owner: Entity::PLACEHOLDER,
@@ -1097,7 +1098,7 @@ mod tests {
         // Already reflected once, then sent back at a player.
         let proj = world
             .spawn((
-                Position::new(60.0, 50.0),
+                Position::new(51.0, 50.0),
                 Velocity::new(-200.0, 0.0),
                 Projectile {
                     owner: Entity::PLACEHOLDER,
@@ -1152,7 +1153,7 @@ mod tests {
 
         // Already reflected once, then sent back at a player.
         world.spawn((
-            Position::new(60.0, 50.0),
+            Position::new(51.0, 50.0),
             Velocity::new(-200.0, 0.0),
             Projectile {
                 owner: Entity::PLACEHOLDER,

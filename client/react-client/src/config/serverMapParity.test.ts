@@ -79,12 +79,12 @@ describe("client map tables match server-rs/src/content/map.rs, read from disk",
       expect(spawn.y).toBeLessThan(m.height);
     }
     expect(server.rooms["map-for-test-large"].spawn).toEqual({
-      x: 2000,
-      y: 2000,
+      x: 200,
+      y: 200,
     });
     expect(server.rooms["map-for-test-deflect"].spawn).toEqual({
-      x: 50,
-      y: 50,
+      x: 5,
+      y: 5,
     });
   });
 
@@ -98,16 +98,16 @@ describe("client map tables match server-rs/src/content/map.rs, read from disk",
     );
     const expectedFootprints = townDoc.footprints.map(
       (fp: { id: string; rect: number[] }) => {
-        const minX = Math.min(fp.rect[0], fp.rect[2]) + 100;
-        const minY = Math.min(fp.rect[1], fp.rect[3]) + 100;
-        const maxX = Math.max(fp.rect[0], fp.rect[2]) + 100;
-        const maxY = Math.max(fp.rect[1], fp.rect[3]) + 100;
+        const minX = (Math.min(fp.rect[0], fp.rect[2]) + 100) / 10;
+        const minY = (Math.min(fp.rect[1], fp.rect[3]) + 100) / 10;
+        const maxX = (Math.max(fp.rect[0], fp.rect[2]) + 100) / 10;
+        const maxY = (Math.max(fp.rect[1], fp.rect[3]) + 100) / 10;
         return {
           id: fp.id,
-          x: minX,
-          y: minY,
-          width: maxX - minX,
-          height: maxY - minY,
+          x: Number(minX.toFixed(1)),
+          y: Number(minY.toFixed(1)),
+          width: Number((maxX - minX).toFixed(1)),
+          height: Number((maxY - minY).toFixed(1)),
         };
       },
     );
@@ -131,8 +131,8 @@ describe("client map tables match server-rs/src/content/map.rs, read from disk",
       expect(mapIdFromSearch(`?map=${region.id}`)).toBe(region.id);
       expect(mapDef(region.id)).toMatchObject({
         id: region.id,
-        width: 4000,
-        height: 4000,
+        width: 400,
+        height: 400,
       });
 
       const diskMap = JSON.parse(
@@ -167,27 +167,27 @@ describe("client map tables match server-rs/src/content/map.rs, read from disk",
   const edits: [string, string, string][] = [
     [
       "a zone rect of the large map",
-      "Ice, 0.0, 0.0, 1400.0, 800.0",
-      "Ice, 0.0, 0.0, 1400.0, 900.0",
+      "Ice, 0.0, 0.0, 140.0, 80.0",
+      "Ice, 0.0, 0.0, 140.0, 90.0",
     ],
     [
       "a zone rect of the play map",
-      "TerrainType::Mud, 390.0, 590.0",
-      "TerrainType::Mud, 380.0, 590.0",
+      "TerrainType::Mud, 39.0, 59.0",
+      "TerrainType::Mud, 38.0, 59.0",
     ],
-    ["a zone's terrain", "rect(Sand, 2200.0", "rect(Mud, 2200.0"],
+    ["a zone's terrain", "rect(Sand, 220.0", "rect(Mud, 220.0"],
     [
       "the terrain test map's strips",
-      "50.0 + 150.0 * i as f32",
-      "50.0 + 140.0 * i as f32",
+      "5.0 + 15.0 * i as f32",
+      "5.0 + 14.0 * i as f32",
     ],
     [
       "a speed multiplier",
       "TerrainType::Mud => 0.5",
       "TerrainType::Mud => 0.4",
     ],
-    ["a world size", "width: 4000.0,", "width: 5000.0,"],
-    ["paint order", "TerrainZone::rect(Road, 1970.0, 0.0, 60.0, 4000.0),", ""],
+    ["a world size", "width: 400.0,", "width: 500.0,"],
+    ["paint order", "TerrainZone::rect(Road, 197.0, 0.0, 6.0, 400.0),", ""],
     ["a room id", '"map-for-test-deflect",', '"map-for-test-parry",'],
   ];
   it.each(edits)("goes red when map.rs changes %s", (_, from, to) => {
@@ -213,17 +213,17 @@ describe("client map tables match server-rs/src/content/map.rs, read from disk",
           "let extra = TerrainZone::rect(Ice, 1.0, 2.0, 3.0, 4.0);",
         ),
     ],
-    ["a number it cannot read", (s) => s.replace("1400.0, 800.0", "W, 800.0")],
+    ["a number it cannot read", (s) => s.replace("140.0, 80.0", "W, 80.0")],
     [
       "a terrain the enum does not have",
-      (s) => s.replace("rect(Sand, 2200.0", "rect(Lava, 2200.0"),
+      (s) => s.replace("rect(Sand, 220.0", "rect(Lava, 220.0"),
     ],
     [
       "a room with two sizes",
       (s) =>
         s.replace(
-          "height: 4000.0,",
-          "height: 4000.0, map_id: map_id.to_string(), width: 1.0, height: 1.0,",
+          "height: 400.0,",
+          "height: 400.0, map_id: map_id.to_string(), width: 1.0, height: 1.0,",
         ),
     ],
   ];

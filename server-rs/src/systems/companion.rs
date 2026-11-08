@@ -23,7 +23,7 @@ pub fn spawn_companion(
             CombatStats {
                 attack_power: 16.0,
                 defense: 4.0,
-                attack_range: 35.0,
+                attack_range: 3.5,
                 attack_cooldown: 1.0,
                 cooldown_timer: 0.0,
                 is_player: true,

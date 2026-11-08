@@ -166,7 +166,7 @@ namespace AtlasWorld.Client.UI
                 mDef: def,
                 // Additive on purpose: move speed is on neither side of the attack/
                 // defence ratio, so it already cancels.
-                maxMoveSpeed: 20 + 0.2 * agi);
+                maxMoveSpeed: 3 + 0.03 * agi); // F-184: (20 + 0.2 * agi) * 0.15, server SPEED_SCALE
         }
     }
 }

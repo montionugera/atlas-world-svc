@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "freja-south-gate",
   "name": "Prontera South Gate \u2014 Freja Meadow",
   "seed": 104729,
-  "width": 1000.0,
-  "height": 1000.0,
+  "width": 100.0,
+  "height": 100.0,
   "baseGroundId": "meadow_grass",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -428,73 +429,73 @@
   "spawnAreas": [
     {
       "id": "boss_area",
-      "x": 450.0,
-      "y": 450.0,
-      "width": 100.0,
-      "height": 100.0,
+      "x": 45.0,
+      "y": 45.0,
+      "width": 10.0,
+      "height": 10.0,
       "mobType": "mob-thorncrown-drake",
       "count": 1
     },
     {
       "id": "center_courtyard",
-      "x": 400.0,
-      "y": 400.0,
-      "width": 200.0,
-      "height": 200.0,
+      "x": 40.0,
+      "y": 40.0,
+      "width": 20.0,
+      "height": 20.0,
       "mobType": "mob-bramble-stalker",
       "count": 3
     },
     {
       "id": "east_dunes",
-      "x": 550.0,
-      "y": 400.0,
-      "width": 150.0,
-      "height": 200.0,
+      "x": 55.0,
+      "y": 40.0,
+      "width": 15.0,
+      "height": 20.0,
       "mobType": "mob-veil-spearling",
       "count": 4
     },
     {
       "id": "north_ice_fields",
-      "x": 400.0,
-      "y": 250.0,
-      "width": 200.0,
-      "height": 150.0,
+      "x": 40.0,
+      "y": 25.0,
+      "width": 20.0,
+      "height": 15.0,
       "mobType": "mob-bramble-stalker",
       "count": 2
     },
     {
       "id": "south_mud_pit",
-      "x": 400.0,
-      "y": 600.0,
-      "width": 200.0,
-      "height": 150.0,
+      "x": 40.0,
+      "y": 60.0,
+      "width": 20.0,
+      "height": 15.0,
       "mobType": "mob-bramble-warden",
       "count": 2
     },
     {
       "id": "thornveil_interior",
-      "x": 820.0,
-      "y": 420.0,
-      "width": 150.0,
-      "height": 150.0,
+      "x": 82.0,
+      "y": 42.0,
+      "width": 15.0,
+      "height": 15.0,
       "mobType": "mob-bramble-drake",
       "count": 1
     },
     {
       "id": "thornveil_route_spearlings",
-      "x": 700.0,
-      "y": 550.0,
-      "width": 150.0,
-      "height": 200.0,
+      "x": 70.0,
+      "y": 55.0,
+      "width": 15.0,
+      "height": 20.0,
       "mobType": "mob-veil-spearling",
       "count": 2
     },
     {
       "id": "thornveil_route_stalkers",
-      "x": 700.0,
-      "y": 300.0,
-      "width": 150.0,
-      "height": 200.0,
+      "x": 70.0,
+      "y": 30.0,
+      "width": 15.0,
+      "height": 20.0,
       "mobType": "mob-bramble-stalker",
       "count": 2
     }
@@ -502,87 +503,87 @@
   "staticObstacles": [
     {
       "id": "tree_ring_01",
-      "min_x": 329.0,
-      "min_y": 349.0,
-      "max_x": 351.0,
-      "max_y": 371.0
+      "min_x": 32.9,
+      "min_y": 34.9,
+      "max_x": 35.1,
+      "max_y": 37.1
     },
     {
       "id": "tree_ring_02",
-      "min_x": 639.0,
-      "min_y": 339.0,
-      "max_x": 661.0,
-      "max_y": 361.0
+      "min_x": 63.9,
+      "min_y": 33.9,
+      "max_x": 66.1,
+      "max_y": 36.1
     },
     {
       "id": "tree_ring_03",
-      "min_x": 288.0,
-      "min_y": 448.0,
-      "max_x": 312.0,
-      "max_y": 472.0
+      "min_x": 28.8,
+      "min_y": 44.8,
+      "max_x": 31.2,
+      "max_y": 47.2
     },
     {
       "id": "tree_ring_04",
-      "min_x": 679.0,
-      "min_y": 469.0,
-      "max_x": 701.0,
-      "max_y": 491.0
+      "min_x": 67.9,
+      "min_y": 46.9,
+      "max_x": 70.1,
+      "max_y": 49.1
     },
     {
       "id": "tree_ring_05",
-      "min_x": 340.0,
-      "min_y": 620.0,
-      "max_x": 360.0,
-      "max_y": 640.0
+      "min_x": 34.0,
+      "min_y": 62.0,
+      "max_x": 36.0,
+      "max_y": 64.0
     },
     {
       "id": "tree_ring_06",
-      "min_x": 648.5,
-      "min_y": 628.5,
-      "max_x": 671.5,
-      "max_y": 651.5
+      "min_x": 64.85,
+      "min_y": 62.85,
+      "max_x": 67.15,
+      "max_y": 65.15
     },
     {
       "id": "tree_ring_07",
-      "min_x": 429.0,
-      "min_y": 669.0,
-      "max_x": 451.0,
-      "max_y": 691.0
+      "min_x": 42.9,
+      "min_y": 66.9,
+      "max_x": 45.1,
+      "max_y": 69.1
     },
     {
       "id": "tree_ring_08",
-      "min_x": 567.5,
-      "min_y": 267.5,
-      "max_x": 592.5,
-      "max_y": 292.5
+      "min_x": 56.75,
+      "min_y": 26.75,
+      "max_x": 59.25,
+      "max_y": 29.25
     },
     {
       "id": "rock_mid_01",
-      "min_x": 366.0,
-      "min_y": 386.0,
-      "max_x": 384.0,
-      "max_y": 404.0
+      "min_x": 36.6,
+      "min_y": 38.6,
+      "max_x": 38.4,
+      "max_y": 40.4
     },
     {
       "id": "rock_mid_02",
-      "min_x": 611.5,
-      "min_y": 381.5,
-      "max_x": 628.5,
-      "max_y": 398.5
+      "min_x": 61.15,
+      "min_y": 38.15,
+      "max_x": 62.85,
+      "max_y": 39.85
     },
     {
       "id": "sanctuary_pillar_w",
-      "min_x": 447.5,
-      "min_y": 388.5,
-      "max_x": 460.5,
-      "max_y": 401.5
+      "min_x": 44.75,
+      "min_y": 38.85,
+      "max_x": 46.05,
+      "max_y": 40.15
     },
     {
       "id": "sanctuary_pillar_e",
-      "min_x": 539.5,
-      "min_y": 388.5,
-      "max_x": 552.5,
-      "max_y": 401.5
+      "min_x": 53.95,
+      "min_y": 38.85,
+      "max_x": 55.25,
+      "max_y": 40.15
     }
   ],
   "worldSpineBinding": {

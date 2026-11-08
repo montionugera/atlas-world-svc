@@ -135,11 +135,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arena_width: f32 = std::env::var("ARENA_WIDTH")
         .ok()
         .and_then(|s| s.parse().ok())
-        .unwrap_or(1000.0);
+        .unwrap_or(100.0);
     let arena_height: f32 = std::env::var("ARENA_HEIGHT")
         .ok()
         .and_then(|s| s.parse().ok())
-        .unwrap_or(1000.0);
+        .unwrap_or(100.0);
 
     // 2. Auth Guard
     let auth_guard = AuthGuard::from_env();
@@ -273,8 +273,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "map-for-test-projectile".to_string(),
         AtlasSimulation::live(LiveConfig {
             seed: seed.wrapping_add(1),
-            arena_width: 1000.0,
-            arena_height: 1000.0,
+            arena_width: 100.0,
+            arena_height: 100.0,
             bot_count: 0,
             mob_count: 6,
             mob_respawn_sec,
@@ -283,13 +283,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }),
     );
 
-    // 3. Deflect / Parry Testing Map (100x100 arena, 1 spear-thrower mob)
+    // 3. Deflect / Parry Testing Map (10x10 arena, 1 spear-thrower mob)
     rooms.insert(
         "map-for-test-deflect".to_string(),
         AtlasSimulation::live(LiveConfig {
             seed: seed.wrapping_add(2),
-            arena_width: 100.0,
-            arena_height: 100.0,
+            arena_width: 10.0,
+            arena_height: 10.0,
             bot_count: 0,
             mob_count: 1,
             mob_respawn_sec,
@@ -303,8 +303,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "map-for-test-terrain".to_string(),
         AtlasSimulation::live(LiveConfig {
             seed: seed.wrapping_add(3),
-            arena_width: 1000.0,
-            arena_height: 1000.0,
+            arena_width: 100.0,
+            arena_height: 100.0,
             bot_count: 0,
             mob_count: 2,
             mob_respawn_sec,
@@ -313,13 +313,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }),
     );
 
-    // 5. Large scale-testing map (4000 x 4000)
+    // 5. Large scale-testing map (400 x 400)
     rooms.insert(
         "map-for-test-large".to_string(),
         AtlasSimulation::live(LiveConfig {
             seed,
-            arena_width: 4000.0,
-            arena_height: 4000.0,
+            arena_width: 400.0,
+            arena_height: 400.0,
             bot_count: 10,
             mob_count: 200,
             mob_respawn_sec,

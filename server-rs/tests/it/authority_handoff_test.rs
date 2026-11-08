@@ -29,11 +29,11 @@ fn authority_handoff_transfers_player_across_border_in_single_tick_and_wakes_sle
     sim_ashvale.sleep(1_000);
     assert!(sim_ashvale.is_sleeping());
 
-    // Spawn player-alice near the East border of millcross-ford (x = 3995, y = 2000)
+    // Spawn player-alice near the East border of millcross-ford (x = 399.99, y = 200)
     let mut loadout = LoadoutSnapshot::default();
     loadout.profile.level = 5;
     sim_millcross.set_session_loadout("player-alice", Some(loadout));
-    let alice_ent = sim_millcross.spawn_player_avatar("player-alice", 3995.0, 2000.0);
+    let alice_ent = sim_millcross.spawn_player_avatar("player-alice", 399.99, 200.0);
 
     // Customize Alice's health, cooldowns, and status effects to verify state preservation
     if let Some(mut health) = sim_millcross.world.get_mut::<Health>(alice_ent) {
@@ -54,7 +54,7 @@ fn authority_handoff_transfers_player_across_border_in_single_tick_and_wakes_sle
     let mut coordinator = AuthorityHandoffCoordinator::default();
     let alice_wire_id = fnv1a_32("player-alice");
 
-    // Step 1: Alice walks East (move_x = 1.0) across x = 4000.0 in millcross-ford
+    // Step 1: Alice walks East (move_x = 1.0) across x = 400.0 in millcross-ford
     let move_east = ClientPacket::new(
         "player-alice",
         serialize_client_input(1, 1.0, 0.0, false, 0, 0),
@@ -82,8 +82,8 @@ fn authority_handoff_transfers_player_across_border_in_single_tick_and_wakes_sle
     assert_eq!(token.transfer.to_region, "ashvale-front");
     assert_eq!(token.transfer.border, CardinalBorder::East);
     assert!((token.transfer.x - HANDOFF_HYSTERESIS_UNITS).abs() < 1e-3);
-    assert!((token.transfer.y - 2000.0).abs() < 1e-3);
-    assert!(token.transfer.vx > 100.0);
+    assert!((token.transfer.y - 200.0).abs() < 1e-3);
+    assert!(token.transfer.vx > 1.0);
 
     // 1. Target region ashvale-front woke up on handoff!
     let ashvale = rooms.get_mut("ashvale-front").unwrap();
@@ -117,14 +117,14 @@ fn authority_handoff_transfers_player_across_border_in_single_tick_and_wakes_sle
     assert!((cd.get_remaining("skill_dash") - 2.35).abs() < 0.1);
     assert!(status.freeze_timer > 1.0);
 
-    // 5. Hysteresis check: stepping another tick with 0 input at x = 32.0 does NOT bounce Alice back
+    // 5. Hysteresis check: stepping another tick with 0 input at x = 3.2 does NOT bounce Alice back
     let av_frame_t2 = rooms.get_mut("ashvale-front").unwrap().live_tick(&[], &[]);
     room_frames.insert("ashvale-front".to_string(), av_frame_t2);
     let tokens_t2 =
         coordinator.step_handoffs_with_frames(&mut rooms, &mut room_frames, &adjacency, 6_050);
     assert!(
         tokens_t2.is_empty(),
-        "32-unit hysteresis inset must prevent immediate border bounce"
+        "3.2 m hysteresis inset must prevent immediate border bounce"
     );
 
     // Validate DeadMobTracker fast-forward on sleeping region wake during handoff
@@ -178,7 +178,7 @@ async fn ws_server_reassign_session_room_routes_snapshots_and_inputs_to_new_regi
     let av_entities = vec![server_rs::protocol::EntitySnapshotData {
         id: hero_id,
         x: HANDOFF_HYSTERESIS_UNITS,
-        y: 2000.0,
+        y: 200.0,
         health: 100.0,
         max_health: 100.0,
         state_flags: server_rs::protocol::STATE_FLAG_ALIVE,
@@ -187,8 +187,8 @@ async fn ws_server_reassign_session_room_routes_snapshots_and_inputs_to_new_regi
     let mf_entities = vec![server_rs::protocol::EntitySnapshotData {
         id: mf_mob_id,
         entity_type: server_rs::protocol::EntityType::Mob,
-        x: 3920.0,
-        y: 2000.0,
+        x: 392.0,
+        y: 200.0,
         health: 100.0,
         max_health: 100.0,
         state_flags: server_rs::protocol::STATE_FLAG_ALIVE,

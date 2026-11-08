@@ -84,6 +84,9 @@ export const MILLCROSS_BUILDINGS: TownBuilding[] =
     };
   });
 
+/** Metres per old server unit: the hand-placed art coordinates predate F-185. */
+const OLD_UNIT_M = 0.1;
+
 /**
  * Draw complete ground terrain, regional biomes, roads, river, buildings, and labels.
  * Only the river moves: the ground under it and the town over it can be drawn once and
@@ -105,11 +108,15 @@ export const drawTerrain = (
 /** Everything under the river: meadow, biomes, courtyard and walkways. */
 export const drawTerrainGround = (
   ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  scale: number,
+  widthM: number,
+  heightM: number,
+  unitScale: number,
   viewScale: number = 1,
 ): void => {
+  // The hand-placed map-for-play art below is laid out in the old 0.1 m units (F-185).
+  const scale = unitScale * OLD_UNIT_M;
+  const width = widthM / OLD_UNIT_M;
+  const height = heightM / OLD_UNIT_M;
   const inverseScale = 1 / viewScale;
 
   // 1. Base Ground (Spawn Meadow - lush forest green)
@@ -274,10 +281,11 @@ export const drawTerrainGround = (
 /** The animated river "The Meltwash". */
 export const drawTerrainRiver = (
   ctx: CanvasRenderingContext2D,
-  scale: number,
+  unitScale: number,
   viewScale: number = 1,
   timeMs: number = Date.now(),
 ): void => {
+  const scale = unitScale * OLD_UNIT_M;
   const inverseScale = 1 / viewScale;
 
   // 4. Town of Millcross
@@ -304,9 +312,10 @@ export const drawTerrainRiver = (
 /** Everything over the river: trade road, bridge, buildings and region labels. */
 export const drawTerrainTown = (
   ctx: CanvasRenderingContext2D,
-  scale: number,
+  unitScale: number,
   viewScale: number = 1,
 ): void => {
+  const scale = unitScale * OLD_UNIT_M;
   const inverseScale = 1 / viewScale;
 
   // Town Trade Road
@@ -320,10 +329,10 @@ export const drawTerrainTown = (
 
   // Town Buildings
   for (const b of MILLCROSS_BUILDINGS) {
-    const bx = b.x * scale;
-    const by = b.y * scale;
-    const bw = b.width * scale;
-    const bh = b.height * scale;
+    const bx = b.x * unitScale;
+    const by = b.y * unitScale;
+    const bw = b.width * unitScale;
+    const bh = b.height * unitScale;
 
     // Drop shadow
     ctx.fillStyle = "rgba(0, 0, 0, 0.45)";

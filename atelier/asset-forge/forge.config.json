@@ -30,13 +30,16 @@
       "requiredStates": ["idle", "walk", "run", "attack", "death"]
     },
     "pipelineCharacter": {
-      "heightRange": [0.95, 1.15],
+      "heightRange": [0.90, 1.20],
       "maxTriangles": 15000,
       "maxBytes": 2936012,
       "maxTextureSize": 1024,
       "requiredStates": ["idle", "walk", "run", "attack", "death"],
       "optionalStates": ["combat_idle", "block", "hit", "ready_in", "ready_out"],
-      "rigReference": ["rig-reference/mixamo-65.bones.json"]
+      "rigReference": [
+        "rig-reference/mixamo-65.bones.json",
+        "rig-reference/meshy-humanoid.bones.json"
+      ]
     }
   },
   "pipelineClips": ["attack", "attack_2", "attack_3", "block", "block_idle", "cast", "death", "hit", "idle", "idle_look", "run", "walk"],

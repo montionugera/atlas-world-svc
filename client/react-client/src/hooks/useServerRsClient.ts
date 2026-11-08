@@ -251,15 +251,15 @@ export function fnv1a32(s: string): number {
 }
 
 /**
- * server-rs world scale: 1000×1000 arena, player speed ≈ 200 units/s (10× the legacy
- * Colyseus units). The camera must show a matching span or a 0.1s tap moves 40% of
- * a 50-unit screen and the follow-camera makes movement look frozen.
+ * server-rs world scale (F-185): 1 unit = 1 m, 100×100 arena, player speed ≈ 3 units/s.
+ * The camera must show a matching span or a 0.1s tap moves 40% of
+ * a tiny screen and the follow-camera makes movement look frozen.
  */
-export const SERVER_RS_VIEWPORT = 400;
-export const SERVER_RS_PLAYER_RADIUS = 12;
-export const SERVER_RS_MOB_RADIUS = 14;
+export const SERVER_RS_VIEWPORT = 40;
+export const SERVER_RS_PLAYER_RADIUS = 1.2;
+export const SERVER_RS_MOB_RADIUS = 1.4;
 /** Drawn projectile radius (the wire carries no radius). */
-export const SERVER_RS_PROJECTILE_RADIUS = 4;
+export const SERVER_RS_PROJECTILE_RADIUS = 0.4;
 
 /**
  * Snapshots arrive 20 times a second; React state (HUD, entity cards, stats) follows
@@ -387,8 +387,8 @@ export const useServerRsClient = (
     tick: 0,
     mapId: "map-for-play",
     roomId: "server-rs-map-for-play",
-    width: 1000,
-    height: 1000,
+    width: 100,
+    height: 100,
     viewportSize: SERVER_RS_VIEWPORT,
   });
 
@@ -670,7 +670,7 @@ export const useServerRsClient = (
                     isAlive,
                     isAttacking,
                     heading,
-                    attackRange: 40,
+                    attackRange: 4,
                     // Only server-driven BotAgents are bots; other humans are not.
                     isBotMode: (entity.stateFlags & STATE_FLAG_BOT) !== 0,
                     inputAck: entity.inputAck,

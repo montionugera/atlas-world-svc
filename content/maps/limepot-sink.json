@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "limepot-sink",
   "name": "Limepot Sink \u2014 Stonemoor (c04/r19)",
   "seed": 279976,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "barren_cliff",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -441,73 +442,73 @@
   "spawnAreas": [
     {
       "id": "limepot_sink_bound_war_beast",
-      "x": 2140.9,
-      "y": 2012.5,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 214.09,
+      "y": 201.25,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "limepot_sink_crateyard_colossus",
-      "x": 1718.3,
-      "y": 2132.7,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 171.83,
+      "y": 213.27,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "limepot_sink_ash_sermon_speaker",
-      "x": 2010.1,
-      "y": 1582.2,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 201.01,
+      "y": 158.22,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-ash-sermon-speaker",
       "count": 1
     },
     {
       "id": "limepot_sink_deepwater_hauler",
-      "x": 2210.9,
-      "y": 2299.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 221.09,
+      "y": 229.91,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "limepot_sink_frontline_devourer",
-      "x": 1453.3,
-      "y": 1784.7,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 145.33,
+      "y": 178.47,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-frontline-devourer",
       "count": 1
     },
     {
       "id": "limepot_sink_hollow_bell_wight",
-      "x": 2481.0,
-      "y": 1694.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 248.1,
+      "y": 169.49,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-hollow-bell-wight",
       "count": 1
     },
     {
       "id": "limepot_sink_scar_drake",
-      "x": 1772.2,
-      "y": 2587.9,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 177.22,
+      "y": 258.79,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-scar-drake",
       "count": 1
     },
     {
       "id": "limepot_sink_unburied_host",
-      "x": 1982.7,
-      "y": 1206.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 198.27,
+      "y": 120.6,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-unburied-host",
       "count": 1
     }
@@ -515,24 +516,24 @@
   "staticObstacles": [
     {
       "id": "landmark_shalesink_mere_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_stair_under_clintfell_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_limepot_sink_sheer_scarp_cliff",
-      "min_x": 1278.8,
-      "min_y": 2348.8,
-      "max_x": 1541.2,
-      "max_y": 2611.2
+      "min_x": 127.88,
+      "min_y": 234.88,
+      "max_x": 154.12,
+      "max_y": 261.12
     }
   ]
 }

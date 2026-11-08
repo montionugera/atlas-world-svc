@@ -1,4 +1,5 @@
 use crate::core::clock::SimClock;
+use crate::core::speed::scaled_speed;
 use crate::ecs::components::{Health, MobTag, Position, Velocity};
 use crate::spatial::grid::SpatialGrid;
 use bevy_ecs::prelude::*;
@@ -14,11 +15,10 @@ pub fn separation_system(
     mut query: Query<(Entity, &Position, &mut Velocity, &Health), With<MobTag>>,
 ) {
     let dt = clock.delta_seconds();
-    let separation_radius = 23.0f32; // (radius 4 + radius 4 + 15)
-    let min_separation_radius = 0.1f32;
+    let separation_radius = 2.3f32; // (radius 0.4 + radius 0.4 + 1.5)
+    let min_separation_radius = 0.01f32;
     let inv_separation_radius = 1.0f32 / separation_radius;
-    let speed = 6.0f32;
-    let separation_weight_base = speed * 4.0f32;
+    let separation_weight_base = scaled_speed(6.0f32) * 4.0f32;
 
     let steer = |(entity, pos, mut vel, health): (Entity, &Position, Mut<Velocity>, &Health)| {
         if !health.is_alive {

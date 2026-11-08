@@ -284,8 +284,8 @@ namespace AtlasWorld.Client.World
             }
 
             // 2. Load any chunk inside [-radius .. +radius] within map bounds
-            float halfW = _doc.HalfWidthWorld(0.1f);
-            float halfH = _doc.HalfHeightWorld(0.1f);
+            float halfW = _doc.HalfWidthWorld(1.0f);
+            float halfH = _doc.HalfHeightWorld(1.0f);
 
             for (int dz = -radius; dz <= radius; dz++)
             {
@@ -422,6 +422,12 @@ namespace AtlasWorld.Client.World
                 Position = new Vector3(s.X, baseY, s.Z)
             };
             chunkNode.AddChild(root);
+
+            if (s.Kind == "block")
+            {
+                SpawnGreyBlock(s, root);
+                return;
+            }
 
             if (s.Kind == "watchtower")
             {
@@ -764,6 +770,33 @@ namespace AtlasWorld.Client.World
             }
         }
 
+        /// <summary>F-183 grey-box block: one BoxMesh (no art) plus an optional billboard name label above it.</summary>
+        private static void SpawnGreyBlock(UnifiedMapStructureVolume s, Node3D root)
+        {
+            float top = s.Hover + s.Size.Y;
+            float g = s.Solid ? 0.58f : 0.82f; // walk-through markers read lighter
+            root.AddChild(new MeshInstance3D
+            {
+                Name = $"Block_{s.Id}",
+                Mesh = new BoxMesh { Size = new Vector3(s.Size.X, s.Size.Y, s.Size.Z) },
+                Position = new Vector3(0f, s.Hover + s.Size.Y / 2f, 0f),
+                MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(g, g, g) },
+            });
+            if (!string.IsNullOrEmpty(s.Label))
+            {
+                root.AddChild(new Label3D
+                {
+                    Name = $"Label_{s.Id}",
+                    Text = s.Label,
+                    Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    PixelSize = 0.004f,
+                    FontSize = 64,
+                    OutlineSize = 12,
+                    Position = new Vector3(0f, top + 0.35f, 0f),
+                });
+            }
+        }
+
         /// <summary>
         /// Stage 4 Declarative <c>ground_id</c> Two-Tier Scatter Engine:
         /// - Tier A (16x16 = 256 virtual sub-cells per 24m chunk, <c>blocksMovement: false</c>):
@@ -784,8 +817,8 @@ namespace AtlasWorld.Client.World
                 return;
 
             float densityScale = Mathf.Clamp(density / 48.0f, 0.1f, 3.0f);
-            float halfW = _doc.HalfWidthWorld(0.1f) - 2.0f;
-            float halfH = _doc.HalfHeightWorld(0.1f) - 2.0f;
+            float halfW = _doc.HalfWidthWorld(1.0f) - 2.0f;
+            float halfH = _doc.HalfHeightWorld(1.0f) - 2.0f;
             Rect2 rect = GetChunkWorldRect(coord);
             int seed = _doc.Seed;
 

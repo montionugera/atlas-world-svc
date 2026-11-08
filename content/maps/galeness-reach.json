@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "galeness-reach",
   "name": "Galeness Reach \u2014 Coldreach (c03/r12)",
   "seed": 945188,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "glacier_snow_crust",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -468,73 +469,73 @@
   "spawnAreas": [
     {
       "id": "galeness_reach_bound_war_beast",
-      "x": 2147.0,
-      "y": 1993.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 214.7,
+      "y": 199.37,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "galeness_reach_crateyard_colossus",
-      "x": 1650.7,
-      "y": 1948.4,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 165.07,
+      "y": 194.84,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-crateyard-colossus",
       "count": 1
     },
     {
       "id": "galeness_reach_deepwater_hauler",
-      "x": 2038.9,
-      "y": 1588.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 203.89,
+      "y": 158.86,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-deepwater-hauler",
       "count": 1
     },
     {
       "id": "galeness_reach_hollow_bell_wight",
-      "x": 2151.1,
-      "y": 2337.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 215.11,
+      "y": 233.7,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-hollow-bell-wight",
       "count": 1
     },
     {
       "id": "galeness_reach_icefloe_wyrm",
-      "x": 1482.8,
-      "y": 1713.1,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 148.28,
+      "y": 171.31,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-icefloe-wyrm",
       "count": 1
     },
     {
       "id": "galeness_reach_oathgate_sentinel",
-      "x": 2535.9,
-      "y": 1970.7,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 253.59,
+      "y": 197.07,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-oathgate-sentinel",
       "count": 1
     },
     {
       "id": "galeness_reach_harbor_war_beast",
-      "x": 1514.8,
-      "y": 2453.0,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 151.48,
+      "y": 245.3,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-harbor-war-beast",
       "count": 1
     },
     {
       "id": "galeness_reach_whitewaste_colossus",
-      "x": 2247.4,
-      "y": 1269.6,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 224.74,
+      "y": 126.96,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-whitewaste-colossus",
       "count": 1
     }
@@ -542,24 +543,24 @@
   "staticObstacles": [
     {
       "id": "landmark_haulsound_stack_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_ford_past_cairnbreak_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_galeness_reach_sheer_scarp_cliff",
-      "min_x": 1338.8,
-      "min_y": 2778.8,
-      "max_x": 1601.2,
-      "max_y": 3041.2
+      "min_x": 133.88,
+      "min_y": 277.88,
+      "max_x": 160.12,
+      "max_y": 304.12
     }
   ]
 }

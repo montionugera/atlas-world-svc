@@ -577,6 +577,7 @@ test(
       }),
     );
     real.kinds.pipelineCharacter.maxBytes = 1000;
+    real.kinds.pipelineCharacter.rigReference = ["rig-reference/mixamo-65.bones.json"];
     writeFileSync(path.join(cfgDir, "forge.config.json"), JSON.stringify(real));
     try {
       const r = await validateGlb(SERGEANT, {

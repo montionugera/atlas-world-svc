@@ -36,7 +36,33 @@ if timed_out "$rc"; then echo "❌ dotnet build timed out after ${BUILD_SECS}s";
 needs_import=0
 [ -d "$PROJECT/.godot/imported" ] || needs_import=1
 for g in "$PROJECT"/studio-cache/*.glb; do
-  if [ -e "$g" ] && [ ! -e "$g.import" ]; then needs_import=1; fi
+  if [ -e "$g" ]; then
+    if [ ! -e "$g.import" ]; then
+      needs_import=1
+    else
+      scn=$(grep -m1 '^path="res://\.godot/imported/' "$g.import" 2>/dev/null | cut -d'"' -f2 | sed 's|^res://||')
+      if [ -z "$scn" ] || [ ! -e "$PROJECT/$scn" ]; then needs_import=1; fi
+      base="${g%.glb}"
+      # Godot gltf/embedded_image_handling=1 extracts embedded textures to <sha>_*.jpg on first import.
+      # If the .glb.import was cloned without those extracted textures or their .ctex files, force re-import.
+      shopt -s nullglob
+      extracted=("${base}"_*.jpg "${base}"_*.png)
+      shopt -u nullglob
+      if [ "${#extracted[@]}" -eq 0 ]; then
+        rm -f "$g.import"
+        needs_import=1
+      else
+        for tex in "${extracted[@]}"; do
+          if [ ! -e "$tex.import" ]; then
+            needs_import=1
+          else
+            ctex=$(grep -m1 '^path="res://\.godot/imported/' "$tex.import" 2>/dev/null | cut -d'"' -f2 | sed 's|^res://||')
+            if [ -z "$ctex" ] || [ ! -e "$PROJECT/$ctex" ]; then needs_import=1; fi
+          fi
+        done
+      fi
+    fi
+  fi
 done
 if [ "$needs_import" = 1 ]; then
   echo "▶ godot --import (fresh worktree or new pull)"

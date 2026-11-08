@@ -44,8 +44,8 @@ fn test_f031_mob_derivation_parity() {
     let stalker_stats = derive_mob_stats(stalker_entry, MobTier::Route);
     // durability "mid" = 100 * 1.0 = 100 HP
     assert_eq!(stalker_stats.hp, 100.0);
-    // skirmisher: radius 3.0, p_def 1.0, armor 1.0, chase 200.0
-    assert_eq!(stalker_stats.radius, 3.0);
+    // skirmisher: radius 0.3, p_def 0.1, armor 0.1, chase 20.0
+    assert_eq!(stalker_stats.radius, 0.3);
     assert_eq!(stalker_stats.p_def, 1.0);
     assert_eq!(stalker_stats.armor, 1.0);
     assert_eq!(stalker_stats.element, Element::Earth);
@@ -62,40 +62,40 @@ fn test_f031_mob_derivation_parity() {
     let drake_stats = derive_mob_stats(drake_entry, MobTier::Interior);
     // durability "high" = 150 * 1.75 = 262.5 -> 263.0 HP
     assert_eq!(drake_stats.hp, 263.0);
-    // bruiser: radius 5.0, p_def 3.0, armor 2.0, chase 250.0
-    assert_eq!(drake_stats.radius, 5.0);
+    // bruiser: radius 0.5, p_def 0.3, armor 0.2, chase 25.0
+    assert_eq!(drake_stats.radius, 0.5);
     assert_eq!(drake_stats.p_def, 3.0);
     assert_eq!(drake_stats.armor, 2.0);
 }
 
 #[test]
 fn test_threat_driven_ai_chase_and_attack() {
-    let mut sim = AtlasSimulation::new(12345, 1000.0, 1000.0);
+    let mut sim = AtlasSimulation::new(12345, 100.0, 100.0);
 
     // Spawn player avatar at (500.0, 500.0)
-    let player = sim.spawn_player_avatar("hero-p1", 500.0, 500.0);
+    let player = sim.spawn_player_avatar("hero-p1", 50.0, 50.0);
 
     // Spawn mob at (530.0, 500.0)
     let mob = sim
         .world
         .spawn((
             MobTag,
-            Position::new(530.0, 500.0),
+            Position::new(53.0, 50.0),
             Velocity::zero(),
             Health::new(100.0),
             CombatStats {
                 attack_power: 10.0,
                 defense: 2.0,
-                attack_range: 20.0,
+                attack_range: 2.0,
                 attack_cooldown: 0.5,
                 cooldown_timer: 0.0,
                 is_player: false,
             },
             ElementalAttributes::default(),
             ThreatTable::new(),
-            MobAi::new(Position::new(530.0, 500.0), 150.0, 20.0, false),
+            MobAi::new(Position::new(53.0, 50.0), 15.0, 2.0, false),
             MobSpawnAnchor {
-                spawn_pos: Position::new(530.0, 500.0),
+                spawn_pos: Position::new(53.0, 50.0),
                 mob_id: "mob-bramble-stalker".to_string(),
                 tier: MobTier::Route,
                 respawn_delay_sec: 2.0,
@@ -125,10 +125,10 @@ fn test_threat_driven_ai_chase_and_attack() {
 
 #[test]
 fn test_mob_respawn_lifecycle() {
-    let mut sim = AtlasSimulation::new(54321, 1000.0, 1000.0);
+    let mut sim = AtlasSimulation::new(54321, 100.0, 100.0);
 
     // Spawn a mob with low health and 0.1s respawn delay
-    let spawn_pos = Position::new(300.0, 300.0);
+    let spawn_pos = Position::new(30.0, 30.0);
     let mob = sim
         .world
         .spawn((
@@ -139,7 +139,7 @@ fn test_mob_respawn_lifecycle() {
             CombatStats::default(),
             ElementalAttributes::default(),
             ThreatTable::new(),
-            MobAi::new(spawn_pos, 100.0, 20.0, false),
+            MobAi::new(spawn_pos, 10.0, 2.0, false),
             MobSpawnAnchor {
                 spawn_pos,
                 mob_id: "mob-tallgrass-tick".to_string(),
@@ -183,7 +183,7 @@ fn test_mob_respawn_lifecycle() {
             );
             // Respawned at the anchor; it may already have started wandering (bestiary
             // speed, 25px wander radius) in the ticks since respawn.
-            assert!((pos.x - 300.0).abs() <= 25.0 && (pos.y - 300.0).abs() <= 25.0);
+            assert!((pos.x - 30.0).abs() <= 2.5 && (pos.y - 30.0).abs() <= 2.5);
             respawned_count += 1;
         }
     }

@@ -226,6 +226,7 @@ export async function intake(glbPath, opts = {}) {
     gen = {
       ...(tags.includes("tripo") ? { model: "tripo", provider: "tripo" } : {}),
       ...(tags.includes("mixamo") ? { rig: "mixamo", clips: "mixamo" } : {}),
+      ...(tags.includes("meshy") ? { model: "meshy", provider: "meshy", rig: "meshy", clips: "meshy" } : {}),
     };
     const cacheDir = path.join(root, CACHE_REL);
     if (dryRun) {

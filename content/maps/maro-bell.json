@@ -1,0 +1,1061 @@
+{
+ "version": 3,
+ "unitContract": "metres-v1",
+ "mapId": "maro-bell",
+ "name": "Maro Bell grey box",
+ "seed": 1,
+ "width": 80.0,
+ "height": 160.0,
+ "baseGroundId": "meadow_grass",
+ "chunkSizeWorld": 24,
+ "activeChunkRadius": 4,
+ "terrainAmplitude": 0,
+ "proceduralClutterDensity": 0,
+ "defaultTimeOfDayHours": 12,
+ "autoAdvanceDayNight": false,
+ "playerSpawn": {
+  "x": 40,
+  "y": 151
+ },
+ "concept": {
+  "biome": "grey_box",
+  "recommendedLevelRange": [
+   1,
+   1
+  ],
+  "skyPreset": "golden_alpine_meadow",
+  "loreSummary": "F-183 grey-shape scale test of Maro Bell: no art, no NPC behaviour."
+ },
+ "groundPalettes": {},
+ "routes": [
+  {
+   "id": "road-main",
+   "groundId": "cobble_road",
+   "width": 4.0,
+   "clearMargin": 1.0,
+   "points": [
+    [
+     0,
+     76
+    ],
+    [
+     0,
+     60
+    ],
+    [
+     -6,
+     45
+    ],
+    [
+     -8,
+     30
+    ],
+    [
+     0,
+     15
+    ],
+    [
+     8,
+     0
+    ],
+    [
+     6,
+     -15
+    ],
+    [
+     0,
+     -30
+    ],
+    [
+     0,
+     -45
+    ],
+    [
+     0,
+     -60
+    ]
+   ]
+  }
+ ],
+ "groundZones": [],
+ "heightTerraces": [
+  {
+   "id": "flat_marker",
+   "x": 0,
+   "z": 70,
+   "radius": 1,
+   "height": 0,
+   "falloff": 0.5
+  }
+ ],
+ "structures": [
+  {
+   "id": "gate-west",
+   "kind": "block",
+   "x": -4.5,
+   "z": 76,
+   "rotY": 0,
+   "radius": 2.5,
+   "size": {
+    "x": 5,
+    "y": 5,
+    "z": 3
+   },
+   "label": "Valley gate"
+  },
+  {
+   "id": "gate-east",
+   "kind": "block",
+   "x": 4.5,
+   "z": 76,
+   "rotY": 0,
+   "radius": 2.5,
+   "size": {
+    "x": 5,
+    "y": 5,
+    "z": 3
+   }
+  },
+  {
+   "id": "valley-wall-west",
+   "kind": "block",
+   "x": -38,
+   "z": 0,
+   "rotY": 0,
+   "radius": 80.0,
+   "size": {
+    "x": 4,
+    "y": 30,
+    "z": 160
+   }
+  },
+  {
+   "id": "valley-wall-east",
+   "kind": "block",
+   "x": 38,
+   "z": 0,
+   "rotY": 0,
+   "radius": 80.0,
+   "size": {
+    "x": 4,
+    "y": 30,
+    "z": 160
+   }
+  },
+  {
+   "id": "cliff-west",
+   "kind": "block",
+   "x": -11,
+   "z": -66,
+   "rotY": 0,
+   "radius": 12.0,
+   "size": {
+    "x": 10,
+    "y": 30,
+    "z": 24
+   },
+   "label": "Cliff"
+  },
+  {
+   "id": "cliff-east",
+   "kind": "block",
+   "x": 11,
+   "z": -66,
+   "rotY": 0,
+   "radius": 12.0,
+   "size": {
+    "x": 10,
+    "y": 30,
+    "z": 24
+   }
+  },
+  {
+   "id": "great-bell",
+   "kind": "block",
+   "x": 0,
+   "z": -66,
+   "rotY": 0,
+   "radius": 3.0,
+   "size": {
+    "x": 6,
+    "y": 8,
+    "z": 6
+   },
+   "label": "The Great Bell",
+   "hover": 10,
+   "solid": false
+  },
+  {
+   "id": "porcelain-rib-01",
+   "kind": "block",
+   "x": -34.5,
+   "z": -50,
+   "rotY": 0,
+   "radius": 1.25,
+   "size": {
+    "x": 2.5,
+    "y": 16,
+    "z": 2.5
+   }
+  },
+  {
+   "id": "porcelain-rib-02",
+   "kind": "block",
+   "x": 34.5,
+   "z": -25,
+   "rotY": 0,
+   "radius": 1.25,
+   "size": {
+    "x": 2.5,
+    "y": 16,
+    "z": 2.5
+   }
+  },
+  {
+   "id": "porcelain-rib-03",
+   "kind": "block",
+   "x": -34.5,
+   "z": 0,
+   "rotY": 0,
+   "radius": 1.25,
+   "size": {
+    "x": 2.5,
+    "y": 16,
+    "z": 2.5
+   }
+  },
+  {
+   "id": "porcelain-rib-04",
+   "kind": "block",
+   "x": 34.5,
+   "z": 25,
+   "rotY": 0,
+   "radius": 1.25,
+   "size": {
+    "x": 2.5,
+    "y": 16,
+    "z": 2.5
+   }
+  },
+  {
+   "id": "porcelain-rib-05",
+   "kind": "block",
+   "x": -34.5,
+   "z": 50,
+   "rotY": 0,
+   "radius": 1.25,
+   "size": {
+    "x": 2.5,
+    "y": 16,
+    "z": 2.5
+   }
+  },
+  {
+   "id": "porcelain-rib-06",
+   "kind": "block",
+   "x": 34.5,
+   "z": 70,
+   "rotY": 0,
+   "radius": 1.25,
+   "size": {
+    "x": 2.5,
+    "y": 16,
+    "z": 2.5
+   }
+  },
+  {
+   "id": "amber-shop",
+   "kind": "block",
+   "x": 6,
+   "z": 28,
+   "rotY": 0,
+   "radius": 3.5,
+   "size": {
+    "x": 7,
+    "y": 5,
+    "z": 6
+   },
+   "label": "Amber's oil shop"
+  },
+  {
+   "id": "bram-house",
+   "kind": "block",
+   "x": -9,
+   "z": -24,
+   "rotY": 0,
+   "radius": 3.5,
+   "size": {
+    "x": 7,
+    "y": 5,
+    "z": 6
+   },
+   "label": "Bram's lantern house"
+  },
+  {
+   "id": "tovin-shrine",
+   "kind": "block",
+   "x": 10,
+   "z": -50,
+   "rotY": 0,
+   "radius": 4.0,
+   "size": {
+    "x": 8,
+    "y": 5,
+    "z": 7
+   },
+   "label": "Tovin's shrine"
+  },
+  {
+   "id": "old-lantern",
+   "kind": "block",
+   "x": 3.5,
+   "z": -38,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 3,
+    "z": 0.4
+   },
+   "label": "Old lantern"
+  },
+  {
+   "id": "npc-spot-reed",
+   "kind": "block",
+   "x": 3,
+   "z": 62,
+   "rotY": 0,
+   "radius": 0.4,
+   "size": {
+    "x": 0.8,
+    "y": 0.05,
+    "z": 0.8
+   },
+   "label": "Reed",
+   "solid": false
+  },
+  {
+   "id": "npc-spot-pip",
+   "kind": "block",
+   "x": -3,
+   "z": 60,
+   "rotY": 0,
+   "radius": 0.4,
+   "size": {
+    "x": 0.8,
+    "y": 0.05,
+    "z": 0.8
+   },
+   "label": "Pip",
+   "solid": false
+  },
+  {
+   "id": "npc-spot-amber",
+   "kind": "block",
+   "x": 1,
+   "z": 28,
+   "rotY": 0,
+   "radius": 0.4,
+   "size": {
+    "x": 0.8,
+    "y": 0.05,
+    "z": 0.8
+   },
+   "label": "Amber",
+   "solid": false
+  },
+  {
+   "id": "npc-spot-bram",
+   "kind": "block",
+   "x": -3.5,
+   "z": -24,
+   "rotY": 0,
+   "radius": 0.4,
+   "size": {
+    "x": 0.8,
+    "y": 0.05,
+    "z": 0.8
+   },
+   "label": "Bram",
+   "solid": false
+  },
+  {
+   "id": "npc-spot-edda",
+   "kind": "block",
+   "x": -3,
+   "z": -57,
+   "rotY": 0,
+   "radius": 0.4,
+   "size": {
+    "x": 0.8,
+    "y": 0.05,
+    "z": 0.8
+   },
+   "label": "Edda",
+   "solid": false
+  },
+  {
+   "id": "npc-spot-tovin",
+   "kind": "block",
+   "x": 4.5,
+   "z": -50,
+   "rotY": 0,
+   "radius": 0.4,
+   "size": {
+    "x": 0.8,
+    "y": 0.05,
+    "z": 0.8
+   },
+   "label": "Tovin",
+   "solid": false
+  },
+  {
+   "id": "height-post-daro-m",
+   "kind": "block",
+   "x": -4.0,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 1.2,
+    "z": 0.4
+   },
+   "label": "Daro M 1.20 m"
+  },
+  {
+   "id": "height-post-daro-f",
+   "kind": "block",
+   "x": 4.0,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 1.11,
+    "z": 0.4
+   },
+   "label": "Daro F 1.11 m"
+  },
+  {
+   "id": "height-post-maro-m",
+   "kind": "block",
+   "x": -5.5,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 1.03,
+    "z": 0.4
+   },
+   "label": "Maro M 1.03 m"
+  },
+  {
+   "id": "height-post-maro-f",
+   "kind": "block",
+   "x": 5.5,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 0.94,
+    "z": 0.4
+   },
+   "label": "Maro F 0.94 m"
+  },
+  {
+   "id": "height-post-linde-m",
+   "kind": "block",
+   "x": -7.0,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 1.03,
+    "z": 0.4
+   },
+   "label": "Linde M 1.03 m"
+  },
+  {
+   "id": "height-post-linde-f",
+   "kind": "block",
+   "x": 7.0,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 0.94,
+    "z": 0.4
+   },
+   "label": "Linde F 0.94 m"
+  },
+  {
+   "id": "height-post-silme-m",
+   "kind": "block",
+   "x": -8.5,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 1.03,
+    "z": 0.4
+   },
+   "label": "Silme M 1.03 m"
+  },
+  {
+   "id": "height-post-silme-f",
+   "kind": "block",
+   "x": 8.5,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 0.94,
+    "z": 0.4
+   },
+   "label": "Silme F 0.94 m"
+  },
+  {
+   "id": "height-post-tava-m",
+   "kind": "block",
+   "x": -10.0,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 0.91,
+    "z": 0.4
+   },
+   "label": "Tava M 0.91 m"
+  },
+  {
+   "id": "height-post-tava-f",
+   "kind": "block",
+   "x": 10.0,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 0.82,
+    "z": 0.4
+   },
+   "label": "Tava F 0.82 m"
+  },
+  {
+   "id": "height-post-ondo-m",
+   "kind": "block",
+   "x": -11.5,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 0.84,
+    "z": 0.4
+   },
+   "label": "Ondo M 0.84 m"
+  },
+  {
+   "id": "height-post-ondo-f",
+   "kind": "block",
+   "x": 11.5,
+   "z": 66,
+   "rotY": 0,
+   "radius": 0.2,
+   "size": {
+    "x": 0.4,
+    "y": 0.77,
+    "z": 0.4
+   },
+   "label": "Ondo F 0.77 m"
+  },
+  {
+   "id": "lantern-01",
+   "kind": "block",
+   "x": -3.2,
+   "z": 61.3,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-02",
+   "kind": "block",
+   "x": -0.2,
+   "z": 50.4,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-03",
+   "kind": "block",
+   "x": -9.4,
+   "z": 45.4,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-04",
+   "kind": "block",
+   "x": -3.8,
+   "z": 35.6,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-05",
+   "kind": "block",
+   "x": -11.0,
+   "z": 28.4,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-06",
+   "kind": "block",
+   "x": -0.8,
+   "z": 23.7,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-07",
+   "kind": "block",
+   "x": -3.0,
+   "z": 13.4,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-08",
+   "kind": "block",
+   "x": 7.2,
+   "z": 8.7,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-09",
+   "kind": "block",
+   "x": 11.4,
+   "z": -0.4,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-10",
+   "kind": "block",
+   "x": 10.2,
+   "z": -9.4,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-11",
+   "kind": "block",
+   "x": 2.8,
+   "z": -13.7,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-12",
+   "kind": "block",
+   "x": 5.8,
+   "z": -24.6,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-13",
+   "kind": "block",
+   "x": -3.4,
+   "z": -30.0,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  },
+  {
+   "id": "lantern-14",
+   "kind": "block",
+   "x": -3.4,
+   "z": -39.0,
+   "rotY": 0,
+   "radius": 0.15,
+   "size": {
+    "x": 0.3,
+    "y": 2.5,
+    "z": 0.3
+   }
+  }
+ ],
+ "props": [],
+ "spawnAreas": [],
+ "staticObstacles": [
+  {
+   "id": "gate-west",
+   "min_x": 33.0,
+   "min_y": 154.5,
+   "max_x": 38.0,
+   "max_y": 157.5
+  },
+  {
+   "id": "gate-east",
+   "min_x": 42.0,
+   "min_y": 154.5,
+   "max_x": 47.0,
+   "max_y": 157.5
+  },
+  {
+   "id": "valley-wall-west",
+   "min_x": 0,
+   "min_y": 0,
+   "max_x": 4,
+   "max_y": 160
+  },
+  {
+   "id": "valley-wall-east",
+   "min_x": 76,
+   "min_y": 0,
+   "max_x": 80,
+   "max_y": 160
+  },
+  {
+   "id": "cliff-west",
+   "min_x": 24,
+   "min_y": 2,
+   "max_x": 34,
+   "max_y": 26
+  },
+  {
+   "id": "cliff-east",
+   "min_x": 46,
+   "min_y": 2,
+   "max_x": 56,
+   "max_y": 26
+  },
+  {
+   "id": "porcelain-rib-01",
+   "min_x": 4.25,
+   "min_y": 28.75,
+   "max_x": 6.75,
+   "max_y": 31.25
+  },
+  {
+   "id": "porcelain-rib-02",
+   "min_x": 73.25,
+   "min_y": 53.75,
+   "max_x": 75.75,
+   "max_y": 56.25
+  },
+  {
+   "id": "porcelain-rib-03",
+   "min_x": 4.25,
+   "min_y": 78.75,
+   "max_x": 6.75,
+   "max_y": 81.25
+  },
+  {
+   "id": "porcelain-rib-04",
+   "min_x": 73.25,
+   "min_y": 103.75,
+   "max_x": 75.75,
+   "max_y": 106.25
+  },
+  {
+   "id": "porcelain-rib-05",
+   "min_x": 4.25,
+   "min_y": 128.75,
+   "max_x": 6.75,
+   "max_y": 131.25
+  },
+  {
+   "id": "porcelain-rib-06",
+   "min_x": 73.25,
+   "min_y": 148.75,
+   "max_x": 75.75,
+   "max_y": 151.25
+  },
+  {
+   "id": "amber-shop",
+   "min_x": 42.5,
+   "min_y": 105,
+   "max_x": 49.5,
+   "max_y": 111
+  },
+  {
+   "id": "bram-house",
+   "min_x": 27.5,
+   "min_y": 53,
+   "max_x": 34.5,
+   "max_y": 59
+  },
+  {
+   "id": "tovin-shrine",
+   "min_x": 46,
+   "min_y": 26.5,
+   "max_x": 54,
+   "max_y": 33.5
+  },
+  {
+   "id": "old-lantern",
+   "min_x": 43.3,
+   "min_y": 41.8,
+   "max_x": 43.7,
+   "max_y": 42.2
+  },
+  {
+   "id": "height-post-daro-m",
+   "min_x": 35.8,
+   "min_y": 145.8,
+   "max_x": 36.2,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-daro-f",
+   "min_x": 43.8,
+   "min_y": 145.8,
+   "max_x": 44.2,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-maro-m",
+   "min_x": 34.3,
+   "min_y": 145.8,
+   "max_x": 34.7,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-maro-f",
+   "min_x": 45.3,
+   "min_y": 145.8,
+   "max_x": 45.7,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-linde-m",
+   "min_x": 32.8,
+   "min_y": 145.8,
+   "max_x": 33.2,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-linde-f",
+   "min_x": 46.8,
+   "min_y": 145.8,
+   "max_x": 47.2,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-silme-m",
+   "min_x": 31.3,
+   "min_y": 145.8,
+   "max_x": 31.7,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-silme-f",
+   "min_x": 48.3,
+   "min_y": 145.8,
+   "max_x": 48.7,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-tava-m",
+   "min_x": 29.8,
+   "min_y": 145.8,
+   "max_x": 30.2,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-tava-f",
+   "min_x": 49.8,
+   "min_y": 145.8,
+   "max_x": 50.2,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-ondo-m",
+   "min_x": 28.3,
+   "min_y": 145.8,
+   "max_x": 28.7,
+   "max_y": 146.2
+  },
+  {
+   "id": "height-post-ondo-f",
+   "min_x": 51.3,
+   "min_y": 145.8,
+   "max_x": 51.7,
+   "max_y": 146.2
+  },
+  {
+   "id": "lantern-01",
+   "min_x": 36.65,
+   "min_y": 141.15,
+   "max_x": 36.95,
+   "max_y": 141.45
+  },
+  {
+   "id": "lantern-02",
+   "min_x": 39.65,
+   "min_y": 130.25,
+   "max_x": 39.95,
+   "max_y": 130.55
+  },
+  {
+   "id": "lantern-03",
+   "min_x": 30.45,
+   "min_y": 125.25,
+   "max_x": 30.75,
+   "max_y": 125.55
+  },
+  {
+   "id": "lantern-04",
+   "min_x": 36.05,
+   "min_y": 115.45,
+   "max_x": 36.35,
+   "max_y": 115.75
+  },
+  {
+   "id": "lantern-05",
+   "min_x": 28.85,
+   "min_y": 108.25,
+   "max_x": 29.15,
+   "max_y": 108.55
+  },
+  {
+   "id": "lantern-06",
+   "min_x": 39.05,
+   "min_y": 103.55,
+   "max_x": 39.35,
+   "max_y": 103.85
+  },
+  {
+   "id": "lantern-07",
+   "min_x": 36.85,
+   "min_y": 93.25,
+   "max_x": 37.15,
+   "max_y": 93.55
+  },
+  {
+   "id": "lantern-08",
+   "min_x": 47.05,
+   "min_y": 88.55,
+   "max_x": 47.35,
+   "max_y": 88.85
+  },
+  {
+   "id": "lantern-09",
+   "min_x": 51.25,
+   "min_y": 79.45,
+   "max_x": 51.55,
+   "max_y": 79.75
+  },
+  {
+   "id": "lantern-10",
+   "min_x": 50.05,
+   "min_y": 70.45,
+   "max_x": 50.35,
+   "max_y": 70.75
+  },
+  {
+   "id": "lantern-11",
+   "min_x": 42.65,
+   "min_y": 66.15,
+   "max_x": 42.95,
+   "max_y": 66.45
+  },
+  {
+   "id": "lantern-12",
+   "min_x": 45.65,
+   "min_y": 55.25,
+   "max_x": 45.95,
+   "max_y": 55.55
+  },
+  {
+   "id": "lantern-13",
+   "min_x": 36.45,
+   "min_y": 49.85,
+   "max_x": 36.75,
+   "max_y": 50.15
+  },
+  {
+   "id": "lantern-14",
+   "min_x": 36.45,
+   "min_y": 40.85,
+   "max_x": 36.75,
+   "max_y": 41.15
+  }
+ ]
+}

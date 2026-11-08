@@ -29,7 +29,7 @@ async fn test_player_avatar_input_pipeline_and_broadcast() {
         .expect("successful websocket connection");
 
     // Initialize simulation
-    let mut sim = AtlasSimulation::new(0x42, 800.0, 800.0);
+    let mut sim = AtlasSimulation::new(0x42, 80.0, 80.0);
     let mut snapshot_builder = SnapshotBuilder::new();
 
     // Client sends ClientInput moving diagonally: (move_x=0.8, move_y=0.6)
@@ -62,13 +62,13 @@ async fn test_player_avatar_input_pipeline_and_broadcast() {
         .find(|e| e.id == "user-hero-77")
         .expect("hero entity present in simulation");
 
-    // (0.8, 0.6) has length 1.0, so vx ~ 161.6, vy ~ 121.2
-    assert!((hero.vx - 161.6).abs() < 2.0);
-    assert!((hero.vy - 121.2).abs() < 2.0);
+    // (0.8, 0.6) has length 1.0, so vx ~ 2.424, vy ~ 1.818
+    assert!((hero.vx - 2.424).abs() < 0.03);
+    assert!((hero.vy - 1.818).abs() < 0.03);
 
-    // Center was (400, 400). Over 0.1s: dx = 16.16, dy = 12.12 => (416.16, 412.12)
-    assert!((hero.x - 416.16).abs() < 1.0);
-    assert!((hero.y - 412.12).abs() < 1.0);
+    // Center was (400, 400). Over 0.1s: dx = 2.424, dy = 1.818 => (402.424, 401.818)
+    assert!((hero.x - 40.2424).abs() < 0.3);
+    assert!((hero.y - 40.1818).abs() < 0.3);
 
     // Broadcast snapshot to client
     let entities = vec![EntitySnapshotData {
@@ -100,8 +100,8 @@ async fn test_player_avatar_input_pipeline_and_broadcast() {
         assert_eq!(entities.len(), 1);
         let player = entities.get(0);
         assert_eq!(player.id(), 77);
-        assert!((player.pos().unwrap().x() - 416.16).abs() < 1.0);
-        assert!((player.pos().unwrap().y() - 412.12).abs() < 1.0);
+        assert!((player.pos().unwrap().x() - 40.2424).abs() < 0.3);
+        assert!((player.pos().unwrap().y() - 40.1818).abs() < 0.3);
         assert_eq!(player.target_id(), 42);
     } else {
         panic!("expected binary message");

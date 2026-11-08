@@ -240,3 +240,20 @@ test("allowExtras reference without a parents map warns that parent checks were 
 test("unknown kind 'constructor' is rejected as unknown, not a prototype hit", async () => {
   await assert.rejects(() => validateGlb(path.join(HERE, "../fixtures/good.glb"), { kind: "constructor" }), /unknown kind "constructor"/);
 });
+
+test("meshy-humanoid core + prop_weapon_r + handslot.r + sec_hair/sec_cape passes pipelineCharacter skeleton contract", async () => {
+  const meshy = readRef("meshy-humanoid");
+  const file = await writeRig({
+    base: meshy,
+    extras: [
+      { name: "prop_weapon_r", parent: "RightHand" },
+      { name: "handslot.r", parent: "prop_weapon_r" },
+      { name: "sec_hair_c1_1", parent: "Head" },
+      { name: "sec_hair_c1_2", parent: "sec_hair_c1_1" },
+      { name: "sec_cape_l1_1", parent: "Spine" },
+    ],
+  });
+  const r = await validateGlb(file, { kind: "pipelineCharacter", tier: "bespoke" });
+  assert.deepEqual(skelOrWeights(r), [], r.failures.join(" | "));
+  assert.ok(!ids(r).includes("height"), `0.94..1.00u height must pass pipelineCharacter [0.90, 1.20]: ${r.failures.join(" | ")}`);
+});

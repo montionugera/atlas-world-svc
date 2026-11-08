@@ -33,6 +33,7 @@ Keep cargo light on a laptop: Gate 1 caps workers at `ATLAS_MAX_WORKERS` (defaul
 
 ## Non-obvious invariants
 
+- **1 game unit = 1 m (F-185).** Every server length, position and speed is metres; `coord_scale` is 1. Never fix a scale bug by editing `coord_scale` alone. Per-number rule: `docs/unit-contract.md`.
 - **Server-authoritative, always.** Clients send input intents only (move vectors, discrete actions), never position/velocity. All HP/combat mutation is server-side.
 - **Simulation takes time as an input.** Gate per-tick work on simulated time (`server-rs/src/core/clock.rs`, `SimClock`), not `Instant::now()` / `Date.now()` — real-time clocks lose determinism (F-028). The tick period lives in `server-rs/src/main.rs` (`sim_ticker`); trust the code over README targets.
 - **Determinism is a pinned contract.** Node/Rust versions that run map tooling and byte gates are pinned (`.release.json` `nodeMajor`); do not "fix" them casually.

@@ -1,10 +1,11 @@
 {
   "version": 3,
+  "unitContract": "metres-v1",
   "mapId": "tarnmoor-stair",
   "name": "Tarnmoor Stair \u2014 Stonemoor (c04/r12)",
   "seed": 374803,
-  "width": 4000.0,
-  "height": 4000.0,
+  "width": 400.0,
+  "height": 400.0,
   "baseGroundId": "barren_cliff",
   "chunkSizeWorld": 24,
   "activeChunkRadius": 2,
@@ -441,73 +442,73 @@
   "spawnAreas": [
     {
       "id": "tarnmoor_stair_ashen_drum_caller",
-      "x": 2148.7,
-      "y": 1987.3,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 214.87,
+      "y": 198.73,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-ashen-drum-caller",
       "count": 2
     },
     {
       "id": "tarnmoor_stair_flagrot_swarm",
-      "x": 1644.9,
-      "y": 1885.7,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 164.49,
+      "y": 188.57,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-flagrot-swarm",
       "count": 2
     },
     {
       "id": "tarnmoor_stair_harbor_assessor",
-      "x": 2240.6,
-      "y": 1728.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 224.06,
+      "y": 172.89,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-harbor-assessor",
       "count": 2
     },
     {
       "id": "tarnmoor_stair_bellwarden_revenant",
-      "x": 1797.4,
-      "y": 2355.9,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 179.74,
+      "y": 235.59,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bellwarden-revenant",
       "count": 2
     },
     {
       "id": "tarnmoor_stair_bound_war_beast",
-      "x": 1427.7,
-      "y": 1834.8,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 142.77,
+      "y": 183.48,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-bound-war-beast",
       "count": 2
     },
     {
       "id": "tarnmoor_stair_shroudweaver",
-      "x": 2478.2,
-      "y": 1701.1,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 247.82,
+      "y": 170.11,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-shroudweaver",
       "count": 2
     },
     {
       "id": "tarnmoor_stair_siege_rot_hulk",
-      "x": 1556.8,
-      "y": 2485.8,
-      "width": 110.0,
-      "height": 110.0,
+      "x": 155.68,
+      "y": 248.58,
+      "width": 11.0,
+      "height": 11.0,
       "mobType": "mob-siege-rot-hulk",
       "count": 1
     },
     {
       "id": "tarnmoor_stair_warscar_maw",
-      "x": 2097.2,
-      "y": 1213.0,
-      "width": 130.0,
-      "height": 130.0,
+      "x": 209.72,
+      "y": 121.3,
+      "width": 13.0,
+      "height": 13.0,
       "mobType": "mob-warscar-maw",
       "count": 2
     }
@@ -515,24 +516,24 @@
   "staticObstacles": [
     {
       "id": "landmark_fenshaft_confluence_pillar_w",
-      "min_x": 1946.6,
-      "min_y": 1844.6,
-      "max_x": 1957.4,
-      "max_y": 1855.4
+      "min_x": 194.66,
+      "min_y": 184.46,
+      "max_x": 195.74,
+      "max_y": 185.54
     },
     {
       "id": "landmark_sink_through_flagclint_pillar_e",
-      "min_x": 2042.6,
-      "min_y": 1844.6,
-      "max_x": 2053.4,
-      "max_y": 1855.4
+      "min_x": 204.26,
+      "min_y": 184.46,
+      "max_x": 205.34,
+      "max_y": 185.54
     },
     {
       "id": "cliff_tarnmoor_stair_sheer_scarp_cliff",
-      "min_x": 1118.8,
-      "min_y": 2648.8,
-      "max_x": 1381.2,
-      "max_y": 2911.2
+      "min_x": 111.88,
+      "min_y": 264.88,
+      "max_x": 138.12,
+      "max_y": 291.12
     }
   ]
 }

@@ -79,12 +79,12 @@ fn bot_and_mob_counts_are_set_adjusted_and_clamped() {
 #[test]
 fn spawn_mobs_places_a_named_type_and_rejects_unknown_ones() {
     let mut sim = room(0, 0);
-    sim.spawn_player_avatar("tester", 300.0, 300.0);
+    sim.spawn_player_avatar("tester", 30.0, 30.0);
     let at = DebugCommand::SpawnMobs {
         mob_type: "mob-veil-spearling".to_string(),
         count: 3,
-        x: Some(800.0),
-        y: Some(200.0),
+        x: Some(80.0),
+        y: Some(20.0),
     };
     assert_eq!(run(&mut sim, at)["mobs"], 3);
     let near_caller = DebugCommand::SpawnMobs {
@@ -95,27 +95,21 @@ fn spawn_mobs_places_a_named_type_and_rejects_unknown_ones() {
     };
     assert_eq!(run(&mut sim, near_caller)["mobs"], 5);
     let mobs = positions::<With<MobTag>>(&mut sim);
-    assert_eq!(
-        mobs.iter().filter(|p| (p.x - 800.0).abs() <= 40.0).count(),
-        3
-    );
-    assert_eq!(
-        mobs.iter().filter(|p| (p.x - 300.0).abs() <= 40.0).count(),
-        2
-    );
+    assert_eq!(mobs.iter().filter(|p| (p.x - 80.0).abs() <= 4.0).count(), 3);
+    assert_eq!(mobs.iter().filter(|p| (p.x - 30.0).abs() <= 4.0).count(), 2);
 
     let unknown = DebugCommand::SpawnMobs {
         mob_type: "mob-no-such-thing".to_string(),
         count: 1,
-        x: Some(1.0),
-        y: Some(1.0),
+        x: Some(0.1),
+        y: Some(0.1),
     };
     assert!(sim.debug_apply(&unknown, None).is_err());
     let over = DebugCommand::SpawnMobs {
         mob_type: "mob-veil-spearling".to_string(),
         count: 100_000,
-        x: Some(500.0),
-        y: Some(500.0),
+        x: Some(50.0),
+        y: Some(50.0),
     };
     assert_eq!(run(&mut sim, over)["mobs"], MAX_MOBS);
 }
@@ -163,9 +157,9 @@ fn paused_mobs_and_bots_stand_still_and_resume() {
 #[test]
 fn invulnerability_and_teleport_act_on_the_calling_player() {
     let mut sim = room(0, 0);
-    let avatar = sim.spawn_player_avatar("tester", 300.0, 300.0);
+    let avatar = sim.spawn_player_avatar("tester", 30.0, 30.0);
     assert!(
-        sim.debug_apply(&DebugCommand::Teleport { x: 1.0, y: 1.0 }, Some("nobody"))
+        sim.debug_apply(&DebugCommand::Teleport { x: 0.1, y: 0.1 }, Some("nobody"))
             .is_err(),
         "a caller who is not in the room is an error"
     );
@@ -188,15 +182,15 @@ fn invulnerability_and_teleport_act_on_the_calling_player() {
     let health = sim.world.get::<Health>(avatar).unwrap();
     assert!(health.current < health.max);
 
-    run(&mut sim, DebugCommand::Teleport { x: 900.0, y: 123.0 });
+    run(&mut sim, DebugCommand::Teleport { x: 90.0, y: 12.3 });
     assert_eq!(
         *sim.world.get::<Position>(avatar).unwrap(),
-        Position::new(900.0, 123.0)
+        Position::new(90.0, 12.3)
     );
-    run(&mut sim, DebugCommand::Teleport { x: -50.0, y: 1e9 });
+    run(&mut sim, DebugCommand::Teleport { x: -5.0, y: 1e9 });
     assert_eq!(
         *sim.world.get::<Position>(avatar).unwrap(),
-        Position::new(0.0, 1000.0)
+        Position::new(0.0, 100.0)
     );
 }
 

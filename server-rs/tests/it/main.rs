@@ -49,6 +49,7 @@ mod region_restart_persistence_test;
 mod rust_meta_engine;
 mod sleeping_regions_test;
 mod snapshot_bytes_breakdown_test;
+mod speed_rescale_test;
 mod terrain_speed;
 mod trace_replay;
 mod weapon_switch_and_skill_loadout_test;

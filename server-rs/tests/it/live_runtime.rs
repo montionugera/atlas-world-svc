@@ -20,8 +20,8 @@ use std::time::Duration;
 use tokio_tungstenite::connect_async;
 use tokio_tungstenite::tungstenite::Message;
 
-const W: f32 = 1000.0;
-const H: f32 = 1000.0;
+const W: f32 = 100.0;
+const H: f32 = 100.0;
 
 fn live(bots: usize, mobs: usize) -> AtlasSimulation {
     AtlasSimulation::live(LiveConfig {
@@ -92,7 +92,7 @@ fn chase_offset(sim: &AtlasSimulation, mob: Entity) -> f32 {
 
 /// Force a mob to melee (the seeded bestiary pick may be ranged).
 fn make_melee(sim: &mut AtlasSimulation, mob: Entity) {
-    let reach = 20.0 + 12.0 + 14.0;
+    let reach = 2.0 + 1.2 + 1.4;
     let mut ai = sim.world.get_mut::<MobAi>(mob).unwrap();
     ai.is_ranged = false;
     ai.attack_range = reach;
@@ -126,9 +126,9 @@ fn row1_live_mob_chases_player_in_chase_range() {
     let off = chase_offset(&sim, mob);
     let p = player_near_mob(&mut sim, mob_pos, off);
     let d0 = dist(pos(&sim, mob), pos(&sim, p));
-    ticks(&mut sim, 10);
+    ticks(&mut sim, 67);
     let d1 = dist(pos(&sim, mob), pos(&sim, p));
-    assert!(d1 < d0 - 10.0, "mob did not approach player: {d0} -> {d1}");
+    assert!(d1 < d0 - 1.0, "mob did not approach player: {d0} -> {d1}");
 }
 
 // ---- Row 1b: aggro ----------------------------------------------------------------------
@@ -137,7 +137,7 @@ fn row1_live_mob_chases_player_in_chase_range() {
 fn row1b_proximity_aggro_targets_player_in_chase_range() {
     let mut sim = live(0, 1);
     let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
-    let p = player_near_mob(&mut sim, mob_pos, 120.0);
+    let p = player_near_mob(&mut sim, mob_pos, 12.0);
     tick(&mut sim);
     let now = sim.clock.current_time_seconds();
     let threat = sim
@@ -155,7 +155,7 @@ fn row1b_damage_adds_threat_on_victim_mob() {
         .get_mut::<MobAi>(mob)
         .expect("live mob must carry MobAi")
         .chase_range = 0.0; // disable proximity aggro: only damage may add threat
-    let p = player_near_mob(&mut sim, mob_pos, 30.0);
+    let p = player_near_mob(&mut sim, mob_pos, 3.0);
     sim.live_tick(&[input("p1", 0.0, 0.0, true)], &[]);
     let now = sim.clock.current_time_seconds();
     assert_eq!(
@@ -195,12 +195,12 @@ fn row2_melee_mob_closes_distance_and_damages_player() {
     let mut sim = live(0, 1);
     let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
     make_melee(&mut sim, mob);
-    let p = player_near_mob(&mut sim, mob_pos, 120.0);
+    let p = player_near_mob(&mut sim, mob_pos, 12.0);
     let max = sim.world.get::<Health>(p).unwrap().max;
     // Each hit shoves the player out of reach (see the shove test below), so the mob has
     // to close again: one hit followed by leashing or walking home must fail here.
     let (mut hp, mut hits) = (max, 0);
-    for _ in 0..100 {
+    for _ in 0..667 {
         tick(&mut sim);
         let now = sim.world.get::<Health>(p).unwrap().current;
         if now < hp {
@@ -215,7 +215,7 @@ fn row2_melee_mob_closes_distance_and_damages_player() {
         "mob did not keep engaging after its shove: {hits} hit(s)"
     );
     let d = dist(pos(&sim, mob), pos(&sim, p));
-    assert!(d <= 60.0, "melee mob did not stay on the player: {d}");
+    assert!(d <= 6.0, "melee mob did not stay on the player: {d}");
 }
 
 /// Distance one real mob melee hit (projectile, live schedule) shoves a stationary avatar.
@@ -224,7 +224,7 @@ fn mob_melee_shove(attack_power: f32) -> f32 {
     let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
     make_melee(&mut sim, mob);
     sim.world.get_mut::<CombatStats>(mob).unwrap().attack_power = attack_power;
-    let p = player_near_mob(&mut sim, mob_pos, 44.0);
+    let p = player_near_mob(&mut sim, mob_pos, 4.4);
     let max = sim.world.get::<Health>(p).unwrap().max;
     let mut before = pos(&sim, p);
     for _ in 0..40 {
@@ -255,8 +255,8 @@ fn row2_mob_melee_hit_shoves_player_a_short_step() {
     for attack_power in [1.0, 40.0] {
         let moved = mob_melee_shove(attack_power);
         assert!(
-            (12.0..=40.0).contains(&moved),
-            "attack_power {attack_power}: player shoved {moved} u, want 12..=40"
+            (0.18..=0.6).contains(&moved),
+            "attack_power {attack_power}: player shoved {moved} u, want 0.18..=0.6 (F-184: knockback speed x0.15)"
         );
     }
 }
@@ -282,7 +282,7 @@ fn row4_dead_player_respawns_at_spawn_point_with_full_hp() {
     sim.live_tick(&[input("p1", 0.0, 0.0, false)], &[]);
     let p = avatar(&mut sim, "p1").expect("avatar spawned from input");
     let spawn = pos(&sim, p);
-    *sim.world.get_mut::<Position>(p).unwrap() = Position::new(100.0, 100.0);
+    *sim.world.get_mut::<Position>(p).unwrap() = Position::new(10.0, 10.0);
     sim.world.get_mut::<Health>(p).unwrap().take_damage(1.0e6);
     tick(&mut sim);
     assert!(!sim.world.get::<Health>(p).unwrap().is_alive);
@@ -328,24 +328,24 @@ fn row5_dead_mob_despawns_into_removed_ids_and_respawns() {
 fn row6_player_and_mob_are_pushed_apart() {
     let mut sim = live(0, 1);
     let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
-    let p = player_near_mob(&mut sim, mob_pos, 5.0);
+    let p = player_near_mob(&mut sim, mob_pos, 0.5);
     ticks(&mut sim, 5);
     let d = dist(pos(&sim, mob), pos(&sim, p));
-    assert!(d >= 12.0 + 14.0 - 0.01, "player/mob overlap: dist {d}");
+    assert!(d >= 1.2 + 1.4 - 0.01, "player/mob overlap: dist {d}");
 }
 
 #[test]
 fn row6_players_are_pushed_apart_and_stay_in_bounds() {
     let mut sim = live(0, 0);
-    let a = sim.spawn_player_avatar("a", 500.0, 500.0);
-    let b = sim.spawn_player_avatar("b", 503.0, 500.0);
-    let c = sim.spawn_player_avatar("c", W - 1.0, 300.0);
-    let d = sim.spawn_player_avatar("d", W - 3.0, 300.0);
+    let a = sim.spawn_player_avatar("a", 50.0, 50.0);
+    let b = sim.spawn_player_avatar("b", 50.3, 50.0);
+    let c = sim.spawn_player_avatar("c", W - 0.1, 30.0);
+    let d = sim.spawn_player_avatar("d", W - 0.3, 30.0);
     ticks(&mut sim, 5);
     let ab = dist(pos(&sim, a), pos(&sim, b));
     let cd = dist(pos(&sim, c), pos(&sim, d));
-    assert!(ab >= 24.0 - 0.01, "players overlap: {ab}");
-    assert!(cd >= 24.0 - 0.01, "players at wall overlap: {cd}");
+    assert!(ab >= 2.4 - 0.01, "players overlap: {ab}");
+    assert!(cd >= 2.4 - 0.01, "players at wall overlap: {cd}");
     for e in [a, b, c, d] {
         let p = pos(&sim, e);
         assert!((0.0..=W).contains(&p.x) && (0.0..=H).contains(&p.y));
@@ -374,7 +374,7 @@ fn row7_wire_max_health_is_real_health_max() {
 fn row8_human_avatar_only_melees_while_attack_held() {
     let mut sim = live(0, 1);
     let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
-    player_near_mob(&mut sim, mob_pos, 30.0);
+    player_near_mob(&mut sim, mob_pos, 3.0);
     // Keep the mob from swinging: its hit would shove the avatar out of melee reach.
     sim.world
         .get_mut::<CombatStats>(mob)
@@ -403,7 +403,7 @@ fn row8_bots_still_auto_attack() {
         .map(|(e, p)| (e, *p))
         .unwrap();
     let (mob, _, _) = mobs(&mut sim)[0].clone();
-    *sim.world.get_mut::<Position>(mob).unwrap() = Position::new(bot_pos.x + 30.0, bot_pos.y);
+    *sim.world.get_mut::<Position>(mob).unwrap() = Position::new(bot_pos.x + 3.0, bot_pos.y);
     let max = sim.world.get::<Health>(mob).unwrap().max;
     ticks(&mut sim, 2);
     assert!(sim.world.get::<Health>(mob).unwrap().current < max);
@@ -516,7 +516,7 @@ fn review2_disconnect_and_input_same_tick_keeps_avatar() {
     let mut sim = live(0, 0);
     sim.live_tick(&[input("p1", 0.0, 0.0, false)], &[]);
     let p = avatar(&mut sim, "p1").unwrap();
-    *sim.world.get_mut::<Position>(p).unwrap() = Position::new(300.0, 300.0);
+    *sim.world.get_mut::<Position>(p).unwrap() = Position::new(30.0, 30.0);
     sim.world.get_mut::<Health>(p).unwrap().current = 50.0;
     let frame = sim.live_tick(&[input("p1", 0.0, 0.0, false)], &["p1".to_string()]);
     assert!(
@@ -526,7 +526,7 @@ fn review2_disconnect_and_input_same_tick_keeps_avatar() {
     let p2 = avatar(&mut sim, "p1").expect("avatar kept");
     assert_eq!(p2, p);
     assert_eq!(sim.world.get::<Health>(p).unwrap().current, 50.0);
-    assert_eq!(pos(&sim, p), Position::new(300.0, 300.0));
+    assert_eq!(pos(&sim, p), Position::new(30.0, 30.0));
 }
 
 #[test]
@@ -553,13 +553,13 @@ fn review3_dead_mob_is_visible_as_corpse_before_removal() {
 fn review4_dense_crowd_resolves_without_overlap() {
     let mut sim = live(0, 0);
     let bodies: Vec<Entity> = (0..20)
-        .map(|i| sim.spawn_player_avatar(&format!("c{i}"), 500.0, 500.0))
+        .map(|i| sim.spawn_player_avatar(&format!("c{i}"), 50.0, 50.0))
         .collect();
     ticks(&mut sim, 10);
     for (i, a) in bodies.iter().enumerate() {
         for b in &bodies[i + 1..] {
             let d = dist(pos(&sim, *a), pos(&sim, *b));
-            assert!(d >= 24.0 - 1.0, "crowd overlap {d}");
+            assert!(d >= 2.4 - 0.1, "crowd overlap {d}");
         }
     }
 }
@@ -574,7 +574,7 @@ fn review5_bot_hits_mob_standing_at_mob_melee_reach() {
     let (mob, _, _) = mobs(&mut sim)[0].clone();
     // Mob at 44px: inside mob melee reach (20 + 12 + 14), beyond the old 30px bot range.
     *sim.world.get_mut::<Velocity>(bot).unwrap() = Velocity::zero();
-    *sim.world.get_mut::<Position>(mob).unwrap() = Position::new(bot_pos.x + 44.0, bot_pos.y);
+    *sim.world.get_mut::<Position>(mob).unwrap() = Position::new(bot_pos.x + 4.4, bot_pos.y);
     // The mob must not swing first: its hit now shoves the bot out of melee reach,
     // which is not what this range check is about.
     sim.world
@@ -712,7 +712,7 @@ fn row9_projectiles_are_on_the_wire_after_a_cast() {
 fn row10_kill_and_hit_events_on_the_wire_and_queue_drained() {
     let mut sim = live(0, 1);
     let (mob, id, mob_pos) = mobs(&mut sim)[0].clone();
-    player_near_mob(&mut sim, mob_pos, 30.0);
+    player_near_mob(&mut sim, mob_pos, 3.0);
     sim.world.get_mut::<Health>(mob).unwrap().current = 1.0;
     let mut events = Vec::new();
     let mut last = None;
@@ -785,45 +785,45 @@ fn row12_bot_seeks_and_approaches_nearest_mob() {
         let (e, p) = q.iter(&sim.world).next().expect("bot entity");
         (e, *p)
     };
-    bot_pos.x = 500.0;
-    bot_pos.y = 500.0;
+    bot_pos.x = 50.0;
+    bot_pos.y = 50.0;
     *sim.world.get_mut::<Position>(bot_ent).unwrap() = bot_pos;
     *sim.world.get_mut::<Velocity>(bot_ent).unwrap() = Velocity::zero();
 
     let catalog = sim.world.resource::<BestiaryCatalog>().clone();
     let entry = catalog.get_mob("mob-bramble-stalker").unwrap();
     let derived = derive_mob_stats(entry, server_rs::content::MobTier::Route);
-    let mob_pos = Position::new(580.0, 500.0);
+    let mob_pos = Position::new(58.0, 50.0);
     sim.world.spawn((
         EntityId("m-target".to_string()),
         mob_pos,
         Velocity::zero(),
         Health::new(derived.hp),
         MobTag,
-        server_rs::ecs::components::BodyRadius(14.0),
+        server_rs::ecs::components::BodyRadius(1.4),
         CombatStats {
             attack_power: derived.p_atk,
             defense: derived.p_def,
-            attack_range: 20.0 + 12.0 + 14.0,
+            attack_range: 2.0 + 1.2 + 1.4,
             attack_cooldown: 1.0,
             cooldown_timer: 0.0,
             is_player: false,
         },
     ));
 
-    let initial_dist = 80.0;
-    ticks(&mut sim, 10);
+    let initial_dist = 8.0;
+    ticks(&mut sim, 67);
 
     let new_bot_pos = *sim.world.get::<Position>(bot_ent).unwrap();
     let new_dist = (mob_pos.x - new_bot_pos.x).abs();
 
     assert!(
-        new_bot_pos.x > 500.0,
+        new_bot_pos.x > 50.0,
         "bot should steer towards mob at x=580, got x={}",
         new_bot_pos.x
     );
     assert!(
-        new_dist < initial_dist - 10.0,
+        new_dist < initial_dist - 1.0,
         "bot should approach mob: initial dist={}, new dist={}",
         initial_dist,
         new_dist
@@ -834,28 +834,28 @@ fn row12_bot_seeks_and_approaches_nearest_mob() {
 fn row13_map_identity_loads_dims_and_spawn_areas() {
     let mut deflect_sim = AtlasSimulation::live(LiveConfig {
         seed: 42,
-        arena_width: 1000.0,
-        arena_height: 1000.0,
+        arena_width: 100.0,
+        arena_height: 100.0,
         bot_count: 0,
         mob_count: 1,
         mob_respawn_sec: 1.0,
         player_respawn_sec: 1.0,
         map_id: Some("map-for-test-deflect".to_string()),
     });
-    assert_eq!(deflect_sim.arena_width, 100.0);
-    assert_eq!(deflect_sim.arena_height, 100.0);
+    assert_eq!(deflect_sim.arena_width, 10.0);
+    assert_eq!(deflect_sim.arena_height, 10.0);
     let mut q = deflect_sim
         .world
         .query_filtered::<&Position, With<MobTag>>();
     let mob_positions: Vec<_> = q.iter(&deflect_sim.world).copied().collect();
     assert_eq!(mob_positions.len(), 1);
     assert!(
-        mob_positions[0].x >= 30.0 && mob_positions[0].x <= 70.0,
+        mob_positions[0].x >= 3.0 && mob_positions[0].x <= 7.0,
         "mob x={} out of spawn rect",
         mob_positions[0].x
     );
     assert!(
-        mob_positions[0].y >= 30.0 && mob_positions[0].y <= 70.0,
+        mob_positions[0].y >= 3.0 && mob_positions[0].y <= 7.0,
         "mob y={} out of spawn rect",
         mob_positions[0].y
     );
@@ -863,15 +863,15 @@ fn row13_map_identity_loads_dims_and_spawn_areas() {
     let mut default_sim = AtlasSimulation::live(LiveConfig {
         seed: 42,
         arena_width: 1000.0,
-        arena_height: 1000.0,
+        arena_height: 100.0,
         bot_count: 0,
         mob_count: 17,
         mob_respawn_sec: 1.0,
         player_respawn_sec: 1.0,
         map_id: Some("default".to_string()),
     });
-    assert_eq!(default_sim.arena_width, 1000.0);
-    assert_eq!(default_sim.arena_height, 1000.0);
+    assert_eq!(default_sim.arena_width, 100.0);
+    assert_eq!(default_sim.arena_height, 100.0);
     let mut q_default = default_sim
         .world
         .query_filtered::<&Position, With<MobTag>>();
@@ -886,14 +886,14 @@ fn row13_static_obstacles_block_movement() {
     sim.world.insert_resource(StaticObstacles {
         obstacles: vec![StaticObstacle {
             id: "test-wall".to_string(),
-            min_x: 400.0,
-            min_y: 400.0,
-            max_x: 500.0,
-            max_y: 500.0,
+            min_x: 40.0,
+            min_y: 40.0,
+            max_x: 50.0,
+            max_y: 50.0,
         }],
     });
 
-    let p_ent = sim.spawn_player_avatar("p_block", 380.0, 450.0);
+    let p_ent = sim.spawn_player_avatar("p_block", 38.0, 45.0);
     sim.world
         .entity_mut(p_ent)
         .insert(server_rs::ecs::components::BodyRadius(12.0));
@@ -905,7 +905,7 @@ fn row13_static_obstacles_block_movement() {
 
     let p_pos = *sim.world.get::<Position>(p_ent).unwrap();
     assert!(
-        p_pos.x <= 400.0 - 12.0 + 0.1,
+        p_pos.x <= 40.0 - 1.2 + 0.1,
         "player penetrated static obstacle: x={}, expected <= 388.1",
         p_pos.x
     );
@@ -914,13 +914,13 @@ fn row13_static_obstacles_block_movement() {
 #[test]
 fn audit_gap1_melee_combat_applies_damage_calculator_with_defense_and_elements() {
     let mut sim = live(0, 0);
-    let p_ent = sim.spawn_player_avatar("p_melee", 100.0, 100.0);
+    let p_ent = sim.spawn_player_avatar("p_melee", 10.0, 10.0);
     // Set player melee attack power to 50
     sim.world
         .entity_mut(p_ent)
         .insert(server_rs::ecs::components::CombatStats {
             attack_power: 50.0,
-            attack_range: 50.0,
+            attack_range: 5.0,
             attack_cooldown: 0.8,
             cooldown_timer: 0.0,
             defense: 6.0,
@@ -932,7 +932,7 @@ fn audit_gap1_melee_combat_applies_damage_calculator_with_defense_and_elements()
         .world
         .spawn((
             EntityId("mob_tank".to_string()),
-            Position::new(110.0, 100.0),
+            Position::new(11.0, 10.0),
             Velocity::zero(),
             Health::new(100.0),
             MobTag,
@@ -983,15 +983,15 @@ fn audit_gap3_bot_wire_target_id_replicates_nearest_mob() {
         .world
         .query_filtered::<(Entity, &mut Position), With<server_rs::ecs::components::BotAgent>>();
     let (_b_ent, mut b_pos) = bot_q.iter_mut(&mut sim.world).next().unwrap();
-    b_pos.x = 100.0;
-    b_pos.y = 100.0;
+    b_pos.x = 10.0;
+    b_pos.y = 10.0;
 
     // Spawn a mob 80px away (within 300px vision range)
     let _m_ent = sim
         .world
         .spawn((
             EntityId("mob_target".to_string()),
-            Position::new(180.0, 100.0),
+            Position::new(18.0, 10.0),
             Velocity::zero(),
             Health::new(100.0),
             MobTag,
@@ -1019,7 +1019,7 @@ fn test_manual_respawn_revives_dead_player_immediately() {
 
     let mut sim = live(0, 0);
     sim.debug_enabled = true;
-    let p_ent = sim.spawn_player_avatar("p-revive-test", 250.0, 350.0);
+    let p_ent = sim.spawn_player_avatar("p-revive-test", 25.0, 35.0);
 
     // Kill player
     {
@@ -1058,8 +1058,8 @@ fn test_manual_respawn_revives_dead_player_immediately() {
     );
 
     let pos = sim.world.get::<Position>(p_ent).unwrap();
-    assert_eq!(pos.x, 250.0);
-    assert_eq!(pos.y, 350.0);
+    assert_eq!(pos.x, 25.0);
+    assert_eq!(pos.y, 35.0);
 }
 
 #[test]
@@ -1067,7 +1067,7 @@ fn respawn_requests_are_ignored_outside_development_mode() {
     use server_rs::protocol::serialize_client_input_full;
 
     let mut sim = live(0, 0); // debug_enabled is false unless the server turns it on
-    let p_ent = sim.spawn_player_avatar("p-no-debug", 250.0, 350.0);
+    let p_ent = sim.spawn_player_avatar("p-no-debug", 25.0, 35.0);
     let respawn = || ClientPacket {
         session_id: "p-no-debug".to_string(),
         room_id: "map-for-play".to_string(),
@@ -1075,7 +1075,7 @@ fn respawn_requests_are_ignored_outside_development_mode() {
     };
 
     // Alive and away from the spawn point: no free heal, no teleport home.
-    *sim.world.get_mut::<Position>(p_ent).unwrap() = Position::new(600.0, 600.0);
+    *sim.world.get_mut::<Position>(p_ent).unwrap() = Position::new(60.0, 60.0);
     sim.world
         .get_mut::<Health>(p_ent)
         .unwrap()
@@ -1085,7 +1085,7 @@ fn respawn_requests_are_ignored_outside_development_mode() {
     assert_eq!(sim.world.get::<Health>(p_ent).unwrap().current, hurt);
     assert_eq!(
         *sim.world.get::<Position>(p_ent).unwrap(),
-        Position::new(600.0, 600.0)
+        Position::new(60.0, 60.0)
     );
 
     // Dead: asking does not skip the respawn delay (1.0 s = 20 ticks here).
@@ -1110,13 +1110,13 @@ fn test_client_input_target_pos_and_entity_aiming() {
     use server_rs::protocol::serialize_client_input_full;
 
     let mut sim = live(0, 0);
-    let p_ent = sim.spawn_player_avatar("p-aim-test", 100.0, 100.0);
+    let p_ent = sim.spawn_player_avatar("p-aim-test", 10.0, 10.0);
 
     let m_ent = sim
         .world
         .spawn((
             EntityId("mob-aim-target".to_string()),
-            Position::new(150.0, 100.0),
+            Position::new(15.0, 10.0),
             Velocity::zero(),
             Health::new(100.0),
             MobTag,
@@ -1127,17 +1127,7 @@ fn test_client_input_target_pos_and_entity_aiming() {
     let aim_packet = ClientPacket {
         session_id: "p-aim-test".to_string(),
         room_id: "map-for-play".to_string(),
-        payload: serialize_client_input_full(
-            1,
-            0.0,
-            0.0,
-            false,
-            0,
-            mob_wire_id,
-            300.0,
-            400.0,
-            false,
-        ),
+        payload: serialize_client_input_full(1, 0.0, 0.0, false, 0, mob_wire_id, 30.0, 40.0, false),
     };
     sim.live_tick(&[aim_packet], &[]);
 
@@ -1150,7 +1140,7 @@ fn test_client_input_target_pos_and_entity_aiming() {
     );
     assert_eq!(
         input_state.target_pos,
-        Some(Position::new(300.0, 400.0)),
+        Some(Position::new(30.0, 40.0)),
         "target_x and target_y should populate target_pos"
     );
 }
@@ -1168,7 +1158,7 @@ fn parry_setup(mob_delay: f32) -> (AtlasSimulation, Entity, Entity) {
         .get_mut::<CombatStats>(mob)
         .unwrap()
         .cooldown_timer = mob_delay;
-    let p = player_near_mob(&mut sim, mob_pos, 44.0);
+    let p = player_near_mob(&mut sim, mob_pos, 4.4);
     (sim, mob, p)
 }
 
@@ -1216,7 +1206,7 @@ fn parry_released_tap_that_found_no_target_does_not_parry_later() {
 fn parry_tap_released_within_one_tick_still_swings_once() {
     let mut sim = live(0, 1);
     let (mob, _, mob_pos) = mobs(&mut sim)[0].clone();
-    let p = player_near_mob(&mut sim, mob_pos, 30.0);
+    let p = player_near_mob(&mut sim, mob_pos, 3.0);
     sim.world
         .get_mut::<CombatStats>(mob)
         .unwrap()

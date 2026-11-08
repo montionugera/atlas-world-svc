@@ -7,7 +7,7 @@ import {
   CHAPTERS,
 } from "../lore-model.mjs";
 import { chapterForRef } from "./lore-refs.mjs";
-import { register } from "./registry.mjs";
+import { overlayRoot, register } from "./registry.mjs";
 
 const WORLD_HISTORY_URL = "/content/studio/world_history_and_concept.json";
 const ATLAS_URL = "/content/studio/t_shaped_world_atlas.json";
@@ -37,6 +37,30 @@ function el(tag, className = "", text = "") {
 }
 
 /**
+ * Full-size image overlay: click anywhere or press Escape to close.
+ */
+function openFullImage(src, title) {
+  const overlay = el("div", "concept-lightbox-overlay lore-full-overlay");
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", title);
+  const img = el("img", "lore-full-img");
+  img.src = src;
+  img.alt = title;
+  overlay.appendChild(img);
+  const close = () => {
+    document.removeEventListener("keydown", onKey);
+    overlay.remove();
+  };
+  const onKey = (e) => {
+    if (e.key === "Escape") close();
+  };
+  overlay.addEventListener("click", close);
+  document.addEventListener("keydown", onKey);
+  overlayRoot().appendChild(overlay);
+}
+
+/**
  * Renders an art thumbnail gallery for an entity when matching concept art exists.
  */
 function renderArtGallery(arts) {
@@ -50,6 +74,19 @@ function renderArtGallery(arts) {
     img.src = src;
     img.alt = art.title || "Concept Art";
     img.loading = "lazy";
+    if (art.file) {
+      img.tabIndex = 0;
+      img.setAttribute("role", "button");
+      img.title = "Click to view full size";
+      const open = () => openFullImage(`/content/concept-art/${art.file}`, art.title || "Concept Art");
+      img.addEventListener("click", open);
+      img.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          open();
+        }
+      });
+    }
     fig.appendChild(img);
 
     if (art.title || art.caption) {
