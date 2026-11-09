@@ -69,16 +69,19 @@ async function ensureSharedBrowser() {
     try { rmSync(profile, { recursive: true, force: true }); } catch {}
   };
   process.on('exit', cleanup);
-  for (let i = 0; i < 50; i++) {
+  let info = null;
+  for (let i = 0; i < 100; i++) {
     try {
-      await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+      info = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
       break;
     } catch {
       await sleep(150);
     }
   }
   // Browser-level CDP connection: lets every launch() own an isolated browser context.
-  const info = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+  if (!info) {
+    info = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+  }
   const cdp = new Cdp(info.webSocketDebuggerUrl);
   await cdp.open();
   _sharedBrowser = { port, chrome, profile, cleanup, cdp };

@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sqlite3
 import subprocess
 import sys
@@ -36,7 +37,7 @@ except ImportError:  # ... or run as a script, where scripts/ is sys.path[0]
 
 ROOT = Path(__file__).resolve().parent.parent
 BUILD_SCRIPT = ROOT / "scripts" / "build_catalog_db.py"
-DB_PATH = ROOT / "build" / "catalog.sqlite"
+DB_PATH = Path(os.environ.get("ATLAS_CATALOG_DB", str(ROOT / "build" / "catalog.sqlite")))
 CONTENT_DIR = ROOT / "contracts" / "content"
 MAPS_DIR = ROOT / "content" / "maps"
 SPECS_DIR = ROOT / "docs" / "superpowers" / "specs"
