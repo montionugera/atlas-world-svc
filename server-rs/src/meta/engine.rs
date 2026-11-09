@@ -445,6 +445,15 @@ impl RustMetaEngine {
                 let body = Self::parse_json_payload(payload_raw)?;
                 self.rpc_update_poc_maro_10m_state(uid, &body)
             }
+            "accept_poc_amber_errand" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_accept_poc_amber_errand(uid)
+            }
+            "complete_poc_amber_errand" => {
+                let uid = Self::require_client(ctx)?;
+                let body = Self::parse_json_payload(payload_raw)?;
+                self.rpc_complete_poc_amber_errand(uid, &body)
+            }
             other => Err(MetaError::NotFound(format!("Unknown RPC '{}'", other))),
         }
     }
@@ -1606,10 +1615,11 @@ impl RustMetaEngine {
             state.amber_errand_completed = v;
         }
         if let Some(arr) = body.get("lanternsLit").and_then(|v| v.as_array()) {
-            state.lanterns_lit = arr
-                .iter()
-                .filter_map(|x| x.as_str().map(String::from))
-                .collect();
+            for x in arr.iter().filter_map(|x| x.as_str()) {
+                if !state.lanterns_lit.iter().any(|s| s == x) {
+                    state.lanterns_lit.push(x.to_string());
+                }
+            }
         }
         if let Some(v) = body.get("verminDefeated").and_then(|v| v.as_u64()) {
             state.vermin_defeated = v as u32;
@@ -1650,6 +1660,88 @@ impl RustMetaEngine {
             permission_write: 0,
         }])?;
         Ok(val)
+    }
+
+    fn rpc_accept_poc_amber_errand(&self, user_id: &str) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+        state.amber_errand_accepted = true;
+        if state.active_beat == "POC-00" || state.active_beat == "POC-01" {
+            state.active_beat = "POC-02".to_string();
+        }
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+        Ok(val)
+    }
+
+    fn rpc_complete_poc_amber_errand(
+        &self,
+        user_id: &str,
+        body: &Value,
+    ) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        let target_lantern = body
+            .get("lanternId")
+            .and_then(|v| v.as_str())
+            .unwrap_or("lantern-06")
+            .to_string();
+
+        let already_completed = state.amber_errand_completed;
+        if !already_completed {
+            state.amber_errand_accepted = true;
+            state.amber_errand_completed = true;
+            state.active_beat = "POC-02".to_string();
+            state.lantern_oil_count = state.lantern_oil_count.saturating_add(1);
+            if !state.lanterns_lit.contains(&target_lantern) {
+                state.lanterns_lit.push(target_lantern);
+            }
+        }
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        let mut res = serde_json::Map::new();
+        res.insert("state".to_string(), val);
+        res.insert(
+            "alreadyCompleted".to_string(),
+            Value::Bool(already_completed),
+        );
+        res.insert("rewardGranted".to_string(), Value::Bool(!already_completed));
+        Ok(Value::Object(res))
     }
 }
 
@@ -2068,5 +2160,52 @@ mod tests {
                 .unwrap(),
             None
         );
+    }
+
+    #[test]
+    fn poc_maro_10m_amber_errand_authoritative_and_idempotent() {
+        let engine = test_engine();
+        let uid = generate_uuid_v4();
+        let ctx = RpcContext::client(&uid, None);
+
+        // 1. Accept errand
+        let accepted = engine
+            .invoke_rpc(&ctx, "accept_poc_amber_errand", "{}")
+            .expect("accept amber errand");
+        assert_eq!(accepted["amberErrandAccepted"], true);
+        assert_eq!(accepted["activeBeat"], "POC-02");
+
+        // 2. Complete errand (lights lantern-06 and grants 1 lantern oil)
+        let completed = engine
+            .invoke_rpc(
+                &ctx,
+                "complete_poc_amber_errand",
+                &json!({ "lanternId": "lantern-06" }).to_string(),
+            )
+            .expect("complete amber errand");
+        assert_eq!(completed["alreadyCompleted"], false);
+        assert_eq!(completed["rewardGranted"], true);
+        assert_eq!(completed["state"]["amberErrandCompleted"], true);
+        assert_eq!(completed["state"]["lanternOilCount"], 1);
+        assert_eq!(completed["state"]["lanternsLit"], json!(["lantern-06"]));
+
+        // 3. Reconnect / retry attempt (must be idempotent, no duplicate reward or double lanterns)
+        let retry = engine
+            .invoke_rpc(
+                &ctx,
+                "complete_poc_amber_errand",
+                &json!({ "lanternId": "lantern-06" }).to_string(),
+            )
+            .expect("retry complete amber errand");
+        assert_eq!(retry["alreadyCompleted"], true);
+        assert_eq!(retry["rewardGranted"], false);
+        assert_eq!(retry["state"]["amberErrandCompleted"], true);
+        assert_eq!(retry["state"]["lanternOilCount"], 1);
+        assert_eq!(retry["state"]["lanternsLit"], json!(["lantern-06"]));
+
+        // 4. Verify canonical saves remain untouched
+        let (quests, _) = engine.read_quests(&uid).expect("read quests");
+        assert!(quests.active.is_empty());
+        assert!(quests.completed.is_empty());
     }
 }

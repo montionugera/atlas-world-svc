@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using AtlasWorld.Contracts;
@@ -9,7 +10,9 @@ namespace AtlasWorld.Client.World
 {
     /// <summary>
     /// POC-01: Wonder — The Road to the Great Bell (00:00–02:30).
-    /// Manages arrival reveal composition validation, South Gate Pip/Reed/Tovin NPCs,
+    /// POC-02: Warmth — A Small Kindness (02:30–04:15).
+    /// Manages arrival reveal composition validation, South Gate Pip/Reed/Tovin/Amber NPCs,
+    /// village lantern unlit->lit 3D state transitions with warm OmniLight3D and emissive glow,
     /// non-intrusive objective pill &amp; dialogue toast UI, and environmental audio cues.
     /// </summary>
     public sealed partial class MaroBellPocController : Node3D
@@ -19,6 +22,9 @@ namespace AtlasWorld.Client.World
         public static readonly Vector3 PipWorldPos = new(-3.0f, 0f, 60.0f);
         public static readonly Vector3 ReedWorldPos = new(3.0f, 0f, 62.0f);
         public static readonly Vector3 TovinWorldPos = new(4.5f, 0f, -50.0f);
+        public static readonly Vector3 AmberWorldPos = new(1.0f, 0f, 28.0f);
+        public static readonly Vector3 Lantern06WorldPos = new(-0.8f, 0f, 23.7f);
+        public static readonly Vector3 Lantern04WorldPos = new(-3.8f, 0f, 35.6f);
         public const float InteractionRadiusMeters = 3.8f;
 
         public readonly record struct RevealCompositionReport(
@@ -32,6 +38,11 @@ namespace AtlasWorld.Client.World
 
         public string ActiveBeat { get; private set; } = "POC-01";
         public bool PipGreeted { get; private set; }
+        public bool AmberErrandAccepted { get; private set; }
+        public bool AmberErrandCompleted { get; private set; }
+        public List<string> LanternsLit { get; } = new();
+        public int LanternOilCount { get; private set; }
+
         public string ObjectiveText { get; private set; } = "Follow the Lantern Road & speak with Pip [F]";
         public string LastDialogueLine { get; private set; } = "";
         public int EnvironmentalAudioEventsPlayed { get; private set; }
@@ -39,6 +50,11 @@ namespace AtlasWorld.Client.World
         public EntityView? PipView { get; private set; }
         public EntityView? ReedView { get; private set; }
         public EntityView? TovinView { get; private set; }
+        public EntityView? AmberView { get; private set; }
+
+        public Node3D? WorkshopLanternNode { get; private set; }
+        public OmniLight3D? WorkshopLanternLight { get; private set; }
+        public MeshInstance3D? WorkshopLanternGlowMesh { get; private set; }
 
         private CanvasLayer? _uiLayer;
         private PanelContainer? _objectivePanel;
@@ -49,6 +65,7 @@ namespace AtlasWorld.Client.World
         private double _footstepTimer = 0.0;
         private bool _reedBarkPlayed = false;
         private bool _tovinBarkPlayed = false;
+        private bool _amberBarkPlayed = false;
 
         public static RevealCompositionReport EvaluateGreatBellRevealComposition(UnifiedMapDocument doc, Vector3 spawnPos)
         {
@@ -78,6 +95,7 @@ namespace AtlasWorld.Client.World
         public void Initialize(UnifiedMapDocument doc)
         {
             SpawnNpcs();
+            SetupLanternNodes(doc);
             BuildUi();
             PlayEnvironmentalIntroAudio();
         }
@@ -101,6 +119,14 @@ namespace AtlasWorld.Client.World
             }
 
             string tovinKey = "npc";
+
+            string amberKey = "npc";
+            if (AssetRegistry.Instance != null)
+            {
+                AssetRegistry.Instance.Resolve(PipelineCharVerify.MaroGirlKey, out ResolveTier amberTier);
+                if (amberTier == ResolveTier.Bespoke)
+                    amberKey = PipelineCharVerify.MaroGirlKey;
+            }
 
             // 1. Pip
             PipView = new EntityView(EntityKind.Npc, pipKey);
@@ -128,6 +154,27 @@ namespace AtlasWorld.Client.World
             TovinView.Root.LookAt(TovinWorldPos + new Vector3(0f, 0f, -1f), Vector3.Up);
             AttachNpcLabel(TovinView.Root, "[Record Keeper] Tovin");
             TovinView.Animation.Update(true, Vector3.Zero);
+
+            // 4. Amber
+            AmberView = new EntityView(EntityKind.Npc, amberKey);
+            AmberView.Root.Name = "npc-amber";
+            AmberView.Root.Position = AmberWorldPos;
+            AddChild(AmberView.Root);
+            AmberView.Root.LookAt(AmberWorldPos + new Vector3(-1f, 0f, 0f), Vector3.Up);
+            AttachNpcLabel(AmberView.Root, "[Oil Merchant] Amber\n[F] Speak");
+            AmberView.Animation.Update(true, Vector3.Zero);
+        }
+
+        private void SetupLanternNodes(UnifiedMapDocument doc)
+        {
+            WorkshopLanternNode = new Node3D
+            {
+                Name = "PocWorkshopLantern_lantern-06",
+                Position = Lantern06WorldPos,
+            };
+            AddChild(WorkshopLanternNode);
+
+            AttachLanternLabel(WorkshopLanternNode, "[Unlit Lantern]\n[F] Light with Amber's Oil");
         }
 
         private static void AttachNpcLabel(Node3D root, string labelText)
@@ -150,6 +197,31 @@ namespace AtlasWorld.Client.World
                     OutlineSize = 4,
                     OutlineModulate = Colors.Black,
                     Modulate = Colors.White,
+                };
+                root.AddChild(label);
+            }
+        }
+
+        private static void AttachLanternLabel(Node3D root, string labelText)
+        {
+            var existing = root.GetNodeOrNull<Label3D>("OverheadNameplate");
+            if (existing != null)
+            {
+                existing.Text = labelText;
+                existing.Visible = true;
+            }
+            else
+            {
+                var label = new Label3D
+                {
+                    Name = "OverheadNameplate",
+                    Text = labelText,
+                    Position = new Vector3(0f, 2.65f, 0f),
+                    Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    FontSize = 13,
+                    OutlineSize = 3,
+                    OutlineModulate = Colors.Black,
+                    Modulate = new Color(1.0f, 0.92f, 0.75f),
                 };
                 root.AddChild(label);
             }
@@ -288,6 +360,18 @@ namespace AtlasWorld.Client.World
             {
                 InteractWithPip();
             }
+            else if (PipGreeted && !AmberErrandAccepted && playerPos.DistanceTo(AmberWorldPos) <= InteractionRadiusMeters)
+            {
+                InteractWithAmber();
+            }
+            else if (AmberErrandAccepted && !LanternsLit.Contains("lantern-06") && playerPos.DistanceTo(Lantern06WorldPos) <= 2.2f)
+            {
+                LightVillageLantern("lantern-06");
+            }
+            else if (LanternsLit.Contains("lantern-06") && !AmberErrandCompleted && playerPos.DistanceTo(AmberWorldPos) <= InteractionRadiusMeters)
+            {
+                CompleteAmberErrand();
+            }
             else if (!_reedBarkPlayed && playerPos.DistanceTo(ReedWorldPos) <= 4.0f)
             {
                 _reedBarkPlayed = true;
@@ -298,14 +382,23 @@ namespace AtlasWorld.Client.World
                 _tovinBarkPlayed = true;
                 SetDialogue("Tovin: Sixty-five winters I've kept the kiln ledgers, and never has the brass hummed like this...");
             }
+            else if (!_amberBarkPlayed && playerPos.DistanceTo(AmberWorldPos) <= 4.0f)
+            {
+                _amberBarkPlayed = true;
+                if (!AmberErrandAccepted)
+                    SetDialogue("Amber: Evening traveller! If you have a moment, could you help me with a lantern?");
+            }
         }
 
         public bool InteractWithPip()
         {
             PipGreeted = true;
-            ActiveBeat = "POC-01";
+            if (ActiveBeat == "POC-00" || ActiveBeat == "POC-01")
+            {
+                ActiveBeat = "POC-01";
+            }
             LastDialogueLine = "Pip: You made it through the valley gate! Look up ahead—that's the Great Bell of Maro. Come on, Amber's waiting by the lantern workshop!";
-            ObjectiveText = "Visit Amber at the Lantern Workshop (Market Bend)";
+            ObjectiveText = "Visit Amber at the Lantern Workshop (Market Bend) [F]";
 
             if (_objectiveLabel != null)
                 _objectiveLabel.Text = ObjectiveText;
@@ -317,11 +410,140 @@ namespace AtlasWorld.Client.World
             return true;
         }
 
+        public bool InteractWithAmber()
+        {
+            if (AmberErrandCompleted)
+            {
+                SetDialogue("Amber: The path is brighter tonight thanks to you, traveller. Take care near the old kilns.");
+                return true;
+            }
+
+            if (LanternsLit.Contains("lantern-06"))
+            {
+                return CompleteAmberErrand();
+            }
+
+            return StartAmberErrand();
+        }
+
+        public bool StartAmberErrand()
+        {
+            AmberErrandAccepted = true;
+            LastDialogueLine = "Amber: Hello traveller! The evening breeze is blowing cold off the ribs, and my workshop lantern across the path has run dry. Could you take this vial of seed-oil and light it for the road?";
+            ObjectiveText = "Light Amber's Workshop Lantern [lantern-06] across the road [F]";
+
+            if (_objectiveLabel != null)
+                _objectiveLabel.Text = ObjectiveText;
+
+            SetDialogue(LastDialogueLine);
+            AudioRegistry.Instance?.Play("sfx:chime_soft", AmberWorldPos);
+            EnvironmentalAudioEventsPlayed++;
+            return true;
+        }
+
+        public bool LightVillageLantern(string lanternId = "lantern-06")
+        {
+            if (!LanternsLit.Contains(lanternId))
+            {
+                LanternsLit.Add(lanternId);
+            }
+
+            if (lanternId == "lantern-06" && WorkshopLanternNode != null)
+            {
+                if (WorkshopLanternLight == null || !GodotObject.IsInstanceValid(WorkshopLanternLight))
+                {
+                    WorkshopLanternLight = new OmniLight3D
+                    {
+                        Name = "OmniLight3D",
+                        LightColor = new Color(1.0f, 0.78f, 0.45f), // Warm amber glow
+                        LightEnergy = 2.2f,
+                        OmniRange = 7.0f,
+                        Position = new Vector3(0f, 2.2f, 0f), // Head of lantern post
+                        ShadowEnabled = false,
+                    };
+                    WorkshopLanternNode.AddChild(WorkshopLanternLight);
+                }
+
+                if (WorkshopLanternGlowMesh == null || !GodotObject.IsInstanceValid(WorkshopLanternGlowMesh))
+                {
+                    var glowMat = new StandardMaterial3D
+                    {
+                        AlbedoColor = new Color(1.0f, 0.85f, 0.40f),
+                        EmissionEnabled = true,
+                        Emission = new Color(1.0f, 0.75f, 0.30f),
+                        EmissionEnergyMultiplier = 2.5f,
+                    };
+                    WorkshopLanternGlowMesh = new MeshInstance3D
+                    {
+                        Name = "LanternGlowHead",
+                        Mesh = new SphereMesh { Radius = 0.22f, Height = 0.38f },
+                        MaterialOverride = glowMat,
+                        Position = new Vector3(0f, 2.2f, 0f),
+                    };
+                    WorkshopLanternNode.AddChild(WorkshopLanternGlowMesh);
+                }
+
+                AttachLanternLabel(WorkshopLanternNode, "[Lit Village Lantern]");
+            }
+
+            AudioRegistry.Instance?.Play("sfx:chime_bright", Lantern06WorldPos);
+            EnvironmentalAudioEventsPlayed++;
+
+            SetDialogue("The village lantern catches flame, casting a warm amber glow across the cobblestones.");
+            ObjectiveText = "Return to Amber at the Lantern Workshop [F]";
+            if (_objectiveLabel != null)
+                _objectiveLabel.Text = ObjectiveText;
+
+            return true;
+        }
+
+        public bool CompleteAmberErrand()
+        {
+            if (AmberErrandCompleted)
+            {
+                return false; // Idempotent: cannot duplicate rewards on retry/reconnect
+            }
+
+            AmberErrandAccepted = true;
+            AmberErrandCompleted = true;
+            ActiveBeat = "POC-02";
+            LanternOilCount++;
+
+            LastDialogueLine = "Amber: Bless you! Look how much warmer the road feels already. It's only a small light, but in Maro Bell, every lit wick keeps the dark away. Thank you.";
+            ObjectiveText = "Explore the Market & check the eastern path [F]";
+
+            if (_objectiveLabel != null)
+                _objectiveLabel.Text = ObjectiveText;
+
+            SetDialogue(LastDialogueLine);
+            AudioRegistry.Instance?.Play("sfx:bell_resonance", AmberWorldPos);
+            EnvironmentalAudioEventsPlayed++;
+            return true;
+        }
+
         public bool TryInteractNearest(Vector3 playerPos)
         {
             if (playerPos.DistanceTo(PipWorldPos) <= InteractionRadiusMeters)
             {
                 return InteractWithPip();
+            }
+            if (playerPos.DistanceTo(AmberWorldPos) <= InteractionRadiusMeters)
+            {
+                return InteractWithAmber();
+            }
+            if (playerPos.DistanceTo(Lantern06WorldPos) <= InteractionRadiusMeters)
+            {
+                if (AmberErrandAccepted && !LanternsLit.Contains("lantern-06"))
+                {
+                    return LightVillageLantern("lantern-06");
+                }
+                if (LanternsLit.Contains("lantern-06"))
+                {
+                    SetDialogue("The workshop lantern burns with a steady, warm amber flame.");
+                    return true;
+                }
+                SetDialogue("A brass village lantern with an empty oil reservoir. It feels cold to the touch.");
+                return true;
             }
             if (playerPos.DistanceTo(ReedWorldPos) <= 4.0f)
             {
@@ -350,6 +572,7 @@ namespace AtlasWorld.Client.World
             PipView?.Animation.Update(true, Vector3.Zero);
             ReedView?.Animation.Update(true, Vector3.Zero);
             TovinView?.Animation.Update(true, Vector3.Zero);
+            AmberView?.Animation.Update(true, Vector3.Zero);
         }
     }
 }
