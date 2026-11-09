@@ -2732,9 +2732,10 @@
     "title": "POC-06: Player Impression Validation and Scorecard Gate (ATLAS_VERIFY_POC_MARO_10M probe, telemetry, 7-metric scorecard)",
     "from_idea": "I-293",
     "created_at": "2026-11-09T03:09:29.703442+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-011"
+    "epic": "E-011",
+    "claimed_at": "2026-11-09T03:09:40.557789+00:00"
   }
 ]
