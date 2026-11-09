@@ -83,6 +83,7 @@ namespace AtlasWorld.Client.World
             VerifyMaroFolkGirlInTown(root);
             VerifyPoc01WonderRoadToGreatBell(doc);
             VerifyPoc02WarmthAmberLanternErrand(doc);
+            VerifyPoc03PlayfulnessSootMuncherEncounter(doc);
 
             string outDir = OS.GetEnvironment("ATLAS_RENDER_MARO_BELL");
             if (!string.IsNullOrEmpty(outDir))
@@ -207,6 +208,57 @@ namespace AtlasWorld.Client.World
                 poc.ActiveBeat == "POC-02" &&
                 poc.LanternOilCount == 1 &&
                 poc.LanternsLit.Count == 1);
+
+            poc.QueueFree();
+        }
+
+        private void VerifyPoc03PlayfulnessSootMuncherEncounter(UnifiedMapDocument doc)
+        {
+            var poc = new MaroBellPocController { Name = "Poc03Verify" };
+            AddChild(poc);
+            poc.Initialize(doc);
+
+            Report("MaroBellPocController spawns SootMuncherView at SootMuncherWorldPos",
+                poc.SootMuncherView != null && poc.SootMuncherView.Root.Position.DistanceTo(MaroBellPocController.SootMuncherWorldPos) < 0.1f);
+            Report("SootMuncherView starts in idle animation with 60 HP",
+                poc.SootMuncherView?.Animation.CurrentState == "idle" && poc.SootMuncherHp == 60f);
+            Report("ParcelNode is initialized at ParcelWorldPos",
+                poc.ParcelNode != null && poc.ParcelNode.Position.DistanceTo(MaroBellPocController.ParcelWorldPos) < 0.1f);
+
+            // 1. Attempt recovering parcel before defeat must fail
+            bool earlyParcel = poc.RecoverParcel();
+            Report("RecoverParcel before defeating Soot Muncher fails",
+                !earlyParcel && !poc.ParcelRecovered);
+
+            // 2. Out-of-range attack check (> 3.0m)
+            bool outOfRangeAttack = poc.AttackSootMuncher(5.2f, 35f);
+            Report("AttackSootMuncher from 5.2m exceeds 3.0m melee range and fails",
+                !outOfRangeAttack && poc.SootMuncherHp == 60f && !poc.SootMuncherDefeated);
+
+            // 3. In-range non-lethal attack damages Soot Muncher and triggers hit
+            bool firstHit = poc.AttackSootMuncher(1.5f, 35f);
+            Report("In-range attack (1.5m, 35 dmg) damages Soot Muncher to 25 HP",
+                firstHit && poc.SootMuncherHp == 25f && !poc.SootMuncherDefeated);
+
+            // 4. In-range lethal attack defeats Soot Muncher
+            bool fatalHit = poc.AttackSootMuncher(1.5f, 35f);
+            Report("Fatal attack defeats Soot Muncher and updates objective to recover parcel",
+                fatalHit && poc.SootMuncherDefeated && poc.SootMuncherHp == 0f && poc.ObjectiveText.Contains("Recover"));
+
+            // 5. Recover parcel after defeat succeeds and updates beat to POC-03
+            bool parcelRecovered = poc.RecoverParcel();
+            Report("RecoverParcel after defeat succeeds, hides parcel node, and advances beat to POC-03",
+                parcelRecovered && poc.ParcelRecovered && poc.ActiveBeat == "POC-03" && poc.ParcelNode?.Visible == false);
+
+            // 6. Deliver parcel to Pip
+            bool deliveredToPip = poc.ReturnParcelToPip();
+            Report("ReturnParcelToPip completes delivery, triggers Pip gratitude, and advances objective to Bram",
+                deliveredToPip && poc.ParcelDeliveredToPip && poc.ObjectiveText.Contains("Bram") && poc.LastDialogueLine.Contains("roasted chestnuts"));
+
+            // 7. Reset encounter restores HP and parcel state
+            poc.ResetVerminEncounter();
+            Report("ResetVerminEncounter restores HP to 60, resets defeat/recovery flags, and makes parcel visible",
+                poc.SootMuncherHp == 60f && !poc.SootMuncherDefeated && !poc.ParcelRecovered && poc.ParcelNode?.Visible == true);
 
             poc.QueueFree();
         }

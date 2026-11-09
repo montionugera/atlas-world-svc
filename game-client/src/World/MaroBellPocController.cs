@@ -11,9 +11,10 @@ namespace AtlasWorld.Client.World
     /// <summary>
     /// POC-01: Wonder — The Road to the Great Bell (00:00–02:30).
     /// POC-02: Warmth — A Small Kindness (02:30–04:15).
+    /// POC-03: Playfulness — The Missing Delivery (04:15–06:15).
     /// Manages arrival reveal composition validation, South Gate Pip/Reed/Tovin/Amber NPCs,
     /// village lantern unlit->lit 3D state transitions with warm OmniLight3D and emissive glow,
-    /// non-intrusive objective pill &amp; dialogue toast UI, and environmental audio cues.
+    /// shared Lantern Vermin / Soot Muncher encounter, parcel recovery, and environmental cues.
     /// </summary>
     public sealed partial class MaroBellPocController : Node3D
     {
@@ -25,6 +26,8 @@ namespace AtlasWorld.Client.World
         public static readonly Vector3 AmberWorldPos = new(1.0f, 0f, 28.0f);
         public static readonly Vector3 Lantern06WorldPos = new(-0.8f, 0f, 23.7f);
         public static readonly Vector3 Lantern04WorldPos = new(-3.8f, 0f, 35.6f);
+        public static readonly Vector3 SootMuncherWorldPos = new(12.0f, 0f, 6.0f);
+        public static readonly Vector3 ParcelWorldPos = new(12.5f, 0f, 4.0f);
         public const float InteractionRadiusMeters = 3.8f;
 
         public readonly record struct RevealCompositionReport(
@@ -43,6 +46,11 @@ namespace AtlasWorld.Client.World
         public List<string> LanternsLit { get; } = new();
         public int LanternOilCount { get; private set; }
 
+        public float SootMuncherHp { get; private set; } = 60f;
+        public bool SootMuncherDefeated { get; private set; }
+        public bool ParcelRecovered { get; private set; }
+        public bool ParcelDeliveredToPip { get; private set; }
+
         public string ObjectiveText { get; private set; } = "Follow the Lantern Road & speak with Pip [F]";
         public string LastDialogueLine { get; private set; } = "";
         public int EnvironmentalAudioEventsPlayed { get; private set; }
@@ -51,10 +59,12 @@ namespace AtlasWorld.Client.World
         public EntityView? ReedView { get; private set; }
         public EntityView? TovinView { get; private set; }
         public EntityView? AmberView { get; private set; }
+        public EntityView? SootMuncherView { get; private set; }
 
         public Node3D? WorkshopLanternNode { get; private set; }
         public OmniLight3D? WorkshopLanternLight { get; private set; }
         public MeshInstance3D? WorkshopLanternGlowMesh { get; private set; }
+        public Node3D? ParcelNode { get; private set; }
 
         private CanvasLayer? _uiLayer;
         private PanelContainer? _objectivePanel;
@@ -96,6 +106,7 @@ namespace AtlasWorld.Client.World
         {
             SpawnNpcs();
             SetupLanternNodes(doc);
+            SpawnSootMuncherEncounter();
             BuildUi();
             PlayEnvironmentalIntroAudio();
         }
@@ -175,6 +186,42 @@ namespace AtlasWorld.Client.World
             AddChild(WorkshopLanternNode);
 
             AttachLanternLabel(WorkshopLanternNode, "[Unlit Lantern]\n[F] Light with Amber's Oil");
+        }
+
+        private void SpawnSootMuncherEncounter()
+        {
+            // 1. Soot Muncher (Shared Lantern Vermin Rig)
+            SootMuncherView = new EntityView(EntityKind.Mob, "mob:soot_muncher");
+            SootMuncherView.Root.Name = "mob-soot-muncher";
+            SootMuncherView.Root.Position = SootMuncherWorldPos;
+            SootMuncherView.Root.Scale = new Vector3(0.55f, 0.55f, 0.55f);
+            AddChild(SootMuncherView.Root);
+            SootMuncherView.Root.LookAt(SootMuncherWorldPos + new Vector3(-1f, 0f, 0f), Vector3.Up);
+            AttachNpcLabel(SootMuncherView.Root, "[Critter] Soot Muncher\n[F] Attack");
+            SootMuncherView.ApplyLifeState(true, SootMuncherHp, 60f, false);
+            SootMuncherView.Animation.Update(true, Vector3.Zero);
+
+            // 2. Missing Delivery Parcel
+            ParcelNode = new Node3D
+            {
+                Name = "PocMissingParcel",
+                Position = ParcelWorldPos,
+            };
+            AddChild(ParcelNode);
+
+            var parcelMesh = new MeshInstance3D
+            {
+                Name = "ParcelBox",
+                Mesh = new BoxMesh { Size = new Vector3(0.45f, 0.35f, 0.45f) },
+                Position = new Vector3(0f, 0.18f, 0f),
+                MaterialOverride = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.65f, 0.45f, 0.25f), // Brown wrapped parcel
+                    Roughness = 0.8f,
+                },
+            };
+            ParcelNode.AddChild(parcelMesh);
+            AttachNpcLabel(ParcelNode, "[Pip's Missing Parcel]\n[F] Recover");
         }
 
         private static void AttachNpcLabel(Node3D root, string labelText)
@@ -372,6 +419,18 @@ namespace AtlasWorld.Client.World
             {
                 CompleteAmberErrand();
             }
+            else if (AmberErrandCompleted && !SootMuncherDefeated && playerPos.DistanceTo(SootMuncherWorldPos) <= 3.0f)
+            {
+                AttackSootMuncher(playerPos.DistanceTo(SootMuncherWorldPos));
+            }
+            else if (SootMuncherDefeated && !ParcelRecovered && playerPos.DistanceTo(ParcelWorldPos) <= 2.5f)
+            {
+                RecoverParcel();
+            }
+            else if (ParcelRecovered && !ParcelDeliveredToPip && playerPos.DistanceTo(PipWorldPos) <= InteractionRadiusMeters)
+            {
+                ReturnParcelToPip();
+            }
             else if (!_reedBarkPlayed && playerPos.DistanceTo(ReedWorldPos) <= 4.0f)
             {
                 _reedBarkPlayed = true;
@@ -392,6 +451,11 @@ namespace AtlasWorld.Client.World
 
         public bool InteractWithPip()
         {
+            if (ParcelRecovered && !ParcelDeliveredToPip)
+            {
+                return ReturnParcelToPip();
+            }
+
             PipGreeted = true;
             if (ActiveBeat == "POC-00" || ActiveBeat == "POC-01")
             {
@@ -510,7 +574,7 @@ namespace AtlasWorld.Client.World
             LanternOilCount++;
 
             LastDialogueLine = "Amber: Bless you! Look how much warmer the road feels already. It's only a small light, but in Maro Bell, every lit wick keeps the dark away. Thank you.";
-            ObjectiveText = "Explore the Market & check the eastern path [F]";
+            ObjectiveText = "Explore the East Terrace & find Pip's missing parcel [F]";
 
             if (_objectiveLabel != null)
                 _objectiveLabel.Text = ObjectiveText;
@@ -519,6 +583,108 @@ namespace AtlasWorld.Client.World
             AudioRegistry.Instance?.Play("sfx:bell_resonance", AmberWorldPos);
             EnvironmentalAudioEventsPlayed++;
             return true;
+        }
+
+        public bool AttackSootMuncher(float playerDistance = 1.5f, float attackPower = 35.0f)
+        {
+            const float MaxMeleeRange = 3.0f; // metres-v1 authoritative melee attack range
+            if (playerDistance > MaxMeleeRange)
+            {
+                return false; // Range authority check
+            }
+
+            if (SootMuncherDefeated)
+            {
+                return false;
+            }
+
+            SootMuncherHp = Mathf.Max(0f, SootMuncherHp - attackPower);
+            AudioRegistry.Instance?.Play("sfx:hit", SootMuncherWorldPos);
+            AudioRegistry.Instance?.Play("sfx:impact_light", SootMuncherWorldPos);
+            EnvironmentalAudioEventsPlayed += 2;
+
+            if (SootMuncherHp > 0f)
+            {
+                SootMuncherView?.ApplyLifeState(true, SootMuncherHp, 60f, false);
+                SootMuncherView?.Animation.Hit();
+                SetDialogue("The Soot Muncher squeaks playfully and scampers back from your strike!");
+            }
+            else
+            {
+                SootMuncherDefeated = true;
+                AudioRegistry.Instance?.Play("sfx:death", SootMuncherWorldPos);
+                EnvironmentalAudioEventsPlayed++;
+                SootMuncherView?.ApplyLifeState(false, 0f, 60f, false);
+                SootMuncherView?.Animation.Update(false, Vector3.Zero);
+                SetDialogue("The Soot Muncher scurries away into the stone chimney, leaving Pip's delivery parcel behind!");
+                ObjectiveText = "Recover Pip's Missing Delivery Parcel [F]";
+                if (_objectiveLabel != null)
+                    _objectiveLabel.Text = ObjectiveText;
+            }
+
+            return true;
+        }
+
+        public bool RecoverParcel()
+        {
+            if (!SootMuncherDefeated)
+            {
+                SetDialogue("A Soot Muncher is gnawing on the delivery twine! Defeat it first.");
+                return false;
+            }
+
+            if (ParcelRecovered)
+            {
+                return false; // Idempotent: cannot duplicate parcel recovery
+            }
+
+            ParcelRecovered = true;
+            ActiveBeat = "POC-03";
+            if (ParcelNode != null)
+                ParcelNode.Visible = false;
+
+            AudioRegistry.Instance?.Play("sfx:chime_bright", ParcelWorldPos);
+            EnvironmentalAudioEventsPlayed++;
+
+            SetDialogue("You recover Pip's brass-wrapped delivery parcel, intact and smelling faintly of dried mountain mint.");
+            ObjectiveText = "Return the delivery parcel to Pip at the South Gate [F]";
+            if (_objectiveLabel != null)
+                _objectiveLabel.Text = ObjectiveText;
+
+            return true;
+        }
+
+        public bool ReturnParcelToPip()
+        {
+            if (!ParcelRecovered || ParcelDeliveredToPip)
+            {
+                return false;
+            }
+
+            ParcelDeliveredToPip = true;
+            SetDialogue("Pip: You found it! Those pesky Soot Munchers love chewing on oiled twine. Thank you so much! Here, take some roasted chestnuts for the road.");
+            ObjectiveText = "Meet Bram at the Old Lantern House (Terrace Steps) [F]";
+            if (_objectiveLabel != null)
+                _objectiveLabel.Text = ObjectiveText;
+
+            AudioRegistry.Instance?.Play("sfx:bell_resonance", PipWorldPos);
+            EnvironmentalAudioEventsPlayed++;
+            return true;
+        }
+
+        public void ResetVerminEncounter()
+        {
+            SootMuncherHp = 60f;
+            SootMuncherDefeated = false;
+            ParcelRecovered = false;
+            ParcelDeliveredToPip = false;
+            if (ParcelNode != null)
+                ParcelNode.Visible = true;
+            if (SootMuncherView != null)
+            {
+                SootMuncherView.ApplyLifeState(true, 60f, 60f, false);
+                SootMuncherView.Animation.Update(true, Vector3.Zero);
+            }
         }
 
         public bool TryInteractNearest(Vector3 playerPos)
@@ -543,6 +709,27 @@ namespace AtlasWorld.Client.World
                     return true;
                 }
                 SetDialogue("A brass village lantern with an empty oil reservoir. It feels cold to the touch.");
+                return true;
+            }
+            if (playerPos.DistanceTo(ParcelWorldPos) <= InteractionRadiusMeters)
+            {
+                if (SootMuncherDefeated && !ParcelRecovered)
+                {
+                    return RecoverParcel();
+                }
+                if (!SootMuncherDefeated)
+                {
+                    SetDialogue("A small supply parcel wrapped in twine. A Soot Muncher is nibbling on it! Defeat it first.");
+                    return true;
+                }
+            }
+            if (playerPos.DistanceTo(SootMuncherWorldPos) <= InteractionRadiusMeters)
+            {
+                if (!SootMuncherDefeated)
+                {
+                    return AttackSootMuncher(playerPos.DistanceTo(SootMuncherWorldPos));
+                }
+                SetDialogue("The soot pipes are quiet now. The Soot Muncher fled into the stone vents.");
                 return true;
             }
             if (playerPos.DistanceTo(ReedWorldPos) <= 4.0f)
@@ -573,6 +760,7 @@ namespace AtlasWorld.Client.World
             ReedView?.Animation.Update(true, Vector3.Zero);
             TovinView?.Animation.Update(true, Vector3.Zero);
             AmberView?.Animation.Update(true, Vector3.Zero);
+            SootMuncherView?.Animation.Update(true, Vector3.Zero);
         }
     }
 }

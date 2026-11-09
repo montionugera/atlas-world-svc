@@ -454,6 +454,19 @@ impl RustMetaEngine {
                 let body = Self::parse_json_payload(payload_raw)?;
                 self.rpc_complete_poc_amber_errand(uid, &body)
             }
+            "resolve_poc_vermin_combat" => {
+                let uid = Self::require_client(ctx)?;
+                let body = Self::parse_json_payload(payload_raw)?;
+                self.rpc_resolve_poc_vermin_combat(uid, &body)
+            }
+            "recover_poc_parcel" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_recover_poc_parcel(uid)
+            }
+            "reset_poc_vermin_encounter" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_reset_poc_vermin_encounter(uid)
+            }
             other => Err(MetaError::NotFound(format!("Unknown RPC '{}'", other))),
         }
     }
@@ -1743,6 +1756,155 @@ impl RustMetaEngine {
         res.insert("rewardGranted".to_string(), Value::Bool(!already_completed));
         Ok(Value::Object(res))
     }
+
+    fn rpc_resolve_poc_vermin_combat(
+        &self,
+        user_id: &str,
+        body: &Value,
+    ) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        let player_dist = body
+            .get("playerDistance")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(999.0) as f32;
+        let attack_power = body
+            .get("attackPower")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(35.0) as f32;
+
+        const MAX_MELEE_RANGE: f32 = 3.0; // metres-v1 authoritative melee attack range
+        let mut res = serde_json::Map::new();
+
+        if player_dist > MAX_MELEE_RANGE {
+            res.insert("inRange".to_string(), Value::Bool(false));
+            res.insert("hit".to_string(), Value::Bool(false));
+            res.insert("damage".to_string(), serde_json::json!(0.0));
+            res.insert(
+                "defeated".to_string(),
+                Value::Bool(state.soot_muncher_defeated),
+            );
+            return Ok(Value::Object(res));
+        }
+
+        let damage = attack_power.max(10.0);
+        state.vermin_defeated = state.vermin_defeated.saturating_add(1);
+        state.soot_muncher_defeated = true;
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        res.insert("inRange".to_string(), Value::Bool(true));
+        res.insert("hit".to_string(), Value::Bool(true));
+        res.insert("damage".to_string(), serde_json::json!(damage));
+        res.insert("defeated".to_string(), Value::Bool(true));
+        res.insert("state".to_string(), val);
+        Ok(Value::Object(res))
+    }
+
+    fn rpc_recover_poc_parcel(&self, user_id: &str) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        if !state.soot_muncher_defeated {
+            let mut res = serde_json::Map::new();
+            res.insert("ok".to_string(), Value::Bool(false));
+            res.insert(
+                "reason".to_string(),
+                serde_json::json!("Soot Muncher must be defeated before parcel can be recovered"),
+            );
+            return Ok(Value::Object(res));
+        }
+
+        let already_recovered = state.parcel_recovered;
+        if !already_recovered {
+            state.parcel_recovered = true;
+            if state.active_beat == "POC-00"
+                || state.active_beat == "POC-01"
+                || state.active_beat == "POC-02"
+            {
+                state.active_beat = "POC-03".to_string();
+            }
+        }
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        let mut res = serde_json::Map::new();
+        res.insert("ok".to_string(), Value::Bool(true));
+        res.insert(
+            "alreadyRecovered".to_string(),
+            Value::Bool(already_recovered),
+        );
+        res.insert("state".to_string(), val);
+        Ok(Value::Object(res))
+    }
+
+    fn rpc_reset_poc_vermin_encounter(&self, user_id: &str) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        state.vermin_defeated = 0;
+        state.soot_muncher_defeated = false;
+        state.parcel_recovered = false;
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        let mut res = serde_json::Map::new();
+        res.insert("ok".to_string(), Value::Bool(true));
+        res.insert("state".to_string(), val);
+        Ok(Value::Object(res))
+    }
 }
 
 #[async_trait]
@@ -2207,5 +2369,71 @@ mod tests {
         let (quests, _) = engine.read_quests(&uid).expect("read quests");
         assert!(quests.active.is_empty());
         assert!(quests.completed.is_empty());
+    }
+
+    #[test]
+    fn poc_maro_10m_vermin_combat_and_parcel_recovery() {
+        let engine = test_engine();
+        let uid = generate_uuid_v4();
+        let ctx = RpcContext::client(&uid, None);
+
+        // 1. Out-of-range attack check (> 3.0m)
+        let out_of_range = engine
+            .invoke_rpc(
+                &ctx,
+                "resolve_poc_vermin_combat",
+                &json!({
+                    "targetId": "mon-soot-muncher",
+                    "playerDistance": 5.2,
+                    "attackPower": 35.0,
+                })
+                .to_string(),
+            )
+            .expect("resolve out of range attack");
+        assert_eq!(out_of_range["inRange"], false);
+        assert_eq!(out_of_range["hit"], false);
+        assert_eq!(out_of_range["defeated"], false);
+
+        // 2. Parcel recovery before defeat must fail
+        let early_parcel = engine
+            .invoke_rpc(&ctx, "recover_poc_parcel", "{}")
+            .expect("early recover parcel");
+        assert_eq!(early_parcel["ok"], false);
+
+        // 3. In-range attack defeats Soot Muncher (<= 3.0m)
+        let in_range = engine
+            .invoke_rpc(
+                &ctx,
+                "resolve_poc_vermin_combat",
+                &json!({
+                    "targetId": "mon-soot-muncher",
+                    "playerDistance": 1.8,
+                    "attackPower": 35.0,
+                })
+                .to_string(),
+            )
+            .expect("resolve in range attack");
+        assert_eq!(in_range["inRange"], true);
+        assert_eq!(in_range["hit"], true);
+        assert_eq!(in_range["defeated"], true);
+        assert_eq!(in_range["state"]["sootMuncherDefeated"], true);
+        assert_eq!(in_range["state"]["verminDefeated"], 1);
+
+        // 4. Parcel recovery after defeat succeeds and updates beat to POC-03
+        let parcel = engine
+            .invoke_rpc(&ctx, "recover_poc_parcel", "{}")
+            .expect("recover parcel");
+        assert_eq!(parcel["ok"], true);
+        assert_eq!(parcel["alreadyRecovered"], false);
+        assert_eq!(parcel["state"]["parcelRecovered"], true);
+
+        // 5. Repeatable reset restores encounter state
+        let reset = engine
+            .invoke_rpc(&ctx, "reset_poc_vermin_encounter", "{}")
+            .expect("reset vermin encounter");
+        assert_eq!(reset["ok"], true);
+        assert_eq!(reset["state"]["sootMuncherDefeated"], false);
+        assert_eq!(reset["state"]["parcelRecovered"], false);
+        assert_eq!(reset["state"]["verminDefeated"], 0);
     }
 }
