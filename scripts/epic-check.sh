@@ -14,7 +14,7 @@ check_e011() {
   ./scripts/godot-verify.sh ATLAS_VERIFY_POC_MARO_10M '^\[PocMaro10mVerify\] VERDICT PASS$'
 }
 
-if [[ "${PSRW_EPIC_ID:-}" == "E-011" ]]; then
+if [[ "${PSRW_EPIC_ID:-}" == "E-011" || "${1:-}" == "E-011" ]]; then
   check_e011
   echo "[epic-check] PASS — E-011 First 10 Minutes POC assertions verified."
   exit 0
