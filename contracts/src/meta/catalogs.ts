@@ -1,3 +1,7 @@
+/**
+ * Meta catalogs (items, skills, quests) shared between clients and the built-in
+ * Rust meta engine (server-rs/src/meta).
+ */
 import { z } from "zod";
 import type { AtkStat, MatchEventType } from "./types";
 

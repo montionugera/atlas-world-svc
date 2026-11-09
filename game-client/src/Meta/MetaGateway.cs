@@ -1,23 +1,25 @@
 using System;
-using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Godot;
-using Nakama;
 using AtlasWorld.Client.Core;
+using HttpClient = System.Net.Http.HttpClient;
 
 namespace AtlasWorld.Client.Meta
 {
     /// <summary>
-    /// AUTOLOAD singleton. Owns EVERY Nakama await — device-auth, ReadStorageObjects,
-    /// RpcAsync, and the realtime socket — and re-emits results as Godot signals via
-    /// <c>CallDeferred</c>. Panels never await Nakama; they call the plain
-    /// <see cref="RequestDoc"/> / <see cref="Rpc"/> kickers and listen for
-    /// <see cref="DocLoadedEventHandler"/> / <see cref="RpcResultEventHandler"/>.
+    /// AUTOLOAD singleton. Owns HTTP communication with the Rust meta server
+    /// (/v2/* endpoints in server-rs) — device-auth, storage reads, and RPCs —
+    /// and re-emits results as Godot signals via <c>CallDeferred</c>. Panels never
+    /// make network calls directly; they call the plain <see cref="RequestDoc"/> /
+    /// <see cref="Rpc"/> kickers and listen for <see cref="DocLoadedEventHandler"/> /
+    /// <see cref="RpcResultEventHandler"/>.
     ///
-    /// THREADING: Nakama continuations resume OFF the main thread, so any node mutation
-    /// must cross back via CallDeferred → a private Emit* wrapper. This is the SAME rule
-    /// as the Phase-B MetaService seam and the deliberate opposite of the Colyseus
-    /// main-thread pump; the two are never mixed.
+    /// THREADING: HTTP continuations resume OFF the main thread, so any node mutation
+    /// must cross back via CallDeferred → a private Emit* wrapper.
     /// </summary>
     public sealed partial class MetaGateway : Node
     {
@@ -41,12 +43,13 @@ namespace AtlasWorld.Client.Meta
         private const string DeviceIdPath = "user://device_id";
 
         private Config _config = null!;
-        private Nakama.Client? _client;
-        private ISession? _session;
-        private ISocket? _socket;
+        private readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
+        private string _baseUrl = "";
+        private string? _authToken;
+        private string? _userId;
 
-        public string? UserId => _session?.UserId;
-        public new bool Ready => _client != null && _session != null;
+        public string? UserId => _userId;
+        public new bool Ready => !string.IsNullOrEmpty(_authToken) && !string.IsNullOrEmpty(_userId);
 
         public override void _EnterTree()
         {
@@ -56,13 +59,14 @@ namespace AtlasWorld.Client.Meta
         public override void _Ready()
         {
             _config = Config.Load();
+            _baseUrl = $"{_config.NakamaScheme}://{_config.NakamaHost}:{_config.NakamaPort}".TrimEnd('/');
             _ = AuthenticateAsync(); // never async void
         }
 
         public override void _ExitTree()
         {
             if (Instance == this) Instance = null;
-            try { _socket?.CloseAsync(); } catch { /* shutting down */ }
+            try { _httpClient.Dispose(); } catch { /* shutting down */ }
         }
 
         // ---- Auth ----------------------------------------------------------------------
@@ -70,40 +74,100 @@ namespace AtlasWorld.Client.Meta
         {
             try
             {
-                _client = new Nakama.Client(_config.NakamaScheme, _config.NakamaHost,
-                    _config.NakamaPort, _config.NakamaServerKey) { Timeout = 10 };
-
                 string deviceId = LoadOrCreateDeviceId();
-                _session = await _client.AuthenticateDeviceAsync(deviceId, username: null, create: true);
-                GD.Print($"[MetaGateway] auth ok userId={_session.UserId}");
 
-                await TryOpenSocket();
+                // 1. Authenticate device via POST /v2/account/authenticate/device?create=true
+                using var authReq = new HttpRequestMessage(
+                    HttpMethod.Post,
+                    $"{_baseUrl}/v2/account/authenticate/device?create=true");
+                string basicAuth = Convert.ToBase64String(Encoding.UTF8.GetBytes(_config.NakamaServerKey + ":"));
+                authReq.Headers.Authorization = new AuthenticationHeaderValue("Basic", basicAuth);
+                authReq.Content = new StringContent(
+                    JsonSerializer.Serialize(new { id = deviceId }),
+                    Encoding.UTF8,
+                    "application/json");
 
-                CallDeferred(nameof(EmitAuthReady), _session.UserId);
+                using HttpResponseMessage authResp = await _httpClient.SendAsync(authReq);
+                if (!authResp.IsSuccessStatusCode)
+                {
+                    string errBody = await authResp.Content.ReadAsStringAsync();
+                    throw new HttpRequestException($"Auth failed with status {(int)authResp.StatusCode}: {errBody}");
+                }
+
+                string authJson = await authResp.Content.ReadAsStringAsync();
+                using JsonDocument authDoc = JsonDocument.Parse(authJson);
+                string token = authDoc.RootElement.GetProperty("token").GetString()
+                    ?? throw new InvalidOperationException("No token in auth response");
+
+                // 2. Resolve user ID via GET /v2/account (with JWT decode fallback)
+                string? userId = null;
+                try
+                {
+                    using var accountReq = new HttpRequestMessage(HttpMethod.Get, $"{_baseUrl}/v2/account");
+                    accountReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    using HttpResponseMessage accountResp = await _httpClient.SendAsync(accountReq);
+                    if (accountResp.IsSuccessStatusCode)
+                    {
+                        string accountJson = await accountResp.Content.ReadAsStringAsync();
+                        using JsonDocument accountDoc = JsonDocument.Parse(accountJson);
+                        if (accountDoc.RootElement.TryGetProperty("user", out JsonElement userEl) &&
+                            userEl.TryGetProperty("id", out JsonElement idEl) &&
+                            idEl.ValueKind == JsonValueKind.String)
+                        {
+                            userId = idEl.GetString();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    GD.Print($"[MetaGateway] GET /v2/account failed, trying JWT decode: {ex.Message}");
+                }
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    userId = ExtractUserIdFromJwt(token);
+                }
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    throw new InvalidOperationException("Failed to resolve user ID from /v2/account or JWT claims");
+                }
+
+                _authToken = token;
+                _userId = userId;
+                GD.Print($"[MetaGateway] auth ok userId={_userId}");
+
+                CallDeferred(nameof(EmitAuthReady), _userId);
             }
             catch (Exception e)
             {
-                GD.Print($"[MetaGateway] Nakama offline (using local defaults): {e.Message}");
+                GD.Print($"[MetaGateway] Meta HTTP API offline (using local defaults): {e.Message}");
                 CallDeferred(nameof(EmitAuthFailed), e.Message);
             }
         }
 
-        /// <summary>Best-effort realtime socket for quest notifications. Never fatal.</summary>
-        private async Task TryOpenSocket()
+        private static string? ExtractUserIdFromJwt(string jwt)
         {
-            if (_client == null || _session == null) return;
             try
             {
-                _socket = Socket.From(_client);
-                _socket.ReceivedNotification += n =>
-                    CallDeferred(nameof(EmitNotification), n.Code, n.Content ?? "");
-                await _socket.ConnectAsync(_session, appearOnline: true);
-                GD.Print("[MetaGateway] realtime socket connected");
+                string[] parts = jwt.Split('.');
+                if (parts.Length < 2) return null;
+                string payload = parts[1];
+                payload = payload.Replace('-', '+').Replace('_', '/');
+                switch (payload.Length % 4)
+                {
+                    case 2: payload += "=="; break;
+                    case 3: payload += "="; break;
+                }
+                byte[] bytes = Convert.FromBase64String(payload);
+                using JsonDocument doc = JsonDocument.Parse(bytes);
+                if (doc.RootElement.TryGetProperty("sub", out JsonElement sub) && sub.ValueKind == JsonValueKind.String)
+                    return sub.GetString();
+                if (doc.RootElement.TryGetProperty("uid", out JsonElement uid) && uid.ValueKind == JsonValueKind.String)
+                    return uid.GetString();
             }
-            catch (Exception e)
-            {
-                GD.Print($"[MetaGateway] socket unavailable (non-fatal): {e.Message}");
-            }
+            catch { }
+            return null;
         }
 
         // ---- Storage read --------------------------------------------------------------
@@ -112,31 +176,54 @@ namespace AtlasWorld.Client.Meta
 
         private async Task RequestDocAsync(string collection)
         {
-            if (_client == null || _session == null)
+            if (string.IsNullOrEmpty(_authToken) || string.IsNullOrEmpty(_userId))
             {
                 CallDeferred(nameof(EmitDocLoaded), collection, "", false);
                 return;
             }
             try
             {
-                var ids = new[]
+                var bodyObj = new
                 {
-                    new StorageObjectId
+                    object_ids = new[]
                     {
-                        Collection = collection,
-                        Key = MetaWireKeys.StorageKey,
-                        UserId = _session.UserId,
-                    },
+                        new
+                        {
+                            collection = collection,
+                            key = MetaWireKeys.StorageKey,
+                            user_id = _userId,
+                        }
+                    }
                 };
-                IApiStorageObjects result = await _client.ReadStorageObjectsAsync(_session, ids);
-                IApiStorageObject? obj = result.Objects.FirstOrDefault();
-                if (obj == null)
+                string reqBody = JsonSerializer.Serialize(bodyObj);
+                using var req = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/v2/storage");
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _authToken);
+                req.Content = new StringContent(reqBody, Encoding.UTF8, "application/json");
+
+                using HttpResponseMessage resp = await _httpClient.SendAsync(req);
+                if (!resp.IsSuccessStatusCode)
                 {
-                    // Doc not created yet — a valid state; panels fall back to defaults.
                     CallDeferred(nameof(EmitDocLoaded), collection, "", false);
                     return;
                 }
-                CallDeferred(nameof(EmitDocLoaded), collection, obj.Value, true);
+
+                string respJson = await resp.Content.ReadAsStringAsync();
+                using JsonDocument doc = JsonDocument.Parse(respJson);
+                if (doc.RootElement.TryGetProperty("objects", out JsonElement objects) &&
+                    objects.ValueKind == JsonValueKind.Array &&
+                    objects.GetArrayLength() > 0)
+                {
+                    JsonElement first = objects[0];
+                    string val = first.TryGetProperty("value", out JsonElement valEl) && valEl.ValueKind == JsonValueKind.String
+                        ? valEl.GetString() ?? ""
+                        : "";
+                    CallDeferred(nameof(EmitDocLoaded), collection, val, true);
+                }
+                else
+                {
+                    // Doc not created yet — a valid state; panels fall back to defaults.
+                    CallDeferred(nameof(EmitDocLoaded), collection, "", false);
+                }
             }
             catch (Exception e)
             {
@@ -151,15 +238,34 @@ namespace AtlasWorld.Client.Meta
 
         private async Task RpcAsync(string rpcId, string payloadJson)
         {
-            if (_client == null || _session == null)
+            if (string.IsNullOrEmpty(_authToken))
             {
                 CallDeferred(nameof(EmitRpcResult), rpcId, "", false, "no session");
                 return;
             }
             try
             {
-                IApiRpc rpc = await _client.RpcAsync(_session, rpcId, payloadJson);
-                CallDeferred(nameof(EmitRpcResult), rpcId, rpc.Payload ?? "", true, "");
+                using var req = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/v2/rpc/{Uri.EscapeDataString(rpcId)}");
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _authToken);
+                req.Content = new StringContent(payloadJson ?? "", Encoding.UTF8, "application/json");
+
+                using HttpResponseMessage resp = await _httpClient.SendAsync(req);
+                if (!resp.IsSuccessStatusCode)
+                {
+                    CallDeferred(nameof(EmitRpcResult), rpcId, "", false, $"HTTP {(int)resp.StatusCode}");
+                    return;
+                }
+
+                string respJson = await resp.Content.ReadAsStringAsync();
+                using JsonDocument doc = JsonDocument.Parse(respJson);
+                string payload = "";
+                if (doc.RootElement.TryGetProperty("payload", out JsonElement payloadEl))
+                {
+                    payload = payloadEl.ValueKind == JsonValueKind.String
+                        ? payloadEl.GetString() ?? ""
+                        : payloadEl.GetRawText();
+                }
+                CallDeferred(nameof(EmitRpcResult), rpcId, payload, true, "");
             }
             catch (Exception e)
             {

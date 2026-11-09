@@ -5,9 +5,7 @@ use server_rs::meta::{
     DEFAULT_NAKAMA_HTTP_KEY, DEFAULT_NAKAMA_SERVER_KEY,
 };
 use server_rs::net::WsServer;
-use server_rs::storage::{
-    CharacterStateSnapshot, MatchEvent, MatchEventBatch, NakamaClient, NakamaStorage,
-};
+use server_rs::storage::{CharacterStateSnapshot, MatchEvent, MatchEventBatch, NakamaStorage};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -144,17 +142,19 @@ async fn nakama_v2_http_wire_compatibility_and_ws_hydrate_end_to_end() {
     assert_eq!(st_empty_status, 200);
     assert_eq!(st_empty_json["objects"].as_array().unwrap().len(), 0);
 
-    // 4. Existing NakamaClient (S2S HTTP client) works unchanged against WsServer's /v2/rpc/*
-    let s2s_client = NakamaClient::new(
-        format!("http://{ws_addr}"),
-        DEFAULT_NAKAMA_HTTP_KEY.to_string(),
-        2000,
-        1,
+    // 4. S2S healthcheck probe succeeds against WsServer's /v2/rpc/*
+    let (health_status, health_json) = raw_http_request(
+        ws_addr,
+        "GET",
+        &format!("/v2/rpc/healthcheck?http_key={DEFAULT_NAKAMA_HTTP_KEY}"),
+        &[],
+        "",
+    )
+    .await;
+    assert_eq!(
+        health_status, 200,
+        "healthcheck probe failed: {health_json}"
     );
-    s2s_client
-        .probe()
-        .await
-        .expect("NakamaClient::probe must succeed against RustMetaEngine");
 
     // 5. Grant XP & loot via S2S HTTP RPC (?http_key=...&unwrap)
     // Level 1 needs 100 XP -> Level 2 needs 200 XP -> 300 XP reaches Level 3 with 6 statPoints
@@ -301,7 +301,7 @@ async fn nakama_v2_http_wire_compatibility_and_ws_hydrate_end_to_end() {
     ws_client.close(None).await.unwrap();
     let _ = ws_client.next().await;
 
-    // 10. Report match events + save character state via NakamaClient, then reopen SQLite store
+    // 10. Report match events + save character state via NakamaStorage, then reopen SQLite store
     let batch = MatchEventBatch {
         user_id: user_id.clone(),
         events: vec![MatchEvent {
@@ -310,10 +310,10 @@ async fn nakama_v2_http_wire_compatibility_and_ws_hydrate_end_to_end() {
             payload: serde_json::json!({ "count": 5 }),
         }],
     };
-    s2s_client
+    engine
         .report_match_events(&batch)
         .await
-        .expect("report_match_events via NakamaClient must succeed");
+        .expect("report_match_events via NakamaStorage must succeed");
 
     // Claim quest reward via HTTP RPC
     let (claim_status, claim_wrapped) = raw_http_request(
@@ -329,7 +329,7 @@ async fn nakama_v2_http_wire_compatibility_and_ws_hydrate_end_to_end() {
         "claim_quest_reward failed: {claim_wrapped}"
     );
 
-    s2s_client
+    engine
         .save_character_state(
             &user_id,
             &CharacterStateSnapshot {

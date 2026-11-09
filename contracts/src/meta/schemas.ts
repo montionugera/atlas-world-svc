@@ -25,7 +25,7 @@ const primaryStatsSchema = z
 export const profileDocSchema = z
   .object({
     // v2 added `dex` to PrimaryStats. Only `profile` changed shape; every other
-    // collection is still v1 (see nakama/src/storage.ts migrateDoc).
+    // collection is still v1 (see server-rs/src/meta storage migrations).
     schemaVersion: z.literal(2),
     level: z.number(),
     xp: z.number(),

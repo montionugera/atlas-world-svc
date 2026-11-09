@@ -171,6 +171,24 @@
       "status": "applied",
       "applied_in": "scripts/tests/slope-limit-drift.test.mjs",
       "owner_answer": "35"
+    },
+    {
+      "id": "meta-rust-only",
+      "text": "Player persistence uses only the built-in Rust meta engine (RustMetaEngine + SqliteMetaStore). Nakama is removed. Cleanup order: client MetaGateway moves to the Rust meta HTTP API; delete the server Nakama path and its tests; delete nakama/, k8s nakama and cockroachdb files, docker-compose entries and the Nakama CI gate; update docs.",
+      "source_chat": "Owner answer in Claude Code session",
+      "date": "2026-11-08",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "No Nakama; built-in only; help clean up"
+    },
+    {
+      "id": "meta-single-server-first",
+      "text": "One game server first. Several servers sharing one player save comes later and needs a shared store behind the same store interface (still no Nakama).",
+      "source_chat": "Owner answer in Claude Code session",
+      "date": "2026-11-08",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "single first, several later"
     }
   ]
 }

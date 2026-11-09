@@ -23,11 +23,10 @@ set -uo pipefail
 #   had just "passed". Never collapse these two sections into one.
 #
 # WHY contracts IS BUILT BEFORE ANYTHING ELSE:
-#   nakama imports @atlas/contracts from its dist/, so a
-#   stale or missing dist makes tsc either report phantom TS2307s or — worse —
-#   typecheck green against the OLD types. Both failure modes are silent.
+#   contracts dist/ is built upfront, so workspace packages and tsc
+#   never typecheck against stale or missing types.
 #
-# NOTE: this repo is a pnpm workspace (client, contracts, nakama)
+# NOTE: this repo is a pnpm workspace (client, contracts)
 # whose packages use the `workspace:*` protocol — `npm install` fails
 # here with EUNSUPPORTEDPROTOCOL. Use pnpm at the root.
 #
@@ -401,9 +400,6 @@ rust_section() {
   fi
 }
 
-# nakama is bundled into the Nakama runtime; a type error here breaks InitModule.
-nakama_typecheck() { (cd "$REPO_ROOT/nakama" && npx tsc --noEmit); }
-nakama_tests()     { (cd "$REPO_ROOT/nakama" && npx jest --maxWorkers="$ATLAS_MAX_WORKERS"); }
 
 # The react-client suite. This used to run only via scripts/test_all.sh, which
 # nothing called — so it gated nothing. CI=true makes react-scripts run once and
@@ -643,7 +639,7 @@ explorer_probes() {
 # --- Execute -----------------------------------------------------------------
 #
 # Sections are "name|function" entries. deps_install and contracts_build run
-# serially BEFORE the groups (nakama typechecks against contracts/dist).
+# serially BEFORE the groups (contracts dist/ is built).
 #
 # PARALLEL GROUPS (GATE_PARALLEL=0 runs every entry in the old serial order).
 # Independence audit (F-170): suites that can touch a repo path another
@@ -664,7 +660,7 @@ explorer_probes() {
 #     writes those ledgers -> node group.
 #   - map-builder tests build a fake repo under os.tmpdir(); combat-lab, spine,
 #     world digest (--check) and both Python checks (--check) only read the repo.
-#   - client / nakama / contracts jest + tsc write only their own caches
+#   - client / contracts jest + tsc write only their own caches
 #     (node_modules/.cache, ts-jest cache); contracts/dist is built before the groups.
 #   - the godot group (pipeline char) writes only game-client/.godot and game-client/.godot/mono
 #     build output, and the gitignored game-client/studio-cache; no other group reads them.
@@ -673,8 +669,6 @@ explorer_probes() {
 # Group order is fixed; each group's log prints whole in this order.
 GROUP_ORDER="ts rust node explorer py godot"
 GROUP_ts=(
-  "nakama: tsc --noEmit|nakama_typecheck"
-  "nakama: jest suite|nakama_tests"
   "client: react-client suite|client_tests"
 )
 GROUP_rust=(
@@ -705,8 +699,6 @@ GROUP_godot=(
 SERIAL_PLAN=(
   "contracts: jest suite|contracts_tests"
   "server-rs: cargo clippy & test|rust_section"
-  "nakama: tsc --noEmit|nakama_typecheck"
-  "nakama: jest suite|nakama_tests"
   "client: react-client suite|client_tests"
   "system deps: binary check (scripts/system-deps.json)|system_deps_check"
   "art-forge: node --test suite|art_forge_tests"

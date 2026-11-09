@@ -4,7 +4,7 @@ using AtlasWorld.Contracts.Meta;
 namespace AtlasWorld.Client.Meta
 {
     /// <summary>
-    /// Parses Nakama storage-doc JSON into the generated <c>AtlasWorld.Contracts.Meta</c>
+    /// Parses storage-doc JSON into the generated <c>AtlasWorld.Contracts.Meta</c>
     /// POCOs. Those POCOs expose public <b>fields</b> (not properties), so
     /// <c>IncludeFields</c> is mandatory. The <c>@int</c> field deserialises from the
     /// JSON key <c>"int"</c> automatically (the member name is <c>int</c>).

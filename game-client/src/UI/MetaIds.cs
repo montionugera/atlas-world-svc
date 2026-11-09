@@ -26,7 +26,7 @@ namespace AtlasWorld.Client.UI
         public static class Rpc
         {
             // get_loadout is intentionally omitted: it is S2S-only and MUST NOT be called
-            // by a client session (Nakama throws). The Loadout screen reads storage docs.
+            // by a client session (server rejects). The Loadout screen reads storage docs.
             public const string ReportMatchEvents = "report_match_events";
             public const string EquipItem = "equip_item";
             public const string AllocateStats = "allocate_stats";

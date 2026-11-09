@@ -2,22 +2,24 @@
 set -uo pipefail
 
 # =============================================================================
-# e2e-meta.sh — RPC-level end-to-end test of the meta pipeline (Nakama):
+# e2e-meta.sh — RPC-level end-to-end test of the meta pipeline (server-rs built-in Meta Engine):
 #   device auth -> accept_quest -> report_match_events (S2S, x2 incl. replay)
 #   -> claim_quest_reward -> assert profile/inventory/quest state.
 #
-# This drives the exact RPC surface Colyseus's MetaEventReporter/NakamaMetaBackend
-# exercise against a live Nakama, without needing a full Colyseus match (which
-# is flaky to script end-to-end). Requires: docker, curl, jq.
+# This drives the exact wire-compatible `/v2/*` RPC surface against server-rs's
+# built-in RustMetaEngine HTTP listener (or any wire-compatible meta server).
+# Requires: curl, jq.
 #
-# Usage: ./scripts/e2e-meta.sh
+# Usage:
+#   META_BIND_ADDR="127.0.0.1:7350" cargo run --manifest-path server-rs/Cargo.toml &
+#   ./scripts/e2e-meta.sh
 # Exit code: 0 on all assertions passing, 1 on any failure.
 # =============================================================================
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-NAKAMA_HTTP="${NAKAMA_HTTP:-http://localhost:7350}"
+META_HTTP="${META_HTTP:-${NAKAMA_HTTP:-http://localhost:7350}}"
 SERVER_KEY="${SERVER_KEY:-defaultkey}"
 HTTP_KEY="${HTTP_KEY:-atlas_dev_http_key}"
 RUN_ID="e2e-$(date +%s)-$$"
@@ -55,34 +57,22 @@ require_cmd() {
 
 require_cmd curl
 require_cmd jq
-require_cmd docker
 
-# --- 1. Ensure the stack is up and healthy -----------------------------------
-echo "--- [1/8] Ensuring docker stack is up (atlas-database, atlas-nakama) ---"
-docker compose up -d atlas-database atlas-nakama >/dev/null 2>&1 || fatal "docker compose up failed"
-
-wait_healthy() {
-  local container="$1"
-  local tries=40
-  for ((i = 1; i <= tries; i++)); do
-    local status
-    status="$(docker inspect -f '{{.State.Health.Status}}' "$container" 2>/dev/null || echo "missing")"
-    if [ "$status" = "healthy" ]; then
-      return 0
-    fi
-    sleep 2
-  done
-  return 1
-}
-
-wait_healthy atlas-world-database || fatal "atlas-world-database did not become healthy in time"
-wait_healthy atlas-world-nakama || fatal "atlas-world-nakama did not become healthy in time"
-pass "docker stack is up and healthy (atlas-database, atlas-nakama)"
+# --- 1. Verify the meta HTTP service is reachable ----------------------------
+echo "--- [1/8] Checking meta HTTP engine connectivity ($META_HTTP) ---"
+if ! curl -s -o /dev/null --max-time 3 "${META_HTTP}/v2/account/authenticate/device" 2>/dev/null && \
+   ! curl -s -f -o /dev/null --max-time 3 "${META_HTTP}/healthz" 2>/dev/null; then
+  echo "⚠ Meta HTTP engine is not reachable at ${META_HTTP}."
+  echo "  Start server-rs with META_BIND_ADDR set, e.g.:"
+  echo "    META_BIND_ADDR=\"0.0.0.0:7350\" cargo run --manifest-path server-rs/Cargo.toml"
+  fatal "meta HTTP service unreachable at ${META_HTTP}"
+fi
+pass "meta HTTP engine is up and reachable at ${META_HTTP}"
 
 # --- 2. Device-authenticate a fresh Nakama account ---------------------------
 echo "--- [2/8] Authenticating device account ($DEVICE_ID) ---"
 AUTH_BASIC="$(printf '%s:' "$SERVER_KEY" | base64)"
-AUTH_RESP="$(curl -s -X POST "${NAKAMA_HTTP}/v2/account/authenticate/device?create=true&username=${RUN_ID}" \
+AUTH_RESP="$(curl -s -X POST "${META_HTTP}/v2/account/authenticate/device?create=true&username=${RUN_ID}" \
   -H "Authorization: Basic ${AUTH_BASIC}" \
   -H "Content-Type: application/json" \
   -d "{\"id\":\"${DEVICE_ID}\"}")"
@@ -110,7 +100,7 @@ pass "authenticated device -> userId=$USER_ID"
 # --- helper: generic owner-scoped storage read (client Bearer auth) ---------
 read_storage() {
   local collection="$1"
-  curl -s -X POST "${NAKAMA_HTTP}/v2/storage" \
+  curl -s -X POST "${META_HTTP}/v2/storage" \
     -H "Authorization: Bearer ${TOKEN}" \
     -H "Content-Type: application/json" \
     -d "{\"object_ids\":[{\"collection\":\"${collection}\",\"key\":\"main\",\"user_id\":\"${USER_ID}\"}]}" \
@@ -119,7 +109,7 @@ read_storage() {
 
 # --- 3. accept_quest (client RPC) --------------------------------------------
 echo "--- [3/8] accept_quest {questId:$QUEST_ID} ---"
-ACCEPT_RESP="$(curl -s -w '\n%{http_code}' -X POST "${NAKAMA_HTTP}/v2/rpc/accept_quest?unwrap" \
+ACCEPT_RESP="$(curl -s -w '\n%{http_code}' -X POST "${META_HTTP}/v2/rpc/accept_quest?unwrap" \
   -H "Authorization: Bearer ${TOKEN}" \
   -H "Content-Type: application/json" \
   -d "{\"questId\":\"${QUEST_ID}\"}")"
@@ -138,7 +128,7 @@ EVENTS_JSON="$(jq -n --arg uid "$USER_ID" '[range(5) | {type:"MOB_KILLED", userI
 BATCH_PAYLOAD="$(jq -n --arg uid "$USER_ID" --arg matchId "$MATCH_ID" --argjson events "$EVENTS_JSON" \
   '{userId:$uid, matchId:$matchId, seq:1, events:$events}')"
 
-REPORT_RESP="$(curl -s -X POST "${NAKAMA_HTTP}/v2/rpc/report_match_events?http_key=${HTTP_KEY}&unwrap" \
+REPORT_RESP="$(curl -s -X POST "${META_HTTP}/v2/rpc/report_match_events?http_key=${HTTP_KEY}&unwrap" \
   -H "Content-Type: application/json" \
   -d "$BATCH_PAYLOAD")"
 
@@ -176,7 +166,7 @@ fi
 
 # --- 6. claim_quest_reward (client RPC) --------------------------------------
 echo "--- [6/8] claim_quest_reward {questId:$QUEST_ID} ---"
-CLAIM_RESP="$(curl -s -X POST "${NAKAMA_HTTP}/v2/rpc/claim_quest_reward?unwrap" \
+CLAIM_RESP="$(curl -s -X POST "${META_HTTP}/v2/rpc/claim_quest_reward?unwrap" \
   -H "Authorization: Bearer ${TOKEN}" \
   -H "Content-Type: application/json" \
   -d "{\"questId\":\"${QUEST_ID}\"}")"
@@ -195,7 +185,7 @@ echo "--- [7/8] Asserting profile xp/level and inventory reward item ---"
 # not show up as a raw +100 xp delta (xp rolls over to 0), so we assert on the
 # level-up + statPoints grant instead, which is the deterministic signature of
 # "100 xp was applied" from a known starting profile.
-LOADOUT_RESP="$(curl -s -X POST "${NAKAMA_HTTP}/v2/rpc/get_loadout?http_key=${HTTP_KEY}&unwrap" \
+LOADOUT_RESP="$(curl -s -X POST "${META_HTTP}/v2/rpc/get_loadout?http_key=${HTTP_KEY}&unwrap" \
   -H "Content-Type: application/json" \
   -d "{\"userId\":\"${USER_ID}\"}")"
 PROFILE_LEVEL="$(echo "$LOADOUT_RESP" | jq -r '.profile.level // empty')"
@@ -218,7 +208,7 @@ fi
 
 # --- 8. Replay the identical batch: must dedupe and not double-progress -----
 echo "--- [8/8] Replaying the identical batch (same matchId+seq) ---"
-REPLAY_RESP="$(curl -s -X POST "${NAKAMA_HTTP}/v2/rpc/report_match_events?http_key=${HTTP_KEY}&unwrap" \
+REPLAY_RESP="$(curl -s -X POST "${META_HTTP}/v2/rpc/report_match_events?http_key=${HTTP_KEY}&unwrap" \
   -H "Content-Type: application/json" \
   -d "$BATCH_PAYLOAD")"
 REPLAY_DEDUPED="$(echo "$REPLAY_RESP" | jq -r '.deduped')"
@@ -231,7 +221,7 @@ fi
 
 POST_REPLAY_INVENTORY="$(read_storage inventory)"
 POST_REPLAY_QTY="$(echo "$POST_REPLAY_INVENTORY" | jq -r --arg item "$REWARD_ITEM" '.stackables | map(select(.itemId == $item)) | .[0].qty // 0')"
-POST_REPLAY_LOADOUT="$(curl -s -X POST "${NAKAMA_HTTP}/v2/rpc/get_loadout?http_key=${HTTP_KEY}&unwrap" \
+POST_REPLAY_LOADOUT="$(curl -s -X POST "${META_HTTP}/v2/rpc/get_loadout?http_key=${HTTP_KEY}&unwrap" \
   -H "Content-Type: application/json" \
   -d "{\"userId\":\"${USER_ID}\"}")"
 POST_REPLAY_LEVEL="$(echo "$POST_REPLAY_LOADOUT" | jq -r '.profile.level // empty')"

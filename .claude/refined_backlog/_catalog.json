@@ -2538,5 +2538,108 @@
     "shipped_at": "2026-11-08T13:00:44.228585+00:00",
     "shipped_sha": "e960811fbe9af3e64792ceef57f93242c2c0006d",
     "promoted_at": "2026-11-08T13:51:51.218838+00:00"
+  },
+  {
+    "id": "F-196",
+    "title": "Ledger: built-in Rust meta engine only (no Nakama), single server first, several later",
+    "from_idea": "I-281",
+    "created_at": "2026-11-08T13:52:37.330823+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.30",
+    "claimed_at": "2026-11-08T13:52:51.853943+00:00",
+    "shipped_at": "2026-11-08T13:54:37.863433+00:00",
+    "shipped_sha": "920d9f19677d621bc8eff193b1a412add1c341b5"
+  },
+  {
+    "id": "F-197",
+    "title": "Game and playtest sandbox windows get different Dock/window icons and titles so the owner can tell them apart: a runtime WindowBadge sets DisplayServer icon + title per scene",
+    "from_idea": "I-282",
+    "created_at": "2026-11-08T14:40:10.859737+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.30",
+    "claimed_at": "2026-11-08T14:40:24.295678+00:00",
+    "shipped_at": "2026-11-08T14:44:01.711074+00:00",
+    "shipped_sha": "4980f4bf7d3595c7074b21404f262581ac214115"
+  },
+  {
+    "id": "F-198",
+    "title": "Player character in Godot: messy black outline shells over the model (should be a clean anime line); check inverted-hull outline_thickness 0.0065 in EntityView.cs against the pipeline char mesh",
+    "from_idea": "I-273",
+    "created_at": "2026-11-08T14:40:11.283371+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-08T14:44:18.688010+00:00"
+  },
+  {
+    "id": "F-199",
+    "title": "Player character floats above the ground in Maro Bell (feet not on the ground); check model pivot/foot offset and block-top ground sampling in VerticalSliceRoot/TerrainElevation",
+    "from_idea": "I-274",
+    "created_at": "2026-11-08T14:40:11.853888+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
+  },
+  {
+    "id": "F-200",
+    "title": "Coordinate contract test suite (A1 unit identity, A5 attack range metres, A6 region boundary, A7 slope parity)",
+    "from_idea": "I-283",
+    "created_at": "2026-11-08T14:44:02.084963+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.30",
+    "claimed_at": "2026-11-08T14:44:31.463954+00:00",
+    "shipped_at": "2026-11-08T14:53:31.043642+00:00",
+    "shipped_sha": "7d59707f3d2d3069cf6688a0c73b5154f484c4e4"
+  },
+  {
+    "id": "F-201",
+    "title": "Client MetaGateway to Rust meta HTTP API (remove NakamaClient NuGet dependency)",
+    "from_idea": "I-284",
+    "created_at": "2026-11-08T14:44:02.492161+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.30",
+    "claimed_at": "2026-11-08T14:44:42.267816+00:00",
+    "shipped_at": "2026-11-08T15:03:23.628971+00:00",
+    "shipped_sha": "30850604ffeb2bc85a777a286a2a6ceb34e6d94b"
+  },
+  {
+    "id": "F-202",
+    "title": "Remove server-rs external Nakama S2S client and Nakama wiring tests",
+    "from_idea": "I-285",
+    "created_at": "2026-11-08T14:44:02.857151+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.30",
+    "claimed_at": "2026-11-08T15:02:25.160138+00:00",
+    "shipped_at": "2026-11-08T19:21:46.758491+00:00",
+    "shipped_sha": "633816057d9231f29a0d88201d8cb93e1f034a9f"
+  },
+  {
+    "id": "F-203",
+    "title": "Delete nakama workspace package, k8s/compose manifests, and Nakama CI gates",
+    "from_idea": "I-286",
+    "created_at": "2026-11-08T14:44:03.256939+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.30",
+    "claimed_at": "2026-11-08T15:04:01.350836+00:00",
+    "shipped_at": "2026-11-08T15:35:44.928819+00:00",
+    "shipped_sha": "2c8087d4f834a3bda73830947620e9bf51d71a19"
+  },
+  {
+    "id": "F-204",
+    "title": "Compiled-region integration gate on millcross-ford (C1-C8 + 64m AOI vs 24m chunk coverage)",
+    "from_idea": "I-294",
+    "created_at": "2026-11-08T18:50:32.196737+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.30",
+    "claimed_at": "2026-11-08T18:50:42.543941+00:00",
+    "shipped_at": "2026-11-08T18:51:49.180397+00:00",
+    "shipped_sha": "b69887e473624448b2453e14a22ee6d4fc14d4cc"
   }
 ]

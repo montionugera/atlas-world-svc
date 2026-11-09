@@ -21,14 +21,14 @@ namespace AtlasWorld.Client.Core
         /// <summary>Initial mapId sent in the join options (the map picker can switch later).</summary>
         public string MapId { get; private init; } = "map-for-play";
 
-        /// <summary>Nakama scheme/host/port/serverKey for the meta seam.</summary>
+        /// <summary>Meta server scheme/host/port/serverKey for the Rust meta HTTP API seam (/v2/*).</summary>
         public string NakamaScheme { get; private init; } = "http";
         public string NakamaHost { get; private init; } = "127.0.0.1";
         public int NakamaPort { get; private init; } = 7350;
         public string NakamaServerKey { get; private init; } = "defaultkey";
 
         /// <summary>
-        /// Optional Nakama session token threaded into the Colyseus join options
+        /// Optional meta session token threaded into the Colyseus join options
         /// (server-side <c>onAuth</c> reads it). Empty = bare join (the no-auth dev path).
         /// </summary>
         public string AuthToken { get; private init; } = "";

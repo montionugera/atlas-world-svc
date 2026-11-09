@@ -36,8 +36,6 @@ mod mmo_engine_e2e_test;
 mod mmo_scale_load_test;
 mod mob_attack_variety_test;
 mod mob_windup_facing_test;
-mod nakama_persistence;
-mod nakama_wiring;
 mod nearby_and_world_chat_test;
 mod parry_cost_test;
 mod parties_test;

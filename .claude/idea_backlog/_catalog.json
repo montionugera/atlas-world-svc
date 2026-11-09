@@ -1706,13 +1706,13 @@
     "id": "I-273",
     "title": "Player character in Godot: messy black outline shells over the model (should be a clean anime line); check inverted-hull outline_thickness 0.0065 in EntityView.cs against the pipeline char mesh",
     "created_at": "2026-11-08T03:37:34.054294+00:00",
-    "promoted_to": null
+    "promoted_to": "F-198"
   },
   {
     "id": "I-274",
     "title": "Player character floats above the ground in Maro Bell (feet not on the ground); check model pivot/foot offset and block-top ground sampling in VerticalSliceRoot/TerrainElevation",
     "created_at": "2026-11-08T03:37:35.046814+00:00",
-    "promoted_to": null
+    "promoted_to": "F-199"
   },
   {
     "id": "I-275",
@@ -1749,5 +1749,96 @@
     "title": "Server walkable slope limit 38 -> 35 deg to match the Godot client, with a drift test",
     "created_at": "2026-11-08T12:58:11.958437+00:00",
     "promoted_to": "F-195"
+  },
+  {
+    "id": "I-281",
+    "title": "Ledger: built-in Rust meta engine only (no Nakama), single server first, several later",
+    "created_at": "2026-11-08T13:52:36.810554+00:00",
+    "promoted_to": "F-196"
+  },
+  {
+    "id": "I-282",
+    "title": "Game and playtest sandbox windows get different Dock/window icons and titles so the owner can tell them apart: a runtime WindowBadge sets DisplayServer icon + title per scene",
+    "created_at": "2026-11-08T14:40:02.004648+00:00",
+    "promoted_to": "F-197"
+  },
+  {
+    "id": "I-283",
+    "title": "Coordinate contract test suite (A1 unit identity, A5 attack range metres, A6 region boundary, A7 slope parity)",
+    "created_at": "2026-11-08T14:40:51.869003+00:00",
+    "promoted_to": "F-200"
+  },
+  {
+    "id": "I-284",
+    "title": "Client MetaGateway to Rust meta HTTP API (remove NakamaClient NuGet dependency)",
+    "created_at": "2026-11-08T14:40:52.474186+00:00",
+    "promoted_to": "F-201"
+  },
+  {
+    "id": "I-285",
+    "title": "Remove server-rs external Nakama S2S client and Nakama wiring tests",
+    "created_at": "2026-11-08T14:40:52.907204+00:00",
+    "promoted_to": "F-202"
+  },
+  {
+    "id": "I-286",
+    "title": "Delete nakama workspace package, k8s/compose manifests, and Nakama CI gates",
+    "created_at": "2026-11-08T14:40:53.348612+00:00",
+    "promoted_to": "F-203"
+  },
+  {
+    "id": "I-287",
+    "title": "POC-00: Maro Bell integration baseline (room routing, reproducible POC reset, diagnostics HUD)",
+    "created_at": "2026-11-08T18:48:24.152711+00:00",
+    "promoted_to": null,
+    "epic": "E-011"
+  },
+  {
+    "id": "I-288",
+    "title": "POC-01: Wonder \u2014 The Road to the Great Bell (00:00-02:30 reveal composition, Pip greeting, ambient Reed & Tovin)",
+    "created_at": "2026-11-08T18:48:24.153980+00:00",
+    "promoted_to": null,
+    "epic": "E-011"
+  },
+  {
+    "id": "I-289",
+    "title": "POC-02: Warmth \u2014 A Small Kindness (02:30-04:15 Amber lantern errand and authoritative unlit->lit state change)",
+    "created_at": "2026-11-08T18:48:24.154986+00:00",
+    "promoted_to": null,
+    "epic": "E-011"
+  },
+  {
+    "id": "I-290",
+    "title": "POC-03: Playfulness \u2014 The Missing Delivery (04:15-06:15 Lantern Vermin shared rig, Soot Muncher encounter, parcel recovery)",
+    "created_at": "2026-11-08T18:48:24.155959+00:00",
+    "promoted_to": null,
+    "epic": "E-011"
+  },
+  {
+    "id": "I-291",
+    "title": "POC-04: Emotional Mystery \u2014 Bram's Old Lantern and First Trace (06:15-07:45 inspect interaction and canon-safe POC flag)",
+    "created_at": "2026-11-08T18:48:24.156859+00:00",
+    "promoted_to": null,
+    "epic": "E-011"
+  },
+  {
+    "id": "I-292",
+    "title": "POC-05: Disturbance \u2014 A Bell Out of Time and The Impossible Flame (07:45-10:00 Edda anomaly and Time-Wound climax)",
+    "created_at": "2026-11-08T18:48:24.157729+00:00",
+    "promoted_to": null,
+    "epic": "E-011"
+  },
+  {
+    "id": "I-293",
+    "title": "POC-06: Player Impression Validation and Scorecard Gate (ATLAS_VERIFY_POC_MARO_10M probe, telemetry, 7-metric scorecard)",
+    "created_at": "2026-11-08T18:48:24.158562+00:00",
+    "promoted_to": null,
+    "epic": "E-011"
+  },
+  {
+    "id": "I-294",
+    "title": "Compiled-region integration gate on millcross-ford (C1-C8 + 64m AOI vs 24m chunk coverage)",
+    "created_at": "2026-11-08T18:50:01.345996+00:00",
+    "promoted_to": "F-204"
   }
 ]

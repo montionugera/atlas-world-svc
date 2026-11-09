@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Real-time multiplayer game. **`server-rs/`** (Rust, `bevy_ecs` + `rapier2d`) is the authoritative simulation and WebSocket gateway; it also hosts the meta/persistence engine (`server-rs/src/meta/`) and the Agones fleet lifecycle (`server-rs/src/fleet/`). `nakama/` holds the TypeScript meta RPCs, `contracts/` the shared TS types/content contracts, `client/react-client/` the web client, `game-client/` the Godot client. **The old Colyseus server (`colyseus-server/`) is gone** — any doc or rule that names `GameRoom`, `BattleModule`, `Planck.js` or `colyseus-server/` is history (see `docs/archive/`).
+Real-time multiplayer game. **`server-rs/`** (Rust, `bevy_ecs` + `rapier2d`) is the authoritative simulation and WebSocket gateway; it also hosts the meta/persistence engine (`server-rs/src/meta/`) and the Agones fleet lifecycle (`server-rs/src/fleet/`). `contracts/` holds the shared TS types/content contracts, `client/react-client/` the web client, `game-client/` the Godot client. **The old Nakama TypeScript runtime (`nakama/`) and Colyseus server (`colyseus-server/`) are gone** — meta persistence and RPCs are handled natively by `server-rs/src/meta/`.
 
-This is a **pnpm workspace** (`pnpm-workspace.yaml` → `client`, `contracts`, `nakama`) with no root scripts; `client/react-client/` has its own `package-lock.json` and needs a separate `npm ci`. Use pnpm at the root (`npm install` fails on `workspace:*`).
+This is a **pnpm workspace** (`pnpm-workspace.yaml` → `client`, `contracts`) with no root scripts; `client/react-client/` has its own `package-lock.json` and needs a separate `npm ci`. Use pnpm at the root (`npm install` fails on `workspace:*`).
 
 ## Commands
 
@@ -15,7 +15,7 @@ This is a **pnpm workspace** (`pnpm-workspace.yaml` → `client`, `contracts`, `
 ```bash
 # server-rs (from server-rs/)
 cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test
-# contracts / nakama (from the package dir)
+# contracts (from contracts/)
 pnpm run build ; pnpm test ; npx tsc --noEmit    # see each package.json
 # web client (from client/react-client/)
 npm start            # CRA dev server
@@ -41,7 +41,7 @@ Keep cargo light on a laptop: Gate 1 caps workers at `ATLAS_MAX_WORKERS` (defaul
 
 ## Tests
 
-Rust: `server-rs/tests/` and inline unit tests (`cargo test`). TS: jest in `contracts/` and `nakama/`; CRA tests in `client/react-client/`; `node --test` suites under `atelier/*/tests` and `scripts/tests` (use the glob `tests/*.test.mjs` on Node 24). Cover boundary cases for combat/timing changes and inject time instead of sleeping.
+Rust: `server-rs/tests/` and inline unit tests (`cargo test`). TS: jest in `contracts/`; CRA tests in `client/react-client/`; `node --test` suites under `atelier/*/tests` and `scripts/tests` (use the glob `tests/*.test.mjs` on Node 24). Cover boundary cases for combat/timing changes and inject time instead of sleeping.
 
 ## Conventions
 

@@ -13,7 +13,7 @@ namespace AtlasWorld.Client.Core
     /// <summary>
     /// Scene root and composition hub (the analog of the server's GameRoom.onCreate).
     /// Builds Config, the Colyseus connection + entity sync, the input path, the camera
-    /// rig, and the Nakama meta seed, and wires their dependencies. Owns no gameplay
+    /// rig, and the meta gateway, and wires their dependencies. Owns no gameplay
     /// logic itself.
     /// </summary>
     public sealed partial class GameRoot : Node3D
@@ -126,7 +126,7 @@ namespace AtlasWorld.Client.Core
             _playerController = new PlayerController(_inputSender, _entities) { Name = "PlayerController" };
             AddChild(_playerController);
 
-            // Meta UI (B2). The MetaGateway autoload owns all Nakama awaiting; MetaShell is
+            // Meta UI (B2). The MetaGateway autoload owns all meta API HTTP awaiting; MetaShell is
             // a pure signal-driven overlay. Toggle with Tab, close with Esc.
             AddChild(new MetaShell());
 

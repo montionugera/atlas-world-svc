@@ -1,4 +1,4 @@
-<Project Sdk="Godot.NET.Sdk/4.7.2">
+<Project Sdk="Godot.NET.Sdk/4.7.0">
   <PropertyGroup>
     <!-- Godot 4.3+ .NET builds target net8.0. -->
     <TargetFramework>net8.0</TargetFramework>
@@ -12,8 +12,6 @@
          0.17.11 is net10-only). Speaks the schema-v4 / 0.17 wire protocol that the
          migrated server (colyseus@^0.17 + @colyseus/schema@^4) emits. -->
     <PackageReference Include="Colyseus" Version="0.17.17" />
-    <!-- Official Nakama .NET client; 3.21.2 matches the running nakama:3.21.1. -->
-    <PackageReference Include="NakamaClient" Version="3.21.2" />
     <!-- Google FlatBuffers for Rust game server protocol (zero-copy, NativeAOT safe). -->
     <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
   </ItemGroup>

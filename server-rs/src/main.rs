@@ -2,8 +2,8 @@ use server_rs::auth::AuthGuard;
 use server_rs::content::world_regions::{resolve_room_or_region_id, GENERATED_REGION_IDS};
 use server_rs::fleet::{AgonesClient, FleetLifecycle, HeartbeatTask};
 use server_rs::meta::{
-    spawn_meta_http_listener, InMemoryMetaStore, MetaDocStore, MetaHttpConfig, PostgresMetaStore,
-    RustMetaEngine, SqliteMetaStore,
+    spawn_meta_http_listener, MetaDocStore, MetaHttpConfig, PostgresMetaStore, RustMetaEngine,
+    SqliteMetaStore,
 };
 use server_rs::net::WsServer;
 use server_rs::protocol::SnapshotBuilder;
@@ -11,9 +11,7 @@ use server_rs::simulation::{AtlasSimulation, LiveConfig};
 use server_rs::spatial::{
     collect_region_border_ghosts, AuthorityHandoffCoordinator, RegionAdjacencyGraph,
 };
-use server_rs::storage::{
-    CharacterStateBuffer, MatchEventBuffer, NakamaClient, NakamaConfig, NakamaStorage,
-};
+use server_rs::storage::{CharacterStateBuffer, MatchEventBuffer, NakamaStorage};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tracing::{debug, error, info, warn};
@@ -75,21 +73,6 @@ fn summarize(micros: &mut [u64]) -> String {
 }
 
 fn build_meta_doc_store_from_env() -> Result<Arc<dyn MetaDocStore>, String> {
-    if let Some(db_path) = std::env::var("META_DB_PATH")
-        .ok()
-        .map(|s| s.trim().to_string())
-        .filter(|s| !s.is_empty())
-    {
-        if db_path == ":memory:" {
-            info!("Initializing SqliteMetaStore (:memory:)");
-            let store = SqliteMetaStore::in_memory().map_err(|e| e.to_string())?;
-            return Ok(Arc::new(store));
-        }
-        info!("Initializing SqliteMetaStore at {}", db_path);
-        let store = SqliteMetaStore::open(&db_path).map_err(|e| e.to_string())?;
-        return Ok(Arc::new(store));
-    }
-
     if let Some(pg_url) = std::env::var("META_POSTGRES_URL")
         .ok()
         .map(|s| s.trim().to_string())
@@ -100,8 +83,20 @@ fn build_meta_doc_store_from_env() -> Result<Arc<dyn MetaDocStore>, String> {
         return Ok(Arc::new(store));
     }
 
-    info!("Initializing InMemoryMetaStore (META_DB_PATH unset)");
-    Ok(Arc::new(InMemoryMetaStore::new()))
+    let db_path = std::env::var("META_DB_PATH")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "data/meta.sqlite".to_string());
+
+    if db_path == ":memory:" {
+        info!("Initializing SqliteMetaStore (:memory:)");
+        let store = SqliteMetaStore::in_memory().map_err(|e| e.to_string())?;
+        return Ok(Arc::new(store));
+    }
+    info!("Initializing SqliteMetaStore at {}", db_path);
+    let store = SqliteMetaStore::open(&db_path).map_err(|e| e.to_string())?;
+    Ok(Arc::new(store))
 }
 
 #[tokio::main]
@@ -144,64 +139,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 2. Auth Guard
     let auth_guard = AuthGuard::from_env();
 
-    // 2b. Persistent storage backend: external Nakama S2S client when NAKAMA_URL/NAKAMA_HTTP_KEY
-    // are configured, or native in-process RustMetaEngine by default.
-    let mut nakama_client: Option<Arc<NakamaClient>> = None;
-    let mut in_process_meta: Option<Arc<RustMetaEngine>> = None;
-
-    match NakamaConfig::from_env() {
-        Ok(Some(cfg)) => {
-            info!("Configuring Nakama client for {}", cfg.base_url);
-            let client = Arc::new(NakamaClient::new(
-                cfg.base_url.clone(),
-                cfg.http_key,
-                5000,
-                3,
-            ));
-            if let Err(err) = client.probe().await {
-                error!("Nakama startup probe failed for {}: {}", cfg.base_url, err);
-                eprintln!("Nakama startup probe failed for {}: {}", cfg.base_url, err);
-                std::process::exit(1);
-            }
-            info!("Nakama startup probe succeeded ({})", cfg.base_url);
-            nakama_client = Some(client);
-        }
-        Ok(None) => {
-            info!(
-                "Nakama not configured (NAKAMA_URL and NAKAMA_HTTP_KEY unset); running in-process RustMetaEngine"
-            );
-            let store = match build_meta_doc_store_from_env() {
-                Ok(s) => s,
-                Err(err) => {
-                    error!("Failed to initialize MetaDocStore: {}", err);
-                    eprintln!("Failed to initialize MetaDocStore: {}", err);
-                    std::process::exit(1);
-                }
-            };
-            let engine = match RustMetaEngine::new(store) {
-                Ok(eng) => Arc::new(eng),
-                Err(err) => {
-                    error!("Failed to initialize RustMetaEngine catalogs: {}", err);
-                    eprintln!("Failed to initialize RustMetaEngine catalogs: {}", err);
-                    std::process::exit(1);
-                }
-            };
-            in_process_meta = Some(engine);
-        }
+    // 2b. Persistent storage backend: native in-process RustMetaEngine + SqliteMetaStore.
+    info!("Initializing in-process RustMetaEngine");
+    let store = match build_meta_doc_store_from_env() {
+        Ok(s) => s,
         Err(err) => {
-            error!("Nakama configuration error: {}", err);
-            eprintln!("Nakama configuration error: {}", err);
+            error!("Failed to initialize MetaDocStore: {}", err);
+            eprintln!("Failed to initialize MetaDocStore: {}", err);
             std::process::exit(1);
         }
-    }
-
-    let storage_backend: Option<Arc<dyn NakamaStorage>> = if let Some(ref client) = nakama_client {
-        Some(client.clone())
-    } else if let Some(ref engine) = in_process_meta {
-        Some(engine.clone())
-    } else {
-        None
     };
+    let meta_engine = match RustMetaEngine::new(store) {
+        Ok(eng) => Arc::new(eng),
+        Err(err) => {
+            error!("Failed to initialize RustMetaEngine catalogs: {}", err);
+            eprintln!("Failed to initialize RustMetaEngine catalogs: {}", err);
+            std::process::exit(1);
+        }
+    };
+
+    let storage_backend: Option<Arc<dyn NakamaStorage>> = Some(meta_engine.clone());
 
     // Optional secondary HTTP listener for Nakama `/v2/*` compatibility (e.g. `:7350`)
     if let Some(meta_bind) = std::env::var("META_BIND_ADDR")
@@ -209,13 +166,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
     {
-        if let Some(ref engine) = in_process_meta {
-            let meta_cfg = MetaHttpConfig::from_env(engine.clone(), auth_guard.clone());
-            let bound = spawn_meta_http_listener(&meta_bind, meta_cfg)
-                .await
-                .map_err(std::io::Error::other)?;
-            info!("Secondary Meta HTTP gateway listening on {}", bound);
-        }
+        let meta_cfg = MetaHttpConfig::from_env(meta_engine.clone(), auth_guard.clone());
+        let bound = spawn_meta_http_listener(&meta_bind, meta_cfg)
+            .await
+            .map_err(std::io::Error::other)?;
+        info!("Secondary Meta HTTP gateway listening on {}", bound);
     }
 
     // 3. Agones lifecycle & heartbeat
@@ -232,16 +187,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let dungeons = Arc::new(server_rs::fleet::DungeonRegistry::new());
 
     // 4. WebSocket Server
-    let mut ws_server_inner = WsServer::bind(&bind_addr, auth_guard)
+    let ws_server_inner = WsServer::bind(&bind_addr, auth_guard)
         .await
         .map_err(std::io::Error::other)?
         .with_dungeons(dungeons.clone())
-        .with_agones(agones.clone());
-    if let Some(ref client) = nakama_client {
-        ws_server_inner = ws_server_inner.with_nakama(client.clone());
-    } else if let Some(ref engine) = in_process_meta {
-        ws_server_inner = ws_server_inner.with_meta_engine_from_env(engine.clone());
-    }
+        .with_agones(agones.clone())
+        .with_meta_engine_from_env(meta_engine.clone());
     let ws_server = Arc::new(ws_server_inner);
     info!("WebSocket gateway listening on {}", ws_server.local_addr());
 

@@ -8,16 +8,13 @@ status: idea
 
 ## Problem
 
-(what hurts; concrete examples)
-
-## Why now
-
-(opportunity; deadline; constraint)
+The player in the main game scene has a scribbly, broken dark outline (rendered on release/1.30, ATLAS_MAP_ID=maro-bell, /tmp/atlas_actual_render.png). The sandbox character looks clean.
 
 ## Sketch
 
-(rough shape; not a design yet)
+Compare inverted-hull outline (outline.gdshader, thickness 0.0065) on the character that loads in the main scene vs the sandbox; fix thickness/normals or skip the outline for that material.
 
 ## Acceptance criteria
 
-- [ ] (one observable, testable outcome per item; refine refuses a spec without any)
+- [ ] A new render of the main scene at the same camera shows one continuous thin outline on the player, no broken or scribbled strokes (owner looks).
+- [ ] The cause is recorded in the spec (which model, which material, why the outline broke).

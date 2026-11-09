@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bbqe2kyvvfmve"
-path="res://.godot/imported/floor_tile_large_dungeon_texture.png-2c4362d52f7702a5e22a1fc2db9e7022.ctex"
+path.s3tc="res://.godot/imported/floor_tile_large_dungeon_texture.png-2c4362d52f7702a5e22a1fc2db9e7022.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "33c924802a36c4f3415e10bb6940e832"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/dungeon/floor_tile_large_dungeon_texture.png"
-dest_files=["res://.godot/imported/floor_tile_large_dungeon_texture.png-2c4362d52f7702a5e22a1fc2db9e7022.ctex"]
+dest_files=["res://.godot/imported/floor_tile_large_dungeon_texture.png-2c4362d52f7702a5e22a1fc2db9e7022.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

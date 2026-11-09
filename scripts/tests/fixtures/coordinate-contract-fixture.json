@@ -1,0 +1,35 @@
+{
+  "unitContract": "metres-v1",
+  "metresPerGameUnit": 1.0,
+  "coordScale": 1.0,
+  "region": {
+    "mapId": "millcross-ford",
+    "widthMetres": 400.0,
+    "heightMetres": 400.0,
+    "aoiEnterRadiusMetres": 60.0,
+    "aoiExitRadiusMetres": 64.0,
+    "borderGhostBandMetres": 25.0,
+    "handoffHysteresisMetres": 3.2,
+    "chunkSizeWorldMetres": 24
+  },
+  "sandbox": {
+    "mapId": "freja-south-gate",
+    "widthMetres": 100.0,
+    "heightMetres": 100.0,
+    "arenaCenterServer": [50.0, 50.0]
+  },
+  "attackRangesMetres": {
+    "meleeBand": [1.5, 5.0],
+    "rangedBand": [10.0, 40.0],
+    "playerDefaultMeleeMetres": 3.0,
+    "playerSwordMetres": 4.0,
+    "clientMeleeWorldMetres": 3.5,
+    "mobMeleeMetres": 2.0,
+    "mobRangedMetres": 15.0,
+    "playerBowMetres": 30.0,
+    "playerStaffMetres": 28.0
+  },
+  "slope": {
+    "maxWalkableSlopeDeg": 35.0
+  }
+}

@@ -8,16 +8,13 @@ status: idea
 
 ## Problem
 
-(what hurts; concrete examples)
-
-## Why now
-
-(opportunity; deadline; constraint)
+The player appears to float above the ground in the main scene. The HUD reads Alt +0.04 m [GROUND], so the height value is fine; suspect the model pivot or foot offset.
 
 ## Sketch
 
-(rough shape; not a design yet)
+Measure the lowest vertex of the loaded player model against PlayerAvatar.Position.Y in the main scene; correct the offset the way the sandbox does (GROUNDED check).
 
 ## Acceptance criteria
 
-- [ ] (one observable, testable outcome per item; refine refuses a spec without any)
+- [ ] A probe measures the player model's lowest point within 0.02 m of the ground height in the main scene.
+- [ ] A main-scene render shows the feet touching the ground (owner looks).

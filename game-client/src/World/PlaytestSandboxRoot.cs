@@ -147,6 +147,7 @@ namespace AtlasWorld.Client.World
 
         public override void _Ready()
         {
+            WindowBadge.Apply(sandbox: true);
             _config = Config.Load();
             DiscoverAvailableAvatars();
 

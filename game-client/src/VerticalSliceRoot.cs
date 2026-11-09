@@ -124,6 +124,7 @@ namespace AtlasWorld.Client
 
         public override void _Ready()
         {
+            WindowBadge.Apply(sandbox: false);
             // 0. Load Unified MMORPG Growth & Quest Board Catalogs (contracts/content/*.json)
             _growth.LoadCatalogs();
 

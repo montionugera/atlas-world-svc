@@ -61,10 +61,10 @@ namespace AtlasWorld.Client.World
             anim.Update(isAlive: true, velocity: new Vector3(12f, 0f, 0f), isAttacking: false);
             failures += ReportClip(modelRoot, "moving (fast) → sprint", Clip("run", "sprint"));
 
-            // F-184: the player's real run speed (client formula, 0 AGI = 3 m/s = 30 server u/s * 0.1)
+            // F-184: the player's real run speed (client formula, 0 AGI = 3 m/s (1 unit = 1 m, F-185))
             // must pick the run clip, not idle or walk.
             double runMps = AtlasWorld.Client.UI.MetaFormulas.Derived(1, 1, 0, 1, 1, 1, null).maxMoveSpeed;
-            failures += Report($"client run speed mirrors server: {runMps} m/s == 30 u/s * 0.1", System.Math.Abs(runMps - 30.0 * 0.1) < 1e-6);
+            failures += Report($"client run speed mirrors server: {runMps} m/s == 3 m/s (1 unit = 1 m, F-185)", System.Math.Abs(runMps - 3.0) < 1e-6);
             anim.Update(isAlive: true, velocity: new Vector3((float)runMps, 0f, 0f), isAttacking: false);
             failures += ReportClip(modelRoot, "player run speed 3 m/s → sprint (run), not idle/walk", Clip("run", "sprint"));
 

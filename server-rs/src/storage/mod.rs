@@ -7,8 +7,8 @@ pub mod world_store;
 
 pub use nakama::{
     normalize_match_event_type, CharacterStateSnapshot, EquippedItemIds, LoadoutSnapshot,
-    MatchEvent, MatchEventBatch, MockNakamaClient, NakamaClient, NakamaConfig, NakamaStorage,
-    PrimaryStats, ProfileDoc, SkillUnlock, DEFAULT_NAKAMA_MATCH_ID, PROBE_RETRY_WINDOW,
+    MatchEvent, MatchEventBatch, MockNakamaClient, NakamaStorage, PrimaryStats, ProfileDoc,
+    SkillUnlock, DEFAULT_NAKAMA_MATCH_ID,
 };
 pub use world_store::{
     DeadMobRespawnRecord, FileWorldStateStore, MemoryWorldStateStore, MetaWorldStateStore,

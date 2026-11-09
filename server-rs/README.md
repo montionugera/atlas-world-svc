@@ -51,19 +51,20 @@ Implements the RO-style World Wisdom elemental combat table:
 
 ---
 
-## 💾 Nakama Persistent Storage & Stat Derivation (F-063 / E-002 Slice 4)
+## 💾 Built-in RustMetaEngine Persistent Storage & Stat Derivation (F-202)
 
 ### 1. Configuration & Environment Variables
-- `NAKAMA_BASE_URL`: HTTP REST/RPC endpoint for the Nakama cluster (e.g. `http://nakama:7350`).
-- `NAKAMA_HTTP_KEY`: Nakama server HTTP runtime key used for authenticating server-to-server RPCs (e.g. `defaultkey`).
-- `NAKAMA_TIMEOUT_MS`: Request timeout in milliseconds (default: 5000ms).
-- `NAKAMA_RETRIES`: Number of exponential backoff retry attempts on transient network or 5xx failures (default: 3).
+- `META_DB_PATH`: SQLite database file path (default: `data/meta.sqlite`, or `:memory:` for ephemeral in-memory storage).
+- `META_POSTGRES_URL`: Optional PostgreSQL connection URL if using Postgres backed meta store.
+- `META_BIND_ADDR`: Optional secondary HTTP gateway address (e.g. `0.0.0.0:7350`) for Nakama-compatible `/v2/*` RPCs and storage endpoints.
+- `NAKAMA_HTTP_KEY`: HTTP runtime key used for authenticating server-to-server RPCs against `RustMetaEngine` (default: `defaultkey`).
+- `NAKAMA_SERVER_KEY`: Server runtime key for Nakama compatibility endpoints (default: `defaultkey`).
 
 ### 2. Persistence Lifecycle
-- **Session Verification:** During WebSocket handshake, player bearer tokens are validated with Nakama `GET /v2/account` (or local JWT auth guard fallback).
-- **Persistent Loadout Retrieval:** Upon successful authentication, `NakamaClient::get_loadout` fetches the player's persistent profile (`level`, `xp`, `allocated` primary stats), equipped weapons/armor, and skill loadouts.
-- **Avatar Initialization:** `AtlasSimulation::spawn_player_avatar_with_loadout` initializes the player's ECS avatar with server-authoritative derived combat attributes. If offline or loadout is unavailable, it gracefully falls back to level 1 defaults.
-- **Match Event Queue:** In-game achievements and quest objectives (e.g., `mob_kill`) are enqueued in `MatchEventQueue` and reported back to Nakama via `report_match_events` RPC batches with deduplication and idempotency.
+- **Session Verification:** During WebSocket handshake, player bearer tokens are validated with local JWT auth guard (`AuthGuard`).
+- **Persistent Loadout Retrieval:** Upon successful authentication, `RustMetaEngine::get_loadout` fetches the player's persistent profile (`level`, `xp`, `allocated` primary stats), equipped weapons/armor, and skill loadouts directly in-process.
+- **Avatar Initialization:** `AtlasSimulation::spawn_player_avatar_with_loadout` initializes the player's ECS avatar with server-authoritative derived combat attributes. If loadout is unavailable, it gracefully falls back to level 1 defaults.
+- **Match Event Queue:** In-game achievements and quest objectives (e.g., `mob_kill`) are enqueued in `MatchEventQueue` and reported directly to `RustMetaEngine` via `report_match_events` batches with deduplication and idempotency.
 
 ### 3. Server-Authoritative Combat Stat Derivation
 Mirrors `contracts/src/meta/derivedStats.ts` exactly:

@@ -5,7 +5,7 @@ set -uo pipefail
 # test_all.sh — run the full local test suite for Atlas World in one shot:
 #   • server  : server-rs cargo test suite
 #   • client  : react-client suite (single run, non-watch)
-#   • e2e     : (opt-in) scripts/e2e-meta.sh — live Nakama meta RPC pipeline
+#   • e2e     : (opt-in) scripts/e2e-meta.sh — meta HTTP pipeline (server-rs)
 #
 # Worktree-aware: operates on whatever checkout you invoke it from, so it also
 # works from a linked git worktree (e.g. a release/ or feature/ worktree).
@@ -98,7 +98,7 @@ e2e_meta() {
 # --- Execute -----------------------------------------------------------------
 run_section "server-rs: cargo test suite" server_rust
 [ "$RUN_CLIENT" -eq 1 ]    && run_section "client: react-client suite" client_tests
-[ "$RUN_E2E" -eq 1 ]       && run_section "e2e: Nakama meta pipeline" e2e_meta
+[ "$RUN_E2E" -eq 1 ]       && run_section "e2e: server-rs meta pipeline" e2e_meta
 
 # --- Summary -----------------------------------------------------------------
 echo ""

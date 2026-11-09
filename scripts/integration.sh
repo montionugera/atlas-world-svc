@@ -12,8 +12,8 @@ set -uo pipefail
 # no node_modules, so this installs dependencies before testing rather than
 # failing on a missing binary.
 #
-# NOTE: this repo is a pnpm workspace (client, contracts,
-# nakama) and its packages use the `workspace:*` protocol — `npm install` fails
+# NOTE: this repo is a pnpm workspace (client, contracts)
+# and its packages use the `workspace:*` protocol — `npm install` fails
 # here with EUNSUPPORTEDPROTOCOL. Use pnpm at the root. `scripts/` is NOT part
 # of the workspace and carries its own npm lockfile.
 #
@@ -64,7 +64,7 @@ run_section() {
 # --- Sections ----------------------------------------------------------------
 
 # Workspace deps + the content-gate package, which lives outside the workspace.
-# contracts must be BUILT, not just installed: nakama imports
+# contracts must be BUILT, not just installed: workspace packages import
 # @atlas/contracts from its dist/, so tsc reports phantom TS2307s without it.
 deps_install() {
   command -v pnpm >/dev/null 2>&1 || { echo "pnpm not found — install it (corepack enable)"; return 1; }

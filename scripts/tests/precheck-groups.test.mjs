@@ -13,7 +13,7 @@ const serial = rows.filter(([g]) => g === "serial").map(([, e]) => e);
 const grouped = rows.filter(([g]) => g !== "serial");
 
 test("every serial section appears in exactly one parallel group, and vice versa", () => {
-  assert.ok(serial.length >= 16, "serial plan unexpectedly short");
+  assert.ok(serial.length >= 14, "serial plan unexpectedly short");
   assert.equal(new Set(serial).size, serial.length, "duplicate serial entry");
   assert.deepEqual(grouped.map(([, e]) => e).sort(), [...serial].sort());
 });

@@ -11,7 +11,7 @@ export interface PrimaryStats {
   vit: number;
   /**
    * Ranged/precision offence. Bows read this instead of str. Added in profile
-   * schema v2; v1 docs are migrated with dex: 1 (see nakama/src/storage.ts).
+   * schema v2; v1 docs are migrated with dex: 1 (see server-rs/src/meta).
    */
   dex: number;
 }

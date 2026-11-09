@@ -260,7 +260,6 @@ pub struct WsServer {
     inbound_rx: Arc<tokio::sync::Mutex<Receiver<ClientPacket>>>,
     disconnect_tx: UnboundedSender<(String, String)>,
     disconnect_rx: Arc<tokio::sync::Mutex<UnboundedReceiver<(String, String)>>>,
-    pub nakama_client: Option<Arc<crate::storage::NakamaClient>>,
     storage_ref: SharedStorageRef,
     meta_http_ref: SharedMetaHttpRef,
     non_uuid_skip_logs: Arc<AtomicUsize>,
@@ -336,7 +335,6 @@ impl WsServer {
             inbound_rx,
             disconnect_tx: disconnect_tx.clone(),
             disconnect_rx,
-            nakama_client: None,
             storage_ref: storage_ref.clone(),
             meta_http_ref: meta_http_ref.clone(),
             non_uuid_skip_logs: non_uuid_skip_logs.clone(),
@@ -515,14 +513,7 @@ impl WsServer {
         requests
     }
 
-    pub fn with_nakama(mut self, client: Arc<crate::storage::NakamaClient>) -> Self {
-        let storage: Arc<dyn crate::storage::NakamaStorage> = client.clone();
-        *self.storage_ref.write().unwrap() = Some(storage);
-        self.nakama_client = Some(client);
-        self
-    }
-
-    /// Configures a generic `NakamaStorage` implementation (e.g. `RustMetaEngine` or `NakamaClient`)
+    /// Configures a generic `NakamaStorage` implementation (e.g. `RustMetaEngine` or `MockNakamaClient`)
     /// for join-time `get_loadout` hydration.
     pub fn with_storage(self, storage: Arc<dyn crate::storage::NakamaStorage>) -> Self {
         *self.storage_ref.write().unwrap() = Some(storage);
@@ -2449,44 +2440,41 @@ mod tests {
         // Even if socket 1 finishes its pre-registration work (get_loadout) AFTER socket 2
         // has already registered, socket 2 (the newer connection) must stay live and
         // socket 1 (the older connection) must be closed with 4002.
-        let nakama_listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
-        let nakama_addr = nakama_listener.local_addr().unwrap();
-        let req_count = Arc::new(AtomicUsize::new(0));
-        let req_count_srv = req_count.clone();
+        #[derive(Default)]
+        struct DelayedStorage {
+            call_count: Arc<AtomicUsize>,
+        }
 
-        tokio::spawn(async move {
-            while let Ok((mut stream, _)) = nakama_listener.accept().await {
-                let idx = req_count_srv.fetch_add(1, Ordering::SeqCst);
-                tokio::spawn(async move {
-                    let mut buf = [0u8; 1024];
-                    let _ = stream.read(&mut buf).await;
-                    if idx == 0 {
-                        // Delay mount-1 socket so mount-2 registers first!
-                        tokio::time::sleep(Duration::from_millis(120)).await;
-                    }
-                    let body =
-                        serde_json::to_string(&crate::storage::LoadoutSnapshot::default()).unwrap();
-                    let resp = format!(
-                        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-                        body.len(),
-                        body
-                    );
-                    let _ = stream.write_all(resp.as_bytes()).await;
-                });
+        #[async_trait::async_trait]
+        impl crate::storage::NakamaStorage for DelayedStorage {
+            async fn verify_session(&self, _token: &str) -> Result<Option<String>, String> {
+                Ok(None)
             }
-        });
+            async fn get_loadout(
+                &self,
+                _user_id: &str,
+            ) -> Result<Option<crate::storage::LoadoutSnapshot>, String> {
+                let idx = self.call_count.fetch_add(1, Ordering::SeqCst);
+                if idx == 0 {
+                    // Delay mount-1 socket so mount-2 registers first!
+                    tokio::time::sleep(Duration::from_millis(120)).await;
+                }
+                Ok(Some(crate::storage::LoadoutSnapshot::default()))
+            }
+            async fn report_match_events(
+                &self,
+                _batch: &crate::storage::MatchEventBatch,
+            ) -> Result<String, String> {
+                Ok(r#"{"deduped":false}"#.to_string())
+            }
+        }
 
-        let nakama_client = Arc::new(crate::storage::NakamaClient::new(
-            format!("http://{nakama_addr}"),
-            "test_http_key".to_string(),
-            2000,
-            0,
-        ));
+        let storage = Arc::new(DelayedStorage::default());
         let auth = AuthGuard::new(b"gateway_secret_key_12345".to_vec());
         let server = WsServer::bind("127.0.0.1:0", auth.clone())
             .await
             .unwrap()
-            .with_nakama(nakama_client);
+            .with_storage(storage);
         let uid = "00000000-0000-4000-8000-000000000042";
         let url = format!(
             "ws://{}/ws?token=dev-token:{uid}&proto=1",

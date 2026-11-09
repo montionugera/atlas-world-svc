@@ -8,7 +8,7 @@ namespace AtlasWorld.Client.UI.Panels
 {
     /// <summary>
     /// Read-only derived-stats summary. IMPORTANT: <c>get_loadout</c> is S2S-only and
-    /// MUST NOT be called by a client session (Nakama throws). This panel therefore
+    /// MUST NOT be called by a client session (server rejects). This panel therefore
     /// assembles the view from the player's OWN storage docs (profile + equipment +
     /// inventory) and computes derived stats with the pinned client-side formula.
     /// </summary>

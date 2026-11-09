@@ -2,12 +2,10 @@
 set -e
 
 # =============================================================================
-# deploy-local.sh — build the Atlas World images and deploy the FULL local stack
+# deploy-local.sh — build the Atlas World images and deploy the stack
 # to a LOCAL Kubernetes cluster:
 #
-#   cockroachdb      StatefulSet + PVC  (Nakama's database)
-#   nakama           Deployment + migrate initContainer
-#   server-rs        Deployment         (authoritative game sim)
+#   server-rs        Deployment         (authoritative game sim & RustMetaEngine)
 #   atlas-world-web  Deployment         (read-only web app for release hostnames)
 #
 # atlas-world is a cluster workload (deployment/atlas-world-web); atlas-edit
@@ -19,9 +17,8 @@ set -e
 # deploy, so the local env reflects the integrated release.
 #
 # Usage:
-#   ./scripts/deploy-local.sh                     # full stack
+#   ./scripts/deploy-local.sh                     # deploy stack
 #   ./scripts/deploy-local.sh --skip-storybook    # deprecated no-op (the storybook image is retired)
-#   ./scripts/deploy-local.sh --skip-meta         # skip nakama + cockroachdb
 #   ./scripts/deploy-local.sh --skip-server       # skip server-rs
 #   LOCAL_CTX_PATTERN=mylocal ./scripts/deploy-local.sh   # custom local ctx name
 # =============================================================================
@@ -50,12 +47,12 @@ verify_local_ctx() {
 }
 
 # --- Flags --------------------------------------------------------------------
-DO_META=1
 DO_SERVER=1
 for arg in "$@"; do
   case "$arg" in
     --skip-storybook) echo "⚠ --skip-storybook is deprecated and ignored: the storybook image is retired (its panels are served by atlas-world on :8788)." ;;
-    --skip-meta)      DO_META=0 ;;
+    --skip-meta)      echo "⚠ --skip-meta is deprecated and ignored: Nakama has been retired (server-rs has built-in RustMetaEngine)." ;;
+    --with-meta)      echo "⚠ --with-meta is deprecated and ignored: Nakama has been retired (server-rs has built-in RustMetaEngine)." ;;
     --skip-server)    DO_SERVER=0 ;;
     -h|--help)
       awk '/^# ===/{n++} n>=1{sub(/^# ?/,""); print} n>=2{exit}' "$0"
@@ -77,13 +74,6 @@ echo "📂 Working tree: $REPO_ROOT"
 
 NAMESPACE="atlas-world"
 SERVER_RS_IMAGE="atlas-world-server-rs:local"
-NAKAMA_IMAGE="atlas-world-nakama:local"
-
-# The nakama image relies on its own <dockerfile>.dockerignore, which only
-# BuildKit honours. Without BuildKit the build silently falls back to the root
-# .dockerignore — a whitelist scoped to the colyseus build — and produces a
-# broken image. Force it on rather than trusting the daemon default.
-export DOCKER_BUILDKIT=1
 
 GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo dev)"
 
@@ -114,14 +104,6 @@ if [ "$DO_SERVER" -eq 1 ]; then
   echo "  ✓ built"
 fi
 
-if [ "$DO_META" -eq 1 ]; then
-  echo ""
-  echo "▶ Building nakama image ($NAKAMA_IMAGE)..."
-  docker build -t "$NAKAMA_IMAGE" \
-    -f "$REPO_ROOT/nakama/Dockerfile" "$REPO_ROOT"
-  echo "  ✓ built"
-fi
-
 if [ "$DO_WEB" -eq 1 ]; then
   echo ""
   echo "▶ Building atlas-world-web image from $WEB_COMMIT..."
@@ -135,27 +117,20 @@ echo "▶ Applying local Kubernetes manifests..."
 verify_local_ctx  # re-check immediately before any kubectl write
 kubectl apply -f "$REPO_ROOT/k8s/local/namespace.yaml"
 kubectl apply -f "$REPO_ROOT/k8s/local/config.yaml"
-if [ "$DO_META" -eq 1 ]; then
-  kubectl apply -f "$REPO_ROOT/k8s/local/cockroachdb.yaml"
-  kubectl apply -f "$REPO_ROOT/k8s/local/nakama.yaml"
-fi
 if [ "$DO_SERVER" -eq 1 ]; then
   kubectl apply -f "$REPO_ROOT/k8s/local/server-rs.yaml"
-  if [ "$DO_META" -eq 0 ]; then
-    verify_local_ctx
-    kubectl -n "$NAMESPACE" set env deployment/server-rs NAKAMA_URL- NAKAMA_HTTP_KEY-
-  fi
 fi
 if [ "$DO_WEB" -eq 1 ]; then
   kubectl apply -f "$REPO_ROOT/k8s/local/atlas-world-web.yaml"
 fi
-# `apply` never removes what a manifest stopped declaring, so retire the old storybook workload
-# explicitly (a no-op once it is gone).
+# `apply` never removes what a manifest stopped declaring, so retire old workloads
+# explicitly (a no-op once they are gone).
 verify_local_ctx
 # Retired workload name (a cluster resource, NOT the atelier/ directory) — assembled so the
 # directory-rename grep gate stays at zero matches.
 LEGACY_SB="asset-""storybook"
 kubectl -n "$NAMESPACE" delete deployment/"$LEGACY_SB" service/"$LEGACY_SB" --ignore-not-found >/dev/null 2>&1 || true
+kubectl -n "$NAMESPACE" delete deployment/nakama statefulset/cockroachdb service/nakama service/cockroachdb --ignore-not-found >/dev/null 2>&1 || true
 
 # --- Roll out -----------------------------------------------------------------
 # imagePullPolicy:Never + a stable :local tag means the manifests are unchanged
@@ -164,9 +139,6 @@ kubectl -n "$NAMESPACE" delete deployment/"$LEGACY_SB" service/"$LEGACY_SB" --ig
 roll() {
   local kind="$1" name="$2" timeout="$3"
   verify_local_ctx
-  # Only Deployments need the restart nudge to re-read the :local image. The
-  # CockroachDB StatefulSet holds the data volume and should not be bounced on
-  # every deploy.
   if [ "$kind" = "deployment" ]; then
     kubectl -n "$NAMESPACE" rollout restart "deployment/$name"
   fi
@@ -175,11 +147,6 @@ roll() {
 
 echo ""
 echo "▶ Rolling out..."
-if [ "$DO_META" -eq 1 ]; then
-  # CockroachDB first: the nakama migrate initContainer blocks on it.
-  roll statefulset cockroachdb 180s
-  roll deployment  nakama      180s
-fi
 [ "$DO_SERVER" -eq 1 ]    && roll deployment server-rs 120s
 if [ "$DO_WEB" -eq 1 ]; then
   roll deployment atlas-world-web 120s
@@ -222,13 +189,8 @@ if [ "$DO_SERVER" -eq 1 ]; then
   echo " Server-RS Pod : deployment/server-rs (port 2567)"
 fi
 echo " Asset panels  : http://atlas-world.joymify.local.com/?tab=assets (old atlas-storybook host redirects here)"
-if [ "$DO_META" -eq 1 ]; then
-  echo " Nakama API    : http://localhost:7350       (health: /healthcheck)"
-  echo " Nakama console: http://localhost:7351       (admin/password)"
-fi
 echo ""
 echo " No LoadBalancer (e.g. kind)? Port-forward instead:"
 [ "$DO_SERVER" -eq 1 ]    && echo "   kubectl -n $NAMESPACE port-forward deployment/server-rs 2567:2567"
-[ "$DO_META" -eq 1 ]      && echo "   kubectl -n $NAMESPACE port-forward deployment/nakama 7350:7350 7351:7351"
 [ "$DO_WEB" -eq 1 ]       && echo "   kubectl -n $NAMESPACE port-forward deployment/atlas-world-web 8788:8788"
 echo "======================================"
