@@ -2713,5 +2713,15 @@
     "claimed_at": "2026-11-09T02:47:35.891793+00:00",
     "shipped_at": "2026-11-09T02:57:45.094301+00:00",
     "shipped_sha": "7a81b9d2ee5ddfc960589689b36861754e7f7ed0"
+  },
+  {
+    "id": "F-210",
+    "title": "POC-05: Disturbance \u2014 A Bell Out of Time and The Impossible Flame (07:45-10:00 Edda anomaly and Time-Wound climax)",
+    "from_idea": "I-292",
+    "created_at": "2026-11-09T02:57:50.904976+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null,
+    "epic": "E-011"
   }
 ]
