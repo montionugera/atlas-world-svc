@@ -82,6 +82,7 @@ namespace AtlasWorld.Client.World
 
             VerifyMaroFolkGirlInTown(root);
             VerifyPoc01WonderRoadToGreatBell(doc);
+            VerifyPoc02WarmthAmberLanternErrand(doc);
 
             string outDir = OS.GetEnvironment("ATLAS_RENDER_MARO_BELL");
             if (!string.IsNullOrEmpty(outDir))
@@ -140,6 +141,72 @@ namespace AtlasWorld.Client.World
                 poc.ActiveBeat == "POC-01" &&
                 poc.LastDialogueLine.Contains("Great Bell") &&
                 poc.ObjectiveText.Contains("Amber"));
+
+            poc.QueueFree();
+        }
+
+        private void VerifyPoc02WarmthAmberLanternErrand(UnifiedMapDocument doc)
+        {
+            var amberSpot = doc.Structures.FirstOrDefault(s => s.Id == "npc-spot-amber");
+            Report("maro-bell.json declares npc-spot-amber at expected world position (1, 28)",
+                amberSpot != null && Mathf.IsEqualApprox(amberSpot.X, 1f) && Mathf.IsEqualApprox(amberSpot.Z, 28f));
+
+            var lantern06 = doc.Structures.FirstOrDefault(s => s.Id == "lantern-06");
+            Report("maro-bell.json declares workshop lantern-06 near Amber (Z ~ 23.7)",
+                lantern06 != null && Mathf.IsEqualApprox(lantern06.Z, 23.7f));
+
+            var poc = new MaroBellPocController { Name = "Poc02Verify" };
+            AddChild(poc);
+            poc.Initialize(doc);
+
+            Report("MaroBellPocController spawns AmberView at AmberWorldPos",
+                poc.AmberView != null && poc.AmberView.Root.Position.DistanceTo(MaroBellPocController.AmberWorldPos) < 0.1f);
+            Report("AmberView starts in idle animation",
+                poc.AmberView?.Animation.CurrentState == "idle");
+            Report("WorkshopLanternNode is initialized unlit",
+                poc.WorkshopLanternNode != null && poc.WorkshopLanternLight == null && poc.LanternsLit.Count == 0);
+
+            // 1. Greet Pip first
+            poc.InteractWithPip();
+            Report("Pip greeting leads to Amber visit objective",
+                poc.ObjectiveText.Contains("Amber"));
+
+            // 2. Speak with Amber to start errand
+            bool errandStarted = poc.InteractWithAmber();
+            Report("InteractWithAmber starts errand and asks to light workshop lantern-06",
+                errandStarted &&
+                poc.AmberErrandAccepted &&
+                !poc.AmberErrandCompleted &&
+                poc.ObjectiveText.Contains("lantern-06") &&
+                poc.LastDialogueLine.Contains("workshop lantern"));
+
+            // 3. Interact with lantern-06 across the road
+            bool lanternLit = poc.TryInteractNearest(MaroBellPocController.Lantern06WorldPos);
+            Report("TryInteractNearest at lantern-06 lights the lantern with OmniLight3D and emissive glow",
+                lanternLit &&
+                poc.LanternsLit.Contains("lantern-06") &&
+                poc.WorkshopLanternLight != null &&
+                poc.WorkshopLanternGlowMesh != null &&
+                poc.ObjectiveText.Contains("Return to Amber"));
+
+            // 4. Return to Amber and complete errand
+            bool errandCompleted = poc.TryInteractNearest(MaroBellPocController.AmberWorldPos);
+            Report("Return to Amber completes errand, transitions beat to POC-02, rewards oil, and warms dialogue",
+                errandCompleted &&
+                poc.AmberErrandCompleted &&
+                poc.ActiveBeat == "POC-02" &&
+                poc.LanternOilCount == 1 &&
+                poc.LastDialogueLine.Contains("warmer the road feels already"));
+
+            // 5. Verify idempotency on repeated interactions
+            bool retryErrand = poc.CompleteAmberErrand();
+            poc.TryInteractNearest(MaroBellPocController.AmberWorldPos);
+            Report("Repeated interaction with Amber is idempotent (no duplicate rewards, beat stays POC-02)",
+                !retryErrand &&
+                poc.AmberErrandCompleted &&
+                poc.ActiveBeat == "POC-02" &&
+                poc.LanternOilCount == 1 &&
+                poc.LanternsLit.Count == 1);
 
             poc.QueueFree();
         }
