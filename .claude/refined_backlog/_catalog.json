@@ -2655,12 +2655,13 @@
     "from_idea": "I-287",
     "created_at": "2026-11-09T01:40:22.191182+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.31",
     "epic": "E-011",
     "claimed_at": "2026-11-09T01:40:32.486112+00:00",
     "shipped_at": "2026-11-09T02:07:22.922211+00:00",
-    "shipped_sha": "799a2b8b0089f722fb7b7fa798c1e8fbf26502da"
+    "shipped_sha": "799a2b8b0089f722fb7b7fa798c1e8fbf26502da",
+    "promoted_at": "2026-11-09T04:25:39.146076+00:00"
   },
   {
     "id": "F-206",
@@ -2668,12 +2669,13 @@
     "from_idea": "I-288",
     "created_at": "2026-11-09T02:07:38.362599+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.31",
     "epic": "E-011",
     "claimed_at": "2026-11-09T02:07:49.643431+00:00",
     "shipped_at": "2026-11-09T02:27:06.293048+00:00",
-    "shipped_sha": "de9410964a4950332810fe114ffdca1510d9772e"
+    "shipped_sha": "de9410964a4950332810fe114ffdca1510d9772e",
+    "promoted_at": "2026-11-09T04:25:47.506514+00:00"
   },
   {
     "id": "F-207",
@@ -2681,12 +2683,13 @@
     "from_idea": "I-289",
     "created_at": "2026-11-09T02:27:23.059584+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.31",
     "epic": "E-011",
     "claimed_at": "2026-11-09T02:27:45.517409+00:00",
     "shipped_at": "2026-11-09T02:36:18.217156+00:00",
-    "shipped_sha": "06c882c12fe96b538d0a028bb0f7dbc0fa9366ad"
+    "shipped_sha": "06c882c12fe96b538d0a028bb0f7dbc0fa9366ad",
+    "promoted_at": "2026-11-09T04:25:54.512118+00:00"
   },
   {
     "id": "F-208",
@@ -2694,12 +2697,13 @@
     "from_idea": "I-290",
     "created_at": "2026-11-09T02:36:32.582319+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.31",
     "epic": "E-011",
     "claimed_at": "2026-11-09T02:36:46.561621+00:00",
     "shipped_at": "2026-11-09T02:46:36.790005+00:00",
-    "shipped_sha": "d7eed258bc4ade6e89efe94b75b7289ac0a2d368"
+    "shipped_sha": "d7eed258bc4ade6e89efe94b75b7289ac0a2d368",
+    "promoted_at": "2026-11-09T04:26:02.319707+00:00"
   },
   {
     "id": "F-209",
@@ -2707,12 +2711,13 @@
     "from_idea": "I-291",
     "created_at": "2026-11-09T02:47:23.965649+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.31",
     "epic": "E-011",
     "claimed_at": "2026-11-09T02:47:35.891793+00:00",
     "shipped_at": "2026-11-09T02:57:45.094301+00:00",
-    "shipped_sha": "7a81b9d2ee5ddfc960589689b36861754e7f7ed0"
+    "shipped_sha": "7a81b9d2ee5ddfc960589689b36861754e7f7ed0",
+    "promoted_at": "2026-11-09T04:26:09.853618+00:00"
   },
   {
     "id": "F-210",
@@ -2720,12 +2725,13 @@
     "from_idea": "I-292",
     "created_at": "2026-11-09T02:57:50.904976+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.31",
     "epic": "E-011",
     "claimed_at": "2026-11-09T02:58:03.449529+00:00",
     "shipped_at": "2026-11-09T03:09:23.079599+00:00",
-    "shipped_sha": "411dc914ab9b90860c5c9326d910658bfec2ebe6"
+    "shipped_sha": "411dc914ab9b90860c5c9326d910658bfec2ebe6",
+    "promoted_at": "2026-11-09T04:26:17.789702+00:00"
   },
   {
     "id": "F-211",
@@ -2733,11 +2739,12 @@
     "from_idea": "I-293",
     "created_at": "2026-11-09T03:09:29.703442+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "shipped",
+    "status": "promoted",
     "release_version": "1.31",
     "epic": "E-011",
     "claimed_at": "2026-11-09T03:09:40.557789+00:00",
     "shipped_at": "2026-11-09T03:21:24.944287+00:00",
-    "shipped_sha": "22b8e7ec3299ffc6299468c366f173dc11721ce8"
+    "shipped_sha": "22b8e7ec3299ffc6299468c366f173dc11721ce8",
+    "promoted_at": "2026-11-09T04:26:25.578264+00:00"
   }
 ]
