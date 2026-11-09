@@ -111,11 +111,11 @@
     "id": "E-011",
     "title": "First 10 Minutes POC \u2014 The First Light of Maro Bell",
     "created_at": "2026-11-08T18:46:34.352911+00:00",
-    "status": "verifying",
+    "status": "verified",
     "release_version": "1.31",
-    "verified_sha": null,
-    "verified_at": "2026-11-09T03:50:59.315026+00:00",
+    "verified_sha": "eee865bdc74dbc235fd2048b2291402b2b49a369",
+    "verified_at": "2026-11-09T04:17:39.630316+00:00",
     "split_approved_by": null,
-    "verifying_sha": "eee865bdc74dbc235fd2048b2291402b2b49a369"
+    "verifying_sha": null
   }
 ]
