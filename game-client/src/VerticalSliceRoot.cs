@@ -60,6 +60,9 @@ namespace AtlasWorld.Client
         private readonly DayNightCycleController _dayNightCycle = new();
         private readonly MmorpgGrowthManager _growth = new();
         private Node3D? _meadowRingRoot;
+        private string _activeMapId = "freja-south-gate";
+        private MaroBellPocDiagnosticsHud? _pocDiagnosticsHud;
+        private MaroBellPocController? _maroPoc;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
         private float _basePlayerSpeed = 3.0f; // F-184: player run is 3 m/s (server SPEED_SCALE 0.15 of the old 20)
@@ -189,6 +192,17 @@ namespace AtlasWorld.Client
                 return;
             }
 
+            // F-211 POC-06: 10-Minute Maro Bell POC end-to-end scorecard probe (ATLAS_VERIFY_POC_MARO_10M=1).
+            if (OS.GetEnvironment("ATLAS_VERIFY_POC_MARO_10M") == "1")
+            {
+                SetProcess(false);
+                SetPhysicsProcess(false);
+                SetProcessInput(false);
+                SetProcessUnhandledInput(false);
+                AddChild(new PocMaro10mVerify { Name = "PocMaro10mVerify" });
+                return;
+            }
+
             // F-188 interactive Playtest Sandbox probe (ATLAS_VERIFY_PLAYTEST_SANDBOX=1).
             if (OS.GetEnvironment("ATLAS_VERIFY_PLAYTEST_SANDBOX") == "1")
             {
@@ -216,6 +230,7 @@ namespace AtlasWorld.Client
 
             // 2. Initialize Player Avatar & AnimationController from internal library
             string activeMapId = ResolveMapId(OS.GetEnvironment("ATLAS_MAP_ID"));
+            _activeMapId = activeMapId;
             bool useMaroGirlAvatar = activeMapId == "maro-bell" ||
                 OS.GetEnvironment("ATLAS_PLAYER_KEY") == PipelineCharVerify.MaroGirlKey;
             if (PlayerAvatar != null && useMaroGirlAvatar && AssetRegistry.Instance != null)
@@ -294,7 +309,7 @@ namespace AtlasWorld.Client
             if (PlayerAvatar != null && OS.GetEnvironment("ATLAS_AUTO_COMBAT_ON_START") != "1")
             {
                 float startX = activeMapId == "maro-bell" ? 0.0f : -2.4f;
-                float startZ = activeMapId == "maro-bell" ? -15.0f : -2.0f;
+                float startZ = activeMapId == "maro-bell" ? (OS.GetEnvironment("ATLAS_MARO_SPAWN_PLAZA") == "1" ? -15.0f : 71.0f) : -2.0f;
                 float startY = TerrainElevation.SampleHeight(startX, startZ, _mapDoc, 0f);
                 PlayerAvatar.Position = new Vector3(startX, startY, startZ);
                 PlayerAvatar.Rotation = new Vector3(0f, activeMapId == "maro-bell" ? Mathf.Pi : -Mathf.Pi * 0.5f, 0f);
@@ -333,6 +348,14 @@ namespace AtlasWorld.Client
 
             _metaShell = new MetaShell();
             AddChild(_metaShell);
+            if (activeMapId == "maro-bell")
+            {
+                _pocDiagnosticsHud = new MaroBellPocDiagnosticsHud { Name = "MaroBellPocDiagnosticsHud" };
+                AddChild(_pocDiagnosticsHud);
+                _maroPoc = new MaroBellPocController { Name = "MaroBellPocController" };
+                AddChild(_maroPoc);
+                _maroPoc.Initialize(_mapDoc);
+            }
             _metaShell.BindGrowthManager(_growth, msg =>
             {
                 SyncGrowthHud();
@@ -384,7 +407,8 @@ namespace AtlasWorld.Client
                 Connection.RawSnapshotReceived += OnRawSnapshotReceived;
 
                 UpdateStatusText($"[color=#{Design.Palette.Info.ToHtml(false)}]\u25cf Server: Connecting...[/color]");
-                Connection.ConnectToHost(_config.ServerRsEndpoint);
+                string endpoint = Config.ResolveServerRsEndpointForMap(_config.ServerRsEndpoint, activeMapId);
+                Connection.ConnectToHost(endpoint);
                 _entityManager.SetOwnPlayer(Connection.LocalWireId.ToString());
             }
 
@@ -1406,6 +1430,13 @@ namespace AtlasWorld.Client
                         TriggerSkill(3);
                         GetViewport()?.SetInputAsHandled();
                         break;
+                    case Key.F:
+                        if (PlayerAvatar != null && _maroPoc?.TryInteractNearest(PlayerAvatar.Position) == true)
+                        {
+                            GetViewport()?.SetInputAsHandled();
+                            return;
+                        }
+                        break;
                     case Key.F1:
                         MobileControls?.PotionHpBtn?.TriggerCooldown(1.5f);
                         TriggerPotion("hp");
@@ -1753,6 +1784,22 @@ namespace AtlasWorld.Client
                     PlayerAvatar.Rotation.Y,
                     _peacefulNoMonsters ? null : _entityManager?.Views,
                     _selectedServerTargetId);
+            }
+
+            if (PlayerAvatar != null)
+            {
+                _maroPoc?.StepPlayer(PlayerAvatar.Position, _wasMovingLastFrame, dt);
+            }
+
+            if (_pocDiagnosticsHud != null && PlayerAvatar != null)
+            {
+                _pocDiagnosticsHud.UpdateDiagnostics(
+                    _activeMapId,
+                    PlayerAvatar.Position,
+                    ServerArenaCenter,
+                    Connection != null && Connection.IsConnectedToHost,
+                    delta,
+                    _maroPoc?.ActiveBeat ?? "POC-00");
             }
 
             if (_attackAnimHoldSec > 0f)

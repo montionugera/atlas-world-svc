@@ -43,6 +43,36 @@
         "death": "Death_A"
       }
     },
+    "mob:lantern_vermin": {
+      "scene": "res://assets/characters/werewolf_wolf.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character",
+      "anims": {
+        "idle": "Idle_A",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "Melee_1H_Attack_Slice_Diagonal",
+        "hit": "Hit_A",
+        "death": "Death_A"
+      }
+    },
+    "mob:soot_muncher": {
+      "scene": "res://assets/characters/werewolf_wolf.glb",
+      "source": "market",
+      "license": "CC0",
+      "tier": "seed",
+      "kind": "character",
+      "anims": {
+        "idle": "Idle_A",
+        "walk": "Walking_A",
+        "run": "Running_A",
+        "attack": "Melee_1H_Attack_Slice_Diagonal",
+        "hit": "Hit_A",
+        "death": "Death_A"
+      }
+    },
     "mob:balanced": {
       "scene": "res://assets/characters/skeleton_minion.glb",
       "source": "market",

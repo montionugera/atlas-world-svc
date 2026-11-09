@@ -48,6 +48,7 @@ namespace AtlasWorld.Client.World
         private readonly SmartCameraOccluder _cameraOccluder = new();
         private readonly DayNightCycleController _dayNightCycle = new();
         private EntityManager? _entityManager;
+        private MaroBellPocController? _maroPoc;
 
         // Active player avatar state
         private Node3D? _avatarContainer;
@@ -254,6 +255,20 @@ namespace AtlasWorld.Client.World
 
             Vector3 focus = _avatarContainer?.Position ?? new Vector3(0f, 0f, -15.5f);
             _chunkStreamer.UpdateStreaming(focus, forceReload: true);
+
+            if (_maroPoc != null && GodotObject.IsInstanceValid(_maroPoc))
+            {
+                _maroPoc.GetParent()?.RemoveChild(_maroPoc);
+                _maroPoc.QueueFree();
+                _maroPoc = null;
+            }
+
+            if (_mapDoc.MapId == "maro-bell")
+            {
+                _maroPoc = new MaroBellPocController { Name = "MaroBellPocController" };
+                AddChild(_maroPoc);
+                _maroPoc.Initialize(_mapDoc);
+            }
         }
 
         private void SpawnTargetDummies()
@@ -635,8 +650,9 @@ namespace AtlasWorld.Client.World
                 }
                 Connection.RawSnapshotReceived -= OnRawSnapshot;
                 Connection.RawSnapshotReceived += OnRawSnapshot;
-                Connection.ConnectToHost(_config.ServerRsEndpoint);
-                RefreshUiLabels($"Connecting to server-rs ({_config.ServerRsEndpoint})...");
+                string endpoint = Config.ResolveServerRsEndpointForMap(_config.ServerRsEndpoint, ActiveMapId);
+                Connection.ConnectToHost(endpoint);
+                RefreshUiLabels($"Connecting to server-rs ({endpoint})...");
             }
             else
             {
@@ -947,6 +963,10 @@ namespace AtlasWorld.Client.World
 
             StepMovement(new Vector3(rawInput.X, 0f, rawInput.Y), dt, speed);
 
+            bool isMoving = rawInput.LengthSquared() > 0.001f;
+            Vector3 playerPos = _avatarContainer?.Position ?? Vector3.Zero;
+            _maroPoc?.StepPlayer(playerPos, isMoving, dt);
+
             if (MainCamera != null && _avatarContainer != null)
             {
                 // As camera zooms closer (< 2.0m down to 0.35m), smoothly elevate focus from body (0.52m) to face/eyes (0.65m)
@@ -995,8 +1015,16 @@ namespace AtlasWorld.Client.World
             {
                 switch (key.Keycode)
                 {
-                    case Key.Space:
                     case Key.F:
+                        if (_avatarContainer != null && _maroPoc?.TryInteractNearest(_avatarContainer.Position) == true)
+                        {
+                            GetViewport()?.SetInputAsHandled();
+                            break;
+                        }
+                        TriggerSandboxAttack();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
+                    case Key.Space:
                         TriggerSandboxAttack();
                         GetViewport()?.SetInputAsHandled();
                         break;

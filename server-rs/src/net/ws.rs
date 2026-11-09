@@ -1063,7 +1063,7 @@ impl WsServer {
         if let Some(query) = req.uri().query() {
             for pair in query.split('&') {
                 if let Some((k, v)) = pair.split_once('=') {
-                    if k == "map" {
+                    if k == "map" || k == "room" {
                         return Some(v.to_string());
                     }
                 }

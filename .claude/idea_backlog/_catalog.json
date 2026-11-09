@@ -1790,49 +1790,49 @@
     "id": "I-287",
     "title": "POC-00: Maro Bell integration baseline (room routing, reproducible POC reset, diagnostics HUD)",
     "created_at": "2026-11-08T18:48:24.152711+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-205",
     "epic": "E-011"
   },
   {
     "id": "I-288",
     "title": "POC-01: Wonder \u2014 The Road to the Great Bell (00:00-02:30 reveal composition, Pip greeting, ambient Reed & Tovin)",
     "created_at": "2026-11-08T18:48:24.153980+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-206",
     "epic": "E-011"
   },
   {
     "id": "I-289",
     "title": "POC-02: Warmth \u2014 A Small Kindness (02:30-04:15 Amber lantern errand and authoritative unlit->lit state change)",
     "created_at": "2026-11-08T18:48:24.154986+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-207",
     "epic": "E-011"
   },
   {
     "id": "I-290",
     "title": "POC-03: Playfulness \u2014 The Missing Delivery (04:15-06:15 Lantern Vermin shared rig, Soot Muncher encounter, parcel recovery)",
     "created_at": "2026-11-08T18:48:24.155959+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-208",
     "epic": "E-011"
   },
   {
     "id": "I-291",
     "title": "POC-04: Emotional Mystery \u2014 Bram's Old Lantern and First Trace (06:15-07:45 inspect interaction and canon-safe POC flag)",
     "created_at": "2026-11-08T18:48:24.156859+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-209",
     "epic": "E-011"
   },
   {
     "id": "I-292",
     "title": "POC-05: Disturbance \u2014 A Bell Out of Time and The Impossible Flame (07:45-10:00 Edda anomaly and Time-Wound climax)",
     "created_at": "2026-11-08T18:48:24.157729+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-210",
     "epic": "E-011"
   },
   {
     "id": "I-293",
     "title": "POC-06: Player Impression Validation and Scorecard Gate (ATLAS_VERIFY_POC_MARO_10M probe, telemetry, 7-metric scorecard)",
     "created_at": "2026-11-08T18:48:24.158562+00:00",
-    "promoted_to": null,
+    "promoted_to": "F-211",
     "epic": "E-011"
   },
   {

@@ -66,9 +66,27 @@ for g in "$PROJECT"/studio-cache/*.glb; do
 done
 if [ "$needs_import" = 1 ]; then
   echo "▶ godot --import (fresh worktree or new pull)"
-  imp=$(bounded "$IMPORT_SECS" "$GODOT" --headless --path "$PROJECT" --import 2>&1); rc=$?
-  timed_out "$rc" && { echo "❌ godot --import timed out after ${IMPORT_SECS}s (ATLAS_GODOT_IMPORT_TIMEOUT)"; printf '%s\n' "$imp" | tail -n 40; exit 1; }
-  [ "$rc" -eq 0 ] || { echo "❌ godot --import exited $rc (last 40 lines)"; printf '%s\n' "$imp" | tail -n 40; exit 1; }
+  attempt=1
+  max_attempts=3
+  while [ "$attempt" -le "$max_attempts" ]; do
+    imp=$(bounded "$IMPORT_SECS" "$GODOT" --headless --path "$PROJECT" --import 2>&1); rc=$?
+    if timed_out "$rc"; then
+      echo "❌ godot --import timed out after ${IMPORT_SECS}s (ATLAS_GODOT_IMPORT_TIMEOUT)"
+      printf '%s\n' "$imp" | tail -n 40
+      exit 1
+    fi
+    if [ "$rc" -eq 0 ]; then
+      break
+    fi
+    echo "⚠️ godot --import exited $rc (attempt $attempt/$max_attempts), retrying..."
+    attempt=$((attempt + 1))
+    sleep 1
+  done
+  if [ "$rc" -ne 0 ]; then
+    echo "❌ godot --import exited $rc after $max_attempts attempts (last 40 lines)"
+    printf '%s\n' "$imp" | tail -n 40
+    exit 1
+  fi
 fi
 
 out=$(export "$env_name=1"; bounded "$SECS" "$GODOT" --headless --path "$PROJECT" 2>&1); rc=$?

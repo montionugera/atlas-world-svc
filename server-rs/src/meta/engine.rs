@@ -25,6 +25,73 @@ pub const MAX_SKILL_LOADOUT: usize = 4;
 pub const MAX_NOTIFICATIONS_PER_USER: usize = 64;
 const MAX_OCC_ATTEMPTS: usize = 2;
 
+pub const COLLECTION_POC_MARO_10M: &str = "poc_maro_10m";
+pub const KEY_POC_SESSION_STATE: &str = "session_state";
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct PocMaro10mSpawn {
+    pub server_x: f32,
+    pub server_y: f32,
+    pub world_x: f32,
+    pub world_z: f32,
+    pub yaw_rad: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct PocMaro10mState {
+    pub map_id: String,
+    pub class_id: String,
+    pub active_beat: String,
+    pub spawn: PocMaro10mSpawn,
+    pub pip_greeted: bool,
+    pub amber_errand_accepted: bool,
+    pub amber_errand_completed: bool,
+    pub lanterns_lit: Vec<String>,
+    pub vermin_defeated: u32,
+    pub soot_muncher_defeated: bool,
+    pub parcel_recovered: bool,
+    pub lantern_oil_count: u32,
+    pub bram_parcel_delivered: bool,
+    pub trace_glimpsed: bool,
+    pub edda_spoken: bool,
+    pub time_wound_triggered: bool,
+    pub glade_hook_unlocked: bool,
+    pub reset_count: u32,
+}
+
+impl Default for PocMaro10mState {
+    fn default() -> Self {
+        Self {
+            map_id: "maro-bell".to_string(),
+            class_id: "cl-vanguard".to_string(),
+            active_beat: "POC-00".to_string(),
+            spawn: PocMaro10mSpawn {
+                server_x: 40.0,
+                server_y: 151.0,
+                world_x: 0.0,
+                world_z: 71.0,
+                yaw_rad: std::f32::consts::PI,
+            },
+            pip_greeted: false,
+            amber_errand_accepted: false,
+            amber_errand_completed: false,
+            lanterns_lit: Vec::new(),
+            vermin_defeated: 0,
+            soot_muncher_defeated: false,
+            parcel_recovered: false,
+            lantern_oil_count: 0,
+            bram_parcel_delivered: false,
+            trace_glimpsed: false,
+            edda_spoken: false,
+            time_wound_triggered: false,
+            glade_hook_unlocked: false,
+            reset_count: 0,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct RpcContext {
     pub user_id: Option<String>,
@@ -364,6 +431,49 @@ impl RustMetaEngine {
                 let uid = Self::require_client(ctx)?;
                 let body = Self::parse_json_payload(payload_raw)?;
                 self.rpc_socket_card(uid, &body)
+            }
+            "reset_poc_maro_10m" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_reset_poc_maro_10m(uid)
+            }
+            "get_poc_maro_10m_state" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_get_poc_maro_10m_state(uid)
+            }
+            "update_poc_maro_10m_state" => {
+                let uid = Self::require_client(ctx)?;
+                let body = Self::parse_json_payload(payload_raw)?;
+                self.rpc_update_poc_maro_10m_state(uid, &body)
+            }
+            "accept_poc_amber_errand" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_accept_poc_amber_errand(uid)
+            }
+            "complete_poc_amber_errand" => {
+                let uid = Self::require_client(ctx)?;
+                let body = Self::parse_json_payload(payload_raw)?;
+                self.rpc_complete_poc_amber_errand(uid, &body)
+            }
+            "resolve_poc_vermin_combat" => {
+                let uid = Self::require_client(ctx)?;
+                let body = Self::parse_json_payload(payload_raw)?;
+                self.rpc_resolve_poc_vermin_combat(uid, &body)
+            }
+            "recover_poc_parcel" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_recover_poc_parcel(uid)
+            }
+            "reset_poc_vermin_encounter" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_reset_poc_vermin_encounter(uid)
+            }
+            "inspect_poc_old_lantern" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_inspect_poc_old_lantern(uid)
+            }
+            "trigger_poc_time_wound" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_trigger_poc_time_wound(uid)
             }
             other => Err(MetaError::NotFound(format!("Unknown RPC '{}'", other))),
         }
@@ -1454,6 +1564,438 @@ impl RustMetaEngine {
             MetaError::VersionConflict("claim_quest_reward OCC retries exhausted".to_string())
         }))
     }
+
+    fn rpc_reset_poc_maro_10m(&self, user_id: &str) -> Result<Value, MetaError> {
+        let prev_reset_count =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => serde_json::from_value::<PocMaro10mState>(stored.value)
+                    .map(|s| s.reset_count)
+                    .unwrap_or(0),
+                None => 0,
+            };
+        let state = PocMaro10mState {
+            reset_count: prev_reset_count + 1,
+            ..PocMaro10mState::default()
+        };
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+        Ok(val)
+    }
+
+    fn rpc_get_poc_maro_10m_state(&self, user_id: &str) -> Result<Value, MetaError> {
+        let state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+        serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))
+    }
+
+    fn rpc_update_poc_maro_10m_state(
+        &self,
+        user_id: &str,
+        body: &Value,
+    ) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        if let Some(v) = body.get("activeBeat").and_then(|v| v.as_str()) {
+            state.active_beat = v.to_string();
+        }
+        if let Some(v) = body.get("pipGreeted").and_then(|v| v.as_bool()) {
+            state.pip_greeted = v;
+        }
+        if let Some(v) = body.get("amberErrandAccepted").and_then(|v| v.as_bool()) {
+            state.amber_errand_accepted = v;
+        }
+        if let Some(v) = body.get("amberErrandCompleted").and_then(|v| v.as_bool()) {
+            state.amber_errand_completed = v;
+        }
+        if let Some(arr) = body.get("lanternsLit").and_then(|v| v.as_array()) {
+            for x in arr.iter().filter_map(|x| x.as_str()) {
+                if !state.lanterns_lit.iter().any(|s| s == x) {
+                    state.lanterns_lit.push(x.to_string());
+                }
+            }
+        }
+        if let Some(v) = body.get("verminDefeated").and_then(|v| v.as_u64()) {
+            state.vermin_defeated = v as u32;
+        }
+        if let Some(v) = body.get("sootMuncherDefeated").and_then(|v| v.as_bool()) {
+            state.soot_muncher_defeated = v;
+        }
+        if let Some(v) = body.get("parcelRecovered").and_then(|v| v.as_bool()) {
+            state.parcel_recovered = v;
+        }
+        if let Some(v) = body.get("lanternOilCount").and_then(|v| v.as_u64()) {
+            state.lantern_oil_count = v as u32;
+        }
+        if let Some(v) = body.get("bramParcelDelivered").and_then(|v| v.as_bool()) {
+            state.bram_parcel_delivered = v;
+        }
+        if let Some(v) = body.get("traceGlimpsed").and_then(|v| v.as_bool()) {
+            state.trace_glimpsed = v;
+        }
+        if let Some(v) = body.get("eddaSpoken").and_then(|v| v.as_bool()) {
+            state.edda_spoken = v;
+        }
+        if let Some(v) = body.get("timeWoundTriggered").and_then(|v| v.as_bool()) {
+            state.time_wound_triggered = v;
+        }
+        if let Some(v) = body.get("gladeHookUnlocked").and_then(|v| v.as_bool()) {
+            state.glade_hook_unlocked = v;
+        }
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+        Ok(val)
+    }
+
+    fn rpc_accept_poc_amber_errand(&self, user_id: &str) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+        state.amber_errand_accepted = true;
+        if state.active_beat == "POC-00" || state.active_beat == "POC-01" {
+            state.active_beat = "POC-02".to_string();
+        }
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+        Ok(val)
+    }
+
+    fn rpc_complete_poc_amber_errand(
+        &self,
+        user_id: &str,
+        body: &Value,
+    ) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        let target_lantern = body
+            .get("lanternId")
+            .and_then(|v| v.as_str())
+            .unwrap_or("lantern-06")
+            .to_string();
+
+        let already_completed = state.amber_errand_completed;
+        if !already_completed {
+            state.amber_errand_accepted = true;
+            state.amber_errand_completed = true;
+            state.active_beat = "POC-02".to_string();
+            state.lantern_oil_count = state.lantern_oil_count.saturating_add(1);
+            if !state.lanterns_lit.contains(&target_lantern) {
+                state.lanterns_lit.push(target_lantern);
+            }
+        }
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        let mut res = serde_json::Map::new();
+        res.insert("state".to_string(), val);
+        res.insert(
+            "alreadyCompleted".to_string(),
+            Value::Bool(already_completed),
+        );
+        res.insert("rewardGranted".to_string(), Value::Bool(!already_completed));
+        Ok(Value::Object(res))
+    }
+
+    fn rpc_resolve_poc_vermin_combat(
+        &self,
+        user_id: &str,
+        body: &Value,
+    ) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        let player_dist = body
+            .get("playerDistance")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(999.0) as f32;
+        let attack_power = body
+            .get("attackPower")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(35.0) as f32;
+
+        const MAX_MELEE_RANGE: f32 = 3.0; // metres-v1 authoritative melee attack range
+        let mut res = serde_json::Map::new();
+
+        if player_dist > MAX_MELEE_RANGE {
+            res.insert("inRange".to_string(), Value::Bool(false));
+            res.insert("hit".to_string(), Value::Bool(false));
+            res.insert("damage".to_string(), serde_json::json!(0.0));
+            res.insert(
+                "defeated".to_string(),
+                Value::Bool(state.soot_muncher_defeated),
+            );
+            return Ok(Value::Object(res));
+        }
+
+        let damage = attack_power.max(10.0);
+        state.vermin_defeated = state.vermin_defeated.saturating_add(1);
+        state.soot_muncher_defeated = true;
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        res.insert("inRange".to_string(), Value::Bool(true));
+        res.insert("hit".to_string(), Value::Bool(true));
+        res.insert("damage".to_string(), serde_json::json!(damage));
+        res.insert("defeated".to_string(), Value::Bool(true));
+        res.insert("state".to_string(), val);
+        Ok(Value::Object(res))
+    }
+
+    fn rpc_recover_poc_parcel(&self, user_id: &str) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        if !state.soot_muncher_defeated {
+            let mut res = serde_json::Map::new();
+            res.insert("ok".to_string(), Value::Bool(false));
+            res.insert(
+                "reason".to_string(),
+                serde_json::json!("Soot Muncher must be defeated before parcel can be recovered"),
+            );
+            return Ok(Value::Object(res));
+        }
+
+        let already_recovered = state.parcel_recovered;
+        if !already_recovered {
+            state.parcel_recovered = true;
+            if state.active_beat == "POC-00"
+                || state.active_beat == "POC-01"
+                || state.active_beat == "POC-02"
+            {
+                state.active_beat = "POC-03".to_string();
+            }
+        }
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        let mut res = serde_json::Map::new();
+        res.insert("ok".to_string(), Value::Bool(true));
+        res.insert(
+            "alreadyRecovered".to_string(),
+            Value::Bool(already_recovered),
+        );
+        res.insert("state".to_string(), val);
+        Ok(Value::Object(res))
+    }
+
+    fn rpc_reset_poc_vermin_encounter(&self, user_id: &str) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        state.vermin_defeated = 0;
+        state.soot_muncher_defeated = false;
+        state.parcel_recovered = false;
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        let mut res = serde_json::Map::new();
+        res.insert("ok".to_string(), Value::Bool(true));
+        res.insert("state".to_string(), val);
+        Ok(Value::Object(res))
+    }
+
+    fn rpc_inspect_poc_old_lantern(&self, user_id: &str) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        let already_glimpsed = state.trace_glimpsed;
+        if !already_glimpsed {
+            state.trace_glimpsed = true;
+            if state.active_beat == "POC-00"
+                || state.active_beat == "POC-01"
+                || state.active_beat == "POC-02"
+                || state.active_beat == "POC-03"
+            {
+                state.active_beat = "POC-04".to_string();
+            }
+        }
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        let mut res = serde_json::Map::new();
+        res.insert("ok".to_string(), Value::Bool(true));
+        res.insert("alreadyGlimpsed".to_string(), Value::Bool(already_glimpsed));
+        res.insert("state".to_string(), val);
+        Ok(Value::Object(res))
+    }
+
+    fn rpc_trigger_poc_time_wound(&self, user_id: &str) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        let already_triggered = state.time_wound_triggered;
+        if !already_triggered {
+            state.edda_spoken = true;
+            state.time_wound_triggered = true;
+            state.glade_hook_unlocked = true;
+            state.active_beat = "POC-05".to_string();
+        }
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        let mut res = serde_json::Map::new();
+        res.insert("ok".to_string(), Value::Bool(true));
+        res.insert(
+            "alreadyTriggered".to_string(),
+            Value::Bool(already_triggered),
+        );
+        res.insert("state".to_string(), val);
+        Ok(Value::Object(res))
+    }
 }
 
 #[async_trait]
@@ -1789,5 +2331,252 @@ mod tests {
         }
 
         let _ = std::fs::remove_dir_all(&temp_dir);
+    }
+
+    #[test]
+    fn poc_maro_10m_state_resets_reproducibly_without_leaking_into_canonical_saves() {
+        let engine = test_engine();
+        let uid = generate_uuid_v4();
+        let ctx = RpcContext::client(&uid, None);
+
+        // 1. Initial state is default
+        let initial = engine
+            .invoke_rpc(&ctx, "get_poc_maro_10m_state", "{}")
+            .expect("get initial poc state");
+        assert_eq!(initial["mapId"], "maro-bell");
+        assert_eq!(initial["classId"], "cl-vanguard");
+        assert_eq!(initial["activeBeat"], "POC-00");
+        assert_eq!(initial["spawn"]["serverX"], 40.0);
+        assert_eq!(initial["spawn"]["serverY"], 151.0);
+        assert_eq!(initial["spawn"]["worldX"], 0.0);
+        assert_eq!(initial["spawn"]["worldZ"], 71.0);
+        assert_eq!(initial["resetCount"], 0);
+        assert_eq!(initial["traceGlimpsed"], false);
+
+        // 2. Update state (progressing the POC beat and story flags)
+        let updated = engine
+            .invoke_rpc(
+                &ctx,
+                "update_poc_maro_10m_state",
+                &json!({
+                    "activeBeat": "POC-03",
+                    "traceGlimpsed": true,
+                    "verminDefeated": 3,
+                    "lanternsLit": ["lantern-01", "lantern-02"],
+                })
+                .to_string(),
+            )
+            .expect("update poc state");
+        assert_eq!(updated["activeBeat"], "POC-03");
+        assert_eq!(updated["traceGlimpsed"], true);
+        assert_eq!(updated["verminDefeated"], 3);
+        assert_eq!(updated["lanternsLit"], json!(["lantern-01", "lantern-02"]));
+
+        // 3. Reset state
+        let reset = engine
+            .invoke_rpc(&ctx, "reset_poc_maro_10m", "{}")
+            .expect("reset poc state");
+        assert_eq!(reset["mapId"], "maro-bell");
+        assert_eq!(reset["activeBeat"], "POC-00");
+        assert_eq!(reset["traceGlimpsed"], false);
+        assert_eq!(reset["verminDefeated"], 0);
+        assert_eq!(reset["lanternsLit"], json!([]));
+        assert_eq!(reset["resetCount"], 1);
+
+        // 4. Verify canonical saves (quest_progress and character_progress/inventory) are completely untouched
+        let loadout = engine.get_loadout_direct(&uid).expect("get loadout");
+        assert!(loadout.active_quest_ids.is_empty());
+        let (quests, _) = engine.read_quests(&uid).expect("read quests");
+        assert!(quests.active.is_empty());
+        assert!(quests.completed.is_empty());
+        assert!(!quests
+            .completed
+            .iter()
+            .any(|q| q.quest_id.starts_with("q-maro-")));
+        let (inv, _) = engine.read_inventory(&uid).expect("read inventory");
+        assert!(!inv.uniques.iter().any(|u| u.item_id == "it-key-sun-shard"));
+        assert!(!inv
+            .stackables
+            .iter()
+            .any(|s| s.item_id == "it-key-sun-shard"));
+        assert_eq!(
+            engine
+                .store()
+                .read_doc(&uid, "quest_progress", "state")
+                .unwrap(),
+            None
+        );
+        assert_eq!(
+            engine
+                .store()
+                .read_doc(&uid, "character_progress", "state")
+                .unwrap(),
+            None
+        );
+    }
+
+    #[test]
+    fn poc_maro_10m_amber_errand_authoritative_and_idempotent() {
+        let engine = test_engine();
+        let uid = generate_uuid_v4();
+        let ctx = RpcContext::client(&uid, None);
+
+        // 1. Accept errand
+        let accepted = engine
+            .invoke_rpc(&ctx, "accept_poc_amber_errand", "{}")
+            .expect("accept amber errand");
+        assert_eq!(accepted["amberErrandAccepted"], true);
+        assert_eq!(accepted["activeBeat"], "POC-02");
+
+        // 2. Complete errand (lights lantern-06 and grants 1 lantern oil)
+        let completed = engine
+            .invoke_rpc(
+                &ctx,
+                "complete_poc_amber_errand",
+                &json!({ "lanternId": "lantern-06" }).to_string(),
+            )
+            .expect("complete amber errand");
+        assert_eq!(completed["alreadyCompleted"], false);
+        assert_eq!(completed["rewardGranted"], true);
+        assert_eq!(completed["state"]["amberErrandCompleted"], true);
+        assert_eq!(completed["state"]["lanternOilCount"], 1);
+        assert_eq!(completed["state"]["lanternsLit"], json!(["lantern-06"]));
+
+        // 3. Reconnect / retry attempt (must be idempotent, no duplicate reward or double lanterns)
+        let retry = engine
+            .invoke_rpc(
+                &ctx,
+                "complete_poc_amber_errand",
+                &json!({ "lanternId": "lantern-06" }).to_string(),
+            )
+            .expect("retry complete amber errand");
+        assert_eq!(retry["alreadyCompleted"], true);
+        assert_eq!(retry["rewardGranted"], false);
+        assert_eq!(retry["state"]["amberErrandCompleted"], true);
+        assert_eq!(retry["state"]["lanternOilCount"], 1);
+        assert_eq!(retry["state"]["lanternsLit"], json!(["lantern-06"]));
+
+        // 4. Verify canonical saves remain untouched
+        let (quests, _) = engine.read_quests(&uid).expect("read quests");
+        assert!(quests.active.is_empty());
+        assert!(quests.completed.is_empty());
+    }
+
+    #[test]
+    fn poc_maro_10m_vermin_combat_and_parcel_recovery() {
+        let engine = test_engine();
+        let uid = generate_uuid_v4();
+        let ctx = RpcContext::client(&uid, None);
+
+        // 1. Out-of-range attack check (> 3.0m)
+        let out_of_range = engine
+            .invoke_rpc(
+                &ctx,
+                "resolve_poc_vermin_combat",
+                &json!({
+                    "targetId": "mon-soot-muncher",
+                    "playerDistance": 5.2,
+                    "attackPower": 35.0,
+                })
+                .to_string(),
+            )
+            .expect("resolve out of range attack");
+        assert_eq!(out_of_range["inRange"], false);
+        assert_eq!(out_of_range["hit"], false);
+        assert_eq!(out_of_range["defeated"], false);
+
+        // 2. Parcel recovery before defeat must fail
+        let early_parcel = engine
+            .invoke_rpc(&ctx, "recover_poc_parcel", "{}")
+            .expect("early recover parcel");
+        assert_eq!(early_parcel["ok"], false);
+
+        // 3. In-range attack defeats Soot Muncher (<= 3.0m)
+        let in_range = engine
+            .invoke_rpc(
+                &ctx,
+                "resolve_poc_vermin_combat",
+                &json!({
+                    "targetId": "mon-soot-muncher",
+                    "playerDistance": 1.8,
+                    "attackPower": 35.0,
+                })
+                .to_string(),
+            )
+            .expect("resolve in range attack");
+        assert_eq!(in_range["inRange"], true);
+        assert_eq!(in_range["hit"], true);
+        assert_eq!(in_range["defeated"], true);
+        assert_eq!(in_range["state"]["sootMuncherDefeated"], true);
+        assert_eq!(in_range["state"]["verminDefeated"], 1);
+
+        // 4. Parcel recovery after defeat succeeds and updates beat to POC-03
+        let parcel = engine
+            .invoke_rpc(&ctx, "recover_poc_parcel", "{}")
+            .expect("recover parcel");
+        assert_eq!(parcel["ok"], true);
+        assert_eq!(parcel["alreadyRecovered"], false);
+        assert_eq!(parcel["state"]["parcelRecovered"], true);
+
+        // 5. Repeatable reset restores encounter state
+        let reset = engine
+            .invoke_rpc(&ctx, "reset_poc_vermin_encounter", "{}")
+            .expect("reset vermin encounter");
+        assert_eq!(reset["ok"], true);
+        assert_eq!(reset["state"]["sootMuncherDefeated"], false);
+        assert_eq!(reset["state"]["parcelRecovered"], false);
+        assert_eq!(reset["state"]["verminDefeated"], 0);
+    }
+
+    #[test]
+    fn poc_maro_10m_bram_and_old_lantern_inspect_authoritative_and_idempotent() {
+        let engine = test_engine();
+        let uid = generate_uuid_v4();
+        let ctx = RpcContext::client(&uid, None);
+
+        // 1. Initial inspect marks trace_glimpsed and advances beat to POC-04
+        let inspect1 = engine
+            .invoke_rpc(&ctx, "inspect_poc_old_lantern", "{}")
+            .expect("inspect old lantern");
+        assert_eq!(inspect1["ok"], true);
+        assert_eq!(inspect1["alreadyGlimpsed"], false);
+        assert_eq!(inspect1["state"]["traceGlimpsed"], true);
+        assert_eq!(inspect1["state"]["activeBeat"], "POC-04");
+
+        // 2. Repeated inspect is idempotent
+        let inspect2 = engine
+            .invoke_rpc(&ctx, "inspect_poc_old_lantern", "{}")
+            .expect("repeat inspect");
+        assert_eq!(inspect2["ok"], true);
+        assert_eq!(inspect2["alreadyGlimpsed"], true);
+        assert_eq!(inspect2["state"]["traceGlimpsed"], true);
+        assert_eq!(inspect2["state"]["activeBeat"], "POC-04");
+    }
+
+    #[test]
+    fn poc_maro_10m_edda_and_time_wound_event_authoritative_and_idempotent() {
+        let engine = test_engine();
+        let uid = generate_uuid_v4();
+        let ctx = RpcContext::client(&uid, None);
+
+        // 1. Initial trigger marks time wound flags and advances beat to POC-05
+        let trigger1 = engine
+            .invoke_rpc(&ctx, "trigger_poc_time_wound", "{}")
+            .expect("trigger time wound");
+        assert_eq!(trigger1["ok"], true);
+        assert_eq!(trigger1["alreadyTriggered"], false);
+        assert_eq!(trigger1["state"]["eddaSpoken"], true);
+        assert_eq!(trigger1["state"]["timeWoundTriggered"], true);
+        assert_eq!(trigger1["state"]["gladeHookUnlocked"], true);
+        assert_eq!(trigger1["state"]["activeBeat"], "POC-05");
+
+        // 2. Repeated trigger is idempotent
+        let trigger2 = engine
+            .invoke_rpc(&ctx, "trigger_poc_time_wound", "{}")
+            .expect("repeat trigger");
+        assert_eq!(trigger2["ok"], true);
+        assert_eq!(trigger2["alreadyTriggered"], true);
+        assert_eq!(trigger2["state"]["timeWoundTriggered"], true);
+        assert_eq!(trigger2["state"]["activeBeat"], "POC-05");
     }
 }

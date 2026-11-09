@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { readFileSync, statSync, readdirSync, renameSync, existsSync } from 'node:fs';
+import { readFileSync, statSync, readdirSync, renameSync, existsSync, unlinkSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import net from 'node:net';
 import path from 'node:path';
@@ -91,16 +91,15 @@ test('read-only reports the baked version, marks the body, never rebuilds', asyn
 
 test('read-only never builds the catalog database, even when it is missing', async (t) => {
   // The guard in ensure_catalog_db runs before the server listens, so the DB must be
-  // absent at start for the test to be able to fail. build/ is untracked.
-  const db = path.join(ROOT, 'build/catalog.sqlite');
-  const aside = `${db}.f168-aside`;
-  const had = existsSync(db);
-  if (had) renameSync(db, aside);
-  t.after(() => { if (had) renameSync(aside, db); }); // renameSync replaces a rebuilt copy
-  const srv = await startServer({ ATLAS_READ_ONLY: '1' });
+  // absent at start for the test to be able to fail. Isolated path via ATLAS_CATALOG_DB
+  // ensures no interference with parallel tests accessing build/catalog.sqlite.
+  const missingDb = path.join(ROOT, 'build', `catalog-readonly-test-${Date.now()}.sqlite`);
+  if (existsSync(missingDb)) unlinkSync(missingDb);
+  t.after(() => { if (existsSync(missingDb)) unlinkSync(missingDb); });
+  const srv = await startServer({ ATLAS_READ_ONLY: '1', ATLAS_CATALOG_DB: missingDb });
   t.after(() => srv.stop());
   await fetch(`${srv.url}/api/sql?q=${encodeURIComponent('SELECT 1')}`);
-  assert.equal(existsSync(db), false, 'read-only mode built build/catalog.sqlite');
+  assert.equal(existsSync(missingDb), false, 'read-only mode built build/catalog.sqlite');
 });
 
 test('read-only caches vendor files by ETag only', async (t) => {

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 using AtlasWorld.Client.Content;
+using AtlasWorld.Client.Core;
+using AtlasWorld.Client.UI.Widgets;
 
 namespace AtlasWorld.Client.World
 {
@@ -44,6 +46,16 @@ namespace AtlasWorld.Client.World
             float zoomIn = 6.2f; for (int i = 0; i < 80; i++) zoomIn = CameraZoom.Zoomed(zoomIn, -1);
             Report($"zoom clamps at 30 m out and 0.35 m in (got {zoomOut}, {zoomIn})", Mathf.IsEqualApprox(zoomOut, 30f) && Mathf.IsEqualApprox(zoomIn, 0.35f));
 
+            // F-205: POC-00 server endpoint resolution & diagnostics HUD
+            string endpointWithMap = Config.ResolveServerRsEndpointForMap("ws://127.0.0.1:2567/ws?token=dev-token:test", "maro-bell");
+            Report("ResolveServerRsEndpointForMap threads map=maro-bell and does not fall back to map-for-play",
+                endpointWithMap.Contains("map=maro-bell") && !endpointWithMap.Contains("map-for-play"));
+
+            string diagSummary = MaroBellPocDiagnosticsHud.FormatDiagnosticsSummary(
+                "maro-bell", new Vector3(0f, 0f, 71f), new Vector2(40f, 151f), true, 16.6f, "POC-00");
+            Report("MaroBellPocDiagnosticsHud formats mapId, Connected, frame time, POC beat, and 35° slope",
+                diagSummary.Contains("maro-bell") && diagSummary.Contains("Connected") && diagSummary.Contains("16.6") && diagSummary.Contains("POC-00") && diagSummary.Contains("35°"));
+
             var doc = UnifiedMapDocument.LoadOrDefault("maro-bell");
             int blocks = doc.Structures.Count(s => s.Kind == "block");
             Report($"maro-bell.json loaded ({blocks} block structures, not the fallback doc)", doc.MapId == "maro-bell" && blocks >= 40);
@@ -69,6 +81,11 @@ namespace AtlasWorld.Client.World
             Report($"client obstacle grid has {solid} solid-block rects (has {doc.StaticObstacles.Count})", doc.StaticObstacles.Count == solid);
 
             VerifyMaroFolkGirlInTown(root);
+            VerifyPoc01WonderRoadToGreatBell(doc);
+            VerifyPoc02WarmthAmberLanternErrand(doc);
+            VerifyPoc03PlayfulnessSootMuncherEncounter(doc);
+            VerifyPoc04EmotionalMysteryBramOldLantern(doc);
+            VerifyPoc05DisturbanceEddaTimeWound(doc);
 
             string outDir = OS.GetEnvironment("ATLAS_RENDER_MARO_BELL");
             if (!string.IsNullOrEmpty(outDir))
@@ -103,6 +120,271 @@ namespace AtlasWorld.Client.World
                 girl.Animation.CurrentState == "run" && girl.Animation.IsUpperBodyAttackActive);
 
             girl.Root.QueueFree();
+        }
+
+        private void VerifyPoc01WonderRoadToGreatBell(UnifiedMapDocument doc)
+        {
+            var composition = MaroBellPocController.EvaluateGreatBellRevealComposition(doc, MaroBellPocController.ArrivalSpawnWorld);
+            Report("MaroBellPocController.EvaluateGreatBellRevealComposition is valid", composition.IsValid);
+
+            var poc = new MaroBellPocController { Name = "Poc01Verify" };
+            AddChild(poc);
+            poc.Initialize(doc);
+
+            Report("MaroBellPocController spawns PipView, ReedView, and TovinView",
+                poc.PipView != null && poc.ReedView != null && poc.TovinView != null);
+            Report("PipView starts in idle animation",
+                poc.PipView?.Animation.CurrentState == "idle");
+            Report("MaroBellPocController environmental audio events played >= 2 and objective text populated",
+                poc.EnvironmentalAudioEventsPlayed >= 2 && !string.IsNullOrEmpty(poc.ObjectiveText));
+
+            poc.StepPlayer(MaroBellPocController.PipWorldPos, true, 0.5);
+            Report("StepPlayer to Pip greets Pip, updates beat to POC-01, shows Great Bell dialogue, and sets Amber objective",
+                poc.PipGreeted &&
+                poc.ActiveBeat == "POC-01" &&
+                poc.LastDialogueLine.Contains("Great Bell") &&
+                poc.ObjectiveText.Contains("Amber"));
+
+            poc.QueueFree();
+        }
+
+        private void VerifyPoc02WarmthAmberLanternErrand(UnifiedMapDocument doc)
+        {
+            var amberSpot = doc.Structures.FirstOrDefault(s => s.Id == "npc-spot-amber");
+            Report("maro-bell.json declares npc-spot-amber at expected world position (1, 28)",
+                amberSpot != null && Mathf.IsEqualApprox(amberSpot.X, 1f) && Mathf.IsEqualApprox(amberSpot.Z, 28f));
+
+            var lantern06 = doc.Structures.FirstOrDefault(s => s.Id == "lantern-06");
+            Report("maro-bell.json declares workshop lantern-06 near Amber (Z ~ 23.7)",
+                lantern06 != null && Mathf.IsEqualApprox(lantern06.Z, 23.7f));
+
+            var poc = new MaroBellPocController { Name = "Poc02Verify" };
+            AddChild(poc);
+            poc.Initialize(doc);
+
+            Report("MaroBellPocController spawns AmberView at AmberWorldPos",
+                poc.AmberView != null && poc.AmberView.Root.Position.DistanceTo(MaroBellPocController.AmberWorldPos) < 0.1f);
+            Report("AmberView starts in idle animation",
+                poc.AmberView?.Animation.CurrentState == "idle");
+            Report("WorkshopLanternNode is initialized unlit",
+                poc.WorkshopLanternNode != null && poc.WorkshopLanternLight == null && poc.LanternsLit.Count == 0);
+
+            // 1. Greet Pip first
+            poc.InteractWithPip();
+            Report("Pip greeting leads to Amber visit objective",
+                poc.ObjectiveText.Contains("Amber"));
+
+            // 2. Speak with Amber to start errand
+            bool errandStarted = poc.InteractWithAmber();
+            Report("InteractWithAmber starts errand and asks to light workshop lantern-06",
+                errandStarted &&
+                poc.AmberErrandAccepted &&
+                !poc.AmberErrandCompleted &&
+                poc.ObjectiveText.Contains("lantern-06") &&
+                poc.LastDialogueLine.Contains("workshop lantern"));
+
+            // 3. Interact with lantern-06 across the road
+            bool lanternLit = poc.TryInteractNearest(MaroBellPocController.Lantern06WorldPos);
+            Report("TryInteractNearest at lantern-06 lights the lantern with OmniLight3D and emissive glow",
+                lanternLit &&
+                poc.LanternsLit.Contains("lantern-06") &&
+                poc.WorkshopLanternLight != null &&
+                poc.WorkshopLanternGlowMesh != null &&
+                poc.ObjectiveText.Contains("Return to Amber"));
+
+            // 4. Return to Amber and complete errand
+            bool errandCompleted = poc.TryInteractNearest(MaroBellPocController.AmberWorldPos);
+            Report("Return to Amber completes errand, transitions beat to POC-02, rewards oil, and warms dialogue",
+                errandCompleted &&
+                poc.AmberErrandCompleted &&
+                poc.ActiveBeat == "POC-02" &&
+                poc.LanternOilCount == 1 &&
+                poc.LastDialogueLine.Contains("warmer the road feels already"));
+
+            // 5. Verify idempotency on repeated interactions
+            bool retryErrand = poc.CompleteAmberErrand();
+            poc.TryInteractNearest(MaroBellPocController.AmberWorldPos);
+            Report("Repeated interaction with Amber is idempotent (no duplicate rewards, beat stays POC-02)",
+                !retryErrand &&
+                poc.AmberErrandCompleted &&
+                poc.ActiveBeat == "POC-02" &&
+                poc.LanternOilCount == 1 &&
+                poc.LanternsLit.Count == 1);
+
+            poc.QueueFree();
+        }
+
+        private void VerifyPoc03PlayfulnessSootMuncherEncounter(UnifiedMapDocument doc)
+        {
+            var poc = new MaroBellPocController { Name = "Poc03Verify" };
+            AddChild(poc);
+            poc.Initialize(doc);
+
+            Report("MaroBellPocController spawns SootMuncherView at SootMuncherWorldPos",
+                poc.SootMuncherView != null && poc.SootMuncherView.Root.Position.DistanceTo(MaroBellPocController.SootMuncherWorldPos) < 0.1f);
+            Report("SootMuncherView starts in idle animation with 60 HP",
+                poc.SootMuncherView?.Animation.CurrentState == "idle" && poc.SootMuncherHp == 60f);
+            Report("ParcelNode is initialized at ParcelWorldPos",
+                poc.ParcelNode != null && poc.ParcelNode.Position.DistanceTo(MaroBellPocController.ParcelWorldPos) < 0.1f);
+
+            // 1. Attempt recovering parcel before defeat must fail
+            bool earlyParcel = poc.RecoverParcel();
+            Report("RecoverParcel before defeating Soot Muncher fails",
+                !earlyParcel && !poc.ParcelRecovered);
+
+            // 2. Out-of-range attack check (> 3.0m)
+            bool outOfRangeAttack = poc.AttackSootMuncher(5.2f, 35f);
+            Report("AttackSootMuncher from 5.2m exceeds 3.0m melee range and fails",
+                !outOfRangeAttack && poc.SootMuncherHp == 60f && !poc.SootMuncherDefeated);
+
+            // 3. In-range non-lethal attack damages Soot Muncher and triggers hit
+            bool firstHit = poc.AttackSootMuncher(1.5f, 35f);
+            Report("In-range attack (1.5m, 35 dmg) damages Soot Muncher to 25 HP",
+                firstHit && poc.SootMuncherHp == 25f && !poc.SootMuncherDefeated);
+
+            // 4. In-range lethal attack defeats Soot Muncher
+            bool fatalHit = poc.AttackSootMuncher(1.5f, 35f);
+            Report("Fatal attack defeats Soot Muncher and updates objective to recover parcel",
+                fatalHit && poc.SootMuncherDefeated && poc.SootMuncherHp == 0f && poc.ObjectiveText.Contains("Recover"));
+
+            // 5. Recover parcel after defeat succeeds and updates beat to POC-03
+            bool parcelRecovered = poc.RecoverParcel();
+            Report("RecoverParcel after defeat succeeds, hides parcel node, and advances beat to POC-03",
+                parcelRecovered && poc.ParcelRecovered && poc.ActiveBeat == "POC-03" && poc.ParcelNode?.Visible == false);
+
+            // 6. Deliver parcel to Pip
+            bool deliveredToPip = poc.ReturnParcelToPip();
+            Report("ReturnParcelToPip completes delivery, triggers Pip gratitude, and advances objective to Bram",
+                deliveredToPip && poc.ParcelDeliveredToPip && poc.ObjectiveText.Contains("Bram") && poc.LastDialogueLine.Contains("roasted chestnuts"));
+
+            // 7. Reset encounter restores HP and parcel state
+            poc.ResetVerminEncounter();
+            Report("ResetVerminEncounter restores HP to 60, resets defeat/recovery flags, and makes parcel visible",
+                poc.SootMuncherHp == 60f && !poc.SootMuncherDefeated && !poc.ParcelRecovered && poc.ParcelNode?.Visible == true);
+
+            poc.QueueFree();
+        }
+
+        private void VerifyPoc04EmotionalMysteryBramOldLantern(UnifiedMapDocument doc)
+        {
+            var bramSpot = doc.Structures.FirstOrDefault(s => s.Id == "npc-spot-bram");
+            Report("maro-bell.json declares npc-spot-bram at expected world position (-3.5, -24)",
+                bramSpot != null && Mathf.IsEqualApprox(bramSpot.X, -3.5f) && Mathf.IsEqualApprox(bramSpot.Z, -24f));
+
+            var oldLantern = doc.Structures.FirstOrDefault(s => s.Id == "old-lantern");
+            Report("maro-bell.json declares old-lantern at expected world position (3.5, -38)",
+                oldLantern != null && Mathf.IsEqualApprox(oldLantern.X, 3.5f) && Mathf.IsEqualApprox(oldLantern.Z, -38f));
+
+            var poc = new MaroBellPocController { Name = "Poc04Verify" };
+            AddChild(poc);
+            poc.Initialize(doc);
+
+            Report("MaroBellPocController spawns BramView at BramWorldPos",
+                poc.BramView != null && poc.BramView.Root.Position.DistanceTo(MaroBellPocController.BramWorldPos) < 0.1f);
+            Report("BramView starts in idle animation",
+                poc.BramView?.Animation.CurrentState == "idle");
+            Report("OldLanternNode is initialized at OldLanternWorldPos without active light",
+                poc.OldLanternNode != null && poc.OldLanternLight == null && !poc.TraceGlimpsed);
+
+            // 1. Speak with Bram
+            bool bramSpoken = poc.InteractWithBram();
+            bool bramCanonSafe = !poc.LastDialogueLine.Contains("Ninth")
+                && !poc.LastDialogueLine.Contains("Cala Knight")
+                && !poc.LastDialogueLine.Contains("9th");
+            Report("InteractWithBram sets BramSpoken, objective to inspect old lantern, and keeps canon safe (no forbidden reveals)",
+                bramSpoken &&
+                poc.BramSpoken &&
+                bramCanonSafe &&
+                poc.ObjectiveText.Contains("old lantern") &&
+                poc.LastDialogueLine.Contains("silver solder"));
+
+            // 2. Inspect Old Lantern hero prop
+            bool lanternInspected = poc.InspectOldLantern();
+            bool inspectCanonSafe = !poc.LastDialogueLine.Contains("Ninth")
+                && !poc.LastDialogueLine.Contains("Cala Knight")
+                && !poc.LastDialogueLine.Contains("9th");
+            Report("InspectOldLantern sets TraceGlimpsed, advances beat to POC-04, creates light/glow, and keeps canon safe",
+                lanternInspected &&
+                poc.TraceGlimpsed &&
+                poc.ActiveBeat == "POC-04" &&
+                poc.OldLanternLight != null &&
+                poc.OldLanternGlowMesh != null &&
+                inspectCanonSafe &&
+                poc.ObjectiveText.Contains("Edda") &&
+                poc.LastDialogueLine.Contains("patient devotion"));
+
+            // 3. Repeated inspection is idempotent
+            bool repeatInspect = poc.InspectOldLantern();
+            Report("Repeated InspectOldLantern is idempotent and maintains POC-04 state",
+                repeatInspect &&
+                poc.TraceGlimpsed &&
+                poc.ActiveBeat == "POC-04" &&
+                poc.ObjectiveText.Contains("Edda"));
+
+            poc.QueueFree();
+        }
+
+        private void VerifyPoc05DisturbanceEddaTimeWound(UnifiedMapDocument doc)
+        {
+            var eddaSpot = doc.Structures.FirstOrDefault(s => s.Id == "npc-spot-edda");
+            Report("maro-bell.json declares npc-spot-edda at expected world position (-3, -57)",
+                eddaSpot != null && Mathf.IsEqualApprox(eddaSpot.X, -3.0f) && Mathf.IsEqualApprox(eddaSpot.Z, -57.0f));
+
+            var poc = new MaroBellPocController { Name = "Poc05Verify" };
+            AddChild(poc);
+            poc.Initialize(doc);
+
+            Report("MaroBellPocController spawns EddaView at EddaWorldPos",
+                poc.EddaView != null && poc.EddaView.Root.Position.DistanceTo(MaroBellPocController.EddaWorldPos) < 0.1f);
+            Report("EddaView starts in idle animation",
+                poc.EddaView?.Animation.CurrentState == "idle");
+            Report("TimeWoundLanternNode is initialized with warm light before anomaly",
+                poc.TimeWoundLanternNode != null && poc.TimeWoundLanternLight != null && poc.TimeWoundLanternLight.LightEnergy > 1.0f);
+
+            // 1. Speak with Edda about Great Bell timing anomaly
+            bool eddaSpoken = poc.InteractWithEdda();
+            Report("InteractWithEdda sets EddaSpoken, notes Great Bell timing discrepancy, and sets lantern objective",
+                eddaSpoken &&
+                poc.EddaSpoken &&
+                poc.ObjectiveText.Contains("terrace lantern") &&
+                poc.LastDialogueLine.Contains("Three minutes early"));
+
+            // 2. Trigger Time-Wound rapid oil drain
+            bool triggered = poc.TriggerTimeWoundEvent();
+            Report("TriggerTimeWoundEvent drains oil, dims light to purple/violet chill, and asks to stabilize wick",
+                triggered &&
+                poc.TimeWoundTriggered &&
+                poc.TimeWoundLanternLight != null &&
+                poc.TimeWoundLanternLight.LightEnergy < 0.5f &&
+                poc.ObjectiveText.Contains("Stabilize") &&
+                poc.LastDialogueLine.Contains("drains into nothingness"));
+
+            // 3. Stabilize the cold wick
+            bool stabilized = poc.StabilizeTimeWoundLantern();
+            Report("StabilizeTimeWoundLantern restores warm spark, advances beat to POC-05, and sets Edda return objective",
+                stabilized &&
+                poc.TimeWoundStabilized &&
+                poc.ActiveBeat == "POC-05" &&
+                poc.TimeWoundLanternLight != null &&
+                poc.TimeWoundLanternLight.LightEnergy >= 0.7f &&
+                poc.ObjectiveText.Contains("Return to Edda") &&
+                poc.LastDialogueLine.Contains("stubborn warmth"));
+
+            // 4. Return to Edda to unlock Whispering Glade travel hook
+            bool returnToEdda = poc.InteractWithEdda();
+            Report("Return to Edda unlocks GladeHookUnlocked and concludes 10-minute POC with hopeful road hook",
+                returnToEdda &&
+                poc.GladeHookUnlocked &&
+                poc.ObjectiveText.Contains("POC Complete") &&
+                poc.LastDialogueLine.Contains("Whispering Glade"));
+
+            // 5. Repeated triggers/stabilizations are idempotent
+            bool repeatTrigger = poc.TriggerTimeWoundEvent();
+            bool repeatStabilize = poc.StabilizeTimeWoundLantern();
+            Report("Repeated Time-Wound interactions are idempotent",
+                !repeatTrigger && !repeatStabilize && poc.TimeWoundStabilized && poc.ActiveBeat == "POC-05");
+
+            poc.QueueFree();
         }
 
         private async Task Render(Node3D root, string outDir)

@@ -8,7 +8,7 @@ import net from 'node:net';
 process.setMaxListeners(100);
 export const sleep = ms => new Promise(r => setTimeout(r, ms));
 const CHROME = process.env.CHROME_BIN || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-export const chromeAvailable = () => existsSync(CHROME);
+export const chromeAvailable = () => existsSync(CHROME) && typeof WebSocket !== 'undefined';
 const freePort = () => new Promise((res, rej) => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => res(p)); }); s.on('error', rej); });
 export class Cdp {
   constructor(ws) { this.ws = new WebSocket(ws); this.id = 0; this.pending = new Map(); this.ls = [];
@@ -69,16 +69,19 @@ async function ensureSharedBrowser() {
     try { rmSync(profile, { recursive: true, force: true }); } catch {}
   };
   process.on('exit', cleanup);
-  for (let i = 0; i < 50; i++) {
+  let info = null;
+  for (let i = 0; i < 100; i++) {
     try {
-      await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+      info = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
       break;
     } catch {
       await sleep(150);
     }
   }
   // Browser-level CDP connection: lets every launch() own an isolated browser context.
-  const info = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+  if (!info) {
+    info = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+  }
   const cdp = new Cdp(info.webSocketDebuggerUrl);
   await cdp.open();
   _sharedBrowser = { port, chrome, profile, cleanup, cdp };

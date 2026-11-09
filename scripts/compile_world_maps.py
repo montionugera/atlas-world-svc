@@ -2056,7 +2056,7 @@ def verify_compiled_maps(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Compile L1-L3 World Spine into playable v3 Unified Map Documents.")
-    parser.add_argument("--check", action="store_true", help="Verify all 44 maps are up-to-date and 100% bound without writing.")
+    parser.add_argument("--check", action="store_true", help="Verify all 44 maps are up-to-date and 100%% bound without writing.")
     args = parser.parse_args()
 
     bestiary: list[dict[str, Any]] = load_json(BESTIARY_PATH)

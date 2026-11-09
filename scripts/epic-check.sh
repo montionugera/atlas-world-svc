@@ -4,6 +4,22 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+export PATH="$HOME/.nvm/versions/node/v22.22.1/bin:$HOME/.local/share/fnm/aliases/default/bin:/opt/homebrew/bin:/usr/local/bin:$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
+export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-/Users/pasitnusso/workspace/repos/atlas-world-svc/server-rs/target-agy}"
+
+check_e011() {
+  echo "[epic-check] Verifying E-011 (First 10 Minutes POC — The First Light of Maro Bell)"
+  node --test scripts/tests/poc-*.test.mjs
+  cargo test --manifest-path server-rs/Cargo.toml poc_maro_10m
+  ./scripts/godot-verify.sh ATLAS_VERIFY_POC_MARO_10M '^\[PocMaro10mVerify\] VERDICT PASS$'
+}
+
+if [[ "${PSRW_EPIC_ID:-}" == "E-011" || "${1:-}" == "E-011" ]]; then
+  check_e011
+  echo "[epic-check] PASS — E-011 First 10 Minutes POC assertions verified."
+  exit 0
+fi
+
 # A missing or renamed module must fail, rather than silently run zero tests.
 run_modules() {
   local module listing
@@ -18,8 +34,6 @@ run_modules() {
 }
 
 echo "[epic-check] Verifying E-004 (One Continuous Open World: AOI, Sleeping Regions, World State Store, Restart Persistence, Border Ghosts, Authority Handoff)"
-export PATH="$HOME/.nvm/versions/node/v22.22.1/bin:$HOME/.local/share/fnm/aliases/default/bin:/opt/homebrew/bin:/usr/local/bin:$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
-export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-/Users/pasitnusso/workspace/repos/atlas-world-svc/server-rs/target-agy}"
 run_modules \
   sleeping_regions_test \
   world_state_store_test \
@@ -66,4 +80,6 @@ python3 scripts/run_world_pipeline.py --fast --auto-tune
 rm -rf tests/__pycache__
 git checkout -- scripts/__pycache__/ 2>/dev/null || true
 
-echo "[epic-check] PASS — All E-004, E-005, E-007, E-008, E-010, and Product Owner Self-Evaluation assertions verified."
+check_e011
+
+echo "[epic-check] PASS — All E-004, E-005, E-007, E-008, E-010, E-011, and Product Owner Self-Evaluation assertions verified."
