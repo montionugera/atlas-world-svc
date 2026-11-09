@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 using AtlasWorld.Client.Content;
+using AtlasWorld.Client.Core;
+using AtlasWorld.Client.UI.Widgets;
 
 namespace AtlasWorld.Client.World
 {
@@ -43,6 +45,16 @@ namespace AtlasWorld.Client.World
             float zoomOut = 6.2f; for (int i = 0; i < 80; i++) zoomOut = CameraZoom.Zoomed(zoomOut, +1);
             float zoomIn = 6.2f; for (int i = 0; i < 80; i++) zoomIn = CameraZoom.Zoomed(zoomIn, -1);
             Report($"zoom clamps at 30 m out and 0.35 m in (got {zoomOut}, {zoomIn})", Mathf.IsEqualApprox(zoomOut, 30f) && Mathf.IsEqualApprox(zoomIn, 0.35f));
+
+            // F-205: POC-00 server endpoint resolution & diagnostics HUD
+            string endpointWithMap = Config.ResolveServerRsEndpointForMap("ws://127.0.0.1:2567/ws?token=dev-token:test", "maro-bell");
+            Report("ResolveServerRsEndpointForMap threads map=maro-bell and does not fall back to map-for-play",
+                endpointWithMap.Contains("map=maro-bell") && !endpointWithMap.Contains("map-for-play"));
+
+            string diagSummary = MaroBellPocDiagnosticsHud.FormatDiagnosticsSummary(
+                "maro-bell", new Vector3(0f, 0f, 71f), new Vector2(40f, 151f), true, 16.6f, "POC-00");
+            Report("MaroBellPocDiagnosticsHud formats mapId, Connected, frame time, POC beat, and 35° slope",
+                diagSummary.Contains("maro-bell") && diagSummary.Contains("Connected") && diagSummary.Contains("16.6") && diagSummary.Contains("POC-00") && diagSummary.Contains("35°"));
 
             var doc = UnifiedMapDocument.LoadOrDefault("maro-bell");
             int blocks = doc.Structures.Count(s => s.Kind == "block");

@@ -10,6 +10,7 @@ pub const EMBERDOWN_JSON: &str = include_str!("../../../content/maps/emberdown.j
 pub const GILDMARK_HEAD_JSON: &str = include_str!("../../../content/maps/gildmark-head.json");
 pub const HOLLOWMARCH_JSON: &str = include_str!("../../../content/maps/hollowmarch.json");
 pub const ROOKTIDE_REACH_JSON: &str = include_str!("../../../content/maps/rooktide-reach.json");
+pub const MARO_BELL_JSON: &str = include_str!("../../../content/maps/maro-bell.json");
 
 /// Canonical Wealdmarch (`c02`) generated-world regions compiled from the World Spine (`F-002`).
 pub const GENERATED_REGION_IDS: [&str; 9] = [
@@ -36,6 +37,7 @@ pub fn embedded_region_json(region_id: &str) -> Option<&'static str> {
         "gildmark-head" => Some(GILDMARK_HEAD_JSON),
         "hollowmarch" => Some(HOLLOWMARCH_JSON),
         "rooktide-reach" => Some(ROOKTIDE_REACH_JSON),
+        "maro-bell" => Some(MARO_BELL_JSON),
         _ => None,
     }
 }
@@ -43,6 +45,9 @@ pub fn embedded_region_json(region_id: &str) -> Option<&'static str> {
 /// Resolves a requested `?map=` identifier to either a generated-world region ID
 /// (`GENERATED_REGION_IDS`) or one of the legacy/test rooms (`room_id_for`).
 pub fn resolve_room_or_region_id(requested: &str) -> &'static str {
+    if requested == "maro-bell" {
+        return "maro-bell";
+    }
     if let Some(&region) = GENERATED_REGION_IDS.iter().find(|&&id| id == requested) {
         return region;
     }
@@ -145,6 +150,29 @@ mod tests {
             "expected millcross-ford mobs to spawn, got {}",
             frame.entities.len()
         );
+    }
+
+    #[test]
+    fn resolves_and_loads_maro_bell_poc_room_with_south_gate_spawn_and_obstacles() {
+        assert_eq!(resolve_room_or_region_id("maro-bell"), "maro-bell");
+        let cfg = load_generated_region_config("maro-bell").unwrap();
+        assert_eq!(cfg.width, 80.0);
+        assert_eq!(cfg.height, 160.0);
+        assert_eq!(cfg.player_spawn, Some((40.0, 151.0)));
+        assert!(cfg.static_obstacles.len() >= 40);
+        assert!(cfg.static_obstacles.iter().any(|o| o.id == "cliff-west"));
+        assert!(cfg.static_obstacles.iter().any(|o| o.id == "amber-shop"));
+        assert!(cfg.static_obstacles.iter().any(|o| o.id == "bram-house"));
+
+        let sim = AtlasSimulation::from_generated_region("maro-bell", 0x1337_cafe).unwrap();
+        assert_eq!(sim.map_id, "maro-bell");
+        assert_eq!(sim.arena_width, 80.0);
+        assert_eq!(sim.arena_height, 160.0);
+        assert_eq!(sim.player_spawn.x, 40.0);
+        assert_eq!(sim.player_spawn.y, 151.0);
+        let hf = sim.world.resource::<crate::content::map::TerrainHeightfield>();
+        assert_eq!(hf.coord_scale, 1.0);
+        assert_eq!(hf.max_walkable_slope_deg, 35.0);
     }
 
     #[test]
