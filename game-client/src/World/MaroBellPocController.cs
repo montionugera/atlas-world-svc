@@ -12,9 +12,10 @@ namespace AtlasWorld.Client.World
     /// POC-01: Wonder — The Road to the Great Bell (00:00–02:30).
     /// POC-02: Warmth — A Small Kindness (02:30–04:15).
     /// POC-03: Playfulness — The Missing Delivery (04:15–06:15).
-    /// Manages arrival reveal composition validation, South Gate Pip/Reed/Tovin/Amber NPCs,
+    /// POC-04: Emotional Mystery — Bram's Old Lantern and First Trace (06:15–07:45).
+    /// Manages arrival reveal composition validation, South Gate Pip/Reed/Tovin/Amber/Bram NPCs,
     /// village lantern unlit->lit 3D state transitions with warm OmniLight3D and emissive glow,
-    /// shared Lantern Vermin / Soot Muncher encounter, parcel recovery, and environmental cues.
+    /// shared Lantern Vermin / Soot Muncher encounter, parcel recovery, old lantern hero prop inspection, and environmental cues.
     /// </summary>
     public sealed partial class MaroBellPocController : Node3D
     {
@@ -28,6 +29,8 @@ namespace AtlasWorld.Client.World
         public static readonly Vector3 Lantern04WorldPos = new(-3.8f, 0f, 35.6f);
         public static readonly Vector3 SootMuncherWorldPos = new(12.0f, 0f, 6.0f);
         public static readonly Vector3 ParcelWorldPos = new(12.5f, 0f, 4.0f);
+        public static readonly Vector3 BramWorldPos = new(-3.5f, 0f, -24.0f);
+        public static readonly Vector3 OldLanternWorldPos = new(3.5f, 0f, -38.0f);
         public const float InteractionRadiusMeters = 3.8f;
 
         public readonly record struct RevealCompositionReport(
@@ -51,6 +54,9 @@ namespace AtlasWorld.Client.World
         public bool ParcelRecovered { get; private set; }
         public bool ParcelDeliveredToPip { get; private set; }
 
+        public bool BramSpoken { get; private set; }
+        public bool TraceGlimpsed { get; private set; }
+
         public string ObjectiveText { get; private set; } = "Follow the Lantern Road & speak with Pip [F]";
         public string LastDialogueLine { get; private set; } = "";
         public int EnvironmentalAudioEventsPlayed { get; private set; }
@@ -59,12 +65,16 @@ namespace AtlasWorld.Client.World
         public EntityView? ReedView { get; private set; }
         public EntityView? TovinView { get; private set; }
         public EntityView? AmberView { get; private set; }
+        public EntityView? BramView { get; private set; }
         public EntityView? SootMuncherView { get; private set; }
 
         public Node3D? WorkshopLanternNode { get; private set; }
         public OmniLight3D? WorkshopLanternLight { get; private set; }
         public MeshInstance3D? WorkshopLanternGlowMesh { get; private set; }
         public Node3D? ParcelNode { get; private set; }
+        public Node3D? OldLanternNode { get; private set; }
+        public OmniLight3D? OldLanternLight { get; private set; }
+        public MeshInstance3D? OldLanternGlowMesh { get; private set; }
 
         private CanvasLayer? _uiLayer;
         private PanelContainer? _objectivePanel;
@@ -174,6 +184,16 @@ namespace AtlasWorld.Client.World
             AmberView.Root.LookAt(AmberWorldPos + new Vector3(-1f, 0f, 0f), Vector3.Up);
             AttachNpcLabel(AmberView.Root, "[Oil Merchant] Amber\n[F] Speak");
             AmberView.Animation.Update(true, Vector3.Zero);
+
+            // 5. Bram
+            string bramKey = "npc";
+            BramView = new EntityView(EntityKind.Npc, bramKey);
+            BramView.Root.Name = "npc-bram";
+            BramView.Root.Position = BramWorldPos;
+            AddChild(BramView.Root);
+            BramView.Root.LookAt(BramWorldPos + new Vector3(1f, 0f, 0f), Vector3.Up);
+            AttachNpcLabel(BramView.Root, "[Lantern Keeper] Bram\n[F] Speak");
+            BramView.Animation.Update(true, Vector3.Zero);
         }
 
         private void SetupLanternNodes(UnifiedMapDocument doc)
@@ -186,6 +206,15 @@ namespace AtlasWorld.Client.World
             AddChild(WorkshopLanternNode);
 
             AttachLanternLabel(WorkshopLanternNode, "[Unlit Lantern]\n[F] Light with Amber's Oil");
+
+            OldLanternNode = new Node3D
+            {
+                Name = "PocOldLantern",
+                Position = OldLanternWorldPos,
+            };
+            AddChild(OldLanternNode);
+
+            AttachLanternLabel(OldLanternNode, "[Old Lantern]\n[F] Inspect");
         }
 
         private void SpawnSootMuncherEncounter()
@@ -672,6 +701,73 @@ namespace AtlasWorld.Client.World
             return true;
         }
 
+        public bool InteractWithBram()
+        {
+            BramSpoken = true;
+            LastDialogueLine = "Bram: This lantern has kept vigil through forty winters. Years ago, when its reservoir cracked, a traveller passing through town repaired the seams with silver solder so fine no smith in Maro could match it. She asked for no coin, only that we keep the wick trimmed. Go have a look at the terrace shrine.";
+            ObjectiveText = "Inspect Bram's old lantern at the Terrace Shrine [F]";
+
+            if (_objectiveLabel != null)
+                _objectiveLabel.Text = ObjectiveText;
+
+            SetDialogue(LastDialogueLine);
+            AudioRegistry.Instance?.Play("sfx:bell_resonance", BramWorldPos);
+            EnvironmentalAudioEventsPlayed++;
+            return true;
+        }
+
+        public bool InspectOldLantern()
+        {
+            TraceGlimpsed = true;
+            if (ActiveBeat == "POC-00" || ActiveBeat == "POC-01" || ActiveBeat == "POC-02" || ActiveBeat == "POC-03")
+            {
+                ActiveBeat = "POC-04";
+            }
+
+            if (OldLanternNode != null && OldLanternLight == null)
+            {
+                OldLanternLight = new OmniLight3D
+                {
+                    Name = "OldLanternLight",
+                    LightColor = new Color(0.95f, 0.82f, 0.65f),
+                    LightEnergy = 0.9f,
+                    OmniRange = 4.5f,
+                    Position = new Vector3(0f, 2.0f, 0f),
+                };
+                OldLanternNode.AddChild(OldLanternLight);
+
+                var glowMat = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.95f, 0.82f, 0.65f),
+                    EmissionEnabled = true,
+                    Emission = new Color(0.95f, 0.82f, 0.65f),
+                    EmissionEnergyMultiplier = 1.2f,
+                };
+                OldLanternGlowMesh = new MeshInstance3D
+                {
+                    Name = "OldLanternGlow",
+                    Mesh = new SphereMesh { Radius = 0.2f, Height = 0.35f },
+                    MaterialOverride = glowMat,
+                    Position = new Vector3(0f, 2.0f, 0f),
+                };
+                OldLanternNode.AddChild(OldLanternGlowMesh);
+
+                AttachLanternLabel(OldLanternNode, "[Old Lantern - Inspected]");
+            }
+
+            AudioRegistry.Instance?.Play("sfx:chime_bright", OldLanternWorldPos);
+            EnvironmentalAudioEventsPlayed++;
+
+            LastDialogueLine = "The silver brazing along the seams is impossibly delicate and even. An unknown master's hand mended this cold brass with patient devotion.";
+            ObjectiveText = "Speak with Edda by the Great Bell staircase [F]";
+
+            if (_objectiveLabel != null)
+                _objectiveLabel.Text = ObjectiveText;
+
+            SetDialogue(LastDialogueLine);
+            return true;
+        }
+
         public void ResetVerminEncounter()
         {
             SootMuncherHp = 60f;
@@ -742,6 +838,14 @@ namespace AtlasWorld.Client.World
                 SetDialogue("Tovin: Sixty-five winters I've kept the kiln ledgers, and never has the brass hummed like this...");
                 return true;
             }
+            if (playerPos.DistanceTo(BramWorldPos) <= InteractionRadiusMeters)
+            {
+                return InteractWithBram();
+            }
+            if (playerPos.DistanceTo(OldLanternWorldPos) <= InteractionRadiusMeters)
+            {
+                return InspectOldLantern();
+            }
             return false;
         }
 
@@ -760,6 +864,7 @@ namespace AtlasWorld.Client.World
             ReedView?.Animation.Update(true, Vector3.Zero);
             TovinView?.Animation.Update(true, Vector3.Zero);
             AmberView?.Animation.Update(true, Vector3.Zero);
+            BramView?.Animation.Update(true, Vector3.Zero);
             SootMuncherView?.Animation.Update(true, Vector3.Zero);
         }
     }
