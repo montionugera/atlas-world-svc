@@ -192,6 +192,17 @@ namespace AtlasWorld.Client
                 return;
             }
 
+            // F-211 POC-06: 10-Minute Maro Bell POC end-to-end scorecard probe (ATLAS_VERIFY_POC_MARO_10M=1).
+            if (OS.GetEnvironment("ATLAS_VERIFY_POC_MARO_10M") == "1")
+            {
+                SetProcess(false);
+                SetPhysicsProcess(false);
+                SetProcessInput(false);
+                SetProcessUnhandledInput(false);
+                AddChild(new PocMaro10mVerify { Name = "PocMaro10mVerify" });
+                return;
+            }
+
             // F-188 interactive Playtest Sandbox probe (ATLAS_VERIFY_PLAYTEST_SANDBOX=1).
             if (OS.GetEnvironment("ATLAS_VERIFY_PLAYTEST_SANDBOX") == "1")
             {
