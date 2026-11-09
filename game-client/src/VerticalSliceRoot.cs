@@ -62,6 +62,7 @@ namespace AtlasWorld.Client
         private Node3D? _meadowRingRoot;
         private string _activeMapId = "freja-south-gate";
         private MaroBellPocDiagnosticsHud? _pocDiagnosticsHud;
+        private MaroBellPocController? _maroPoc;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
         private float _basePlayerSpeed = 3.0f; // F-184: player run is 3 m/s (server SPEED_SCALE 0.15 of the old 20)
@@ -340,6 +341,9 @@ namespace AtlasWorld.Client
             {
                 _pocDiagnosticsHud = new MaroBellPocDiagnosticsHud { Name = "MaroBellPocDiagnosticsHud" };
                 AddChild(_pocDiagnosticsHud);
+                _maroPoc = new MaroBellPocController { Name = "MaroBellPocController" };
+                AddChild(_maroPoc);
+                _maroPoc.Initialize(_mapDoc);
             }
             _metaShell.BindGrowthManager(_growth, msg =>
             {
@@ -1415,6 +1419,13 @@ namespace AtlasWorld.Client
                         TriggerSkill(3);
                         GetViewport()?.SetInputAsHandled();
                         break;
+                    case Key.F:
+                        if (PlayerAvatar != null && _maroPoc?.TryInteractNearest(PlayerAvatar.Position) == true)
+                        {
+                            GetViewport()?.SetInputAsHandled();
+                            return;
+                        }
+                        break;
                     case Key.F1:
                         MobileControls?.PotionHpBtn?.TriggerCooldown(1.5f);
                         TriggerPotion("hp");
@@ -1764,6 +1775,11 @@ namespace AtlasWorld.Client
                     _selectedServerTargetId);
             }
 
+            if (PlayerAvatar != null)
+            {
+                _maroPoc?.StepPlayer(PlayerAvatar.Position, _wasMovingLastFrame, dt);
+            }
+
             if (_pocDiagnosticsHud != null && PlayerAvatar != null)
             {
                 _pocDiagnosticsHud.UpdateDiagnostics(
@@ -1772,7 +1788,7 @@ namespace AtlasWorld.Client
                     ServerArenaCenter,
                     Connection != null && Connection.IsConnectedToHost,
                     delta,
-                    "POC-00");
+                    _maroPoc?.ActiveBeat ?? "POC-00");
             }
 
             if (_attackAnimHoldSec > 0f)

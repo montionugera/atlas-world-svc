@@ -155,6 +155,26 @@
       "stream": "res://assets/audio/shatter_heavy.ogg",
       "license": "CC0",
       "source": "Kenney Impact Sounds"
+    },
+    "sfx:bell_resonance": {
+      "stream": "res://assets/audio/chime_soft.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds (Great Bell resonance)"
+    },
+    "sfx:bell_toll": {
+      "stream": "res://assets/audio/impact_plate_heavy.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds (Great Bell toll)"
+    },
+    "sfx:wind_ambient": {
+      "stream": "res://assets/audio/impact_light_alt.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds (Maro valley wind)"
+    },
+    "sfx:footstep": {
+      "stream": "res://assets/audio/impact_light.ogg",
+      "license": "CC0",
+      "source": "Kenney Impact Sounds (road footstep)"
     }
   }
 }
