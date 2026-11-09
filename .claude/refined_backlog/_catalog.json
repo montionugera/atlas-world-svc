@@ -2667,9 +2667,10 @@
     "title": "POC-01: Wonder \u2014 The Road to the Great Bell (00:00-02:30 reveal composition, Pip greeting, ambient Reed & Tovin)",
     "from_idea": "I-288",
     "created_at": "2026-11-09T02:07:38.362599+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-011"
+    "epic": "E-011",
+    "claimed_at": "2026-11-09T02:07:49.643431+00:00"
   }
 ]
