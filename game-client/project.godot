@@ -13,6 +13,7 @@ config_version=5
 config/name="AtlasWorldClient"
 run/main_scene="res://scenes/VerticalSlice.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+config/icon="res://icon.png"
 
 [autoload]
 
