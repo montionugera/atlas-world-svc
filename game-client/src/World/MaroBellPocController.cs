@@ -31,6 +31,8 @@ namespace AtlasWorld.Client.World
         public static readonly Vector3 ParcelWorldPos = new(12.5f, 0f, 4.0f);
         public static readonly Vector3 BramWorldPos = new(-3.5f, 0f, -24.0f);
         public static readonly Vector3 OldLanternWorldPos = new(3.5f, 0f, -38.0f);
+        public static readonly Vector3 EddaWorldPos = new(-3.0f, 0f, -57.0f);
+        public static readonly Vector3 TimeWoundLanternWorldPos = new(2.5f, 0f, -54.0f);
         public const float InteractionRadiusMeters = 3.8f;
 
         public readonly record struct RevealCompositionReport(
@@ -56,6 +58,10 @@ namespace AtlasWorld.Client.World
 
         public bool BramSpoken { get; private set; }
         public bool TraceGlimpsed { get; private set; }
+        public bool EddaSpoken { get; private set; }
+        public bool TimeWoundTriggered { get; private set; }
+        public bool TimeWoundStabilized { get; private set; }
+        public bool GladeHookUnlocked { get; private set; }
 
         public string ObjectiveText { get; private set; } = "Follow the Lantern Road & speak with Pip [F]";
         public string LastDialogueLine { get; private set; } = "";
@@ -66,6 +72,7 @@ namespace AtlasWorld.Client.World
         public EntityView? TovinView { get; private set; }
         public EntityView? AmberView { get; private set; }
         public EntityView? BramView { get; private set; }
+        public EntityView? EddaView { get; private set; }
         public EntityView? SootMuncherView { get; private set; }
 
         public Node3D? WorkshopLanternNode { get; private set; }
@@ -75,6 +82,9 @@ namespace AtlasWorld.Client.World
         public Node3D? OldLanternNode { get; private set; }
         public OmniLight3D? OldLanternLight { get; private set; }
         public MeshInstance3D? OldLanternGlowMesh { get; private set; }
+        public Node3D? TimeWoundLanternNode { get; private set; }
+        public OmniLight3D? TimeWoundLanternLight { get; private set; }
+        public MeshInstance3D? TimeWoundLanternGlowMesh { get; private set; }
 
         private CanvasLayer? _uiLayer;
         private PanelContainer? _objectivePanel;
@@ -194,6 +204,16 @@ namespace AtlasWorld.Client.World
             BramView.Root.LookAt(BramWorldPos + new Vector3(1f, 0f, 0f), Vector3.Up);
             AttachNpcLabel(BramView.Root, "[Lantern Keeper] Bram\n[F] Speak");
             BramView.Animation.Update(true, Vector3.Zero);
+
+            // 6. Edda
+            string eddaKey = "npc";
+            EddaView = new EntityView(EntityKind.Npc, eddaKey);
+            EddaView.Root.Name = "npc-edda";
+            EddaView.Root.Position = EddaWorldPos;
+            AddChild(EddaView.Root);
+            EddaView.Root.LookAt(EddaWorldPos + new Vector3(1f, 0f, 0f), Vector3.Up);
+            AttachNpcLabel(EddaView.Root, "[Bell Keeper] Edda\n[F] Speak");
+            EddaView.Animation.Update(true, Vector3.Zero);
         }
 
         private void SetupLanternNodes(UnifiedMapDocument doc)
@@ -215,6 +235,41 @@ namespace AtlasWorld.Client.World
             AddChild(OldLanternNode);
 
             AttachLanternLabel(OldLanternNode, "[Old Lantern]\n[F] Inspect");
+
+            TimeWoundLanternNode = new Node3D
+            {
+                Name = "PocTimeWoundLantern",
+                Position = TimeWoundLanternWorldPos,
+            };
+            AddChild(TimeWoundLanternNode);
+
+            TimeWoundLanternLight = new OmniLight3D
+            {
+                Name = "TimeWoundLanternLight",
+                LightColor = new Color(0.98f, 0.85f, 0.55f),
+                LightEnergy = 1.2f,
+                OmniRange = 5.0f,
+                Position = new Vector3(0f, 2.0f, 0f),
+            };
+            TimeWoundLanternNode.AddChild(TimeWoundLanternLight);
+
+            var timeWoundGlowMat = new StandardMaterial3D
+            {
+                AlbedoColor = new Color(0.98f, 0.85f, 0.55f),
+                EmissionEnabled = true,
+                Emission = new Color(0.98f, 0.85f, 0.55f),
+                EmissionEnergyMultiplier = 1.4f,
+            };
+            TimeWoundLanternGlowMesh = new MeshInstance3D
+            {
+                Name = "TimeWoundLanternGlow",
+                Mesh = new SphereMesh { Radius = 0.22f, Height = 0.38f },
+                MaterialOverride = timeWoundGlowMat,
+                Position = new Vector3(0f, 2.0f, 0f),
+            };
+            TimeWoundLanternNode.AddChild(TimeWoundLanternGlowMesh);
+
+            AttachLanternLabel(TimeWoundLanternNode, "[Terrace Lantern]");
         }
 
         private void SpawnSootMuncherEncounter()
@@ -768,6 +823,125 @@ namespace AtlasWorld.Client.World
             return true;
         }
 
+        public bool InteractWithEdda()
+        {
+            if (!TimeWoundStabilized)
+            {
+                EddaSpoken = true;
+                LastDialogueLine = "Edda: Three minutes early. Look at the water clock — third time this fortnight the Great Bell has sung before the dial marked the hour. Something above is slipping. Look across the path! The terrace lantern is flickering wildly!";
+                ObjectiveText = "Investigate the flickering terrace lantern by the Bell staircase [F]";
+
+                if (_objectiveLabel != null)
+                    _objectiveLabel.Text = ObjectiveText;
+
+                SetDialogue(LastDialogueLine);
+                AudioRegistry.Instance?.Play("sfx:bell_toll", GreatBellWorld);
+                EnvironmentalAudioEventsPlayed++;
+                return true;
+            }
+
+            GladeHookUnlocked = true;
+            LastDialogueLine = "Edda: An impossible flame... burning through hours of oil in heartbeats. Just like the whispers from the Whispering Glade past the north pass. Traveller, Maro Bell has stood for centuries, but the winds are shifting. When you are ready, journey beyond the Great Bell. We need kind hands out there.";
+            ObjectiveText = "POC Complete — The road continues into the Whispering Glade";
+
+            if (_objectiveLabel != null)
+                _objectiveLabel.Text = ObjectiveText;
+
+            SetDialogue(LastDialogueLine);
+            AudioRegistry.Instance?.Play("sfx:bell_resonance", EddaWorldPos);
+            EnvironmentalAudioEventsPlayed++;
+            return true;
+        }
+
+        public bool TriggerTimeWoundEvent()
+        {
+            if (TimeWoundTriggered)
+            {
+                return false;
+            }
+
+            TimeWoundTriggered = true;
+
+            // Cold dim purple shift
+            if (TimeWoundLanternLight != null)
+            {
+                TimeWoundLanternLight.LightColor = new Color(0.6f, 0.4f, 0.85f);
+                TimeWoundLanternLight.LightEnergy = 0.25f;
+                TimeWoundLanternLight.OmniRange = 2.5f;
+            }
+            if (TimeWoundLanternGlowMesh != null)
+            {
+                var frostMat = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.6f, 0.4f, 0.85f),
+                    EmissionEnabled = true,
+                    Emission = new Color(0.6f, 0.4f, 0.85f),
+                    EmissionEnergyMultiplier = 0.5f,
+                };
+                TimeWoundLanternGlowMesh.MaterialOverride = frostMat;
+            }
+
+            if (TimeWoundLanternNode != null)
+                AttachLanternLabel(TimeWoundLanternNode, "[Frozen Wick - Press F to Stabilize]");
+
+            AudioRegistry.Instance?.Play("sfx:whisper_wind", TimeWoundLanternWorldPos);
+            EnvironmentalAudioEventsPlayed++;
+
+            LastDialogueLine = "The lantern glass frosts over with unnatural chill. Within heartbeats, a full reservoir of oil drains into nothingness, leaving a shivering violet ember.";
+            ObjectiveText = "Stabilize the freezing terrace lantern wick [F]";
+
+            if (_objectiveLabel != null)
+                _objectiveLabel.Text = ObjectiveText;
+
+            SetDialogue(LastDialogueLine);
+            return true;
+        }
+
+        public bool StabilizeTimeWoundLantern()
+        {
+            if (!TimeWoundTriggered || TimeWoundStabilized)
+            {
+                return false;
+            }
+
+            TimeWoundStabilized = true;
+            ActiveBeat = "POC-05";
+
+            // Restored warm spark
+            if (TimeWoundLanternLight != null)
+            {
+                TimeWoundLanternLight.LightColor = new Color(0.95f, 0.8f, 0.5f);
+                TimeWoundLanternLight.LightEnergy = 0.8f;
+                TimeWoundLanternLight.OmniRange = 4.0f;
+            }
+            if (TimeWoundLanternGlowMesh != null)
+            {
+                var sparkMat = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.95f, 0.8f, 0.5f),
+                    EmissionEnabled = true,
+                    Emission = new Color(0.95f, 0.8f, 0.5f),
+                    EmissionEnergyMultiplier = 1.0f,
+                };
+                TimeWoundLanternGlowMesh.MaterialOverride = sparkMat;
+            }
+
+            if (TimeWoundLanternNode != null)
+                AttachLanternLabel(TimeWoundLanternNode, "[Stabilized Lantern]");
+
+            AudioRegistry.Instance?.Play("sfx:chime_bright", TimeWoundLanternWorldPos);
+            EnvironmentalAudioEventsPlayed++;
+
+            LastDialogueLine = "You shield the cold casing and steady the wick. The shivering ember catches and burns with a gentle, stubborn warmth.";
+            ObjectiveText = "Return to Edda at the Great Bell staircase [F]";
+
+            if (_objectiveLabel != null)
+                _objectiveLabel.Text = ObjectiveText;
+
+            SetDialogue(LastDialogueLine);
+            return true;
+        }
+
         public void ResetVerminEncounter()
         {
             SootMuncherHp = 60f;
@@ -846,6 +1020,28 @@ namespace AtlasWorld.Client.World
             {
                 return InspectOldLantern();
             }
+            if (playerPos.DistanceTo(EddaWorldPos) <= InteractionRadiusMeters)
+            {
+                return InteractWithEdda();
+            }
+            if (playerPos.DistanceTo(TimeWoundLanternWorldPos) <= InteractionRadiusMeters)
+            {
+                if (EddaSpoken && !TimeWoundTriggered)
+                {
+                    return TriggerTimeWoundEvent();
+                }
+                if (TimeWoundTriggered && !TimeWoundStabilized)
+                {
+                    return StabilizeTimeWoundLantern();
+                }
+                if (TimeWoundStabilized)
+                {
+                    SetDialogue("The stabilized ember burns steadily against the cold mountain wind.");
+                    return true;
+                }
+                SetDialogue("A brass terrace lantern burning steadily near the Great Bell staircase.");
+                return true;
+            }
             return false;
         }
 
@@ -865,6 +1061,7 @@ namespace AtlasWorld.Client.World
             TovinView?.Animation.Update(true, Vector3.Zero);
             AmberView?.Animation.Update(true, Vector3.Zero);
             BramView?.Animation.Update(true, Vector3.Zero);
+            EddaView?.Animation.Update(true, Vector3.Zero);
             SootMuncherView?.Animation.Update(true, Vector3.Zero);
         }
     }

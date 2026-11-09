@@ -85,6 +85,7 @@ namespace AtlasWorld.Client.World
             VerifyPoc02WarmthAmberLanternErrand(doc);
             VerifyPoc03PlayfulnessSootMuncherEncounter(doc);
             VerifyPoc04EmotionalMysteryBramOldLantern(doc);
+            VerifyPoc05DisturbanceEddaTimeWound(doc);
 
             string outDir = OS.GetEnvironment("ATLAS_RENDER_MARO_BELL");
             if (!string.IsNullOrEmpty(outDir))
@@ -319,6 +320,69 @@ namespace AtlasWorld.Client.World
                 poc.TraceGlimpsed &&
                 poc.ActiveBeat == "POC-04" &&
                 poc.ObjectiveText.Contains("Edda"));
+
+            poc.QueueFree();
+        }
+
+        private void VerifyPoc05DisturbanceEddaTimeWound(UnifiedMapDocument doc)
+        {
+            var eddaSpot = doc.Structures.FirstOrDefault(s => s.Id == "npc-spot-edda");
+            Report("maro-bell.json declares npc-spot-edda at expected world position (-3, -57)",
+                eddaSpot != null && Mathf.IsEqualApprox(eddaSpot.X, -3.0f) && Mathf.IsEqualApprox(eddaSpot.Z, -57.0f));
+
+            var poc = new MaroBellPocController { Name = "Poc05Verify" };
+            AddChild(poc);
+            poc.Initialize(doc);
+
+            Report("MaroBellPocController spawns EddaView at EddaWorldPos",
+                poc.EddaView != null && poc.EddaView.Root.Position.DistanceTo(MaroBellPocController.EddaWorldPos) < 0.1f);
+            Report("EddaView starts in idle animation",
+                poc.EddaView?.Animation.CurrentState == "idle");
+            Report("TimeWoundLanternNode is initialized with warm light before anomaly",
+                poc.TimeWoundLanternNode != null && poc.TimeWoundLanternLight != null && poc.TimeWoundLanternLight.LightEnergy > 1.0f);
+
+            // 1. Speak with Edda about Great Bell timing anomaly
+            bool eddaSpoken = poc.InteractWithEdda();
+            Report("InteractWithEdda sets EddaSpoken, notes Great Bell timing discrepancy, and sets lantern objective",
+                eddaSpoken &&
+                poc.EddaSpoken &&
+                poc.ObjectiveText.Contains("terrace lantern") &&
+                poc.LastDialogueLine.Contains("Three minutes early"));
+
+            // 2. Trigger Time-Wound rapid oil drain
+            bool triggered = poc.TriggerTimeWoundEvent();
+            Report("TriggerTimeWoundEvent drains oil, dims light to purple/violet chill, and asks to stabilize wick",
+                triggered &&
+                poc.TimeWoundTriggered &&
+                poc.TimeWoundLanternLight != null &&
+                poc.TimeWoundLanternLight.LightEnergy < 0.5f &&
+                poc.ObjectiveText.Contains("Stabilize") &&
+                poc.LastDialogueLine.Contains("drains into nothingness"));
+
+            // 3. Stabilize the cold wick
+            bool stabilized = poc.StabilizeTimeWoundLantern();
+            Report("StabilizeTimeWoundLantern restores warm spark, advances beat to POC-05, and sets Edda return objective",
+                stabilized &&
+                poc.TimeWoundStabilized &&
+                poc.ActiveBeat == "POC-05" &&
+                poc.TimeWoundLanternLight != null &&
+                poc.TimeWoundLanternLight.LightEnergy >= 0.7f &&
+                poc.ObjectiveText.Contains("Return to Edda") &&
+                poc.LastDialogueLine.Contains("stubborn warmth"));
+
+            // 4. Return to Edda to unlock Whispering Glade travel hook
+            bool returnToEdda = poc.InteractWithEdda();
+            Report("Return to Edda unlocks GladeHookUnlocked and concludes 10-minute POC with hopeful road hook",
+                returnToEdda &&
+                poc.GladeHookUnlocked &&
+                poc.ObjectiveText.Contains("POC Complete") &&
+                poc.LastDialogueLine.Contains("Whispering Glade"));
+
+            // 5. Repeated triggers/stabilizations are idempotent
+            bool repeatTrigger = poc.TriggerTimeWoundEvent();
+            bool repeatStabilize = poc.StabilizeTimeWoundLantern();
+            Report("Repeated Time-Wound interactions are idempotent",
+                !repeatTrigger && !repeatStabilize && poc.TimeWoundStabilized && poc.ActiveBeat == "POC-05");
 
             poc.QueueFree();
         }
