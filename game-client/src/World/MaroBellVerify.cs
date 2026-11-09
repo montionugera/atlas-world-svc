@@ -81,6 +81,7 @@ namespace AtlasWorld.Client.World
             Report($"client obstacle grid has {solid} solid-block rects (has {doc.StaticObstacles.Count})", doc.StaticObstacles.Count == solid);
 
             VerifyMaroFolkGirlInTown(root);
+            VerifyPoc01WonderRoadToGreatBell(doc);
 
             string outDir = OS.GetEnvironment("ATLAS_RENDER_MARO_BELL");
             if (!string.IsNullOrEmpty(outDir))
@@ -115,6 +116,32 @@ namespace AtlasWorld.Client.World
                 girl.Animation.CurrentState == "run" && girl.Animation.IsUpperBodyAttackActive);
 
             girl.Root.QueueFree();
+        }
+
+        private void VerifyPoc01WonderRoadToGreatBell(UnifiedMapDocument doc)
+        {
+            var composition = MaroBellPocController.EvaluateGreatBellRevealComposition(doc, MaroBellPocController.ArrivalSpawnWorld);
+            Report("MaroBellPocController.EvaluateGreatBellRevealComposition is valid", composition.IsValid);
+
+            var poc = new MaroBellPocController { Name = "Poc01Verify" };
+            AddChild(poc);
+            poc.Initialize(doc);
+
+            Report("MaroBellPocController spawns PipView, ReedView, and TovinView",
+                poc.PipView != null && poc.ReedView != null && poc.TovinView != null);
+            Report("PipView starts in idle animation",
+                poc.PipView?.Animation.CurrentState == "idle");
+            Report("MaroBellPocController environmental audio events played >= 2 and objective text populated",
+                poc.EnvironmentalAudioEventsPlayed >= 2 && !string.IsNullOrEmpty(poc.ObjectiveText));
+
+            poc.StepPlayer(MaroBellPocController.PipWorldPos, true, 0.5);
+            Report("StepPlayer to Pip greets Pip, updates beat to POC-01, shows Great Bell dialogue, and sets Amber objective",
+                poc.PipGreeted &&
+                poc.ActiveBeat == "POC-01" &&
+                poc.LastDialogueLine.Contains("Great Bell") &&
+                poc.ObjectiveText.Contains("Amber"));
+
+            poc.QueueFree();
         }
 
         private async Task Render(Node3D root, string outDir)
