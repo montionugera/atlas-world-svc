@@ -10,7 +10,9 @@ This is a **pnpm workspace** (`pnpm-workspace.yaml` → `client`, `contracts`) w
 
 ## Commands
 
-**Gate 1 (what `psrw ship` runs):** `./scripts/precheck.sh` (`--no-install` if deps exist). The server-rs section is skipped when no rust-relevant path changed; `PRECHECK_FULL=1` forces everything.
+**Mid-iteration fast check (<15s, run while coding):** `./scripts/fastcheck.sh` (`--jev` adds 350ms Jev review-lens triage). Run this during edits instead of full `precheck.sh`.
+
+**Gate 1 (what `psrw ship` runs):** `./scripts/precheck.sh` (`--no-install` if deps exist). The server-rs section is skipped when no rust-relevant path changed; `PRECHECK_FULL=1` forces everything. `.release.json` enables `gate_cache` so the post-merge `_release` re-verification skips on a clean tree HIT.
 
 ```bash
 # server-rs (from server-rs/)
