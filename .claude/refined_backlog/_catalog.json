@@ -2706,9 +2706,10 @@
     "title": "POC-04: Emotional Mystery \u2014 Bram's Old Lantern and First Trace (06:15-07:45 inspect interaction and canon-safe POC flag)",
     "from_idea": "I-291",
     "created_at": "2026-11-09T02:47:23.965649+00:00",
-    "claimed_by": null,
-    "status": "open",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
     "release_version": null,
-    "epic": "E-011"
+    "epic": "E-011",
+    "claimed_at": "2026-11-09T02:47:35.891793+00:00"
   }
 ]
