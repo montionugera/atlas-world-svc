@@ -471,6 +471,10 @@ impl RustMetaEngine {
                 let uid = Self::require_client(ctx)?;
                 self.rpc_inspect_poc_old_lantern(uid)
             }
+            "trigger_poc_time_wound" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_trigger_poc_time_wound(uid)
+            }
             other => Err(MetaError::NotFound(format!("Unknown RPC '{}'", other))),
         }
     }
@@ -1951,6 +1955,47 @@ impl RustMetaEngine {
         res.insert("state".to_string(), val);
         Ok(Value::Object(res))
     }
+
+    fn rpc_trigger_poc_time_wound(&self, user_id: &str) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        let already_triggered = state.time_wound_triggered;
+        if !already_triggered {
+            state.edda_spoken = true;
+            state.time_wound_triggered = true;
+            state.glade_hook_unlocked = true;
+            state.active_beat = "POC-05".to_string();
+        }
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+
+        let mut res = serde_json::Map::new();
+        res.insert("ok".to_string(), Value::Bool(true));
+        res.insert(
+            "alreadyTriggered".to_string(),
+            Value::Bool(already_triggered),
+        );
+        res.insert("state".to_string(), val);
+        Ok(Value::Object(res))
+    }
 }
 
 #[async_trait]
@@ -2506,5 +2551,32 @@ mod tests {
         assert_eq!(inspect2["alreadyGlimpsed"], true);
         assert_eq!(inspect2["state"]["traceGlimpsed"], true);
         assert_eq!(inspect2["state"]["activeBeat"], "POC-04");
+    }
+
+    #[test]
+    fn poc_maro_10m_edda_and_time_wound_event_authoritative_and_idempotent() {
+        let engine = test_engine();
+        let uid = generate_uuid_v4();
+        let ctx = RpcContext::client(&uid, None);
+
+        // 1. Initial trigger marks time wound flags and advances beat to POC-05
+        let trigger1 = engine
+            .invoke_rpc(&ctx, "trigger_poc_time_wound", "{}")
+            .expect("trigger time wound");
+        assert_eq!(trigger1["ok"], true);
+        assert_eq!(trigger1["alreadyTriggered"], false);
+        assert_eq!(trigger1["state"]["eddaSpoken"], true);
+        assert_eq!(trigger1["state"]["timeWoundTriggered"], true);
+        assert_eq!(trigger1["state"]["gladeHookUnlocked"], true);
+        assert_eq!(trigger1["state"]["activeBeat"], "POC-05");
+
+        // 2. Repeated trigger is idempotent
+        let trigger2 = engine
+            .invoke_rpc(&ctx, "trigger_poc_time_wound", "{}")
+            .expect("repeat trigger");
+        assert_eq!(trigger2["ok"], true);
+        assert_eq!(trigger2["alreadyTriggered"], true);
+        assert_eq!(trigger2["state"]["timeWoundTriggered"], true);
+        assert_eq!(trigger2["state"]["activeBeat"], "POC-05");
     }
 }
