@@ -84,6 +84,7 @@ namespace AtlasWorld.Client.World
             VerifyPoc01WonderRoadToGreatBell(doc);
             VerifyPoc02WarmthAmberLanternErrand(doc);
             VerifyPoc03PlayfulnessSootMuncherEncounter(doc);
+            VerifyPoc04EmotionalMysteryBramOldLantern(doc);
 
             string outDir = OS.GetEnvironment("ATLAS_RENDER_MARO_BELL");
             if (!string.IsNullOrEmpty(outDir))
@@ -259,6 +260,65 @@ namespace AtlasWorld.Client.World
             poc.ResetVerminEncounter();
             Report("ResetVerminEncounter restores HP to 60, resets defeat/recovery flags, and makes parcel visible",
                 poc.SootMuncherHp == 60f && !poc.SootMuncherDefeated && !poc.ParcelRecovered && poc.ParcelNode?.Visible == true);
+
+            poc.QueueFree();
+        }
+
+        private void VerifyPoc04EmotionalMysteryBramOldLantern(UnifiedMapDocument doc)
+        {
+            var bramSpot = doc.Structures.FirstOrDefault(s => s.Id == "npc-spot-bram");
+            Report("maro-bell.json declares npc-spot-bram at expected world position (-3.5, -24)",
+                bramSpot != null && Mathf.IsEqualApprox(bramSpot.X, -3.5f) && Mathf.IsEqualApprox(bramSpot.Z, -24f));
+
+            var oldLantern = doc.Structures.FirstOrDefault(s => s.Id == "old-lantern");
+            Report("maro-bell.json declares old-lantern at expected world position (3.5, -38)",
+                oldLantern != null && Mathf.IsEqualApprox(oldLantern.X, 3.5f) && Mathf.IsEqualApprox(oldLantern.Z, -38f));
+
+            var poc = new MaroBellPocController { Name = "Poc04Verify" };
+            AddChild(poc);
+            poc.Initialize(doc);
+
+            Report("MaroBellPocController spawns BramView at BramWorldPos",
+                poc.BramView != null && poc.BramView.Root.Position.DistanceTo(MaroBellPocController.BramWorldPos) < 0.1f);
+            Report("BramView starts in idle animation",
+                poc.BramView?.Animation.CurrentState == "idle");
+            Report("OldLanternNode is initialized at OldLanternWorldPos without active light",
+                poc.OldLanternNode != null && poc.OldLanternLight == null && !poc.TraceGlimpsed);
+
+            // 1. Speak with Bram
+            bool bramSpoken = poc.InteractWithBram();
+            bool bramCanonSafe = !poc.LastDialogueLine.Contains("Ninth")
+                && !poc.LastDialogueLine.Contains("Cala Knight")
+                && !poc.LastDialogueLine.Contains("9th");
+            Report("InteractWithBram sets BramSpoken, objective to inspect old lantern, and keeps canon safe (no forbidden reveals)",
+                bramSpoken &&
+                poc.BramSpoken &&
+                bramCanonSafe &&
+                poc.ObjectiveText.Contains("old lantern") &&
+                poc.LastDialogueLine.Contains("silver solder"));
+
+            // 2. Inspect Old Lantern hero prop
+            bool lanternInspected = poc.InspectOldLantern();
+            bool inspectCanonSafe = !poc.LastDialogueLine.Contains("Ninth")
+                && !poc.LastDialogueLine.Contains("Cala Knight")
+                && !poc.LastDialogueLine.Contains("9th");
+            Report("InspectOldLantern sets TraceGlimpsed, advances beat to POC-04, creates light/glow, and keeps canon safe",
+                lanternInspected &&
+                poc.TraceGlimpsed &&
+                poc.ActiveBeat == "POC-04" &&
+                poc.OldLanternLight != null &&
+                poc.OldLanternGlowMesh != null &&
+                inspectCanonSafe &&
+                poc.ObjectiveText.Contains("Edda") &&
+                poc.LastDialogueLine.Contains("patient devotion"));
+
+            // 3. Repeated inspection is idempotent
+            bool repeatInspect = poc.InspectOldLantern();
+            Report("Repeated InspectOldLantern is idempotent and maintains POC-04 state",
+                repeatInspect &&
+                poc.TraceGlimpsed &&
+                poc.ActiveBeat == "POC-04" &&
+                poc.ObjectiveText.Contains("Edda"));
 
             poc.QueueFree();
         }
