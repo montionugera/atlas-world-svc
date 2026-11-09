@@ -48,7 +48,6 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, join } from "node:path";
 import { tmpdir } from "node:os";
-import sharp from "sharp";
 import {
   thumbFilename,
   sourceHash,
@@ -175,11 +174,21 @@ function readPriorIndex() {
   }
 }
 
+let _sharp = null;
+async function getSharp() {
+  if (!_sharp) {
+    const mod = await import("sharp");
+    _sharp = mod.default || mod;
+  }
+  return _sharp;
+}
+
 // Trim the transparent margin, then centre-pad back to a square. Blender
 // frames each model to its own bounding box, which leaves an elongated asset
 // (spear, sword, fence) occupying a sliver of the frame; trimming recovers
 // those pixels. Harmless for 2D sources, which usually have no alpha margin.
 async function toThumb(absSrc, absOut, { trim }) {
+  const sharp = await getSharp();
   let img = sharp(absSrc, { failOn: "error" });
   if (trim) img = img.trim();
   const buf = await img
@@ -329,6 +338,7 @@ async function main() {
   //     stays red until the bake actually succeeds instead of certifying an
   //     image nobody rendered. ---
   const staleSet = new Set(stale.map((j) => j.srcPath));
+  const sharp = await getSharp();
   for (const job of jobs.sort((a, b) => a.srcPath.localeCompare(b.srcPath))) {
     if (!existsSync(job.absThumb)) continue;
     // A missing source has nothing to hash; guard (B) owns that failure.
