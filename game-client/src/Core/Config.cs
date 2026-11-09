@@ -57,5 +57,40 @@ namespace AtlasWorld.Client.Core
                 AuthToken = Env("ATLAS_AUTH_TOKEN", ""),
             };
         }
+
+        /// <summary>
+        /// Resolves a server-rs endpoint ensuring the requested mapId is set in the query string
+        /// (?map=&lt;mapId&gt; or replacing existing map=/room= parameters).
+        /// </summary>
+        public static string ResolveServerRsEndpointForMap(string endpoint, string mapId)
+        {
+            if (string.IsNullOrWhiteSpace(endpoint))
+                return endpoint ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(mapId))
+                return endpoint;
+
+            int queryIndex = endpoint.IndexOf('?');
+            if (queryIndex < 0)
+                return $"{endpoint}?map={mapId}";
+
+            string baseUrl = endpoint.Substring(0, queryIndex);
+            string queryString = endpoint.Substring(queryIndex + 1);
+            string[] pairs = queryString.Split('&');
+            bool found = false;
+            for (int i = 0; i < pairs.Length; i++)
+            {
+                string p = pairs[i];
+                if (p.StartsWith("map=", System.StringComparison.OrdinalIgnoreCase) ||
+                    p.StartsWith("room=", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    pairs[i] = $"map={mapId}";
+                    found = true;
+                }
+            }
+            if (found)
+                return $"{baseUrl}?{string.Join("&", pairs)}";
+
+            return $"{endpoint}&map={mapId}";
+        }
     }
 }

@@ -25,6 +25,73 @@ pub const MAX_SKILL_LOADOUT: usize = 4;
 pub const MAX_NOTIFICATIONS_PER_USER: usize = 64;
 const MAX_OCC_ATTEMPTS: usize = 2;
 
+pub const COLLECTION_POC_MARO_10M: &str = "poc_maro_10m";
+pub const KEY_POC_SESSION_STATE: &str = "session_state";
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct PocMaro10mSpawn {
+    pub server_x: f32,
+    pub server_y: f32,
+    pub world_x: f32,
+    pub world_z: f32,
+    pub yaw_rad: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct PocMaro10mState {
+    pub map_id: String,
+    pub class_id: String,
+    pub active_beat: String,
+    pub spawn: PocMaro10mSpawn,
+    pub pip_greeted: bool,
+    pub amber_errand_accepted: bool,
+    pub amber_errand_completed: bool,
+    pub lanterns_lit: Vec<String>,
+    pub vermin_defeated: u32,
+    pub soot_muncher_defeated: bool,
+    pub parcel_recovered: bool,
+    pub lantern_oil_count: u32,
+    pub bram_parcel_delivered: bool,
+    pub trace_glimpsed: bool,
+    pub edda_spoken: bool,
+    pub time_wound_triggered: bool,
+    pub glade_hook_unlocked: bool,
+    pub reset_count: u32,
+}
+
+impl Default for PocMaro10mState {
+    fn default() -> Self {
+        Self {
+            map_id: "maro-bell".to_string(),
+            class_id: "cl-vanguard".to_string(),
+            active_beat: "POC-00".to_string(),
+            spawn: PocMaro10mSpawn {
+                server_x: 40.0,
+                server_y: 151.0,
+                world_x: 0.0,
+                world_z: 71.0,
+                yaw_rad: std::f32::consts::PI,
+            },
+            pip_greeted: false,
+            amber_errand_accepted: false,
+            amber_errand_completed: false,
+            lanterns_lit: Vec::new(),
+            vermin_defeated: 0,
+            soot_muncher_defeated: false,
+            parcel_recovered: false,
+            lantern_oil_count: 0,
+            bram_parcel_delivered: false,
+            trace_glimpsed: false,
+            edda_spoken: false,
+            time_wound_triggered: false,
+            glade_hook_unlocked: false,
+            reset_count: 0,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct RpcContext {
     pub user_id: Option<String>,
@@ -364,6 +431,19 @@ impl RustMetaEngine {
                 let uid = Self::require_client(ctx)?;
                 let body = Self::parse_json_payload(payload_raw)?;
                 self.rpc_socket_card(uid, &body)
+            }
+            "reset_poc_maro_10m" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_reset_poc_maro_10m(uid)
+            }
+            "get_poc_maro_10m_state" => {
+                let uid = Self::require_client(ctx)?;
+                self.rpc_get_poc_maro_10m_state(uid)
+            }
+            "update_poc_maro_10m_state" => {
+                let uid = Self::require_client(ctx)?;
+                let body = Self::parse_json_payload(payload_raw)?;
+                self.rpc_update_poc_maro_10m_state(uid, &body)
             }
             other => Err(MetaError::NotFound(format!("Unknown RPC '{}'", other))),
         }
@@ -1454,6 +1534,123 @@ impl RustMetaEngine {
             MetaError::VersionConflict("claim_quest_reward OCC retries exhausted".to_string())
         }))
     }
+
+    fn rpc_reset_poc_maro_10m(&self, user_id: &str) -> Result<Value, MetaError> {
+        let prev_reset_count =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => serde_json::from_value::<PocMaro10mState>(stored.value)
+                    .map(|s| s.reset_count)
+                    .unwrap_or(0),
+                None => 0,
+            };
+        let state = PocMaro10mState {
+            reset_count: prev_reset_count + 1,
+            ..PocMaro10mState::default()
+        };
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+        Ok(val)
+    }
+
+    fn rpc_get_poc_maro_10m_state(&self, user_id: &str) -> Result<Value, MetaError> {
+        let state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+        serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))
+    }
+
+    fn rpc_update_poc_maro_10m_state(
+        &self,
+        user_id: &str,
+        body: &Value,
+    ) -> Result<Value, MetaError> {
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
+
+        if let Some(v) = body.get("activeBeat").and_then(|v| v.as_str()) {
+            state.active_beat = v.to_string();
+        }
+        if let Some(v) = body.get("pipGreeted").and_then(|v| v.as_bool()) {
+            state.pip_greeted = v;
+        }
+        if let Some(v) = body.get("amberErrandAccepted").and_then(|v| v.as_bool()) {
+            state.amber_errand_accepted = v;
+        }
+        if let Some(v) = body.get("amberErrandCompleted").and_then(|v| v.as_bool()) {
+            state.amber_errand_completed = v;
+        }
+        if let Some(arr) = body.get("lanternsLit").and_then(|v| v.as_array()) {
+            state.lanterns_lit = arr
+                .iter()
+                .filter_map(|x| x.as_str().map(String::from))
+                .collect();
+        }
+        if let Some(v) = body.get("verminDefeated").and_then(|v| v.as_u64()) {
+            state.vermin_defeated = v as u32;
+        }
+        if let Some(v) = body.get("sootMuncherDefeated").and_then(|v| v.as_bool()) {
+            state.soot_muncher_defeated = v;
+        }
+        if let Some(v) = body.get("parcelRecovered").and_then(|v| v.as_bool()) {
+            state.parcel_recovered = v;
+        }
+        if let Some(v) = body.get("lanternOilCount").and_then(|v| v.as_u64()) {
+            state.lantern_oil_count = v as u32;
+        }
+        if let Some(v) = body.get("bramParcelDelivered").and_then(|v| v.as_bool()) {
+            state.bram_parcel_delivered = v;
+        }
+        if let Some(v) = body.get("traceGlimpsed").and_then(|v| v.as_bool()) {
+            state.trace_glimpsed = v;
+        }
+        if let Some(v) = body.get("eddaSpoken").and_then(|v| v.as_bool()) {
+            state.edda_spoken = v;
+        }
+        if let Some(v) = body.get("timeWoundTriggered").and_then(|v| v.as_bool()) {
+            state.time_wound_triggered = v;
+        }
+        if let Some(v) = body.get("gladeHookUnlocked").and_then(|v| v.as_bool()) {
+            state.glade_hook_unlocked = v;
+        }
+
+        let val = serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))?;
+        self.store.write_batch(&[DocWrite {
+            collection: COLLECTION_POC_MARO_10M.to_string(),
+            key: KEY_POC_SESSION_STATE.to_string(),
+            user_id: user_id.to_string(),
+            value: val.clone(),
+            expected_version: None,
+            permission_read: 2,
+            permission_write: 0,
+        }])?;
+        Ok(val)
+    }
 }
 
 #[async_trait]
@@ -1789,5 +1986,87 @@ mod tests {
         }
 
         let _ = std::fs::remove_dir_all(&temp_dir);
+    }
+
+    #[test]
+    fn poc_maro_10m_state_resets_reproducibly_without_leaking_into_canonical_saves() {
+        let engine = test_engine();
+        let uid = generate_uuid_v4();
+        let ctx = RpcContext::client(&uid, None);
+
+        // 1. Initial state is default
+        let initial = engine
+            .invoke_rpc(&ctx, "get_poc_maro_10m_state", "{}")
+            .expect("get initial poc state");
+        assert_eq!(initial["mapId"], "maro-bell");
+        assert_eq!(initial["classId"], "cl-vanguard");
+        assert_eq!(initial["activeBeat"], "POC-00");
+        assert_eq!(initial["spawn"]["serverX"], 40.0);
+        assert_eq!(initial["spawn"]["serverY"], 151.0);
+        assert_eq!(initial["spawn"]["worldX"], 0.0);
+        assert_eq!(initial["spawn"]["worldZ"], 71.0);
+        assert_eq!(initial["resetCount"], 0);
+        assert_eq!(initial["traceGlimpsed"], false);
+
+        // 2. Update state (progressing the POC beat and story flags)
+        let updated = engine
+            .invoke_rpc(
+                &ctx,
+                "update_poc_maro_10m_state",
+                &json!({
+                    "activeBeat": "POC-03",
+                    "traceGlimpsed": true,
+                    "verminDefeated": 3,
+                    "lanternsLit": ["lantern-01", "lantern-02"],
+                })
+                .to_string(),
+            )
+            .expect("update poc state");
+        assert_eq!(updated["activeBeat"], "POC-03");
+        assert_eq!(updated["traceGlimpsed"], true);
+        assert_eq!(updated["verminDefeated"], 3);
+        assert_eq!(updated["lanternsLit"], json!(["lantern-01", "lantern-02"]));
+
+        // 3. Reset state
+        let reset = engine
+            .invoke_rpc(&ctx, "reset_poc_maro_10m", "{}")
+            .expect("reset poc state");
+        assert_eq!(reset["mapId"], "maro-bell");
+        assert_eq!(reset["activeBeat"], "POC-00");
+        assert_eq!(reset["traceGlimpsed"], false);
+        assert_eq!(reset["verminDefeated"], 0);
+        assert_eq!(reset["lanternsLit"], json!([]));
+        assert_eq!(reset["resetCount"], 1);
+
+        // 4. Verify canonical saves (quest_progress and character_progress/inventory) are completely untouched
+        let loadout = engine.get_loadout_direct(&uid).expect("get loadout");
+        assert!(loadout.active_quest_ids.is_empty());
+        let (quests, _) = engine.read_quests(&uid).expect("read quests");
+        assert!(quests.active.is_empty());
+        assert!(quests.completed.is_empty());
+        assert!(!quests
+            .completed
+            .iter()
+            .any(|q| q.quest_id.starts_with("q-maro-")));
+        let (inv, _) = engine.read_inventory(&uid).expect("read inventory");
+        assert!(!inv.uniques.iter().any(|u| u.item_id == "it-key-sun-shard"));
+        assert!(!inv
+            .stackables
+            .iter()
+            .any(|s| s.item_id == "it-key-sun-shard"));
+        assert_eq!(
+            engine
+                .store()
+                .read_doc(&uid, "quest_progress", "state")
+                .unwrap(),
+            None
+        );
+        assert_eq!(
+            engine
+                .store()
+                .read_doc(&uid, "character_progress", "state")
+                .unwrap(),
+            None
+        );
     }
 }

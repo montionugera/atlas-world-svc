@@ -288,6 +288,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    if let Some(sim) = AtlasSimulation::from_generated_region("maro-bell", seed.wrapping_add(99)) {
+        rooms.insert("maro-bell".to_string(), sim);
+    }
+
     info!(
         "Initialized {} simulation rooms: {:?}",
         rooms.len(),

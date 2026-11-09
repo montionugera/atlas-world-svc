@@ -635,8 +635,9 @@ namespace AtlasWorld.Client.World
                 }
                 Connection.RawSnapshotReceived -= OnRawSnapshot;
                 Connection.RawSnapshotReceived += OnRawSnapshot;
-                Connection.ConnectToHost(_config.ServerRsEndpoint);
-                RefreshUiLabels($"Connecting to server-rs ({_config.ServerRsEndpoint})...");
+                string endpoint = Config.ResolveServerRsEndpointForMap(_config.ServerRsEndpoint, ActiveMapId);
+                Connection.ConnectToHost(endpoint);
+                RefreshUiLabels($"Connecting to server-rs ({endpoint})...");
             }
             else
             {
