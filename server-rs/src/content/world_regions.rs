@@ -170,7 +170,9 @@ mod tests {
         assert_eq!(sim.arena_height, 160.0);
         assert_eq!(sim.player_spawn.x, 40.0);
         assert_eq!(sim.player_spawn.y, 151.0);
-        let hf = sim.world.resource::<crate::content::map::TerrainHeightfield>();
+        let hf = sim
+            .world
+            .resource::<crate::content::map::TerrainHeightfield>();
         assert_eq!(hf.coord_scale, 1.0);
         assert_eq!(hf.max_walkable_slope_deg, 35.0);
     }

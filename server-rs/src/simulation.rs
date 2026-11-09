@@ -301,7 +301,11 @@ impl AtlasSimulation {
             arena_width: cfg.width,
             arena_height: cfg.height,
             bot_count: 0,
-            mob_count: if cfg.spawn_areas.is_empty() { 0 } else { mob_count.max(1) },
+            mob_count: if cfg.spawn_areas.is_empty() {
+                0
+            } else {
+                mob_count.max(1)
+            },
             mob_respawn_sec: 5.0,
             player_respawn_sec: 5.0,
             map_id: Some(region_id.to_string()),

@@ -1536,15 +1536,16 @@ impl RustMetaEngine {
     }
 
     fn rpc_reset_poc_maro_10m(&self, user_id: &str) -> Result<Value, MetaError> {
-        let prev_reset_count = match self
-            .store
-            .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
-        {
-            Some(stored) => serde_json::from_value::<PocMaro10mState>(stored.value)
-                .map(|s| s.reset_count)
-                .unwrap_or(0),
-            None => 0,
-        };
+        let prev_reset_count =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => serde_json::from_value::<PocMaro10mState>(stored.value)
+                    .map(|s| s.reset_count)
+                    .unwrap_or(0),
+                None => 0,
+            };
         let state = PocMaro10mState {
             reset_count: prev_reset_count + 1,
             ..PocMaro10mState::default()
@@ -1563,15 +1564,16 @@ impl RustMetaEngine {
     }
 
     fn rpc_get_poc_maro_10m_state(&self, user_id: &str) -> Result<Value, MetaError> {
-        let state = match self
-            .store
-            .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
-        {
-            Some(stored) => {
-                serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
-            }
-            None => PocMaro10mState::default(),
-        };
+        let state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
         serde_json::to_value(&state).map_err(|e| MetaError::Internal(e.to_string()))
     }
 
@@ -1580,15 +1582,16 @@ impl RustMetaEngine {
         user_id: &str,
         body: &Value,
     ) -> Result<Value, MetaError> {
-        let mut state = match self
-            .store
-            .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
-        {
-            Some(stored) => {
-                serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
-            }
-            None => PocMaro10mState::default(),
-        };
+        let mut state =
+            match self
+                .store
+                .read_doc(user_id, COLLECTION_POC_MARO_10M, KEY_POC_SESSION_STATE)?
+            {
+                Some(stored) => {
+                    serde_json::from_value::<PocMaro10mState>(stored.value).unwrap_or_default()
+                }
+                None => PocMaro10mState::default(),
+            };
 
         if let Some(v) = body.get("activeBeat").and_then(|v| v.as_str()) {
             state.active_beat = v.to_string();
@@ -2047,7 +2050,10 @@ mod tests {
             .any(|q| q.quest_id.starts_with("q-maro-")));
         let (inv, _) = engine.read_inventory(&uid).expect("read inventory");
         assert!(!inv.uniques.iter().any(|u| u.item_id == "it-key-sun-shard"));
-        assert!(!inv.stackables.iter().any(|s| s.item_id == "it-key-sun-shard"));
+        assert!(!inv
+            .stackables
+            .iter()
+            .any(|s| s.item_id == "it-key-sun-shard"));
         assert_eq!(
             engine
                 .store()
