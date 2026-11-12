@@ -32,7 +32,7 @@ Content only, same shape as F-165:
 
 ## Acceptance criteria
 
-- [ ] Both images exist as webp, each at most 800 KB and 2800 px on the longest side; both thumbs are 960 px wide.
-- [ ] `index.json` and `art-briefs.json` each hold both ids with category `character` and loreRef `furral`; the item count goes from 9 to 11.
-- [ ] `cd scripts && npm test` and `node --test atelier/atlas-world-panels/tests/*.test.mjs` pass.
-- [ ] `scripts/build_catalog_db.py` puts both ids into table `concept_art`.
+- [x] Both images exist as webp, each at most 800 KB and 2800 px on the longest side; both thumbs are 960 px wide.
+- [x] `index.json` and `art-briefs.json` each hold both ids with category `character` and loreRef `furral`; the item count goes from 9 to 11.
+- [x] `cd scripts && npm test` and `node --test atelier/atlas-world-panels/tests/*.test.mjs` pass.
+- [x] `scripts/build_catalog_db.py` puts both ids into table `concept_art`.
