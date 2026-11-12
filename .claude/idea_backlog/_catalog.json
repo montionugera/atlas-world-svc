@@ -1840,5 +1840,11 @@
     "title": "Compiled-region integration gate on millcross-ford (C1-C8 + 64m AOI vs 24m chunk coverage)",
     "created_at": "2026-11-08T18:50:01.345996+00:00",
     "promoted_to": "F-204"
+  },
+  {
+    "id": "I-295",
+    "title": "Concept art: male Furral galvanic scout sheet and turnaround into the Game DB",
+    "created_at": "2026-11-12T02:12:50.013150+00:00",
+    "promoted_to": null
   }
 ]
