@@ -2752,8 +2752,9 @@
     "title": "Concept art: male Furral galvanic scout sheet and turnaround into the Game DB",
     "from_idea": "I-295",
     "created_at": "2026-11-12T02:13:08.134106+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-12T02:13:23.097541+00:00"
   }
 ]
