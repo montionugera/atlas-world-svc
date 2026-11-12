@@ -41,6 +41,26 @@
       "aspect": "3:2"
     },
     {
+      "id": "character-race-furral-galvanic-scout-sheet",
+      "title": "Furral Galvanic Scout (male): Character Sheet",
+      "category": "character",
+      "zoneId": "town-cinnamon-mill-haven",
+      "loreRef": "furral",
+      "caption": "Male Furral scout, the third character of the 3D character factory: fox head with a muzzle, big ears and a bushy tail, short brick-red double-breasted jacket, belt with two pouches, copper wrist wraps, fingerless gloves, dark trousers, brass-toed boots. About five heads tall. Prototype design, not locked canon.",
+      "prompt": "ChatGPT, 2026-11-12, two messages. First: Character design sheet on a plain off-white paper background, 3:4 portrait. Left, filling 90 percent of the frame height: one large full body view of one lean young adult male fox-like beastfolk with a furry fox head, a short muzzle, large upright ears with cream inner fur, golden-orange fur with cream on the muzzle, cheeks and throat, and a short bushy golden-orange tail with a cream tip that hangs close behind the legs and ends above the knee, standing relaxed, arms slightly away from the body, hands open. The head is one fifth of total body height. Short tousled golden-orange head fur between the ears, no long hair. Bright teal eyes, calm confident face. Hip-length rust-brown double-breasted jacket with a standing collar, cream piping and brass buttons, sleeves ending at the elbow, a short dark brown neck scarf tucked inside the collar with no hanging ends. Wide brown leather belt with two flat pouches and one brass buckle. Fitted charcoal trousers. Brown leather knee boots with brass toe caps. Copper wire bracers wrapped around both forearms, dark brown fingerless gloves. Top right: head and shoulders close-up of the same face. Middle right: one small full body version of the same character, two heads tall, same outfit. Bottom right: three small full body views in a row, front, side and back, same outfit. A faint pale grey emblem behind the large figure. A soft grey shadow under every figure. Anime character design sheet, hand-painted digital illustration with fine dark outlines, soft cel shading, sharp line highlights and visible fabric texture. Clear colours with warm accents. No text, no letters, no logo, no watermark Correction (version 2, the stored image): Please redraw the same character design sheet: same character, same outfit, same colours, same layout. Fix only the proportions. He is a short, small-bodied beastfolk, only five heads tall: the head (chin to top of the head fur, not counting the ears) is one fifth of total body height. Larger head, shorter torso, much shorter legs, still lean, still a young adult male. Keep the tail short and ending above the knee, the jacket ending at the hip, both hands empty and open. Make the two belt pouches flat against the hips. No backpack, no weapon, nothing held, no chains, no glow, no sparks, no text.",
+      "aspect": "3:4"
+    },
+    {
+      "id": "character-race-furral-galvanic-scout-turnaround",
+      "title": "Furral Galvanic Scout (male): Turnaround",
+      "category": "character",
+      "zoneId": "town-cinnamon-mill-haven",
+      "loreRef": "furral",
+      "caption": "Front, side and back A-pose turnaround of the male Furral scout, made from the character sheet. These three views are the input of the 3D body generation. Prototype design, not locked canon.",
+      "prompt": "ChatGPT, 2026-11-12, same conversation as the character sheet: Create a clean 3D-modeling orthographic turnaround sheet of the same character and outfit as the image above (the five-heads-tall version), prepared for 3D game character generation. Landscape 3:2 image split into three equal columns: Front view, Left Side view, Back view, all the same height, full body from the ear tips to the boot soles, same outfit and colours in every view. 1. HEAD AND FUR: keep the face; short head fur only, no long hair, so the whole neck, collar and upper back are visible. 2. STRICT SYMMETRICAL A-POSE: arms straight, 40 degrees out from the torso, open relaxed empty hands, clear white space between the arms and the waist. Legs straight and shoulder-width apart, with clear white space between the calves, ankles and boots in the Front and Back views (no crossed legs, no touching heels). 3. TAIL: one short bushy tail that ends above the knee, hanging straight down close behind the legs; hidden behind the body in the Front view so it does not cover the legs, clearly visible in the Left Side and Back views. 4. STUDIO BACKGROUND: pure flat #FFFFFF white, no ground shadow, no floor line, no emblem, no borders, no text. No backpack, no weapon, nothing held, no glow, no sparks.",
+      "aspect": "3:2"
+    },
+    {
       "id": "character-race-lunar-glaze-singer",
       "title": "Linde Folk Reference Sheet",
       "category": "character",

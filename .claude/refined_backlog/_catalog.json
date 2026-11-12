@@ -2746,5 +2746,17 @@
     "shipped_at": "2026-11-09T03:21:24.944287+00:00",
     "shipped_sha": "22b8e7ec3299ffc6299468c366f173dc11721ce8",
     "promoted_at": "2026-11-09T04:26:25.578264+00:00"
+  },
+  {
+    "id": "F-212",
+    "title": "Concept art: male Furral galvanic scout sheet and turnaround into the Game DB",
+    "from_idea": "I-295",
+    "created_at": "2026-11-12T02:13:08.134106+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "shipped",
+    "release_version": "1.32",
+    "claimed_at": "2026-11-12T02:13:23.097541+00:00",
+    "shipped_at": "2026-11-12T02:15:18.900309+00:00",
+    "shipped_sha": "95621441369129f3dbf642dff563ae930cbcd345"
   }
 ]
