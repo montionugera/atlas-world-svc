@@ -30,6 +30,20 @@
       "verdict": "unreviewed"
     },
     {
+      "id": "character-race-dwarf-ondo-base-body-female",
+      "title": "Ondo Forge Base Body (female): Underwear Turnaround",
+      "category": "character",
+      "zoneId": "town-root-train-roundhouse",
+      "loreRef": "dwarf",
+      "caption": "Front, three-quarter, side and back views of the female Ondo Forge body without outfit, hair or headgear, in a grey sports top and shorts, redrawn from the female turnaround of the Ondo Forge reference sheet. The reference the 3D base body is built to; clothes and hair are separate parts. Prototype design, not locked canon.",
+      "file": "images/character-race-dwarf-ondo-base-body-female.webp",
+      "thumb": "thumbs/character-race-dwarf-ondo-base-body-female.webp",
+      "prompt": "ChatGPT, 2026-11-13, sixth redraw in one conversation. The first message attached the Ondo Forge reference sheet and its female turnaround and asked for the same adult dwarf woman's base body with outfit, hair and headgear taken off, as a neutral modeling reference; redraws two to five corrected leg, hip and arm widths against that turnaround. The sixth message (attached: the reference turnaround, the fifth image, and the fifth image with four blue marks drawn 18 % wider at the shoulder tips) was: Measured again over the reference. The legs of your latest image are good in the front view: keep them. One thing is left: the SHOULDERS. They are as narrow as in your first redraw. In the reference her shoulders, under the shoulder armour, are clearly wider, and her arms hang further out from the body. Attached: first the reference turnaround, second your latest image, third your latest image again with four blue marks that I drew on it. Redraw the latest image (the second attached image) on the same canvas, the same four views in the same places. Head, face, neck, height, waist, hips, legs, feet, and the thickness and length of the arms and hands stay exactly as in the latest image. Fix ONLY the shoulders: 1. Front view and back view: widen the shoulders until each shoulder tip (the outer end of the shoulder line, where the arm begins) reaches the blue mark on its side in the third attached image. That is about one sixth wider than now. 2. The chest and the upper back widen with the shoulders. The waist stays as it is, so the torso tapers a little more from the shoulders down to the waist. 3. Both arms hang from the new shoulder tips: each whole arm with its hand moves outward by the same distance as its shoulder tip, at the same angle as now. The gap between each arm and the body stays open. 4. Three-quarter view: the shoulders wider by the same share. Side view: no change. The blue marks are only a guide for you: do not draw them in the new image. Change nothing else: same bald head, same grey sports top and shorts, same bare skin, same line work, same paper background, no text, no ground shadow. Landscape 3:2 image, the same framing.",
+      "tool": "chatgpt",
+      "rights": "concept-reference",
+      "verdict": "unreviewed"
+    },
+    {
       "id": "character-race-orc-ash-warden",
       "title": "Daro Guard Reference Sheet",
       "category": "character",
