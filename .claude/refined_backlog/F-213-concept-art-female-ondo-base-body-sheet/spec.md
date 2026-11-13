@@ -35,7 +35,7 @@ Content only, same shape as F-212:
 
 ## Acceptance criteria
 
-- [ ] The image exists as webp, at most 800 KB and 2800 px on the longest side; the thumb is 960 px wide.
-- [ ] `index.json` and `art-briefs.json` each hold the id with category `character` and loreRef `dwarf`; the item count goes from 11 to 12.
-- [ ] `cd scripts && npm test` and `node --test atelier/atlas-world-panels/tests/*.test.mjs` pass.
-- [ ] `scripts/build_catalog_db.py` puts the id into table `concept_art`.
+- [x] The image exists as webp, at most 800 KB and 2800 px on the longest side; the thumb is 960 px wide.
+- [x] `index.json` and `art-briefs.json` each hold the id with category `character` and loreRef `dwarf`; the item count goes from 11 to 12.
+- [x] `cd scripts && npm test` and `node --test atelier/atlas-world-panels/tests/*.test.mjs` pass.
+- [x] `scripts/build_catalog_db.py` puts the id into table `concept_art`.

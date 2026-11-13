@@ -322,8 +322,8 @@ test("Human/Dwarf race cards show only their race portrait and gods pull no cont
   const dwarfArts = model.races[1].arts.map((a) => a.id);
   assert.deepEqual(
     dwarfArts,
-    ["character-race-dwarf-kiln-artisan"],
-    "Dwarf race card must only show Dwarf race portrait and not Human town building town-lantern-hollow-hearth-forge",
+    ["character-race-dwarf-kiln-artisan", "character-race-dwarf-ondo-base-body-female"],
+    "Dwarf race card must only show Dwarf race art (race sheet, F-213 base-body sheet) and not Human town building town-lantern-hollow-hearth-forge",
   );
 });
 
