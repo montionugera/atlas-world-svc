@@ -64,6 +64,31 @@ namespace AtlasWorld.Client.Audio
             failures += Report("unknown key returns null (no player)", unknownResult == null);
             failures += Report("unknown key spawns no child node", after == before);
 
+            // Part 4 — multi-stride footstep phase subdivision (2.600s 3-stride run loop fires 6 SFX = 3 left + 3 right, never 2 SFX).
+            int runStrides = World.AnimationController.ComputeStrideCount(2.600, isRunning: true);
+            int walkStartStrides = World.AnimationController.ComputeStrideCount(1.900, isRunning: false);
+            int singleWalkStrides = World.AnimationController.ComputeStrideCount(1.100, isRunning: false);
+            failures += Report($"ComputeStrideCount detects multi-stride clips (2.60s run={runStrides}==3, 1.90s walk_start={walkStartStrides}==2, 1.10s walk={singleWalkStrides}==1)",
+                runStrides == 3 && walkStartStrides == 2 && singleWalkStrides == 1);
+
+            int simLeft = 0;
+            int simRight = 0;
+            double clipLen = 2.600;
+            double prevPhase = 0.0;
+            for (int i = 1; i <= 130; i++)
+            {
+                double t = i * 0.020;
+                double currPhase = ((t / clipLen) * runStrides) % 1.0;
+                if (World.AnimationController.TryCrossFootstepPhase(prevPhase, currPhase, isRunning: true, out bool rightFoot))
+                {
+                    if (rightFoot) simRight++;
+                    else simLeft++;
+                }
+                prevPhase = currPhase;
+            }
+            failures += Report($"2.600s 3-stride run loop fires 6 footstep strikes (left={simLeft}==3, right={simRight}==3, 1 SFX per visual step)",
+                simLeft == 3 && simRight == 3);
+
             if (failures == 0)
                 GD.Print("[AudioVerify] RESULT: PASS (all cases)");
             else
