@@ -70,7 +70,7 @@ for ogg in "$PROJECT"/assets/audio/*.ogg; do
       needs_import=1
     else
       str=$(grep -m1 '^path="res://\.godot/imported/' "$ogg.import" 2>/dev/null | cut -d'"' -f2 | sed 's|^res://||')
-      if [ -z "$str" ] || [ ! -e "$PROJECT/$str" ]; then needs_import=1; fi
+      if [ -z "$str" ] || [ ! -e "$PROJECT/$str" ] || [ "$ogg" -nt "$PROJECT/$str" ]; then needs_import=1; fi
     fi
   fi
 done

@@ -41,12 +41,19 @@ namespace AtlasWorld.Client.Audio
         private readonly List<AudioStreamPlayer> _pool2D = new();
         private const int MaxPoolSize = 16;
         private int _footstepVariantIndex = 0;
+        private readonly System.Random _footstepRng = new(0x5F3759DF);
+        private readonly int[] _recentFootstepVariants = { -1, -1, -1 };
+        private int _recentFootstepCursor = 0;
         private static readonly string[] FootstepVariantKeys =
         {
             "sfx:footstep_1",
             "sfx:footstep_2",
             "sfx:footstep_3",
             "sfx:footstep_4",
+            "sfx:footstep_5",
+            "sfx:footstep_6",
+            "sfx:footstep_7",
+            "sfx:footstep_8",
         };
 
         public override void _Ready()
@@ -146,8 +153,9 @@ namespace AtlasWorld.Client.Audio
         /// </summary>
         public AudioStreamPlayer3D? PlayFootstep(Vector3 worldPos, bool isRightFoot = false, bool isRunning = false)
         {
-            int idx = _footstepVariantIndex++;
-            string variantKey = FootstepVariantKeys[idx % FootstepVariantKeys.Length];
+            _footstepVariantIndex++;
+            int variantIdx = PickNonRepeatingFootstepVariant();
+            string variantKey = FootstepVariantKeys[variantIdx];
             AudioStream? stream = null;
             if (_manifest != null && _manifest.TryGet(variantKey, out _))
             {
@@ -159,23 +167,54 @@ namespace AtlasWorld.Client.Audio
 
             AudioStreamPlayer3D player = AcquirePlayer3D();
             player.Stream = stream;
-            // Subtle deterministic micro-variation across steps so consecutive steps never sound robotic
-            float microJitter = ((idx % 5) - 2) * 0.012f;
+
+            // Triangular organic random variation (centered at 0, range [-1, +1]) so consecutive
+            // steps never sound like a periodic loop or a high-low-high-low clock pendulum.
+            float triPitch = (float)(_footstepRng.NextDouble() - _footstepRng.NextDouble());
+            float triVol = (float)(_footstepRng.NextDouble() - _footstepRng.NextDouble());
+            float footBias = isRightFoot ? -0.012f : 0.012f;
+
             if (isRunning)
             {
-                player.VolumeDb = isRightFoot ? -1.8f : -1.2f;
-                player.PitchScale = (isRightFoot ? 0.99f : 1.05f) + microJitter;
+                player.VolumeDb = -8.2f + (triVol * 1.1f);
+                player.PitchScale = Mathf.Clamp(1.02f + footBias + (triPitch * 0.065f), 0.90f, 1.14f);
+                player.UnitSize = 4.5f;
+                player.MaxDb = -5.0f;
             }
             else
             {
-                player.VolumeDb = isRightFoot ? -4.2f : -3.6f;
-                player.PitchScale = (isRightFoot ? 0.95f : 1.01f) + microJitter;
+                player.VolumeDb = -10.8f + (triVol * 1.2f);
+                player.PitchScale = Mathf.Clamp(0.96f + footBias + (triPitch * 0.060f), 0.86f, 1.08f);
+                player.UnitSize = 4.0f;
+                player.MaxDb = -7.0f;
             }
-            player.UnitSize = 6.5f;
-            player.MaxDb = 0.0f;
             player.GlobalPosition = worldPos;
             player.Play();
             return player;
+        }
+
+        private int PickNonRepeatingFootstepVariant()
+        {
+            int count = FootstepVariantKeys.Length;
+            int candidate = _footstepRng.Next(count);
+            for (int attempt = 0; attempt < 12; attempt++)
+            {
+                bool recentlyUsed = false;
+                for (int i = 0; i < _recentFootstepVariants.Length; i++)
+                {
+                    if (_recentFootstepVariants[i] == candidate)
+                    {
+                        recentlyUsed = true;
+                        break;
+                    }
+                }
+                if (!recentlyUsed)
+                    break;
+                candidate = (candidate + 1 + _footstepRng.Next(count - 1)) % count;
+            }
+            _recentFootstepVariants[_recentFootstepCursor] = candidate;
+            _recentFootstepCursor = (_recentFootstepCursor + 1) % _recentFootstepVariants.Length;
+            return candidate;
         }
 
         private AudioStreamPlayer3D AcquirePlayer3D()

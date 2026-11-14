@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T16:24:42.592Z",
+  "generatedAt": "2026-11-14T17:17:46.661Z",
   "sourceDir": "game-client/assets/audio",
   "files": [
     {
@@ -21,19 +21,35 @@
     },
     {
       "name": "footstep_stone_01.ogg",
-      "bytes": 9417
+      "bytes": 4260
     },
     {
       "name": "footstep_stone_02.ogg",
-      "bytes": 10123
+      "bytes": 4382
     },
     {
       "name": "footstep_stone_03.ogg",
-      "bytes": 9466
+      "bytes": 4308
     },
     {
       "name": "footstep_stone_04.ogg",
-      "bytes": 10459
+      "bytes": 4331
+    },
+    {
+      "name": "footstep_stone_05.ogg",
+      "bytes": 4375
+    },
+    {
+      "name": "footstep_stone_06.ogg",
+      "bytes": 4262
+    },
+    {
+      "name": "footstep_stone_07.ogg",
+      "bytes": 4295
+    },
+    {
+      "name": "footstep_stone_08.ogg",
+      "bytes": 4408
     },
     {
       "name": "impact_flesh_heavy.ogg",
