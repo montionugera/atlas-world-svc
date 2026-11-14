@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import html
 import json
 import os
 import sqlite3
@@ -410,21 +411,53 @@ def load_theme_css() -> bytes:
     return b"/* joy-theme.css not found */"
 
 
-def ensure_catalog_db() -> None:
+CATALOG_BUILD_ERROR = ""  # last line of a failed startup rebuild; shown on "/" (R1f)
+_FRESHNESS_FILES = (BUILD_SCRIPT, ROOT / "scripts" / "atlas_world_web" / "catalog_index.py")
+_FRESHNESS_DIRS = (ROOT / "content", ROOT / "contracts" / "content")
+
+
+def _inputs_newer_than(db_mtime: float) -> bool:
+    if any(f.stat().st_mtime > db_mtime for f in _FRESHNESS_FILES):
+        return True
+    for root in _FRESHNESS_DIRS:
+        for dirpath, _dirs, names in os.walk(root):
+            if os.stat(dirpath).st_mtime > db_mtime:  # a deleted or added file changes its folder's mtime
+                return True
+            if any(os.stat(os.path.join(dirpath, name)).st_mtime > db_mtime for name in names):
+                return True
+    return False
+
+
+def ensure_catalog_db(check_fresh: bool = False) -> None:
+    """Build the DB when it is missing or unusable; with check_fresh (startup only) also when
+    any input is newer. A failed rebuild keeps the previous DB and records why."""
+    global CATALOG_BUILD_ERROR
     if web_runtime.read_only():
         return
-    needs_build = not DB_PATH.exists()
-    if not needs_build:
+    have = DB_PATH.exists()
+    needs_build = not have
+    if have:
         try:
             conn = sqlite3.connect(str(DB_PATH))
-            row = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='world_continents'").fetchone()
+            # 'records' is written last, so its presence means a complete DB of this version
+            row = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='records'").fetchone()
             conn.close()
-            if not row:
-                needs_build = True
+            needs_build = not row
         except Exception:
             needs_build = True
-    if needs_build:
-        subprocess.run([sys.executable, str(BUILD_SCRIPT)], check=True)
+    if not needs_build and check_fresh:
+        needs_build = _inputs_newer_than(DB_PATH.stat().st_mtime)
+    if not needs_build:
+        return
+    proc = subprocess.run([sys.executable, str(BUILD_SCRIPT)], capture_output=True, text=True)
+    if proc.returncode == 0:
+        CATALOG_BUILD_ERROR = ""
+        return
+    last = ([line for line in proc.stderr.splitlines() if line.strip()] or [f"builder exited {proc.returncode}"])[-1]
+    if not have:
+        raise RuntimeError(f"catalog build failed and there is no previous DB: {last}")
+    CATALOG_BUILD_ERROR = last
+    print(f"[catalog_explorer_web] Game DB is out of date: rebuild failed: {last}", file=sys.stderr)
 
 
 def load_world_spine_bundle() -> dict:
@@ -826,7 +859,13 @@ class ObservatoryHandler(BaseHTTPRequestHandler):
             return
         parsed = urlparse(self.path)
         if parsed.path in ("/", "/index.html"):
-            raw = web_runtime.mark_body(load_modular_index_html()).encode("utf-8")
+            page = web_runtime.mark_body(load_modular_index_html())
+            if CATALOG_BUILD_ERROR:
+                banner = ('<div id="catalogStaleBanner" class="catalog-stale-banner" role="alert">'
+                          'Game DB is out of date: rebuild failed'
+                          f'<code>{html.escape(CATALOG_BUILD_ERROR)}</code></div>')
+                page = page.replace('<header class="topbar">', banner + '<header class="topbar">', 1)
+            raw = page.encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(raw)))
@@ -960,7 +999,7 @@ def main() -> int:
         )
         return 0
 
-    ensure_catalog_db()
+    ensure_catalog_db(check_fresh=True)
     ThreadingHTTPServer.allow_reuse_address = True
     server = ThreadingHTTPServer(("0.0.0.0", args.port), ObservatoryHandler)
     print(f"[catalog_explorer_web] Atlas World Observatory listening on http://127.0.0.1:{args.port}")

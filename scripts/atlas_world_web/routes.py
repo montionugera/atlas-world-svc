@@ -8,9 +8,10 @@ this module never has to import `catalog_explorer_web`.
 from __future__ import annotations
 
 import json
-from urllib.parse import urlsplit
+import sqlite3
+from urllib.parse import parse_qs, urlsplit
 
-from . import map_builder_proxy, review_queue, runtime, static_mounts
+from . import map_builder_proxy, records, review_queue, runtime, static_mounts
 
 MAX_BODY_BYTES = 2 * 1024 * 1024
 
@@ -121,11 +122,41 @@ def _map_builder(method: str):
     return run
 
 
+def _query(handler) -> dict:
+    return {k: v[0] for k, v in parse_qs(urlsplit(handler.path).query).items()}
+
+
+def _search(handler, path: str, *, head: bool = False) -> None:
+    qs = _query(handler)
+    try:
+        results = records.search(qs.get("q", ""), qs.get("include_archive") == "1")
+    except sqlite3.Error as exc:  # an old DB without the index: say so instead of a 500 page
+        _send_json(handler, {"ok": False, "error": f"Search is unavailable: {exc}"}, 503, head=head)
+        return
+    _send_json(handler, {"ok": True, "results": results}, head=head)
+
+
+def _record(handler, path: str, *, head: bool = False) -> None:
+    qs = _query(handler)
+    kind, id_ = qs.get("kind", ""), qs.get("id", "")
+    try:
+        found = records.record(kind, id_)
+    except sqlite3.Error as exc:
+        _send_json(handler, {"ok": False, "error": f"Search is unavailable: {exc}"}, 503, head=head)
+        return
+    if found is None:
+        _send_json(handler, {"ok": False, "error": f"No such record: {kind}:{id_}"}, 404, head=head)
+        return
+    _send_json(handler, {"ok": True, **found}, head=head)
+
+
 # (exact path | prefix ending in "/") -> handler. Checked in order.
 ROUTES = {
     "GET": [
         ("/healthz", _healthz),
         ("/api/runtime", _runtime),
+        ("/api/search", _search),
+        ("/api/record", _record),
         ("/api/map-builder/", _map_builder("GET")),
         ("/api/map-builder-files/", _map_builder("GET")),
     ],
