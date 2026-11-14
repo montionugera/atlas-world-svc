@@ -698,27 +698,20 @@ namespace AtlasWorld.Client.World
             if (_avatarContainer == null)
                 return false;
 
+            float rightInput = (d ? 1f : 0f) - (a ? 1f : 0f);
             float forwardInput = (w ? 1f : 0f) - (s ? 1f : 0f);
-            float turnInput = (a ? 1f : 0f) - (d ? 1f : 0f);
 
-            var loco = CharacterLocomotion.Step(_avatarContainer.Rotation.Y, forwardInput, turnInput, dt);
+            var loco = CharacterLocomotion.Step(_avatarContainer.Rotation.Y, _cameraYaw, rightInput, forwardInput, dt);
             _avatarContainer.Rotation = new Vector3(0f, loco.NextYaw, 0f);
 
-            float forwardSpeed = IsHeadlessProbe
+            float speed = IsHeadlessProbe
                 ? (_runGaitEnabled ? RunSpeedMetersPerSec : WalkSpeedMetersPerSec)
                 : (_runGaitEnabled
                     ? (shiftHeld ? InteractiveSprintSpeedMetersPerSec : InteractiveRunSpeedMetersPerSec)
                     : (shiftHeld ? InteractiveRunSpeedMetersPerSec : InteractiveWalkSpeedMetersPerSec));
-            float backSpeed = IsHeadlessProbe ? WalkSpeedMetersPerSec : InteractiveWalkSpeedMetersPerSec;
 
-            if (loco.IsMovingBackward)
-            {
-                StepMovement(loco.WorldDirection, dt, backSpeed, rotateToDirection: false);
-                return true;
-            }
-
-            StepMovement(loco.WorldDirection, dt, forwardSpeed, rotateToDirection: false);
-            return loco.IsMovingForward;
+            StepMovement(loco.WorldDirection, dt, speed, rotateToDirection: false);
+            return loco.IsMoving;
         }
 
         /// <summary>
@@ -1284,7 +1277,7 @@ namespace AtlasWorld.Client.World
             var helpRow = new Label
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Text = "Controls: [W/S] Forward/Back  |  [A/D] Turn  |  [Shift] Sprint 8.8m/s  |  [C] Relax/Armed Stance  |  [Z / Scroll / +-] Face Zoom (0.35m..30m)  |  [Drag] Free Orbit  |  [Space] Attack",
+                Text = "Controls: [WASD] Camera-Relative Move  |  [Shift] Sprint 8.8m/s  |  [C] Relax/Armed Stance  |  [Z / Scroll / +-] Face Zoom (0.35m..30m)  |  [Drag] Free Orbit  |  [Space] Attack",
                 Modulate = new Color(0.76f, 0.84f, 0.94f, 0.90f),
             };
             helpRow.AddThemeFontSizeOverride("font_size", 11);
