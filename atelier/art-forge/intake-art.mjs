@@ -6,7 +6,7 @@
 // generated image enters the repo — see docs/superpowers/specs/
 // 2026-08-01-art-forge-foundation-design.md §4.
 //
-// Same SHAPE as atelier/asset-2d-forge/intake2d.mjs (validate -> snapshot ->
+// Pipeline shape (validate -> snapshot ->
 // copy -> write-entry -> gate -> rollback), different sink: art-manifest.json
 // (curated, driftGated:false, validated by the "art" validator in
 // scripts/check_asset_manifest.mjs, NOT the render-spec validator).
@@ -475,8 +475,7 @@ export async function intakeArt(opts = {}) {
 /**
  * Minimal argv parser: `--flag value` only. Raw string values — `--gen`'s
  * JSON string and `--tags`'s comma-separated list are parsed by the CLI
- * caller (main()), not here. Exported for testing parity with intake2d's
- * parseArgs.
+ * caller (main()), not here. Exported for testing.
  * @param {string[]} argv
  */
 export function parseArgs(argv) {

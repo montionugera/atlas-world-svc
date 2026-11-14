@@ -27,7 +27,7 @@ export const BODY_KIN_RACE = {
 export const NPC_FROZEN = 29001;
 const NON_UPRIGHT_RE = /\b(worm|slime|vine|ooze)s?\b/i;
 
-// Identical to FILLER_RE_SOURCE in scripts/mob_body_plan_pass.py (59 / 61 / 60 boss rows today).
+// The filler boss-name pattern (59 / 61 / 60 boss rows today).
 export const FILLER_RE = new RegExp(
   String.raw`^(?:\[Mini-Boss\] )?(?:B\d+|\d+F) .+ Overseer$` +
     String.raw`|^(?:\[Raid Boss\] )?(?:.+ )?Seal Warden$` +
