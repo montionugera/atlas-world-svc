@@ -2824,8 +2824,9 @@
     "title": "Maro Bell arrival: environment pilot pieces in game and grey box re-blocked for the 1.30 m player",
     "from_idea": "I-303",
     "created_at": "2026-11-14T19:27:02.283520+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-14T19:39:04.969572+00:00"
   }
 ]
