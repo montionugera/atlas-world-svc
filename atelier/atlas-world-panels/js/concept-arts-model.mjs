@@ -609,6 +609,18 @@ export function groupConceptArtsByZone(items, resolveNameFn = (id) => id) {
 }
 
 /**
+ * The items of the current design: an item marked `"concept": "legacy"` in the index is an old
+ * design the owner retired. Its files stay; the gallery and the lore page do not show it.
+ * @param {any[]} items
+ * @returns {any[]}
+ */
+export function currentConceptArts(items) {
+  return Array.isArray(items)
+    ? items.filter((it) => it.concept !== "legacy")
+    : [];
+}
+
+/**
  * Selects the primary hero key-art item from the list.
  * @param {any[]} items
  * @returns {any|null}

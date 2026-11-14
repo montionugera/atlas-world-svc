@@ -42,7 +42,9 @@ TABLE_KINDS = [
     ("canon", "studio", "SELECT kind || ':' || id, name, kind FROM canon_entries WHERE kind NOT IN ('race', 'retired_name')", "/?tab=lore"),
     ("canon", "legacy", "SELECT kind || ':' || id, name, 'Retired name' FROM canon_entries WHERE kind = 'retired_name'", "/?tab=lore"),
     ("decision", "studio", "SELECT id, id, text FROM canon_decisions", "/?tab=lore"),
-    ("concept_art", "studio", "SELECT id, title, caption FROM concept_art", "/?tab=concept-arts&focus={id}"),
+    # an index item marked "concept": "legacy" is an old design: out of search unless "Include archive"
+    ("concept_art", "studio", "SELECT id, title, caption FROM concept_art WHERE json_extract(raw_json, '$.concept') IS NOT 'legacy'", "/?tab=concept-arts&focus={id}"),
+    ("concept_art", "legacy", "SELECT id, title, caption FROM concept_art WHERE json_extract(raw_json, '$.concept') IS 'legacy'", "/?tab=concept-arts&focus={id}"),
     ("bestiary", "legacy", "SELECT id, name, lore FROM world_bestiary", "/?tab=bestiary&focus={id}"),
     ("dungeon", "legacy", "SELECT id, title, lore_note FROM world_dungeons", "/?tab=dungeons&focus={id}"),
     ("legacy_continent", "legacy", "SELECT id, title, structural_idea FROM world_continents", "/?tab=world"),

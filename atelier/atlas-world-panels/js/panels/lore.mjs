@@ -6,6 +6,7 @@ import {
   buildLoreModel,
   CHAPTERS,
 } from "../lore-model.mjs";
+import { currentConceptArts } from "../concept-arts-model.mjs";
 import { chapterForRef } from "./lore-refs.mjs";
 import { overlayRoot, register } from "./registry.mjs";
 
@@ -838,6 +839,7 @@ register("lore", {
       try {
         const res = await fetch(CONCEPT_ART_URL);
         if (res.ok) conceptArtIndex = await res.json();
+        if (conceptArtIndex) conceptArtIndex.items = currentConceptArts(conceptArtIndex.items);
       } catch {
         conceptArtIndex = { version: 1, items: [] };
       }
