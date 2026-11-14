@@ -51,7 +51,7 @@ const GEO_HEADER = {
     units: "km",
     convention: "x increases EAST, y increases SOUTH (north is smaller y) — inherited unchanged from content/maps/atlas-frontier.md",
     // F-045 Task 4 fix: this header was frozen boilerplate copied verbatim
-    // from the pre-rescale file and never updated when rescale_spine.mjs
+    // from the pre-rescale file and never updated when the F-045 rescale
     // (Task 1) scaled n-cluster1's interior.size (and every town/road
     // coordinate this document's other fields derive from) 150x190 -> 30x38.
     // The towns/roads arrays below were already correct (they read live off
@@ -272,7 +272,7 @@ function resolveWorldFromSpine({ spine, tree, descriptor = null }) {
     camps: camps.map((n) => ({ id: strip(n), name: n.title, at: rootAt(n),
       zone: strip(tree.byId.get(n.parentId)), note: n.lore.note })),
     // F-045 Task 2: days/daysLabel -> hours/hoursLabel — edges.json stopped
-    // carrying the day-count fields once rescale_spine.mjs (Task 1)
+    // carrying the day-count fields once the F-045 rescale (Task 1)
     // relabeled travel time to hours; this mirror was silently dropping the
     // travel-time data (canonStringify drops undefined-valued keys) until
     // it was updated to read the new field names.
