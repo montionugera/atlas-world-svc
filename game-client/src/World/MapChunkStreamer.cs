@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using AtlasWorld.Client.Content;
 
 namespace AtlasWorld.Client.World
 {
@@ -814,17 +815,50 @@ namespace AtlasWorld.Client.World
             }
         }
 
-        /// <summary>F-183 grey-box block: one BoxMesh (no art) plus an optional billboard name label above it.</summary>
-        private static void SpawnGreyBlock(UnifiedMapStructureVolume s, Node3D root)
+        private PackedScene? ResolveAssetScene(string assetPath)
+        {
+            if (string.IsNullOrEmpty(assetPath))
+                return null;
+            if (_sceneCache.TryGetValue(assetPath, out PackedScene? cached))
+                return cached;
+
+            PackedScene? scene = null;
+            if (assetPath.StartsWith("res://", StringComparison.Ordinal))
+                scene = ResourceLoader.Exists(assetPath) ? GD.Load<PackedScene>(assetPath) : null;
+            else if (AssetRegistry.Instance is { } reg)
+            {
+                PackedScene s = reg.Resolve(assetPath, out ResolveTier tier);
+                scene = tier == ResolveTier.Capsule ? null : s; // a miss must keep the grey box, never a capsule
+            }
+
+            _sceneCache[assetPath] = scene;
+            return scene;
+        }
+
+        /// <summary>F-183 grey-box block: resolved GLB or one BoxMesh fallback plus an optional billboard name label above it.</summary>
+        private void SpawnGreyBlock(UnifiedMapStructureVolume s, Node3D root)
         {
             float top = s.Hover + s.Size.Y;
-            root.AddChild(new MeshInstance3D
+            Node3D? glb = ResolveAssetScene(s.AssetPath ?? "")?.Instantiate() as Node3D;
+            if (glb != null)
             {
-                Name = $"Block_{s.Id}",
-                Mesh = new BoxMesh { Size = new Vector3(s.Size.X, s.Size.Y, s.Size.Z) },
-                Position = new Vector3(0f, s.Hover + s.Size.Y / 2f, 0f),
-                MaterialOverride = s.Solid ? SolidGreyBlockMaterial : WalkthroughGreyBlockMaterial,
-            });
+                glb.Name = $"Glb_{s.Id}";
+                glb.Position = new Vector3(0f, s.Hover, 0f);
+                glb.Rotation = new Vector3(0f, s.RotY, 0f);
+                EntityView.ApplyAnimeToonShading(glb, EntityKind.Npc);
+                root.AddChild(glb);
+                _occluder?.RegisterPropRoot(glb, Mathf.Max(s.Size.X, s.Size.Z) / 2f, 1f); // without this the 7.1 m tower blocks the camera with no fade
+            }
+            else
+            {
+                root.AddChild(new MeshInstance3D
+                {
+                    Name = $"Block_{s.Id}",
+                    Mesh = new BoxMesh { Size = new Vector3(s.Size.X, s.Size.Y, s.Size.Z) },
+                    Position = new Vector3(0f, s.Hover + s.Size.Y / 2f, 0f),
+                    MaterialOverride = s.Solid ? SolidGreyBlockMaterial : WalkthroughGreyBlockMaterial,
+                });
+            }
             if (!string.IsNullOrEmpty(s.Label))
             {
                 root.AddChild(new Label3D
@@ -1087,13 +1121,7 @@ namespace AtlasWorld.Client.World
 
         private bool SpawnSinglePropIntoChunk(UnifiedMapProp prop, Node3D chunkNode, float groundY)
         {
-            if (!_sceneCache.TryGetValue(prop.AssetPath, out PackedScene? scene))
-            {
-                scene = ResourceLoader.Exists(prop.AssetPath)
-                    ? GD.Load<PackedScene>(prop.AssetPath)
-                    : null;
-                _sceneCache[prop.AssetPath] = scene;
-            }
+            PackedScene? scene = ResolveAssetScene(prop.AssetPath);
 
             if (scene?.Instantiate() is Node3D instance)
             {
