@@ -560,6 +560,26 @@ namespace AtlasWorld.Client.World
             Report($"Walk cycle PollFootstepStrike fires both left and right foot strikes in sync with AnimationPlayer phase (left={leftStrikes}, right={rightStrikes})",
                 leftStrikes >= 1 && rightStrikes >= 1);
 
+            sandbox.TeleportToLandmark(0);
+            sandbox.SetGaitRun(true); // 2.600s 3-stride run cycle (mx_f_run_jogging / run)
+            sandbox.StepMovement(new Vector3(0f, 0f, -1f), 0.01f);
+            sandbox.AvatarAnimation?.ResetFootstepPhase();
+            int runLeftStrikes = 0;
+            int runRightStrikes = 0;
+            for (int step = 0; step < 104; step++)
+            {
+                Vector3 dir = step < 52 ? new Vector3(0f, 0f, -1f) : new Vector3(0f, 0f, 1f);
+                sandbox.StepMovement(dir, 0.025f);
+                if (sandbox.AvatarAnimation != null && sandbox.AvatarAnimation.PollFootstepStrike(out bool rightFoot, out bool _))
+                {
+                    if (rightFoot) runRightStrikes++;
+                    else runLeftStrikes++;
+                }
+            }
+            int runStrideCount = sandbox.AvatarAnimation?.CurrentStrideCount ?? 0;
+            Report($"2.600s multi-stride Run cycle (strides={runStrideCount}==3) fires all 6 footsteps (left={runLeftStrikes}==3, right={runRightStrikes}==3, 1 SFX per step)",
+                runStrideCount == 3 && runLeftStrikes == 3 && runRightStrikes == 3);
+
             var audioReg = Audio.AudioRegistry.Instance;
             if (audioReg != null)
             {
