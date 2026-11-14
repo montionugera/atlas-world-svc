@@ -58,6 +58,9 @@ namespace AtlasWorld.Client.World
         private Skeleton3D? _skeleton;
         private WeaponSocket? _weaponSocket;
         private float _restMinFootY = 0.078f;
+        private int _leftFootBoneIdx = -1;
+        private int _rightFootBoneIdx = -1;
+        private float _telemetryRefreshTimer = 0f;
 
         private readonly List<string> _availableAvatarKeys = new();
         private int _avatarIndex = 0;
@@ -445,15 +448,17 @@ namespace AtlasWorld.Client.World
             _skeleton = FindFirst<Skeleton3D>(_avatarModel);
             _weaponSocket = new WeaponSocket(_avatarModel);
 
+            _leftFootBoneIdx = -1;
+            _rightFootBoneIdx = -1;
             if (_skeleton != null)
             {
-                int lf = FindFootBone(_skeleton, left: true);
-                int rf = FindFootBone(_skeleton, left: false);
-                if (lf >= 0 && rf >= 0)
+                _leftFootBoneIdx = FindFootBone(_skeleton, left: true);
+                _rightFootBoneIdx = FindFootBone(_skeleton, left: false);
+                if (_leftFootBoneIdx >= 0 && _rightFootBoneIdx >= 0)
                 {
                     _restMinFootY = Mathf.Min(
-                        _skeleton.GetBoneGlobalRest(lf).Origin.Y,
-                        _skeleton.GetBoneGlobalRest(rf).Origin.Y);
+                        _skeleton.GetBoneGlobalRest(_leftFootBoneIdx).Origin.Y,
+                        _skeleton.GetBoneGlobalRest(_rightFootBoneIdx).Origin.Y);
                 }
             }
 
@@ -738,11 +743,15 @@ namespace AtlasWorld.Client.World
             }
             else
             {
+                bool wasMoving = _currentSpeedMetersPerSec > 0.001f;
                 _currentSpeedMetersPerSec = 0f;
                 _lastVelocity = Vector3.Zero;
-                float groundY = TerrainElevation.SampleHeight(
-                    _avatarContainer.Position.X, _avatarContainer.Position.Z, _mapDoc, _avatarContainer.Position.Y);
-                _avatarContainer.Position = new Vector3(_avatarContainer.Position.X, groundY, _avatarContainer.Position.Z);
+                if (wasMoving)
+                {
+                    float groundY = TerrainElevation.SampleHeight(
+                        _avatarContainer.Position.X, _avatarContainer.Position.Z, _mapDoc, _avatarContainer.Position.Y);
+                    _avatarContainer.Position = new Vector3(_avatarContainer.Position.X, groundY, _avatarContainer.Position.Z);
+                }
 
                 if (_attackHoldTimer <= 0f)
                 {
@@ -754,7 +763,6 @@ namespace AtlasWorld.Client.World
             }
 
             SampleFootGrounding();
-            RefreshUiLabels();
         }
 
         public void TriggerSandboxAttack()
@@ -887,13 +895,15 @@ namespace AtlasWorld.Client.World
                 LastFootMinDeltaMeters = 0f;
                 return 0f;
             }
-            int lf = FindFootBone(_skeleton, left: true);
-            int rf = FindFootBone(_skeleton, left: false);
+            int lf = _leftFootBoneIdx >= 0 ? _leftFootBoneIdx : FindFootBone(_skeleton, left: true);
+            int rf = _rightFootBoneIdx >= 0 ? _rightFootBoneIdx : FindFootBone(_skeleton, left: false);
             if (lf < 0 || rf < 0)
             {
                 LastFootMinDeltaMeters = 0f;
                 return 0f;
             }
+            _leftFootBoneIdx = lf;
+            _rightFootBoneIdx = rf;
 
             float ly = (_skeleton.GlobalTransform * _skeleton.GetBoneGlobalPose(lf)).Origin.Y;
             float ry = (_skeleton.GlobalTransform * _skeleton.GetBoneGlobalPose(rf)).Origin.Y;
@@ -984,7 +994,12 @@ namespace AtlasWorld.Client.World
                 _cameraOccluder.Update(dt, MainCamera.GlobalPosition, focus, null);
             }
 
-            UpdateTelemetryDisplay();
+            _telemetryRefreshTimer += dt;
+            if (_telemetryRefreshTimer >= 0.10f)
+            {
+                _telemetryRefreshTimer = 0f;
+                UpdateTelemetryDisplay();
+            }
         }
 
         public override void _UnhandledInput(InputEvent @event)

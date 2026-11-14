@@ -52,6 +52,7 @@ namespace AtlasWorld.Client.World
         private readonly List<(MeshInstance3D mesh, Vector3 homePos, float phase)> _fireflies = new();
         private StandardMaterial3D? _fireflyMat;
         private float _flickerClock = 0f;
+        private float _lastAppliedSkyHour = float.NaN;
 
         private readonly struct AtmosphereKeyframe
         {
@@ -263,6 +264,7 @@ namespace AtlasWorld.Client.World
             }
             else
             {
+                _lastAppliedSkyHour = float.NaN;
                 ApplyAtmosphereForHour(TimeOfDayHours, mapDoc);
             }
         }
@@ -344,6 +346,7 @@ namespace AtlasWorld.Client.World
         public void SetTimeOfDay(float hours, UnifiedMapDocument? mapDoc = null)
         {
             TimeOfDayHours = Wrap24(hours);
+            _lastAppliedSkyHour = float.NaN;
             ApplyAtmosphereForHour(TimeOfDayHours, mapDoc);
         }
 
@@ -459,50 +462,59 @@ namespace AtlasWorld.Client.World
             else
                 NightFactor = 1f;
 
-            // 2. Apply Sky & WorldEnvironment parameters
-            if (_skyMat != null)
+            // Throttle ProceduralSkyMaterial & DirectionalLight3D updates (~4 Hz at 0.10 hr/s, or on explicit SetTimeOfDay)
+            // so Godot Metal Forward+ does not re-convolve the sky radiance cubemap 60 times/sec.
+            bool shouldUpdateSky = float.IsNaN(_lastAppliedSkyHour) ||
+                                   Mathf.Abs(Mathf.Wrap(h - _lastAppliedSkyHour, -12f, 12f)) >= 0.025f;
+            if (shouldUpdateSky)
             {
-                _skyMat.SkyTopColor = skyTop;
-                _skyMat.SkyHorizonColor = skyHorizon;
-                _skyMat.GroundHorizonColor = groundHorizon;
-                _skyMat.GroundBottomColor = groundBottom;
-            }
+                _lastAppliedSkyHour = h;
 
-            if (_environment != null)
-            {
-                _environment.AmbientLightColor = ambientColor;
-                _environment.AmbientLightEnergy = ambientEnergy;
-                _environment.FogLightColor = fogColor;
-                _environment.FogDensity = fogDensity;
-                _environment.GlowIntensity = glowIntensity;
-            }
-
-            // 3. Apply Solar (06:00..18:30) or Lunar (18:30..06:00) DirectionalLight3D trajectory
-            if (_sunMoonLight != null)
-            {
-                _sunMoonLight.LightColor = lightColor;
-                _sunMoonLight.LightEnergy = lightEnergy;
-                _sunMoonLight.ShadowOpacity = Mathf.Lerp(0.68f, 0.42f, NightFactor);
-
-                float pitchDeg;
-                float yawDeg;
-                if (h >= 6.0f && h <= 18.5f)
+                // 2. Apply Sky & WorldEnvironment parameters
+                if (_skyMat != null)
                 {
-                    // Daytime solar arc: rises in East (-75° yaw), peaks at 58° elevation at noon, sets in West (+75° yaw)
-                    float dayFrac = (h - 6.0f) / 12.5f;
-                    pitchDeg = -Mathf.Lerp(16.0f, 58.0f, Mathf.Sin(dayFrac * Mathf.Pi));
-                    yawDeg = Mathf.Lerp(-68.0f, 68.0f, dayFrac);
-                }
-                else
-                {
-                    // Nighttime lunar arc: cool silver moonlight casting gentle shadows from high south-west
-                    float nightHours = h > 18.5f ? (h - 18.5f) : (h + 5.5f);
-                    float nightFrac = nightHours / 11.5f;
-                    pitchDeg = -Mathf.Lerp(26.0f, 48.0f, Mathf.Sin(nightFrac * Mathf.Pi));
-                    yawDeg = Mathf.Lerp(-42.0f, 42.0f, nightFrac);
+                    _skyMat.SkyTopColor = skyTop;
+                    _skyMat.SkyHorizonColor = skyHorizon;
+                    _skyMat.GroundHorizonColor = groundHorizon;
+                    _skyMat.GroundBottomColor = groundBottom;
                 }
 
-                _sunMoonLight.RotationDegrees = new Vector3(pitchDeg, yawDeg, 0f);
+                if (_environment != null)
+                {
+                    _environment.AmbientLightColor = ambientColor;
+                    _environment.AmbientLightEnergy = ambientEnergy;
+                    _environment.FogLightColor = fogColor;
+                    _environment.FogDensity = fogDensity;
+                    _environment.GlowIntensity = glowIntensity;
+                }
+
+                // 3. Apply Solar (06:00..18:30) or Lunar (18:30..06:00) DirectionalLight3D trajectory
+                if (_sunMoonLight != null)
+                {
+                    _sunMoonLight.LightColor = lightColor;
+                    _sunMoonLight.LightEnergy = lightEnergy;
+                    _sunMoonLight.ShadowOpacity = Mathf.Lerp(0.68f, 0.42f, NightFactor);
+
+                    float pitchDeg;
+                    float yawDeg;
+                    if (h >= 6.0f && h <= 18.5f)
+                    {
+                        // Daytime solar arc: rises in East (-75° yaw), peaks at 58° elevation at noon, sets in West (+75° yaw)
+                        float dayFrac = (h - 6.0f) / 12.5f;
+                        pitchDeg = -Mathf.Lerp(16.0f, 58.0f, Mathf.Sin(dayFrac * Mathf.Pi));
+                        yawDeg = Mathf.Lerp(-68.0f, 68.0f, dayFrac);
+                    }
+                    else
+                    {
+                        // Nighttime lunar arc: cool silver moonlight casting gentle shadows from high south-west
+                        float nightHours = h > 18.5f ? (h - 18.5f) : (h + 5.5f);
+                        float nightFrac = nightHours / 11.5f;
+                        pitchDeg = -Mathf.Lerp(26.0f, 48.0f, Mathf.Sin(nightFrac * Mathf.Pi));
+                        yawDeg = Mathf.Lerp(-42.0f, 42.0f, nightFrac);
+                    }
+
+                    _sunMoonLight.RotationDegrees = new Vector3(pitchDeg, yawDeg, 0f);
+                }
             }
 
             // 4. Update Sanctuary Torch / Lantern warm point lights & Firefly motes at Dusk / Night
