@@ -1876,5 +1876,11 @@
     "title": "Flaky Gate 1: atlas-web-read-only test loses its port under the parallel gate (freePort closes before spawn)",
     "created_at": "2026-11-14T16:50:59.592526+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-301",
+    "title": "Second-pass Colyseus/Nakama mentions: .dockerignore:14, k8s config name, README npm run lines, .cursor rules",
+    "created_at": "2026-11-14T16:51:00.002937+00:00",
+    "promoted_to": null
   }
 ]
