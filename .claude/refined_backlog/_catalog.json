@@ -2802,9 +2802,10 @@
     "title": "Game DB from the studio world: slim catalog, one search, record links",
     "from_idea": "I-299",
     "created_at": "2026-11-14T17:23:26.053010+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-14T18:10:47.461466+00:00"
   },
   {
     "id": "F-217",
