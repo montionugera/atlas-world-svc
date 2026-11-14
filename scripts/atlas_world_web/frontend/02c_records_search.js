@@ -86,7 +86,7 @@ async function renderRecordPage(main) {
   const cut = key.indexOf(':');
   const kind = cut < 0 ? key : key.slice(0, cut), id = cut < 0 ? '' : key.slice(cut + 1);
   document.getElementById('topbarTitle').textContent = 'Record';
-  main.innerHTML = `<article id="recordPage" class="record-page" aria-busy="true"><h1 class="record-page__skeleton">&nbsp;</h1></article>`;
+  main.innerHTML = `<article id="recordPage" class="record-page" aria-busy="true"><div class="record-page__skeleton">&nbsp;</div></article>`;
   let res, body;
   try {
     res = await fetch(`/api/record?kind=${encodeURIComponent(kind)}&id=${encodeURIComponent(id)}`);
