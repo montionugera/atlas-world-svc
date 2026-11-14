@@ -92,29 +92,31 @@
   {
    "id": "gate-west",
    "kind": "block",
-   "x": -4.5,
+   "x": -3.87,
    "z": 76,
    "rotY": 0,
    "radius": 2.5,
    "size": {
-    "x": 5,
-    "y": 5,
-    "z": 3
+    "x": 3.74,
+    "y": 7.1,
+    "z": 2.37
    },
-   "label": "Valley gate"
+   "label": "Valley gate",
+   "assetPath": "env:maro-gate-tower"
   },
   {
    "id": "gate-east",
    "kind": "block",
-   "x": 4.5,
+   "x": 3.87,
    "z": 76,
    "rotY": 0,
    "radius": 2.5,
    "size": {
-    "x": 5,
-    "y": 5,
-    "z": 3
-   }
+    "x": 3.74,
+    "y": 7.1,
+    "z": 2.37
+   },
+   "assetPath": "env:maro-gate-tower"
   },
   {
    "id": "valley-wall-west",
@@ -272,7 +274,7 @@
    "radius": 3.5,
    "size": {
     "x": 7,
-    "y": 5,
+    "y": 6.5,
     "z": 6
    },
    "label": "Amber's oil shop"
@@ -286,7 +288,7 @@
    "radius": 3.5,
    "size": {
     "x": 7,
-    "y": 5,
+    "y": 6.5,
     "z": 6
    },
    "label": "Bram's lantern house"
@@ -300,7 +302,7 @@
    "radius": 4.0,
    "size": {
     "x": 8,
-    "y": 5,
+    "y": 6.5,
     "z": 7
    },
    "label": "Tovin's shrine"
@@ -586,9 +588,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-02",
@@ -599,9 +602,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-03",
@@ -612,9 +616,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-04",
@@ -625,9 +630,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-05",
@@ -638,9 +644,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-06",
@@ -651,9 +658,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-07",
@@ -664,9 +672,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-08",
@@ -677,9 +686,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-09",
@@ -690,9 +700,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-10",
@@ -703,9 +714,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-11",
@@ -716,9 +728,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-12",
@@ -729,9 +742,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-13",
@@ -742,9 +756,10 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   },
   {
    "id": "lantern-14",
@@ -755,27 +770,51 @@
    "radius": 0.15,
    "size": {
     "x": 0.3,
-    "y": 2.5,
+    "y": 3.1,
     "z": 0.3
-   }
+   },
+   "assetPath": "env:maro-lantern-post"
   }
  ],
- "props": [],
+ "props": [
+  {
+   "id": "barrel-gate-01",
+   "assetPath": "env:maro-barrel",
+   "x": -3.8,
+   "y": 0,
+   "z": 72.5,
+   "rotY": 0,
+   "scale": 1,
+   "blocksMovement": false,
+   "colliderHalfExtent": 0.31
+  },
+  {
+   "id": "barrel-gate-02",
+   "assetPath": "env:maro-barrel",
+   "x": 3.8,
+   "y": 0,
+   "z": 72.8,
+   "rotY": 0,
+   "scale": 1,
+   "blocksMovement": false,
+   "colliderHalfExtent": 0.31
+  }
+ ],
  "spawnAreas": [],
  "staticObstacles": [
   {
    "id": "gate-west",
-   "min_x": 33.0,
-   "min_y": 154.5,
+   "min_x": 34.26,
+   "min_y": 154.815,
    "max_x": 38.0,
-   "max_y": 157.5
+   "max_y": 157.185
   },
   {
    "id": "gate-east",
    "min_x": 42.0,
-   "min_y": 154.5,
-   "max_x": 47.0,
-   "max_y": 157.5
+   "min_y": 154.815,
+   "max_x": 45.74,
+   "max_y": 157.185
   },
   {
    "id": "valley-wall-west",
