@@ -70,7 +70,8 @@ if grep -qE '^client/react-client/' <<<"$CHANGED"; then
 fi
 
 # 4. Direct test files touched under scripts/tests or atelier/*/tests
-DIRECT_MJS="$(grep -E '^(scripts/tests|atelier/[^/]+/tests)/.*\.test\.mjs$' <<<"$CHANGED" || true)"
+# a deleted file is still in $CHANGED: only run files that exist
+DIRECT_MJS="$(grep -E '^(scripts/tests|atelier/[^/]+/tests)/.*\.test\.mjs$' <<<"$CHANGED" | while IFS= read -r f; do [ -e "$f" ] && echo "$f"; done || true)"
 if [ -n "$DIRECT_MJS" ]; then
   # shellcheck disable=SC2086
   run_step "node --test (touched test files)" node --test $DIRECT_MJS
@@ -82,7 +83,7 @@ if grep -qE '^content/' <<<"$CHANGED"; then
 fi
 
 # 6. Python scripts syntax / quick check
-PY_TOUCHED="$(grep -E '^scripts/.*\.py$' <<<"$CHANGED" || true)"
+PY_TOUCHED="$(grep -E '^scripts/.*\.py$' <<<"$CHANGED" | while IFS= read -r f; do [ -e "$f" ] && echo "$f"; done || true)"
 if [ -n "$PY_TOUCHED" ]; then
   # shellcheck disable=SC2086
   run_step "python3 py_compile" python3 -m py_compile $PY_TOUCHED
