@@ -359,7 +359,7 @@ export function drawBasinSheet({ doc }) {
 
   // waystations at the interior hour boundaries — A1 §7.2: the map draws
   // waystations because the day-counts need somewhere to end (F-045 Task 4:
-  // road.days/daysLabel -> road.hours/hoursLabel — the field rescale_spine.mjs
+  // road.days/daysLabel -> road.hours/hoursLabel — the field the F-045 rescale
   // (Task 1) applied to edges.json/cluster1-geography.json, but this
   // renderer still read the old names, so every road silently evaluated
   // `undefined` here: zero waystations and zero road labels were drawn on
@@ -616,7 +616,7 @@ export function drawBasinSheet({ doc }) {
       `<path d="M${x},${y} h56" stroke="${C.ink}" stroke-width="3.2" stroke-linecap="round"/>`,
     "the trade road",
     // F-045 Task 5: was "day-counts are lettered on the legs" — the sheet's
-    // roads now carry hour labels (rescale_spine.mjs, Task 1), not day-counts.
+    // roads now carry hour labels (the F-045 rescale, Task 1), not day-counts.
     "hours are lettered on the legs",
   );
   legendRow(
