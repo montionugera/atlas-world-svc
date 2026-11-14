@@ -2818,5 +2818,14 @@
     "claimed_at": "2026-11-14T18:07:37.278923+00:00",
     "shipped_at": "2026-11-14T18:15:36.655253+00:00",
     "shipped_sha": "2d42e8433b8b7cd13647a6a8d738970f13587f0f"
+  },
+  {
+    "id": "F-218",
+    "title": "Maro Bell arrival: environment pilot pieces in game and grey box re-blocked for the 1.30 m player",
+    "from_idea": "I-303",
+    "created_at": "2026-11-14T19:27:02.283520+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
