@@ -27,12 +27,14 @@
 
 1. `district.portal_edges` entries are **node to node** (`from_node_id`, `to_node_id`), 96 edges, all resolve. So "Connects to" links are `node -> Connects to -> node`, not district to district.
 2. The `maps` table has 46 rows, not 45: `MAPS_DIR.glob("*.json")` (`build_catalog_db.py:106`) also ingests `_manifest.runtime.json` as a map with id `_manifest.runtime`. Task 1 fixes the glob.
-3. The 15 `canon_entries` rows of kind `retired_name` (Millcross, Undertow, ...) get `concept = 'legacy'`, so default search does not surface retired names. All other canon rows are `studio`.
+3. The 15 `canon_entries` rows of kind `retired_name` (Adena, Giran, Mira, Thessa, ...) get `concept = 'legacy'`, so default search does not surface retired names. All other canon rows are `studio`. "Millcross" reaches search through 35 legacy rows (6 places, 10 story nodes, 19 bestiary) and through the runtime map `millcross-ford`, which stays `studio` by the owner's 2026-11-15 decision (the 45 runtime maps are what the game runs today).
 4. Old `maps` ids and the 97 playable `mapId`s do not overlap (0 common ids), so `map` and `studio_map` are separate kinds with no collision.
 5. R1 says "when the edit host starts": the freshness walk (983 files, 14 ms) runs once in `main()`, not on every `ensure_catalog_db()` call.
 6. Parallel tests start several explorers at once. The temp file is therefore `<db name>.<pid>.tmp`, not a shared `<path>.tmp`, so two rebuilds cannot write the same file. `os.replace` keeps the swap atomic.
 7. `castles`, `elements`, `handbook`, `boss_encounters`, `enchanting_rules` and `races_catalog` have no kind in the spec's list and get no `records` rows. Races come from `canon_entries` (kind `race`).
-8. Three test seams are added to the builder, all env vars: `ATLAS_STUDIO_DIR` (studio tree to read), `ATLAS_TAGS_FILE` (hand-tag file), `ATLAS_CATALOG_BUILD_FAIL` (force exit 1). `ATLAS_CATALOG_DB` already exists in the explorer (`catalog_explorer_web.py:40`).
+8. The top-bar box keeps its second job, filtering the open tab through `SEARCH_QUERY` (S2 replaces the concept-art tab's own box with it). Two fixes make that safe next to the popover: each keystroke replaces the URL instead of pushing a history entry, and `syncUrlState()` always assigns `SEARCH_QUERY` from the URL, so Back to a URL without `q` clears the box.
+9. `launch()` and `navigate()` in `scripts/probes/atlas_audit_lib.mjs:123,151` wait up to 15 s for the Studio map (`#dedicatedWorldAtlasSvg`). The new probe opens `about:blank` and navigates itself, or it would spend 90 s waiting on tabs that have no map.
+10. Three test seams are added to the builder, all env vars: `ATLAS_STUDIO_DIR` (studio tree to read), `ATLAS_TAGS_FILE` (hand-tag file), `ATLAS_CATALOG_BUILD_FAIL` (force exit 1). `ATLAS_CATALOG_DB` already exists in the explorer (`catalog_explorer_web.py:40`).
 
 ## File structure
 
@@ -66,6 +68,7 @@
   - Below 768 px the top bar is `flex-wrap: nowrap; overflow-x: auto; max-height: 44px` (`01_shell_and_styles.html:2332`). The search box must be visible at 390 px **without scrolling the top bar and without opening the nav drawer**, so it sits directly after the `Menu` button there; the title and status badge may hide on a phone.
   - A popover placed inside the top bar would be clipped by `overflow-x: auto`. The popover is a sibling of `.main`'s header, `position: fixed`, placed from the input's `getBoundingClientRect()`.
   - Reuse what exists: `joy-badge`, `joy-button`, the `.sidebar-search__*` input styles (`:94-135`), tokens `--joy-surface-sunken`, `--joy-border-default`, `--joy-text-secondary`, `--hub-topbar-bg`. No new colour literals.
+  - The top bar's height must not change at any width (desktop `min-height: 52px`, phone `max-height: 44px`): the moved wrapper gets no vertical padding and the input is at most 32 px high (28 px on a phone). `#topbarStatus` stays in the DOM. Gate 1 probes measure the map legend and zoom positions below the bar (`atlas_phone_touch_audit.mjs` L3, `atlas_zoom_drift_check.mjs` F-158) and fail on a shift.
   - Touch targets at least 44 px on a phone; popover rows are one line of title plus one line of summary, truncated with ellipsis.
 - [ ] **Step 2:** Write `design-brief.md`: layout at 390 and 1280, tokens, the components reused, every state from the UI state matrix, the exact strings from Global Constraints, focus order (search box, "Include archive", results, page content).
 - [ ] **Step 3:** Commit: `git add .claude/refined_backlog/F-216-*/design-brief.md && git commit -m "docs(F-216): design brief for search box, popover and record page"`
@@ -310,13 +313,13 @@ def build_index(conn: sqlite3.Connection, root: Path, studio_dir: Path, manifest
 
     for p in sorted((studio_dir / "continents").rglob("*.json")):
         d = _load(p)
-        recs.append(("continent", d["id"], d["name"], d.get("core_rationale", ""), "studio", rel(p), f"/?tab=studio&continent={d['id']}"))
+        recs.append(("continent", d["id"], d["name"], d.get("core_rationale", ""), "studio", rel(p), f"/?tab=studio&perspective=continent&continent={d['id']}"))
         tag("continent", d["id"], d.get("status"))
     for p in sorted((studio_dir / "districts").rglob("*.json")):
         d = _load(p)
         cid = d.get("parent_continent_id", "")
         recs.append(("district", d["id"], d["name"], d.get("core_rationale", ""), "studio", rel(p),
-                     f"/?tab=studio&continent={cid}&district={d['id']}"))
+                     f"/?tab=studio&perspective=district&continent={cid}&district={d['id']}"))
         tag("district", d["id"], d.get("status"), cid, *_levels(d.get("level_range")))
         refs.append(("district", d["id"], "Part of", "continent", cid))
         for e in d.get("portal_edges") or []:
@@ -325,7 +328,7 @@ def build_index(conn: sqlite3.Connection, root: Path, studio_dir: Path, manifest
         d = _load(p)
         cid, did = d.get("parent_continent_id", ""), d.get("parent_district_id", "")
         recs.append(("node", d["id"], d["name"], d.get("core_rationale", ""), "studio", rel(p),
-                     f"/?tab=studio&continent={cid}&district={did}&node={d['id']}"))
+                     f"/?tab=studio&perspective=town-or-hunting-area&continent={cid}&district={did}&node={d['id']}"))
         tag("node", d["id"], d.get("status"), d.get("node_type"), cid, *_levels(d.get("level_range")))
         refs.append(("node", d["id"], "Part of", "district", did))
         if d.get("map_id"):
@@ -334,7 +337,7 @@ def build_index(conn: sqlite3.Connection, root: Path, studio_dir: Path, manifest
         lv = m.get("levelRange") or []
         summary = m.get("nodeType", "") + (f" · levels {lv[0]}-{lv[1]}" if len(lv) == 2 else "")
         recs.append(("studio_map", m["mapId"], m["name"], summary, "studio", rel(manifest_path),
-                     f"/?tab=studio&continent={m.get('continentId', '')}&district={m.get('districtId', '')}&node={m['nodeId']}"))
+                     f"/?tab=studio&perspective=town-or-hunting-area&continent={m.get('continentId', '')}&district={m.get('districtId', '')}&node={m['nodeId']}"))
         tag("studio_map", m["mapId"], m.get("status"), m.get("nodeType"), m.get("continentId"), *_levels(lv))
         refs.append(("studio_map", m["mapId"], "Part of", "node", m["nodeId"]))
     for p in sorted((studio_dir / "maps").glob("*.png")):
@@ -402,7 +405,7 @@ def load_json(path: Path):
     try:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
-    except ValueError as exc:
+    except (OSError, ValueError) as exc:
         raise SystemExit(f"[catalog_db] cannot parse {path}: {exc}") from None
 ```
 
@@ -710,9 +713,13 @@ _FRESHNESS_DIRS = (ROOT / "content", ROOT / "contracts" / "content")
 def _inputs_newer_than(db_mtime: float) -> bool:
     if any(f.stat().st_mtime > db_mtime for f in _FRESHNESS_FILES):
         return True
-    return any(
-        os.stat(os.path.join(dirpath, name)).st_mtime > db_mtime
-        for root in _FRESHNESS_DIRS for dirpath, _dirs, names in os.walk(root) for name in names)
+    for root in _FRESHNESS_DIRS:
+        for dirpath, _dirs, names in os.walk(root):
+            if os.stat(dirpath).st_mtime > db_mtime:  # a deleted or added file changes its folder's mtime
+                return True
+            if any(os.stat(os.path.join(dirpath, name)).st_mtime > db_mtime for name in names):
+                return True
+    return False
 
 
 def ensure_catalog_db(check_fresh: bool = False) -> None:
@@ -726,7 +733,8 @@ def ensure_catalog_db(check_fresh: bool = False) -> None:
     if have:
         try:
             conn = sqlite3.connect(str(DB_PATH))
-            row = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='world_continents'").fetchone()
+            # 'records' is written last, so its presence means a complete DB of this version
+            row = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='records'").fetchone()
             conn.close()
             needs_build = not row
         except Exception:
@@ -766,7 +774,7 @@ Check that `os` is imported in this file (`grep -n "^import os" scripts/catalog_
 
 Run: `cd scripts && node --test tests/atlas-web-records.test.mjs tests/atlas-web-read-only.test.mjs tests/catalog-records.test.mjs`
 Expected: `# fail 0`. If `atlas-web-read-only.test.mjs:105` reports `server did not start`, re-run once (known port race, I-300) before debugging.
-Run: `python3 tests/test_studio_web_perspectives.py` (or the command at `scripts/precheck.sh:563`). Expected: OK.
+Run: `python3 tests/test_studio_web_perspectives.py` (the command `scripts/fastcheck.sh:51` runs). Expected: OK.
 
 - [ ] **Step 7: Commit**
 
@@ -801,7 +809,7 @@ git commit -m "feat(explorer): rebuild a stale game DB at start, add /api/search
 // F-216 S1: search box, result popover and record page in a real Chrome, desktop and phone.
 // usage: node scripts/probes/atlas_records_probe.mjs [--url http://127.0.0.1:8788/]
 // Needs a running catalog_explorer_web.py. Exit: 0 pass, 1 assertion failed, 2 setup error, 3 Chrome missing.
-import { launch, waitFor, settle, navigate, tap, chromeAvailable } from './atlas_audit_lib.mjs';
+import { launch, waitFor, settle, tap, chromeAvailable } from './atlas_audit_lib.mjs';
 
 const argv = process.argv.slice(2);
 const ui = argv.indexOf('--url');
@@ -824,15 +832,20 @@ const back = async (c) => {  // what the browser Back button does
   const h = await c.send('Page.getNavigationHistory');
   await c.send('Page.navigateToHistoryEntry', { entryId: h.entries[h.currentIndex - 1].id });
 };
+// The library's launch(url) and navigate() wait 15 s for the Studio map; these pages have none.
+const goto = async (c, url) => {
+  await c.send('Page.navigate', { url });
+  await waitFor(c, `typeof DATA !== 'undefined' && !!DATA && !!document.getElementById('globalSearch')`, 20000);
+  await settle(c);
+};
 const FIRST = `#searchPopover:not([hidden]) [data-record]`;
 const MSG = `#searchPopover:not([hidden]) .search-popover__message`;
 
 for (const v of [{ name: 'desktop 1280x800', w: 1280, h: 800, dpr: 1 }, { name: 'phone 390x844', w: 390, h: 844, dpr: 2, mobile: true, touch: true }]) {
   let c;
   try {
-    c = await launch({ ...v, url: `${BASE}?tab=mobs` });
-    await waitFor(c, `typeof DATA !== 'undefined' && !!DATA && !!document.getElementById('globalSearch')`, 20000);
-    await settle(c);
+    c = await launch({ ...v, url: 'about:blank' });
+    await goto(c, `${BASE}?tab=mobs`);
 
     const box = await rect(c, '#globalSearch');
     ck(`A14 ${v.name}: search box is on screen and on top without opening the nav drawer`,
@@ -872,13 +885,13 @@ for (const v of [{ name: 'desktop 1280x800', w: 1280, h: 800, dpr: 1 }, { name: 
       await c.eval(`(document.querySelector(${JSON.stringify(MSG)})||{textContent:''}).textContent.includes('Search is unavailable') && document.getElementById('searchRetryBtn').textContent.trim()==='Retry'`));
     await c.send('Network.setBlockedURLs', { urls: [] });
 
-    await navigate(c, `${BASE}?r=district:district-amber-root-hollows`);
+    await goto(c, `${BASE}?r=district:district-amber-root-hollows`);
     await waitFor(c, `!!document.querySelector('#recordPage section[data-relation="Part of"]')`, 20000);
     ck(`A8 ${v.name}: a record link shows "Part of" and "Contains"`,
       await c.eval(`document.querySelector('#recordPage section[data-relation="Part of"]').textContent.includes('Hearthbloom Basin') && document.querySelectorAll('#recordPage section[data-relation="Contains"] [data-record]').length>0`));
     ck(`A8 ${v.name}: the record page does not overflow sideways`, await c.eval(`document.documentElement.scrollWidth<=innerWidth+1`), await c.eval(`document.documentElement.scrollWidth+'/'+innerWidth`));
 
-    await navigate(c, `${BASE}?r=district:nope`);
+    await goto(c, `${BASE}?r=district:nope`);
     await waitFor(c, `!!document.getElementById('recordPage')`, 20000);
     await settle(c);
     ck(`R7f ${v.name}: an unknown record says so and focuses the search box`,
@@ -897,7 +910,7 @@ Verify-Cmd: python3 scripts/catalog_explorer_web.py --port 8791 & pid=$!; for i 
 
 - [ ] **Step 2: Run the probe and see it fail for the right reason**
 
-Run the Verify-Cmd. Expected: the first assertion on the phone FAILS (`A14 phone 390x844` with the box off-screen in the closed drawer), then exit 2 on the popover wait (`#searchPopover` does not exist). If `launch`, `navigate` or `c.kill` do not match these calls, read `scripts/probes/atlas_audit_lib.mjs:104-166` and fix the probe's calls, never the library.
+Run the Verify-Cmd. Expected: the first assertion on the phone FAILS (`A14 phone 390x844` with the box off-screen in the closed drawer), then exit 2 on the popover wait (`#searchPopover` does not exist). If `launch` or `c.kill` do not match these calls, read `scripts/probes/atlas_audit_lib.mjs:104-166` and fix the probe's calls, never the library.
 
 - [ ] **Step 3: Move the search box into the top bar (`01_shell_and_styles.html`)**
 
@@ -1068,8 +1081,10 @@ Add `"02c_records_search.js",` to `FRONTEND_MODULE_FILES` in `scripts/atlas_worl
 
 - [ ] **Step 5: Wire `CURRENT_RECORD` into the URL state and `render()` (`02_state_and_composable_layers.js`)**
 
-Five small edits. Each one is a single line unless shown.
+Seven small edits. Each one is a single line unless shown.
 - `syncUrlState()` after `const q = params.get('q');` (`:361`): `CURRENT_RECORD = params.get('r') || '';` (always assigned, so Back to a URL without `r` leaves the record page).
+- `syncUrlState()` (`:396-400`): replace the `if (q !== null) { ... }` block with an unconditional one, so the URL is the only source of the box text: `SEARCH_QUERY = q || ''; const inp = document.getElementById('globalSearch'); if (inp) inp.value = SEARCH_QUERY;`
+- `init()` (`:698`), inside the existing `searchInput` `input` listener: `writeUrlState();` becomes `writeUrlState(false);` (one history entry per view, not per keystroke; Back from a record page then lands on the tab with the query still in the box).
 - `writeUrlState()` after `if (SEARCH_QUERY) params.set('q', SEARCH_QUERY);` (`:522`): `if (CURRENT_RECORD) params.set('r', CURRENT_RECORD);`
 - `jumpToEntity()` (`:617`) and `switchTab()` (`:729`): add `CURRENT_RECORD = '';` as the first line of each.
 - `render()` (`:794`), directly after `const main = document.getElementById('mainContent');`:
@@ -1078,6 +1093,7 @@ Five small edits. Each one is a single line unless shown.
   if (CURRENT_RECORD) {
     const bar = document.getElementById('subViewBar');
     if (bar) bar.hidden = true;
+    if (window.ATLAS_PANELS) window.ATLAS_PANELS.hideAll();   // same leave-the-panel steps as panelDispatch() (:279-288)
     const host = document.getElementById('panelHost');
     if (host) host.hidden = true;
     main.hidden = false;
@@ -1087,7 +1103,7 @@ Five small edits. Each one is a single line unless shown.
   delete main.dataset.record;
 ```
 
-  Before writing this, read `panelDispatch()` and `renderSubViewBar()` (`grep -n "function panelDispatch\|function renderSubViewBar" scripts/atlas_world_web/frontend/*.js`) and mirror how they show and hide `#panelHost`, `#mainContent` and `#subViewBar`, so leaving a record page for a panel tab restores the panel.
+  Leaving the record page needs no extra code: the next `render()` runs `renderSubViewBar()` and `panelDispatch(main)` (`:261-300`), which set `#subViewBar`, `#panelHost` and `#mainContent` for the tab again.
 - `init()` (`:694-700`): after the existing `searchInput.addEventListener('input', ...)` block add `initRecordSearch();`. In the existing global `keydown` handler's `Escape` branch (`:710`) add `closeSearchPopover();`.
 
 - [ ] **Step 6: Run the probe and see it pass**
@@ -1136,3 +1152,17 @@ git commit -m "feat(explorer): top-bar search over every record and record pages
 - Spec coverage for S1: R1 (Task 2 Step 5, A1 test), R1a (Task 1 Step 5d, A2 file test), R1f (Task 2 Step 5, A2 banner test), R2 (Task 1 Step 4, A3 test), R2f (Task 1 Steps 4-5b, R2f test), R3 / R3f (Task 1 Step 4, A4 tests), R4 / R4f (Task 1 Step 4, A5 test), R5 (unchanged guard, existing read-only test), R6 / R6f / R6g (Tasks 2-3, A6 test, probe), R7 / R7f (Tasks 2-3, A8 test, probe), R8 (Task 3 Step 5, probe A9), R9 (Tasks 1-3, A10 test, "Old concept" label), A14 (probe + Step 10), A15 (Step 7 and Step 10).
 - No architecture diagram exists for the explorer, so none is updated; the README step covers the new routes and env vars.
 - Types and names are consistent across tasks: `catalog_db_path`, `build_index`, `CatalogIndexError`, `records.search`, `records.record`, `openRecord`, `CURRENT_RECORD`, the DOM ids in Task 3's Interfaces block.
+
+## Appendix — audit trail
+
+- 2026-11-15 self-grill-audit (agy, report `~/.local/state/atlas-lane/cleanup-audit-2026-11-14/audit-F-216-plan.md`): verdict safe-with-fixes. The auditor ran `catalog_index.py` and `records.py` as written against the real DB: 1,945 records (795 studio, 1,150 legacy), 3,477 links, 5,151 tags, no SQL error. Corrected, each checked on disk first:
+  - F1: keystrokes replace the URL instead of pushing history; `syncUrlState()` always assigns `SEARCH_QUERY` (fact 8, Task 3 Step 5). The box keeps filtering the open tab; that is existing behaviour S2 builds on, so the auditor's "decouple" was not taken.
+  - F2: the top bar's height must not change (Task 0 constraint).
+  - F3: the probe opens `about:blank` and navigates itself (fact 9, probe `goto`).
+  - F5: studio `view_url`s carry `perspective=continent | district | town-or-hunting-area`.
+  - F6: `ensure_catalog_db()` checks for the `records` table and the freshness walk compares folder mtimes too.
+  - F7: the record branch of `render()` calls `ATLAS_PANELS.hideAll()`.
+  - F8 (part): `load_json` also catches `OSError`. F10: the wrong `precheck.sh:563` reference.
+  - Rejected F4 (make the 45 runtime maps `legacy`): it contradicts the owner's recorded decision; fact 3 now says why `millcross-ford` shows in default search.
+  - Noted F9: S1 only adds; the removals the owner asked for are slices S3 and S4.
+  Open: none.
