@@ -1841,28 +1841,34 @@ namespace AtlasWorld.Client
                 return;
             }
 
-            // Keyboard input (WASD + Arrow keys)
+            // Keyboard input (W/S forward/back in character facing direction, A/D turn character; camera orbit is independent)
             bool lockPose = OS.GetEnvironment("ATLAS_TEST_TOWER_2F_POSE") == "1" || OS.GetEnvironment("ATLAS_TEST_OCCLUSION_POSE") == "1";
-            float vx = 0f, vy = 0f;
-            if (Godot.Input.IsKeyPressed(Key.A) || Godot.Input.IsKeyPressed(Key.Left)) vx -= 1f;
-            if (Godot.Input.IsKeyPressed(Key.D) || Godot.Input.IsKeyPressed(Key.Right)) vx += 1f;
-            if (Godot.Input.IsKeyPressed(Key.W) || Godot.Input.IsKeyPressed(Key.Up)) vy -= 1f;
-            if (Godot.Input.IsKeyPressed(Key.S) || Godot.Input.IsKeyPressed(Key.Down)) vy += 1f;
+            bool wKey = Godot.Input.IsKeyPressed(Key.W) || Godot.Input.IsKeyPressed(Key.Up);
+            bool sKey = Godot.Input.IsKeyPressed(Key.S) || Godot.Input.IsKeyPressed(Key.Down);
+            bool aKey = Godot.Input.IsKeyPressed(Key.A) || Godot.Input.IsKeyPressed(Key.Left);
+            bool dKey = Godot.Input.IsKeyPressed(Key.D) || Godot.Input.IsKeyPressed(Key.Right);
 
-            Vector2 keyboardDir = new Vector2(vx, vy);
-            if (keyboardDir.LengthSquared() > 0.001f)
+            float forwardInput = (wKey ? 1f : 0f) - (sKey ? 1f : 0f);
+            float turnInput = (aKey ? 1f : 0f) - (dKey ? 1f : 0f);
+            if (Mathf.Abs(forwardInput) < 0.001f && Mathf.Abs(turnInput) < 0.001f && _touchMoveIntent != Vector2.Zero)
             {
-                keyboardDir = keyboardDir.Normalized();
+                forwardInput = -_touchMoveIntent.Y;
+                turnInput = -_touchMoveIntent.X;
             }
 
-            Vector2 rawInput = lockPose ? Vector2.Zero : (keyboardDir != Vector2.Zero ? keyboardDir : _touchMoveIntent);
+            Vector3 direction = Vector3.Zero;
+            bool isBackwardMove = false;
+            bool hasManualSteerOrMove = !lockPose && (Mathf.Abs(forwardInput) > 0.001f || Mathf.Abs(turnInput) > 0.001f);
+            if (hasManualSteerOrMove && PlayerAvatar != null)
+            {
+                var loco = World.CharacterLocomotion.Step(PlayerAvatar.Rotation.Y, forwardInput, turnInput, dt);
+                PlayerAvatar.Rotation = new Vector3(0f, loco.NextYaw, 0f);
+                direction = loco.WorldDirection;
+                isBackwardMove = loco.IsMovingBackward;
+            }
 
-            // Rotate movement vector by camera yaw so W/Up always moves forward relative to camera view
-            Vector2 rotatedInput = rawInput.Rotated(-_cameraYaw);
-            Vector3 direction = new Vector3(rotatedInput.X, 0f, rotatedInput.Y);
-
-            // Manual movement overrides auto-approach for the current frame
-            if (direction.LengthSquared() > 0.001f)
+            // Manual movement or turning overrides auto-approach for the current frame
+            if (hasManualSteerOrMove)
             {
                 _autoApproachAttackPending = false;
             }
@@ -1963,12 +1969,13 @@ namespace AtlasWorld.Client
             if (isMoving && PlayerAvatar != null)
             {
                 Vector3 normDir = direction.Normalized();
-                Vector3 velocity = normDir * (_playerSpeed * 2.0f); // Exceeds the 1.2f sprint threshold in AnimationController
+                float effectiveSpeed = isBackwardMove ? Mathf.Min(_playerSpeed, 1.9f) : _playerSpeed;
+                Vector3 velocity = normDir * (isBackwardMove ? 1.5f : effectiveSpeed * 2.0f);
                 float curX = PlayerAvatar.Position.X;
                 float curY = PlayerAvatar.Position.Y;
                 float curZ = PlayerAvatar.Position.Z;
-                float desiredX = curX + normDir.X * _playerSpeed * dt;
-                float desiredZ = curZ + normDir.Z * _playerSpeed * dt;
+                float desiredX = curX + normDir.X * effectiveSpeed * dt;
+                float desiredZ = curZ + normDir.Z * effectiveSpeed * dt;
 
                 // Enforce 3D steep cliff & wall-sliding gate + Multi-Floor Watchtower / Crystal Cave height resolution
                 Vector2 resolvedXZ = TerrainElevation.ResolveSteepSlopeMove(
@@ -2005,12 +2012,14 @@ namespace AtlasWorld.Client
                 // Stream 3D chunks in/out on demand as the player walks across the map
                 _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position);
 
-                // player_knight.glb faces +Z in local space:
-                // Atan2(direction.X, direction.Z) yields Pi when moving -Z (into scene) and 0 when moving +Z (toward camera)
-                float targetAngle = Mathf.Atan2(normDir.X, normDir.Z);
-                float currentAngle = PlayerAvatar.Rotation.Y;
-                float smoothAngle = Mathf.LerpAngle(currentAngle, targetAngle, dt * 14.0f);
-                PlayerAvatar.Rotation = new Vector3(0f, smoothAngle, 0f);
+                if (!isBackwardMove && !hasManualSteerOrMove)
+                {
+                    // Auto-combat / auto-approach smoothly faces target movement vector
+                    float targetAngle = Mathf.Atan2(normDir.X, normDir.Z);
+                    float currentAngle = PlayerAvatar.Rotation.Y;
+                    float smoothAngle = Mathf.LerpAngle(currentAngle, targetAngle, dt * 14.0f);
+                    PlayerAvatar.Rotation = new Vector3(0f, smoothAngle, 0f);
+                }
 
                 // Update minimap coordinates in TopBar only when integer coordinates change
                 int mapX = (int)Mathf.Round(ServerArenaCenter.X + (PlayerAvatar.Position.X / ServerCoordScale));

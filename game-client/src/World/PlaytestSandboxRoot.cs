@@ -141,6 +141,11 @@ namespace AtlasWorld.Client.World
         public bool IsRelaxedStance => _relaxedStanceEnabled;
         public bool IsWeaponCurrentlyVisible => _weaponSocket?.Equipped != null && _weaponSocket.Equipped.Visible;
         public float CameraDistance => _cameraDistance;
+        public float CameraYaw
+        {
+            get => _cameraYaw;
+            set => _cameraYaw = value;
+        }
         public Node3D? AvatarNode => _avatarContainer;
         public Node3D? AvatarModelNode => _avatarModel;
         public Skeleton3D? AvatarSkeleton => _skeleton;
@@ -688,12 +693,40 @@ namespace AtlasWorld.Client.World
             _entityManager?.IngestServerRsSnapshot(snap, 1.0f, _mapDoc.ServerCenter);
         }
 
+        public bool StepWasdInput(bool w, bool s, bool a, bool d, float dt, bool shiftHeld = false)
+        {
+            if (_avatarContainer == null)
+                return false;
+
+            float forwardInput = (w ? 1f : 0f) - (s ? 1f : 0f);
+            float turnInput = (a ? 1f : 0f) - (d ? 1f : 0f);
+
+            var loco = CharacterLocomotion.Step(_avatarContainer.Rotation.Y, forwardInput, turnInput, dt);
+            _avatarContainer.Rotation = new Vector3(0f, loco.NextYaw, 0f);
+
+            float forwardSpeed = IsHeadlessProbe
+                ? (_runGaitEnabled ? RunSpeedMetersPerSec : WalkSpeedMetersPerSec)
+                : (_runGaitEnabled
+                    ? (shiftHeld ? InteractiveSprintSpeedMetersPerSec : InteractiveRunSpeedMetersPerSec)
+                    : (shiftHeld ? InteractiveRunSpeedMetersPerSec : InteractiveWalkSpeedMetersPerSec));
+            float backSpeed = IsHeadlessProbe ? WalkSpeedMetersPerSec : InteractiveWalkSpeedMetersPerSec;
+
+            if (loco.IsMovingBackward)
+            {
+                StepMovement(loco.WorldDirection, dt, backSpeed, rotateToDirection: false);
+                return true;
+            }
+
+            StepMovement(loco.WorldDirection, dt, forwardSpeed, rotateToDirection: false);
+            return loco.IsMovingForward;
+        }
+
         /// <summary>
         /// Programmatic movement step for both interactive _PhysicsProcess and headless verification probes.
         /// Moves the character along <paramref name="worldDirection"/> at the current gait speed (or custom override),
         /// resolves terrain/obstacle collisions, updates AnimationController, and samples foot grounding.
         /// </summary>
-        public void StepMovement(Vector3 worldDirection, float dt, float? speedOverride = null)
+        public void StepMovement(Vector3 worldDirection, float dt, float? speedOverride = null, bool rotateToDirection = true)
         {
             if (_avatarContainer == null)
                 return;
@@ -724,9 +757,12 @@ namespace AtlasWorld.Client.World
                 float groundY = TerrainElevation.SampleHeight(resolved.X, resolved.Y, _mapDoc, curY);
                 _avatarContainer.Position = new Vector3(resolved.X, groundY, resolved.Y);
 
-                float targetAngle = Mathf.Atan2(norm.X, norm.Z);
-                float smoothAngle = Mathf.LerpAngle(_avatarContainer.Rotation.Y, targetAngle, Mathf.Clamp(dt * 14f, 0f, 1f));
-                _avatarContainer.Rotation = new Vector3(0f, smoothAngle, 0f);
+                if (rotateToDirection)
+                {
+                    float targetAngle = Mathf.Atan2(norm.X, norm.Z);
+                    float smoothAngle = Mathf.LerpAngle(_avatarContainer.Rotation.Y, targetAngle, Mathf.Clamp(dt * 14f, 0f, 1f));
+                    _avatarContainer.Rotation = new Vector3(0f, smoothAngle, 0f);
+                }
 
                 _chunkStreamer?.UpdateStreaming(_avatarContainer.Position);
                 if (_animPlayer != null && !IsHeadlessProbe)
@@ -956,25 +992,13 @@ namespace AtlasWorld.Client.World
                 _targetRing.Scale = new Vector3(s, 1f, s);
             }
 
-            float vx = 0f, vz = 0f;
-            if (Godot.Input.IsKeyPressed(Key.A) || Godot.Input.IsKeyPressed(Key.Left)) vx -= 1f;
-            if (Godot.Input.IsKeyPressed(Key.D) || Godot.Input.IsKeyPressed(Key.Right)) vx += 1f;
-            if (Godot.Input.IsKeyPressed(Key.W) || Godot.Input.IsKeyPressed(Key.Up)) vz -= 1f;
-            if (Godot.Input.IsKeyPressed(Key.S) || Godot.Input.IsKeyPressed(Key.Down)) vz += 1f;
-
-            Vector2 rawInput = new(vx, vz);
-            if (rawInput.LengthSquared() > 0.001f)
-                rawInput = rawInput.Normalized().Rotated(-_cameraYaw);
-
-            // Shift in Run mode boosts to Sprint (8.8 m/s); Shift in Walk mode runs (5.8 m/s)
+            bool w = Godot.Input.IsKeyPressed(Key.W) || Godot.Input.IsKeyPressed(Key.Up);
+            bool sKey = Godot.Input.IsKeyPressed(Key.S) || Godot.Input.IsKeyPressed(Key.Down);
+            bool a = Godot.Input.IsKeyPressed(Key.A) || Godot.Input.IsKeyPressed(Key.Left);
+            bool d = Godot.Input.IsKeyPressed(Key.D) || Godot.Input.IsKeyPressed(Key.Right);
             bool shiftHeld = Godot.Input.IsKeyPressed(Key.Shift);
-            float speed = _runGaitEnabled
-                ? (shiftHeld ? InteractiveSprintSpeedMetersPerSec : InteractiveRunSpeedMetersPerSec)
-                : (shiftHeld ? InteractiveRunSpeedMetersPerSec : InteractiveWalkSpeedMetersPerSec);
 
-            StepMovement(new Vector3(rawInput.X, 0f, rawInput.Y), dt, speed);
-
-            bool isMoving = rawInput.LengthSquared() > 0.001f;
+            bool isMoving = StepWasdInput(w, sKey, a, d, dt, shiftHeld);
             Vector3 playerPos = _avatarContainer?.Position ?? Vector3.Zero;
             _maroPoc?.StepPlayer(playerPos, isMoving, dt);
 
@@ -1246,7 +1270,7 @@ namespace AtlasWorld.Client.World
             var helpRow = new Label
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Text = "Controls: [WASD] Move  |  [Shift] Sprint 8.8m/s  |  [C] Relax/Armed Stance  |  [Z / Scroll / +-] Face Zoom (0.35m..30m)  |  [Drag] Orbit  |  [Space] Attack",
+                Text = "Controls: [W/S] Forward/Back  |  [A/D] Turn  |  [Shift] Sprint 8.8m/s  |  [C] Relax/Armed Stance  |  [Z / Scroll / +-] Face Zoom (0.35m..30m)  |  [Drag] Free Orbit  |  [Space] Attack",
                 Modulate = new Color(0.76f, 0.84f, 0.94f, 0.90f),
             };
             helpRow.AddThemeFontSizeOverride("font_size", 11);

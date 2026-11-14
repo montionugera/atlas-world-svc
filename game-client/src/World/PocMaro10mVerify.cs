@@ -54,6 +54,14 @@ namespace AtlasWorld.Client.World
             Report("default map id is freja-south-gate", VerticalSliceRoot.ResolveMapId("") == "freja-south-gate");
             Report("ATLAS_MAP_ID=maro-bell selects maro-bell", VerticalSliceRoot.ResolveMapId("maro-bell") == "maro-bell");
 
+            var fwdStep = CharacterLocomotion.Step(Mathf.Pi * 0.5f, forwardInput: 1f, turnInput: 0f, dt: 0.25f);
+            var backStep = CharacterLocomotion.Step(Mathf.Pi, forwardInput: -1f, turnInput: 0f, dt: 0.25f);
+            var turnRightAndWalk = CharacterLocomotion.Step(Mathf.Pi, forwardInput: 1f, turnInput: -1f, dt: 0.25f);
+            Report("CharacterLocomotion moves W along facing, backs up on S preserving yaw, and curves right on D+W",
+                fwdStep.IsMovingForward && fwdStep.WorldDirection.X > 0.99f && Mathf.Abs(fwdStep.WorldDirection.Z) < 0.01f &&
+                backStep.IsMovingBackward && backStep.WorldDirection.Z > 0.99f && Mathf.Abs(Mathf.Wrap(backStep.NextYaw - Mathf.Pi, -Mathf.Pi, Mathf.Pi)) < 0.001f &&
+                turnRightAndWalk.IsMovingForward && turnRightAndWalk.IsTurning && turnRightAndWalk.WorldDirection.X > 0.5f && turnRightAndWalk.WorldDirection.Z < -0.5f);
+
             string endpointWithMap = Config.ResolveServerRsEndpointForMap("ws://127.0.0.1:2567/ws?token=dev-token:test", "maro-bell");
             Report("ResolveServerRsEndpointForMap threads map=maro-bell and avoids fallback to map-for-play",
                 endpointWithMap.Contains("map=maro-bell") && !endpointWithMap.Contains("map-for-play"));
