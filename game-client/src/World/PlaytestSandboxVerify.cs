@@ -178,6 +178,76 @@ namespace AtlasWorld.Client.World
             sandbox.ToggleMap();
             Report("ToggleMap switches back to maro-bell", sandbox.ActiveMapId == "maro-bell");
 
+            // 7. Character-Relative WASD & Camera-Independent Movement
+            sandbox.TeleportToLandmark(0);
+            sandbox.SetGaitRun(true);
+
+            // 7a. W moves forward in the character's facing direction (+X when Yaw = +Pi/2), NOT camera view (-Z when CameraYaw = 0)
+            sandbox.CameraYaw = 0f;
+            sandbox.AvatarNode!.Rotation = new Vector3(0f, Mathf.Pi * 0.5f, 0f);
+            Vector3 faceEastStart = sandbox.AvatarNode.Position;
+            sandbox.StepWasdInput(w: true, s: false, a: false, d: false, dt: 0.25f);
+            Vector3 faceEastDelta = sandbox.AvatarNode.Position - faceEastStart;
+            Report($"W moves forward in character's facing direction (+X when yaw=+Pi/2, dx={faceEastDelta.X:F3}, dz={faceEastDelta.Z:F3})",
+                faceEastDelta.X > 0.30f && Mathf.Abs(faceEastDelta.Z) < 0.03f);
+
+            // 7b. Camera rotation is completely independent of W movement direction
+            sandbox.TeleportToLandmark(0); // Faces -Z (yaw = Pi)
+            sandbox.CameraYaw = Mathf.Pi * 0.65f; // Arbitrarily orbited camera
+            Vector3 camIndepStart = sandbox.AvatarNode.Position;
+            sandbox.StepWasdInput(w: true, s: false, a: false, d: false, dt: 0.25f);
+            Vector3 camIndepDelta = sandbox.AvatarNode.Position - camIndepStart;
+            Report($"W moves along character facing (-Z) regardless of orbited CameraYaw (dx={camIndepDelta.X:F3}, dz={camIndepDelta.Z:F3})",
+                camIndepDelta.Z < -0.30f && Mathf.Abs(camIndepDelta.X) < 0.03f &&
+                Mathf.IsEqualApprox(sandbox.CameraYaw, Mathf.Pi * 0.65f));
+            sandbox.CameraYaw = 0f;
+
+            // 7c. D turns character right in place; D + W turns right while moving forward along new heading (even with camera orbited 180 deg)
+            sandbox.TeleportToLandmark(0); // yaw = Pi (facing -Z)
+            sandbox.CameraYaw = Mathf.Pi;  // Camera orbited in front of character's face
+            Vector3 turnRightStart = sandbox.AvatarNode.Position;
+            sandbox.StepWasdInput(w: false, s: false, a: false, d: true, dt: 0.25f);
+            float yawAfterD = sandbox.AvatarNode.Rotation.Y;
+            Report($"D alone turns character right in place without translating (dist={sandbox.AvatarNode.Position.DistanceTo(turnRightStart):F4}, sinYaw={Mathf.Sin(yawAfterD):F3} > 0.30)",
+                sandbox.AvatarNode.Position.DistanceTo(turnRightStart) < 0.01f && Mathf.Sin(yawAfterD) > 0.30f);
+
+            sandbox.TeleportToLandmark(0); // Reset to yaw = Pi (facing -Z) to test simultaneous D + W 43-deg diagonal turn+move
+            sandbox.CameraYaw = Mathf.Pi;
+            Vector3 curveRightStart = sandbox.AvatarNode.Position;
+            sandbox.StepWasdInput(w: true, s: false, a: false, d: true, dt: 0.25f);
+            Vector3 curveRightDelta = sandbox.AvatarNode.Position - curveRightStart;
+            float curveRightHeadingDiff = Mathf.Abs(Mathf.Wrap(Mathf.Atan2(curveRightDelta.X, curveRightDelta.Z) - sandbox.AvatarNode.Rotation.Y, -Mathf.Pi, Mathf.Pi));
+            Report($"D + W turns right and moves forward along new facing (+X,-Z) independent of front CameraYaw (dx={curveRightDelta.X:F3} > 0.35, dz={curveRightDelta.Z:F3} < -0.35, headingDiff={curveRightHeadingDiff:F4})",
+                curveRightDelta.X > 0.35f && curveRightDelta.Z < -0.35f && curveRightHeadingDiff < 0.02f);
+
+            // 7d. A turns character left in place; A + W turns left while moving forward along new heading (even with camera orbited 180 deg)
+            sandbox.TeleportToLandmark(0); // yaw = Pi (facing -Z)
+            sandbox.CameraYaw = Mathf.Pi;  // Camera orbited in front of character's face
+            Vector3 turnLeftStart = sandbox.AvatarNode.Position;
+            sandbox.StepWasdInput(w: false, s: false, a: true, d: false, dt: 0.25f);
+            float yawAfterA = sandbox.AvatarNode.Rotation.Y;
+            Report($"A alone turns character left in place without translating (dist={sandbox.AvatarNode.Position.DistanceTo(turnLeftStart):F4}, sinYaw={Mathf.Sin(yawAfterA):F3} < -0.30)",
+                sandbox.AvatarNode.Position.DistanceTo(turnLeftStart) < 0.01f && Mathf.Sin(yawAfterA) < -0.30f);
+
+            sandbox.TeleportToLandmark(0); // Reset to yaw = Pi (facing -Z) to test simultaneous A + W 43-deg diagonal turn+move
+            sandbox.CameraYaw = Mathf.Pi;
+            Vector3 curveLeftStart = sandbox.AvatarNode.Position;
+            sandbox.StepWasdInput(w: true, s: false, a: true, d: false, dt: 0.25f);
+            Vector3 curveLeftDelta = sandbox.AvatarNode.Position - curveLeftStart;
+            float curveLeftHeadingDiff = Mathf.Abs(Mathf.Wrap(Mathf.Atan2(curveLeftDelta.X, curveLeftDelta.Z) - sandbox.AvatarNode.Rotation.Y, -Mathf.Pi, Mathf.Pi));
+            Report($"A + W turns left and moves forward along new facing (-X,-Z) independent of front CameraYaw (dx={curveLeftDelta.X:F3} < -0.35, dz={curveLeftDelta.Z:F3} < -0.35, headingDiff={curveLeftHeadingDiff:F4})",
+                curveLeftDelta.X < -0.35f && curveLeftDelta.Z < -0.35f && curveLeftHeadingDiff < 0.02f);
+            sandbox.CameraYaw = 0f;
+
+            // 7e. S steps backward opposite to facing direction while preserving facing yaw (no 180-deg flip)
+            sandbox.TeleportToLandmark(0); // yaw = Pi (facing -Z)
+            Vector3 backStart = sandbox.AvatarNode.Position;
+            sandbox.StepWasdInput(w: false, s: true, a: false, d: false, dt: 0.30f);
+            Vector3 backDelta = sandbox.AvatarNode.Position - backStart;
+            float backYawDiff = Mathf.Abs(Mathf.Wrap(sandbox.AvatarNode.Rotation.Y - Mathf.Pi, -Mathf.Pi, Mathf.Pi));
+            Report($"S steps backward (+Z) while preserving facing yaw=Pi (dz={backDelta.Z:F3} > 0.15, yawDiff={backYawDiff:F4} < 0.01)",
+                backDelta.Z > 0.15f && Mathf.Abs(backDelta.X) < 0.03f && backYawDiff < 0.01f);
+
             // Optional windowed screenshot capture of the Playtest Sandbox UI
             string renderDir = OS.GetEnvironment("ATLAS_RENDER_PLAYTEST_SANDBOX");
             if (!string.IsNullOrEmpty(renderDir) && DisplayServer.GetName() != "headless")
