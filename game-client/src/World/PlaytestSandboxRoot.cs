@@ -61,12 +61,59 @@ namespace AtlasWorld.Client.World
         private int _leftFootBoneIdx = -1;
         private int _rightFootBoneIdx = -1;
         private float _telemetryRefreshTimer = 0f;
+        private float _smoothedFocusY = 0.45f;
 
         private readonly List<string> _availableAvatarKeys = new();
         private int _avatarIndex = 0;
         private int _hairPresetIndex = 0;
+        private int _eyeExpressionIndex = 0;
+        private float _blinkTimer = 0f;
         private int _weaponIndex = 0;
         private int _landmarkIndex = 0;
+        private int _idlePresetIndex = 0;
+        private int _movePresetIndex = 0;
+        private int _genderFilterIndex = 0; // 0 = All, 1 = Female, 2 = Male
+        private static readonly string[] GenderFilters = { "all", "female", "male" };
+        public const string VroidSampleKey = "npc:vroid_sample";
+        public const string VroidSampleResPath = "res://studio-cache/vroid_sample.glb";
+        public const string SilmeSeeressKey = "npc:silme_seeress";
+        public const string SilmeSeeressResPath = "res://studio-cache/silme_seeress.glb";
+        public const string MaroGirlV2ResPath = "res://studio-cache/maro_folk_girl_v2.glb";
+        private static Node? _cachedMixamoPresetScene;
+        private static Node? _cachedMixamoVroidPresetScene;
+        private static Node? _cachedMixamoSilmePresetScene;
+
+        public sealed record IdlePreset(string Slug, string ClipName, string Label, string Gender);
+        public sealed record MovePreset(string Slug, string WalkClip, string RunClip, string Label, string Gender);
+
+        public static readonly IReadOnlyList<IdlePreset> MixamoIdlePresets = new[]
+        {
+            new IdlePreset("f_idle_weight_shift", "mx_f_idle_weight_shift", "[F] Weight Shift Idle", "female"),
+            new IdlePreset("f_idle_dwarf_var2", "mx_f_idle_dwarf_var2", "[F] Dwarf Idle Var. 2", "female"),
+            new IdlePreset("f_idle_dwarf_standing", "mx_f_idle_dwarf_standing", "[F] Dwarf Standing Idle", "female"),
+            new IdlePreset("f_idle_dwarf_var1", "mx_f_idle_dwarf_var1", "[F] Dwarf Idle Var. 1", "female"),
+            new IdlePreset("f_idle_standing", "mx_f_idle_standing", "[F] Standing Idle", "female"),
+            new IdlePreset("f_idle_breathing", "mx_f_idle_breathing", "[F] Breathing Idle", "female"),
+            new IdlePreset("f_idle_classic", "mx_f_idle_classic", "[F] Classic Female Idle", "female"),
+            new IdlePreset("f_idle_happy", "mx_f_idle_happy", "[F] Happy Idle Var. 1", "female"),
+            new IdlePreset("meshy_idle_4", "mx_meshy_idle_4", "[F] Meshy Idle 4", "female"),
+            new IdlePreset("m_idle_standing_01", "mx_m_idle_standing_01", "[M] Standing Idle 01", "male"),
+            new IdlePreset("m_idle_standing_02", "mx_m_idle_standing_02", "[M] Standing Idle 02", "male"),
+            new IdlePreset("m_idle_fitness", "mx_m_idle_fitness", "[M] Fitness Breathing Idle", "male"),
+        };
+
+        public static readonly IReadOnlyList<MovePreset> MixamoMovePresets = new[]
+        {
+            new MovePreset("f_normal_jog", "mx_f_walk_normal", "mx_f_run_jogging", "[F] Normal Walk + Jogging", "female"),
+            new MovePreset("f_start_jog", "mx_f_walk_start", "mx_f_run_jogging", "[F] Start Walking + Jogging", "female"),
+            new MovePreset("f_normal_forward", "mx_f_walk_normal", "mx_f_run_forward", "[F] Normal Walk + Run Fwd", "female"),
+            new MovePreset("f_catwalk_ninja", "mx_f_walk_catwalk", "mx_f_run_ninja", "[F] Catwalk + Ninja Run", "female"),
+            new MovePreset("f_tough_standard", "mx_f_walk_tough", "mx_f_run_standard", "[F] Tough Walk + Std Run", "female"),
+            new MovePreset("f_standard_forward", "mx_f_walk_standard", "mx_f_run_forward", "[F] Std Walk + Run Fwd", "female"),
+            new MovePreset("meshy_woman_fast9", "mx_meshy_walking_woman", "mx_meshy_run_fast_9", "[F] Meshy Walk + Run Fast 9", "female"),
+            new MovePreset("m_standard_weighted", "mx_m_walk_standard", "mx_m_run_weighted", "[M] Male Std Walk + Weighted Run", "male"),
+            new MovePreset("m_walk03_sword", "mx_m_walk_forward_03", "mx_m_run_sword_shield", "[M] Male Walk 03 + Sword Run", "male"),
+        };
 
         private static readonly string[] WeaponOptions =
         {
@@ -123,20 +170,33 @@ namespace AtlasWorld.Client.World
         private Label? _actionBannerLabel;
         private Button? _stanceButton;
         private Button? _gaitButton;
+        private Button? _idlePresetButton;
+        private Button? _movePresetButton;
+        private Button? _genderFilterButton;
         private Button? _zoomButton;
         private Button? _hairButton;
+        private Button? _eyeButton;
         private Button? _weaponButton;
         private Button? _rigButton;
         private Button? _landmarkButton;
+        private Button? _timeButton;
         private Button? _mapButton;
         private Button? _netButton;
 
         // Public accessors for PlaytestSandboxVerify & external inspection
         public string ActiveMapId => _mapDoc?.MapId ?? "";
+        public UnifiedMapDocument? MapDocument => _mapDoc;
         public string ActiveAvatarKey => _availableAvatarKeys.Count > 0 ? _availableAvatarKeys[_avatarIndex] : "";
         public string ActiveHairPresetName => CharacterCustomization.HairColorPresets[_hairPresetIndex].Name;
         public Color ActiveHairColor => CharacterCustomization.HairColorPresets[_hairPresetIndex].Color;
+        public string ActiveEyeExpressionLabel => CharacterCustomization.EyeExpressionPresets[_eyeExpressionIndex].Label;
+        public string ActiveEyeExpressionShapeKey => CharacterCustomization.EyeExpressionPresets[_eyeExpressionIndex].ShapeKey;
         public string ActiveWeaponKey => WeaponOptions[_weaponIndex];
+        public string ActiveIdlePresetSlug => MixamoIdlePresets[_idlePresetIndex].Slug;
+        public string ActiveIdlePresetLabel => MixamoIdlePresets[_idlePresetIndex].Label;
+        public string ActiveMovePresetSlug => MixamoMovePresets[_movePresetIndex].Slug;
+        public string ActiveMovePresetLabel => MixamoMovePresets[_movePresetIndex].Label;
+        public string ActiveGenderFilter => GenderFilters[_genderFilterIndex];
         public bool IsRunGait => _runGaitEnabled;
         public bool IsRelaxedStance => _relaxedStanceEnabled;
         public bool IsWeaponCurrentlyVisible => _weaponSocket?.Equipped != null && _weaponSocket.Equipped.Visible;
@@ -168,7 +228,7 @@ namespace AtlasWorld.Client.World
             BuildPlaytestHud();
             SpawnOrReplaceAvatar(_availableAvatarKeys[_avatarIndex]);
             TeleportToLandmark(0);
-            RefreshUiLabels("Playtest Sandbox ready — WASD move, Space/Click attack, [1-6] Hair, [E] Sword, [R] Rig.");
+            RefreshUiLabels("Playtest Sandbox ready — WASD move, Space/Click attack, [I/K] Mixamo, [X] Eye Expr, [1-6] Hair, [E] Sword, [R] Rig.");
 
             if (OS.GetEnvironment("ATLAS_VERIFY_PLAYTEST_SANDBOX") == "1" && GetParent() == GetTree().Root)
             {
@@ -180,6 +240,12 @@ namespace AtlasWorld.Client.World
         {
             _availableAvatarKeys.Clear();
             _availableAvatarKeys.Add(PipelineCharVerify.MaroGirlKey);
+            string absVroid = ProjectSettings.GlobalizePath(VroidSampleResPath);
+            if (ResourceLoader.Exists(VroidSampleResPath) || System.IO.File.Exists(absVroid))
+                _availableAvatarKeys.Add(VroidSampleKey);
+            string absSilme = ProjectSettings.GlobalizePath(SilmeSeeressResPath);
+            if (ResourceLoader.Exists(SilmeSeeressResPath) || System.IO.File.Exists(absSilme))
+                _availableAvatarKeys.Add(SilmeSeeressKey);
             if (AssetRegistry.Instance != null)
             {
                 foreach (string key in AssetRegistry.Instance.GetPlayableAvatarKeys())
@@ -271,7 +337,7 @@ namespace AtlasWorld.Client.World
                 _maroPoc = null;
             }
 
-            if (_mapDoc.MapId == "maro-bell")
+            if (_mapDoc.MapId == "maro-bell" && OS.GetEnvironment("ATLAS_ENABLE_SANDBOX_POC") == "1")
             {
                 _maroPoc = new MaroBellPocController { Name = "MaroBellPocController" };
                 AddChild(_maroPoc);
@@ -423,7 +489,32 @@ namespace AtlasWorld.Client.World
             }
 
             Node3D? instanced = null;
-            if (AssetRegistry.Instance != null)
+            string? customResPath = avatarKey == VroidSampleKey
+                ? VroidSampleResPath
+                : (avatarKey == SilmeSeeressKey ? SilmeSeeressResPath : null);
+            if (customResPath != null)
+            {
+                string absCustom = ProjectSettings.GlobalizePath(customResPath);
+                string absImport = absCustom + ".import";
+                bool diskNewerThanImport = System.IO.File.Exists(absCustom) &&
+                    (!System.IO.File.Exists(absImport) ||
+                     System.IO.File.GetLastWriteTimeUtc(absCustom) > System.IO.File.GetLastWriteTimeUtc(absImport));
+
+                if (!diskNewerThanImport && ResourceLoader.Exists(customResPath))
+                {
+                    var packed = ResourceLoader.Load<PackedScene>(customResPath, null, ResourceLoader.CacheMode.Replace);
+                    if (packed != null)
+                        instanced = packed.Instantiate() as Node3D;
+                }
+                if (instanced == null && System.IO.File.Exists(absCustom))
+                {
+                    var doc = new GltfDocument();
+                    var state = new GltfState();
+                    if (doc.AppendFromFile(absCustom, state) == Error.Ok)
+                        instanced = doc.GenerateScene(state) as Node3D;
+                }
+            }
+            if (instanced == null && AssetRegistry.Instance != null)
             {
                 PackedScene packed = AssetRegistry.Instance.Resolve(avatarKey, out _);
                 instanced = packed.Instantiate() as Node3D;
@@ -434,15 +525,20 @@ namespace AtlasWorld.Client.World
             _avatarModel = instanced;
 
             // Apply chibi scale factor only for legacy oversized models; pipelineCharacter / 0.94m models stay 1.0x
-            float scaleFactor = EntityView.ResolveChibiScaleFactor(
-                avatarKey == "player" ? EntityKind.Player : EntityKind.Npc,
-                avatarKey);
+            float scaleFactor = (avatarKey == VroidSampleKey || avatarKey == SilmeSeeressKey)
+                ? 1.0f
+                : EntityView.ResolveChibiScaleFactor(
+                    avatarKey == "player" ? EntityKind.Player : EntityKind.Npc,
+                    avatarKey);
             _avatarModel.Scale = Vector3.One * scaleFactor;
 
             EntityView.ApplyAnimeToonShading(_avatarModel, EntityKind.Player);
 
-            var overrides = AssetRegistry.Instance?.ResolveAnimOverrides(avatarKey);
-            var variants = AssetRegistry.Instance?.ResolveAnimVariants(avatarKey);
+            string animManifestKey = (avatarKey == VroidSampleKey || avatarKey == SilmeSeeressKey)
+                ? PipelineCharVerify.MaroGirlKey
+                : avatarKey;
+            var overrides = AssetRegistry.Instance?.ResolveAnimOverrides(animManifestKey);
+            var variants = AssetRegistry.Instance?.ResolveAnimVariants(animManifestKey);
             _animController = new AnimationController(_avatarModel, overrides, variants)
             {
                 UseFeminineRelaxedPosture = IsFeminineAvatar(avatarKey),
@@ -452,6 +548,12 @@ namespace AtlasWorld.Client.World
             _animPlayer = FindFirst<AnimationPlayer>(_avatarModel);
             _skeleton = FindFirst<Skeleton3D>(_avatarModel);
             _weaponSocket = new WeaponSocket(_avatarModel);
+
+            if (avatarKey == PipelineCharVerify.MaroGirlKey || avatarKey == VroidSampleKey || avatarKey == SilmeSeeressKey)
+            {
+                InjectMixamoPresetLibrary(avatarKey);
+                ApplyCurrentMixamoPresets();
+            }
 
             _leftFootBoneIdx = -1;
             _rightFootBoneIdx = -1;
@@ -469,6 +571,15 @@ namespace AtlasWorld.Client.World
 
             _avatarContainer.Position = oldPos;
             _avatarContainer.Rotation = oldRot;
+            _smoothedFocusY = oldPos.Y + 0.45f;
+
+            if (!IsHeadlessProbe)
+            {
+                if (avatarKey == SilmeSeeressKey && _hairPresetIndex == 0)
+                    _hairPresetIndex = 1; // Linde Silver default for Silme Seeress
+                else if (avatarKey == PipelineCharVerify.MaroGirlKey && _hairPresetIndex == 1)
+                    _hairPresetIndex = 0; // Maro Chestnut default for Maro Folk Girl
+            }
 
             ApplyCurrentHairColor();
             ApplyCurrentWeapon();
@@ -484,6 +595,7 @@ namespace AtlasWorld.Client.World
             if (string.IsNullOrEmpty(avatarKey))
                 return false;
             return avatarKey.Contains("maro_folk_girl", StringComparison.OrdinalIgnoreCase) ||
+                   avatarKey.Contains("vroid_sample", StringComparison.OrdinalIgnoreCase) ||
                    avatarKey.Contains("girl", StringComparison.OrdinalIgnoreCase) ||
                    avatarKey.Contains("female", StringComparison.OrdinalIgnoreCase) ||
                    avatarKey.Contains("linde", StringComparison.OrdinalIgnoreCase) ||
@@ -510,6 +622,166 @@ namespace AtlasWorld.Client.World
 
         public void ToggleRelaxedStance() => SetRelaxedStance(!_relaxedStanceEnabled);
 
+        private void InjectMixamoPresetLibrary(string avatarKey)
+        {
+            if (_animPlayer == null || !GodotObject.IsInstanceValid(_animPlayer))
+                return;
+
+            string resPath = avatarKey == VroidSampleKey
+                ? "res://studio-cache/mixamo_vroid_presets.glb"
+                : (avatarKey == SilmeSeeressKey
+                    ? "res://studio-cache/mixamo_silme_presets.glb"
+                    : "res://studio-cache/mixamo_maro_presets.glb");
+            ref Node? cachedScene = ref _cachedMixamoPresetScene;
+            if (avatarKey == VroidSampleKey)
+                cachedScene = ref _cachedMixamoVroidPresetScene;
+            else if (avatarKey == SilmeSeeressKey)
+                cachedScene = ref _cachedMixamoSilmePresetScene;
+
+            string absPath = ProjectSettings.GlobalizePath(resPath);
+            string absPresetImport = absPath + ".import";
+            bool presetDiskNewer = System.IO.File.Exists(absPath) &&
+                (!System.IO.File.Exists(absPresetImport) ||
+                 System.IO.File.GetLastWriteTimeUtc(absPath) > System.IO.File.GetLastWriteTimeUtc(absPresetImport));
+
+            if (cachedScene == null || !GodotObject.IsInstanceValid(cachedScene) || presetDiskNewer)
+            {
+                if (!presetDiskNewer && ResourceLoader.Exists(resPath))
+                {
+                    var packed = ResourceLoader.Load<PackedScene>(resPath, null, ResourceLoader.CacheMode.Replace);
+                    if (packed != null)
+                        cachedScene = packed.Instantiate();
+                }
+                if (cachedScene == null && System.IO.File.Exists(absPath))
+                {
+                    var doc = new GltfDocument();
+                    var state = new GltfState();
+                    if (doc.AppendFromFile(absPath, state) == Error.Ok)
+                        cachedScene = doc.GenerateScene(state);
+                }
+            }
+
+            if (cachedScene == null)
+                return;
+
+            AnimationPlayer? donorPlayer = FindFirst<AnimationPlayer>(cachedScene);
+            if (donorPlayer == null)
+                return;
+
+            AnimationLibrary lib = _animPlayer.HasAnimationLibrary("")
+                ? _animPlayer.GetAnimationLibrary("")
+                : new AnimationLibrary();
+            if (!_animPlayer.HasAnimationLibrary(""))
+                _animPlayer.AddAnimationLibrary("", lib);
+
+            foreach (string clipName in donorPlayer.GetAnimationList())
+            {
+                if (!clipName.StartsWith("mx_", StringComparison.Ordinal))
+                    continue;
+                if (lib.HasAnimation(clipName))
+                    continue;
+                Animation? srcAnim = donorPlayer.GetAnimation(clipName);
+                if (srcAnim == null)
+                    continue;
+                Animation copy = (Animation)srcAnim.Duplicate(true);
+                copy.LoopMode = Animation.LoopModeEnum.Linear;
+                lib.AddAnimation(clipName, copy);
+            }
+        }
+
+        private void ApplyCurrentMixamoPresets()
+        {
+            if (_animController == null ||
+                (ActiveAvatarKey != PipelineCharVerify.MaroGirlKey &&
+                 ActiveAvatarKey != VroidSampleKey &&
+                 ActiveAvatarKey != SilmeSeeressKey))
+                return;
+            var idle = MixamoIdlePresets[_idlePresetIndex];
+            var move = MixamoMovePresets[_movePresetIndex];
+            _animController.SetClipOverride(AnimationController.StateIdle, idle.ClipName);
+            _animController.SetClipOverride(AnimationController.StateWalk, move.WalkClip);
+            _animController.SetClipOverride(AnimationController.StateRun, move.RunClip);
+        }
+
+        public void SetIdlePresetIndex(int index)
+        {
+            _idlePresetIndex = ((index % MixamoIdlePresets.Count) + MixamoIdlePresets.Count) % MixamoIdlePresets.Count;
+            if (!_relaxedStanceEnabled || _combatWeaponRevealTimer > 0f)
+            {
+                _relaxedStanceEnabled = true;
+                _combatWeaponRevealTimer = 0f;
+                SyncStanceAndWeaponVisibility();
+            }
+            if (_animController != null)
+            {
+                var idle = MixamoIdlePresets[_idlePresetIndex];
+                _animController.SetClipOverride(AnimationController.StateIdle, idle.ClipName);
+                if (_currentSpeedMetersPerSec <= 0.03f)
+                    _animController.Update(true, Vector3.Zero, false);
+                _animController.Tick(0.20);
+                SampleFootGrounding();
+            }
+            RefreshUiLabels($"Idle Preset -> {ActiveIdlePresetLabel} ({ActiveIdlePresetSlug})");
+        }
+
+        public void CycleIdlePreset()
+        {
+            string filter = ActiveGenderFilter;
+            for (int step = 1; step <= MixamoIdlePresets.Count; step++)
+            {
+                int idx = (_idlePresetIndex + step) % MixamoIdlePresets.Count;
+                if (filter == "all" || MixamoIdlePresets[idx].Gender == filter)
+                {
+                    SetIdlePresetIndex(idx);
+                    return;
+                }
+            }
+            SetIdlePresetIndex(_idlePresetIndex + 1);
+        }
+
+        public void SetMovePresetIndex(int index)
+        {
+            _movePresetIndex = ((index % MixamoMovePresets.Count) + MixamoMovePresets.Count) % MixamoMovePresets.Count;
+            if (_animController != null)
+            {
+                var move = MixamoMovePresets[_movePresetIndex];
+                _animController.SetClipOverride(AnimationController.StateWalk, move.WalkClip);
+                _animController.SetClipOverride(AnimationController.StateRun, move.RunClip);
+                _animController.Tick(0.20);
+                SampleFootGrounding();
+            }
+            RefreshUiLabels($"Move Preset -> {ActiveMovePresetLabel} ({ActiveMovePresetSlug})");
+        }
+
+        public void CycleMovePreset()
+        {
+            string filter = ActiveGenderFilter;
+            for (int step = 1; step <= MixamoMovePresets.Count; step++)
+            {
+                int idx = (_movePresetIndex + step) % MixamoMovePresets.Count;
+                if (filter == "all" || MixamoMovePresets[idx].Gender == filter)
+                {
+                    SetMovePresetIndex(idx);
+                    return;
+                }
+            }
+            SetMovePresetIndex(_movePresetIndex + 1);
+        }
+
+        public void ToggleGenderFilter()
+        {
+            _genderFilterIndex = (_genderFilterIndex + 1) % GenderFilters.Length;
+            string filter = ActiveGenderFilter;
+            if (filter != "all")
+            {
+                if (MixamoIdlePresets[_idlePresetIndex].Gender != filter)
+                    CycleIdlePreset();
+                if (MixamoMovePresets[_movePresetIndex].Gender != filter)
+                    CycleMovePreset();
+            }
+            RefreshUiLabels($"Mixamo Gender Tag Filter -> {filter.ToUpperInvariant()}");
+        }
+
         private void SyncStanceAndWeaponVisibility()
         {
             bool showWeapon = (!_relaxedStanceEnabled || _combatWeaponRevealTimer > 0f) && ActiveWeaponKey != "unarmed";
@@ -527,6 +799,22 @@ namespace AtlasWorld.Client.World
         {
             _cameraDistance = Mathf.Clamp(distance, CameraZoom.MinDistance, CameraZoom.MaxDistance);
             _faceZoomActive = _cameraDistance <= 0.85f;
+        }
+
+        public float GetLiveHeadFocusY()
+        {
+            if (_skeleton != null && GodotObject.IsInstanceValid(_skeleton) && _avatarContainer != null)
+            {
+                int headIdx = _skeleton.FindBone("Head");
+                if (headIdx < 0)
+                    headIdx = _skeleton.FindBone("mixamorig_Head");
+                if (headIdx >= 0)
+                {
+                    Vector3 headWorld = _skeleton.ToGlobal(_skeleton.GetBoneGlobalPose(headIdx).Origin);
+                    return Mathf.Clamp(headWorld.Y - _avatarContainer.GlobalPosition.Y + 0.04f, 0.42f, 1.10f);
+                }
+            }
+            return 0.56f;
         }
 
         public void ToggleFaceZoom()
@@ -568,6 +856,42 @@ namespace AtlasWorld.Client.World
                 return;
             var preset = CharacterCustomization.HairColorPresets[_hairPresetIndex];
             CharacterCustomization.SetHairColor(_avatarModel, preset.Color);
+        }
+
+        public void SetEyeExpressionIndex(int index)
+        {
+            var presets = CharacterCustomization.EyeExpressionPresets;
+            _eyeExpressionIndex = ((index % presets.Count) + presets.Count) % presets.Count;
+            UpdateEyeExpressions(0f);
+            RefreshUiLabels($"Eye Expression -> {ActiveEyeExpressionLabel}");
+        }
+
+        public void CycleEyeExpression() => SetEyeExpressionIndex(_eyeExpressionIndex + 1);
+
+        public void UpdateEyeExpressions(float dt)
+        {
+            if (_avatarModel == null)
+                return;
+
+            _blinkTimer = (_blinkTimer + dt) % 3.20f;
+            float blinkOverlay = 0f;
+            if (_blinkTimer >= 3.04f)
+            {
+                float t = (_blinkTimer - 3.04f) / 0.16f;
+                blinkOverlay = Mathf.Sin(Mathf.Clamp(t, 0f, 1f) * Mathf.Pi);
+            }
+
+            string shapeKey = ActiveEyeExpressionShapeKey;
+            float weight = string.IsNullOrEmpty(shapeKey) ? 0f : 1.0f;
+
+            // When in Neutral eye mode, automatically show Determined (eye_angry) during attack combos
+            if (string.IsNullOrEmpty(shapeKey) && _attackHoldTimer > 0.01f)
+            {
+                shapeKey = "eye_angry";
+                weight = 0.85f;
+            }
+
+            CharacterCustomization.SetEyeExpression(_avatarModel, shapeKey, weight, blinkOverlay);
         }
 
         public void SetWeaponIndex(int index)
@@ -629,6 +953,7 @@ namespace AtlasWorld.Client.World
                 float y = TerrainElevation.SampleHeight(x, z, _mapDoc, 0f);
                 _avatarContainer.Position = new Vector3(x, y, z);
                 _avatarContainer.Rotation = new Vector3(0f, lm.Yaw, 0f);
+                _smoothedFocusY = y + 0.45f;
                 _chunkStreamer?.UpdateStreaming(_avatarContainer.Position, forceReload: true);
                 SampleFootGrounding();
             }
@@ -636,6 +961,15 @@ namespace AtlasWorld.Client.World
         }
 
         public void CycleLandmark() => TeleportToLandmark(_landmarkIndex + 1);
+
+        public void CycleTimeOfDay()
+        {
+            if (_dayNightCycle == null)
+                return;
+            _dayNightCycle.AutoAdvance = false;
+            var phase = _dayNightCycle.CycleNextPreset(_mapDoc);
+            RefreshUiLabels($"Time of Day -> {_dayNightCycle.FormattedClockString} ({phase})");
+        }
 
         public void ToggleMap()
         {
@@ -715,7 +1049,7 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
-        /// Programmatic movement step for both interactive _PhysicsProcess and headless verification probes.
+        /// Programmatic movement step for both interactive _Process and headless verification probes.
         /// Moves the character along <paramref name="worldDirection"/> at the current gait speed (or custom override),
         /// resolves terrain/obstacle collisions, updates AnimationController, and samples foot grounding.
         /// </summary>
@@ -748,7 +1082,16 @@ namespace AtlasWorld.Client.World
                 Vector2 resolved = TerrainElevation.ResolveSteepSlopeMove(
                     curX, curZ, nextX, nextZ, _mapDoc, out _, out _, curY);
                 float groundY = TerrainElevation.SampleHeight(resolved.X, resolved.Y, _mapDoc, curY);
-                _avatarContainer.Position = new Vector3(resolved.X, groundY, resolved.Y);
+
+                float newY = groundY;
+                if (!IsHeadlessProbe)
+                {
+                    float lerpFactor = Mathf.Clamp(dt * 22f, 0f, 1f);
+                    float smoothedY = Mathf.Lerp(curY, groundY, lerpFactor);
+                    newY = Mathf.Max(groundY, smoothedY);
+                }
+
+                _avatarContainer.Position = new Vector3(resolved.X, newY, resolved.Y);
 
                 if (rotateToDirection)
                 {
@@ -775,7 +1118,7 @@ namespace AtlasWorld.Client.World
                 bool wasMoving = _currentSpeedMetersPerSec > 0.001f;
                 _currentSpeedMetersPerSec = 0f;
                 _lastVelocity = Vector3.Zero;
-                if (wasMoving)
+                if (wasMoving || IsHeadlessProbe)
                 {
                     float groundY = TerrainElevation.SampleHeight(
                         _avatarContainer.Position.X, _avatarContainer.Position.Z, _mapDoc, _avatarContainer.Position.Y);
@@ -992,6 +1335,8 @@ namespace AtlasWorld.Client.World
             bool shiftHeld = Godot.Input.IsKeyPressed(Key.Shift);
 
             bool isMoving = StepWasdInput(w, sKey, a, d, dt, shiftHeld);
+            UpdateEyeExpressions(dt);
+
             Vector3 playerPos = _avatarContainer?.Position ?? Vector3.Zero;
             if (_maroPoc != null)
             {
@@ -1011,17 +1356,22 @@ namespace AtlasWorld.Client.World
 
             if (MainCamera != null && _avatarContainer != null)
             {
-                // As camera zooms closer (< 2.0m down to 0.35m), smoothly elevate focus from body (0.52m) to face/eyes (0.65m)
+                // As camera zooms closer (< 2.0m down to 0.35m), smoothly elevate focus from body to live Head bone height
                 float closeT = Mathf.Clamp(1.0f - ((_cameraDistance - 0.45f) / 1.55f), 0f, 1f);
-                float focusHeight = Mathf.Lerp(0.52f, 0.65f, closeT);
-                Vector3 focus = _avatarContainer.Position + new Vector3(0f, focusHeight, 0f);
+                float headFocusY = closeT > 0.001f ? GetLiveHeadFocusY() : 0.56f;
+                float focusHeight = Mathf.Lerp(0.45f, headFocusY, closeT);
+                float targetFocusY = _avatarContainer.Position.Y + focusHeight;
+                _smoothedFocusY = Mathf.Lerp(_smoothedFocusY, targetFocusY, 1f - Mathf.Exp(-18f * dt));
+
+                Vector3 focus = new(_avatarContainer.Position.X, _smoothedFocusY, _avatarContainer.Position.Z);
                 float hDist = _cameraDistance * Mathf.Cos(_cameraPitch);
                 float vDist = _cameraDistance * Mathf.Sin(_cameraPitch);
                 Vector3 offset = new(Mathf.Sin(_cameraYaw) * hDist, vDist, Mathf.Cos(_cameraYaw) * hDist);
                 Vector3 desired = focus + offset;
                 float camFloor = TerrainElevation.SampleBaseTerrainHeight(desired.X, desired.Z, _mapDoc);
                 desired.Y = Mathf.Max(desired.Y, camFloor + 0.12f);
-                MainCamera.Position = MainCamera.Position.Lerp(desired, Mathf.Clamp(dt * 12f, 0f, 1f));
+
+                MainCamera.Position = desired;
                 MainCamera.LookAt(focus, Vector3.Up);
                 _cameraOccluder.Update(dt, MainCamera.GlobalPosition, focus, null);
             }
@@ -1096,8 +1446,24 @@ namespace AtlasWorld.Client.World
                         ToggleGait();
                         GetViewport()?.SetInputAsHandled();
                         break;
+                    case Key.I:
+                        CycleIdlePreset();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
+                    case Key.K:
+                        CycleMovePreset();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
+                    case Key.J:
+                        ToggleGenderFilter();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
                     case Key.H:
                         CycleHairColor();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
+                    case Key.X:
+                        CycleEyeExpression();
                         GetViewport()?.SetInputAsHandled();
                         break;
                     case Key.Key1:
@@ -1123,6 +1489,10 @@ namespace AtlasWorld.Client.World
                         break;
                     case Key.T:
                         CycleLandmark();
+                        GetViewport()?.SetInputAsHandled();
+                        break;
+                    case Key.L:
+                        CycleTimeOfDay();
                         GetViewport()?.SetInputAsHandled();
                         break;
                     case Key.M:
@@ -1253,11 +1623,20 @@ namespace AtlasWorld.Client.World
             _gaitButton = MakeButton("🏃 Gait: Run 5.8m/s [G]", ToggleGait);
             btnRow.AddChild(_gaitButton);
 
+            _idlePresetButton = MakeButton("🧍 Idle [I]", CycleIdlePreset);
+            btnRow.AddChild(_idlePresetButton);
+
+            _movePresetButton = MakeButton("🏃 Move [K]", CycleMovePreset);
+            btnRow.AddChild(_movePresetButton);
+
             _zoomButton = MakeButton("📷 Face Zoom [Z]", ToggleFaceZoom);
             btnRow.AddChild(_zoomButton);
 
             _hairButton = MakeButton("🎨 Hair [H / 1-6]", CycleHairColor);
             btnRow.AddChild(_hairButton);
+
+            _eyeButton = MakeButton("👁 Eyes [X]", CycleEyeExpression);
+            btnRow.AddChild(_eyeButton);
 
             _weaponButton = MakeButton("🗡 Sword [Q/E]", CycleWeapon);
             btnRow.AddChild(_weaponButton);
@@ -1268,6 +1647,9 @@ namespace AtlasWorld.Client.World
             _landmarkButton = MakeButton("📍 Teleport [T]", CycleLandmark);
             btnRow.AddChild(_landmarkButton);
 
+            _timeButton = MakeButton("☀ Time [L]", CycleTimeOfDay);
+            btnRow.AddChild(_timeButton);
+
             _mapButton = MakeButton("🗺 Map [M]", ToggleMap);
             btnRow.AddChild(_mapButton);
 
@@ -1277,7 +1659,7 @@ namespace AtlasWorld.Client.World
             var helpRow = new Label
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Text = "Controls: [WASD] Camera-Relative Move  |  [Shift] Sprint 8.8m/s  |  [C] Relax/Armed Stance  |  [Z / Scroll / +-] Face Zoom (0.35m..30m)  |  [Drag] Free Orbit  |  [Space] Attack",
+                Text = "Controls: [WASD] Camera-Relative Move  |  [Shift] Sprint 8.8m/s  |  [I/K] Mixamo Idle/Move  |  [L] Time of Day  |  [X] Eye Expr  |  [Z] Face Zoom  |  [R] Rig  |  [Space] Attack",
                 Modulate = new Color(0.76f, 0.84f, 0.94f, 0.90f),
             };
             helpRow.AddThemeFontSizeOverride("font_size", 11);
@@ -1308,16 +1690,24 @@ namespace AtlasWorld.Client.World
                 _gaitButton.Text = _runGaitEnabled
                     ? $"🏃 Run {InteractiveRunSpeedMetersPerSec:F1}m/s [G]"
                     : $"🚶 Walk {InteractiveWalkSpeedMetersPerSec:F1}m/s [G]";
+            if (_idlePresetButton != null)
+                _idlePresetButton.Text = $"🧍 Idle {_idlePresetIndex + 1}/{MixamoIdlePresets.Count} [I]";
+            if (_movePresetButton != null)
+                _movePresetButton.Text = $"🏃 Move {_movePresetIndex + 1}/{MixamoMovePresets.Count} [K]";
             if (_zoomButton != null)
                 _zoomButton.Text = _faceZoomActive ? "📷 Body [Z]" : "📷 Face [Z]";
             if (_hairButton != null)
                 _hairButton.Text = $"🎨 {ActiveHairPresetName.Split(' ')[0]} [H]";
+            if (_eyeButton != null)
+                _eyeButton.Text = $"👁 {ActiveEyeExpressionLabel.Split(' ')[0]} [X]";
             if (_weaponButton != null)
                 _weaponButton.Text = $"🗡 {ActiveWeaponKey} [E]";
             if (_rigButton != null)
                 _rigButton.Text = $"🧑 {ShortKey(ActiveAvatarKey)} [R]";
             if (_landmarkButton != null)
                 _landmarkButton.Text = $"📍 {MaroBellLandmarks[_landmarkIndex].Label.Split(' ')[0]} [T]";
+            if (_timeButton != null && _dayNightCycle != null)
+                _timeButton.Text = $"☀ {_dayNightCycle.FormattedClockString} [L]";
             if (_mapButton != null)
                 _mapButton.Text = $"🗺 {ActiveMapId} [M]";
             if (_netButton != null)
@@ -1348,7 +1738,7 @@ namespace AtlasWorld.Client.World
 
             _telemetryLabel.Text =
                 $"Map: {ActiveMapId}  |  Pos: ({pos.X:F1}, {pos.Y:F2}, {pos.Z:F1}) m  |  Speed: {_currentSpeedMetersPerSec:F2} m/s  |  Zoom: {_cameraDistance:F2} m\n" +
-                $"Rig: {ActiveAvatarKey}  |  Stance: {stanceLabel}  |  Hair: {ActiveHairPresetName}\n" +
+                $"Rig: {ActiveAvatarKey}  |  Stance: {stanceLabel}  |  Hair: {ActiveHairPresetName}  |  Eyes: {ActiveEyeExpressionLabel}\n" +
                 $"Locomotion: {baseState} ({baseClip})  |  Upper-Body Attack: {upperLayer}\n" +
                 $"Foot Grounding: {footMm:+0.0;-0.0;0.0} mm vs rest ankle ({groundStatus})";
         }

@@ -26,6 +26,17 @@ namespace AtlasWorld.Client.World
                 _controller.ApplyRelaxedLocomotionPosture(delta);
             if (_controller.IsUpperBodyAttackActive)
                 _controller.AdvanceUpperBody(delta);
+            if (_controller.SecondarySpringLinkCount > 0)
+            {
+                Node3D? root = _controller.ModelRoot;
+                if (root != null && GodotObject.IsInstanceValid(root))
+                {
+                    Camera3D? cam = GetViewport()?.GetCamera3D();
+                    if (cam != null && cam.GlobalPosition.DistanceSquaredTo(root.GlobalPosition) > 16.0f * 16.0f)
+                        return;
+                }
+                _controller.StepSecondarySprings(delta);
+            }
         }
     }
 }

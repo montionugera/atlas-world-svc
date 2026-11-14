@@ -15,8 +15,8 @@ namespace AtlasWorld.Client.World
     ///    is active while legs run AND the dummy takes damage (CurrentHp < MaxHp).
     /// 4. Cycles Hair Color presets (SetHairPresetIndex) and verifies the Hair surface color changes while Body stays unchanged.
     /// 5. Cycles 1H Sword variants (SetWeaponIndex: sword, kk_sword_a, kk_sword_b, claymore, axe, unarmed).
-    /// 6. Cycles Character Rigs (CycleAvatarRig: npc:maro_folk_girl -> watch_sergeant -> player -> back).
-    /// 7. Teleports across Maro Bell landmarks and toggles map (maro-bell <-> freja-south-gate).
+    /// 6. Cycles Character Rigs (CycleAvatarRig: npc:maro_folk_girl -> vroid_sample -> silme_seeress -> watch_sergeant -> player -> back).
+    /// 7. Teleports across Maro Bell landmarks, verifies 18-step watchtower stairs on freja-south-gate, and verifies Camera-Relative Omnidirectional WASD + ElevenLabs footstep phase sync.
     /// 8. With ATLAS_RENDER_PLAYTEST_SANDBOX=&lt;dir&gt; in a windowed run, captures high-res interactive HUD screenshots.
     /// </summary>
     public sealed partial class PlaytestSandboxVerify : Node
@@ -106,20 +106,90 @@ namespace AtlasWorld.Client.World
             Report("SetRelaxedStance(true) returns to Relaxed stance with weapon hidden",
                 sandbox.IsRelaxedStance && !sandbox.IsWeaponCurrentlyVisible);
 
-            // Verify Relaxed Idle is actively animating (not frozen) when standing still after walking
+            // Verify Relaxed Idle is actively animating (not frozen) when standing still after walking,
+            // AND feet stay planted horizontally (X/Z drift <= 1.50 cm, no pendulum leg swing).
             Skeleton3D? skel = sandbox.AvatarSkeleton;
             int headIdx = skel?.FindBone("Head") ?? -1;
             int rHandIdx = skel?.FindBone("RightHand") ?? -1;
+            int lFootIdx = skel?.FindBone("LeftFoot") ?? -1;
+            int rFootIdx = skel?.FindBone("RightFoot") ?? -1;
+            int hairTipIdx = skel?.FindBone("sec_hair_c1_3") ?? -1;
+            int capeTipIdx = skel?.FindBone("sec_cape_l1_2") ?? -1;
             sandbox.StepMovement(Vector3.Zero, 0.20f);
             Vector3 handIdleA = skel != null && rHandIdx >= 0 ? skel.GetBoneGlobalPose(rHandIdx).Origin : Vector3.Zero;
             Quaternion headIdleA = skel != null && headIdx >= 0 ? skel.GetBoneGlobalPose(headIdx).Basis.GetRotationQuaternion() : Quaternion.Identity;
-            sandbox.StepMovement(Vector3.Zero, 0.85f);
+            Vector2 lFootMinXZ = new(float.MaxValue, float.MaxValue);
+            Vector2 lFootMaxXZ = new(float.MinValue, float.MinValue);
+            Vector2 rFootMinXZ = new(float.MaxValue, float.MaxValue);
+            Vector2 rFootMaxXZ = new(float.MinValue, float.MinValue);
+            for (int idleStep = 0; idleStep < 5; idleStep++)
+            {
+                if (skel != null && lFootIdx >= 0 && rFootIdx >= 0)
+                {
+                    Vector3 lf = skel.GetBoneGlobalPose(lFootIdx).Origin;
+                    Vector3 rf = skel.GetBoneGlobalPose(rFootIdx).Origin;
+                    Vector2 lxz = new(lf.X, lf.Z);
+                    Vector2 rxz = new(rf.X, rf.Z);
+                    lFootMinXZ = lFootMinXZ.Min(lxz);
+                    lFootMaxXZ = lFootMaxXZ.Max(lxz);
+                    rFootMinXZ = rFootMinXZ.Min(rxz);
+                    rFootMaxXZ = rFootMaxXZ.Max(rxz);
+                }
+                if (idleStep < 4)
+                    sandbox.StepMovement(Vector3.Zero, 0.2125f);
+            }
             Vector3 handIdleB = skel != null && rHandIdx >= 0 ? skel.GetBoneGlobalPose(rHandIdx).Origin : Vector3.Zero;
             Quaternion headIdleB = skel != null && headIdx >= 0 ? skel.GetBoneGlobalPose(headIdx).Basis.GetRotationQuaternion() : Quaternion.Identity;
             float handIdleDriftCm = handIdleA.DistanceTo(handIdleB) * 100f;
             float headIdleAngleDeg = Mathf.RadToDeg(headIdleA.AngleTo(headIdleB));
-            Report($"Relaxed Idle actively animates preset Idle_4 when stopped (hand moved {handIdleDriftCm:F2} cm > 0.20 cm, head turned {headIdleAngleDeg:F2} deg > 0.20 deg)",
+            float footIdleHorizDriftCm = Mathf.Max(lFootMinXZ.DistanceTo(lFootMaxXZ), rFootMinXZ.DistanceTo(rFootMaxXZ)) * 100f;
+            Report($"Relaxed Idle actively animates Mixamo Weight Shift Idle when stopped (hand moved {handIdleDriftCm:F2} cm > 0.20 cm, head turned {headIdleAngleDeg:F2} deg > 0.20 deg)",
                 handIdleDriftCm > 0.20f && headIdleAngleDeg > 0.20f && sandbox.LastFootMinDeltaMeters >= -0.025f);
+            Report($"Relaxed Idle feet stay horizontally planted with zero pendulum sway (max ankle X/Z drift {footIdleHorizDriftCm:F2} cm <= 1.50 cm)",
+                footIdleHorizDriftCm <= 1.50f);
+
+            // Verify A+ Tier SecondarySpringPhysics (120Hz Velocity-Verlet + Capsule/Sphere Collider solver) on hair & cape chains
+            Quaternion hairIdleRot = skel != null && hairTipIdx >= 0 ? skel.GetBonePoseRotation(hairTipIdx) : Quaternion.Identity;
+            Quaternion capeIdleRot = skel != null && capeTipIdx >= 0 ? skel.GetBonePoseRotation(capeTipIdx) : Quaternion.Identity;
+            sandbox.SetGaitRun(true);
+            for (int step = 0; step < 6; step++)
+                sandbox.StepMovement(new Vector3(0.4f, 0f, -0.9f).Normalized(), 0.05f);
+            Quaternion hairRunRot = skel != null && hairTipIdx >= 0 ? skel.GetBonePoseRotation(hairTipIdx) : Quaternion.Identity;
+            Quaternion capeRunRot = skel != null && capeTipIdx >= 0 ? skel.GetBonePoseRotation(capeTipIdx) : Quaternion.Identity;
+            float hairSpringDeg = Mathf.RadToDeg(hairIdleRot.AngleTo(hairRunRot));
+            float capeSpringDeg = Mathf.RadToDeg(capeIdleRot.AngleTo(capeRunRot));
+            Report($"SecondarySpringPhysics drives damped hair & cape follow-through on acceleration (links={sandbox.AvatarAnimation?.SecondarySpringLinkCount}, hair={hairSpringDeg:F2} deg, cape={capeSpringDeg:F2} deg)",
+                (sandbox.AvatarAnimation?.SecondarySpringLinkCount ?? 0) >= 11 && hairSpringDeg > 0.5f && capeSpringDeg > 0.5f);
+
+            // Verify continuous footstep-cadence hair bounce & sway during steady constant-velocity running
+            float maxSteadyOscDeg = 0f;
+            for (int step = 0; step < 12; step++)
+            {
+                sandbox.StepMovement(new Vector3(0.4f, 0f, -0.9f).Normalized(), 0.03f);
+                Quaternion curRot = skel != null && hairTipIdx >= 0 ? skel.GetBonePoseRotation(hairTipIdx) : Quaternion.Identity;
+                maxSteadyOscDeg = Mathf.Max(maxSteadyOscDeg, Mathf.RadToDeg(hairRunRot.AngleTo(curRot)));
+            }
+            Report($"Footstep cadence impulse keeps hair bouncing/swaying during steady running (osc={maxSteadyOscDeg:F2} deg > 1.50 deg)",
+                maxSteadyOscDeg > 1.50f);
+            sandbox.StepMovement(Vector3.Zero, 0.25f);
+
+            // Verify live Mixamo preset cycling (Weight Shift Idle -> Dwarf Idle Var. 2 -> Dwarf Standing Idle) & Move preset cycling
+            Report($"initial Mixamo idle preset is f_idle_weight_shift (got {sandbox.ActiveIdlePresetSlug})",
+                sandbox.ActiveIdlePresetSlug == "f_idle_weight_shift");
+            sandbox.CycleIdlePreset();
+            Report($"CycleIdlePreset switches to f_idle_dwarf_var2 (got {sandbox.ActiveIdlePresetSlug}, clip={sandbox.AvatarAnimation?.CurrentClip})",
+                sandbox.ActiveIdlePresetSlug == "f_idle_dwarf_var2" &&
+                sandbox.AvatarAnimation?.CurrentClip == "mx_f_idle_dwarf_var2" &&
+                sandbox.LastFootMinDeltaMeters >= -0.025f);
+            sandbox.CycleMovePreset();
+            sandbox.SetGaitRun(false);
+            sandbox.StepMovement(new Vector3(0f, 0f, -1f), 0.25f);
+            Report($"CycleMovePreset switches walk to f_start_jog (mx_f_walk_start, got {sandbox.AvatarAnimation?.CurrentClip})",
+                sandbox.ActiveMovePresetSlug == "f_start_jog" &&
+                sandbox.AvatarAnimation?.CurrentClip == "mx_f_walk_start");
+            sandbox.SetIdlePresetIndex(0);
+            sandbox.SetMovePresetIndex(0);
+            sandbox.StepMovement(Vector3.Zero, 0.20f);
 
             sandbox.ToggleFaceZoom();
             Report($"ToggleFaceZoom zooms close to character face (dist={sandbox.CameraDistance:F2} m <= 0.65 m)",
@@ -158,14 +228,176 @@ namespace AtlasWorld.Client.World
                     sandbox.AvatarWeaponSocket?.Equipped != null);
             }
 
-            // 5. Live Character Rig Switcher (Maro Girl -> Sergeant -> Player -> back to Maro Girl)
+            // 5. Live Character Rig Switcher (Maro Girl -> VRoid Sample -> Silme Seeress -> Sergeant -> Player -> back to Maro Girl)
             string startRig = sandbox.ActiveAvatarKey;
             sandbox.CycleAvatarRig();
             string secondRig = sandbox.ActiveAvatarKey;
             Report($"CycleAvatarRig switches from {startRig} to {secondRig}", secondRig != startRig && sandbox.AvatarModelNode != null);
+
+            if (secondRig == PlaytestSandboxRoot.VroidSampleKey && sandbox.AvatarSkeleton != null)
+            {
+                Skeleton3D vSkel = sandbox.AvatarSkeleton;
+                int l1 = vSkel.FindBone("sec_hair_l3_1");
+                int l2 = vSkel.FindBone("sec_hair_l3_2");
+                int l3 = vSkel.FindBone("sec_hair_l3_3");
+                int l4 = vSkel.FindBone("sec_hair_l3_4");
+
+                sandbox.StepMovement(Vector3.Zero, 0.25f);
+                Quaternion restL1 = l1 >= 0 ? vSkel.GetBonePoseRotation(l1) : Quaternion.Identity;
+                Quaternion restL2 = l2 >= 0 ? vSkel.GetBonePoseRotation(l2) : Quaternion.Identity;
+                Quaternion restL3 = l3 >= 0 ? vSkel.GetBonePoseRotation(l3) : Quaternion.Identity;
+
+                sandbox.SetGaitRun(false);
+                float walkDeflectSum = 0f;
+                for (int s = 0; s < 10; s++)
+                {
+                    sandbox.StepMovement(new Vector3(-1f, 0f, 0f), 0.04f, speedOverride: 1.5f);
+                    if (l2 >= 0)
+                        walkDeflectSum += Mathf.RadToDeg(restL2.AngleTo(vSkel.GetBonePoseRotation(l2)));
+                }
+                float walkAvgDeflectDeg = walkDeflectSum / 10f;
+
+                sandbox.SetGaitRun(true);
+                float runDeflectSum = 0f;
+                float maxSWaveInflectDeg = 0f;
+                Quaternion runStartL4 = Quaternion.Identity;
+                float maxRunWaveOscDeg = 0f;
+                float peakRunDeflectDeg = 0f;
+                for (int s = 0; s < 16; s++)
+                {
+                    sandbox.StepMovement(new Vector3(-1f, 0f, 0f), 0.04f, speedOverride: 4.5f);
+                    if (l2 >= 0)
+                    {
+                        float d2 = Mathf.RadToDeg(restL2.AngleTo(vSkel.GetBonePoseRotation(l2)));
+                        runDeflectSum += d2;
+                        peakRunDeflectDeg = Mathf.Max(peakRunDeflectDeg, d2);
+                    }
+                    if (l1 >= 0 && l3 >= 0)
+                    {
+                        Quaternion delta1 = restL1.Inverse() * vSkel.GetBonePoseRotation(l1);
+                        Quaternion delta3 = restL3.Inverse() * vSkel.GetBonePoseRotation(l3);
+                        float inflect = Mathf.RadToDeg(delta1.AngleTo(delta3));
+                        maxSWaveInflectDeg = Mathf.Max(maxSWaveInflectDeg, inflect);
+                    }
+                    if (l4 >= 0)
+                    {
+                        Quaternion curL4 = vSkel.GetBonePoseRotation(l4);
+                        if (s == 3)
+                            runStartL4 = curL4;
+                        else if (s > 3)
+                            maxRunWaveOscDeg = Mathf.Max(maxRunWaveOscDeg, Mathf.RadToDeg(runStartL4.AngleTo(curL4)));
+                    }
+                }
+                float runAvgDeflectDeg = runDeflectSum / 16f;
+
+                for (int s = 0; s < 7; s++)
+                    sandbox.StepMovement(Vector3.Zero, 0.04f);
+                float afterStopDeg = l2 >= 0 ? Mathf.RadToDeg(restL2.AngleTo(vSkel.GetBonePoseRotation(l2))) : 0f;
+
+                Report($"VRoid 4-link twin-tails Walk vs Run inertia & travelling S-wave (∿) (links={sandbox.AvatarAnimation?.SecondarySpringLinkCount}, walk={walkAvgDeflectDeg:F1} deg < run={runAvgDeflectDeg:F1} deg, sWave={maxSWaveInflectDeg:F1} deg, osc={maxRunWaveOscDeg:F1} deg, stopDrop={peakRunDeflectDeg:F1}->{afterStopDeg:F1} deg)",
+                    (sandbox.AvatarAnimation?.SecondarySpringLinkCount ?? 0) >= 40 &&
+                    runAvgDeflectDeg > walkAvgDeflectDeg * 1.80f &&
+                    maxSWaveInflectDeg > 8.0f &&
+                    maxRunWaveOscDeg > 8.0f &&
+                    afterStopDeg < peakRunDeflectDeg * 0.55f);
+
+                sandbox.SetEyeExpressionIndex(1); // Happy ^_^
+                float vHappyW = CharacterCustomization.GetEyeExpressionWeight(sandbox.AvatarModelNode!, "eye_happy");
+                sandbox.SetEyeExpressionIndex(0); // Neutral
+                Report($"VRoid mouthless FaceMesh live eye expressions (eye_happy={vHappyW:F2})", vHappyW > 0.90f);
+            }
+
+            if (Godot.FileAccess.FileExists("res://studio-cache/silme_seeress.glb"))
+            {
+                sandbox.CycleAvatarRig();
+                await NextFrames(2);
+                Report($"CycleAvatarRig switches to npc:silme_seeress (got {sandbox.ActiveAvatarKey})",
+                    sandbox.ActiveAvatarKey == "npc:silme_seeress");
+                if (sandbox.AvatarSkeleton is Skeleton3D sSkel && sandbox.AvatarModelNode != null)
+                {
+                    int sc1 = sSkel.FindBone("sec_hair_c1_1");
+                    sandbox.SetEyeExpressionIndex(1); // Happy ^_^
+                    float sHappyW = CharacterCustomization.GetEyeExpressionWeight(sandbox.AvatarModelNode, "eye_happy");
+                    sandbox.SetEyeExpressionIndex(0);
+                    Report($"Silme Seeress hair spring chain (sec_hair_c1_1={sc1}) & mouthless FaceMesh live eye expressions (eye_happy={sHappyW:F2})",
+                        sc1 >= 0 && sHappyW > 0.90f);
+
+                    MeshInstance3D? sBody = sandbox.AvatarModelNode.FindChild("CharacterMesh", recursive: true, owned: false) as MeshInstance3D;
+                    MeshInstance3D? sFace = sandbox.AvatarModelNode.FindChild("FaceMesh", recursive: true, owned: false) as MeshInstance3D;
+                    MeshInstance3D? sHair = sandbox.AvatarModelNode.FindChild("HairMesh", recursive: true, owned: false) as MeshInstance3D;
+                    MeshInstance3D? sCrown = sandbox.AvatarModelNode.FindChild("CrownOrnamentMesh", recursive: true, owned: false) as MeshInstance3D;
+                    float collarOverlapMm = 0f;
+                    if (sBody != null && sFace != null)
+                    {
+                        Aabb bodyBox = sBody.GetAabb();
+                        Aabb faceBox = sFace.GetAabb();
+                        collarOverlapMm = (bodyBox.End.Y - faceBox.Position.Y) * 1000f;
+                    }
+                    Report($"Silme Seeress 4-slot modular meshes present (Body={sBody != null}, Face={sFace != null}, Hair={sHair != null}, Crown={sCrown != null}) with watertight neck collar overlap ({collarOverlapMm:F1} mm in 2..35 mm)",
+                        sBody != null && sFace != null && sHair != null && sCrown != null && collarOverlapMm >= 2.0f && collarOverlapMm <= 35.0f);
+                }
+            }
+
             while (sandbox.ActiveAvatarKey != startRig)
                 sandbox.CycleAvatarRig();
             Report($"CycleAvatarRig returns to {startRig}", sandbox.ActiveAvatarKey == startRig);
+
+            if (sandbox.AvatarSkeleton is Skeleton3D mSkel && sandbox.AvatarModelNode != null)
+            {
+                int mc1 = mSkel.FindBone("sec_hair_c1_1");
+                int mc4 = mSkel.FindBone("sec_hair_c1_4");
+                sandbox.SetEyeExpressionIndex(1); // Happy ^_^
+                float mHappyW = CharacterCustomization.GetEyeExpressionWeight(sandbox.AvatarModelNode, "eye_happy");
+                sandbox.SetEyeExpressionIndex(0); // Neutral
+                Report($"Maro Folk Girl 4-link ponytail centerline (sec_hair_c1_1={mc1}, sec_hair_c1_4={mc4}) & mouthless VRoid FaceMesh live eye expressions (eye_happy={mHappyW:F2})",
+                    mc1 >= 0 && mc4 >= 0 && mHappyW > 0.90f);
+
+                sandbox.SetRelaxedStance(false);
+                sandbox.StepMovement(Vector3.Zero, 0.25f);
+                int lArmIdx = mSkel.FindBone("LeftArm");
+                int rArmIdx = mSkel.FindBone("RightArm");
+                float lArmDeg = lArmIdx >= 0 ? Mathf.RadToDeg(mSkel.GetBonePoseRotation(lArmIdx).GetAngle()) : 0f;
+                float rArmDeg = rArmIdx >= 0 ? Mathf.RadToDeg(mSkel.GetBonePoseRotation(rArmIdx).GetAngle()) : 0f;
+                sandbox.SetRelaxedStance(true);
+                Report($"Armed Stance (combat_idle) is animated and never frozen in A-pose (LeftArm={lArmDeg:F1} deg, RightArm={rArmDeg:F1} deg > 10 deg)",
+                    lArmDeg > 10.0f && rArmDeg > 10.0f);
+
+                MeshInstance3D? faceMesh = sandbox.AvatarModelNode.GetNodeOrNull<MeshInstance3D>("Armature/Skeleton3D/FaceMesh")
+                    ?? sandbox.AvatarModelNode.FindChild("FaceMesh", recursive: true, owned: false) as MeshInstance3D;
+                bool faceToonOk = false;
+                bool eyeShadedOk = false;
+                bool eyeIrisCrispOk = false;
+                int faceSurfCount = faceMesh?.Mesh?.GetSurfaceCount() ?? 0;
+                if (faceMesh?.Mesh != null)
+                {
+                    for (int si = 0; si < faceSurfCount; si++)
+                    {
+                        Material? mat = faceMesh.GetSurfaceOverrideMaterial(si) ?? faceMesh.Mesh.SurfaceGetMaterial(si);
+                        if (mat is StandardMaterial3D sm)
+                        {
+                            string rname = (sm.ResourceName ?? "").ToLowerInvariant();
+                            if (rname.Contains("skin") || rname.Contains("face_00"))
+                            {
+                                faceToonOk = sm.DiffuseMode == BaseMaterial3D.DiffuseModeEnum.Toon
+                                    && sm.DisableReceiveShadows
+                                    && sm.EmissionEnabled;
+                            }
+                            else if (rname.Contains("eyewhite"))
+                            {
+                                eyeShadedOk = sm.ShadingMode == BaseMaterial3D.ShadingModeEnum.PerPixel
+                                    && sm.DisableReceiveShadows;
+                            }
+                            else if (rname.Contains("eyeiris"))
+                            {
+                                Vector2I texSz = sm.AlbedoTexture != null ? new Vector2I(sm.AlbedoTexture.GetWidth(), sm.AlbedoTexture.GetHeight()) : Vector2I.Zero;
+                                eyeIrisCrispOk = texSz.X >= 512 && texSz.Y >= 512;
+                            }
+                        }
+                    }
+                }
+                Report($"Nighttime Face & Eye lighting parity + Crisp >=512px VRoid EyeIris (surfaces={faceSurfCount}>=8, FaceToon={faceToonOk}, EyeWhitePerPixel={eyeShadedOk}, EyeIris512={eyeIrisCrispOk})",
+                    faceSurfCount >= 8 && faceToonOk && eyeShadedOk && eyeIrisCrispOk);
+            }
 
             // 6. Landmark Teleporter & Map Switcher
             sandbox.TeleportToLandmark(1); // Arrival Gate
@@ -175,6 +407,76 @@ namespace AtlasWorld.Client.World
 
             sandbox.ToggleMap();
             Report("ToggleMap switches to freja-south-gate", sandbox.ActiveMapId == "freja-south-gate");
+
+            // Automated Stair Sinking & Smooth Walking Verification on freja_west_watchtower_01 East Stair Ramp
+            UnifiedMapDocument? frejaDoc = sandbox.MapDocument;
+            UnifiedMapStructureVolume? tower = frejaDoc?.Structures.Find(s => s.Id == "freja_west_watchtower_01");
+            Report("freja_west_watchtower_01 exists in freja-south-gate", tower != null);
+            if (tower != null && frejaDoc != null)
+            {
+                float r = Mathf.Max(2.5f, tower.Radius);
+                float deckH = Mathf.Max(2.2f, tower.UpperFloorHeight);
+                float structBaseY = TerrainElevation.SampleBaseTerrainHeight(tower.X, tower.Z, frejaDoc);
+                float upperDeckY = structBaseY + deckH;
+
+                float rampStartX = tower.X + r + 3.25f;
+                float rampEndX = tower.X + r - 0.25f;
+                const int stepCount = 18;
+
+                float VisualStepRunnerTopY(float testX)
+                {
+                    if (testX >= rampStartX)
+                        return structBaseY;
+                    if (testX <= rampEndX)
+                        return upperDeckY;
+                    float t = (rampStartX - testX) / (rampStartX - rampEndX);
+                    int sIdx = Mathf.Clamp((int)Mathf.Floor(t * stepCount), 0, stepCount - 1);
+                    float sH = deckH * ((sIdx + 0.5f) / stepCount);
+                    return structBaseY + sH + 0.012f;
+                }
+
+                float sampleStart = tower.X + r + 3.20f;
+                float sampleEnd = tower.X + r - 0.20f;
+                const int sampleCount = 20;
+
+                bool allPointsNoSink = true;
+                bool monotonic = true;
+                float worstSinkMeters = 0f;
+                float prevY = structBaseY;
+
+                for (int p = 0; p < sampleCount; p++)
+                {
+                    float alpha = (float)p / (sampleCount - 1);
+                    float px = Mathf.Lerp(sampleStart, sampleEnd, alpha);
+                    float pz = tower.Z;
+
+                    float sampledY = TerrainElevation.SampleHeight(px, pz, frejaDoc, prevY);
+                    float visualTop = VisualStepRunnerTopY(px);
+
+                    float sinkDelta = visualTop - sampledY;
+                    if (sinkDelta > 0.002f)
+                    {
+                        allPointsNoSink = false;
+                        worstSinkMeters = Mathf.Max(worstSinkMeters, sinkDelta);
+                    }
+
+                    if (p > 0 && sampledY < prevY - 0.0001f)
+                    {
+                        monotonic = false;
+                    }
+
+                    prevY = sampledY;
+                }
+
+                float deckSampleY = TerrainElevation.SampleHeight(tower.X + r - 0.35f, tower.Z, frejaDoc, prevY);
+                bool deckSmooth = Mathf.Abs(deckSampleY - upperDeckY) < 0.01f;
+
+                Report($"watchtower East stair ramp: 20 points sampled without sinking (worstSink={worstSinkMeters * 1000f:F1} mm <= 0 mm)",
+                    allPointsNoSink);
+                Report($"watchtower East stair ramp: monotonically increases smoothly to upperDeck (finalY={prevY:F2} m, deckY={deckSampleY:F2} m == {upperDeckY:F2} m)",
+                    monotonic && deckSmooth);
+            }
+
             sandbox.ToggleMap();
             Report("ToggleMap switches back to maro-bell", sandbox.ActiveMapId == "maro-bell");
 
@@ -242,11 +544,11 @@ namespace AtlasWorld.Client.World
 
             // 7f. Footstep phase synchronization & multi-sample ElevenLabs SFX verification
             sandbox.TeleportToLandmark(0);
-            sandbox.SetGaitRun(false); // Walk cycle (0.967s)
+            sandbox.SetGaitRun(false); // Walk cycle
             sandbox.AvatarAnimation?.ResetFootstepPhase();
             int leftStrikes = 0;
             int rightStrikes = 0;
-            for (int step = 0; step < 32; step++)
+            for (int step = 0; step < 36; step++)
             {
                 sandbox.StepMovement(new Vector3(0f, 0f, -1f), 0.035f);
                 if (sandbox.AvatarAnimation != null && sandbox.AvatarAnimation.PollFootstepStrike(out bool rightFoot, out bool _))
@@ -286,7 +588,6 @@ namespace AtlasWorld.Client.World
         {
             Directory.CreateDirectory(outDir);
 
-            // Shot 1: Running + Upper-body attack against Bell Plaza Dummy with Linde Silver hair + KayKit Sword B
             sandbox.TeleportToLandmark(0);
             sandbox.SetHairPresetIndex(1); // Linde Silver
             sandbox.SetWeaponIndex(2); // kk_sword_b
@@ -302,26 +603,30 @@ namespace AtlasWorld.Client.World
             }
             await SaveViewportPng(Path.Combine(outDir, "playtest-sandbox-combat.png"));
 
-            // Shot 2: Feminine Relaxed Standing + Upper-Body View (Unarmed, no weapon in hand)
             sandbox.TeleportToLandmark(1);
             sandbox.SetHairPresetIndex(0); // Maro Chestnut
             sandbox.SetRelaxedStance(true);
+            sandbox.SetIdlePresetIndex(0); // f_idle_weight_shift
             sandbox.StepMovement(Vector3.Zero, 0.60f);
             if (sandbox.MainCamera != null && sandbox.AvatarNode != null)
             {
-                // Avatar at Arrival Gate faces -Z (Yaw = Pi), so camera at -Z is directly in front of her!
-                Vector3 focus = sandbox.AvatarNode.Position + new Vector3(0f, 0.56f, 0f);
-                sandbox.MainCamera.Position = sandbox.AvatarNode.Position + new Vector3(0.14f, 0.68f, -1.25f);
+                Vector3 focus = sandbox.AvatarNode.Position + new Vector3(0f, 0.52f, 0f);
+                sandbox.MainCamera.Position = sandbox.AvatarNode.Position + new Vector3(0.14f, 0.64f, -1.45f);
                 sandbox.MainCamera.LookAt(focus, Vector3.Up);
             }
             await SaveViewportPng(Path.Combine(outDir, "playtest-sandbox-customizer.png"));
 
-            // Shot 3: Ultra-close Portrait Face Zoom (0.54m from her face)
+            sandbox.SetIdlePresetIndex(1); // f_idle_dwarf_var2
+            sandbox.StepMovement(Vector3.Zero, 0.75f);
+            await SaveViewportPng(Path.Combine(outDir, "playtest-sandbox-dwarf-idle-var2.png"));
+            sandbox.SetIdlePresetIndex(0);
+
             sandbox.ToggleFaceZoom();
             if (sandbox.MainCamera != null && sandbox.AvatarNode != null)
             {
-                Vector3 focus = sandbox.AvatarNode.Position + new Vector3(0f, 0.64f, 0f);
-                sandbox.MainCamera.Position = sandbox.AvatarNode.Position + new Vector3(0.05f, 0.66f, -0.54f);
+                float headY = sandbox.GetLiveHeadFocusY();
+                Vector3 focus = sandbox.AvatarNode.Position + new Vector3(0f, headY, 0f);
+                sandbox.MainCamera.Position = sandbox.AvatarNode.Position + new Vector3(0.03f, headY + 0.01f, -0.46f);
                 sandbox.MainCamera.LookAt(focus, Vector3.Up);
             }
             await SaveViewportPng(Path.Combine(outDir, "playtest-sandbox-face-zoom.png"));
