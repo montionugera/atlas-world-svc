@@ -12,12 +12,12 @@ function recordEntryLabel(viewUrl) {
 
 function closeSearchPopover() {
   const pop = document.getElementById('searchPopover');
-  if (pop) { pop.hidden = true; pop.innerHTML = ''; }
+  if (pop) { pop.hidden = true; document.getElementById('searchPopoverResults').innerHTML = ''; }
 }
 
 function placeSearchPopover() {
   const pop = document.getElementById('searchPopover');
-  const r = document.getElementById('globalSearch').getBoundingClientRect();
+  const r = document.querySelector('.topbar .sidebar-search__inner').getBoundingClientRect();
   const width = Math.min(480, window.innerWidth - 16);
   pop.style.top = `${Math.round(r.bottom + 6)}px`;
   pop.style.left = `${Math.round(Math.max(8, Math.min(r.left, window.innerWidth - width - 8)))}px`;
@@ -26,7 +26,7 @@ function placeSearchPopover() {
 
 function showSearchMessage(html) {
   const pop = document.getElementById('searchPopover');
-  pop.innerHTML = `<div class="search-popover__message" role="status">${html}</div>`;
+  document.getElementById('searchPopoverResults').innerHTML = `<div class="search-popover__message" role="status">${html}</div>`;
   placeSearchPopover();
   pop.hidden = false;
 }
@@ -53,7 +53,7 @@ async function runRecordSearch(query) {
   clearTimeout(SEARCH_POPOVER_TIMER);
   if (!body.results.length) { showSearchMessage(`No record matches '${escapeHtml(query.trim())}'`); return; }
   const pop = document.getElementById('searchPopover');
-  pop.innerHTML = body.results.map((r, i) => `
+  document.getElementById('searchPopoverResults').innerHTML = body.results.map((r, i) => `
     <button type="button" class="search-popover__row" role="option" aria-selected="${i === 0}" data-record="${escapeHtml(r.kind + ':' + r.id)}">
       <span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(r.kind.replace(/_/g, ' '))}</span>
       <span class="search-popover__title">${escapeHtml(r.title)}</span>
@@ -128,10 +128,14 @@ function initRecordSearch() {
     if (!pop.hidden && !pop.contains(e.target) && !e.target.closest('.sidebar-search')) closeSearchPopover();
   });
   window.addEventListener('resize', () => { if (!pop.hidden) placeSearchPopover(); });
+  document.getElementById('searchIncludeArchive').addEventListener('keydown', e => {
+    if (e.key === 'Escape' || (e.key === 'Tab' && e.shiftKey)) { e.preventDefault(); input.focus(); if (e.key === 'Escape') closeSearchPopover(); }
+  });
   input.addEventListener('keydown', e => {
     const rows = [...pop.querySelectorAll('[data-record]')];
     const at = rows.findIndex(row => row.getAttribute('aria-selected') === 'true');
     if (e.key === 'Escape') { closeSearchPopover(); return; }
+    if (e.key === 'Tab' && !e.shiftKey && !pop.hidden) { e.preventDefault(); document.getElementById('searchIncludeArchive').focus(); return; }
     if (pop.hidden || !rows.length) return;
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();

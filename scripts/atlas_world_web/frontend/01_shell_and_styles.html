@@ -143,24 +143,48 @@
     }
     .topbar .sidebar-search {
       padding: 0;
-      flex: 1 1 0;
+      flex: 1 1 240px;
       min-width: 160px;
       max-width: 340px;
       margin-left: auto;
     }
+    /* 30px + the 1px border = 32px, the height of the buttons beside it: the bar keeps its height */
     .topbar .sidebar-search__input {
-      height: 32px;
+      height: 30px;
       min-width: 0;
     }
-    .topbar-search__archive {
-      font-size: var(--joy-font-size-xs, 11px);
-      color: var(--joy-text-secondary);
-      white-space: nowrap;
-      padding: 0 8px;
-      border-left: 1px solid var(--joy-border-subtle);
-      display: inline-flex;
+    /* Below 1440px the top bar has no spare room: Back/Forward go icon-only (as on a phone)
+       and the shortcut hint goes, so the search input keeps a width you can type in. */
+    @media (max-width: 1439px) {
+      .topbar .sidebar-search__kbd,
+      .topbar__history-label {
+        display: none;
+      }
+    }
+    /* A title squeezed to one clipped letter is noise: drop it while its group is too narrow to hold it. */
+    @media (min-width: 768px) {
+      .topbar__start {
+        container: topbar-start / inline-size;
+      }
+      @container topbar-start (max-width: 699px) {
+        .topbar__title {
+          display: none;
+        }
+      }
+    }
+    .search-popover__archive {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 12px;
+      font-size: var(--joy-font-size-sm);
+      color: var(--joy-text-secondary);
+      background: var(--joy-surface-card);
+      border-bottom: 1px solid var(--joy-border-default);
       cursor: pointer;
       user-select: none;
     }
@@ -2570,7 +2594,7 @@
       }
       .topbar .sidebar-search {
         order: -1;
-        flex: 1 0 150px;
+        flex: 1 0 190px;
         max-width: none;
         margin-left: 0;
       }
@@ -2578,16 +2602,8 @@
         display: none;
       }
       .topbar .sidebar-search__input {
-        height: 28px;
+        height: 26px;
         min-width: 0;
-      }
-      .sidebar-search__inner,
-      .topbar-search__archive {
-        align-self: stretch;
-        min-height: 100%;
-      }
-      .topbar-search__archive {
-        min-width: 44px;
       }
       .catalog-stale-banner {
         padding: 8px 12px;
@@ -2782,7 +2798,6 @@
               aria-label="Search every record"
             />
             <kbd class="sidebar-search__kbd">⌘K</kbd>
-            <label class="topbar-search__archive"><input type="checkbox" id="searchIncludeArchive" /> Include archive</label>
           </div>
         </div>
       </div>
@@ -2808,7 +2823,10 @@
         </button>
       </div>
     </header>
-    <div id="searchPopover" class="search-popover" role="listbox" aria-label="Search results" hidden></div>
+    <div id="searchPopover" class="search-popover" hidden>
+      <label class="search-popover__archive"><input type="checkbox" id="searchIncludeArchive" /> Include archive</label>
+      <div id="searchPopoverResults" role="listbox" aria-label="Search results"></div>
+    </div>
 
     <div class="scroll-stage" id="scrollStage">
       <div class="subview-bar" id="subViewBar" role="group" aria-label="View" hidden></div>

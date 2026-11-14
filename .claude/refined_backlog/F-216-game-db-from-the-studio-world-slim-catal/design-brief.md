@@ -41,28 +41,27 @@ without the transition).
 - **The top bar's height must not change at any width.** The wrapper `.sidebar-search` gets
   `padding: 0` inside the top bar (`.topbar .sidebar-search { padding: 0; }`); the input is
   `height: 32px` on desktop and `28px` below 768 px.
-- Desktop (768 px and up): `.topbar .sidebar-search { flex: 1 1 0; min-width: 160px; max-width: 340px; margin-left: auto; }`.
-  A zero flex-basis is deliberate: `.topbar` is `flex-wrap: wrap`, and a fixed basis could push
-  `.topbar__end` onto a second row. The title already ellipsizes (`.topbar__title`), so the box
-  takes its room from the title, never from the status badge.
-- Phone (below 768 px): the top bar is one 36-44 px row that scrolls sideways. The box must be on
-  screen at 390 px without scrolling: `.topbar .sidebar-search { order: -1; flex: 1 0 150px; max-width: none; margin-left: 0; }`
+- Desktop (768 px and up): `.topbar .sidebar-search { flex: 1 1 240px; min-width: 160px; max-width: 340px; margin-left: auto; }`.
+  It sits inside `.topbar__start`, whose own flex-basis is 0, so it can never push `.topbar__end` onto a second row.
+  The input is `30px` high (32 px with the border, the height of the buttons beside it).
+- Below 1440 px the bar has no spare room (measured: 70 px left at 1280 with the sidebar open). There the
+  `⌘K` hint and the Back / Forward text labels hide (`.topbar__history-label`, already hidden on a phone),
+  and the title hides while its group is narrower than 700 px (container query on `.topbar__start`):
+  a title squeezed to one clipped letter is noise.
+- Phone (below 768 px): the top bar is one 44 px row that scrolls sideways. The box must be on
+  screen at 390 px without scrolling: `.topbar .sidebar-search { order: -1; flex: 1 0 190px; max-width: none; margin-left: 0; }`
   and `#mobileNavMenuBtn { order: -2; }`, so the row reads Menu, search, then history, title, status.
-  Nothing is hidden; title and status stay in the DOM and scroll with the bar. Hide the `⌘K` hint
-  (`.sidebar-search__kbd`) below 768 px.
-- "Include archive": `<label class="topbar-search__archive">` directly after the `<kbd>`, inside
-  `.sidebar-search__inner`, so box and checkbox read as one control. `font-size: var(--joy-font-size-xs, 11px)`,
-  `color: var(--joy-text-secondary)`, `white-space: nowrap`, `padding: 0 8px`, a 1 px
-  `var(--joy-border-subtle)` left border, `display: inline-flex; align-items: center; gap: 4px`.
-  The label keeps its full text "Include archive" at every width.
-- Touch: the visible input is 28 px high on a phone, so the hit area is the whole wrapper:
-  `.sidebar-search__inner` and the `<label>` are `align-self: stretch` with `min-height: 100%` of the
-  bar row, and the checkbox label has `min-width: 44px`. Tapping anywhere in the wrapper focuses the input.
+  The input is `26px` high (28 px with the border, the height of the Menu button).
+- "Include archive" is NOT in the top bar (revised 2026-11-15 after the first screenshots: with the
+  label inside the box the input was 16 px wide on a phone and at 1280). It is the first row of the
+  popover: `<label class="search-popover__archive">`, sticky at the top, `min-height: 44px`,
+  `var(--joy-font-size-sm)`, `var(--joy-text-secondary)`, a 1 px `var(--joy-border-default)` bottom border.
+  Tab from the search box moves to it; Shift+Tab or Escape returns to the box.
 
 ### Result popover (`#searchPopover`, sibling directly after `</header>`)
 
 - `position: fixed` (the phone top bar has `overflow-x: auto` and would clip an absolute child).
-  JS sets `top` to the input wrapper's `getBoundingClientRect().bottom + 4` and re-places it on
+  JS sets `top` to the input wrapper's (`.sidebar-search__inner`) `getBoundingClientRect().bottom + 6` and re-places it on
   `resize` and on the top bar's `scroll`.
 - Desktop: `left` = the wrapper's left edge, `width: max(<wrapper width>, 420px)`, clamped so the
   right edge stays 8 px inside the viewport. Phone: `left: 8px; right: 8px; width: auto`.
