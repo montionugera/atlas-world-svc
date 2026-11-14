@@ -185,7 +185,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Docker & Docker Compose
+- Docker
 - Node.js 18+
 - Rust 1.98+ & Cargo (`~/.cargo/bin`)
 - .NET 8 SDK & Xcode 16+ (for Godot C# iOS Client)
@@ -323,8 +323,6 @@ The atlas web surface is powered by a single web program (`scripts/catalog_explo
 | `game-client/src/UI/Widgets/` | Ragnarok-style UI components: `PlayerFrame`, `TopBar`, `ChatBox`, `WardrobeModal`, `MobileControlsOverlay`. |
 | `server-rs/` | Authoritative Rust ECS simulation engine + Native Rust Meta & Persistence Engine (`server-rs/src/meta/`). |
 | `client/react-client/` | Web-based client implementation for quick prototyping. |
-| `monitoring/` | Prometheus & Grafana configuration stacks. |
-| `docker-compose.yml` | Complete local orchestration setup. |
 
 ---
 
