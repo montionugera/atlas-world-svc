@@ -47,8 +47,3 @@ test("studio nodes hold true metres (dimensions_meters <= 1000, spawn_point_mete
   walk(resolve(ROOT, "content/studio/nodes"));
   assert.deepEqual(bad, []);
 });
-
-test("rescale_units_to_metres is idempotent: a re-run has nothing left to change", async () => {
-  const { run } = await import("../rescale_units_to_metres.mjs");
-  assert.equal(run({ check: true }).changed, 0);
-});

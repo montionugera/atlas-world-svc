@@ -39,7 +39,7 @@ const VIEW_CLAIMS = {
 
 // Every panel id below has a file ./<id>.mjs. Until its wave lands, that file is a
 // two-line stub (registerPlaceholder); a wave replaces ONLY its own stub file, so no two
-// packages in a wave ever edit registry.mjs. tests/test_atlas_world_web.py checks the files exist.
+// packages in a wave ever edit registry.mjs.
 const PANEL_IDS = [
   ...PANEL_TABS,
   ...Object.values(VIEW_CLAIMS).map((r) => r.panel),
