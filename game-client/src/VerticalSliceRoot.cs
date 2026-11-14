@@ -1735,7 +1735,7 @@ namespace AtlasWorld.Client
             }
         }
 
-        public override void _PhysicsProcess(double delta)
+        public override void _Process(double delta)
         {
             float dt = (float)delta;
             _pulseTime += dt;

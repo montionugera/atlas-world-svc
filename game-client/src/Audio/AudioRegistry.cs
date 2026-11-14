@@ -37,6 +37,9 @@ namespace AtlasWorld.Client.Audio
         private AudioManifest? _manifest;
         private readonly Dictionary<string, AudioStream> _streamCache = new();
         private readonly HashSet<string> _warnedMissing = new();
+        private readonly List<AudioStreamPlayer3D> _pool3D = new();
+        private readonly List<AudioStreamPlayer> _pool2D = new();
+        private const int MaxPoolSize = 16;
 
         public override void _Ready()
         {
@@ -111,10 +114,39 @@ namespace AtlasWorld.Client.Audio
             if (stream == null)
                 return null;
 
-            var player = new AudioStreamPlayer3D { Stream = stream };
-            AddChild(player);
+            AudioStreamPlayer3D? player = null;
+            for (int i = _pool3D.Count - 1; i >= 0; i--)
+            {
+                var p = _pool3D[i];
+                if (!GodotObject.IsInstanceValid(p))
+                {
+                    _pool3D.RemoveAt(i);
+                    continue;
+                }
+                if (!p.Playing)
+                {
+                    player = p;
+                    break;
+                }
+            }
+
+            if (player == null)
+            {
+                if (_pool3D.Count >= MaxPoolSize && GodotObject.IsInstanceValid(_pool3D[0]))
+                {
+                    player = _pool3D[0];
+                    player.Stop();
+                }
+                else
+                {
+                    player = new AudioStreamPlayer3D();
+                    AddChild(player);
+                    _pool3D.Add(player);
+                }
+            }
+
+            player.Stream = stream;
             player.GlobalPosition = worldPos;
-            player.Finished += () => FreeIfValid(player);
             player.Play();
             return player;
         }
@@ -129,17 +161,40 @@ namespace AtlasWorld.Client.Audio
             if (stream == null)
                 return null;
 
-            var player = new AudioStreamPlayer { Stream = stream };
-            AddChild(player);
-            player.Finished += () => FreeIfValid(player);
+            AudioStreamPlayer? player = null;
+            for (int i = _pool2D.Count - 1; i >= 0; i--)
+            {
+                var p = _pool2D[i];
+                if (!GodotObject.IsInstanceValid(p))
+                {
+                    _pool2D.RemoveAt(i);
+                    continue;
+                }
+                if (!p.Playing)
+                {
+                    player = p;
+                    break;
+                }
+            }
+
+            if (player == null)
+            {
+                if (_pool2D.Count >= MaxPoolSize && GodotObject.IsInstanceValid(_pool2D[0]))
+                {
+                    player = _pool2D[0];
+                    player.Stop();
+                }
+                else
+                {
+                    player = new AudioStreamPlayer();
+                    AddChild(player);
+                    _pool2D.Add(player);
+                }
+            }
+
+            player.Stream = stream;
             player.Play();
             return player;
-        }
-
-        private static void FreeIfValid(Node player)
-        {
-            if (GodotObject.IsInstanceValid(player))
-                player.QueueFree();
         }
 
         private void WarnMissing(string eventKey, string reason)
