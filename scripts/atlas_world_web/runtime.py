@@ -8,6 +8,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from pathlib import Path
 
 READ_ONLY_MESSAGE = "This is a read-only release page. Edit on atlas-edit.joymify.local.com."
 MISSING_THUMB_SVG = (
@@ -94,3 +95,10 @@ def send_cacheable(handler, raw: bytes, content_type: str, host_cache_control: s
     handler.send_header("Content-Length", str(len(raw)))
     handler.end_headers()
     handler.wfile.write(raw)
+
+
+def catalog_db_path() -> Path:
+    """The one place the derived game DB path is decided. ATLAS_CATALOG_DB lets tests and the
+    image build point somewhere else."""
+    default = Path(__file__).resolve().parent.parent.parent / "build" / "catalog.sqlite"
+    return Path(os.environ.get("ATLAS_CATALOG_DB", str(default)))

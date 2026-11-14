@@ -510,7 +510,7 @@ storybook_tests() {
 
 atlas_web_tests() {
   # I-246: read-only guard, hidden controls, image contents, routing, the verify script.
-  ( cd "$REPO_ROOT/scripts" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" tests/atlas-web-*.test.mjs )
+  ( cd "$REPO_ROOT/scripts" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" tests/atlas-web-*.test.mjs tests/catalog-records.test.mjs )
 }
 
 # F-174 pull-only assets: fill game-client/studio-cache/ from Asset Studio (sha256-verified).

@@ -37,7 +37,7 @@ except ImportError:  # ... or run as a script, where scripts/ is sys.path[0]
 
 ROOT = Path(__file__).resolve().parent.parent
 BUILD_SCRIPT = ROOT / "scripts" / "build_catalog_db.py"
-DB_PATH = Path(os.environ.get("ATLAS_CATALOG_DB", str(ROOT / "build" / "catalog.sqlite")))
+DB_PATH = web_runtime.catalog_db_path()
 CONTENT_DIR = ROOT / "contracts" / "content"
 MAPS_DIR = ROOT / "content" / "maps"
 SPECS_DIR = ROOT / "docs" / "superpowers" / "specs"
