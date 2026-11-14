@@ -14,6 +14,7 @@ FRONTEND_MODULE_FILES: tuple[str, ...] = (
     "01_shell_and_styles.html",
     "02_state_and_composable_layers.js",
     "02b_cartography_pipeline.js",
+    "02c_records_search.js",
     "03_engines_ol_and_3d.js",
     "04_studio_overlay_bars_a.js",
     "05_studio_overlay_bars_b.js",

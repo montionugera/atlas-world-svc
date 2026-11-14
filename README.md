@@ -291,6 +291,16 @@ The atlas web surface is powered by a single web program (`scripts/catalog_explo
    - Top bar `#topbarStatus` and footer `#sidebarVersion` display `Editable · <host>` (e.g. `Editable · atlas-edit.joymify.local.com` or `Editable · localhost:8788`).
    - **502 Bad Gateway:** If `http://atlas-edit.joymify.local.com/` returns `502 Bad Gateway`, it simply means the local host process is not running on port 8788.
 
+#### Game DB Search and Record Links
+- **Top-Bar Search & Hotkey:** Global search box lives in the top bar (`Cmd/Ctrl+K` or `/` focuses and selects). Searches across all game records, continents, districts, towns, maps, mobs, items, and quests.
+- **Record Links:** Deep links via `/?r=<kind>:<id>` (e.g. `/?r=continent:continent-01-hearthbloom-basin`) open dedicated record pages with grouped relational links ("Part of", "Contains", "Spawns", etc.) and an "Open in <entry>" navigation button.
+- **HTTP Endpoints:**
+  - `GET /api/search?q=<query>&include_archive=<0|1>`: Ranks records with FTS5 search (exact title prefix matches first, BM25 scored).
+  - `GET /api/record?kind=<kind>&id=<id>`: Returns record details, hand tags, and forward/reverse relations.
+- **Automatic DB Rebuilds:** The derived game catalog DB (`build/catalog.db`) automatically rebuilds at edit-host startup when `scripts/build_catalog_db.py`, `content/`, or `contracts/content/` is newer than the DB file. A failed rebuild keeps the existing DB and displays a `.catalog-stale-banner` alert.
+- **Environment Variables:** `ATLAS_CATALOG_DB` configures the SQLite DB location; test-only overrides include `ATLAS_STUDIO_DIR`, `ATLAS_TAGS_FILE`, and `ATLAS_CATALOG_BUILD_FAIL`.
+- **Hand Tags:** Tag overrides live in `content/tags.json` formatted as `{"<kind>:<id>": ["tag1", "tag2"]}`.
+
 #### Active Write Routes & Content Editing
 - **Active Edit Host Endpoints:**
   - `/api/map-builder/*`: Proxy to local Map Builder service (`atelier/map-builder/server.mjs` on port 6016) with its own undo system.

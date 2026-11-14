@@ -359,6 +359,7 @@ function syncUrlState() {
   hashParams.forEach((v, k) => params.set(k, v));
   const t = params.get('tab');
   const q = params.get('q');
+  CURRENT_RECORD = params.get('r') || '';
   const focus = params.get('focus');
   const mob = params.get('mob');
   const tile = params.get('tile');
@@ -393,11 +394,7 @@ function syncUrlState() {
     STUDIO_PINNED_MONSTER_ID = studioMonster;
   }
   if (t) CURRENT_TAB = t;
-  if (q !== null) {
-    SEARCH_QUERY = q;
-    const inp = document.getElementById('globalSearch');
-    if (inp) inp.value = q;
-  }
+  SEARCH_QUERY = q || ''; const inp = document.getElementById('globalSearch'); if (inp) inp.value = SEARCH_QUERY;
   if (mob) {
     MAXION_SELECTED_MOB_ID = mob;
     MAXION_PINNED_MOB_ID = mob;
@@ -520,6 +517,7 @@ function writeUrlState(pushHistory = true) {
   const params = new URLSearchParams();
   params.set('tab', CURRENT_TAB);
   if (SEARCH_QUERY) params.set('q', SEARCH_QUERY);
+  if (CURRENT_RECORD) params.set('r', CURRENT_RECORD);
   if (HIGHLIGHT_ENTITY_ID) params.set('focus', HIGHLIGHT_ENTITY_ID);
   if (CURRENT_TAB === 'mobs' && MAXION_SELECTED_MOB_ID) params.set('mob', MAXION_SELECTED_MOB_ID);
   if (CURRENT_TAB === 'world' && MAXION_PINNED_MOB_ID) params.set('mob', MAXION_PINNED_MOB_ID);
@@ -615,6 +613,7 @@ function formatDropPct(chanceBps) {
 }
 
 function jumpToEntity(tab, entityId) {
+  CURRENT_RECORD = '';
   if (tab !== CURRENT_TAB) ATLAS_PARAMS = {};
   CURRENT_TAB = tab;
   SEARCH_QUERY = '';
@@ -695,9 +694,10 @@ async function init() {
   searchInput.addEventListener('input', e => {
     SEARCH_QUERY = e.target.value.trim().toLowerCase();
     HIGHLIGHT_ENTITY_ID = '';
-    writeUrlState();
+    writeUrlState(false);
     render();
   });
+  initRecordSearch();
 
   window.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -708,6 +708,7 @@ async function init() {
       e.preventDefault();
       searchInput.focus();
     } else if (e.key === 'Escape') {
+      closeSearchPopover();
       if (MOBILE_NAV_OPEN) toggleMobileNavDrawer(false);
       closeInspector();
     }
@@ -727,6 +728,7 @@ function toggleMobileNavDrawer(forceState) {
 }
 
 function switchTab(id) {
+  CURRENT_RECORD = '';
   if (id !== CURRENT_TAB) ATLAS_PARAMS = {};
   CURRENT_TAB = id;
   HIGHLIGHT_ENTITY_ID = '';
@@ -794,6 +796,17 @@ function closeInspector() {
 function render() {
   if (!DATA) return;
   const main = document.getElementById('mainContent');
+  if (CURRENT_RECORD) {
+    const bar = document.getElementById('subViewBar');
+    if (bar) bar.hidden = true;
+    if (window.ATLAS_PANELS) window.ATLAS_PANELS.hideAll();   // same leave-the-panel steps as panelDispatch() (:279-288)
+    const host = document.getElementById('panelHost');
+    if (host) host.hidden = true;
+    main.hidden = false;
+    renderRecordPage(main);
+    return;
+  }
+  delete main.dataset.record;
   const titleMap = {
     studio:   'Systematic Top-Down World and Map Studio (World History and Concept ➔ Continent ➔ District ➔ Town or Hunting Area)',
     world:    'World & Continent Atlas (400×400 km · 13 Continents · Towns, Zones & Dungeons)',
