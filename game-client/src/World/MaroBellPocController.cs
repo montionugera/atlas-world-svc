@@ -516,9 +516,25 @@ namespace AtlasWorld.Client.World
             EnvironmentalAudioEventsPlayed += 2;
         }
 
-        public void StepPlayer(Vector3 playerPos, bool isMoving, double deltaSec)
+        public void StepPlayer(Vector3 playerPos, bool isMoving, double deltaSec, AnimationController? animController = null)
         {
-            if (isMoving)
+            if (animController != null && animController.HasPlayer)
+            {
+                if (isMoving)
+                {
+                    if (animController.PollFootstepStrike(out bool isRightFoot, out bool isRunning))
+                    {
+                        AudioRegistry.Instance?.PlayFootstep(playerPos, isRightFoot, isRunning);
+                        EnvironmentalAudioEventsPlayed++;
+                    }
+                }
+                else
+                {
+                    animController.ResetFootstepPhase();
+                    _footstepTimer = 0.0;
+                }
+            }
+            else if (isMoving)
             {
                 _footstepTimer += deltaSec;
                 if (_footstepTimer >= 0.42)

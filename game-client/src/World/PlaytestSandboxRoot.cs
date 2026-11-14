@@ -1000,7 +1000,21 @@ namespace AtlasWorld.Client.World
 
             bool isMoving = StepWasdInput(w, sKey, a, d, dt, shiftHeld);
             Vector3 playerPos = _avatarContainer?.Position ?? Vector3.Zero;
-            _maroPoc?.StepPlayer(playerPos, isMoving, dt);
+            if (_maroPoc != null)
+            {
+                _maroPoc?.StepPlayer(playerPos, isMoving, dt, _animController);
+            }
+            else if (_animController != null)
+            {
+                if (isMoving && _animController.PollFootstepStrike(out bool rightFoot, out bool running))
+                {
+                    Audio.AudioRegistry.Instance?.PlayFootstep(playerPos, rightFoot, running);
+                }
+                else if (!isMoving)
+                {
+                    _animController.ResetFootstepPhase();
+                }
+            }
 
             if (MainCamera != null && _avatarContainer != null)
             {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-18T09:12:07.241Z",
+  "generatedAt": "2026-11-14T16:24:42.592Z",
   "sourceDir": "game-client/assets/audio",
   "files": [
     {
@@ -18,6 +18,22 @@
     {
       "name": "death.ogg",
       "bytes": 6689
+    },
+    {
+      "name": "footstep_stone_01.ogg",
+      "bytes": 9417
+    },
+    {
+      "name": "footstep_stone_02.ogg",
+      "bytes": 10123
+    },
+    {
+      "name": "footstep_stone_03.ogg",
+      "bytes": 9466
+    },
+    {
+      "name": "footstep_stone_04.ogg",
+      "bytes": 10459
     },
     {
       "name": "impact_flesh_heavy.ogg",

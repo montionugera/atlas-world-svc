@@ -40,6 +40,14 @@ namespace AtlasWorld.Client.Audio
         private readonly List<AudioStreamPlayer3D> _pool3D = new();
         private readonly List<AudioStreamPlayer> _pool2D = new();
         private const int MaxPoolSize = 16;
+        private int _footstepVariantIndex = 0;
+        private static readonly string[] FootstepVariantKeys =
+        {
+            "sfx:footstep_1",
+            "sfx:footstep_2",
+            "sfx:footstep_3",
+            "sfx:footstep_4",
+        };
 
         public override void _Ready()
         {
@@ -110,10 +118,68 @@ namespace AtlasWorld.Client.Audio
         /// </summary>
         public AudioStreamPlayer3D? Play(string eventKey, Vector3 worldPos)
         {
+            if (eventKey == "sfx:footstep")
+            {
+                bool rightFoot = (_footstepVariantIndex & 1) != 0;
+                return PlayFootstep(worldPos, rightFoot, isRunning: false);
+            }
+
             AudioStream? stream = ResolveStream(eventKey);
             if (stream == null)
                 return null;
 
+            AudioStreamPlayer3D player = AcquirePlayer3D();
+            player.Stream = stream;
+            player.VolumeDb = 0.0f;
+            player.PitchScale = 1.0f;
+            player.UnitSize = 10.0f;
+            player.MaxDb = 3.0f;
+            player.GlobalPosition = worldPos;
+            player.Play();
+            return player;
+        }
+
+        /// <summary>
+        /// Plays a natural, multi-sample footstep one-shot synced to left/right foot strikes
+        /// and walk/run locomotion cadence. Falls back to <c>sfx:footstep</c> if variant keys
+        /// are not present in the active manifest.
+        /// </summary>
+        public AudioStreamPlayer3D? PlayFootstep(Vector3 worldPos, bool isRightFoot = false, bool isRunning = false)
+        {
+            int idx = _footstepVariantIndex++;
+            string variantKey = FootstepVariantKeys[idx % FootstepVariantKeys.Length];
+            AudioStream? stream = null;
+            if (_manifest != null && _manifest.TryGet(variantKey, out _))
+            {
+                stream = ResolveStream(variantKey);
+            }
+            stream ??= ResolveStream("sfx:footstep");
+            if (stream == null)
+                return null;
+
+            AudioStreamPlayer3D player = AcquirePlayer3D();
+            player.Stream = stream;
+            // Subtle deterministic micro-variation across steps so consecutive steps never sound robotic
+            float microJitter = ((idx % 5) - 2) * 0.012f;
+            if (isRunning)
+            {
+                player.VolumeDb = isRightFoot ? -1.8f : -1.2f;
+                player.PitchScale = (isRightFoot ? 0.99f : 1.05f) + microJitter;
+            }
+            else
+            {
+                player.VolumeDb = isRightFoot ? -4.2f : -3.6f;
+                player.PitchScale = (isRightFoot ? 0.95f : 1.01f) + microJitter;
+            }
+            player.UnitSize = 6.5f;
+            player.MaxDb = 0.0f;
+            player.GlobalPosition = worldPos;
+            player.Play();
+            return player;
+        }
+
+        private AudioStreamPlayer3D AcquirePlayer3D()
+        {
             AudioStreamPlayer3D? player = null;
             for (int i = _pool3D.Count - 1; i >= 0; i--)
             {
@@ -144,10 +210,6 @@ namespace AtlasWorld.Client.Audio
                     _pool3D.Add(player);
                 }
             }
-
-            player.Stream = stream;
-            player.GlobalPosition = worldPos;
-            player.Play();
             return player;
         }
 

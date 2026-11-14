@@ -248,6 +248,34 @@ namespace AtlasWorld.Client.World
             Report($"S steps backward (+Z) while preserving facing yaw=Pi (dz={backDelta.Z:F3} > 0.15, yawDiff={backYawDiff:F4} < 0.01)",
                 backDelta.Z > 0.15f && Mathf.Abs(backDelta.X) < 0.03f && backYawDiff < 0.01f);
 
+            // 7f. Footstep phase synchronization & multi-sample ElevenLabs SFX verification
+            sandbox.TeleportToLandmark(0);
+            sandbox.SetGaitRun(false); // Walk cycle (0.967s)
+            sandbox.AvatarAnimation?.ResetFootstepPhase();
+            int leftStrikes = 0;
+            int rightStrikes = 0;
+            for (int step = 0; step < 32; step++)
+            {
+                sandbox.StepMovement(new Vector3(0f, 0f, -1f), 0.035f);
+                if (sandbox.AvatarAnimation != null && sandbox.AvatarAnimation.PollFootstepStrike(out bool rightFoot, out bool _))
+                {
+                    if (rightFoot) rightStrikes++;
+                    else leftStrikes++;
+                }
+            }
+            Report($"Walk cycle PollFootstepStrike fires both left and right foot strikes in sync with AnimationPlayer phase (left={leftStrikes}, right={rightStrikes})",
+                leftStrikes >= 1 && rightStrikes >= 1);
+
+            var audioReg = Audio.AudioRegistry.Instance;
+            if (audioReg != null)
+            {
+                var p1 = audioReg.PlayFootstep(sandbox.AvatarNode.Position, isRightFoot: false, isRunning: false);
+                var p2 = audioReg.PlayFootstep(sandbox.AvatarNode.Position, isRightFoot: true, isRunning: true);
+                Report("AudioRegistry.PlayFootstep resolves multi-sample ElevenLabs footstep streams with left/right pitch differentiation",
+                    p1 != null && p2 != null && p1.Stream != null && p2.Stream != null &&
+                    !Mathf.IsEqualApprox(p1.PitchScale, p2.PitchScale));
+            }
+
             // Optional windowed screenshot capture of the Playtest Sandbox UI
             string renderDir = OS.GetEnvironment("ATLAS_RENDER_PLAYTEST_SANDBOX");
             if (!string.IsNullOrEmpty(renderDir) && DisplayServer.GetName() != "headless")

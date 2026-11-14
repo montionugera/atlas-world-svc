@@ -51,6 +51,15 @@ namespace AtlasWorld.Client.World
         private const string SfxAttack = "sfx:attack";
         private const string SfxDeath = "sfx:death";
 
+        /// <summary>
+        /// Normalized cycle phases [0.0..1.0) where LeftFoot / RightFoot reach ground-contact minima
+        /// in the baked walk (0.967s) and run (0.633s) glTF clips.
+        /// </summary>
+        public const double WalkLeftFootStrikePhase = 0.33;
+        public const double WalkRightFootStrikePhase = 0.80;
+        public const double RunLeftFootStrikePhase = 0.35;
+        public const double RunRightFootStrikePhase = 0.84;
+
         private readonly AnimationPlayer? _player;
         private readonly Skeleton3D? _skeleton;
         private readonly IReadOnlyDictionary<string, string> _clipMap;
@@ -58,6 +67,7 @@ namespace AtlasWorld.Client.World
         private readonly Node3D? _modelRoot;
 
         private string _lastState = "";
+        private double _lastFootstepPhase = -1.0;
 
         private readonly IReadOnlyList<string> _attackClips;
         private int _attackIndex;
@@ -504,8 +514,91 @@ namespace AtlasWorld.Client.World
             _player.Play(clip, customBlend: blend);
             LastBlendSec = blend;
             CurrentClip = clip;
+            _lastFootstepPhase = -1.0;
             if (state is StateAttack or StateHit or StateReadyIn or StateReadyOut)
                 _oneShotClip = clip;
+        }
+
+        public bool IsLocomotionActive => _lastState == StateWalk || _lastState == StateRun;
+
+        public double CurrentNormalizedPhase
+        {
+            get
+            {
+                if (_player == null || !GodotObject.IsInstanceValid(_player) || !_player.IsPlaying())
+                    return 0.0;
+                double len = _player.CurrentAnimationLength;
+                if (len <= 0.001)
+                    return 0.0;
+                double p = (_player.CurrentAnimationPosition / len) % 1.0;
+                return p < 0.0 ? p + 1.0 : p;
+            }
+        }
+
+        public void ResetFootstepPhase()
+        {
+            _lastFootstepPhase = -1.0;
+        }
+
+        /// <summary>
+        /// Polls the live <see cref="AnimationPlayer"/> normalized phase and returns <c>true</c>
+        /// on the exact frame that either the left foot or right foot crosses its ground-contact
+        /// phase during <see cref="StateWalk"/> or <see cref="StateRun"/>.
+        /// </summary>
+        public bool PollFootstepStrike(out bool isRightFoot, out bool isRunning)
+        {
+            isRightFoot = false;
+            isRunning = _lastState == StateRun;
+            if (!IsLocomotionActive || _player == null || !GodotObject.IsInstanceValid(_player) || !_player.IsPlaying())
+            {
+                _lastFootstepPhase = -1.0;
+                return false;
+            }
+
+            double len = _player.CurrentAnimationLength;
+            if (len <= 0.001)
+                return false;
+
+            double curr = (_player.CurrentAnimationPosition / len) % 1.0;
+            if (curr < 0.0)
+                curr += 1.0;
+
+            if (_lastFootstepPhase < 0.0)
+            {
+                _lastFootstepPhase = curr;
+                return false;
+            }
+
+            double prev = _lastFootstepPhase;
+            _lastFootstepPhase = curr;
+
+            double leftPhase = isRunning ? RunLeftFootStrikePhase : WalkLeftFootStrikePhase;
+            double rightPhase = isRunning ? RunRightFootStrikePhase : WalkRightFootStrikePhase;
+
+            if (CrossedPhase(prev, curr, leftPhase))
+            {
+                isRightFoot = false;
+                return true;
+            }
+            if (CrossedPhase(prev, curr, rightPhase))
+            {
+                isRightFoot = true;
+                return true;
+            }
+            return false;
+        }
+
+        private static bool CrossedPhase(double prev, double curr, double target)
+        {
+            double delta = curr - prev;
+            if (delta < 0.0)
+                delta += 1.0;
+            if (delta <= 1e-6 || delta > 0.45)
+                return false;
+            double dist = target - prev;
+            if (dist < 0.0)
+                dist += 1.0;
+            return dist > 0.0 && dist <= delta;
         }
 
         private void ConfigureLoopModes()
