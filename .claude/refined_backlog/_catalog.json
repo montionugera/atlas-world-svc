@@ -2811,8 +2811,9 @@
     "title": "Remove stray root files and deploy_ios.py, keep the ten root plans in the archive",
     "from_idea": "I-302",
     "created_at": "2026-11-14T18:07:21.385061+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-14T18:07:37.278923+00:00"
   }
 ]
