@@ -1843,33 +1843,31 @@ namespace AtlasWorld.Client
                 return;
             }
 
-            // Keyboard input (W/S forward/back in character facing direction, A/D turn character; camera orbit is independent)
+            // Keyboard & touch input (Camera-Relative Omnidirectional WASD: W/A/S/D moves relative to _cameraYaw and smoothly faces movement direction)
             bool lockPose = OS.GetEnvironment("ATLAS_TEST_TOWER_2F_POSE") == "1" || OS.GetEnvironment("ATLAS_TEST_OCCLUSION_POSE") == "1";
             bool wKey = Godot.Input.IsKeyPressed(Key.W) || Godot.Input.IsKeyPressed(Key.Up);
             bool sKey = Godot.Input.IsKeyPressed(Key.S) || Godot.Input.IsKeyPressed(Key.Down);
             bool aKey = Godot.Input.IsKeyPressed(Key.A) || Godot.Input.IsKeyPressed(Key.Left);
             bool dKey = Godot.Input.IsKeyPressed(Key.D) || Godot.Input.IsKeyPressed(Key.Right);
 
+            float rightInput = (dKey ? 1f : 0f) - (aKey ? 1f : 0f);
             float forwardInput = (wKey ? 1f : 0f) - (sKey ? 1f : 0f);
-            float turnInput = (aKey ? 1f : 0f) - (dKey ? 1f : 0f);
-            if (Mathf.Abs(forwardInput) < 0.001f && Mathf.Abs(turnInput) < 0.001f && _touchMoveIntent != Vector2.Zero)
+            if (Mathf.Abs(rightInput) < 0.001f && Mathf.Abs(forwardInput) < 0.001f && _touchMoveIntent != Vector2.Zero)
             {
+                rightInput = _touchMoveIntent.X;
                 forwardInput = -_touchMoveIntent.Y;
-                turnInput = -_touchMoveIntent.X;
             }
 
             Vector3 direction = Vector3.Zero;
-            bool isBackwardMove = false;
-            bool hasManualSteerOrMove = !lockPose && (Mathf.Abs(forwardInput) > 0.001f || Mathf.Abs(turnInput) > 0.001f);
+            bool hasManualSteerOrMove = !lockPose && (Mathf.Abs(rightInput) > 0.001f || Mathf.Abs(forwardInput) > 0.001f);
             if (hasManualSteerOrMove && PlayerAvatar != null)
             {
-                var loco = World.CharacterLocomotion.Step(PlayerAvatar.Rotation.Y, forwardInput, turnInput, dt);
+                var loco = World.CharacterLocomotion.Step(PlayerAvatar.Rotation.Y, _cameraYaw, rightInput, forwardInput, dt);
                 PlayerAvatar.Rotation = new Vector3(0f, loco.NextYaw, 0f);
                 direction = loco.WorldDirection;
-                isBackwardMove = loco.IsMovingBackward;
             }
 
-            // Manual movement or turning overrides auto-approach for the current frame
+            // Manual movement overrides auto-approach for the current frame
             if (hasManualSteerOrMove)
             {
                 _autoApproachAttackPending = false;
@@ -1971,13 +1969,12 @@ namespace AtlasWorld.Client
             if (isMoving && PlayerAvatar != null)
             {
                 Vector3 normDir = direction.Normalized();
-                float effectiveSpeed = isBackwardMove ? Mathf.Min(_playerSpeed, 1.9f) : _playerSpeed;
-                Vector3 velocity = normDir * (isBackwardMove ? 1.5f : effectiveSpeed * 2.0f);
+                Vector3 velocity = normDir * (_playerSpeed * 2.0f);
                 float curX = PlayerAvatar.Position.X;
                 float curY = PlayerAvatar.Position.Y;
                 float curZ = PlayerAvatar.Position.Z;
-                float desiredX = curX + normDir.X * effectiveSpeed * dt;
-                float desiredZ = curZ + normDir.Z * effectiveSpeed * dt;
+                float desiredX = curX + normDir.X * _playerSpeed * dt;
+                float desiredZ = curZ + normDir.Z * _playerSpeed * dt;
 
                 // Enforce 3D steep cliff & wall-sliding gate + Multi-Floor Watchtower / Crystal Cave height resolution
                 Vector2 resolvedXZ = TerrainElevation.ResolveSteepSlopeMove(
@@ -2014,7 +2011,7 @@ namespace AtlasWorld.Client
                 // Stream 3D chunks in/out on demand as the player walks across the map
                 _chunkStreamer?.UpdateStreaming(PlayerAvatar.Position);
 
-                if (!isBackwardMove && !hasManualSteerOrMove)
+                if (!hasManualSteerOrMove)
                 {
                     // Auto-combat / auto-approach smoothly faces target movement vector
                     float targetAngle = Mathf.Atan2(normDir.X, normDir.Z);

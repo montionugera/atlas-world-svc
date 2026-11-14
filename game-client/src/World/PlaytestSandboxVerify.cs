@@ -178,75 +178,67 @@ namespace AtlasWorld.Client.World
             sandbox.ToggleMap();
             Report("ToggleMap switches back to maro-bell", sandbox.ActiveMapId == "maro-bell");
 
-            // 7. Character-Relative WASD & Camera-Independent Movement
+            // 7. Camera-Relative Omnidirectional WASD Movement (Genshin / FFXIV Standard / ROX style)
             sandbox.TeleportToLandmark(0);
             sandbox.SetGaitRun(true);
 
-            // 7a. W moves forward in the character's facing direction (+X when Yaw = +Pi/2), NOT camera view (-Z when CameraYaw = 0)
+            // 7a. W moves forward relative to CameraYaw (-Z when CameraYaw = 0), turning character toward -Z even if previously facing +X
             sandbox.CameraYaw = 0f;
             sandbox.AvatarNode!.Rotation = new Vector3(0f, Mathf.Pi * 0.5f, 0f);
-            Vector3 faceEastStart = sandbox.AvatarNode.Position;
+            Vector3 wStart = sandbox.AvatarNode.Position;
             sandbox.StepWasdInput(w: true, s: false, a: false, d: false, dt: 0.25f);
-            Vector3 faceEastDelta = sandbox.AvatarNode.Position - faceEastStart;
-            Report($"W moves forward in character's facing direction (+X when yaw=+Pi/2, dx={faceEastDelta.X:F3}, dz={faceEastDelta.Z:F3})",
-                faceEastDelta.X > 0.30f && Mathf.Abs(faceEastDelta.Z) < 0.03f);
+            Vector3 wDelta = sandbox.AvatarNode.Position - wStart;
+            float wYawDiff = Mathf.Abs(Mathf.Wrap(sandbox.AvatarNode.Rotation.Y - Mathf.Pi, -Mathf.Pi, Mathf.Pi));
+            Report($"W moves into camera view (-Z when CameraYaw=0) and turns avatar to face -Z (dx={wDelta.X:F3}, dz={wDelta.Z:F3}, yawDiff={wYawDiff:F4})",
+                wDelta.Z < -0.30f && Mathf.Abs(wDelta.X) < 0.03f && wYawDiff < 0.02f);
 
-            // 7b. Camera rotation is completely independent of W movement direction
-            sandbox.TeleportToLandmark(0); // Faces -Z (yaw = Pi)
-            sandbox.CameraYaw = Mathf.Pi * 0.65f; // Arbitrarily orbited camera
-            Vector3 camIndepStart = sandbox.AvatarNode.Position;
+            // 7b. CameraYaw rotates movement direction: when CameraYaw = +Pi/2 (camera at +X looking toward -X), W moves -X
+            sandbox.TeleportToLandmark(0);
+            sandbox.CameraYaw = Mathf.Pi * 0.5f;
+            Vector3 camOrbitStart = sandbox.AvatarNode.Position;
             sandbox.StepWasdInput(w: true, s: false, a: false, d: false, dt: 0.25f);
-            Vector3 camIndepDelta = sandbox.AvatarNode.Position - camIndepStart;
-            Report($"W moves along character facing (-Z) regardless of orbited CameraYaw (dx={camIndepDelta.X:F3}, dz={camIndepDelta.Z:F3})",
-                camIndepDelta.Z < -0.30f && Mathf.Abs(camIndepDelta.X) < 0.03f &&
-                Mathf.IsEqualApprox(sandbox.CameraYaw, Mathf.Pi * 0.65f));
+            Vector3 camOrbitDelta = sandbox.AvatarNode.Position - camOrbitStart;
+            float camOrbitYawDiff = Mathf.Abs(Mathf.Wrap(sandbox.AvatarNode.Rotation.Y - (-Mathf.Pi * 0.5f), -Mathf.Pi, Mathf.Pi));
+            Report($"W with orbited CameraYaw=+Pi/2 moves along camera forward (-X) and faces -Pi/2 (dx={camOrbitDelta.X:F3}, dz={camOrbitDelta.Z:F3}, yawDiff={camOrbitYawDiff:F4})",
+                camOrbitDelta.X < -0.30f && Mathf.Abs(camOrbitDelta.Z) < 0.03f && camOrbitYawDiff < 0.02f);
             sandbox.CameraYaw = 0f;
 
-            // 7c. D turns character right in place; D + W turns right while moving forward along new heading (even with camera orbited 180 deg)
-            sandbox.TeleportToLandmark(0); // yaw = Pi (facing -Z)
-            sandbox.CameraYaw = Mathf.Pi;  // Camera orbited in front of character's face
-            Vector3 turnRightStart = sandbox.AvatarNode.Position;
+            // 7c. D alone immediately turns right (+X when CameraYaw=0) and runs right (never spins in place)
+            sandbox.TeleportToLandmark(0);
+            sandbox.CameraYaw = 0f;
+            Vector3 moveRightStart = sandbox.AvatarNode.Position;
             sandbox.StepWasdInput(w: false, s: false, a: false, d: true, dt: 0.25f);
-            float yawAfterD = sandbox.AvatarNode.Rotation.Y;
-            Report($"D alone turns character right in place without translating (dist={sandbox.AvatarNode.Position.DistanceTo(turnRightStart):F4}, sinYaw={Mathf.Sin(yawAfterD):F3} > 0.30)",
-                sandbox.AvatarNode.Position.DistanceTo(turnRightStart) < 0.01f && Mathf.Sin(yawAfterD) > 0.30f);
+            Vector3 moveRightDelta = sandbox.AvatarNode.Position - moveRightStart;
+            float rightYawDiff = Mathf.Abs(Mathf.Wrap(sandbox.AvatarNode.Rotation.Y - (Mathf.Pi * 0.5f), -Mathf.Pi, Mathf.Pi));
+            Report($"D alone turns right (+Pi/2) and translates +X immediately (dx={moveRightDelta.X:F3} > 0.30, yawDiff={rightYawDiff:F4})",
+                moveRightDelta.X > 0.30f && Mathf.Abs(moveRightDelta.Z) < 0.03f && rightYawDiff < 0.02f);
 
-            sandbox.TeleportToLandmark(0); // Reset to yaw = Pi (facing -Z) to test simultaneous D + W 43-deg diagonal turn+move
-            sandbox.CameraYaw = Mathf.Pi;
-            Vector3 curveRightStart = sandbox.AvatarNode.Position;
-            sandbox.StepWasdInput(w: true, s: false, a: false, d: true, dt: 0.25f);
-            Vector3 curveRightDelta = sandbox.AvatarNode.Position - curveRightStart;
-            float curveRightHeadingDiff = Mathf.Abs(Mathf.Wrap(Mathf.Atan2(curveRightDelta.X, curveRightDelta.Z) - sandbox.AvatarNode.Rotation.Y, -Mathf.Pi, Mathf.Pi));
-            Report($"D + W turns right and moves forward along new facing (+X,-Z) independent of front CameraYaw (dx={curveRightDelta.X:F3} > 0.35, dz={curveRightDelta.Z:F3} < -0.35, headingDiff={curveRightHeadingDiff:F4})",
-                curveRightDelta.X > 0.35f && curveRightDelta.Z < -0.35f && curveRightHeadingDiff < 0.02f);
-
-            // 7d. A turns character left in place; A + W turns left while moving forward along new heading (even with camera orbited 180 deg)
-            sandbox.TeleportToLandmark(0); // yaw = Pi (facing -Z)
-            sandbox.CameraYaw = Mathf.Pi;  // Camera orbited in front of character's face
-            Vector3 turnLeftStart = sandbox.AvatarNode.Position;
-            sandbox.StepWasdInput(w: false, s: false, a: true, d: false, dt: 0.25f);
-            float yawAfterA = sandbox.AvatarNode.Rotation.Y;
-            Report($"A alone turns character left in place without translating (dist={sandbox.AvatarNode.Position.DistanceTo(turnLeftStart):F4}, sinYaw={Mathf.Sin(yawAfterA):F3} < -0.30)",
-                sandbox.AvatarNode.Position.DistanceTo(turnLeftStart) < 0.01f && Mathf.Sin(yawAfterA) < -0.30f);
-
-            sandbox.TeleportToLandmark(0); // Reset to yaw = Pi (facing -Z) to test simultaneous A + W 43-deg diagonal turn+move
-            sandbox.CameraYaw = Mathf.Pi;
-            Vector3 curveLeftStart = sandbox.AvatarNode.Position;
-            sandbox.StepWasdInput(w: true, s: false, a: true, d: false, dt: 0.25f);
-            Vector3 curveLeftDelta = sandbox.AvatarNode.Position - curveLeftStart;
-            float curveLeftHeadingDiff = Mathf.Abs(Mathf.Wrap(Mathf.Atan2(curveLeftDelta.X, curveLeftDelta.Z) - sandbox.AvatarNode.Rotation.Y, -Mathf.Pi, Mathf.Pi));
-            Report($"A + W turns left and moves forward along new facing (-X,-Z) independent of front CameraYaw (dx={curveLeftDelta.X:F3} < -0.35, dz={curveLeftDelta.Z:F3} < -0.35, headingDiff={curveLeftHeadingDiff:F4})",
-                curveLeftDelta.X < -0.35f && curveLeftDelta.Z < -0.35f && curveLeftHeadingDiff < 0.02f);
+            // 7d. A alone immediately turns left (-X when CameraYaw=0) and runs left; W+D moves diagonally (+X, -Z)
+            sandbox.TeleportToLandmark(0);
             sandbox.CameraYaw = 0f;
+            Vector3 moveLeftStart = sandbox.AvatarNode.Position;
+            sandbox.StepWasdInput(w: false, s: false, a: true, d: false, dt: 0.25f);
+            Vector3 moveLeftDelta = sandbox.AvatarNode.Position - moveLeftStart;
+            float leftYawDiff = Mathf.Abs(Mathf.Wrap(sandbox.AvatarNode.Rotation.Y - (-Mathf.Pi * 0.5f), -Mathf.Pi, Mathf.Pi));
+            Report($"A alone turns left (-Pi/2) and translates -X immediately (dx={moveLeftDelta.X:F3} < -0.30, yawDiff={leftYawDiff:F4})",
+                moveLeftDelta.X < -0.30f && Mathf.Abs(moveLeftDelta.Z) < 0.03f && leftYawDiff < 0.02f);
 
-            // 7e. S steps backward opposite to facing direction while preserving facing yaw (no 180-deg flip)
-            sandbox.TeleportToLandmark(0); // yaw = Pi (facing -Z)
+            sandbox.TeleportToLandmark(0);
+            Vector3 diagStart = sandbox.AvatarNode.Position;
+            sandbox.StepWasdInput(w: true, s: false, a: false, d: true, dt: 0.25f);
+            Vector3 diagDelta = sandbox.AvatarNode.Position - diagStart;
+            float diagHeadingDiff = Mathf.Abs(Mathf.Wrap(Mathf.Atan2(diagDelta.X, diagDelta.Z) - sandbox.AvatarNode.Rotation.Y, -Mathf.Pi, Mathf.Pi));
+            Report($"W + D moves 45-deg diagonally (+X, -Z) and faces diagonal vector (dx={diagDelta.X:F3} > 0.20, dz={diagDelta.Z:F3} < -0.20, headingDiff={diagHeadingDiff:F4})",
+                diagDelta.X > 0.20f && diagDelta.Z < -0.20f && diagHeadingDiff < 0.02f);
+
+            // 7e. S turns toward camera (+Z when CameraYaw=0) and runs forward toward camera (no backward moonwalk)
+            sandbox.TeleportToLandmark(0);
             Vector3 backStart = sandbox.AvatarNode.Position;
-            sandbox.StepWasdInput(w: false, s: true, a: false, d: false, dt: 0.30f);
+            sandbox.StepWasdInput(w: false, s: true, a: false, d: false, dt: 0.25f);
             Vector3 backDelta = sandbox.AvatarNode.Position - backStart;
-            float backYawDiff = Mathf.Abs(Mathf.Wrap(sandbox.AvatarNode.Rotation.Y - Mathf.Pi, -Mathf.Pi, Mathf.Pi));
-            Report($"S steps backward (+Z) while preserving facing yaw=Pi (dz={backDelta.Z:F3} > 0.15, yawDiff={backYawDiff:F4} < 0.01)",
-                backDelta.Z > 0.15f && Mathf.Abs(backDelta.X) < 0.03f && backYawDiff < 0.01f);
+            float backYawDiff = Mathf.Abs(Mathf.Wrap(sandbox.AvatarNode.Rotation.Y - 0f, -Mathf.Pi, Mathf.Pi));
+            Report($"S turns toward camera (yaw=0) and runs +Z at full speed (dz={backDelta.Z:F3} > 0.30, yawDiff={backYawDiff:F4} < 0.02)",
+                backDelta.Z > 0.30f && Mathf.Abs(backDelta.X) < 0.03f && backYawDiff < 0.02f);
 
             // 7f. Footstep phase synchronization & multi-sample ElevenLabs SFX verification
             sandbox.TeleportToLandmark(0);
