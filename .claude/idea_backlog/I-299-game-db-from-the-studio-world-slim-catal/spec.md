@@ -76,7 +76,8 @@ Keep `content/` as the only source of truth and keep the existing panels as the 
    - `concept = 'studio'` for everything under `content/studio/**`, the 97 playable maps, the
      `contracts/content/*.json` catalogs (items, cards, jobs, skills, mobs, quests), canon and concept art.
      `concept = 'legacy'` for rows of `world_continents`, `world_places`, `world_zones`, `world_dungeons`,
-     `spine_nodes`, `story_nodes` and `world_bestiary`. The 45 `content/maps/*.json` files: see Open decision 1.
+     `spine_nodes`, `story_nodes` and `world_bestiary`. The 45 `content/maps/*.json` files are `studio`
+     with the tag `unbound-to-studio-world` (owner decision below).
 2. **`links`**: `from_kind`, `from_id`, `relation`, `to_kind`, `to_id`, built only from fields that exist:
 
    | Relation label (shown on the page) | Source field |
@@ -245,12 +246,12 @@ Focus order: search box, "Include archive" checkbox, results (arrow keys move, E
 - **Move game data into Asset Studio**, which already has full-text search, tags and links. One tool instead of two, but its model is asset library entries, the content build pipeline and gates live in this repo, and it would couple two repos for every content change. Worth revisiting once S1-S3 show what the record model needs.
 - **Client-side search over the 5.26 MB bundle.** No server change, but it keeps the heavy download as a requirement and cannot rank. FTS5 is already available.
 
-## Open decisions for the owner (asked once, at approval)
+## Decisions (owner, 2026-11-15)
 
-1. The 45 runtime map files in `content/maps/*.json` bind to the old 13-continent world, yet the server
-   loads two of them. Recommended: index them as kind `map` with `concept = 'studio'` and a derived tag
-   `unbound-to-studio-world`, shown under World, because they are what the game runs today. Alternative: mark them `legacy` and show them only under Archive.
-2. Work orders inside Art Forge. Recommended: remove them in S4 (R14) so Art Forge becomes a read-only viewer. Alternative: keep work orders and remove only the review inbox and verdicts.
+- Spec approved as recommended, all four slices and every assumption below.
+- The 45 runtime map files in `content/maps/*.json` are indexed as kind `map` with `concept = 'studio'`
+  and the derived tag `unbound-to-studio-world`, and are shown under World (they are what the game runs today).
+- Work orders are removed together with the review inbox and verdicts in S4 (R14); Art Forge becomes a read-only viewer.
 
 ## Assumptions
 
