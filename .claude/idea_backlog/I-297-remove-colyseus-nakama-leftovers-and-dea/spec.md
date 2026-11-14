@@ -45,10 +45,10 @@ line 188 lists "Docker & Docker Compose" as a prerequisite.
 
 ## Acceptance criteria
 
-- A1: none of the six paths exists in the tree (`git ls-files` returns nothing for them).
-- A2: `git grep -n "docker-compose.yml\|monitoring/" -- README.md` returns nothing.
-- A3: `./scripts/precheck.sh` (Gate 1) passes.
-- A4: `bash -n scripts/deploy-local.sh` passes and it still references only files that exist under `k8s/local/`.
+- [ ] A1: none of the six paths exists in the tree (`git ls-files` returns nothing for them).
+- [ ] A2: `git grep -n "docker-compose.yml\|monitoring/" -- README.md` returns nothing.
+- [ ] A3: `./scripts/precheck.sh` (Gate 1) passes.
+- [ ] A4: `bash -n scripts/deploy-local.sh` passes and it still references only files that exist under `k8s/local/`.
 
 ## Undo
 
