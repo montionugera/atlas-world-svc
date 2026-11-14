@@ -670,8 +670,8 @@ async function init() {
   if (sel) sel.value = savedPal;
 
   syncUrlState();
-  window.addEventListener('hashchange', () => { syncUrlState(); renderSidebar(); render(); });
-  window.addEventListener('popstate', () => { window.LAST_WORLD_TILE_ID = ''; syncUrlState(); renderSidebar(); render(); });
+  window.addEventListener('hashchange', () => { closeSearchPopover(); syncUrlState(); renderSidebar(); render(); });
+  window.addEventListener('popstate', () => { closeSearchPopover(); window.LAST_WORLD_TILE_ID = ''; syncUrlState(); renderSidebar(); render(); });
   // registry.mjs is a deferred module: it may finish before or after the bundle fetch below.
   window.addEventListener('atlas-panels-ready', () => { if (DATA) { renderSidebar(); if (window.ATLAS_PANELS?.has(CURRENT_TAB)) render(); } });
   window.addEventListener('atlas-panels-updated', () => { if (DATA) renderSidebar(); });
@@ -728,6 +728,7 @@ function toggleMobileNavDrawer(forceState) {
 }
 
 function switchTab(id) {
+  closeSearchPopover();
   CURRENT_RECORD = '';
   if (id !== CURRENT_TAB) ATLAS_PARAMS = {};
   CURRENT_TAB = id;

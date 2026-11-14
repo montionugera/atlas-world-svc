@@ -69,6 +69,26 @@ for (const v of [{ name: 'desktop 1280x800', w: 1280, h: 800, dpr: 1 }, { name: 
     await waitFor(c, `!!document.querySelector(${JSON.stringify(MSG)})`, 8000);
     ck(`R6f ${v.name}: nothing matches`, (await c.eval(`document.querySelector(${JSON.stringify(MSG)}).textContent`)).includes(`No record matches 'zzqqxxnomatch'`));
 
+    // A closed popover stays closed: a slow answer must not reopen it after a click outside.
+    // (Escape is not the case to test: Chrome clears a type=search input on Escape, which starts a new search.)
+    const ESC = async () => { for (const type of ['keyDown', 'keyUp']) await c.send('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }); };
+    await c.eval(`(()=>{window.__realFetch=window.fetch; window.fetch=(...a)=>new Promise(r=>setTimeout(r,500)).then(()=>window.__realFetch(...a)); 0})()`);
+    await typeInto(c, v.touch, 'hearth');
+    await click(c, { x: v.w - 6, y: v.h - 6 }, v.touch);
+    await new Promise((r) => setTimeout(r, 1200));
+    ck(`R6 ${v.name}: a click outside during a slow search keeps the popover closed`, await c.eval(`document.getElementById('searchPopover').hidden`));
+    await c.eval(`(()=>{window.fetch=window.__realFetch; 0})()`);
+    await ESC();  // closes anything the outside click opened
+
+    // Browser Back with the popover open must not carry it onto the previous page.
+    await c.eval(`(()=>{switchTab('gear'); 0})()`);
+    await typeInto(c, v.touch, 'hearthbloom');
+    await waitFor(c, `!!document.querySelector(${JSON.stringify(FIRST)})`, 8000);
+    await back(c);
+    await waitFor(c, `CURRENT_TAB==='mobs'`, 8000);
+    await settle(c);
+    ck(`R8 ${v.name}: browser Back closes an open popover`, await c.eval(`document.getElementById('searchPopover').hidden`));
+
     await c.send('Network.enable');
     await c.send('Network.setBlockedURLs', { urls: ['*/api/search*'] });
     await typeInto(c, v.touch, 'hearth');

@@ -11,6 +11,8 @@ function recordEntryLabel(viewUrl) {
 }
 
 function closeSearchPopover() {
+  SEARCH_POPOVER_SEQ++;              // a search still in flight must not reopen it
+  clearTimeout(SEARCH_POPOVER_TIMER);
   const pop = document.getElementById('searchPopover');
   if (pop) { pop.hidden = true; document.getElementById('searchPopoverResults').innerHTML = ''; }
 }
