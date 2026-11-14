@@ -2790,8 +2790,9 @@
     "title": "Remove unreferenced scripts and the first-generation Python atlas chain",
     "from_idea": "I-298",
     "created_at": "2026-11-14T17:13:33.227251+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-14T17:13:51.861441+00:00"
   }
 ]
