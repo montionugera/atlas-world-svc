@@ -64,6 +64,16 @@ for g in "$PROJECT"/studio-cache/*.glb; do
     fi
   fi
 done
+for ogg in "$PROJECT"/assets/audio/*.ogg; do
+  if [ -e "$ogg" ]; then
+    if [ ! -e "$ogg.import" ]; then
+      needs_import=1
+    else
+      str=$(grep -m1 '^path="res://\.godot/imported/' "$ogg.import" 2>/dev/null | cut -d'"' -f2 | sed 's|^res://||')
+      if [ -z "$str" ] || [ ! -e "$PROJECT/$str" ]; then needs_import=1; fi
+    fi
+  fi
+done
 if [ "$needs_import" = 1 ]; then
   echo "▶ godot --import (fresh worktree or new pull)"
   attempt=1

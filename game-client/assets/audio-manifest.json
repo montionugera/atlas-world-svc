@@ -172,9 +172,29 @@
       "source": "Kenney Impact Sounds (Maro valley wind)"
     },
     "sfx:footstep": {
-      "stream": "res://assets/audio/impact_light.ogg",
+      "stream": "res://assets/audio/footstep_stone_01.ogg",
       "license": "CC0",
-      "source": "Kenney Impact Sounds (road footstep)"
+      "source": "ElevenLabs v3 RPG stone road footstep (01)"
+    },
+    "sfx:footstep_1": {
+      "stream": "res://assets/audio/footstep_stone_01.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (01)"
+    },
+    "sfx:footstep_2": {
+      "stream": "res://assets/audio/footstep_stone_02.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (02)"
+    },
+    "sfx:footstep_3": {
+      "stream": "res://assets/audio/footstep_stone_03.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (03)"
+    },
+    "sfx:footstep_4": {
+      "stream": "res://assets/audio/footstep_stone_04.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (04)"
     }
   }
 }

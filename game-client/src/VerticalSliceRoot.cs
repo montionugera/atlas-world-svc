@@ -172,6 +172,13 @@ namespace AtlasWorld.Client
                 GetTree().Quit(code);
                 return;
             }
+            if (OS.GetEnvironment("ATLAS_VERIFY_SFX") == "1")
+            {
+                SetPhysicsProcess(false);
+                int code = AudioVerify.Run();
+                GetTree().Quit(code);
+                return;
+            }
 
             // Env-gated F-174 probe (ATLAS_VERIFY_PIPELINE_CHAR=1). Unlike the probes above it
             // spans frames (bone attachments update on process), so it is a child Node that
@@ -1798,11 +1805,6 @@ namespace AtlasWorld.Client
                     _selectedServerTargetId);
             }
 
-            if (PlayerAvatar != null)
-            {
-                _maroPoc?.StepPlayer(PlayerAvatar.Position, _wasMovingLastFrame, dt);
-            }
-
             if (_pocDiagnosticsHud != null && PlayerAvatar != null)
             {
                 _diagnosticsHudTimer += dt;
@@ -2094,6 +2096,25 @@ namespace AtlasWorld.Client
                 if (_attackAnimHoldSec <= 0f)
                 {
                     _playerAnimController?.Update(isAlive: true, velocity: Vector3.Zero, isAttacking: false);
+                }
+            }
+
+            if (PlayerAvatar != null)
+            {
+                if (_maroPoc != null)
+                {
+                    _maroPoc?.StepPlayer(PlayerAvatar.Position, isMoving, dt, _playerAnimController);
+                }
+                else if (_playerAnimController != null)
+                {
+                    if (isMoving && _playerAnimController.PollFootstepStrike(out bool rightFoot, out bool running))
+                    {
+                        Audio.AudioRegistry.Instance?.PlayFootstep(PlayerAvatar.Position, rightFoot, running);
+                    }
+                    else if (!isMoving)
+                    {
+                        _playerAnimController.ResetFootstepPhase();
+                    }
                 }
             }
 

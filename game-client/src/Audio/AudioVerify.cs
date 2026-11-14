@@ -27,15 +27,21 @@ namespace AtlasWorld.Client.Audio
                 return 1;
             }
 
-            // Part 1 — every mapped combat event resolves to a real, loaded stream.
+            // Part 1 — every mapped combat and locomotion event resolves to a real, loaded stream.
             failures += ReportResolves(reg, "sfx:attack");
             failures += ReportResolves(reg, "sfx:hit");
             failures += ReportResolves(reg, "sfx:death");
+            failures += ReportResolves(reg, "sfx:footstep");
+            failures += ReportResolves(reg, "sfx:footstep_1");
+            failures += ReportResolves(reg, "sfx:footstep_2");
+            failures += ReportResolves(reg, "sfx:footstep_3");
+            failures += ReportResolves(reg, "sfx:footstep_4");
 
             // Part 2 — Play() spawns a positioned, playing 3D one-shot carrying that stream.
             failures += ReportPlay(reg, "sfx:attack", new Vector3(3f, 0f, -2f));
             failures += ReportPlay(reg, "sfx:hit", new Vector3(-1.5f, 0f, 4f));
             failures += ReportPlay(reg, "sfx:death", new Vector3(0f, 0f, 0f));
+            failures += ReportPlay(reg, "sfx:footstep", new Vector3(1f, 0f, 1f));
 
             // Part 3 — an unknown key never throws and never spawns a player.
             int before = reg.GetChildCount();
