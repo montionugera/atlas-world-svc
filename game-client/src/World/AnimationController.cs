@@ -52,13 +52,17 @@ namespace AtlasWorld.Client.World
         private const string SfxDeath = "sfx:death";
 
         /// <summary>
-        /// Normalized cycle phases [0.0..1.0) where LeftFoot / RightFoot reach ground-contact minima
-        /// in the baked walk (0.967s) and run (0.633s) glTF clips.
+        /// Normalized single-stride cycle phases [0.0..1.0) where LeftFoot / RightFoot reach ground-contact minima
+        /// in walk (~0.97s–1.10s per stride) and run (~0.63s–0.87s per stride) glTF clips.
+        /// Multi-stride clips (e.g., 2.600s Mixamo run = 3 strides, 1.900s walk_start = 2 strides)
+        /// are subdivided by <see cref="ComputeStrideCount"/> so every visual step fires 1 SFX.
         /// </summary>
-        public const double WalkLeftFootStrikePhase = 0.33;
-        public const double WalkRightFootStrikePhase = 0.80;
-        public const double RunLeftFootStrikePhase = 0.35;
-        public const double RunRightFootStrikePhase = 0.84;
+        public const double WalkLeftFootStrikePhase = 0.23;
+        public const double WalkRightFootStrikePhase = 0.78;
+        public const double RunLeftFootStrikePhase = 0.25;
+        public const double RunRightFootStrikePhase = 0.75;
+        public const double WalkNominalStrideLengthSec = 1.05;
+        public const double RunNominalStrideLengthSec = 0.867;
 
         private readonly AnimationPlayer? _player;
         private readonly Skeleton3D? _skeleton;
@@ -558,6 +562,30 @@ namespace AtlasWorld.Client.World
 
         public bool IsLocomotionActive => _lastState == StateWalk || _lastState == StateRun;
 
+        /// <summary>
+        /// Returns the number of full locomotion strides (1 stride = Left + Right step) contained in a clip of
+        /// <paramref name="clipLengthSec"/> seconds. Single-stride clips (~0.6s–1.1s) return 1; multi-stride
+        /// Mixamo clips (e.g., 1.900s <c>mx_f_walk_start</c> = 2 strides, 2.600s <c>run</c>/<c>mx_f_run_jogging</c> = 3 strides)
+        /// return 2 or 3 so that every visual footstep fires its own ground-contact strike.
+        /// </summary>
+        public static int ComputeStrideCount(double clipLengthSec, bool isRunning)
+        {
+            if (clipLengthSec <= 1.50)
+                return 1;
+            double nominal = isRunning ? RunNominalStrideLengthSec : WalkNominalStrideLengthSec;
+            return Math.Max(1, (int)Math.Round(clipLengthSec / nominal));
+        }
+
+        public int CurrentStrideCount
+        {
+            get
+            {
+                if (_player == null || !GodotObject.IsInstanceValid(_player) || !_player.IsPlaying())
+                    return 1;
+                return ComputeStrideCount(_player.CurrentAnimationLength, _lastState == StateRun);
+            }
+        }
+
         public double CurrentNormalizedPhase
         {
             get
@@ -567,7 +595,8 @@ namespace AtlasWorld.Client.World
                 double len = _player.CurrentAnimationLength;
                 if (len <= 0.001)
                     return 0.0;
-                double p = (_player.CurrentAnimationPosition / len) % 1.0;
+                int strideCount = ComputeStrideCount(len, _lastState == StateRun);
+                double p = ((_player.CurrentAnimationPosition / len) * strideCount) % 1.0;
                 return p < 0.0 ? p + 1.0 : p;
             }
         }
@@ -578,9 +607,10 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
-        /// Polls the live <see cref="AnimationPlayer"/> normalized phase and returns <c>true</c>
+        /// Polls the live <see cref="AnimationPlayer"/> per-stride normalized phase and returns <c>true</c>
         /// on the exact frame that either the left foot or right foot crosses its ground-contact
-        /// phase during <see cref="StateWalk"/> or <see cref="StateRun"/>.
+        /// phase during <see cref="StateWalk"/> or <see cref="StateRun"/>. Multi-stride clips (such as the
+        /// 2.600s 3-stride run loop) fire 1 strike per visual footstep (6 strikes per 2.600s loop).
         /// </summary>
         public bool PollFootstepStrike(out bool isRightFoot, out bool isRunning)
         {
@@ -596,7 +626,8 @@ namespace AtlasWorld.Client.World
             if (len <= 0.001)
                 return false;
 
-            double curr = (_player.CurrentAnimationPosition / len) % 1.0;
+            int strideCount = ComputeStrideCount(len, isRunning);
+            double curr = ((_player.CurrentAnimationPosition / len) * strideCount) % 1.0;
             if (curr < 0.0)
                 curr += 1.0;
 
@@ -609,15 +640,21 @@ namespace AtlasWorld.Client.World
             double prev = _lastFootstepPhase;
             _lastFootstepPhase = curr;
 
+            return TryCrossFootstepPhase(prev, curr, isRunning, out isRightFoot);
+        }
+
+        public static bool TryCrossFootstepPhase(double prevStridePhase, double currStridePhase, bool isRunning, out bool isRightFoot)
+        {
+            isRightFoot = false;
             double leftPhase = isRunning ? RunLeftFootStrikePhase : WalkLeftFootStrikePhase;
             double rightPhase = isRunning ? RunRightFootStrikePhase : WalkRightFootStrikePhase;
 
-            if (CrossedPhase(prev, curr, leftPhase))
+            if (CrossedPhase(prevStridePhase, currStridePhase, leftPhase))
             {
                 isRightFoot = false;
                 return true;
             }
-            if (CrossedPhase(prev, curr, rightPhase))
+            if (CrossedPhase(prevStridePhase, currStridePhase, rightPhase))
             {
                 isRightFoot = true;
                 return true;
