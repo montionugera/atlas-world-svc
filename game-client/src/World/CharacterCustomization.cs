@@ -32,6 +32,96 @@ namespace AtlasWorld.Client.World
             ("Shadow Violet", ShadowViolet),
         };
 
+        public static readonly IReadOnlyList<(string Label, string ShapeKey)> EyeExpressionPresets = new (string, string)[]
+        {
+            ("Neutral", ""),
+            ("Happy ^_^", "eye_happy"),
+            ("Determined", "eye_angry"),
+            ("Surprised", "eye_surprised"),
+            ("Sorrow", "eye_sorrow"),
+            ("Blink", "eye_blink"),
+        };
+
+        private static readonly string[] AllEyeShapeKeys =
+        {
+            "eye_blink",
+            "eye_happy",
+            "eye_angry",
+            "eye_sorrow",
+            "eye_surprised",
+        };
+
+        /// <summary>
+        /// Drives the mouthless anime eye &amp; brow expression blendshapes (<c>eye_blink</c>, <c>eye_happy</c>,
+        /// <c>eye_angry</c>, <c>eye_sorrow</c>, <c>eye_surprised</c>) on any <see cref="MeshInstance3D"/>
+        /// under <paramref name="root"/>. Returns the number of blendshape channels updated.
+        /// </summary>
+        public static int SetEyeExpression(Node root, string activeShapeKey, float weight = 1.0f, float blinkOverlay = 0.0f)
+        {
+            if (root == null)
+                return 0;
+            int updated = 0;
+            ApplyEyeExpressionRecursive(root, activeShapeKey ?? "", Mathf.Clamp(weight, 0f, 1f), Mathf.Clamp(blinkOverlay, 0f, 1f), ref updated);
+            return updated;
+        }
+
+        /// <summary>Reads the current blendshape weight for <paramref name="shapeKey"/> on the first face mesh under <paramref name="root"/>.</summary>
+        public static float GetEyeExpressionWeight(Node root, string shapeKey)
+        {
+            if (root == null || string.IsNullOrEmpty(shapeKey))
+                return 0f;
+            return FindEyeExpressionWeightRecursive(root, shapeKey) ?? 0f;
+        }
+
+        private static void ApplyEyeExpressionRecursive(Node node, string activeShapeKey, float weight, float blinkOverlay, ref int updated)
+        {
+            if (node is MeshInstance3D meshInst && meshInst.Mesh != null && meshInst.GetBlendShapeCount() > 0)
+            {
+                foreach (string key in AllEyeShapeKeys)
+                {
+                    int idx = meshInst.FindBlendShapeByName(key);
+                    if (idx < 0)
+                        continue;
+
+                    float target = 0f;
+                    if (key == activeShapeKey)
+                        target = weight;
+                    if (key == "eye_blink")
+                    {
+                        // Suppress auto-blink when Happy ^_^ (which already closes the eyes into happy arcs) is active
+                        float blinkEffective = activeShapeKey == "eye_happy" && weight > 0.3f
+                            ? 0f
+                            : blinkOverlay;
+                        target = Mathf.Max(target, blinkEffective);
+                    }
+
+                    meshInst.SetBlendShapeValue(idx, target);
+                    updated++;
+                }
+            }
+
+            foreach (Node child in node.GetChildren())
+                ApplyEyeExpressionRecursive(child, activeShapeKey, weight, blinkOverlay, ref updated);
+        }
+
+        private static float? FindEyeExpressionWeightRecursive(Node node, string shapeKey)
+        {
+            if (node is MeshInstance3D meshInst && meshInst.Mesh != null && meshInst.GetBlendShapeCount() > 0)
+            {
+                int idx = meshInst.FindBlendShapeByName(shapeKey);
+                if (idx >= 0)
+                    return meshInst.GetBlendShapeValue(idx);
+            }
+
+            foreach (Node child in node.GetChildren())
+            {
+                float? hit = FindEyeExpressionWeightRecursive(child, shapeKey);
+                if (hit.HasValue)
+                    return hit;
+            }
+            return null;
+        }
+
         /// <summary>
         /// Tints all hair surfaces under <paramref name="root"/> by duplicating each surface's
         /// <see cref="StandardMaterial3D"/> override so shared resources are never mutated.

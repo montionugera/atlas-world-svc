@@ -242,10 +242,11 @@ namespace AtlasWorld.Client.World
                 ? GD.Load<Shader>("res://assets/shaders/outline.gdshader")
                 : null;
 
-            ApplyAnimeToonShadingRecursive(root, kind, outlineShader);
+            bool hasModularHeadMesh = root.FindChild("HeadMesh", recursive: true, owned: false) != null;
+            ApplyAnimeToonShadingRecursive(root, kind, outlineShader, hasModularHeadMesh);
         }
 
-        private static void ApplyAnimeToonShadingRecursive(Node node, EntityKind kind, Shader? outlineShader)
+        private static void ApplyAnimeToonShadingRecursive(Node node, EntityKind kind, Shader? outlineShader, bool hasModularHeadMesh = false)
         {
             if (node is MeshInstance3D meshInst && meshInst.Mesh != null &&
                 meshInst.Name != "DropShadow" && meshInst.Name != "OverheadHpBg" && meshInst.Name != "OverheadHpFill")
@@ -257,26 +258,108 @@ namespace AtlasWorld.Client.World
                     if (existing is StandardMaterial3D stdMat)
                     {
                         var toonMat = (StandardMaterial3D)stdMat.Duplicate();
-                        toonMat.DiffuseMode = BaseMaterial3D.DiffuseModeEnum.Toon;
-                        toonMat.SpecularMode = BaseMaterial3D.SpecularModeEnum.Toon;
-                        toonMat.Roughness = Mathf.Clamp(toonMat.Roughness * 0.65f, 0.25f, 0.55f);
-                        toonMat.RimEnabled = true;
-                        toonMat.Rim = 0.42f;
-                        toonMat.RimTint = 0.35f;
+                        string matName = (toonMat.ResourceName ?? "").ToLowerInvariant();
+                        bool isEyeCatchlight =
+                            matName.Contains("highlight") ||
+                            matName.Contains("extra");
+                        bool isEyeOrFacialDecal =
+                            toonMat.Transparency != BaseMaterial3D.TransparencyEnum.Disabled ||
+                            matName.Contains("eye") ||
+                            matName.Contains("iris") ||
+                            matName.Contains("eyelash") ||
+                            matName.Contains("eyeline") ||
+                            matName.Contains("brow") ||
+                            matName.Contains("mouth");
+                        bool isFaceSkin =
+                            matName.Contains("face") ||
+                            matName.Contains("skin") ||
+                            matName == "head";
 
-                        // Warm anime bounce light so shadows never look muddy grey/black
-                        toonMat.EmissionEnabled = true;
-                        toonMat.Emission = kind == EntityKind.Mob
-                            ? new Color(0.18f, 0.11f, 0.14f, 1f)
-                            : new Color(0.16f, 0.15f, 0.18f, 1f);
-                        toonMat.EmissionEnergyMultiplier = 0.32f;
-
-                        if (outlineShader != null)
+                        if (isEyeCatchlight)
                         {
-                            var outlineMat = new ShaderMaterial { Shader = outlineShader };
-                            outlineMat.SetShaderParameter("outline_color", new Color(0.14f, 0.10f, 0.16f, 1.0f));
-                            outlineMat.SetShaderParameter("outline_thickness", 0.0065f);
-                            toonMat.NextPass = outlineMat;
+                            // Tiny white anime pupil catchlights stay crisp with subtle self-illumination
+                            toonMat.ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded;
+                            toonMat.SpecularMode = BaseMaterial3D.SpecularModeEnum.Disabled;
+                            toonMat.AlbedoColor = new Color(0.92f, 0.94f, 0.98f, 1.0f);
+                            toonMat.RimEnabled = false;
+                            toonMat.EmissionEnabled = false;
+                            toonMat.NextPass = null;
+                        }
+                        else if (isEyeOrFacialDecal)
+                        {
+                            // Sclera (EyeWhite), Iris, brows, and lashes use Toon shading with shadow-receive disabled
+                            // and warm ambient bounce so they dim naturally at night without overexposing in midday sun!
+                            toonMat.ShadingMode = BaseMaterial3D.ShadingModeEnum.PerPixel;
+                            toonMat.DiffuseMode = BaseMaterial3D.DiffuseModeEnum.Toon;
+                            toonMat.SpecularMode = BaseMaterial3D.SpecularModeEnum.Disabled;
+                            toonMat.Roughness = 0.92f;
+                            toonMat.DisableReceiveShadows = true;
+                            if (matName.Contains("eyewhite"))
+                                toonMat.AlbedoColor = new Color(0.91f, 0.90f, 0.94f, 1.0f);
+                            toonMat.RimEnabled = true;
+                            toonMat.Rim = 0.08f;
+                            toonMat.RimTint = 0.25f;
+                            toonMat.EmissionEnabled = true;
+                            toonMat.Emission = new Color(0.28f, 0.26f, 0.32f, 1.0f);
+                            toonMat.EmissionEnergyMultiplier = 0.14f;
+                            toonMat.NextPass = null;
+                        }
+                        else if (isFaceSkin)
+                        {
+                            // Anime porcelain face skin: Toon diffuse + shadow-receive disabled (no harsh hair bang shadow blotches)
+                            // + subtle warm rim & bounce emission so day/dusk/night lighting stays crisp without blowing out!
+                            toonMat.ShadingMode = BaseMaterial3D.ShadingModeEnum.PerPixel;
+                            toonMat.DiffuseMode = BaseMaterial3D.DiffuseModeEnum.Toon;
+                            toonMat.SpecularMode = BaseMaterial3D.SpecularModeEnum.Disabled;
+                            toonMat.Roughness = 0.95f;
+                            toonMat.DisableReceiveShadows = true;
+                            if (!hasModularHeadMesh &&
+                                toonMat.AlbedoColor.R > 0.96f && toonMat.AlbedoColor.G > 0.96f && toonMat.AlbedoColor.B > 0.96f)
+                            {
+                                toonMat.AlbedoColor = new Color(0.91f, 0.84f, 0.80f, 1.0f);
+                            }
+                            toonMat.RimEnabled = true;
+                            toonMat.Rim = 0.09f;
+                            toonMat.RimTint = 0.25f;
+                            toonMat.EmissionEnabled = true;
+                            toonMat.Emission = new Color(
+                                toonMat.AlbedoColor.R * 0.32f,
+                                toonMat.AlbedoColor.G * 0.28f,
+                                toonMat.AlbedoColor.B * 0.28f,
+                                1.0f);
+                            toonMat.EmissionEnergyMultiplier = 0.14f;
+                            if (outlineShader != null)
+                            {
+                                var outlineMat = new ShaderMaterial { Shader = outlineShader };
+                                outlineMat.SetShaderParameter("outline_color", new Color(0.18f, 0.12f, 0.14f, 1.0f));
+                                outlineMat.SetShaderParameter("outline_thickness", 0.0022f);
+                                toonMat.NextPass = outlineMat;
+                            }
+                        }
+                        else
+                        {
+                            toonMat.DiffuseMode = BaseMaterial3D.DiffuseModeEnum.Toon;
+                            toonMat.SpecularMode = BaseMaterial3D.SpecularModeEnum.Disabled;
+                            toonMat.Roughness = 0.92f;
+                            toonMat.RimEnabled = true;
+                            toonMat.Rim = 0.10f;
+                            toonMat.RimTint = 0.25f;
+
+                            // Subtle warm anime bounce light so clothing/hair shadows never look muddy grey/black
+                            // while keeping white capelet/sleeves/stockings crisp in midday sun
+                            toonMat.EmissionEnabled = true;
+                            toonMat.Emission = kind == EntityKind.Mob
+                                ? new Color(0.14f, 0.09f, 0.12f, 1f)
+                                : new Color(0.10f, 0.09f, 0.12f, 1f);
+                            toonMat.EmissionEnergyMultiplier = 0.08f;
+
+                            if (outlineShader != null)
+                            {
+                                var outlineMat = new ShaderMaterial { Shader = outlineShader };
+                                outlineMat.SetShaderParameter("outline_color", new Color(0.14f, 0.10f, 0.16f, 1.0f));
+                                outlineMat.SetShaderParameter("outline_thickness", 0.0050f);
+                                toonMat.NextPass = outlineMat;
+                            }
                         }
 
                         meshInst.SetSurfaceOverrideMaterial(i, toonMat);

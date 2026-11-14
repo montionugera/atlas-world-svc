@@ -513,19 +513,19 @@ namespace AtlasWorld.Client.World
 
                 // Exterior East Stepped Stone Stair Ramp (matches TerrainElevation.SampleHeight 1:1!)
                 // Climbs from Y=0 at x=+r+3.25m (East entrance) up to Y=deckH at x=+r-0.25m (2nd-floor deck edge)
-                const int stepCount = 12;
+                const int stepCount = 18;
                 float rampStartX = r + 3.25f;
                 float rampEndX = r - 0.25f;
                 float stepSpanX = (rampStartX - rampEndX) / stepCount;
                 for (int i = 0; i < stepCount; i++)
                 {
-                    float t = (i + 1f) / stepCount;
+                    float t = (i + 0.5f) / stepCount;
                     float stepH = deckH * t;
                     float sx = Mathf.Lerp(rampStartX, rampEndX, (i + 0.5f) / stepCount);
                     var stepBox = new MeshInstance3D
                     {
                         Name = $"StairStep_{i + 1}",
-                        Mesh = new BoxMesh { Size = new Vector3(stepSpanX + 0.08f, stepH, 2.65f) },
+                        Mesh = new BoxMesh { Size = new Vector3(stepSpanX, stepH, 2.65f) },
                         MaterialOverride = stoneMat,
                         Position = new Vector3(sx, stepH * 0.5f, 0f)
                     };
@@ -535,9 +535,9 @@ namespace AtlasWorld.Client.World
                     var runnerStrip = new MeshInstance3D
                     {
                         Name = $"StairRunner_{i + 1}",
-                        Mesh = new BoxMesh { Size = new Vector3(stepSpanX + 0.09f, 0.03f, 1.15f) },
+                        Mesh = new BoxMesh { Size = new Vector3(stepSpanX, 0.012f, 1.15f) },
                         MaterialOverride = goldRunnerMat,
-                        Position = new Vector3(sx, stepH + 0.015f, 0f)
+                        Position = new Vector3(sx, stepH + 0.006f, 0f)
                     };
                     root.AddChild(runnerStrip);
                 }
@@ -586,7 +586,7 @@ namespace AtlasWorld.Client.World
                     Name = "SecondFloorDeck",
                     Mesh = new BoxMesh { Size = new Vector3(r * 2.12f, 0.28f, r * 2.12f) },
                     MaterialOverride = woodDeckMat,
-                    Position = new Vector3(0f, -0.10f, 0f)
+                    Position = new Vector3(0f, -0.14f, 0f)
                 };
                 upperCanopy.AddChild(upperSlab);
 

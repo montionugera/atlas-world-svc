@@ -269,7 +269,10 @@ def main():
                 w_vec = hips_rest_m @ v_loc
                 dx = w_vec.x - w0.x
                 dy = w_vec.y - w0.y
-                if act.name in ("walk", "run", "hit", "combat_idle", "block_idle", "idle", "block"):
+                # Only clamp horizontal root drift on locomotion/hit clips; stationary clips
+                # (idle, combat_idle, block_idle, block) need 1.0x pelvis X/Y shift to counterbalance
+                # thigh rotations so the feet stay planted on the ground without pendulum sway.
+                if act.name in ("walk", "run", "hit"):
                     dx *= 0.15
                     dy *= 0.15
                 elif act.name in ("attack", "attack_2", "attack_3"):

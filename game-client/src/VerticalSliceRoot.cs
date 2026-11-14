@@ -2133,8 +2133,9 @@ namespace AtlasWorld.Client
                 float camGroundY = TerrainElevation.SampleBaseTerrainHeight(desiredCamPos.X, desiredCamPos.Z, _mapDoc);
                 desiredCamPos.Y = Mathf.Max(desiredCamPos.Y, camGroundY + 0.85f);
 
-                MainCamera.Position = MainCamera.Position.Lerp(desiredCamPos, dt * 8.0f);
-                MainCamera.LookAt(focusTarget, Vector3.Up);
+                float smoothY = Mathf.Lerp(MainCamera.Position.Y, desiredCamPos.Y, 1f - Mathf.Exp(-16f * dt));
+                MainCamera.Position = new Vector3(desiredCamPos.X, smoothY, desiredCamPos.Z);
+                MainCamera.LookAt(new Vector3(focusTarget.X, smoothY - vertDist, focusTarget.Z), Vector3.Up);
 
                 // Automatically fade any 3D tree, pillar, boulder, wall, or overhead Watchtower/Cave roof!
                 Node3D? activeTarget = GetActiveTargetRoot();
