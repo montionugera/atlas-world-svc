@@ -21,3 +21,13 @@
 - DONE in F-173 (1.24): (2026-11-05, F-171 review LOW) precheck serial path has no INT/TERM trap, so a TERM there skips kill_tree (AC3 covers parallel only); AC4 test orphans its `sleep 300`s if the assertion fails; kill_tree still misses grandchildren re-parented when a mid-tree pid exits before it is stopped.
 - F-174 finding (2026-11-06): `scripts/godot-verify.sh ATLAS_VERIFY_VERTICAL_SLICE` fails on SmartCameraOccluder tree-canopy fade; pre-existing (reproduced at base fe07dc540), not wired into Gate 1, so nothing catches it.
 F-174 backlog (2026-11-06): NotifyHit only fires for hits the local player deals (VerticalSliceRoot.cs ~1582); remaining deferred minors are listed in the F-174 final review (pending hit/attack survive death, WeaponSocket.Equipped dangles after failed Instantiate, FindPlayer duplicated in 3 C# files, precheck in-section skip branch untested, perl timeout fallback lacks kill escalation, studio-pull null-200 reported as unreachable).
+- 2026-11-15 (F-216 review, MEDIUM): typing in the top-bar search while a record page is open rewrites that page's history entry with the new `q=` (`02_state_and_composable_layers.js` search `input` listener calls `writeUrlState(false)`).
+- 2026-11-15 (F-216 review, LOW): `escapeHtml()` (`08_catalog_and_3d_modal_views.js:3070`) leaves `"` and `'` unescaped but is used inside double-quoted attributes (`data-record`, `href`) in `02c_records_search.js`; safe for today's ids only.
+- 2026-11-15 (F-216 review, LOW): `scripts/build_catalog_db.py` writes `build/catalog_summary.json` with no per-pid temp file; two explorer starts can race on it.
+- 2026-11-15 (F-216 review, LOW): record page drifts from its design brief: kind is an eyebrow not a `.joy-badge`, arrow keys do not set `aria-activedescendant`, the popover does not follow a scrolling top bar.
+- 2026-11-15 (F-216 review, LOW): no browser check for the "Include archive" checkbox, the "Old concept" badge, "Nothing is linked to this yet", or the lore panel with a legacy concept-art item.
+- 2026-11-15: record page related rows show no summary line.
+- 2026-11-15: phone top bar tap targets are under 44 px (Menu 52x28, Back/Forward 39 wide, search box 26 high), found by `ui-visual-verify`.
+- 2026-11-15: `scripts/fastcheck.sh` splits changed paths on spaces.
+- 2026-11-15: concept-art gallery keeps its own search box until the record index covers zone, prompt and tags (deferred from F-219).
+- 2026-11-15 (tooling, not this repo): `sdd-workspace` prints `.superpowers/sdd/plan` but `sdd-drive` uses a hash folder; `psrw ship | tail` hangs after the ship because a child keeps the pipe open; the probe Chrome (`atlas_audit_lib.mjs`) cannot reach `*.joymify.local.com` and `waitFor` still reports ready on its error page.
