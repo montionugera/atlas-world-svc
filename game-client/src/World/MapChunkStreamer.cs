@@ -32,8 +32,11 @@ namespace AtlasWorld.Client.World
         private readonly Dictionary<Vector2I, List<UnifiedMapProp>> _chunkBuckets = new();
         private readonly Dictionary<Vector2I, List<UnifiedMapStructureVolume>> _structureBuckets = new();
         private readonly Dictionary<Vector2I, Node3D> _loadedChunkNodes = new();
+        private readonly Dictionary<Vector2I, Node3D> _cachedChunkNodes = new();
         private readonly Dictionary<string, PackedScene?> _sceneCache = new();
         private readonly Dictionary<string, Mesh?> _meshPrototypeCache = new();
+        private static readonly StandardMaterial3D SolidGreyBlockMaterial = new() { AlbedoColor = new Color(0.58f, 0.58f, 0.58f) };
+        private static readonly StandardMaterial3D WalkthroughGreyBlockMaterial = new() { AlbedoColor = new Color(0.82f, 0.82f, 0.82f) };
 
         private Vector2I _lastCenterChunk = new(int.MinValue, int.MinValue);
         private int _lastRadius = -1;
@@ -119,11 +122,12 @@ namespace AtlasWorld.Client.World
         /// </summary>
         public void RebuildIndex(Vector3? focusWorldPos = null)
         {
-            foreach (var kv in _loadedChunkNodes)
+            foreach (var kv in _cachedChunkNodes)
             {
                 if (GodotObject.IsInstanceValid(kv.Value))
                     kv.Value.QueueFree();
             }
+            _cachedChunkNodes.Clear();
             _loadedChunkNodes.Clear();
             _chunkBuckets.Clear();
             _structureBuckets.Clear();
@@ -248,20 +252,43 @@ namespace AtlasWorld.Client.World
                 SyncFloorShaderIfPresent();
             }
 
+            float halfW = _doc.HalfWidthWorld(1.0f);
+            float halfH = _doc.HalfHeightWorld(1.0f);
+
             if (forceReload)
             {
-                foreach (var kv in _loadedChunkNodes)
+                foreach (var kv in _cachedChunkNodes)
                 {
                     if (GodotObject.IsInstanceValid(kv.Value))
                         kv.Value.QueueFree();
                 }
+                _cachedChunkNodes.Clear();
                 _loadedChunkNodes.Clear();
+
+                // Pre-warm all non-empty chunks on standard-sized maps (<= 240x240m) at load time
+                // so crossing 24m chunk boundaries while walking/sprinting never instantiates nodes mid-frame.
+                if (_doc.Width <= 240f && _doc.Height <= 240f)
+                {
+                    int maxCx = Mathf.CeilToInt((halfW + ChunkSizeWorld * 0.5f) / ChunkSizeWorld);
+                    int maxCz = Mathf.CeilToInt((halfH + ChunkSizeWorld * 0.5f) / ChunkSizeWorld);
+                    for (int cz = -maxCz; cz <= maxCz; cz++)
+                    {
+                        for (int cx = -maxCx; cx <= maxCx; cx++)
+                        {
+                            var preCoord = new Vector2I(cx, cz);
+                            if (ShouldChunkExist(preCoord, halfW, halfH))
+                            {
+                                BuildOrReplaceChunkNode(preCoord, visible: false);
+                            }
+                        }
+                    }
+                }
             }
 
             _lastCenterChunk = center;
             _lastRadius = radius;
 
-            // 1. Unload any active chunk outside the Chebyshev radius
+            // 1. Hide any active chunk outside the Chebyshev radius (retain in _cachedChunkNodes for zero-hitch re-entry)
             var toUnload = new List<Vector2I>();
             foreach (var kv in _loadedChunkNodes)
             {
@@ -278,15 +305,12 @@ namespace AtlasWorld.Client.World
                 if (_loadedChunkNodes.TryGetValue(coord, out Node3D? node))
                 {
                     if (GodotObject.IsInstanceValid(node))
-                        node.QueueFree();
+                        node.Visible = false;
                     _loadedChunkNodes.Remove(coord);
                 }
             }
 
-            // 2. Load any chunk inside [-radius .. +radius] within map bounds
-            float halfW = _doc.HalfWidthWorld(1.0f);
-            float halfH = _doc.HalfHeightWorld(1.0f);
-
+            // 2. Activate or build any chunk inside [-radius .. +radius] within map bounds
             for (int dz = -radius; dz <= radius; dz++)
             {
                 for (int dx = -radius; dx <= radius; dx++)
@@ -295,18 +319,18 @@ namespace AtlasWorld.Client.World
                     if (_loadedChunkNodes.ContainsKey(coord))
                         continue;
 
-                    Rect2 chunkRect = GetChunkWorldRect(coord);
-                    float chunkCenterX = chunkRect.Position.X + chunkRect.Size.X * 0.5f;
-                    float chunkCenterZ = chunkRect.Position.Y + chunkRect.Size.Y * 0.5f;
-                    bool insideMapBounds = Mathf.Abs(chunkCenterX) <= halfW + ChunkSizeWorld * 0.5f &&
-                                           Mathf.Abs(chunkCenterZ) <= halfH + ChunkSizeWorld * 0.5f;
-
-                    bool hasAuthoredProps = _chunkBuckets.TryGetValue(coord, out var propsInChunk) && propsInChunk.Count > 0;
-                    bool hasStructures = _structureBuckets.TryGetValue(coord, out var structsInChunk) && structsInChunk.Count > 0;
-                    if (!hasAuthoredProps && !hasStructures && (!insideMapBounds || ProceduralClutterPerChunk <= 0))
+                    if (!ShouldChunkExist(coord, halfW, halfH))
                         continue;
 
-                    ReloadSingleChunk(coord);
+                    if (_cachedChunkNodes.TryGetValue(coord, out Node3D? cached) && GodotObject.IsInstanceValid(cached))
+                    {
+                        cached.Visible = true;
+                        _loadedChunkNodes[coord] = cached;
+                    }
+                    else
+                    {
+                        ReloadSingleChunk(coord);
+                    }
                 }
             }
 
@@ -314,16 +338,35 @@ namespace AtlasWorld.Client.World
             return true;
         }
 
+        private bool ShouldChunkExist(Vector2I coord, float halfW, float halfH)
+        {
+            Rect2 chunkRect = GetChunkWorldRect(coord);
+            float chunkCenterX = chunkRect.Position.X + chunkRect.Size.X * 0.5f;
+            float chunkCenterZ = chunkRect.Position.Y + chunkRect.Size.Y * 0.5f;
+            bool insideMapBounds = Mathf.Abs(chunkCenterX) <= halfW + ChunkSizeWorld * 0.5f &&
+                                   Mathf.Abs(chunkCenterZ) <= halfH + ChunkSizeWorld * 0.5f;
+
+            bool hasAuthoredProps = _chunkBuckets.TryGetValue(coord, out var propsInChunk) && propsInChunk.Count > 0;
+            bool hasStructures = _structureBuckets.TryGetValue(coord, out var structsInChunk) && structsInChunk.Count > 0;
+            return hasAuthoredProps || hasStructures || (insideMapBounds && ProceduralClutterPerChunk > 0);
+        }
+
         private void ReloadSingleChunk(Vector2I coord)
         {
-            if (_loadedChunkNodes.TryGetValue(coord, out Node3D? existing) && GodotObject.IsInstanceValid(existing))
+            Node3D chunkNode = BuildOrReplaceChunkNode(coord, visible: true);
+            _loadedChunkNodes[coord] = chunkNode;
+        }
+
+        private Node3D BuildOrReplaceChunkNode(Vector2I coord, bool visible)
+        {
+            if (_cachedChunkNodes.TryGetValue(coord, out Node3D? existing) && GodotObject.IsInstanceValid(existing))
             {
                 existing.QueueFree();
             }
 
-            var chunkNode = new Node3D { Name = $"Chunk_{coord.X}_{coord.Y}" };
+            var chunkNode = new Node3D { Name = $"Chunk_{coord.X}_{coord.Y}", Visible = visible };
             _chunksRoot.AddChild(chunkNode);
-            _loadedChunkNodes[coord] = chunkNode;
+            _cachedChunkNodes[coord] = chunkNode;
 
             var instancedBatches = new Dictionary<string, List<Transform3D>>();
             int spawnedNodeProps = 0;
@@ -404,6 +447,7 @@ namespace AtlasWorld.Client.World
             chunkNode.SetMeta("node_prop_count", spawnedNodeProps);
             chunkNode.SetMeta("gpu_instance_count", chunkGpuInstances);
             chunkNode.SetMeta("gpu_batch_count", chunkBatchCount);
+            return chunkNode;
         }
 
         /// <summary>
@@ -774,13 +818,12 @@ namespace AtlasWorld.Client.World
         private static void SpawnGreyBlock(UnifiedMapStructureVolume s, Node3D root)
         {
             float top = s.Hover + s.Size.Y;
-            float g = s.Solid ? 0.58f : 0.82f; // walk-through markers read lighter
             root.AddChild(new MeshInstance3D
             {
                 Name = $"Block_{s.Id}",
                 Mesh = new BoxMesh { Size = new Vector3(s.Size.X, s.Size.Y, s.Size.Z) },
                 Position = new Vector3(0f, s.Hover + s.Size.Y / 2f, 0f),
-                MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(g, g, g) },
+                MaterialOverride = s.Solid ? SolidGreyBlockMaterial : WalkthroughGreyBlockMaterial,
             });
             if (!string.IsNullOrEmpty(s.Label))
             {
@@ -789,10 +832,13 @@ namespace AtlasWorld.Client.World
                     Name = $"Label_{s.Id}",
                     Text = s.Label,
                     Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
-                    PixelSize = 0.004f,
-                    FontSize = 64,
-                    OutlineSize = 12,
+                    PixelSize = 0.008f,
+                    FontSize = 32,
+                    OutlineSize = 6,
                     Position = new Vector3(0f, top + 0.35f, 0f),
+                    VisibilityRangeEnd = 42.0f,
+                    VisibilityRangeEndMargin = 6.0f,
+                    VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self,
                 });
             }
         }

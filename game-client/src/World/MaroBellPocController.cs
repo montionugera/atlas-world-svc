@@ -1199,16 +1199,5 @@ namespace AtlasWorld.Client.World
             if (_dialoguePanel != null)
                 _dialoguePanel.Visible = !string.IsNullOrEmpty(text);
         }
-
-        public override void _PhysicsProcess(double delta)
-        {
-            PipView?.Animation.Update(true, Vector3.Zero);
-            ReedView?.Animation.Update(true, Vector3.Zero);
-            TovinView?.Animation.Update(true, Vector3.Zero);
-            AmberView?.Animation.Update(true, Vector3.Zero);
-            BramView?.Animation.Update(true, Vector3.Zero);
-            EddaView?.Animation.Update(true, Vector3.Zero);
-            SootMuncherView?.Animation.Update(true, Vector3.Zero);
-        }
     }
 }

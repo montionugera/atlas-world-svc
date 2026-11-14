@@ -762,7 +762,8 @@ namespace AtlasWorld.Client.World
                 _animController?.Tick(dt);
             }
 
-            SampleFootGrounding();
+            if (IsHeadlessProbe)
+                SampleFootGrounding();
         }
 
         public void TriggerSandboxAttack()
@@ -927,7 +928,7 @@ namespace AtlasWorld.Client.World
             return -1;
         }
 
-        public override void _PhysicsProcess(double delta)
+        public override void _Process(double delta)
         {
             if (IsHeadlessProbe)
                 return;
@@ -1298,6 +1299,9 @@ namespace AtlasWorld.Client.World
         {
             if (_telemetryLabel == null)
                 return;
+
+            if (!IsHeadlessProbe)
+                SampleFootGrounding();
 
             Vector3 pos = _avatarContainer?.Position ?? Vector3.Zero;
             string baseState = _animController?.CurrentState ?? "idle";

@@ -123,13 +123,32 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
+        /// Returns true when both base terrain amplitude and all authored height terraces are flat (~0m),
+        /// enabling O(1) fast-paths for height, normal, and slope queries (e.g., on maro-bell where
+        /// flat_marker has Height = 0).
+        /// </summary>
+        public static bool IsFlatTerrain(UnifiedMapDocument? doc)
+        {
+            float amp = doc?.TerrainAmplitude ?? GlobalAmplitude;
+            if (amp > 0.001f)
+                return false;
+            if (doc == null || doc.HeightTerraces.Count == 0)
+                return true;
+            for (int i = 0; i < doc.HeightTerraces.Count; i++)
+            {
+                if (Mathf.Abs(doc.HeightTerraces[i].Height) > 0.001f)
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Evaluates the exact rendered triangle height Y of the outdoor ground mesh at world position (wx, wz)
         /// using barycentric interpolation on the <see cref="ActiveMeshCellSize"/> grid.
         /// </summary>
         public static float SampleBaseTerrainHeight(float wx, float wz, UnifiedMapDocument? doc = null)
         {
-            float amp = doc?.TerrainAmplitude ?? GlobalAmplitude;
-            if (amp <= 0.001f && (doc == null || doc.HeightTerraces.Count == 0))
+            if (IsFlatTerrain(doc))
                 return 0f;
 
             float step = Mathf.Max(0.5f, ActiveMeshCellSize);
@@ -167,10 +186,10 @@ namespace AtlasWorld.Client.World
         /// </summary>
         public static float SampleAnalyticalTerrainHeight(float wx, float wz, UnifiedMapDocument? doc = null)
         {
-            float amp = doc?.TerrainAmplitude ?? GlobalAmplitude;
-            if (amp <= 0.001f && (doc == null || doc.HeightTerraces.Count == 0))
+            if (IsFlatTerrain(doc))
                 return 0f;
 
+            float amp = doc?.TerrainAmplitude ?? GlobalAmplitude;
             float totalY = SampleRawUnflattenedHeight(wx, wz, amp, doc);
 
             // Flatten base ground under Watchtower & Crystal Cave footprints so stairs and portals sit cleanly on level ground
@@ -468,6 +487,9 @@ namespace AtlasWorld.Client.World
         /// </summary>
         public static Vector3 SampleNormal(float wx, float wz, UnifiedMapDocument? doc = null)
         {
+            if (IsFlatTerrain(doc))
+                return Vector3.Up;
+
             const float eps = 0.25f;
             float hL = SampleBaseTerrainHeight(wx - eps, wz, doc);
             float hR = SampleBaseTerrainHeight(wx + eps, wz, doc);
@@ -483,6 +505,9 @@ namespace AtlasWorld.Client.World
         /// </summary>
         public static float SampleSlopeDegrees(float wx, float wz, UnifiedMapDocument? doc = null)
         {
+            if (IsFlatTerrain(doc))
+                return 0f;
+
             if (IsInsideWalkableStructureCorridor(wx, wz, doc))
                 return 12.0f;
 
@@ -526,6 +551,9 @@ namespace AtlasWorld.Client.World
         /// </summary>
         public static bool IsWalkableSlope(float wx, float wz, UnifiedMapDocument? doc = null)
         {
+            if (IsFlatTerrain(doc))
+                return true;
+
             if (doc != null && doc.HeightTerraces.Count > 0 && !IsInsideWalkableStructureCorridor(wx, wz, doc))
             {
                 for (int i = 0; i < doc.HeightTerraces.Count; i++)
@@ -549,6 +577,9 @@ namespace AtlasWorld.Client.World
         /// </summary>
         public static Vector2 ClampToWalkableTerrain(float wx, float wz, UnifiedMapDocument? doc)
         {
+            if (IsFlatTerrain(doc))
+                return new Vector2(wx, wz);
+
             if (doc == null || doc.HeightTerraces.Count == 0)
                 return new Vector2(wx, wz);
 
@@ -607,6 +638,11 @@ namespace AtlasWorld.Client.World
             }
 
             blockedByCliff = false;
+            if (IsFlatTerrain(doc))
+            {
+                slopeDeg = 0f;
+                return new Vector2(nextX, nextZ);
+            }
 
             // Enforce circular perimeter barrier at the foot of any sheer cliff mesa (e.g. northwest_sheer_cliff_mesa)
             if (doc != null && doc.HeightTerraces.Count > 0 && !IsInsideWalkableStructureCorridor(nextX, nextZ, doc, currentEntityY))
