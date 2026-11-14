@@ -43,7 +43,7 @@ line 188 lists "Docker & Docker Compose" as a prerequisite.
 - The Nakama-compatible `/v2/*` API and `NAKAMA_*` env vars in server-rs: a live feature, not a leftover.
 - Rotating whatever `nakama/.cookie` was a key for: nothing references it, so there is nothing to rotate in this repo. Deleting does not remove it from git history.
 
-## Acceptance
+## Acceptance criteria
 
 - A1: none of the six paths exists in the tree (`git ls-files` returns nothing for them).
 - A2: `git grep -n "docker-compose.yml\|monitoring/" -- README.md` returns nothing.
