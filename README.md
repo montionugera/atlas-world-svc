@@ -395,7 +395,7 @@ The real-time game state replication protocol uses schema-compiled Google FlatBu
 
 ## 🧭 Atlas World & Map Studio — Unified Spatial Engine (`:8788/?tab=studio`)
 
-**Upright monsters (F-167):** dungeon spawn rows can carry `body_plan: upright_monster` and `body_kin`, a shape tag rather than a race. Choices live in `content/studio/mob_body_plan_picks.json`, and `python3 scripts/mob_body_plan_pass.py` applies them (`--check` validates without writing). Gate `G-MOB-SHAPE` (`scripts/tests/mob-shape-gate.test.mjs`) holds the share per tier and blocks filler boss names. The spawn matrix has an "Upright monster" toggle, stored in the URL as `shape=upright`.
+**Upright monsters (F-167):** dungeon spawn rows can carry `body_plan: upright_monster` and `body_kin`, a shape tag rather than a race. Choices live in `content/studio/mob_body_plan_picks.json` and are already applied to the atlas. Gate `G-MOB-SHAPE` (`scripts/tests/mob-shape-gate.test.mjs`) holds the share per tier and blocks filler boss names. The spawn matrix has an "Upright monster" toggle, stored in the URL as `shape=upright`.
 
 Launch the Catalog & Spatial Studio Web Observatory:
 ```bash

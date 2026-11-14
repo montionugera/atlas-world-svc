@@ -5,7 +5,7 @@
 - Forbidden-Path Orrery Catacomb:  5 floors (B1..B5),  -45m .. -250m
 
 `expand_tall_dungeons(atlas)` replaces those dungeons' `floors` in place. Both
-`run_atlas_iteration_loop.py` and `diversify_l2_towns_and_zones.py` call it, so a
+`run_atlas_iteration_loop.py` calls it, so a
 re-run of either keeps the expanded floors instead of reverting to 3.
 """
 

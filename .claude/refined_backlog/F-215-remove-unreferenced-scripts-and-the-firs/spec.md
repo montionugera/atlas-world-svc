@@ -21,11 +21,11 @@ most of it: `run_atlas_iteration_loop.py`, `studio_world_governance.py`, `tall_d
 What is really dead is smaller: finished one-shot migrations kept alive only by their own tests,
 one superseded tool, one unrun test file and one rendered copy.
 
-## Scope: delete 19 files
+## Scope: delete 28 files
 
 | Group | Files | Why dead |
 |---|---|---|
-| Finished migration (F-045) | `scripts/rescale_spine.mjs`, `scripts/tests/rescale.test.mjs`, `scripts/tests/fixtures/spine/rescale-basic/{spine,place-Whitsun,zone-Whitsun}.json` | Only its own test calls it. |
+| Finished migration (F-045) | `scripts/rescale_spine.mjs`, `scripts/tests/rescale.test.mjs`, `scripts/tests/fixtures/spine/rescale-basic/` (13 fixture files) | Only its own test calls it. |
 | Finished migration (F-185) | `scripts/rescale_units_to_metres.mjs` | Only one test case in `scripts/tests/unit-contract.test.mjs` imports it; remove that case, keep the file's other tests. |
 | Finished one-shot (F-167) | `scripts/mob_body_plan_pass.py`, `scripts/tests/mob-body-plan-pass.test.mjs` | Only its own test calls it; the live gate reads the JSON directly. |
 | Finished one-shot | `scripts/diversify_l2_towns_and_zones.py` | No caller. |
@@ -51,7 +51,7 @@ and the comments in `scripts/lib/mob-shape.mjs`, `atelier/art-forge/intake-art.m
 
 ## Acceptance criteria
 
-- [ ] A1: `git ls-files` returns nothing for the 19 paths.
+- [ ] A1: `git ls-files` returns nothing for the 28 paths.
 - [ ] A2: `git grep -n -F` for each deleted file's stem returns no hit outside `.claude/` and `docs/`.
 - [ ] A3: `node --test scripts/tests/unit-contract.test.mjs` passes with its remaining tests.
 - [ ] A4: the scripts test suite passes with the same command CI uses (`npm test --prefix scripts`).
