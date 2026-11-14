@@ -62,7 +62,8 @@ namespace AtlasWorld.Client.World
 
         private readonly AnimationPlayer? _player;
         private readonly Skeleton3D? _skeleton;
-        private readonly IReadOnlyDictionary<string, string> _clipMap;
+        private readonly SecondarySpringPhysics? _springPhysics;
+        private readonly Dictionary<string, string> _clipMap;
         private readonly HashSet<string> _warnedMissingClips = new();
         private readonly Node3D? _modelRoot;
 
@@ -93,6 +94,12 @@ namespace AtlasWorld.Client.World
 
             if (_player != null)
                 ConfigureLoopModes();
+            if (_skeleton != null)
+            {
+                var springs = new SecondarySpringPhysics(_skeleton);
+                if (springs.ActiveLinkCount > 0)
+                    _springPhysics = springs;
+            }
             if (_modelRoot != null && _skeleton != null && _player != null)
                 AttachUpperBodyDriver(_modelRoot);
         }
@@ -142,6 +149,31 @@ namespace AtlasWorld.Client.World
         }
 
         /// <summary>
+        /// Dynamically updates the clip mapped to <paramref name="state"/> (e.g., idle, walk, run),
+        /// configures its loop mode, and immediately transitions to it if currently in that state.
+        /// </summary>
+        public bool SetClipOverride(string state, string clipName)
+        {
+            if (string.IsNullOrEmpty(state) || string.IsNullOrEmpty(clipName))
+                return false;
+            if (_player == null || !_player.HasAnimation(clipName))
+                return false;
+
+            _clipMap[state] = clipName;
+            if (state is StateIdle or StateWalk or StateRun or StateCombatIdle or StateBlock)
+                SetRawClipLoop(clipName, Animation.LoopModeEnum.Linear);
+
+            if (_lastState == state)
+            {
+                PlayState(state);
+            }
+            return true;
+        }
+
+        public string GetMappedClip(string state) =>
+            _clipMap.TryGetValue(state, out string? clip) ? clip : "";
+
+        /// <summary>
         /// Deterministically advances AnimationPlayer, applies feminine relaxed posture / locomotion smoothing,
         /// and blends any active upper-body attack in exact sequential order.
         /// </summary>
@@ -172,7 +204,12 @@ namespace AtlasWorld.Client.World
             {
                 AdvanceUpperBody(delta);
             }
+            _springPhysics?.Step(delta);
         }
+
+        public void StepSecondarySprings(double delta) => _springPhysics?.Step(delta);
+        public int SecondarySpringLinkCount => _springPhysics?.ActiveLinkCount ?? 0;
+        public Node3D? ModelRoot => _modelRoot;
 
         public void Update(bool isAlive, Vector3 velocity, bool isAttacking = false)
         {
@@ -646,29 +683,28 @@ namespace AtlasWorld.Client.World
         /// A pipeline clip name wins over the Kenney default (run before sprint, death before die)
         /// when the manifest did not map that state itself and the player has the pipeline clip.
         /// </summary>
-        private IReadOnlyDictionary<string, string> PreferPipelineNames(
-            IReadOnlyDictionary<string, string> map, IReadOnlyDictionary<string, string>? overrides)
+        private Dictionary<string, string> PreferPipelineNames(
+            Dictionary<string, string> map, IReadOnlyDictionary<string, string>? overrides)
         {
             if (_player == null)
                 return map;
-            Dictionary<string, string>? copy = null;
             foreach ((string state, string pipelineClip) in new[] { (StateRun, "run"), (StateDeath, "death") })
             {
                 bool mapped = overrides != null && overrides.ContainsKey(state);
                 if (!mapped && _player.HasAnimation(pipelineClip))
-                    (copy ??= new Dictionary<string, string>(map))[state] = pipelineClip;
+                    map[state] = pipelineClip;
             }
-            return copy ?? map;
+            return map;
         }
 
-        private static IReadOnlyDictionary<string, string> MergeClipMap(IReadOnlyDictionary<string, string>? overrides)
+        private static Dictionary<string, string> MergeClipMap(IReadOnlyDictionary<string, string>? overrides)
         {
-            if (overrides == null || overrides.Count == 0)
-                return DefaultClipMap;
-
             var merged = new Dictionary<string, string>(DefaultClipMap);
-            foreach (KeyValuePair<string, string> kv in overrides)
-                merged[kv.Key] = kv.Value;
+            if (overrides != null)
+            {
+                foreach (KeyValuePair<string, string> kv in overrides)
+                    merged[kv.Key] = kv.Value;
+            }
             return merged;
         }
 

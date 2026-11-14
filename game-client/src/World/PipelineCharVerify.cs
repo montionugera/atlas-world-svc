@@ -421,29 +421,70 @@ namespace AtlasWorld.Client.World
             Report("upper-body attack layer clears after clip length while run continues",
                 !s.Anim.IsUpperBodyAttackActive && s.Anim.CurrentState == "run");
 
-            // Foot-grounding regression check: across locomotion & combat clips, lowest ankle bone (LeftFoot/RightFoot)
-            // must never sink into the ground relative to rest ankle height (~0.078 m above sole).
+            // Foot-grounding & stationary foot-sway regression check:
+            // 1. Across locomotion & combat clips, lowest ankle bone (LeftFoot/RightFoot) must stay grounded (minDeltaY >= -2.5 cm).
+            // 2. On stationary idle clips (idle, combat_idle, block), horizontal (X, Z) ankle drift must stay <= 1.5 cm
+            //    (guards against missing 1.0x pelvis X/Y counterbalance causing a 6.8 cm pendulum leg swing).
             int leftFoot = skel.FindBone("LeftFoot");
             int rightFoot = skel.FindBone("RightFoot");
             if (Report("Meshy humanoid LeftFoot and RightFoot bones found", leftFoot >= 0 && rightFoot >= 0))
             {
                 float restFootY = Mathf.Min(skel.GetBoneGlobalRest(leftFoot).Origin.Y, skel.GetBoneGlobalRest(rightFoot).Origin.Y);
-                foreach (string clipName in new[] { "idle", "walk", "run", "combat_idle", "attack", "attack_2", "attack_3" })
+                foreach (string clipName in new[] { "idle", "walk", "run", "combat_idle", "block", "attack", "attack_2", "attack_3" })
                 {
+                    if (!s.Player.HasAnimation(clipName))
+                        continue;
                     s.Player.Play(clipName);
                     double cLen = s.Player.GetAnimation(clipName).Length;
                     float minDeltaY = float.MaxValue;
-                    foreach (double norm in new[] { 0.0, 0.25, 0.50, 0.75 })
+                    Vector2 lMinXZ = new(float.MaxValue, float.MaxValue);
+                    Vector2 lMaxXZ = new(float.MinValue, float.MinValue);
+                    Vector2 rMinXZ = new(float.MaxValue, float.MaxValue);
+                    Vector2 rMaxXZ = new(float.MinValue, float.MinValue);
+                    foreach (double norm in new[] { 0.0, 0.2, 0.4, 0.6, 0.8 })
                     {
                         s.Player.Seek(cLen * norm, true);
-                        float ly = (skel.GlobalTransform * skel.GetBoneGlobalPose(leftFoot)).Origin.Y;
-                        float ry = (skel.GlobalTransform * skel.GetBoneGlobalPose(rightFoot)).Origin.Y;
-                        minDeltaY = Mathf.Min(minDeltaY, Mathf.Min(ly, ry) - restFootY);
+                        Vector3 lPos = (skel.GlobalTransform * skel.GetBoneGlobalPose(leftFoot)).Origin;
+                        Vector3 rPos = (skel.GlobalTransform * skel.GetBoneGlobalPose(rightFoot)).Origin;
+                        minDeltaY = Mathf.Min(minDeltaY, Mathf.Min(lPos.Y, rPos.Y) - restFootY);
+                        Vector2 lxz = new(lPos.X, lPos.Z);
+                        Vector2 rxz = new(rPos.X, rPos.Z);
+                        lMinXZ = lMinXZ.Min(lxz);
+                        lMaxXZ = lMaxXZ.Max(lxz);
+                        rMinXZ = rMinXZ.Min(rxz);
+                        rMaxXZ = rMaxXZ.Max(rxz);
                     }
                     Report($"maro_folk_girl '{clipName}' feet stay grounded (min ankle delta {minDeltaY * 100f:+0.1;-0.1;0.0} cm >= -2.5 cm)",
                         minDeltaY >= -0.025f && minDeltaY <= 0.12f);
+
+                    if (clipName == "idle" || clipName == "combat_idle" || clipName == "block")
+                    {
+                        float maxLateralSwayCm = Mathf.Max(lMaxXZ.X - lMinXZ.X, rMaxXZ.X - rMinXZ.X) * 100f;
+                        float maxHorizDriftCm = Mathf.Max(lMinXZ.DistanceTo(lMaxXZ), rMinXZ.DistanceTo(rMaxXZ)) * 100f;
+                        Report($"maro_folk_girl stationary '{clipName}' ankle lateral sway is planted (lateralX={maxLateralSwayCm:F2} cm <= 1.50 cm, totalXZ={maxHorizDriftCm:F2} cm <= 2.60 cm)",
+                            maxLateralSwayCm <= 1.50f && maxHorizDriftCm <= 2.60f);
+                    }
                 }
             }
+
+            // Crisp VRoid FaceMesh & 512x512 Eye Iris Texture Gate (guards against reverting to blurred baked-face GLB)
+            MeshInstance3D? maroFace = s.Root.FindChild("FaceMesh", recursive: true, owned: false) as MeshInstance3D;
+            bool hasIris512 = false;
+            int maroFaceSurfaces = maroFace?.Mesh?.GetSurfaceCount() ?? 0;
+            if (maroFace?.Mesh != null)
+            {
+                for (int si = 0; si < maroFaceSurfaces; si++)
+                {
+                    Material? mat = maroFace.GetSurfaceOverrideMaterial(si) ?? maroFace.Mesh.SurfaceGetMaterial(si);
+                    if (mat is StandardMaterial3D sm && (sm.ResourceName ?? "").Contains("EyeIris", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Vector2I texSz = sm.AlbedoTexture != null ? new Vector2I(sm.AlbedoTexture.GetWidth(), sm.AlbedoTexture.GetHeight()) : Vector2I.Zero;
+                        hasIris512 = texSz.X >= 512 && texSz.Y >= 512;
+                    }
+                }
+            }
+            Report($"maro_folk_girl has dedicated VRoid FaceMesh ({maroFaceSurfaces} surfaces >= 8) with crisp >=512px EyeIris texture ({hasIris512})",
+                maroFace != null && maroFaceSurfaces >= 8 && hasIris512);
 
             // Runtime sword look swap across multiple 1H sword variants on handslot_r
             var socket = new WeaponSocket(s.Root);

@@ -418,18 +418,76 @@ namespace AtlasWorld.Client.World
                 }
                 else if (s.Kind == "watchtower") // "watchtower" (2-Story Stone Watchtower with Wide East Exterior Stair Ramp)
                 {
-                    float upperDeckY = structBaseY + Mathf.Max(2.2f, s.UpperFloorHeight);
-                    float midFloorThresholdY = structBaseY + Mathf.Max(2.2f, s.UpperFloorHeight) * 0.42f;
+                    float deckH = Mathf.Max(2.2f, s.UpperFloorHeight);
+                    float upperDeckY = structBaseY + deckH;
+                    float midFloorThresholdY = structBaseY + deckH * 0.42f;
 
                     // 1. Check Exterior East Stair Ramp (matches visual steps in MapChunkStreamer.SpawnStructureVolumeIntoChunk!):
-                    //    Footprint X in [s.X + r - 0.35m (top at 2F edge) .. s.X + r + 3.45m (bottom on meadow ground)]
+                    //    Footprint X in [s.X + r - 0.25m (top at 2F edge) .. s.X + r + 3.25m (bottom on meadow ground)]
                     //    Footprint Z in [s.Z - 1.55m .. s.Z + 1.55m] (wide 3.1m stair corridor centered on s.Z)
                     float rampTopX = s.X + r - 0.25f;
                     float rampBottomX = s.X + r + 3.25f;
-                    if (wx >= rampTopX - 0.35f && wx <= rampBottomX + 0.45f && Mathf.Abs(wz - s.Z) <= 1.55f)
+                    float rampSpan = rampBottomX - rampTopX;
+                    const int stepCount = 18;
+                    const float runnerThickness = 0.012f;
+                    const float clearance = 0.002f;
+                    const float bevelRatio = 0.35f;
+
+                    bool inStairCorridor = wx >= rampTopX - 0.35f && wx <= rampBottomX + 0.45f && Mathf.Abs(wz - s.Z) <= 1.55f;
+                    if (inStairCorridor)
                     {
-                        float t = Mathf.Clamp((rampBottomX - wx) / Mathf.Max(0.5f, rampBottomX - rampTopX), 0f, 1f);
-                        float rampY = Mathf.Lerp(structBaseY, upperDeckY, t);
+                        float rampY;
+                        if (wx >= rampBottomX + 0.45f)
+                        {
+                            rampY = structBaseY;
+                        }
+                        else if (wx > rampBottomX)
+                        {
+                            // Ground approach leading up to step 0
+                            float enterT = (rampBottomX + 0.45f - wx) / 0.45f;
+                            float enterBlend = enterT * enterT * (3f - 2f * enterT);
+                            float step0Top = structBaseY + deckH * (0.5f / stepCount) + runnerThickness + clearance;
+                            rampY = Mathf.Lerp(structBaseY, step0Top, enterBlend);
+                        }
+                        else if (wx <= rampTopX)
+                        {
+                            // 2nd-floor deck surface connection
+                            rampY = upperDeckY;
+                        }
+                        else
+                        {
+                            // Exact stepped + smooth-beveled stair height across [rampTopX .. rampBottomX]
+                            float t = (rampBottomX - wx) / rampSpan; // 0.0 at East bottom to 1.0 at West top
+                            float u = t * stepCount; // 0.0 to 18.0
+                            int stepIdx = Mathf.Clamp((int)Mathf.Floor(u), 0, stepCount - 1);
+                            float frac = u - stepIdx; // [0.0 .. 1.0) along current step tread
+
+                            float stepH = deckH * ((stepIdx + 0.5f) / stepCount);
+                            float curTreadY = structBaseY + stepH + runnerThickness + clearance;
+
+                            float nextTreadY;
+                            if (stepIdx < stepCount - 1)
+                            {
+                                float nextStepH = deckH * ((stepIdx + 1.5f) / stepCount);
+                                nextTreadY = structBaseY + nextStepH + runnerThickness + clearance;
+                            }
+                            else
+                            {
+                                nextTreadY = upperDeckY;
+                            }
+
+                            if (frac < 1.0f - bevelRatio)
+                            {
+                                rampY = curTreadY;
+                            }
+                            else
+                            {
+                                float b = (frac - (1.0f - bevelRatio)) / bevelRatio;
+                                float blend = b * b * (3f - 2f * b); // Smooth cubic ease across riser boundary
+                                rampY = Mathf.Lerp(curTreadY, nextTreadY, blend);
+                            }
+                        }
+
                         bestFloorY = Mathf.Max(bestFloorY, rampY);
                     }
 
@@ -437,9 +495,10 @@ namespace AtlasWorld.Client.World
                     //    Full deck footprint X in [s.X - r*1.06 .. s.X + r*1.06], Z in [s.X - r*1.06 .. s.Z + r*1.06]
                     if (Mathf.Abs(wx - s.X) <= r * 1.06f && Mathf.Abs(wz - s.Z) <= r * 1.06f)
                     {
-                        if (!float.IsNaN(currentEntityY) && currentEntityY >= midFloorThresholdY)
+                        bool onStairs = inStairCorridor && wx >= rampTopX;
+                        if (!onStairs && !float.IsNaN(currentEntityY) && currentEntityY >= midFloorThresholdY)
                         {
-                            // Entity is on the 2nd floor (or stepping off the upper half of the East stair ramp onto the 2nd floor)
+                            // Entity is on the 2nd floor (or stepping off the East stair ramp onto the 2nd floor)
                             bestFloorY = Mathf.Max(bestFloorY, upperDeckY);
                         }
                         else if (!float.IsNaN(currentEntityY) && wx < rampTopX - 0.25f)
