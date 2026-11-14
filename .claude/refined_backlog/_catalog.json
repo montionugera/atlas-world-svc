@@ -2796,5 +2796,14 @@
     "claimed_at": "2026-11-14T17:13:51.861441+00:00",
     "shipped_at": "2026-11-14T17:21:47.262123+00:00",
     "shipped_sha": "18ef8012ecc8dd2e698325dc1e7e6af292ec1eb8"
+  },
+  {
+    "id": "F-216",
+    "title": "Game DB from the studio world: slim catalog, one search, record links",
+    "from_idea": "I-299",
+    "created_at": "2026-11-14T17:23:26.053010+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
