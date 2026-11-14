@@ -195,6 +195,26 @@
       "stream": "res://assets/audio/footstep_stone_04.ogg",
       "license": "CC0",
       "source": "ElevenLabs v3 RPG stone road footstep (04)"
+    },
+    "sfx:footstep_5": {
+      "stream": "res://assets/audio/footstep_stone_05.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (05)"
+    },
+    "sfx:footstep_6": {
+      "stream": "res://assets/audio/footstep_stone_06.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (06)"
+    },
+    "sfx:footstep_7": {
+      "stream": "res://assets/audio/footstep_stone_07.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (07)"
+    },
+    "sfx:footstep_8": {
+      "stream": "res://assets/audio/footstep_stone_08.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (08)"
     }
   }
 }

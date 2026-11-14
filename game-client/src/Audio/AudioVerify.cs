@@ -36,6 +36,10 @@ namespace AtlasWorld.Client.Audio
             failures += ReportResolves(reg, "sfx:footstep_2");
             failures += ReportResolves(reg, "sfx:footstep_3");
             failures += ReportResolves(reg, "sfx:footstep_4");
+            failures += ReportResolves(reg, "sfx:footstep_5");
+            failures += ReportResolves(reg, "sfx:footstep_6");
+            failures += ReportResolves(reg, "sfx:footstep_7");
+            failures += ReportResolves(reg, "sfx:footstep_8");
 
             // Part 2 — Play() spawns a positioned, playing 3D one-shot carrying that stream.
             failures += ReportPlay(reg, "sfx:attack", new Vector3(3f, 0f, -2f));
