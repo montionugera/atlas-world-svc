@@ -179,14 +179,15 @@ namespace AtlasWorld.Client.World
                 for (int i = 0; i < doc.Structures.Count; i++)
                 {
                     var s = doc.Structures[i];
-                    if (s.Kind == "block")
+                    if (s.Kind != "crystal_cave" && s.Kind != "watchtower")
                         continue;
                     float dx = wx - s.X;
                     float dz = wz - s.Z;
-                    float dist = Mathf.Sqrt(dx * dx + dz * dz);
                     float flatRadius = s.Radius + 3.8f;
-                    if (dist < flatRadius)
+                    float distSq = dx * dx + dz * dz;
+                    if (distSq < flatRadius * flatRadius)
                     {
+                        float dist = Mathf.Sqrt(distSq);
                         float centerH = SampleRawUnflattenedHeight(s.X, s.Z, amp, doc);
                         float blend = SmoothStep(s.Radius + 0.5f, flatRadius, dist);
                         totalY = Mathf.Lerp(centerH, totalY, blend);
@@ -368,8 +369,14 @@ namespace AtlasWorld.Client.World
             for (int i = 0; i < doc.Structures.Count; i++)
             {
                 var s = doc.Structures[i];
-                float structBaseY = SampleBaseTerrainHeight(s.X, s.Z, doc);
+                if (s.Kind != "crystal_cave" && s.Kind != "watchtower")
+                    continue;
+
                 float r = Mathf.Max(2.5f, s.Radius);
+                if (Mathf.Abs(wx - s.X) > r + 4.0f || Mathf.Abs(wz - s.Z) > r + 2.0f)
+                    continue;
+
+                float structBaseY = SampleBaseTerrainHeight(s.X, s.Z, doc);
 
                 if (s.Kind == "crystal_cave")
                 {

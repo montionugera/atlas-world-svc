@@ -63,6 +63,11 @@ namespace AtlasWorld.Client
         private string _activeMapId = "freja-south-gate";
         private MaroBellPocDiagnosticsHud? _pocDiagnosticsHud;
         private MaroBellPocController? _maroPoc;
+        private string _lastWorldClockString = "";
+        private WorldDayPhase _lastWorldClockPhase = (WorldDayPhase)(-1);
+        private int _lastHudMapX = int.MinValue;
+        private int _lastHudMapY = int.MinValue;
+        private float _diagnosticsHudTimer = 0f;
 
         private Vector2 _touchMoveIntent = Vector2.Zero;
         private float _basePlayerSpeed = 3.0f; // F-184: player run is 3 m/s (server SPEED_SCALE 0.15 of the old 20)
@@ -1735,13 +1740,20 @@ namespace AtlasWorld.Client
             float dt = (float)delta;
             _pulseTime += dt;
 
-            // Advance 24-hour Day/Night cycle & update TopBar World Clock badge
+            // Advance 24-hour Day/Night cycle & update TopBar World Clock badge only when minute/phase changes
             _dayNightCycle.Update(dt, _mapDoc);
-            NavigationTopBar?.SetWorldClock(
-                _dayNightCycle.PhaseIconGlyph,
-                _dayNightCycle.FormattedClockString,
-                _dayNightCycle.PhaseDisplayName,
-                _dayNightCycle.CurrentPhase);
+            string clockStr = _dayNightCycle.FormattedClockString;
+            WorldDayPhase clockPhase = _dayNightCycle.CurrentPhase;
+            if (clockStr != _lastWorldClockString || clockPhase != _lastWorldClockPhase)
+            {
+                _lastWorldClockString = clockStr;
+                _lastWorldClockPhase = clockPhase;
+                NavigationTopBar?.SetWorldClock(
+                    _dayNightCycle.PhaseIconGlyph,
+                    clockStr,
+                    _dayNightCycle.PhaseDisplayName,
+                    clockPhase);
+            }
 
             // When Mac 3D Map Builder Studio is active, drive the free-fly / orbit studio camera
             if (_mapBuilderDock != null && _mapBuilderDock.IsBuilderActive)
@@ -1793,13 +1805,18 @@ namespace AtlasWorld.Client
 
             if (_pocDiagnosticsHud != null && PlayerAvatar != null)
             {
-                _pocDiagnosticsHud.UpdateDiagnostics(
-                    _activeMapId,
-                    PlayerAvatar.Position,
-                    ServerArenaCenter,
-                    Connection != null && Connection.IsConnectedToHost,
-                    delta,
-                    _maroPoc?.ActiveBeat ?? "POC-00");
+                _diagnosticsHudTimer += dt;
+                if (_diagnosticsHudTimer >= 0.10f)
+                {
+                    _diagnosticsHudTimer = 0f;
+                    _pocDiagnosticsHud.UpdateDiagnostics(
+                        _activeMapId,
+                        PlayerAvatar.Position,
+                        ServerArenaCenter,
+                        Connection != null && Connection.IsConnectedToHost,
+                        delta,
+                        _maroPoc?.ActiveBeat ?? "POC-00");
+                }
             }
 
             if (_attackAnimHoldSec > 0f)
@@ -1995,10 +2012,15 @@ namespace AtlasWorld.Client
                 float smoothAngle = Mathf.LerpAngle(currentAngle, targetAngle, dt * 14.0f);
                 PlayerAvatar.Rotation = new Vector3(0f, smoothAngle, 0f);
 
-                // Update minimap coordinates in TopBar
+                // Update minimap coordinates in TopBar only when integer coordinates change
                 int mapX = (int)Mathf.Round(ServerArenaCenter.X + (PlayerAvatar.Position.X / ServerCoordScale));
                 int mapY = (int)Mathf.Round(ServerArenaCenter.Y + (PlayerAvatar.Position.Z / ServerCoordScale));
-                NavigationTopBar?.SetLocation("Freja", mapX, mapY);
+                if (mapX != _lastHudMapX || mapY != _lastHudMapY)
+                {
+                    _lastHudMapX = mapX;
+                    _lastHudMapY = mapY;
+                    NavigationTopBar?.SetLocation("Freja", mapX, mapY);
+                }
 
                 // Always allow movement to interrupt any completed or ongoing attack hold so the character never feels frozen!
                 _attackAnimHoldSec = 0f;
