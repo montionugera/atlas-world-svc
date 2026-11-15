@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Godot;
 using AtlasWorld.Client.Content;
@@ -22,6 +23,9 @@ namespace AtlasWorld.Client.World
         private int _failures;
         private SubViewport? _vp;
 
+        [DllImport("libc", EntryPoint = "_exit")]
+        private static extern void PosixExit(int status);
+
         public override async void _Ready()
         {
             try
@@ -32,8 +36,16 @@ namespace AtlasWorld.Client.World
             {
                 Report($"no exception escaped the probe ({ex.GetType().Name}: {ex.Message})", false);
             }
+            int exitCode = _failures == 0 ? 0 : 1;
             GD.Print(_failures == 0 ? $"{Tag} VERDICT PASS" : $"{Tag} VERDICT FAIL ({_failures} case(s))");
-            GetTree().Quit(_failures == 0 ? 0 : 1);
+            Console.Out.Flush();
+            Console.Error.Flush();
+            if (!OS.HasFeature("windows"))
+            {
+                PosixExit(exitCode);
+                return;
+            }
+            GetTree().Quit(exitCode);
         }
 
         private async Task Run()
@@ -96,6 +108,8 @@ namespace AtlasWorld.Client.World
                 streamer.ActiveMultiMeshBatchCount >= 4 && streamer.ActiveGpuInstanceCount >= 80);
             foreach (string propId in new[] { "wall-face-w-01", "curb-w-01", "low-wall-01", "fence-panel-01", "tree-01", "bush-01", "rock-01", "shop-awning-01", "oil-jar-01", "crate-01", "sign-board-01", "bench-01", "flower-pot-01", "wall-face-w-12", "curb-w-30", "low-wall-18", "fence-panel-06", "tree-15", "bush-35", "rock-21", "shop-awning-02", "oil-jar-04", "crate-04", "sign-board-03", "bench-04", "flower-pot-04" })
                 Report($"E4 prop resolved ({propId})", root.FindChild(propId, true, false) != null);
+            foreach (string propId in new[] { "bell-sanctuary-arch-01", "guild-hall-01", "inn-tavern-01", "bridge-flank-w-01", "fountain-plaza-01", "windmill-sw-01", "house-blvd-w-01", "house-blvd-w-02", "house-blvd-w-03", "market-stall-01", "market-stall-02", "banner-gate-w-01", "retaining-wall-t12-w-01", "stairs-t12-w-01", "curtain-wall-s-w-01", "bastion-s-w-01", "aqueduct-arch-01", "tree-blossom-plz-01", "tree-cypress-res-01", "tree-cypress-res-02", "bush-lavender-s-01", "planter-box-s-01", "ivy-wall-t12-w-01" })
+                Report($"F-224 9-zone urban/foliage prop resolved ({propId})", root.FindChild(propId, true, false) != null);
             double drawCalls = Performance.GetMonitor(Performance.Monitor.RenderTotalDrawCallsInFrame);
             double primitives = Performance.GetMonitor(Performance.Monitor.RenderTotalPrimitivesInFrame);
             double frameMs = Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000.0;
@@ -436,57 +450,213 @@ namespace AtlasWorld.Client.World
             _vp = vp;
             Texture2D? meadowTex = ExtractAlbedoTexture(streamer, "env:maro-ground-meadow");
             Texture2D? cobbleTex = ExtractAlbedoTexture(streamer, "env:maro-road-cobble");
-            // Ground and road ribbon, using pulled seamless textures when available in studio-cache.
-            var groundMat = new StandardMaterial3D { AlbedoColor = meadowTex != null ? Colors.White : new Color(0.36f, 0.4f, 0.34f) };
+            Texture2D? plazaTex = ExtractAlbedoTexture(streamer, "env:maro-ground-plaza-flagstone");
+            Texture2D? terraceTex = ExtractAlbedoTexture(streamer, "env:maro-ground-terrace-tile");
+
+            // 1. Base Alpine Meadow Floor
+            var groundMat = new StandardMaterial3D
+            {
+                AlbedoColor = meadowTex != null ? new Color(0.95f, 0.98f, 0.92f) : new Color(0.36f, 0.48f, 0.34f),
+                Roughness = 0.88f,
+            };
             if (meadowTex != null)
             {
                 groundMat.AlbedoTexture = meadowTex;
-                groundMat.Uv1Scale = new Vector3(30f, 50f, 1f);
+                groundMat.Uv1Scale = new Vector3(36f, 60f, 1f);
             }
             root.AddChild(new MeshInstance3D
             {
-                Mesh = new PlaneMesh { Size = new Vector2(120f, 200f) },
-                Position = new Vector3(0f, -0.02f, 0f),
+                Name = "AlpineMeadowFloor",
+                Mesh = new PlaneMesh { Size = new Vector2(160f, 240f) },
+                Position = new Vector3(0f, -0.04f, 0f),
                 MaterialOverride = groundMat,
             });
+
+            // 2. Southern River & Moat Water Surface + Stone Quay Embankments (Category B1, B2)
+            var waterMat = new StandardMaterial3D
+            {
+                AlbedoColor = new Color(0.14f, 0.48f, 0.64f),
+                Metallic = 0.25f,
+                Roughness = 0.12f,
+                SpecularMode = BaseMaterial3D.SpecularModeEnum.SchlickGgx,
+            };
+            root.AddChild(new MeshInstance3D
+            {
+                Name = "river_water_surface",
+                Mesh = new BoxMesh { Size = new Vector3(130f, 0.08f, 15.0f) },
+                Position = new Vector3(0f, -0.02f, 84.5f),
+                MaterialOverride = waterMat,
+            });
+            // Western & Eastern outer moat channels
+            foreach (float moatX in new[] { -38.5f, 38.5f })
+            {
+                root.AddChild(new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(6.5f, 0.08f, 156f) },
+                    Position = new Vector3(moatX, -0.02f, 0f),
+                    MaterialOverride = waterMat,
+                });
+            }
+
+            var terraceMat = new StandardMaterial3D
+            {
+                AlbedoColor = terraceTex != null ? new Color(0.96f, 0.94f, 0.90f) : new Color(0.76f, 0.72f, 0.66f),
+                Roughness = 0.82f,
+            };
+            if (terraceTex != null)
+            {
+                terraceMat.AlbedoTexture = terraceTex;
+                terraceMat.Uv1Scale = new Vector3(16f, 2f, 1f);
+            }
+            // River quay walls on north (z=77.2) and south (z=91.8) banks
+            foreach (float bankZ in new[] { 77.2f, 91.8f })
+            {
+                root.AddChild(new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(110f, 0.22f, 1.4f) },
+                    Position = new Vector3(0f, 0.05f, bankZ),
+                    MaterialOverride = terraceMat,
+                });
+            }
+
+            // 3. Central Circular Flagstone Plaza (Zone 1/2 hub at x=0, z=-10) & Upper Sanctuary Terrace
+            var plazaMat = new StandardMaterial3D
+            {
+                AlbedoColor = plazaTex != null ? new Color(0.98f, 0.96f, 0.93f) : new Color(0.82f, 0.78f, 0.72f),
+                Roughness = 0.78f,
+            };
+            if (plazaTex != null)
+            {
+                plazaMat.AlbedoTexture = plazaTex;
+                plazaMat.Uv1Scale = new Vector3(10f, 10f, 1f);
+            }
+            root.AddChild(new MeshInstance3D
+            {
+                Name = "CentralCircularPlaza",
+                Mesh = new CylinderMesh { TopRadius = 18.5f, BottomRadius = 18.5f, Height = 0.05f, RadialSegments = 48 },
+                Position = new Vector3(0f, 0.015f, -10f),
+                MaterialOverride = plazaMat,
+            });
+            root.AddChild(new MeshInstance3D
+            {
+                Name = "CentralPlazaOuterCurbRing",
+                Mesh = new CylinderMesh { TopRadius = 19.6f, BottomRadius = 19.6f, Height = 0.03f, RadialSegments = 48 },
+                Position = new Vector3(0f, 0.005f, -10f),
+                MaterialOverride = terraceMat,
+            });
+
+            // Adventurer's Guild Courtyard (East Zone 5, x=18, z=-4)
+            root.AddChild(new MeshInstance3D
+            {
+                Name = "GuildCourtyardSurface",
+                Mesh = new BoxMesh { Size = new Vector3(18f, 0.04f, 16f) },
+                Position = new Vector3(18f, 0.01f, -4f),
+                MaterialOverride = plazaMat,
+            });
+
+            // Crafting & Bram Courtyard (West Zone 3, x=-15, z=-18)
+            root.AddChild(new MeshInstance3D
+            {
+                Name = "CraftingCourtyardSurface",
+                Mesh = new BoxMesh { Size = new Vector3(18f, 0.04f, 20f) },
+                Position = new Vector3(-15f, 0.01f, -18f),
+                MaterialOverride = terraceMat,
+            });
+
+            // Upper Great Bell Sanctuary Terrace (North Zone 1/8, z=-42..-74)
+            root.AddChild(new MeshInstance3D
+            {
+                Name = "SanctuaryLowerTerrace",
+                Mesh = new BoxMesh { Size = new Vector3(42f, 0.06f, 32f) },
+                Position = new Vector3(0f, 0.01f, -58f),
+                MaterialOverride = terraceMat,
+            });
+            root.AddChild(new MeshInstance3D
+            {
+                Name = "SanctuaryInnerDais",
+                Mesh = new CylinderMesh { TopRadius = 14.5f, BottomRadius = 15.0f, Height = 0.08f, RadialSegments = 48 },
+                Position = new Vector3(0f, 0.025f, -64f),
+                MaterialOverride = plazaMat,
+            });
+
+            // 4. Main Cobblestone Boulevard + Radial Zone Streets (Category C1)
+            void AddCobbleRibbon(Vector3 a, Vector3 b, float width, float yHeight = 0.025f)
+            {
+                float segLen = a.DistanceTo(b);
+                if (segLen < 0.1f)
+                    return;
+                var roadMat = new StandardMaterial3D
+                {
+                    AlbedoColor = cobbleTex != null ? new Color(0.95f, 0.93f, 0.90f) : new Color(0.46f, 0.44f, 0.42f),
+                    Roughness = 0.84f,
+                };
+                if (cobbleTex != null)
+                {
+                    roadMat.AlbedoTexture = cobbleTex;
+                    roadMat.Uv1Scale = new Vector3(Mathf.Max(1f, width / 4f), Mathf.Max(1f, segLen / 4f), 1f);
+                }
+                var seg = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(width, 0.04f, segLen) },
+                    MaterialOverride = roadMat,
+                };
+                root.AddChild(seg);
+                seg.Position = new Vector3((a.X + b.X) * 0.5f, yHeight, (a.Z + b.Z) * 0.5f);
+                seg.LookAt(seg.Position + (b - a), Vector3.Up);
+            }
+
             var doc = UnifiedMapDocument.LoadOrDefault("maro-bell");
             var road = doc.Routes[0];
+            // Bridge approach from south bank (z=94) to city gate (z=75)
+            AddCobbleRibbon(new Vector3(0f, 0f, 94f), new Vector3(0f, 0f, 75f), 8.2f, 0.03f);
             for (int i = 0; i < road.Points.Count - 1; i++)
             {
                 var a = new Vector3(road.Points[i][0], 0f, road.Points[i][1]);
                 var b = new Vector3(road.Points[i + 1][0], 0f, road.Points[i + 1][1]);
-                float segLen = a.DistanceTo(b);
-                var roadMat = new StandardMaterial3D { AlbedoColor = cobbleTex != null ? Colors.White : new Color(0.2f, 0.2f, 0.22f) };
-                if (cobbleTex != null)
-                {
-                    roadMat.AlbedoTexture = cobbleTex;
-                    roadMat.Uv1Scale = new Vector3(1f, Mathf.Max(1f, segLen / 4f), 1f);
-                }
-                var seg = new MeshInstance3D
-                {
-                    Mesh = new BoxMesh { Size = new Vector3(road.Width, 0.04f, segLen) },
-                    MaterialOverride = roadMat,
-                };
-                root.AddChild(seg);
-                seg.Position = (a + b) / 2f;
-                seg.LookAt(seg.Position + (b - a), Vector3.Up);
+                AddCobbleRibbon(a, b, 9.2f, 0.025f);
             }
-            root.AddChild(new DirectionalLight3D { RotationDegrees = new Vector3(-55f, 30f, 0f) });
+            // Radial Zone Streets branching from the Boulevard & Central Plaza
+            AddCobbleRibbon(new Vector3(0f, 0f, 16f), new Vector3(-24f, 0f, 16f), 6.0f, 0.02f);
+            AddCobbleRibbon(new Vector3(-20f, 0f, 16f), new Vector3(-20f, 0f, -42f), 5.8f, 0.02f);
+            AddCobbleRibbon(new Vector3(-20f, 0f, -24f), new Vector3(0f, 0f, -24f), 5.8f, 0.02f);
+            AddCobbleRibbon(new Vector3(0f, 0f, -4f), new Vector3(24f, 0f, -4f), 6.5f, 0.02f);
+            AddCobbleRibbon(new Vector3(18f, 0f, 16f), new Vector3(18f, 0f, -50f), 5.8f, 0.02f);
+            AddCobbleRibbon(new Vector3(0f, 0f, -28f), new Vector3(20f, 0f, -28f), 5.8f, 0.02f);
+
+            // 5. Golden Alpine Sunlight & Sky (Category A3)
+            root.AddChild(new DirectionalLight3D
+            {
+                RotationDegrees = new Vector3(-48f, 28f, 0f),
+                LightColor = new Color(1.0f, 0.96f, 0.88f),
+                LightEnergy = 1.15f,
+                ShadowEnabled = true,
+            });
+            var skyMat = new ProceduralSkyMaterial
+            {
+                SkyTopColor = new Color(0.20f, 0.46f, 0.84f),
+                SkyHorizonColor = new Color(0.72f, 0.87f, 0.98f),
+                GroundBottomColor = new Color(0.28f, 0.36f, 0.26f),
+                GroundHorizonColor = new Color(0.64f, 0.80f, 0.90f),
+            };
             root.AddChild(new WorldEnvironment
             {
                 Environment = new Godot.Environment
                 {
-                    BackgroundMode = Godot.Environment.BGMode.Color, BackgroundColor = new Color(0.7f, 0.78f, 0.88f),
-                    AmbientLightSource = Godot.Environment.AmbientSource.Color, AmbientLightColor = new Color(0.7f, 0.7f, 0.75f),
+                    BackgroundMode = Godot.Environment.BGMode.Sky,
+                    Sky = new Sky { SkyMaterial = skyMat },
+                    AmbientLightSource = Godot.Environment.AmbientSource.Color,
+                    AmbientLightColor = new Color(0.78f, 0.80f, 0.85f),
+                    AmbientLightEnergy = 0.88f,
+                    TonemapMode = Godot.Environment.ToneMapper.Filmic,
                 },
             });
             var cam = new Camera3D { Current = true };
             root.AddChild(cam);
 
-            // Top-down, orthographic: north (-Z) is screen-up, 175 m tall frame holds the whole 160 m map.
+            // Top-down, orthographic: north (-Z) is screen-up, 185 m tall frame holds the whole 160 m map + south river.
             cam.Projection = Camera3D.ProjectionType.Orthogonal;
-            cam.Size = 175f;
-            cam.Position = new Vector3(0f, 250f, 0f);
+            cam.Size = 185f;
+            cam.Position = new Vector3(0f, 250f, 5f);
             cam.RotationDegrees = new Vector3(-90f, 0f, 0f);
             await Save(outDir, "maro-bell-top-down.png");
 
@@ -535,11 +705,45 @@ namespace AtlasWorld.Client.World
 
             // E4 Slice 2: Great Bell Terrace northern vista shot (z = -66).
             cam.Fov = 60f;
-            cam.Position = new Vector3(0f, 2.2f, -45.0f);
-            cam.LookAt(new Vector3(0f, 8.5f, -66.0f), Vector3.Up);
+            cam.Position = new Vector3(0f, 3.2f, -49.0f);
+            cam.LookAt(new Vector3(0f, 9.5f, -66.0f), Vector3.Up);
             await Save(outDir, "maro-bell-great-bell-terrace.png");
 
-            await RenderMaroFolkGirlInBellTown(root, cam, outDir);
+            // =========================================================================
+            // F-224 Concept-Matched 5 Camera Shots (Categories F1..F5)
+            // =========================================================================
+            // F1: Riverside Bridge & South Gate Approach (matches 05-maro-bell-riverside-market.png)
+            cam.Fov = 60f;
+            cam.Position = new Vector3(-24.0f, 5.2f, 92.0f);
+            cam.LookAt(new Vector3(0.0f, 3.0f, 76.0f), Vector3.Up);
+            await Save(outDir, "maro-bell-concept-f1-riverside-bridge.png");
+
+            // F2: Main Market Boulevard looking North toward the Bell Sanctuary (matches 10 & 11)
+            cam.Fov = 58f;
+            cam.Position = new Vector3(0.0f, 2.6f, 62.0f);
+            cam.LookAt(new Vector3(0.0f, 5.5f, -66.0f), Vector3.Up);
+            await Save(outDir, "maro-bell-concept-f2-market-boulevard.png");
+
+            // F3: Central Circular Plaza with Astrolabe Fountain, Blossom Trees & Guild Hall (matches 10 center)
+            cam.Fov = 60f;
+            cam.Position = new Vector3(-13.5f, 3.6f, 6.5f);
+            cam.LookAt(new Vector3(6.0f, 3.5f, -12.0f), Vector3.Up);
+            await Save(outDir, "maro-bell-concept-f3-central-plaza.png");
+
+            // F4: Upper Great Bell Sanctuary Arch & Terrace Stairs (matches 11 top-left)
+            cam.Fov = 58f;
+            cam.Position = new Vector3(0.0f, 3.8f, -34.0f);
+            cam.LookAt(new Vector3(0.0f, 10.5f, -66.0f), Vector3.Up);
+            await Save(outDir, "maro-bell-concept-f4-bell-sanctuary.png");
+
+            // F5: 3/4 Bird's-Eye 9-Zone Town Overview (matches 10 & 11 right panel)
+            cam.Fov = 52f;
+            cam.Position = new Vector3(-52.0f, 56.0f, 108.0f);
+            cam.LookAt(new Vector3(0.0f, 2.0f, -5.0f), Vector3.Up);
+            await Save(outDir, "maro-bell-concept-f5-birdseye-9zones.png");
+
+            if (OS.GetEnvironment("ATLAS_RENDER_MARO_GIRL_FRAMES") == "1")
+                await RenderMaroFolkGirlInBellTown(root, cam, outDir);
         }
 
         private async Task RenderMaroFolkGirlInBellTown(Node3D root, Camera3D cam, string outDir)

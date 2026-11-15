@@ -376,7 +376,8 @@ namespace AtlasWorld.Client.World
             {
                 foreach (var prop in propsInChunk)
                 {
-                    float groundY = TerrainElevation.SampleBaseTerrainHeight(prop.X, prop.Z, _doc);
+                    float baseY = TerrainElevation.SampleBaseTerrainHeight(prop.X, prop.Z, _doc);
+                    float groundY = Mathf.Abs(prop.Y) > 0.001f ? prop.Y : baseY;
                     prop.Y = Mathf.Round(groundY * 100f) / 100f;
 
                     if (IsGpuInstancedClutterAsset(prop))
@@ -635,7 +636,7 @@ namespace AtlasWorld.Client.World
                 };
                 upperCanopy.AddChild(bannerLabel);
 
-                EntityView.ApplyAnimeToonShading(root, EntityKind.Npc);
+                EntityView.ApplyAnimeToonShading(root, EntityKind.Npc, includeOutline: false);
 
                 // Register the upper 2F canopy + pillar shafts for automatic 1st-floor interior & LOS cutaway
                 // (never fade the stairs or the 2F deck when the player stands on top of the 2F deck!)
@@ -806,7 +807,7 @@ namespace AtlasWorld.Client.World
                 };
                 roofCanopy.AddChild(caveLabel);
 
-                EntityView.ApplyAnimeToonShading(root, EntityKind.Npc);
+                EntityView.ApplyAnimeToonShading(root, EntityKind.Npc, includeOutline: false);
 
                 _occluder?.RegisterRoofOrCeilingCanopy(
                     roofCanopy,
@@ -839,13 +840,14 @@ namespace AtlasWorld.Client.World
         private void SpawnGreyBlock(UnifiedMapStructureVolume s, Node3D root)
         {
             float top = s.Hover + s.Size.Y;
+            bool isDressedScene = _doc.Props != null && _doc.Props.Count > 0;
             Node3D? glb = ResolveAssetScene(s.AssetPath ?? "")?.Instantiate() as Node3D;
             if (glb != null)
             {
                 glb.Name = $"Glb_{s.Id}";
                 glb.Position = new Vector3(0f, s.Hover, 0f);
                 glb.Rotation = new Vector3(0f, s.RotY, 0f);
-                EntityView.ApplyAnimeToonShading(glb, EntityKind.Npc);
+                EntityView.ApplyAnimeToonShading(glb, EntityKind.Npc, includeOutline: false);
                 root.AddChild(glb);
                 _occluder?.RegisterPropRoot(glb, Mathf.Max(s.Size.X, s.Size.Z) / 2f, 1f); // without this the 7.1 m tower blocks the camera with no fade
             }
@@ -857,6 +859,7 @@ namespace AtlasWorld.Client.World
                     Mesh = new BoxMesh { Size = new Vector3(s.Size.X, s.Size.Y, s.Size.Z) },
                     Position = new Vector3(0f, s.Hover + s.Size.Y / 2f, 0f),
                     MaterialOverride = s.Solid ? SolidGreyBlockMaterial : WalkthroughGreyBlockMaterial,
+                    Visible = !isDressedScene,
                 });
             }
             if (!string.IsNullOrEmpty(s.Label))
@@ -873,6 +876,7 @@ namespace AtlasWorld.Client.World
                     VisibilityRangeEnd = 42.0f,
                     VisibilityRangeEndMargin = 6.0f,
                     VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self,
+                    Visible = !isDressedScene,
                 });
             }
         }
@@ -1065,7 +1069,7 @@ namespace AtlasWorld.Client.World
             Mesh? extracted = null;
             if (scene?.Instantiate() is Node3D tempRoot)
             {
-                EntityView.ApplyAnimeToonShading(tempRoot, EntityKind.Npc);
+                EntityView.ApplyAnimeToonShading(tempRoot, EntityKind.Npc, includeOutline: false);
                 MeshInstance3D? firstMeshInst = FindFirstMeshInstance(tempRoot);
                 if (firstMeshInst?.Mesh != null)
                 {
@@ -1125,7 +1129,7 @@ namespace AtlasWorld.Client.World
                 instance.Position = new Vector3(prop.X, groundY, prop.Z);
                 instance.Rotation = new Vector3(0f, prop.RotY, 0f);
                 instance.Scale = Vector3.One * prop.Scale;
-                EntityView.ApplyAnimeToonShading(instance, EntityKind.Npc);
+                EntityView.ApplyAnimeToonShading(instance, EntityKind.Npc, includeOutline: false);
                 chunkNode.AddChild(instance);
 
                 _occluder?.RegisterPropRoot(instance, prop.ColliderHalfExtent, prop.Scale);

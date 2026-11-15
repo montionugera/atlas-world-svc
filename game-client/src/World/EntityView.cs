@@ -235,18 +235,20 @@ namespace AtlasWorld.Client.World
         /// <summary>
         /// Upgrades imported glTF PBR materials to Ragnarok Origin's signature anime cel-shaded look:
         /// Toon diffuse ramp, toon specular highlight, warm sunlit rim light, and subtle dark silhouette outline.
+        /// When <paramref name="includeOutline"/> is false (environment buildings, walls, foliage, and street props),
+        /// applies soft sunlit painterly shading without the inverted-hull black outline NextPass.
         /// </summary>
-        public static void ApplyAnimeToonShading(Node root, EntityKind kind = EntityKind.Player)
+        public static void ApplyAnimeToonShading(Node root, EntityKind kind = EntityKind.Player, bool includeOutline = true)
         {
-            Shader? outlineShader = ResourceLoader.Exists("res://assets/shaders/outline.gdshader")
+            Shader? outlineShader = includeOutline && ResourceLoader.Exists("res://assets/shaders/outline.gdshader")
                 ? GD.Load<Shader>("res://assets/shaders/outline.gdshader")
                 : null;
 
             bool hasModularHeadMesh = root.FindChild("HeadMesh", recursive: true, owned: false) != null;
-            ApplyAnimeToonShadingRecursive(root, kind, outlineShader, hasModularHeadMesh);
+            ApplyAnimeToonShadingRecursive(root, kind, outlineShader, hasModularHeadMesh, includeOutline);
         }
 
-        private static void ApplyAnimeToonShadingRecursive(Node node, EntityKind kind, Shader? outlineShader, bool hasModularHeadMesh = false)
+        private static void ApplyAnimeToonShadingRecursive(Node node, EntityKind kind, Shader? outlineShader, bool hasModularHeadMesh = false, bool includeOutline = true)
         {
             if (node is MeshInstance3D meshInst && meshInst.Mesh != null &&
                 meshInst.Name != "DropShadow" && meshInst.Name != "OverheadHpBg" && meshInst.Name != "OverheadHpFill")
@@ -336,6 +338,19 @@ namespace AtlasWorld.Client.World
                                 toonMat.NextPass = outlineMat;
                             }
                         }
+                        else if (!includeOutline)
+                        {
+                            // Environment structures, cliffs, bridges, trees, bushes, and props:
+                            // soft painterly Burley diffuse with warm alpine bounce and ZERO black outline NextPass.
+                            toonMat.DiffuseMode = BaseMaterial3D.DiffuseModeEnum.Burley;
+                            toonMat.SpecularMode = BaseMaterial3D.SpecularModeEnum.Disabled;
+                            toonMat.Roughness = 0.88f;
+                            toonMat.RimEnabled = false;
+                            toonMat.EmissionEnabled = true;
+                            toonMat.Emission = new Color(0.12f, 0.11f, 0.09f, 1f);
+                            toonMat.EmissionEnergyMultiplier = 0.05f;
+                            toonMat.NextPass = null;
+                        }
                         else
                         {
                             toonMat.DiffuseMode = BaseMaterial3D.DiffuseModeEnum.Toon;
@@ -369,7 +384,7 @@ namespace AtlasWorld.Client.World
 
             foreach (Node child in node.GetChildren())
             {
-                ApplyAnimeToonShadingRecursive(child, kind, outlineShader);
+                ApplyAnimeToonShadingRecursive(child, kind, outlineShader, hasModularHeadMesh, includeOutline);
             }
         }
 

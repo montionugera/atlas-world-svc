@@ -239,14 +239,14 @@ test("every assetPath is a pull-only manifest key; map holds no res:// or studio
   );
 });
 
-test("all 43 env:maro-* slice keys are registered as studio-private pull entries", () => {
+test("all 68 env:maro-* slice keys are registered as studio-private pull entries", () => {
   const envKeys = Object.keys(manifest).filter((k) =>
     k.startsWith("env:maro-"),
   );
   assert.equal(
     envKeys.length,
-    43,
-    `expected 43 env:maro-* keys, got ${envKeys.length}`,
+    68,
+    `expected 68 env:maro-* keys, got ${envKeys.length}`,
   );
   for (const k of envKeys) {
     const e = manifest[k];
@@ -274,8 +274,12 @@ test("E4 arrival and northern slice structures and props cover all recipe catego
   }
   const northProps = doc.props.filter((p) => p.z < 20);
   assert.ok(
-    northProps.length >= 100,
-    `expected >= 100 northern slice props (z < 20), got ${northProps.length}`,
+    northProps.length >= 250,
+    `expected >= 250 northern slice props (z < 20), got ${northProps.length}`,
+  );
+  assert.ok(
+    doc.props.length >= 500,
+    `expected >= 500 total 9-zone props, got ${doc.props.length}`,
   );
   const propKeys = new Set(doc.props.map((p) => p.assetPath));
   const northPropKeys = new Set(northProps.map((p) => p.assetPath));
@@ -311,9 +315,36 @@ test("E4 arrival and northern slice structures and props cover all recipe catego
     "env:maro-bench",
     "env:maro-flower-pot",
     "env:maro-shop-awning",
+    // F-224 9-zone urban architecture & foliage kit:
+    "env:maro-stone-arch-bridge",
+    "env:maro-retaining-wall-arch",
+    "env:maro-terrace-stairs",
+    "env:maro-city-curtain-wall",
+    "env:maro-city-bastion",
+    "env:maro-aqueduct-arch",
+    "env:maro-bell-sanctuary-arch",
+    "env:maro-civic-guild-hall",
+    "env:maro-inn-tavern",
+    "env:maro-house-2story-a",
+    "env:maro-house-2story-b",
+    "env:maro-house-1story-b",
+    "env:maro-windmill",
+    "env:maro-plaza-fountain",
+    "env:maro-market-stall-a",
+    "env:maro-market-stall-b",
+    "env:maro-bell-banner-pole",
+    "env:maro-blossom-tree-pink",
+    "env:maro-cypress-pine-a",
+    "env:maro-cypress-pine-b",
+    "env:maro-flower-bush-lavender",
+    "env:maro-planter-box-flowers",
+    "env:maro-ivy-wall-vine",
   ]) {
     assert.ok(propKeys.has(required), `missing prop category ${required}`);
-    if (required !== "env:maro-barrel") {
+    if (
+      required !== "env:maro-barrel" &&
+      required !== "env:maro-stone-arch-bridge"
+    ) {
       assert.ok(
         northPropKeys.has(required),
         `missing northern prop category ${required}`,
