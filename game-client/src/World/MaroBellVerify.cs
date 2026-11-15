@@ -70,7 +70,13 @@ namespace AtlasWorld.Client.World
             var spawned = doc.Structures.Where(s => s.Kind == "block")
                 .Select(s => (s, node: root.FindChild($"Structure_{s.Id}", true, false))).ToList();
             Report("every block has a Structure node", spawned.All(t => t.node != null));
-            Report("every block has a BoxMesh", spawned.All(t => t.node?.GetNodeOrNull<MeshInstance3D>($"Block_{t.s.Id}")?.Mesh is BoxMesh));
+            Report("every block without assetPath has a BoxMesh",
+                spawned.Where(t => string.IsNullOrEmpty(t.s.AssetPath))
+                       .All(t => t.node?.GetNodeOrNull<MeshInstance3D>($"Block_{t.s.Id}")?.Mesh is BoxMesh));
+            var glbBlocks = spawned.Where(t => !string.IsNullOrEmpty(t.s.AssetPath)).ToList();
+            Report($"all {glbBlocks.Count} assetPath blocks (2 gates + 14 lanterns) have Glb_<id> and no Block_<id> BoxMesh",
+                glbBlocks.Count == 16 && glbBlocks.All(t => t.node?.GetNodeOrNull<Node3D>($"Glb_{t.s.Id}") != null
+                    && t.node?.GetNodeOrNull($"Block_{t.s.Id}") == null));
             var labelled = spawned.Where(t => t.s.Label != "").ToList();
             Report($"all {labelled.Count} labelled blocks have a Label3D", labelled.Count >= 20
                 && labelled.All(t => t.node?.GetNodeOrNull<Label3D>($"Label_{t.s.Id}")?.Text == t.s.Label));
@@ -79,6 +85,13 @@ namespace AtlasWorld.Client.World
 
             int solid = doc.Structures.Count(s => s.Kind == "block" && s.Solid);
             Report($"client obstacle grid has {solid} solid-block rects (has {doc.StaticObstacles.Count})", doc.StaticObstacles.Count == solid);
+            Report("no assetPath block top is walkable (SampleHeight == base terrain)",
+                glbBlocks.All(t => Mathf.Abs(
+                    TerrainElevation.SampleHeight(t.s.X, t.s.Z, doc, t.s.Hover + t.s.Size.Y + 0.1f)
+                    - TerrainElevation.SampleBaseTerrainHeight(t.s.X, t.s.Z, doc)) <= 0.01f));
+            Report("barrel props resolved (barrel-gate-01 and barrel-gate-02)",
+                root.FindChild("barrel-gate-01", true, false) != null
+                && root.FindChild("barrel-gate-02", true, false) != null);
 
             VerifyMaroFolkGirlInTown(root);
             VerifyPoc01WonderRoadToGreatBell(doc);
@@ -442,6 +455,11 @@ namespace AtlasWorld.Client.World
             cam.Position = new Vector3(0f, 1.0f, 71f);
             cam.LookAt(new Vector3(0f, 7f, -66f), Vector3.Up);
             await Save(outDir, "maro-bell-eye-gate.png");
+
+            // AC7: from the town side, looking south at both gate towers and their door openings.
+            cam.Position = new Vector3(0f, 1.6f, 66f);
+            cam.LookAt(new Vector3(0f, 3.5f, 76f), Vector3.Up);
+            await Save(outDir, "maro-bell-gate-towers.png");
 
             await RenderMaroFolkGirlInBellTown(root, cam, outDir);
         }
