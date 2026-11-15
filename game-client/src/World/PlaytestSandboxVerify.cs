@@ -24,6 +24,9 @@ namespace AtlasWorld.Client.World
         private const string Tag = "[PlaytestSandboxVerify]";
         private int _failures;
 
+        [System.Runtime.InteropServices.DllImport("libc")]
+        private static extern void _exit(int status);
+
         public override async void _Ready()
         {
             GD.Print($"{Tag} BEGIN");
@@ -37,6 +40,12 @@ namespace AtlasWorld.Client.World
             }
             bool pass = _failures == 0;
             GD.Print(pass ? $"{Tag} VERDICT PASS" : $"{Tag} VERDICT FAIL ({_failures} case(s))");
+            if (DisplayServer.GetName() == "headless" && !OperatingSystem.IsWindows())
+            {
+                Console.Out.Flush();
+                Console.Error.Flush();
+                _exit(pass ? 0 : 1);
+            }
             GetTree().Quit(pass ? 0 : 1);
         }
 
