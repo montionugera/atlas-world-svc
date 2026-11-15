@@ -18,6 +18,7 @@ import {
   SCHEMA_FIELDS,
   SCHEMA_TOOLS,
   buildConceptArtDeepLink,
+  currentConceptArts,
   extractHeroKeyArt,
   filterConceptArts,
   groupConceptArtsByCategory,
@@ -966,13 +967,8 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
   const cards = panelEl.querySelectorAll(".concept-card");
   assert.equal(
     cards.length,
-    realDoc.items.length,
-    "Must render all concept cards from index.json",
-  );
-  assert.equal(
-    cards.length,
-    realDoc.items.length,
-    "Must render a card for every item in index.json",
+    currentConceptArts(realDoc.items).length,
+    "Must render every current concept card from index.json (old-concept items stay hidden)",
   );
   for (const card of cards) {
     const titleEl = card.querySelector(".concept-card-title");
@@ -1037,7 +1033,8 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
   searchInput.listeners.input[0]({ target: { value: "grey box" } });
   const filteredCards = panelEl.querySelectorAll(".concept-card");
   assert.ok(
-    filteredCards.length > 0 && filteredCards.length < realDoc.items.length,
+    filteredCards.length > 0 &&
+      filteredCards.length < currentConceptArts(realDoc.items).length,
     "Search input 'grey box' must filter cards",
   );
   assert.ok(
@@ -1076,7 +1073,7 @@ test("concept-arts.mjs panel mounts with plain ATLAS_PARAMS object and renders h
   );
   assert.equal(
     panelEl.querySelectorAll(".concept-card").length,
-    realDoc.items.length,
+    currentConceptArts(realDoc.items).length,
     "Browser Back show({}) must clear category/zone/search filters and restore all cards",
   );
 });
@@ -1136,4 +1133,25 @@ test("character cards and any portrait image show whole instead of cropping", ()
     panel,
     /naturalHeight > thumb\.naturalWidth\) card\.dataset\.shape = "portrait"/,
   );
+});
+
+test("currentConceptArts drops old-concept items and the real index hides the Furral Galvanic Scout sheets", () => {
+  assert.deepEqual(
+    currentConceptArts([
+      { id: "a" },
+      { id: "b", concept: "legacy" },
+      { id: "c", concept: "studio" },
+    ]).map((i) => i.id),
+    ["a", "c"],
+  );
+  assert.deepEqual(currentConceptArts(undefined), []);
+  const real = JSON.parse(readFileSync(REAL_INDEX_PATH, "utf8")).items;
+  const hidden = real
+    .filter((i) => !currentConceptArts(real).includes(i))
+    .map((i) => i.id)
+    .sort();
+  assert.deepEqual(hidden, [
+    "character-race-furral-galvanic-scout-sheet",
+    "character-race-furral-galvanic-scout-turnaround",
+  ]);
 });

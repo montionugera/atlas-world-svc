@@ -510,7 +510,7 @@ storybook_tests() {
 
 atlas_web_tests() {
   # I-246: read-only guard, hidden controls, image contents, routing, the verify script.
-  ( cd "$REPO_ROOT/scripts" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" tests/atlas-web-*.test.mjs )
+  ( cd "$REPO_ROOT/scripts" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" tests/atlas-web-*.test.mjs tests/catalog-records.test.mjs )
 }
 
 # F-174 pull-only assets: fill game-client/studio-cache/ from Asset Studio (sha256-verified).
@@ -560,7 +560,7 @@ map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLA
 # (fails closed to RUN when the diff cannot be computed); ATLAS_FORCE_EXPLORER_PROBES=1 always runs them.
 # The two Chrome probes SKIP loudly (exit 0) when Chrome is absent (CI runners without it; set CHROME_BIN or
 # install Chrome to enable) - the Python probe and tests/test_studio_web_perspectives.py still run.
-EXPLORER_PROBE_PATHS='^(scripts/catalog_explorer_web\.py|scripts/atlas_world_web/|atelier/atlas-world-panels/|scripts/studio_|scripts/probes/atlas_|tests/test_studio_web_perspectives\.py|scripts/precheck\.sh$)'
+EXPLORER_PROBE_PATHS='^(scripts/build_catalog_db\.py|scripts/catalog_explorer_web\.py|scripts/atlas_world_web/|atelier/atlas-world-panels/|scripts/studio_|scripts/probes/atlas_|tests/test_studio_web_perspectives\.py|scripts/precheck\.sh$)'
 explorer_probes_skip_reason() {
   [ "${ATLAS_FORCE_EXPLORER_PROBES:-0}" = "1" ] && return 1
   local changed
@@ -611,8 +611,8 @@ explorer_probes() {
   log=$(mktemp)
   python3 "$REPO_ROOT/scripts/catalog_explorer_web.py" --port "$port" >"$log" 2>&1 &
   pid=$!
-  local zp="" tp=""
-  trap 'kill_tree "$zp" "$tp" "$pid"; rm -f "$log" "$log".*; exit 143' INT TERM
+  local zp="" tp="" rp=""
+  trap 'kill_tree "$zp" "$tp" "$rp" "$pid"; rm -f "$log" "$log".*; exit 143' INT TERM
   trap 'kill "$pid" 2>/dev/null; rm -f "$log"' RETURN
   local up=0 i
   for i in $(seq 1 40); do
@@ -620,16 +620,19 @@ explorer_probes() {
     sleep 0.5
   done
   if [ "$up" -ne 1 ]; then echo "explorer server did not start on :$port"; tail -5 "$log"; kill "$pid" 2>/dev/null; return 1; fi
-  local zoom_out="$log.zoom" zoom_rc="$log.zoom.rc" touch_out="$log.touch" touch_rc="$log.touch.rc"
+  local zoom_out="$log.zoom" zoom_rc="$log.zoom.rc" touch_out="$log.touch" touch_rc="$log.touch.rc" rec_out="$log.rec" rec_rc="$log.rec.rc"
   start_probe "$REPO_ROOT/scripts/probes/atlas_zoom_drift_check.mjs" "http://127.0.0.1:$port/" "$zoom_out" "$zoom_rc"; zp=$!
   start_probe "$REPO_ROOT/scripts/probes/atlas_phone_touch_audit.mjs" "http://127.0.0.1:$port/" "$touch_out" "$touch_rc"; tp=$!
-  wait "$zp" "$tp"
+  start_probe "$REPO_ROOT/scripts/probes/atlas_records_probe.mjs" "http://127.0.0.1:$port/" "$rec_out" "$rec_rc"; rp=$!
+  wait "$zp" "$tp" "$rp"
   echo "--- atlas_zoom_drift_check.mjs"; grep -E "^FAIL" "$zoom_out" || true; tail -9 "$zoom_out"
   echo "--- atlas_phone_touch_audit.mjs"; grep -E "^FAIL" "$touch_out" || true; tail -9 "$touch_out"
+  echo "--- atlas_records_probe.mjs"; grep -E "^FAIL" "$rec_out" || true; tail -9 "$rec_out"
   # a missing rc file (probe subshell died) is a failure, never a pass
   [ "$(cat "$zoom_rc" 2>/dev/null)" = "0" ] || rc=1
   [ "$(cat "$touch_rc" 2>/dev/null)" = "0" ] || rc=1
-  rm -f "$zoom_out" "$zoom_rc" "$touch_out" "$touch_rc"
+  [ "$(cat "$rec_rc" 2>/dev/null)" = "0" ] || rc=1
+  rm -f "$zoom_out" "$zoom_rc" "$touch_out" "$touch_rc" "$rec_out" "$rec_rc"
   kill "$pid" 2>/dev/null; wait "$pid" 2>/dev/null
   rm -f "$log"
   trap - RETURN INT TERM

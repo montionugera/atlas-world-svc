@@ -2803,9 +2803,11 @@
     "from_idea": "I-299",
     "created_at": "2026-11-14T17:23:26.053010+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-11-14T18:10:47.461466+00:00"
+    "status": "shipped",
+    "release_version": "1.34",
+    "claimed_at": "2026-11-14T18:10:47.461466+00:00",
+    "shipped_at": "2026-11-14T20:17:04.100136+00:00",
+    "shipped_sha": "9b6a03634d1fba99bc3cbe7510b5bf705c4068fb"
   },
   {
     "id": "F-217",
@@ -2828,5 +2830,15 @@
     "status": "claimed",
     "release_version": null,
     "claimed_at": "2026-11-14T19:39:04.969572+00:00"
+  },
+  {
+    "id": "F-219",
+    "title": "Short menu: sidebar from 31 tabs to 11 entries with sub-view pills (game DB slice S2)",
+    "from_idea": "I-304",
+    "created_at": "2026-11-14T20:28:11.469214+00:00",
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-14T20:28:30.359426+00:00"
   }
 ]

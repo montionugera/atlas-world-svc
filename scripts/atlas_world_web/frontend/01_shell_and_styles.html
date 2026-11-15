@@ -141,6 +141,244 @@
       border: 1px solid var(--joy-border-default);
       border-radius: 4px;
     }
+    .topbar .sidebar-search {
+      padding: 0;
+      flex: 1 1 240px;
+      min-width: 160px;
+      max-width: 340px;
+      margin-left: auto;
+    }
+    /* 30px + the 1px border = 32px, the height of the buttons beside it: the bar keeps its height */
+    .topbar .sidebar-search__input {
+      height: 30px;
+      min-width: 0;
+    }
+    /* Below 1440px the top bar has no spare room: Back/Forward go icon-only (as on a phone)
+       and the shortcut hint goes, so the search input keeps a width you can type in. */
+    @media (max-width: 1439px) {
+      .topbar .sidebar-search__kbd,
+      .topbar__history-label {
+        display: none;
+      }
+    }
+    /* A title squeezed to one clipped letter is noise: drop it while its group is too narrow to hold it. */
+    @media (min-width: 768px) {
+      .topbar__start {
+        container: topbar-start / inline-size;
+      }
+      @container topbar-start (max-width: 699px) {
+        .topbar__title {
+          display: none;
+        }
+      }
+    }
+    .search-popover__archive {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 12px;
+      font-size: var(--joy-font-size-sm);
+      color: var(--joy-text-secondary);
+      background: var(--joy-surface-card);
+      border-bottom: 1px solid var(--joy-border-default);
+      cursor: pointer;
+      user-select: none;
+    }
+    .search-popover {
+      position: fixed;
+      max-height: min(60vh, 480px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-card);
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--joy-text-primary) 18%, transparent);
+      z-index: 900;
+      transition: opacity 120ms ease;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .search-popover {
+        transition: none;
+      }
+    }
+    .search-popover__row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      column-gap: 10px;
+      row-gap: 2px;
+      padding: 8px 12px;
+      min-height: 44px;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--joy-border-subtle);
+      cursor: pointer;
+      align-items: center;
+      font-family: inherit;
+    }
+    .search-popover__row:last-child {
+      border-bottom: none;
+    }
+    .search-popover__row[aria-selected="true"],
+    .search-popover__row:hover {
+      background: var(--joy-accent-subtle);
+    }
+    .search-popover__row:focus-visible {
+      outline: 2px solid var(--joy-border-focus);
+      outline-offset: -2px;
+    }
+    .search-popover__row > .joy-badge:first-child {
+      grid-column: 1;
+      grid-row: 1;
+      align-self: center;
+    }
+    .search-popover__title {
+      grid-column: 2;
+      grid-row: 1;
+      font-size: var(--joy-font-size-sm);
+      font-weight: 600;
+      color: var(--joy-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .search-popover__row > .joy-badge:not(:first-child) {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+    }
+    .search-popover__summary {
+      grid-column: 2;
+      grid-row: 2;
+      font-size: var(--joy-font-size-xs, 12px);
+      color: var(--joy-text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .search-popover__message {
+      padding: 14px 12px;
+      font-size: var(--joy-font-size-sm);
+      color: var(--joy-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .record-page {
+      max-width: 72ch;
+      padding: 24px 20px;
+      margin: 0;
+      text-align: left;
+    }
+    .record-page h1 {
+      font-size: var(--joy-font-size-xl, 22px);
+      font-weight: 600;
+      color: var(--joy-text-primary);
+      text-wrap: balance;
+      margin: 8px 0 12px;
+    }
+    .record-page__skeleton {
+      background: var(--joy-surface-sunken);
+      border-radius: var(--joy-radius-control);
+      width: 60%;
+      height: 28px;
+    }
+    .record-page__summary {
+      color: var(--joy-text-secondary);
+      font-size: var(--joy-font-size-md, 14px);
+      line-height: 1.5;
+      text-wrap: pretty;
+      margin: 0 0 16px;
+    }
+    .record-page__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0 0 20px;
+    }
+    .record-page section {
+      margin-top: 24px;
+    }
+    .record-page section h2 {
+      font-size: var(--joy-font-size-sm, 13px);
+      font-weight: 600;
+      color: var(--joy-text-secondary);
+      margin: 0 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .record-page section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .record-page section li {
+      border-bottom: 1px solid var(--joy-border-subtle);
+    }
+    .record-page section li:last-child {
+      border-bottom: none;
+    }
+    .record-page section button.rms-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 44px;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      color: var(--joy-text-primary);
+      font-family: inherit;
+      font-size: var(--joy-font-size-sm, 13px);
+      text-align: left;
+      cursor: pointer;
+      border-radius: var(--joy-radius-control);
+    }
+    .record-page section button.rms-link:hover,
+    .record-page section button.rms-link:focus-visible {
+      background: var(--joy-surface-sunken);
+      outline: 2px solid var(--joy-border-focus);
+      outline-offset: -2px;
+    }
+    .record-page__empty {
+      color: var(--joy-text-secondary);
+      font-size: var(--joy-font-size-sm);
+      margin-top: 16px;
+    }
+    .record-page__source {
+      font-size: var(--joy-font-size-xs, 11px);
+      color: var(--joy-text-secondary);
+      margin-top: 32px;
+      padding-top: 12px;
+      border-top: 1px solid var(--joy-border-subtle);
+    }
+    .catalog-stale-banner {
+      background: var(--joy-status-danger-bg);
+      color: var(--joy-status-danger-fg);
+      border-bottom: 1px solid var(--joy-border-default);
+      padding: 8px 20px;
+      font-size: var(--joy-font-size-sm);
+      font-weight: 600;
+    }
+    .catalog-stale-banner code {
+      display: block;
+      font-weight: normal;
+      font-family: var(--joy-font-family-mono);
+      font-size: var(--joy-font-size-xs, 12px);
+      overflow-wrap: anywhere;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-top: 2px;
+    }
     .nav {
       flex: 1;
       overflow-y: auto;
@@ -2351,6 +2589,28 @@
         cursor: pointer;
         flex-shrink: 0;
       }
+      #mobileNavMenuBtn {
+        order: -2;
+      }
+      .topbar .sidebar-search {
+        order: -1;
+        flex: 1 0 190px;
+        max-width: none;
+        margin-left: 0;
+      }
+      .sidebar-search__kbd {
+        display: none;
+      }
+      .topbar .sidebar-search__input {
+        height: 26px;
+        min-width: 0;
+      }
+      .catalog-stale-banner {
+        padding: 8px 12px;
+      }
+      .record-page {
+        padding: 16px;
+      }
       .topbar__end {
         display: none !important;
       }
@@ -2501,22 +2761,6 @@
       </div>
     </div>
 
-    <div class="sidebar-search" role="search">
-      <div class="sidebar-search__inner">
-        <span class="sidebar-search__icon" aria-hidden="true">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </span>
-        <input
-          type="search"
-          id="globalSearch"
-          class="sidebar-search__input"
-          placeholder="Search items, mobs, skills..."
-          autocomplete="off"
-        />
-        <kbd class="sidebar-search__kbd">⌘K</kbd>
-      </div>
-    </div>
-
     <nav class="nav" id="sidebarNav"></nav>
 
     <div class="sidebar-footer">
@@ -2539,6 +2783,23 @@
         </div>
         <span class="topbar__title" id="topbarTitle">Interactive World Map &amp; Monster Atlas</span>
         <span class="joy-badge joy-badge--neutral joy-badge--sm" id="topbarStatus" role="status">Ready</span>
+        <div class="sidebar-search" role="search">
+          <div class="sidebar-search__inner">
+            <span class="sidebar-search__icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input
+              type="search"
+              id="globalSearch"
+              class="sidebar-search__input"
+              placeholder="Search every record..."
+              autocomplete="off"
+              aria-controls="searchPopover"
+              aria-label="Search every record"
+            />
+            <kbd class="sidebar-search__kbd">⌘K</kbd>
+          </div>
+        </div>
       </div>
       <div class="topbar__end">
         <select id="dropRateSelect" class="joy-select" aria-label="Item Drop Rate Multiplier" onchange="setDropRate(this.value)">
@@ -2562,6 +2823,10 @@
         </button>
       </div>
     </header>
+    <div id="searchPopover" class="search-popover" hidden>
+      <label class="search-popover__archive"><input type="checkbox" id="searchIncludeArchive" /> Include archive</label>
+      <div id="searchPopoverResults" role="listbox" aria-label="Search results"></div>
+    </div>
 
     <div class="scroll-stage" id="scrollStage">
       <div class="subview-bar" id="subViewBar" role="group" aria-label="View" hidden></div>

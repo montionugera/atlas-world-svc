@@ -73,6 +73,7 @@
     },
     {
       "id": "character-race-furral-galvanic-scout-sheet",
+      "concept": "legacy",
       "title": "Furral Galvanic Scout (male): Character Sheet",
       "category": "character",
       "zoneId": "town-cinnamon-mill-haven",
@@ -87,6 +88,7 @@
     },
     {
       "id": "character-race-furral-galvanic-scout-turnaround",
+      "concept": "legacy",
       "title": "Furral Galvanic Scout (male): Turnaround",
       "category": "character",
       "zoneId": "town-cinnamon-mill-haven",
