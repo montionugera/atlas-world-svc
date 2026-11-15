@@ -47,7 +47,7 @@ and become sub-view pills in the sub-view bar (`#subViewBar`). Because the ids d
 - `sim` (a page that only prints a cargo command) is removed; `?tab=sim` and `?tab=overview` open Home.
 - `review` stays reachable under Tools until slice S4 removes it (the approved table does not place it).
 - `story` keeps its own second row of pills (Nodes, Reader, Graph, Undertow) under the entry pills.
-- The concept-art tab's own search box is removed; the top-bar search finds concept art.
+- Deferred (decided while planning, 2026-11-15): removing the concept-art tab's own search box. It filters by zone, prompt and tag; the top-bar search indexes only title and caption, so removing it now would lose those. It goes once the record index covers those fields.
 - "Legacy world data" under Archive is slice S3 (it moves old-concept data there); not in this slice.
 
 ## Requirements
@@ -70,7 +70,6 @@ and become sub-view pills in the sub-view bar (`#subViewBar`). Because the ids d
 - [ ] A4 (R10a): every existing tab id except `sim` and `overview` is reachable by a real click on an entry and then a pill (browser test walks all of them and checks the content area is not empty).
 - [ ] A5 (R12): Home shows a count for continent, district and node equal to `select count(*) from records where kind=?`; a real click on the district count opens World.
 - [ ] A6 (R13): `/?r=continent:continent-01-hearthbloom-basin` shows "Open in World", and a real click on it opens World with the studio pill selected.
-- [ ] A7: the concept-art gallery has no search box of its own; typing "furral" in the top-bar search lists concept art records.
 - [ ] A8: at 390x844 the nav drawer shows all 11 entries without scrolling past two screens, and the pills row scrolls sideways instead of wrapping over content; phone and desktop (1280x800) screenshots of Home, World and Archive are taken with `ui-visual-verify`, looked at, and shown to the owner with a direct link on the edit host.
 - [ ] A10 (top bar, found after S1 shipped): on the real hostnames (`atlas-edit.joymify.local.com`, `atlas-world.joymify.local.com`) at 1024, 1280 and 1440 px wide, no top-bar control overlaps another, and at least 200 px of the search box is visible at 1280 px. Measured 2026-11-15 on S1: at 1280 px the "Drop Rate" select covers the right half of the search box because the "Editable · <hostname>" chip is longer than on `127.0.0.1`, where S1 was checked.
 - [ ] A9: Gate 1 (`./scripts/precheck.sh`) passes, including `panel-parity.test.mjs`, `atlas_phone_touch_audit.mjs`, `atlas_ux_probe.py` and `atlas_records_probe.mjs`.

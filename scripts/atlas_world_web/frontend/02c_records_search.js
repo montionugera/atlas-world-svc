@@ -5,9 +5,31 @@ let SEARCH_POPOVER_SEQ = 0;        // drops answers that arrive after a newer ke
 let SEARCH_POPOVER_TIMER = 0;
 
 function recordEntryLabel(viewUrl) {
-  const tab = new URLSearchParams((viewUrl.split('?')[1] || '')).get('tab');
-  const item = NAV_GROUPS.flatMap(g => g.items).find(it => it.id === tab);
-  return item ? item.label : 'image';
+  const group = navGroupOf(new URLSearchParams((viewUrl.split('?')[1] || '')).get('tab'));
+  return group ? group.section : 'image';
+}
+
+let HOME_COUNTS;                   // undefined = not asked yet, null = loading, array = loaded (empty when the route failed)
+function renderHome() {
+  if (HOME_COUNTS === undefined) {
+    HOME_COUNTS = null;
+    fetch('/api/record-counts').then(r => r.json()).then(b => b.counts || [], () => [])
+      .then(counts => { HOME_COUNTS = counts; if (CURRENT_TAB === 'home' && !CURRENT_RECORD) render(); });
+  }
+  const tiles = (HOME_COUNTS || []).map(c => {
+    const tab = new URLSearchParams((c.viewUrl.split('?')[1] || '')).get('tab');
+    const group = navGroupOf(tab);
+    const inner = `<span class="home-count__n">${Number(c.n)}</span><span class="home-count__kind">${escapeHtml(c.kind.replace(/_/g, ' '))}</span>`;
+    return group
+      ? `<button type="button" class="home-count" data-kind="${escapeHtml(c.kind)}" onclick="switchTab('${group.items.find(it => it.id === tab).id}')">${inner}<span class="home-count__entry">${escapeHtml(group.section)}</span></button>`
+      : `<div class="home-count" data-kind="${escapeHtml(c.kind)}">${inner}</div>`;
+  }).join('');
+  return `
+    <article id="homePage" class="home-page">
+      <h1>Atlas World DB</h1>
+      <p><button type="button" class="joy-button joy-button--outline" onclick="document.getElementById('globalSearch').focus()">Search every record</button></p>
+      <div class="home-counts" aria-busy="${HOME_COUNTS === null}">${HOME_COUNTS === null ? '<p role="status">...</p>' : tiles}</div>
+    </article>`;
 }
 
 function closeSearchPopover() {

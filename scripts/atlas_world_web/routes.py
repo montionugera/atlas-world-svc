@@ -150,6 +150,15 @@ def _record(handler, path: str, *, head: bool = False) -> None:
     _send_json(handler, {"ok": True, **found}, head=head)
 
 
+def _record_counts(handler, path: str, *, head: bool = False) -> None:
+    try:
+        counts = records.counts()
+    except sqlite3.Error as exc:
+        _send_json(handler, {"ok": False, "error": f"Search is unavailable: {exc}"}, 503, head=head)
+        return
+    _send_json(handler, {"ok": True, "counts": counts}, head=head)
+
+
 # (exact path | prefix ending in "/") -> handler. Checked in order.
 ROUTES = {
     "GET": [
@@ -157,6 +166,7 @@ ROUTES = {
         ("/api/runtime", _runtime),
         ("/api/search", _search),
         ("/api/record", _record),
+        ("/api/record-counts", _record_counts),
         ("/api/map-builder/", _map_builder("GET")),
         ("/api/map-builder-files/", _map_builder("GET")),
     ],

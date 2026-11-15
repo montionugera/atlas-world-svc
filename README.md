@@ -293,10 +293,13 @@ The atlas web surface is powered by a single web program (`scripts/catalog_explo
    - Top bar `#topbarStatus` and footer `#sidebarVersion` display `Editable · <host>` (e.g. `Editable · atlas-edit.joymify.local.com` or `Editable · localhost:8788`).
    - **502 Bad Gateway:** If `http://atlas-edit.joymify.local.com/` returns `502 Bad Gateway`, it simply means the local host process is not running on port 8788.
 
-#### Game DB Search and Record Links
+#### Game DB Search, Record Links, and 11-Entry Sidebar
+- **11-Entry Sidebar & Sub-View Pills:** The left navigation menu has 11 plain entries (`Home`, `World`, `Monsters`, `Items and cards`, `Jobs and skills`, `Quests and dungeons`, `Lore and canon`, `Art`, `Assets and audio`, `Tools`, `Archive (old concept)`). Individual views under multi-view entries appear as sub-view pills in `#subViewBar`, and every legacy `?tab=<old id>` link continues to resolve to its entry and pill (`?tab=sim`, `?tab=overview`, and unknown tab ids land on `Home`).
+- **Home Index Page (`?tab=home`):** Shows record counts per record kind from `GET /api/record-counts`, clicking any kind opens its corresponding entry and tab.
 - **Top-Bar Search & Hotkey:** Global search box lives in the top bar (`Cmd/Ctrl+K` or `/` focuses and selects). Searches across all game records, continents, districts, towns, maps, mobs, items, and quests.
 - **Record Links:** Deep links via `/?r=<kind>:<id>` (e.g. `/?r=continent:continent-01-hearthbloom-basin`) open dedicated record pages with grouped relational links ("Part of", "Contains", "Spawns", etc.) and an "Open in <entry>" navigation button.
 - **HTTP Endpoints:**
+  - `GET /api/record-counts`: Returns ordered record counts per kind (`{ counts: [{ kind, n, viewUrl }] }`).
   - `GET /api/search?q=<query>&include_archive=<0|1>`: Ranks records with FTS5 search (exact title prefix matches first, BM25 scored).
   - `GET /api/record?kind=<kind>&id=<id>`: Returns record details, hand tags, and forward/reverse relations.
 - **Automatic DB Rebuilds:** The derived game catalog DB (`build/catalog.db`) automatically rebuilds at edit-host startup when `scripts/build_catalog_db.py`, `content/`, or `contracts/content/` is newer than the DB file. A failed rebuild keeps the existing DB and displays a `.catalog-stale-banner` alert.
