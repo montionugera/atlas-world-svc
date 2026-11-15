@@ -218,10 +218,13 @@ test("every assetPath is a pull-only manifest key; map holds no res:// or studio
   );
   assert.equal(
     doc.structures.filter((s) => s.assetPath).length,
-    16,
-    "2 gates + 14 lanterns",
+    20,
+    "2 gates + 14 lanterns + amber-shop + 3 arrival porcelain ribs",
   );
-  assert.equal(doc.props.length, 2);
+  assert.ok(
+    doc.props.length >= 130,
+    `expected >= 130 props, got ${doc.props.length}`,
+  );
   for (const x of withAsset) {
     const e = manifest[x.assetPath];
     assert.ok(e, `no manifest entry for ${x.assetPath}`);
@@ -234,6 +237,96 @@ test("every assetPath is a pull-only manifest key; map holds no res:// or studio
     !text.includes("studio-cache") && !text.includes("res://"),
     "keys only",
   );
+});
+
+test("all 39 env:maro-* slice keys are registered as studio-private pull entries", () => {
+  const envKeys = Object.keys(manifest).filter((k) =>
+    k.startsWith("env:maro-"),
+  );
+  assert.equal(
+    envKeys.length,
+    39,
+    `expected 39 env:maro-* keys, got ${envKeys.length}`,
+  );
+  for (const k of envKeys) {
+    const e = manifest[k];
+    assert.ok(isPullOnly(e), `${k} must be pull-only`);
+    assert.equal(e.license, "studio-private", k);
+    assert.equal(e.render, "model3d", k);
+  }
+});
+
+test("E4 arrival slice structures and props cover all recipe categories without blocking movement or road-main", () => {
+  assert.equal(byId.get("amber-shop").assetPath, "env:maro-oil-shop");
+  for (const id of [
+    "porcelain-rib-04",
+    "porcelain-rib-05",
+    "porcelain-rib-06",
+  ]) {
+    assert.equal(byId.get(id).assetPath, "env:maro-porcelain-rib", id);
+  }
+  const propKeys = new Set(doc.props.map((p) => p.assetPath));
+  for (const required of [
+    "env:maro-wall-face-a",
+    "env:maro-wall-face-b",
+    "env:maro-wall-face-c",
+    "env:maro-curb-straight",
+    "env:maro-curb-corner",
+    "env:maro-wall-straight",
+    "env:maro-wall-end",
+    "env:maro-wall-corner",
+    "env:maro-fence-panel",
+    "env:maro-fence-post",
+    "env:maro-apricot-tree-a",
+    "env:maro-apricot-tree-b",
+    "env:maro-broadleaf-tree-a",
+    "env:maro-broadleaf-tree-b",
+    "env:maro-bush-a",
+    "env:maro-bush-b",
+    "env:maro-bush-c",
+    "env:maro-grass-clump-a",
+    "env:maro-grass-clump-b",
+    "env:maro-grass-clover-clump",
+    "env:maro-grass-ember-daisy-clump",
+    "env:maro-rock-small",
+    "env:maro-rock-medium",
+    "env:maro-rock-large",
+    "env:maro-barrel",
+    "env:maro-oil-jar",
+    "env:maro-crate",
+    "env:maro-sign-board",
+    "env:maro-bench",
+    "env:maro-flower-pot",
+    "env:maro-shop-awning",
+  ]) {
+    assert.ok(propKeys.has(required), `missing prop category ${required}`);
+  }
+  const road = doc.routes.find((r) => r.id === "road-main");
+  const pts = road.points;
+  const distToSeg = (px, pz, ax, az, bx, bz) => {
+    const dx = bx - ax;
+    const dz = bz - az;
+    const l2 = dx * dx + dz * dz;
+    const t =
+      l2 === 0
+        ? 0
+        : Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / l2));
+    return Math.hypot(px - (ax + t * dx), pz - (az + t * dz));
+  };
+  for (const p of doc.props) {
+    assert.equal(p.blocksMovement, false, `${p.id} must be non-blocking`);
+    let minRoadDist = Infinity;
+    for (let i = 0; i < pts.length - 1; i++) {
+      minRoadDist = Math.min(
+        minRoadDist,
+        distToSeg(p.x, p.z, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]),
+      );
+    }
+    assert.ok(
+      minRoadDist >= road.width / 2,
+      `${p.id} (${p.x}, ${p.z}) encroaches road-main (dist=${minRoadDist.toFixed(2)})`,
+    );
+  }
 });
 
 test("the 3 env pilot glbs are not committed in the tree", () => {

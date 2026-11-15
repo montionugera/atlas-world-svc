@@ -222,7 +222,7 @@ xcrun devicectl device install app --device <DEVICE_UUID> <PATH_TO_APP>/AtlasWor
 xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.client
 ```
 
-**Pull-only assets (F-174).** This repo is public, so owner-generated glbs (the Tripo + Mixamo characters) are never committed. A manifest entry with a `pull` block records only the Asset Studio asset id, tag and sha256. F-218 adds the 3 Maro Bell environment pilot props (`env:maro-gate-tower`, `env:maro-lantern-post`, `env:maro-barrel`) the same way. Fetch the bytes with:
+**Pull-only assets (F-174, F-218, F-221).** This repo is public, so owner-generated glbs (the Tripo + Mixamo characters and Maro Bell environment assets) are never committed. A manifest entry with a `pull` block records only the Asset Studio asset id, tag and sha256. F-218 adds the 3 Maro Bell environment pilot props (`env:maro-gate-tower`, `env:maro-lantern-post`, `env:maro-barrel`), and F-221 adds the remaining 36 E4 Maro Bell arrival environment assets (ground/road textures, cliff walls, porcelain ribs, curbs, low stone walls, fences, Amber's oil shop, apricot/broadleaf trees, bushes, MultiMesh grass clumps, rocks, and street props; 39 `env:maro-*` entries total) the same way. Fetch the bytes with:
 
 ```bash
 node scripts/studio-pull.mjs        # [--manifest <path>] [--cache-dir <dir>]
@@ -232,7 +232,7 @@ node scripts/studio-pull.mjs        # [--manifest <path>] [--cache-dir <dir>]
 - Exit codes: `0` every entry cached or pulled; `1` sha mismatch, bad record or `studio auth failed`; `2` Asset Studio unreachable or no token. Local Gate 1 never skips on exit 2; only CI sets `ATLAS_SKIP_STUDIO=1`.
 - Token: `STUDIO_TOKEN`, else a dev token minted from the local orbstack cluster (`kubectl`, needs Asset Studio running). Never printed.
 
-**Map blocks with `assetPath` (F-218).** A `structureVolumes` block in `content/maps/*.json` can set `assetPath` to a manifest key (e.g. `env:maro-gate-tower`) or a `res://` scene path; `MapChunkStreamer` instantiates it as `Glb_<id>` instead of the `Block_<id>` `BoxMesh` fallback (falling back to `BoxMesh` if the scene cannot resolve). Map `props` entries with `blocksMovement: false` render visually without adding a movement obstacle.
+**Map blocks with `assetPath` (F-218, F-221).** A `structureVolumes` block in `content/maps/*.json` can set `assetPath` to a manifest key (e.g. `env:maro-gate-tower`) or a `res://` scene path; `MapChunkStreamer` instantiates it as `Glb_<id>` instead of the `Block_<id>` `BoxMesh` fallback (falling back to `BoxMesh` if the scene cannot resolve). Map `props` entries with `blocksMovement: false` render visually without adding a movement obstacle, and `env:maro-grass-*` manifest keys batch into chunk `MultiMeshInstance3D` nodes via `ResolvePrototypeMesh`.
 
 **Interactive Playtest Sandbox Client (F-188).** Launch the clean 1440×900 desktop Playtest Sandbox (`res://scenes/PlaytestSandbox.tscn`) sharing the real `AtlasWorld.Client.World` engine (`AnimationController`, `CharacterCustomization`, `WeaponSocket`, `MapChunkStreamer`, `TerrainElevation`) without legacy mobile HUD overlays:
 
