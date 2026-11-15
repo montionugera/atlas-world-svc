@@ -59,8 +59,8 @@ status: approved (owner decision 2026-11-15: keep current apricot trees at 0 cre
 
 ## Acceptance criteria
 
-- **AC0 (Private hygiene):** All 36 new GLBs uploaded to Asset Studio (`rights=restricted`), `pull.sha256` matches lane sha256; 0 `.glb`, LFS pointers, `.import`, thumbs, or renders tracked in git.
-- **AC1 (Manifest & ledger):** `node scripts/check_asset_manifest.mjs` passes with 0 FAILURE both locally (warm cache) and with `ATLAS_SKIP_STUDIO=1` (CI mode).
-- **AC2 (Obstacle parity):** `staticObstacles` in `content/maps/maro-bell.json` is byte-identical to `release/1.34` (F-218).
-- **AC3 (Scene gates & perf):** `scripts/godot-verify.sh ATLAS_VERIFY_MARO_BELL '^\[MaroBellVerify\] VERDICT PASS$'` passes, logs live-camera perf metrics (`draw_calls`, `primitives`, `frame_ms`), and confirms MultiMesh grass batching + all 20 structure GLBs.
-- **AC4 (Full test & Gate 1):** `node --test scripts/tests/maro-bell.test.mjs`, `scripts/precheck.sh --no-install`, and `(cd server-rs && cargo test)` pass; feature ships cleanly into `release/1.34`.
+- [ ] **AC0 (Private hygiene):** All 36 new GLBs uploaded to Asset Studio (`rights=restricted`), `pull.sha256` matches lane sha256; 0 `.glb`, LFS pointers, `.import`, thumbs, or renders tracked in git.
+- [ ] **AC1 (Manifest & ledger):** `node scripts/check_asset_manifest.mjs` passes with 0 FAILURE both locally (warm cache) and with `ATLAS_SKIP_STUDIO=1` (CI mode).
+- [ ] **AC2 (Obstacle parity):** `staticObstacles` in `content/maps/maro-bell.json` is byte-identical to `release/1.34` (F-218).
+- [ ] **AC3 (Scene gates & perf):** `scripts/godot-verify.sh ATLAS_VERIFY_MARO_BELL '^\[MaroBellVerify\] VERDICT PASS$'` passes, logs live-camera perf metrics (`draw_calls`, `primitives`, `frame_ms`), and confirms MultiMesh grass batching + all 20 structure GLBs.
+- [ ] **AC4 (Full test & Gate 1):** `node --test scripts/tests/maro-bell.test.mjs`, `scripts/precheck.sh --no-install`, and `(cd server-rs && cargo test)` pass; feature ships cleanly into `release/1.34`.
