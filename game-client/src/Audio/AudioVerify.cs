@@ -89,6 +89,75 @@ namespace AtlasWorld.Client.Audio
             failures += Report($"2.600s 3-stride run loop fires 6 footstep strikes (left={simLeft}==3, right={simRight}==3, 1 SFX per visual step)",
                 simLeft == 3 && simRight == 3);
 
+            // Part 5 — Material-aware footstep surface mapping, hybrid resolver precedence, and AudioRegistry surface playback + fallback.
+            failures += Report("FootstepSurfaceMapper maps ground_palettes surfaceType tokens and unknown fallback to Stone",
+                FootstepSurfaceMapper.FromSurfaceType("stone_path") == FootstepSurface.Stone &&
+                FootstepSurfaceMapper.FromSurfaceType("sheer_rock") == FootstepSurface.Stone &&
+                FootstepSurfaceMapper.FromSurfaceType("lush_grass") == FootstepSurface.Grass &&
+                FootstepSurfaceMapper.FromSurfaceType("forest_moss") == FootstepSurface.Grass &&
+                FootstepSurfaceMapper.FromSurfaceType("estuary_mudflat") == FootstepSurface.Dirt &&
+                FootstepSurfaceMapper.FromSurfaceType("scorched_basalt_ash") == FootstepSurface.Dirt &&
+                FootstepSurfaceMapper.FromSurfaceType("bramble_root_floor") == FootstepSurface.Dirt &&
+                FootstepSurfaceMapper.FromSurfaceType("dirt") == FootstepSurface.Dirt &&
+                FootstepSurfaceMapper.FromSurfaceType("water") == FootstepSurface.Water &&
+                FootstepSurfaceMapper.FromSurfaceType("shallow_water") == FootstepSurface.Water &&
+                FootstepSurfaceMapper.FromSurfaceType("glass") == FootstepSurface.Glass &&
+                FootstepSurfaceMapper.FromSurfaceType("wind_scoured_ice") == FootstepSurface.Glass &&
+                FootstepSurfaceMapper.FromSurfaceType(null) == FootstepSurface.Stone &&
+                FootstepSurfaceMapper.FromSurfaceType("unknown_alien_surface") == FootstepSurface.Stone);
+
+            var testDoc = new World.UnifiedMapDocument
+            {
+                BaseGroundId = "meadow_grass",
+                GroundPalettes = new System.Collections.Generic.Dictionary<string, World.UnifiedMapGroundPalette>
+                {
+                    ["meadow_grass"] = new() { SurfaceType = "lush_grass" },
+                    ["cobble_road"] = new() { SurfaceType = "stone_path" },
+                    ["dirt_patch"] = new() { SurfaceType = "dirt" },
+                },
+                Routes = new System.Collections.Generic.List<World.UnifiedMapRouteSpline>
+                {
+                    new()
+                    {
+                        Id = "main_road",
+                        GroundId = "cobble_road",
+                        Width = 4.0f,
+                        Points = new System.Collections.Generic.List<float[]> { new[] { 0f, -10f }, new[] { 0f, 10f } }
+                    }
+                },
+                GroundZones = new System.Collections.Generic.List<World.UnifiedMapGroundZone>
+                {
+                    new() { Id = "dirt_zone", GroundId = "dirt_patch", Priority = 20, Shape = "circle", X = 15f, Z = 15f, Radius = 5f, Feather = 0f }
+                },
+                Structures = new System.Collections.Generic.List<World.UnifiedMapStructureVolume>
+                {
+                    new() { Id = "glass_bridge", Kind = "block", X = -15f, Z = -15f, Size = new World.UnifiedMapBlockSize { X = 4f, Y = 1f, Z = 4f }, SurfaceType = "glass" }
+                }
+            };
+            var testPads = new[]
+            {
+                new World.SurfacePadOverride("pad_water", "Water", new Rect2(-1f, -1f, 2f, 2f), FootstepSurface.Water)
+            };
+
+            FootstepSurface sPad = World.FootstepSurfaceResolver.Resolve(new Vector3(0f, 0f, 0f), testDoc, testPads);
+            FootstepSurface sRoad = World.FootstepSurfaceResolver.Resolve(new Vector3(0f, 0f, 5f), testDoc, testPads);
+            FootstepSurface sZone = World.FootstepSurfaceResolver.Resolve(new Vector3(15f, 0f, 15f), testDoc, testPads);
+            FootstepSurface sStruct = World.FootstepSurfaceResolver.Resolve(new Vector3(-15f, 0f, -15f), testDoc, testPads);
+            FootstepSurface sBase = World.FootstepSurfaceResolver.Resolve(new Vector3(30f, 0f, 30f), testDoc, testPads);
+            failures += Report($"FootstepSurfaceResolver precedence (pad={sPad}==Water > struct={sStruct}==Glass > route={sRoad}==Stone > zone={sZone}==Dirt > base={sBase}==Grass)",
+                sPad == FootstepSurface.Water &&
+                sStruct == FootstepSurface.Glass &&
+                sRoad == FootstepSurface.Stone &&
+                sZone == FootstepSurface.Dirt &&
+                sBase == FootstepSurface.Grass);
+
+            foreach (FootstepSurface surf in System.Enum.GetValues<FootstepSurface>())
+            {
+                AudioStreamPlayer3D? p = reg.PlayFootstep(new Vector3(2f, 0f, 2f), isRightFoot: false, isRunning: false, surface: surf);
+                failures += Report($"PlayFootstep(surface={surf}) spawns playing 3D stream with non-null AudioStream",
+                    p != null && p.Stream != null && p.Playing);
+            }
+
             if (failures == 0)
                 GD.Print("[AudioVerify] RESULT: PASS (all cases)");
             else

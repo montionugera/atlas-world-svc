@@ -140,6 +140,7 @@ namespace AtlasWorld.Client.World
         private Label? _dialogueLabel;
 
         private double _footstepTimer = 0.0;
+        private UnifiedMapDocument? _mapDoc;
         private bool _reedBarkPlayed = false;
         private bool _tovinBarkPlayed = false;
         private bool _amberBarkPlayed = false;
@@ -169,11 +170,12 @@ namespace AtlasWorld.Client.World
                 hasFlankingPorcelainRibs);
         }
 
-        public void Initialize(UnifiedMapDocument doc)
+        public void Initialize(UnifiedMapDocument? doc)
         {
+            _mapDoc = doc;
             RecordBeatTimestamp("POC-00");
             SpawnNpcs();
-            SetupLanternNodes(doc);
+            if (doc != null) SetupLanternNodes(doc);
             SpawnSootMuncherEncounter();
             BuildUi();
             PlayEnvironmentalIntroAudio();
@@ -527,7 +529,8 @@ namespace AtlasWorld.Client.World
                 {
                     if (animController.PollFootstepStrike(out bool isRightFoot, out bool isRunning))
                     {
-                        AudioRegistry.Instance?.PlayFootstep(playerPos, isRightFoot, isRunning);
+                        var surf = FootstepSurfaceResolver.Resolve(playerPos, _mapDoc);
+                        AudioRegistry.Instance?.PlayFootstep(playerPos, isRightFoot, isRunning, surf);
                         EnvironmentalAudioEventsPlayed++;
                     }
                 }

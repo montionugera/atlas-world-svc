@@ -42,8 +42,15 @@ namespace AtlasWorld.Client.Audio
         private const int MaxPoolSize = 16;
         private int _footstepVariantIndex = 0;
         private readonly System.Random _footstepRng = new(0x5F3759DF);
-        private readonly int[] _recentFootstepVariants = { -1, -1, -1 };
-        private int _recentFootstepCursor = 0;
+        private readonly int[][] _recentFootstepVariantsBySurface =
+        {
+            new[] { -1, -1, -1 }, // Stone = 0
+            new[] { -1, -1, -1 }, // Dirt = 1
+            new[] { -1, -1, -1 }, // Grass = 2
+            new[] { -1, -1, -1 }, // Water = 3
+            new[] { -1, -1, -1 }, // Glass = 4
+        };
+        private readonly int[] _recentFootstepCursorBySurface = new int[5];
         private static readonly string[] FootstepVariantKeys =
         {
             "sfx:footstep_1",
@@ -128,7 +135,7 @@ namespace AtlasWorld.Client.Audio
             if (eventKey == "sfx:footstep")
             {
                 bool rightFoot = (_footstepVariantIndex & 1) != 0;
-                return PlayFootstep(worldPos, rightFoot, isRunning: false);
+                return PlayFootstep(worldPos, rightFoot, isRunning: false, FootstepSurface.Stone);
             }
 
             AudioStream? stream = ResolveStream(eventKey);
@@ -147,19 +154,30 @@ namespace AtlasWorld.Client.Audio
         }
 
         /// <summary>
-        /// Plays a natural, multi-sample footstep one-shot synced to left/right foot strikes
-        /// and walk/run locomotion cadence. Falls back to <c>sfx:footstep</c> if variant keys
-        /// are not present in the active manifest.
+        /// Plays a natural, multi-sample footstep one-shot synced to left/right foot strikes,
+        /// walk/run locomotion cadence, and ground surface material. Falls back to <c>sfx:footstep_1..8</c>
+        /// and <c>sfx:footstep</c> if material-specific variant keys are not present in the active manifest.
         /// </summary>
-        public AudioStreamPlayer3D? PlayFootstep(Vector3 worldPos, bool isRightFoot = false, bool isRunning = false)
+        public AudioStreamPlayer3D? PlayFootstep(
+            Vector3 worldPos,
+            bool isRightFoot = false,
+            bool isRunning = false,
+            FootstepSurface surface = FootstepSurface.Stone)
         {
             _footstepVariantIndex++;
-            int variantIdx = PickNonRepeatingFootstepVariant();
-            string variantKey = FootstepVariantKeys[variantIdx];
+            int variantIdx = PickNonRepeatingFootstepVariant(surface);
+            string surfaceToken = FootstepSurfaceMapper.ToEventToken(surface);
+            string surfaceVariantKey = $"sfx:footstep_{surfaceToken}_{variantIdx + 1}";
+            string fallbackVariantKey = FootstepVariantKeys[variantIdx];
+
             AudioStream? stream = null;
-            if (_manifest != null && _manifest.TryGet(variantKey, out _))
+            if (_manifest != null && _manifest.TryGet(surfaceVariantKey, out _))
             {
-                stream = ResolveStream(variantKey);
+                stream = ResolveStream(surfaceVariantKey);
+            }
+            if (stream == null && _manifest != null && _manifest.TryGet(fallbackVariantKey, out _))
+            {
+                stream = ResolveStream(fallbackVariantKey);
             }
             stream ??= ResolveStream("sfx:footstep");
             if (stream == null)
@@ -174,17 +192,27 @@ namespace AtlasWorld.Client.Audio
             float triVol = (float)(_footstepRng.NextDouble() - _footstepRng.NextDouble());
             float footBias = isRightFoot ? -0.012f : 0.012f;
 
+            // Subtle per-surface volume and pitch trims
+            (float volTrim, float pitchTrim) = surface switch
+            {
+                FootstepSurface.Dirt => (-0.6f, 0.0f),
+                FootstepSurface.Grass => (-1.5f, 0.0f),
+                FootstepSurface.Water => (-1.0f, 0.0f),
+                FootstepSurface.Glass => (-1.2f, 0.03f),
+                _ => (0.0f, 0.0f), // Stone
+            };
+
             if (isRunning)
             {
-                player.VolumeDb = -8.2f + (triVol * 1.1f);
-                player.PitchScale = Mathf.Clamp(1.02f + footBias + (triPitch * 0.065f), 0.90f, 1.14f);
+                player.VolumeDb = -8.2f + (triVol * 1.1f) + volTrim;
+                player.PitchScale = Mathf.Clamp(1.02f + footBias + (triPitch * 0.065f) + pitchTrim, 0.90f, 1.14f);
                 player.UnitSize = 4.5f;
                 player.MaxDb = -5.0f;
             }
             else
             {
-                player.VolumeDb = -10.8f + (triVol * 1.2f);
-                player.PitchScale = Mathf.Clamp(0.96f + footBias + (triPitch * 0.060f), 0.86f, 1.08f);
+                player.VolumeDb = -10.8f + (triVol * 1.2f) + volTrim;
+                player.PitchScale = Mathf.Clamp(0.96f + footBias + (triPitch * 0.060f) + pitchTrim, 0.86f, 1.08f);
                 player.UnitSize = 4.0f;
                 player.MaxDb = -7.0f;
             }
@@ -193,16 +221,18 @@ namespace AtlasWorld.Client.Audio
             return player;
         }
 
-        private int PickNonRepeatingFootstepVariant()
+        private int PickNonRepeatingFootstepVariant(FootstepSurface surface)
         {
+            int sIdx = Mathf.Clamp((int)surface, 0, _recentFootstepVariantsBySurface.Length - 1);
+            int[] recent = _recentFootstepVariantsBySurface[sIdx];
             int count = FootstepVariantKeys.Length;
             int candidate = _footstepRng.Next(count);
             for (int attempt = 0; attempt < 12; attempt++)
             {
                 bool recentlyUsed = false;
-                for (int i = 0; i < _recentFootstepVariants.Length; i++)
+                for (int i = 0; i < recent.Length; i++)
                 {
-                    if (_recentFootstepVariants[i] == candidate)
+                    if (recent[i] == candidate)
                     {
                         recentlyUsed = true;
                         break;
@@ -212,8 +242,8 @@ namespace AtlasWorld.Client.Audio
                     break;
                 candidate = (candidate + 1 + _footstepRng.Next(count - 1)) % count;
             }
-            _recentFootstepVariants[_recentFootstepCursor] = candidate;
-            _recentFootstepCursor = (_recentFootstepCursor + 1) % _recentFootstepVariants.Length;
+            recent[_recentFootstepCursorBySurface[sIdx]] = candidate;
+            _recentFootstepCursorBySurface[sIdx] = (_recentFootstepCursorBySurface[sIdx] + 1) % recent.Length;
             return candidate;
         }
 

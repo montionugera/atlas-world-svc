@@ -165,6 +165,9 @@ namespace AtlasWorld.Client.World
         private MeshInstance3D? _targetRing;
         private float _pulseTime = 0f;
 
+        private readonly List<SurfacePadOverride> _surfacePads = new();
+        private Node3D? _surfacePadsRoot;
+
         // UI references
         private Label? _telemetryLabel;
         private Label? _actionBannerLabel;
@@ -184,6 +187,8 @@ namespace AtlasWorld.Client.World
         private Button? _netButton;
 
         // Public accessors for PlaytestSandboxVerify & external inspection
+        public IReadOnlyList<SurfacePadOverride> SurfacePads => _surfacePads;
+        public FootstepSurface ResolveSurfaceAt(Vector3 worldPos) => FootstepSurfaceResolver.Resolve(worldPos, _mapDoc, _surfacePads);
         public string ActiveMapId => _mapDoc?.MapId ?? "";
         public UnifiedMapDocument? MapDocument => _mapDoc;
         public string ActiveAvatarKey => _availableAvatarKeys.Count > 0 ? _availableAvatarKeys[_avatarIndex] : "";
@@ -326,6 +331,7 @@ namespace AtlasWorld.Client.World
             _dayNightCycle.Initialize(this, _mapDoc);
 
             SpawnTargetDummies();
+            SpawnSurfaceTestPads();
 
             Vector3 focus = _avatarContainer?.Position ?? new Vector3(0f, 0f, -15.5f);
             _chunkStreamer.UpdateStreaming(focus, forceReload: true);
@@ -463,6 +469,70 @@ namespace AtlasWorld.Client.World
 
             _selectedDummyIndex = 0;
             UpdateTargetRing();
+        }
+
+        private void SpawnSurfaceTestPads()
+        {
+            _surfacePads.Clear();
+            if (_surfacePadsRoot != null && GodotObject.IsInstanceValid(_surfacePadsRoot))
+            {
+                _surfacePadsRoot.GetParent()?.RemoveChild(_surfacePadsRoot);
+                _surfacePadsRoot.QueueFree();
+            }
+
+            _surfacePadsRoot = new Node3D { Name = "SurfaceTestPads" };
+            AddChild(_surfacePadsRoot);
+
+            float z = (_mapDoc.MapId == "maro-bell") ? -12.5f : -1.5f;
+            (string id, string label, float x, FootstepSurface surf, Color col)[] padDefs =
+            {
+                ("pad_stone", "Stone", -4.2f, FootstepSurface.Stone, new Color(0.48f, 0.48f, 0.52f)),
+                ("pad_dirt", "Dirt", -1.4f, FootstepSurface.Dirt, new Color(0.55f, 0.38f, 0.22f)),
+                ("pad_water", "Water", 1.4f, FootstepSurface.Water, new Color(0.18f, 0.52f, 0.82f, 0.85f)),
+                ("pad_glass", "Glass", 4.2f, FootstepSurface.Glass, new Color(0.82f, 0.92f, 0.98f, 0.75f)),
+            };
+
+            const float padSize = 2.2f;
+            const float half = padSize * 0.5f;
+
+            foreach (var def in padDefs)
+            {
+                Rect2 bounds = new(def.x - half, z - half, padSize, padSize);
+                _surfacePads.Add(new SurfacePadOverride(def.id, def.label, bounds, def.surf));
+
+                float y = TerrainElevation.SampleHeight(def.x, z, _mapDoc, 0f);
+                var meshInst = new MeshInstance3D
+                {
+                    Name = $"Mesh_{def.id}",
+                    Mesh = new BoxMesh { Size = new Vector3(padSize, 0.04f, padSize) },
+                    Position = new Vector3(def.x, y + 0.02f, z)
+                };
+                var mat = new StandardMaterial3D
+                {
+                    AlbedoColor = def.col,
+                    Roughness = def.surf == FootstepSurface.Glass || def.surf == FootstepSurface.Water ? 0.1f : 0.85f,
+                    Metallic = def.surf == FootstepSurface.Glass ? 0.3f : 0.0f,
+                    Transparency = (def.surf == FootstepSurface.Glass || def.surf == FootstepSurface.Water)
+                        ? BaseMaterial3D.TransparencyEnum.Alpha
+                        : BaseMaterial3D.TransparencyEnum.Disabled
+                };
+                meshInst.MaterialOverride = mat;
+                _surfacePadsRoot.AddChild(meshInst);
+
+                var label = new Label3D
+                {
+                    Name = $"Label_{def.id}",
+                    Text = def.label,
+                    Position = new Vector3(def.x, y + 0.32f, z),
+                    Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    FontSize = 22,
+                    PixelSize = 0.005f,
+                    Modulate = Colors.White,
+                    OutlineSize = 4,
+                    OutlineModulate = Colors.Black
+                };
+                _surfacePadsRoot.AddChild(label);
+            }
         }
 
         public void SpawnOrReplaceAvatar(string avatarKey)
@@ -1346,7 +1416,8 @@ namespace AtlasWorld.Client.World
             {
                 if (isMoving && _animController.PollFootstepStrike(out bool rightFoot, out bool running))
                 {
-                    Audio.AudioRegistry.Instance?.PlayFootstep(playerPos, rightFoot, running);
+                    FootstepSurface surf = ResolveSurfaceAt(playerPos);
+                    Audio.AudioRegistry.Instance?.PlayFootstep(playerPos, rightFoot, running, surf);
                 }
                 else if (!isMoving)
                 {
@@ -1735,12 +1806,13 @@ namespace AtlasWorld.Client.World
                 : "off";
             float footMm = LastFootMinDeltaMeters * 1000f;
             string groundStatus = footMm >= -25.0f ? "GROUNDED" : "SINKING";
+            FootstepSurface activeSurf = ResolveSurfaceAt(pos);
 
             _telemetryLabel.Text =
                 $"Map: {ActiveMapId}  |  Pos: ({pos.X:F1}, {pos.Y:F2}, {pos.Z:F1}) m  |  Speed: {_currentSpeedMetersPerSec:F2} m/s  |  Zoom: {_cameraDistance:F2} m\n" +
                 $"Rig: {ActiveAvatarKey}  |  Stance: {stanceLabel}  |  Hair: {ActiveHairPresetName}  |  Eyes: {ActiveEyeExpressionLabel}\n" +
                 $"Locomotion: {baseState} ({baseClip})  |  Upper-Body Attack: {upperLayer}\n" +
-                $"Foot Grounding: {footMm:+0.0;-0.0;0.0} mm vs rest ankle ({groundStatus})";
+                $"Foot Grounding: {footMm:+0.0;-0.0;0.0} mm vs rest ankle ({groundStatus})  |  Surface: {activeSurf}";
         }
 
         private static string ShortKey(string key)

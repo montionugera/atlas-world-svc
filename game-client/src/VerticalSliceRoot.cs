@@ -2106,7 +2106,8 @@ namespace AtlasWorld.Client
                 {
                     if (isMoving && _playerAnimController.PollFootstepStrike(out bool rightFoot, out bool running))
                     {
-                        Audio.AudioRegistry.Instance?.PlayFootstep(PlayerAvatar.Position, rightFoot, running);
+                        var surf = World.FootstepSurfaceResolver.Resolve(PlayerAvatar.Position, _mapDoc);
+                        Audio.AudioRegistry.Instance?.PlayFootstep(PlayerAvatar.Position, rightFoot, running, surf);
                     }
                     else if (!isMoving)
                     {
