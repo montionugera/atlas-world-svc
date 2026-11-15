@@ -1900,5 +1900,23 @@
     "title": "Short menu: sidebar from 31 tabs to 11 entries with sub-view pills (game DB slice S2)",
     "created_at": "2026-11-14T20:24:51.196895+00:00",
     "promoted_to": "F-219"
+  },
+  {
+    "id": "I-305",
+    "title": "Concept art: Ondo Forge boy and girl race turnarounds into the Game DB, old adult dwarf sheets marked old concept",
+    "created_at": "2026-11-15T08:49:51.262942+00:00",
+    "promoted_to": "F-220"
+  },
+  {
+    "id": "I-306",
+    "title": "Maro Bell arrival E4: full slice scene hookup, Asset Studio private pull entries, and live camera perf",
+    "created_at": "2026-11-15T09:10:42.006225+00:00",
+    "promoted_to": "F-221"
+  },
+  {
+    "id": "I-307",
+    "title": "Material-aware footstep SFX by ground surface (stone, dirt, water, glass)",
+    "created_at": "2026-11-15T09:23:38.205170+00:00",
+    "promoted_to": null
   }
 ]
