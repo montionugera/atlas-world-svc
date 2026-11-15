@@ -456,6 +456,11 @@ namespace AtlasWorld.Client.World
             cam.LookAt(new Vector3(0f, 7f, -66f), Vector3.Up);
             await Save(outDir, "maro-bell-eye-gate.png");
 
+            // AC7: from the town side, looking south at both gate towers and their door openings.
+            cam.Position = new Vector3(0f, 1.6f, 66f);
+            cam.LookAt(new Vector3(0f, 3.5f, 76f), Vector3.Up);
+            await Save(outDir, "maro-bell-gate-towers.png");
+
             await RenderMaroFolkGirlInBellTown(root, cam, outDir);
         }
 
