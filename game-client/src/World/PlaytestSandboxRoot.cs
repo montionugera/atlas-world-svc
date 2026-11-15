@@ -488,13 +488,14 @@ namespace AtlasWorld.Client.World
             float z = (_mapDoc.MapId == "maro-bell") ? -8.5f : 2.5f;
             (string id, string label, float x, FootstepSurface surf, Color col)[] padDefs =
             {
-                ("pad_stone", "STONE PAD", -10.5f, FootstepSurface.Stone, new Color(0.48f, 0.48f, 0.54f)),
-                ("pad_dirt", "DIRT PAD", -3.5f, FootstepSurface.Dirt, new Color(0.56f, 0.38f, 0.22f)),
-                ("pad_water", "WATER PAD", 3.5f, FootstepSurface.Water, new Color(0.16f, 0.54f, 0.86f, 0.85f)),
-                ("pad_glass", "GLASS PAD", 10.5f, FootstepSurface.Glass, new Color(0.78f, 0.94f, 1.00f, 0.72f)),
+                ("pad_stone", "STONE PAD", -12.0f, FootstepSurface.Stone, new Color(0.50f, 0.50f, 0.56f)),
+                ("pad_dirt", "DIRT PAD", -6.0f, FootstepSurface.Dirt, new Color(0.56f, 0.38f, 0.22f)),
+                ("pad_grass", "GRASS PAD", 0.0f, FootstepSurface.Grass, new Color(0.24f, 0.68f, 0.28f)),
+                ("pad_water", "WATER PAD", 6.0f, FootstepSurface.Water, new Color(0.16f, 0.54f, 0.86f, 0.85f)),
+                ("pad_glass", "GLASS PAD", 12.0f, FootstepSurface.Glass, new Color(0.78f, 0.94f, 1.00f, 0.72f)),
             };
 
-            const float padWidth = 6.5f;
+            const float padWidth = 5.6f;
             const float padDepth = 9.0f;
             const float halfW = padWidth * 0.5f;
             const float halfD = padDepth * 0.5f;

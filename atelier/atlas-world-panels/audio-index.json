@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T14:53:27.542Z",
+  "generatedAt": "2026-11-15T14:56:20.963Z",
   "sourceDir": "game-client/assets/audio",
   "files": [
     {
@@ -117,35 +117,35 @@
     },
     {
       "name": "footstep_stone_01.ogg",
-      "bytes": 4260
+      "bytes": 6361
     },
     {
       "name": "footstep_stone_02.ogg",
-      "bytes": 4382
+      "bytes": 6560
     },
     {
       "name": "footstep_stone_03.ogg",
-      "bytes": 4308
+      "bytes": 6627
     },
     {
       "name": "footstep_stone_04.ogg",
-      "bytes": 4331
+      "bytes": 7246
     },
     {
       "name": "footstep_stone_05.ogg",
-      "bytes": 4375
+      "bytes": 6224
     },
     {
       "name": "footstep_stone_06.ogg",
-      "bytes": 4262
+      "bytes": 6593
     },
     {
       "name": "footstep_stone_07.ogg",
-      "bytes": 4295
+      "bytes": 6784
     },
     {
       "name": "footstep_stone_08.ogg",
-      "bytes": 4408
+      "bytes": 6827
     },
     {
       "name": "footstep_water_01.ogg",

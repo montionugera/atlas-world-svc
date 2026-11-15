@@ -600,10 +600,10 @@ namespace AtlasWorld.Client.World
                     !Mathf.IsEqualApprox(p1.PitchScale, p2.PitchScale));
             }
 
-            Report("PlaytestSandbox spawns 4 walkable material test pads (Stone, Dirt, Water, Glass)",
-                sandbox.SurfacePads.Count == 4);
+            Report("PlaytestSandbox spawns 5 walkable material test pads (Stone, Dirt, Grass, Water, Glass)",
+                sandbox.SurfacePads.Count == 5);
 
-            bool allPadsResolveAndPlay = sandbox.SurfacePads.Count == 4;
+            bool allPadsResolveAndPlay = sandbox.SurfacePads.Count == 5;
             foreach (var pad in sandbox.SurfacePads)
             {
                 Vector2 center = pad.WorldBounds.GetCenter();
@@ -617,7 +617,7 @@ namespace AtlasWorld.Client.World
             var grassProbe = new Vector3(12f, 0f, -15f);
             var grassSurface = sandbox.ResolveSurfaceAt(grassProbe);
             var grassPlayed = audioReg?.PlayFootstep(grassProbe, isRightFoot: true, isRunning: true, surface: grassSurface);
-            Report($"All 4 sandbox surface pads (Stone, Dirt, Water, Glass) + open terrain ({grassSurface}==Grass) resolve and play material footsteps",
+            Report($"All 5 sandbox surface pads (Stone, Dirt, Grass, Water, Glass) + open terrain ({grassSurface}==Grass) resolve and play material footsteps",
                 allPadsResolveAndPlay && grassSurface == FootstepSurface.Grass &&
                 grassPlayed != null && grassPlayed.Stream != null && grassPlayed.Playing);
 
