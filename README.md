@@ -36,6 +36,10 @@
   - **Interactive 3D SubViewport (Left 45%):** Live 3D character preview mounted on a pedestal with camera and omni lighting. Supports 360° touch drag rotation.
   - **Tabbed Equipment Grid (Right 55%):** Category tabs (`Weapons`, `Armor`, `Hair`, `Sets`) with rarity color borders (Epic purple, Rare blue), level requirements, stat diffs (`+140 M.ATK`, `+65 P.ATK`), **[Try On]** tween preview, and **[Equip]** real-time avatar mutation.
   - **Input Isolation:** Disables background joystick and hero movement while typing in chat or inspecting gear in modals.
+- **Material-Aware Footstep SFX by Ground Surface (Feature F-223):**
+  - **Hybrid Ground Surface Resolver (`FootstepSurfaceResolver`):** Samples player world coordinates across 5 surfaces (`Stone`, `Dirt`, `Grass`, `Water`, `Glass`) with deterministic precedence (scene/pad overrides > structure volumes > road splines > ground zones > base ground palette).
+  - **Single-Strike ElevenLabs v3 Sound Banks:** 8 distinct single-transient strike samples per surface (40 `.ogg` variants total, ~0.16–0.32s transient window, normalized to `-28.6 dBFS` mean volume) with organic triangular pitch/volume articulation and left/right footstrike variation in `AudioRegistry.PlayFootstep`.
+  - **Playtest Sandbox Surface Pads:** 4 labeled test pads (`Stone`, `Dirt`, `Water`, `Glass`) and surrounding meadow grass in `PlaytestSandbox.tscn` allowing immediate ear-checks and automated headless verification via `PlaytestSandboxVerify.cs`.
 
 ### Native Rust Meta & Persistence Engine (`server-rs/src/meta/` — Feature F-091)
 - **Zero-Overhead Single-Binary Meta Engine:** Built directly into `server-rs` to replace the Go/Goja Nakama + CockroachDB stack while preserving 100% `/v2/*` HTTP wire compatibility (`POST /v2/account/authenticate/device`, `GET /v2/account`, `POST /v2/storage`, `GET|POST /v2/rpc/{id}`).

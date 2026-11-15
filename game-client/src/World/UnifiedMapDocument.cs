@@ -141,6 +141,8 @@ namespace AtlasWorld.Client.World
         [JsonPropertyName("solid")] public bool Solid { get; set; } = true;
         /// <summary>Optional asset manifest key or <c>res://</c> scene path; null draws the grey box.</summary>
         [JsonPropertyName("assetPath")] public string? AssetPath { get; set; }
+        /// <summary>Optional ground surface override when stepping onto this structure volume (e.g., "stone", "glass", "water").</summary>
+        [JsonPropertyName("surfaceType")] public string? SurfaceType { get; set; }
     }
 
     public sealed class UnifiedMapSpawnArea
