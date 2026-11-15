@@ -1924,5 +1924,11 @@
     "title": "Maro Bell north E4: Bram lantern house, Tovin shrine, Old Lantern, Great Bell, and northern zone scene hookup (z = 20..-70)",
     "created_at": "2026-11-15T12:30:02.539978+00:00",
     "promoted_to": "F-222"
+  },
+  {
+    "id": "I-309",
+    "title": "Maro Bell concept-faithful town overhaul: clean outlines, 3-tier terraces, river, bridges, walls, modular buildings, foliage, and 9-zone layout",
+    "created_at": "2026-11-15T14:19:56.833614+00:00",
+    "promoted_to": null
   }
 ]
