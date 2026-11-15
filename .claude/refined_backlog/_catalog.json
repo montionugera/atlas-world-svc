@@ -2899,8 +2899,10 @@
     "from_idea": "I-309",
     "created_at": "2026-11-15T14:21:10.026244+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-11-15T14:21:19.875729+00:00"
+    "status": "shipped",
+    "release_version": "1.34",
+    "claimed_at": "2026-11-15T14:21:19.875729+00:00",
+    "shipped_at": "2026-11-15T17:49:17.261163+00:00",
+    "shipped_sha": "9f0485a16c8ed68e63e22801a7e711b9259ce87e"
   }
 ]
