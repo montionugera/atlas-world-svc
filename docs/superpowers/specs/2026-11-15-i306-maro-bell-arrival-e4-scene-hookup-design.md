@@ -57,7 +57,7 @@ status: approved (owner decision 2026-11-15: keep current apricot trees at 0 cre
      - Sample `Performance.Singleton` monitors (`RenderTotalDrawCallsInFrame`, `RenderTotalPrimitivesInFrame`, `TimeProcess`) at the live camera (`z = 71` looking north toward the arrival slice) and print `[MaroBellVerify] PERF draw_calls=... primitives=... frame_ms=...`.
      - Apply the pulled `env:maro-ground-meadow` and `env:maro-road-cobble` textures in `MaroBellVerify.Render` when present in `studio-cache`, and save an additional live-camera arrival shot (`maro-bell-live-camera.png`) to the gitignored `game-client/studio-cache/renders/` folder.
 
-## Acceptance Criteria
+## Acceptance criteria
 
 - **AC0 (Private hygiene):** All 36 new GLBs uploaded to Asset Studio (`rights=restricted`), `pull.sha256` matches lane sha256; 0 `.glb`, LFS pointers, `.import`, thumbs, or renders tracked in git.
 - **AC1 (Manifest & ledger):** `node scripts/check_asset_manifest.mjs` passes with 0 FAILURE both locally (warm cache) and with `ATLAS_SKIP_STUDIO=1` (CI mode).
