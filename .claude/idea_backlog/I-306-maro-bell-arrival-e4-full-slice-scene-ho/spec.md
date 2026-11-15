@@ -1,23 +1,3 @@
----
-title: "Maro Bell arrival E4: full slice scene hookup, Asset Studio private pull entries, and live camera perf"
-id: I-306
-status: idea
----
+# I-306 Maro Bell arrival E4: full slice scene hookup, Asset Studio private pull entries, and live camera perf
 
-# Maro Bell arrival E4: full slice scene hookup, Asset Studio private pull entries, and live camera perf
-
-## Problem
-
-(what hurts; concrete examples)
-
-## Why now
-
-(opportunity; deadline; constraint)
-
-## Sketch
-
-(rough shape; not a design yet)
-
-## Acceptance criteria
-
-- [ ] (one observable, testable outcome per item; refine refuses a spec without any)
+Canonical spec: `docs/superpowers/specs/2026-11-15-i306-maro-bell-arrival-e4-scene-hookup-design.md`.
