@@ -1151,6 +1151,8 @@ test("currentConceptArts drops old-concept items and the real index hides the Fu
     .map((i) => i.id)
     .sort();
   assert.deepEqual(hidden, [
+    "character-race-dwarf-kiln-artisan",
+    "character-race-dwarf-ondo-base-body-female",
     "character-race-furral-galvanic-scout-sheet",
     "character-race-furral-galvanic-scout-turnaround",
   ]);

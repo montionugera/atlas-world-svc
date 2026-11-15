@@ -31,6 +31,26 @@
       "aspect": "3:2"
     },
     {
+      "id": "character-race-dwarf-ondo-boy-turnaround",
+      "title": "Ondo Forge Boy: Race Turnaround",
+      "category": "character",
+      "zoneId": "town-root-train-roundhouse",
+      "loreRef": "dwarf",
+      "caption": "Front, side and back views of the Ondo Forge boy: short messy red-orange hair with a small tuft tied at the back, brass goggles, cream fur collar, navy tunic with gold trim, blue cape, big brown boots with gold toe caps. The 2026-11-15 redesign of the Ondo Forge pair as children; it replaces the bearded adult man of the Ondo Forge reference sheet. Prototype design, not locked canon.",
+      "prompt": "ChatGPT, 2026-11-15, first version (v1), the one the owner picked; a second version with another face was rejected. Attached: the male and the female turnaround of the Ondo Forge reference sheet. The message was: Two reference images are attached. First: the current MALE dwarf of our game (a bearded adult). Second: the FEMALE of the same race. Please redesign the male as a young BOY of the same race, and draw a new character turnaround of him alone. Keep from the first image: the same outfit and the same colours (brass goggles pushed up on the hair, cream fur collar, dark navy tunic with gold trim and shoulder plates, brown leather belt with a round gold buckle and belt pouches, the blue front panel with the gold emblem, the blue cape on the back with gold edge, brown bracers and gloves, dark baggy trousers with cream fur cuffs, big brown boots with gold toe caps), and the same red-orange hair colour. Change: he is a boy, about ten to twelve years old in look. NO beard, no moustache, no braids. A young smooth face in the same anime style as the second image: large expressive eyes, small nose, friendly determined look. Short messy red-orange hair with a small tuft tied at the back of the head. Body proportions and height in heads like the girl in the second image: a child-like small body, not muscular, not stocky, slim arms and legs, small hands. Layout: landscape 3:2 image, plain off-white background, three full body views of the same boy in a row at the same height: FRONT view, SIDE view facing the left edge of the picture, BACK view. Standing straight and relaxed, feet slightly apart, both arms hanging slightly away from the body so there is clear background between each arm and the body, hands empty and open. Same line work, cel shading and colours as the reference images. No text, no letters, no logo, no watermark, no ground props.",
+      "aspect": "3:2"
+    },
+    {
+      "id": "character-race-dwarf-ondo-girl-turnaround",
+      "title": "Ondo Forge Girl: Race Turnaround",
+      "category": "character",
+      "zoneId": "town-root-train-roundhouse",
+      "loreRef": "dwarf",
+      "caption": "Front, side and back views of the Ondo Forge girl: red-orange wavy hair in a high ponytail with two thin braids, brass goggles, cream fur collar, navy bodice with gold trim, cream pleated skirt, big brown boots with gold toe caps. The 2026-11-15 redesign of the Ondo Forge pair as children, drawn as the partner of the boy; it replaces the adult woman of the Ondo Forge reference sheet. Prototype design, not locked canon.",
+      "prompt": "ChatGPT, 2026-11-15, second version (v2), the one the owner picked, in the same conversation as the boy. The first message attached the new boy sheet and the female turnaround of the Ondo Forge reference sheet and asked for the female redrawn as a girl of the same age as the boy, with her design kept (hair, goggles, outfit, colours) and the same three views. The second message (attached: the first girl sheet and the boy sheet) was: Thank you. Now the girl, so the pair differs from both sides. Two images are attached: first the GIRL sheet, second the new BOY sheet. Please redraw the GIRL sheet (the first image) and change ONLY her face, so she looks clearly different from the boy: - Eyes: larger and rounder than his, a soft curved upper lid line with a few clear eyelashes at the outer corner, a lighter warm honey-brown iris with a big highlight. - Eyebrows: thin and softly arched, lighter than his. - Face shape: a rounder, softer face with a small chin and a light cheek blush. - Look: gentle, calm and bright. Same age as the boy, same anime style. Show the new face in the front view and in the side view. In the front view the head faces straight at the camera, not turned, not tilted, left and right symmetric. Everything else exactly as in the first image: hair, goggles, outfit, colours, body proportions, height, the three views in a row (front, side facing the left edge, back), the pose, plain off-white background, landscape 3:2. No text, no letters, no logo, no watermark.",
+      "aspect": "3:2"
+    },
+    {
       "id": "character-race-orc-ash-warden",
       "title": "Daro Guard Reference Sheet",
       "category": "character",
