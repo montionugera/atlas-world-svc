@@ -2,7 +2,7 @@
 title: "I-303 Maro Bell arrival: environment pilot pieces in game, grey box re-blocked for the 1.30 m canon"
 id: I-303
 date: 2026-11-15
-status: approved rev 3 (owner picks applied 2026-11-15)
+status: approved rev 4 (owner picks applied 2026-11-15; rev 4 = card 5 "studio", models back to Asset Studio pull)
 ---
 
 # I-303 Maro Bell arrival: environment pilot pieces in game
@@ -23,7 +23,13 @@ player, ship into release 1.34, local deploy so it shows in the app.
 
 Made on the decision page; tile text verbatim.
 
-1. **Models** = "Commit to the repo (Git LFS)": "Simpler pipeline, but the models become public in the repo." Chosen knowingly. Not the Asset Studio pull. (Was D-A.)
+**Rev 4 (2026-11-15):** the owner answered card "5 · Licence" = "studio" ("Back to Asset Studio pull": "The models stay private, as the repo rule says today. This
+changes your Models pick."; stored pick 2026-11-15T02:06Z; chat: "Private"). This reverses the first Models pick (Git LFS). Pivot plan:
+`.claude/refined_backlog/F-218-maro-bell-arrival-environment-pilot-piec/plan-studio-pivot.md`. Decisions 2-5 are unchanged.
+
+1. **Models** = "Back to Asset Studio pull" (rev 4, card 5): "The models stay private, as the repo rule says today." The 3 glbs are uploaded to Asset Studio and become
+   pull-only manifest entries (F-174 mechanism), licence `studio-private`. Nothing of them (glb, LFS pointer, import sidecar, texture, thumb, render) is committed.
+   (Was "Commit to the repo (Git LFS)", D-A; reversed.)
 2. **Player size** = "Keep the player as is, for now": "The town reads about 38% too big around her. Scaling her is a separate feature later." (= B1, was D-B.)
 3. **Where you see it** = "Local Godot run": "You see them in the game client on this Mac. The web panels show the map and Game DB shots." (Was D-C.)
 4. **Gate walls** = "Resize the 2 gate walls to the towers": "Small server change. The road and the 4 m opening stay the same."
@@ -31,16 +37,16 @@ Made on the decision page; tile text verbatim.
 
 ## Scope (in; Out below)
 
-0. **Step 0: put the 3 glbs in the repo as LFS files** (no Asset Studio upload, no pull). Copy from the lane (read-only source) `env/pilot/r01/r01-4k.glb`, `r04/r04.glb`,
-   `r15/r15.glb` to `game-client/assets/env/maro_gate_tower.glb`, `maro_lantern_post.glb`, `maro_barrel.glb` (names new; `env/barrel.glb` already exists). Then run the
-   Godot import, bake the thumbnails and add the ledger rows (Files table). Acceptance: AC0.
+0. **Step 0 (rev 4): upload the 3 glbs to Asset Studio** (client `atlas-world`, rights `restricted`) from the lane (read-only source) `env/pilot/r01/r01-4k.glb`,
+   `r04/r04.glb`, `r15/r15.glb`, and add 3 pull-only manifest entries + ledger rows. `node scripts/studio-pull.mjs` fetches them into the gitignored
+   `game-client/studio-cache/<sha256>.glb`; Godot imports them there. No thumbnails (pull entries have none). Acceptance: AC0.
 1. Three pilot glbs, each `env_gate.py` GREEN in the lane: gate tower `r01-4k.glb` (3.74 x 2.37 x 7.10, 3,919 tris; owner accepted the ~2.85 m door and 7.1 m tower),
    lantern post `r04.glb` (collision 0.5 x 0.5, 3.1 h) and barrel `r15.glb` (0.62 x 0.62, 0.75 h). All have floor-centre pivots and face -Z. The current gate-tower mesh
    is the multiview remake: **one door, front (-Z) only**. Sizes on disk: 293 KB, 66.8 KB, 73.8 KB.
 2. One new optional block field `assetPath` (manifest key): glb drawn, footprint from `size`. No `assetOffset` (pick 4 makes the footprint match the art, so there is
    nothing to offset).
 3. Height re-block of the arrival structures to the canon, and the 2 gate blocks resized to the tower art (tables below).
-4. Two after-shots in the Game DB (same shape as the existing grey-box entries; see F-216 below). Route: `MaroBellVerify.Render` (`ATLAS_RENDER_MARO_BELL=<dir>`, `MaroBellVerify.cs:90, 390`) streams the grey-box root into its own viewport and saves `maro-bell-top-down.png` and `maro-bell-eye-gate.png` (1280x720) with no server; it needs a windowed run, not headless (header comment, 16-17).
+4. Two after-shots (rev 4: kept OUT of the public Game DB, see AC7; they show the private props) (same shape as the existing grey-box entries; see F-216 below). Route: `MaroBellVerify.Render` (`ATLAS_RENDER_MARO_BELL=<dir>`, `MaroBellVerify.cs:90, 390`) streams the grey-box root into its own viewport and saves `maro-bell-top-down.png` and `maro-bell-eye-gate.png` (1280x720) with no server; it needs a windowed run, not headless (header comment, 16-17).
 5. Ship into release 1.34 through the psrw feature flow, then `scripts/deploy-local.sh`.
 
 Out: the other 13 recipe rows (r02, r03, r05-r16), any player body or height change (B1), road width (D2), the bell tower or landmark, lights and perf (E4), a Godot web
@@ -58,23 +64,22 @@ export (pick 3).
 | `game-client/src/Content/AssetRegistry.cs` | read only: `Resolve(key, out tier)` (70) returns a capsule with `ResolveTier.Capsule` on a miss. Default manifest is `res://assets/manifest.json` (23) |
 | `game-client/src/World/MaroBellPocController.cs` | workshop lantern light (672, y 2.2), `LanternGlowHead` sphere (689-692, y 2.2) and label height move up to the 3.1 m post's lamp. The label is set in the shared `AttachLanternLabel` (382; `Position` y 2.65 at 396), also used for the old-lantern and time-wound labels (283, 318, 876, 951, 997), so add a label-height parameter (default 2.65) and pass the new height only from the workshop-lantern calls (274, 697); the other lanterns stay put |
 | `game-client/src/World/MaroBellVerify.cs` | block-top assert (below) **and edit line 73**: it asserts `Block_<id>` has a `BoxMesh` for every block, which the glb branch breaks for the 16 blocks with an `assetPath` (2 gates + 14 lanterns). New rule: a block with `assetPath` must have a child `Glb_<id>` (node name pinned here) under `Structure_<id>` and no `Block_<id>` BoxMesh; a block without `assetPath` keeps the BoxMesh check. `AssetRegistry` is an autoload (`project.godot:21`) so the glb resolves in the probe. Read the rest of the file for other `Block_` lookups (the only one found is line 73); read first for any pinned block heights |
-| `game-client/assets/env/maro_gate_tower.glb`, `maro_lantern_post.glb`, `maro_barrel.glb` NEW | LFS (`.gitattributes:7` `*.glb`; each machine needs `git lfs install` once, `.gitattributes:2`) |
-| `game-client/assets/env/<name>.glb.import` NEW x3, plus the extracted `<name>_*.jpg` and `.jpg.import` | Godot sidecars are committed for committed glbs (`git ls-files game-client/assets/env` shows `barrel.glb.import`, `crate_Atlas.png`, `crate_Atlas.png.import`; `.gitattributes` header says `.import` stays in normal git). Each lane glb has 1 embedded jpeg; the import extracts it (`gltf/embedded_image_handling=1`, `env/barrel.glb.import:44`); jpg under `game-client/assets/**` is LFS. Generated by `"$GODOT" --headless --path game-client --import`, then committed. The extracted file's name and type are read from the run |
-| `game-client/assets/manifest.json` | 3 committed entries (below) |
-| `game-client/assets/.thumbs/<thumbFilename>.webp` NEW x3 + `.thumbs/index.json` rows | baked by `node scripts/bake_thumbnails.mjs --only env/maro_` (headless Blender, default `/Applications/Blender.app`, `bake_thumbnails.mjs:65`; `--only` matches the source path). webp is normal git (`git check-attr filter` is unspecified there) |
-| `art-source/LICENSES.md` | 3 ledger rows (file says every baked asset gets one, lines 3-4; `scripts/tests/precheck-pipeline-char.test.mjs:46` lists it as a gate path) |
-| `scripts/tests/maro-bell.test.mjs` | new checks (below) |
-| `content/concept-art/index.json` + `images/`, `thumbs/` | NEW entries `maro-bell-env-pilot-eye-gate`, `maro-bell-env-pilot-top-down` (webp, <= 800 KB, <= 2800 px) |
+| Asset Studio library (not the repo) | 3 uploads, client `atlas-world`, rights `restricted`, kind `environment` (tower, post) / `prop` (barrel); the record's id, tag and `sha256` go into the manifest `pull` block |
+| `game-client/studio-cache/<sha256>.glb` x3 (gitignored, `.gitignore:151-153`) | written by `node scripts/studio-pull.mjs`; Godot's `.glb.import` and extracted `<sha256>_Color_*.jpg` land beside them (`scripts/godot-verify.sh:36-60` imports a cold cache). Never tracked: guard (W), `scripts/lib/pull-entry.mjs:67-148` |
+| `game-client/assets/manifest.json` | 3 pull-only entries (below) |
+| `art-source/LICENSES.md` | 3 ledger rows in the `studio-cache/... (pull-only, not in repo)` form of the F-174 rows (`art-source/LICENSES.md:721-722`); a gate path (`scripts/tests/precheck-pipeline-char.test.mjs:46`) |
+| `scripts/tests/maro-bell.test.mjs` | new checks (below); a pull entry is checked by its `pull` block, not by a file on disk |
 
-No `.gitignore` change. `game-client/studio-cache/` (`.gitignore:144`) stays ignored and is not used by these 3.
+No thumbnails (`scripts/bake_thumbnails.mjs:116-118` and `check_asset_manifest.mjs:629` skip pull entries) and no committed Game DB render of the 3 props (renders of a
+private asset stay in the gitignored `game-client/studio-cache/renders/`, README "Render strip"; `scripts/check_atlas_web_image.py:19`). No `.gitignore` change.
 
 New block branch in `SpawnGreyBlock`: if `AssetPath` is set, resolve it with `AssetRegistry.Instance?.Resolve(...)` (cached in `_sceneCache`). On a resolved scene,
 instance it, named `Glb_<id>` (the BoxMesh `Block_<id>` is not created for that block), at local `(0, Hover, 0)` with `RotY`, then call `EntityView.ApplyAnimeToonShading(instance, EntityKind.Npc)` and `_occluder?.RegisterPropRoot(instance,
 max(size.x, size.z) / 2, 1)`, as the prop path does (1104-1107). Without the occluder call the 7.1 m tower blocks the camera with no fade. A null `Instance`, a `Capsule`
 tier or an empty `AssetPath` draws the BoxMesh as today. The label stays at `top + 0.35`.
 
-Recipes and prompts stay in the asset-studio workspace. The public game repo gets sizes and keys in the map, the glbs, and a `source` text in the manifest (no absolute or
-private path).
+Recipes and prompts stay in the asset-studio workspace. The public game repo gets sizes and keys in the map and a pull block (asset id, tag, sha256) plus a `source` text in
+the manifest (no absolute or private path). The glbs stay private (rev 4).
 
 ### Asset keys and manifest entries
 
@@ -82,24 +87,24 @@ private path).
   (blocks) or draws nothing (barrel props, which have no collision).
 - **Which manifest:** `manifest.json`, because the client binds only that file (`AssetRegistry.cs:23`; no client code reads `catalog-manifest.json`). It is the
   codegen-keyed, `driftGated: true` source (`check_asset_manifest.mjs:14, 228`).
-- **Entry shape** (committed, no `pull` block), copied from `player` in `manifest.json` (`scene`, `source`, `license`, `tier`, `kind`) plus `render`, as `env:barrel` does
-  in `catalog-manifest.json:522-529`: `{ "scene": "res://assets/env/maro_gate_tower.glb", "render": "model3d", "kind": "environment", "source": "<text>", "license": "<see
-  O1>", "tier": "bespoke" }`. Barrel uses `kind: "prop"`. No `anims`.
+- **Entry shape (rev 4: pull-only)**, copied from `npc:maro_folk_girl` (`manifest.json:273-298`) minus `anims`, plus `render` (no `kindDefaultRender` for these kinds):
+  `{ "scene": "res://studio-cache/<sha256>.glb", "render": "model3d", "kind": "environment", "source": "Asset Studio library asset <id> (client atlas-world); bytes not
+  in this repo", "license": "studio-private", "tier": "bespoke", "pull": { "from": "asset-studio", "assetStudioAsset": "<id>", "tag": "<tag>", "sha256": "<sha256>" } }`.
+  Barrel uses `kind: "prop"`. No `anims`. `sha256` is the Asset Studio record's value (it must equal the lane file's hash, else stop). No other `res://` string in the
+  entry (`scripts/lib/pull-entry.mjs:17-37`).
 - Rules in `scripts/check_asset_manifest.mjs` that apply:
   - (A) a driftGated entry must be Godot-loadable: `model3d` is (`render-spec.json`, `sceneLoadable: true`).
-  - (B) `scene` is `res://`, a non-empty file, extension in the `model3d` `exts` (`:~455-490`). An LFS pointer file is non-empty, so a checkout without `git lfs pull`
-    passes (B) and fails in `scripts/lib/anim-clips.mjs:16`; CI uses `lfs: true` (`.github/workflows/ci.yml:23`).
-  - (C) `model3d` requires `license` and `source` non-empty; `kindDefaultRender` has no default for these kinds, so each entry sets `"render": "model3d"`. (T) `kind`
-    needs a taxonomy section: `environment`, `prop` (`content/asset-taxonomy.json:27-32`).
-  - (I) `scripts/lib/license-policy.mjs`: allowed `CC0`, `CC-BY-4.0`, `CC-BY-3.0` (line 12); `studio-private` only with a `pull` block (27-37); CC-BY also needs `source`
-    and `author`.
-  - (U) the thumbnail rule applies (the pull exemption at `:629` does not): per `scene`, `.thumbs/<thumbFilename>.webp` plus a `.thumbs/index.json` row whose `srcHash`
-    matches the glb bytes (`:608-666`); rebake on any glb change. CI only hashes (no Blender).
+  - (B) for a pull entry the file check is `checkPullEntry` (`scripts/lib/pull-entry.mjs:42-60`): the cache file must exist and hash to `pull.sha256`; absent with
+    `ATLAS_SKIP_STUDIO=1` (CI only, `.github/workflows/ci.yml:69-75`) it prints SKIP; absent otherwise it FAILS ("run node scripts/studio-pull.mjs").
+  - (C) `model3d` requires `license` and `source` non-empty; each entry sets `"render": "model3d"`. (T) `kind` needs a taxonomy section: `environment`, `prop`
+    (`content/asset-taxonomy.json:27-32`).
+  - (I) `scripts/lib/license-policy.mjs:27-45`: a pull entry MUST be `studio-private`, and `studio-private` only on a pull-only entry.
+  - (U) skipped for pull entries (`:629`); (W) no tracked file under `studio-cache/`, no thumb row from it, no tracked byte copy of a pull sha256
+    (`scripts/lib/pull-entry.mjs:67-148`).
   - (G) keyspaces are disjoint; `env:maro-*` is new. Codegen: `env:` is not reserved (`render-spec.json:125`) and the keys are not in `content/generated/asset-keys.json`,
     so one non-fatal UNKNOWN warning per key (as `npc:maro_folk_girl` today). Check: no new FAILURE, no codegen drift.
-  - No sha256 check exists for a committed entry (only `pull.sha256`); integrity is the LFS oid. The PR text records `sha256sum` of the 3 files next to the lane
-    originals.
-- **Open point O1 (license value):** no committed owner-generated (Tripo/ChatGPT) asset exists yet, and current policy text says such art is not CC0:
+  - Integrity is `pull.sha256`, checked by `studio-pull.mjs` on download and by (B) on the cache.
+- **Open point O1 (license value): CLOSED in rev 4** = `studio-private` (card 5 "studio"). The text below is the rev 3 record. No committed owner-generated (Tripo/ChatGPT) asset exists yet, and current policy text says such art is not CC0:
   `scripts/lib/license-policy.mjs:27-28` ("an owner-generated Asset Studio asset is not CC0 ... never committed to this public repo"); the only owner Tripo asset in
   `art-source/LICENSES.md:718` is `studio-private` (private, pull-only). The `player` entry is **not** a precedent: its scene `characters/player_knight.glb` is a market
   KayKit Adventurers Knight asset under CC0 (`art-source/LICENSES.md:23`). The gate cannot catch a wrong pick: `license-policy.mjs:30-45` passes CC0 on an entry with no
@@ -173,7 +178,8 @@ Block tops are not walkable: `TerrainElevation.SampleHeight` (`TerrainElevation.
 ### New tests
 
 - `maro-bell.test.mjs`:
-  - block heights match the table; every `assetPath` is a key with a `manifest.json` entry whose `scene` file exists; no map string contains `studio-cache` or `res://`;
+  - block heights match the table; every `assetPath` is a key with a `manifest.json` entry that is pull-only (`isPullOnly`, license `studio-private`; rev 4: no file
+    check, the cache is absent in CI); no map string contains `studio-cache` or `res://`;
   - gate blocks: `|x| - size.x / 2` = 2.0 (+-0.01), `size` = 3.74 x 7.1 x 2.37 (+-0.01), `rotY` 0, z 76, no `assetOffset` key; the two obstacle rows equal the table above
     (+-0.001);
   - lantern-06: `Lantern06WorldPos` in `MaroBellPocController.cs:28` (-0.8, 0, 23.7) equals the `lantern-06` block x/z (+-0.01) at y 0 (the glb floor pivot), the workshop
@@ -192,18 +198,21 @@ Block tops are not walkable: `TerrainElevation.SampleHeight` (`TerrainElevation.
 
 ## Acceptance criteria
 
-0. The 3 glbs are in `game-client/assets/env/` as LFS files: `git lfs ls-files` lists them, `git check-attr filter` says `lfs`, `sha256sum` equals the lane originals,
-   `.glb.import` and extracted-texture sidecars are tracked, and `git ls-files` shows nothing new under `game-client/studio-cache/`.
+0. (rev 4) The 3 glbs are Asset Studio library assets; each record's `sha256` equals the lane original's `shasum -a 256`; `node scripts/studio-pull.mjs` exits 0 and
+   writes `game-client/studio-cache/<sha256>.glb` x3. No commit reachable from `feat/F-218` adds any `game-client/assets/env/maro_*` file, LFS pointer, thumb or render of
+   them, and `git ls-files` shows nothing under `game-client/studio-cache/`.
 1. Lane `tools/env_gate.py` is GREEN for `r01-4k.glb`, `r04.glb`, `r15.glb` (gate JSONs attached).
-2. `node scripts/check_asset_manifest.mjs` has no FAILURE: licenses valid (O1 closed), thumbs present and fresh for the 3 `scene` paths, UNKNOWN warnings for the 3 `env:`
-   keys expected.
+2. `node scripts/check_asset_manifest.mjs` has no FAILURE: the 3 entries are pull-only with license `studio-private` (O1 closed), cache present and hashing right, no
+   thumb rows for them, UNKNOWN warnings for the 3 `env:` keys expected. With `ATLAS_SKIP_STUDIO=1` (CI) they print SKIP and still no FAILURE.
 3. `node --test scripts/tests/maro-bell.test.mjs` passes with the required ids, the 12 height posts unchanged, obstacle parity and the new tests above.
    `scripts/tests/poc-maro-*.test.mjs` and `canon-names.test.mjs` pass.
 4. `git diff` of `staticObstacles` shows **only** the 2 gate rows, with exactly the values in the table above (no other row changes by a byte).
 5. `godot-verify.sh ATLAS_VERIFY_MARO_BELL` passes on the pinned mono Godot build (with the new block-top assert and the updated line-73 rule: `Glb_<id>` for the 16 `assetPath` blocks, BoxMesh for the rest), and `PocMaro10mVerify` and `PlaytestSandboxVerify`
    pass, with no import errors for the 3 glbs.
 6. `cargo test` in `server-rs` is green (`map.rs:758` loads maro-bell with the edited gates); the JS parity test confirms the 42 obstacles.
-7. The 2 Game DB shots come from `MaroBellVerify.Render` (scope 4). This item is the phone and desktop look: screenshots from a local Godot run at the gate, phone 390x844 and desktop 1280x800, before and after. `deploy-local.sh` builds no Godot client and `shoot.mjs` only
+7. The 2 shots come from `MaroBellVerify.Render` (scope 4). Rev 4: they show the private props, so they are written to the gitignored
+   `game-client/studio-cache/renders/` (served by the edit host only, `scripts/check_atlas_web_image.py:19`) and are NOT added to `content/concept-art` (owner-visible:
+   no new Game DB entry; the grey-box entries stay). This item is the phone and desktop look: screenshots from a local Godot run at the gate, phone 390x844 and desktop 1280x800, before and after. `deploy-local.sh` builds no Godot client and `shoot.mjs` only
    captures web pages, so the capture is (from the repo root):
 
    ```sh
@@ -220,11 +229,11 @@ Block tops are not walkable: `TerrainElevation.SampleHeight` (`TerrainElevation.
    are read and shown to the owner: both towers with doors on the town side, 14 lanterns, 2 barrels, no grey box behind
    an art piece, and the B1 flag.
 8. Gate 1 (`scripts/precheck.sh`) is green and `psrw ship` merges into release/1.34. Gate 1 still runs the studio pull (`precheck.sh:519-524, 543`) because
-   `npc:maro_folk_girl` is a pull entry; Asset Studio must be up as for any `game-client/` change (`PIPELINE_CHAR_PATHS`, `precheck.sh:193`). The 3 new entries add
-   nothing to pull.
+   `npc:maro_folk_girl` is a pull entry; Asset Studio must be up as for any `game-client/` change (`PIPELINE_CHAR_PATHS`, `precheck.sh:193`). Rev 4: the 3 new
+   entries add 3 rows to that pull.
 9. After ship, `scripts/deploy-local.sh` is run **from the `_release` worktree on release/1.34**: the web image only rebuilds on the release branch
-   (`deploy-local.sh:81-87`). Then `/api/runtime` reports that commit and the 2 new Game DB entries render in the concept-art view (in whatever form F-216 leaves it, see
-   below). The glbs show in the local Godot run (pick 3), not in a served web build.
+   (`deploy-local.sh:81-87`). Then `/api/runtime` reports that commit and the map changes show in the web panels (rev 4: no new Game DB entries, AC7). The glbs show
+   in the local Godot run with a warm studio cache (pick 3), not in a served web build.
 
 ## Risks, blast radius, reversibility
 
@@ -232,15 +241,14 @@ Block tops are not walkable: `TerrainElevation.SampleHeight` (`TerrainElevation.
   `size` or the gate rows, so read `MaroBellVerify.cs`, `PocMaro10mVerify.cs` and `poc-maro-*.test.mjs` first (`grep gate` over `PocMaro10mVerify.cs`,
   `MaroBellVerify.cs`, `MaroBellPocController.cs` and `poc-maro-*.test.mjs` found no gate-size pin). Dropping `static` from `SpawnGreyBlock` changes no caller (line 472
   is in an instance method); the new branch is dead when `assetPath` is absent, so other maps are unchanged.
-- **Public repo (owner accepted, pick 1):** the 3 glbs, their textures and thumbnails become public in the repo and in git history. Deleting them later removes them from
-  the tip only. Prompts, recipes and the lane stay private; the license wording is O1.
-- **LFS:** the repo is LFS-tracked for `*.glb` and already holds 689 committed glbs there (`git ls-files '*.glb' | wc -l`). The server image whitelists
-  `content/**` only (`.dockerignore`), so it needs no glb. The web image does carry the files: it is built from `git archive` (`scripts/build-atlas-web-image.sh:11`,
-  `Dockerfile.atlas-web:2`), `Dockerfile.atlas-web.dockerignore:9` whitelists `game-client/assets/**`, and `Dockerfile.atlas-web:11` runs `scripts/check_atlas_web_image.py`,
-  which fails the build on any file under 200 B (an LFS pointer; `check_atlas_web_image.py:68-71`). So the local deploy needs the 3 LFS objects present locally. Whether
-  `git archive` writes pointers or payloads is not verified; it is the same for every existing glb. CI fetches LFS (`ci.yml:23`).
+- **Private models (rev 4, card 5):** the 3 glbs stay in Asset Studio. Rev 3 commits (LFS pointers, sidecars, thumbs, 2 renders) exist only on the never-pushed local
+  branch; the pivot rebuilds the branch without them and keeps the old tip under `refs/backup/` (never pushed) until ship. Risk: a `git lfs push --all` or a push of
+  the backup ref would upload them; neither is ever run. The web image (`Dockerfile.atlas-web.dockerignore:9` whitelists `game-client/assets/**`) carries no studio
+  cache (`check_atlas_web_image.py:19`).
+- **Pull dependency:** anyone without Asset Studio sees grey boxes (blocks) and no barrels: `ResolveAssetScene` treats a missing scene / Capsule tier as a miss. CI
+  never runs Godot (`ci.yml` has no godot step) and skips pull entries loudly; local Gate 1 pulls and refuses `ATLAS_SKIP_STUDIO` (`precheck.sh:519-543`).
 - **Assumptions:** the toon pass keeps glb textures (R-A6); the lamp cage sits at 2.5-3.1 m (step 0); the lane glb pivots are floor-centre (measured x/z bounds above
-  agree to 0.02 m). **Reversibility:** high in code; drop the new field, props, manifest entries, files, `size`/gate edits. History is not reversible (see Public repo).
+  agree to 0.02 m). **Reversibility:** high in code; drop the new field, props, manifest entries, files, `size`/gate edits. Rev 4: nothing private reaches the public history (see Private models).
   **Blind spots:** the `AtlasWorld.pck` export is not traced (pick 3: the local Godot run is the target).
 
 ## Overlap with in-flight work
@@ -257,7 +265,8 @@ Block tops are not walkable: `TerrainElevation.SampleHeight` (`TerrainElevation.
 
 ## Open points
 
-- **O1 License value** for the 3 committed owner-generated entries (see "Asset keys and manifest entries"). Needs the owner (or a one-line gate change). It blocks AC2,
+- **O1 License value: CLOSED (rev 4)** = "studio" on card 5: pull-only entries, `studio-private`. Rev 3 record follows.
+  For the 3 committed owner-generated entries (see "Asset keys and manifest entries"). Needs the owner (or a one-line gate change). It blocks AC2,
   not the rest of the build.
   The owner is asked on the decision page https://claude.ai/artifact/1i4SoVVpbr3kDf2fRi58TY, card "5 · Licence": own = public, rights kept = option (b), a new allowed value;
   cc0 = option (a); studio = return to the Asset Studio pull. The build proceeds with the licence value as the LAST task, and nothing containing the glbs is pushed before the pick.

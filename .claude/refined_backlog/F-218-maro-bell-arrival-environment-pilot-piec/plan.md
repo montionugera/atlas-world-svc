@@ -1,5 +1,7 @@
 # Maro Bell arrival: environment pilot pieces in game, grey box re-blocked for the 1.30 m canon Implementation Plan
 
+> **SUPERSEDED IN PART (spec rev 4, owner card "5 · Licence" = studio, 2026-11-15):** the LFS parts of Tasks 5-10 are replaced by `plan-studio-pivot.md` (this folder). Tasks 0-4 stand.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal (owner, verbatim):** "Ok" to: run E3 as a ps-release-workflow feature in the game repo: bring the 3 E2 pilot models + recipes into the game, re-block the Maro Bell grey box for the 1.30 m player, ship into release 1.34, local deploy so it shows in the app.
@@ -383,6 +385,8 @@ ATLAS_MAP_ID=maro-bell ATLAS_CAPTURE_SCREENSHOT=1 ATLAS_SCREENSHOT_DELAY=5 ATLAS
 ## Phase F: licence (LAST), then ship (BLOCKED until the owner picks)
 
 ### Task 9: Licence value (spec O1; BLOCKED until the owner answers card "5 · Licence" on https://claude.ai/artifact/1i4SoVVpbr3kDf2fRi58TY)
+
+> **Owner picked "studio" (2026-11-15).** This task and the LFS parts of Tasks 5-10 are superseded by `plan-studio-pivot.md` (P0-P7).
 
 **Files:**
 - Modify: `game-client/assets/manifest.json` (3 `license` fields), `art-source/LICENSES.md` (3 rows), and per option `scripts/lib/license-policy.mjs` (+ its test under `scripts/tests/`, find it with `grep -ln license-policy scripts/tests/*.mjs`).
