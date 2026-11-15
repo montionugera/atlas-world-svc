@@ -143,6 +143,7 @@ absent), `art-source/LICENSES.md` (3 rows; precedent rows `:721-722`).
 - [ ] **Step 2: Game DB shots (OWNER-VISIBLE CONSEQUENCE).** The 2 rev 3 shots render the private props, and the F-174 rule keeps renders of private assets out of the
   public repo (README "Render strip", `README.md:254-260`; `scripts/check_atlas_web_image.py:19` keeps `game-client/studio-cache/renders` out of the web image). So
   `content/concept-art` gets NO new entry (the rev 3 entries, `art-briefs.json` rows and webps were dropped in P0). Re-render for the owner only:
+  `mkdir -p "$WT/game-client/studio-cache/renders/f218"` first (`Save()` does not create the folder, `MaroBellVerify.cs:658-664`), then
   `ATLAS_VERIFY_MARO_BELL=1 ATLAS_RENDER_MARO_BELL="$WT/game-client/studio-cache/renders/f218" "$GODOT" --path game-client` (windowed, `MaroBellVerify.cs:16,103`).
   Expected: `maro-bell-top-down.png`, `maro-bell-eye-gate.png` there, log `VERDICT PASS`; `git status --short` clean. Report line for the owner: "The 2 Maro Bell
   after-shots are not in the Game DB any more, because they show the private models; they live on this Mac only."
