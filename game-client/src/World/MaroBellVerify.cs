@@ -74,8 +74,8 @@ namespace AtlasWorld.Client.World
                 spawned.Where(t => string.IsNullOrEmpty(t.s.AssetPath))
                        .All(t => t.node?.GetNodeOrNull<MeshInstance3D>($"Block_{t.s.Id}")?.Mesh is BoxMesh));
             var glbBlocks = spawned.Where(t => !string.IsNullOrEmpty(t.s.AssetPath)).ToList();
-            Report($"all {glbBlocks.Count} assetPath blocks (2 gates + 14 lanterns + amber-shop + 3 arrival ribs) have Glb_<id> and no Block_<id> BoxMesh",
-                glbBlocks.Count == 20 && glbBlocks.All(t => t.node?.GetNodeOrNull<Node3D>($"Glb_{t.s.Id}") != null
+            Report($"all {glbBlocks.Count} assetPath blocks (2 gates + 14 lanterns + amber-shop + bram-house + tovin-shrine + old-lantern + great-bell + 6 porcelain ribs) have Glb_<id> and no Block_<id> BoxMesh",
+                glbBlocks.Count == 27 && glbBlocks.All(t => t.node?.GetNodeOrNull<Node3D>($"Glb_{t.s.Id}") != null
                     && t.node?.GetNodeOrNull($"Block_{t.s.Id}") == null));
             var labelled = spawned.Where(t => t.s.Label != "").ToList();
             Report($"all {labelled.Count} labelled blocks have a Label3D", labelled.Count >= 20
@@ -93,9 +93,9 @@ namespace AtlasWorld.Client.World
                 root.FindChild("barrel-gate-01", true, false) != null
                 && root.FindChild("barrel-gate-02", true, false) != null);
             Report($"E4 MultiMesh grass batches active ({streamer.ActiveMultiMeshBatchCount} batches, {streamer.ActiveGpuInstanceCount} GPU instances)",
-                streamer.ActiveMultiMeshBatchCount >= 4 && streamer.ActiveGpuInstanceCount >= 40);
-            foreach (string propId in new[] { "wall-face-w-01", "curb-w-01", "low-wall-01", "fence-panel-01", "tree-01", "bush-01", "rock-01", "shop-awning-01", "oil-jar-01", "crate-01", "sign-board-01", "bench-01", "flower-pot-01" })
-                Report($"E4 arrival prop resolved ({propId})", root.FindChild(propId, true, false) != null);
+                streamer.ActiveMultiMeshBatchCount >= 4 && streamer.ActiveGpuInstanceCount >= 80);
+            foreach (string propId in new[] { "wall-face-w-01", "curb-w-01", "low-wall-01", "fence-panel-01", "tree-01", "bush-01", "rock-01", "shop-awning-01", "oil-jar-01", "crate-01", "sign-board-01", "bench-01", "flower-pot-01", "wall-face-w-12", "curb-w-30", "low-wall-18", "fence-panel-06", "tree-15", "bush-35", "rock-21", "shop-awning-02", "oil-jar-04", "crate-04", "sign-board-03", "bench-04", "flower-pot-04" })
+                Report($"E4 prop resolved ({propId})", root.FindChild(propId, true, false) != null);
             double drawCalls = Performance.GetMonitor(Performance.Monitor.RenderTotalDrawCallsInFrame);
             double primitives = Performance.GetMonitor(Performance.Monitor.RenderTotalPrimitivesInFrame);
             double frameMs = Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000.0;
@@ -514,6 +514,30 @@ namespace AtlasWorld.Client.World
             cam.Position = new Vector3(-4.5f, 2.6f, 35.5f);
             cam.LookAt(new Vector3(5.0f, 2.2f, 28.0f), Vector3.Up);
             await Save(outDir, "maro-bell-amber-shop.png");
+
+            // E4 Slice 2: Bram's lantern house approach shot (z = -24).
+            cam.Fov = 55f;
+            cam.Position = new Vector3(2.0f, 2.6f, -18.0f);
+            cam.LookAt(new Vector3(-8.5f, 2.4f, -24.0f), Vector3.Up);
+            await Save(outDir, "maro-bell-bram-house.png");
+
+            // E4 Slice 2: Old Lantern & northern road shot (z = -38).
+            cam.Fov = 55f;
+            cam.Position = new Vector3(-1.8f, 1.9f, -32.5f);
+            cam.LookAt(new Vector3(3.2f, 1.5f, -38.5f), Vector3.Up);
+            await Save(outDir, "maro-bell-old-lantern.png");
+
+            // E4 Slice 2: Tovin's archive shrine approach shot (z = -50).
+            cam.Fov = 55f;
+            cam.Position = new Vector3(-1.5f, 2.8f, -43.0f);
+            cam.LookAt(new Vector3(9.5f, 2.5f, -50.0f), Vector3.Up);
+            await Save(outDir, "maro-bell-tovin-shrine.png");
+
+            // E4 Slice 2: Great Bell Terrace northern vista shot (z = -66).
+            cam.Fov = 60f;
+            cam.Position = new Vector3(0f, 2.2f, -45.0f);
+            cam.LookAt(new Vector3(0f, 8.5f, -66.0f), Vector3.Up);
+            await Save(outDir, "maro-bell-great-bell-terrace.png");
 
             await RenderMaroFolkGirlInBellTown(root, cam, outDir);
         }

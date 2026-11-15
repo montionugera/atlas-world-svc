@@ -836,6 +836,62 @@
         "tag": "f221-maro-env-e4-1115",
         "sha256": "fede250f903fa01e6c0af84fe2c42ee50f29b69d6c3c600be7ab4680ced5b1eb"
       }
+    },
+    "env:maro-bram-house": {
+      "scene": "res://studio-cache/1ae78676462fda046193564db98fedb00255fde49c58105f909b087b1fb07bdc.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1df2b-effd-7bab-90b9-7168a7276169 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1df2b-effd-7bab-90b9-7168a7276169",
+        "tag": "maro-north-e4-1115",
+        "sha256": "1ae78676462fda046193564db98fedb00255fde49c58105f909b087b1fb07bdc"
+      }
+    },
+    "env:maro-tovin-shrine": {
+      "scene": "res://studio-cache/668943f9cf30b6b1a2970fad9c91f51508b59d3ac9c4625f25b8323d8ffb1ec1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1df2b-f024-7a70-925a-46725343ea94 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1df2b-f024-7a70-925a-46725343ea94",
+        "tag": "maro-north-e4-1115",
+        "sha256": "668943f9cf30b6b1a2970fad9c91f51508b59d3ac9c4625f25b8323d8ffb1ec1"
+      }
+    },
+    "env:maro-old-lantern": {
+      "scene": "res://studio-cache/4ac2e71bce756ea256fd66acf2fb54e3cc2a4ea834353e621bb32476558be7ea.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1df2b-f043-732c-a684-ca9c85b7aa89 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1df2b-f043-732c-a684-ca9c85b7aa89",
+        "tag": "maro-north-e4-1115",
+        "sha256": "4ac2e71bce756ea256fd66acf2fb54e3cc2a4ea834353e621bb32476558be7ea"
+      }
+    },
+    "env:maro-great-bell": {
+      "scene": "res://studio-cache/6265eb36580c73d32a617054473c98f4170094217a06f1b456c9eded8d84a21c.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1df2b-f066-7089-b006-e2be0a0a0554 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1df2b-f066-7089-b006-e2be0a0a0554",
+        "tag": "maro-north-e4-1115",
+        "sha256": "6265eb36580c73d32a617054473c98f4170094217a06f1b456c9eded8d84a21c"
+      }
     }
   }
 }

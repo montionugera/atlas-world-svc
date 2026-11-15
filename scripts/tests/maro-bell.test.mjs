@@ -218,12 +218,12 @@ test("every assetPath is a pull-only manifest key; map holds no res:// or studio
   );
   assert.equal(
     doc.structures.filter((s) => s.assetPath).length,
-    20,
-    "2 gates + 14 lanterns + amber-shop + 3 arrival porcelain ribs",
+    27,
+    "2 gates + 14 lanterns + amber-shop + bram-house + tovin-shrine + old-lantern + great-bell + 6 porcelain ribs",
   );
   assert.ok(
-    doc.props.length >= 130,
-    `expected >= 130 props, got ${doc.props.length}`,
+    doc.props.length >= 280,
+    `expected >= 280 props across south + north slices, got ${doc.props.length}`,
   );
   for (const x of withAsset) {
     const e = manifest[x.assetPath];
@@ -239,14 +239,14 @@ test("every assetPath is a pull-only manifest key; map holds no res:// or studio
   );
 });
 
-test("all 39 env:maro-* slice keys are registered as studio-private pull entries", () => {
+test("all 43 env:maro-* slice keys are registered as studio-private pull entries", () => {
   const envKeys = Object.keys(manifest).filter((k) =>
     k.startsWith("env:maro-"),
   );
   assert.equal(
     envKeys.length,
-    39,
-    `expected 39 env:maro-* keys, got ${envKeys.length}`,
+    43,
+    `expected 43 env:maro-* keys, got ${envKeys.length}`,
   );
   for (const k of envKeys) {
     const e = manifest[k];
@@ -256,16 +256,29 @@ test("all 39 env:maro-* slice keys are registered as studio-private pull entries
   }
 });
 
-test("E4 arrival slice structures and props cover all recipe categories without blocking movement or road-main", () => {
+test("E4 arrival and northern slice structures and props cover all recipe categories without blocking movement or road-main", () => {
   assert.equal(byId.get("amber-shop").assetPath, "env:maro-oil-shop");
+  assert.equal(byId.get("bram-house").assetPath, "env:maro-bram-house");
+  assert.equal(byId.get("tovin-shrine").assetPath, "env:maro-tovin-shrine");
+  assert.equal(byId.get("old-lantern").assetPath, "env:maro-old-lantern");
+  assert.equal(byId.get("great-bell").assetPath, "env:maro-great-bell");
   for (const id of [
+    "porcelain-rib-01",
+    "porcelain-rib-02",
+    "porcelain-rib-03",
     "porcelain-rib-04",
     "porcelain-rib-05",
     "porcelain-rib-06",
   ]) {
     assert.equal(byId.get(id).assetPath, "env:maro-porcelain-rib", id);
   }
+  const northProps = doc.props.filter((p) => p.z < 20);
+  assert.ok(
+    northProps.length >= 100,
+    `expected >= 100 northern slice props (z < 20), got ${northProps.length}`,
+  );
   const propKeys = new Set(doc.props.map((p) => p.assetPath));
+  const northPropKeys = new Set(northProps.map((p) => p.assetPath));
   for (const required of [
     "env:maro-wall-face-a",
     "env:maro-wall-face-b",
@@ -300,6 +313,12 @@ test("E4 arrival slice structures and props cover all recipe categories without 
     "env:maro-shop-awning",
   ]) {
     assert.ok(propKeys.has(required), `missing prop category ${required}`);
+    if (required !== "env:maro-barrel") {
+      assert.ok(
+        northPropKeys.has(required),
+        `missing northern prop category ${required}`,
+      );
+    }
   }
   const road = doc.routes.find((r) => r.id === "road-main");
   const pts = road.points;
