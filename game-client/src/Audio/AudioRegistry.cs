@@ -192,14 +192,15 @@ namespace AtlasWorld.Client.Audio
             float triVol = (float)(_footstepRng.NextDouble() - _footstepRng.NextDouble());
             float footBias = isRightFoot ? -0.012f : 0.012f;
 
-            // Subtle per-surface volume and pitch trims
+            // Per-surface volume and pitch trims balanced so Stone (-25.6dB clip) and Glass
+            // cut through at the same perceived loudness as Grass, Dirt, and Water (-20dB clips)
             (float volTrim, float pitchTrim) = surface switch
             {
-                FootstepSurface.Dirt => (0.0f, 0.0f),
-                FootstepSurface.Grass => (0.6f, 0.0f),
-                FootstepSurface.Water => (0.0f, 0.0f),
-                FootstepSurface.Glass => (0.5f, 0.03f),
-                _ => (0.0f, 0.0f), // Stone
+                FootstepSurface.Dirt => (0.8f, 0.0f),
+                FootstepSurface.Grass => (1.0f, 0.0f),
+                FootstepSurface.Water => (1.5f, 0.0f),
+                FootstepSurface.Glass => (2.8f, 0.04f),
+                _ => (4.8f, 0.0f), // Stone (compensates for -25.6 dBFS clip RMS vs -20 dBFS material clips)
             };
 
             if (isRunning)

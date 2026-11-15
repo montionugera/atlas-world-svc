@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T14:49:50.895Z",
+  "generatedAt": "2026-11-15T14:53:27.542Z",
   "sourceDir": "game-client/assets/audio",
   "files": [
     {
@@ -53,35 +53,35 @@
     },
     {
       "name": "footstep_glass_01.ogg",
-      "bytes": 10677
+      "bytes": 7649
     },
     {
       "name": "footstep_glass_02.ogg",
-      "bytes": 10691
+      "bytes": 7897
     },
     {
       "name": "footstep_glass_03.ogg",
-      "bytes": 10465
+      "bytes": 7703
     },
     {
       "name": "footstep_glass_04.ogg",
-      "bytes": 9621
+      "bytes": 7240
     },
     {
       "name": "footstep_glass_05.ogg",
-      "bytes": 10650
+      "bytes": 7627
     },
     {
       "name": "footstep_glass_06.ogg",
-      "bytes": 10508
+      "bytes": 7394
     },
     {
       "name": "footstep_glass_07.ogg",
-      "bytes": 11060
+      "bytes": 8147
     },
     {
       "name": "footstep_glass_08.ogg",
-      "bytes": 10986
+      "bytes": 7704
     },
     {
       "name": "footstep_grass_01.ogg",
