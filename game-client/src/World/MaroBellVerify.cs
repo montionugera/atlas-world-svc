@@ -74,8 +74,8 @@ namespace AtlasWorld.Client.World
                 spawned.Where(t => string.IsNullOrEmpty(t.s.AssetPath))
                        .All(t => t.node?.GetNodeOrNull<MeshInstance3D>($"Block_{t.s.Id}")?.Mesh is BoxMesh));
             var glbBlocks = spawned.Where(t => !string.IsNullOrEmpty(t.s.AssetPath)).ToList();
-            Report($"all {glbBlocks.Count} assetPath blocks (2 gates + 14 lanterns) have Glb_<id> and no Block_<id> BoxMesh",
-                glbBlocks.Count == 16 && glbBlocks.All(t => t.node?.GetNodeOrNull<Node3D>($"Glb_{t.s.Id}") != null
+            Report($"all {glbBlocks.Count} assetPath blocks (2 gates + 14 lanterns + amber-shop + 3 arrival ribs) have Glb_<id> and no Block_<id> BoxMesh",
+                glbBlocks.Count == 20 && glbBlocks.All(t => t.node?.GetNodeOrNull<Node3D>($"Glb_{t.s.Id}") != null
                     && t.node?.GetNodeOrNull($"Block_{t.s.Id}") == null));
             var labelled = spawned.Where(t => t.s.Label != "").ToList();
             Report($"all {labelled.Count} labelled blocks have a Label3D", labelled.Count >= 20
@@ -92,6 +92,15 @@ namespace AtlasWorld.Client.World
             Report("barrel props resolved (barrel-gate-01 and barrel-gate-02)",
                 root.FindChild("barrel-gate-01", true, false) != null
                 && root.FindChild("barrel-gate-02", true, false) != null);
+            Report($"E4 MultiMesh grass batches active ({streamer.ActiveMultiMeshBatchCount} batches, {streamer.ActiveGpuInstanceCount} GPU instances)",
+                streamer.ActiveMultiMeshBatchCount >= 4 && streamer.ActiveGpuInstanceCount >= 40);
+            foreach (string propId in new[] { "wall-face-w-01", "curb-w-01", "low-wall-01", "fence-panel-01", "tree-01", "bush-01", "rock-01", "shop-awning-01", "oil-jar-01", "crate-01", "sign-board-01", "bench-01", "flower-pot-01" })
+                Report($"E4 arrival prop resolved ({propId})", root.FindChild(propId, true, false) != null);
+            double drawCalls = Performance.GetMonitor(Performance.Monitor.RenderTotalDrawCallsInFrame);
+            double primitives = Performance.GetMonitor(Performance.Monitor.RenderTotalPrimitivesInFrame);
+            double frameMs = Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000.0;
+            GD.Print($"{Tag} PERF draw_calls={drawCalls:F0} primitives={primitives:F0} frame_ms={frameMs:F2} node_props={streamer.LoadedPropCount} gpu_batches={streamer.ActiveMultiMeshBatchCount} gpu_instances={streamer.ActiveGpuInstanceCount}");
+            Report("live camera perf monitors sampled", frameMs >= 0.0 && streamer.LoadedPropCount >= 100);
 
             VerifyMaroFolkGirlInTown(root);
             VerifyPoc01WonderRoadToGreatBell(doc);
@@ -102,7 +111,7 @@ namespace AtlasWorld.Client.World
 
             string outDir = OS.GetEnvironment("ATLAS_RENDER_MARO_BELL");
             if (!string.IsNullOrEmpty(outDir))
-                await Render(root, outDir);
+                await Render(root, streamer, outDir);
         }
 
         private void VerifyMaroFolkGirlInTown(Node3D townRoot)
@@ -400,19 +409,45 @@ namespace AtlasWorld.Client.World
             poc.QueueFree();
         }
 
-        private async Task Render(Node3D root, string outDir)
+        private static Texture2D? ExtractAlbedoTexture(MapChunkStreamer streamer, string key)
+        {
+            Mesh? mesh = streamer.ResolvePrototypeMesh(key);
+            if (mesh != null && mesh.GetSurfaceCount() > 0 && mesh.SurfaceGetMaterial(0) is BaseMaterial3D bm && bm.AlbedoTexture != null)
+                return bm.AlbedoTexture;
+            if (AssetRegistry.Instance is { } reg)
+            {
+                PackedScene scene = reg.Resolve(key, out ResolveTier tier);
+                if (tier != ResolveTier.Capsule && scene.ResourcePath.EndsWith(".glb", StringComparison.OrdinalIgnoreCase))
+                {
+                    string texPath = scene.ResourcePath[..^4] + "_0.png";
+                    if (ResourceLoader.Exists(texPath))
+                        return GD.Load<Texture2D>(texPath);
+                }
+            }
+            return null;
+        }
+
+        private async Task Render(Node3D root, MapChunkStreamer streamer, string outDir)
         {
             // Own World3D: the main scene's floor, sky and HUD must not leak into the shots (as PipelineStripRender).
             var vp = new SubViewport { Size = new Vector2I(1280, 720), OwnWorld3D = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Always };
             AddChild(vp);
             root.Reparent(vp);
             _vp = vp;
-            // Plain ground and the road ribbon, only for the screenshots.
+            Texture2D? meadowTex = ExtractAlbedoTexture(streamer, "env:maro-ground-meadow");
+            Texture2D? cobbleTex = ExtractAlbedoTexture(streamer, "env:maro-road-cobble");
+            // Ground and road ribbon, using pulled seamless textures when available in studio-cache.
+            var groundMat = new StandardMaterial3D { AlbedoColor = meadowTex != null ? Colors.White : new Color(0.36f, 0.4f, 0.34f) };
+            if (meadowTex != null)
+            {
+                groundMat.AlbedoTexture = meadowTex;
+                groundMat.Uv1Scale = new Vector3(30f, 50f, 1f);
+            }
             root.AddChild(new MeshInstance3D
             {
                 Mesh = new PlaneMesh { Size = new Vector2(120f, 200f) },
                 Position = new Vector3(0f, -0.02f, 0f),
-                MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(0.36f, 0.4f, 0.34f) },
+                MaterialOverride = groundMat,
             });
             var doc = UnifiedMapDocument.LoadOrDefault("maro-bell");
             var road = doc.Routes[0];
@@ -420,10 +455,17 @@ namespace AtlasWorld.Client.World
             {
                 var a = new Vector3(road.Points[i][0], 0f, road.Points[i][1]);
                 var b = new Vector3(road.Points[i + 1][0], 0f, road.Points[i + 1][1]);
+                float segLen = a.DistanceTo(b);
+                var roadMat = new StandardMaterial3D { AlbedoColor = cobbleTex != null ? Colors.White : new Color(0.2f, 0.2f, 0.22f) };
+                if (cobbleTex != null)
+                {
+                    roadMat.AlbedoTexture = cobbleTex;
+                    roadMat.Uv1Scale = new Vector3(1f, Mathf.Max(1f, segLen / 4f), 1f);
+                }
                 var seg = new MeshInstance3D
                 {
-                    Mesh = new BoxMesh { Size = new Vector3(road.Width, 0.04f, a.DistanceTo(b)) },
-                    MaterialOverride = new StandardMaterial3D { AlbedoColor = new Color(0.2f, 0.2f, 0.22f) },
+                    Mesh = new BoxMesh { Size = new Vector3(road.Width, 0.04f, segLen) },
+                    MaterialOverride = roadMat,
                 };
                 root.AddChild(seg);
                 seg.Position = (a + b) / 2f;
@@ -460,6 +502,18 @@ namespace AtlasWorld.Client.World
             cam.Position = new Vector3(0f, 1.6f, 66f);
             cam.LookAt(new Vector3(0f, 3.5f, 76f), Vector3.Up);
             await Save(outDir, "maro-bell-gate-towers.png");
+
+            // E4 live game camera (tuning.json 6.2 m / ~32 deg pitch / FOV 60) looking north across the arrival slice.
+            cam.Fov = 60f;
+            cam.Position = new Vector3(0f, 3.6f, 75.2f);
+            cam.LookAt(new Vector3(0f, 0.8f, 60.0f), Vector3.Up);
+            await Save(outDir, "maro-bell-live-camera.png", logPerf: true);
+
+            // E4 Amber's oil shop approach shot (z = 28).
+            cam.Fov = 55f;
+            cam.Position = new Vector3(-4.5f, 2.6f, 35.5f);
+            cam.LookAt(new Vector3(5.0f, 2.2f, 28.0f), Vector3.Up);
+            await Save(outDir, "maro-bell-amber-shop.png");
 
             await RenderMaroFolkGirlInBellTown(root, cam, outDir);
         }
@@ -660,10 +714,17 @@ namespace AtlasWorld.Client.World
             return null;
         }
 
-        private async Task Save(string dir, string file)
+        private async Task Save(string dir, string file, bool logPerf = false)
         {
-            for (int f = 0; f < 4; f++)
+            await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+            ulong t0 = Time.GetTicksUsec();
+            for (int f = 0; f < 3; f++)
                 await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+            if (logPerf)
+            {
+                double avgFrameMs = (Time.GetTicksUsec() - t0) / 3000.0;
+                GD.Print($"{Tag} LIVE_CAMERA_PERF draw_calls={Performance.GetMonitor(Performance.Monitor.RenderTotalDrawCallsInFrame):F0} primitives={Performance.GetMonitor(Performance.Monitor.RenderTotalPrimitivesInFrame):F0} frame_ms={avgFrameMs:F2}");
+            }
             Image img = _vp!.GetTexture().GetImage();
             string path = System.IO.Path.Combine(dir, file);
             Report($"saved {path} ({img.GetWidth()}x{img.GetHeight()})", img.GetWidth() > 0 && img.SavePng(path) == Error.Ok);

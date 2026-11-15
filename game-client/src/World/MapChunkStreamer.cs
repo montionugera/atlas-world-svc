@@ -436,7 +436,7 @@ namespace AtlasWorld.Client.World
 
                 var mmi = new MultiMeshInstance3D
                 {
-                    Name = $"GPUInstanced_{System.IO.Path.GetFileNameWithoutExtension(assetPath)}_{transforms.Count}",
+                    Name = $"GPUInstanced_{System.IO.Path.GetFileNameWithoutExtension(assetPath).Replace(':', '_')}_{transforms.Count}",
                     Multimesh = multiMesh,
                     CastShadow = GeometryInstance3D.ShadowCastingSetting.Off
                 };
@@ -1055,16 +1055,12 @@ namespace AtlasWorld.Client.World
             return h;
         }
 
-        private Mesh? ResolvePrototypeMesh(string assetPath)
+        public Mesh? ResolvePrototypeMesh(string assetPath)
         {
             if (_meshPrototypeCache.TryGetValue(assetPath, out Mesh? cached))
                 return cached;
 
-            if (!_sceneCache.TryGetValue(assetPath, out PackedScene? scene))
-            {
-                scene = ResourceLoader.Exists(assetPath) ? GD.Load<PackedScene>(assetPath) : null;
-                _sceneCache[assetPath] = scene;
-            }
+            PackedScene? scene = ResolveAssetScene(assetPath);
 
             Mesh? extracted = null;
             if (scene?.Instantiate() is Node3D tempRoot)
