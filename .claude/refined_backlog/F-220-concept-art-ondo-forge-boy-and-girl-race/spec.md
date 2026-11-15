@@ -39,8 +39,8 @@ Content only, same shape as F-212 and F-213:
 
 ## Acceptance criteria
 
-- [ ] Both images exist as webp, at most 800 KB and 2800 px on the longest side; each thumb is 960 px wide.
-- [ ] `index.json` and `art-briefs.json` each hold both new ids with category `character` and loreRef `dwarf`.
-- [ ] `character-race-dwarf-kiln-artisan` and `character-race-dwarf-ondo-base-body-female` carry `"concept": "legacy"` in `index.json`; their files stay.
-- [ ] `cd scripts && npm test` and `node --test atelier/atlas-world-panels/tests/*.test.mjs` pass.
-- [ ] `scripts/build_catalog_db.py` puts both new ids into table `concept_art`, and the Concept Art gallery shows the two new sheets and not the two old ones.
+- [x] Both images exist as webp, at most 800 KB and 2800 px on the longest side; each thumb is 960 px wide.
+- [x] `index.json` and `art-briefs.json` each hold both new ids with category `character` and loreRef `dwarf`.
+- [x] `character-race-dwarf-kiln-artisan` and `character-race-dwarf-ondo-base-body-female` carry `"concept": "legacy"` in `index.json`; their files stay.
+- [x] `cd scripts && npm test` and `node --test atelier/atlas-world-panels/tests/*.test.mjs` pass.
+- [x] `scripts/build_catalog_db.py` puts both new ids into table `concept_art`, and the Concept Art gallery shows the two new sheets and not the two old ones.

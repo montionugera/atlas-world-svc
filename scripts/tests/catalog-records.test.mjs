@@ -114,6 +114,11 @@ test('search index: every record is in records_fts, retired names are legacy', (
 
 test('old-concept concept art is a legacy record, the rest stays studio', () => {
   const legacy = sql(good.db, "select id from records where kind='concept_art' and concept='legacy' order by id").map((r) => r[0]);
-  assert.deepEqual(legacy, ['character-race-furral-galvanic-scout-sheet', 'character-race-furral-galvanic-scout-turnaround']);
+  assert.deepEqual(legacy, [
+    'character-race-dwarf-kiln-artisan',
+    'character-race-dwarf-ondo-base-body-female',
+    'character-race-furral-galvanic-scout-sheet',
+    'character-race-furral-galvanic-scout-turnaround',
+  ]);
   assert.equal(one(good.db, "select count(*) from records where kind='concept_art'"), one(good.db, 'select count(*) from concept_art'));
 });
