@@ -29,7 +29,7 @@ CREATE VIRTUAL TABLE records_fts USING fts5(kind UNINDEXED, id UNINDEXED, concep
 """
 
 # (kind, concept, "SELECT id, title, summary FROM <table the builder already filled>", view_url)
-# view_url may use {id}. Tab ids are the ones in NAV_GROUPS (02_state_and_composable_layers.js:135).
+# view_url may use {id}. Tab ids are the item ids in NAV_GROUPS (02_state_and_composable_layers.js).
 TABLE_KINDS = [
     ("map", "studio", "SELECT id, name, biome || ' · levels ' || level_min || '-' || level_max FROM maps", "/?tab=maps&focus={id}"),
     ("mob", "studio", "SELECT id, name, 'Level ' || level || ' · ' || element || ' · ' || race FROM mobs", "/?tab=mobs&mob={id}"),

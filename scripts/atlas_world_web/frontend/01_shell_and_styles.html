@@ -144,7 +144,7 @@
     .topbar .sidebar-search {
       padding: 0;
       flex: 1 1 240px;
-      min-width: 160px;
+      min-width: 228px;
       max-width: 340px;
       margin-left: auto;
     }
@@ -153,23 +153,18 @@
       height: 30px;
       min-width: 0;
     }
-    /* Below 1440px the top bar has no spare room: Back/Forward go icon-only (as on a phone)
+    /* Below 1600px the top bar has no spare room: Back/Forward go icon-only (as on a phone)
        and the shortcut hint goes, so the search input keeps a width you can type in. */
-    @media (max-width: 1439px) {
+    @media (max-width: 1599px) {
       .topbar .sidebar-search__kbd,
       .topbar__history-label {
         display: none;
       }
     }
     /* A title squeezed to one clipped letter is noise: drop it while its group is too narrow to hold it. */
-    @media (min-width: 768px) {
-      .topbar__start {
-        container: topbar-start / inline-size;
-      }
-      @container topbar-start (max-width: 699px) {
-        .topbar__title {
-          display: none;
-        }
+    @media (min-width: 768px) and (max-width: 1599px) {
+      .topbar__title {
+        display: none;
       }
     }
     .search-popover__archive {
@@ -421,15 +416,6 @@
       overflow-y: auto;
       padding: 6px 10px 16px;
     }
-    .nav-section {
-      font-size: 10.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--joy-text-muted);
-      padding: 12px 10px 5px;
-      margin-top: 2px;
-    }
     .nav-item {
       display: flex;
       align-items: center;
@@ -451,6 +437,13 @@
       background: var(--joy-accent-subtle);
       color: var(--joy-accent-text);
       font-weight: 600;
+    }
+    .nav-item:focus-visible {
+      outline: 2px solid var(--joy-border-focus);
+      outline-offset: -2px;
+    }
+    @media (max-width: 767px) {
+      .nav-item { min-height: 44px; }
     }
     .nav-section-count {
       display: inline-flex;
@@ -559,7 +552,12 @@
     #panelHost { width: 100%; max-width: 100%; margin: 0 auto; padding: 8px 16px 64px; box-sizing: border-box; }
     #panelHost > [data-panel][hidden] { display: none !important; }
     .subview-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 16px 0; }
-    @media (max-width: 720px) { #panelHost { padding: 4px; } .subview-bar { padding: 4px; } }
+    .subview-bar__sep { flex: 0 0 auto; align-self: stretch; width: 1px; margin: 0 4px; background: var(--joy-border-default); }
+    @media (max-width: 720px) {
+      #panelHost { padding: 4px; }
+      .subview-bar { flex-wrap: nowrap; overflow-x: auto; padding: 4px; }
+      .subview-bar > .joy-button { flex: 0 0 auto; min-height: 44px; }
+    }
     .studio-split-layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 340px;
@@ -2248,7 +2246,7 @@
     @media (max-height: 480px) and (min-width: 768px) {
       .joy-spatial-shell:not([data-theater="true"]) .joy-spatial-shell__canvas {
         min-height: 0;
-        height: max(200px, calc(100dvh - 160px));
+        height: max(160px, calc(100dvh - 200px));
       }
       /* The top-left HUD (map style buttons) is taller than the short canvas leaves free; keep the engine
          toolbar above it so its buttons stay reachable. */
@@ -2377,7 +2375,17 @@
       }
       body .topbar__start {
         flex: 1 1 340px;
-        min-width: 260px;
+        min-width: min-content;
+      }
+    }
+    @media (min-width: 1180px) and (min-height: 481px) {
+      body .topbar {
+        flex-wrap: nowrap;
+      }
+      body .topbar .topbar__end {
+        flex-wrap: nowrap;
+        min-width: 0;
+        flex: 0 1 auto;
       }
     }
     /* F-157: the 1-5 hotkey hints on the lens tabs cost ~20px each; drop them where the bar is tight. */

@@ -198,7 +198,7 @@ blocks.push(async ck => {
   } finally { try { await c?.kill(); } finally { release(); } }
 });
 blocks.push(async ck => {
-  const base = { '1280x800 2d_svg': [281, 652.75, 975, 86], '1280x800 2d_ol': [293, 567, 951, 87], '1280x800 3d_map3d': [293, 567, 951, 87], '1440x900 2d_svg': [281, 729.7, 1135, 56], '1440x900 2d_ol': [293, 887, 1111, 57], '1440x900 3d_map3d': [293, 887, 1111, 57] };
+  const base = { '1280x800 2d_svg': [281, 692.75, 975, 86], '1280x800 2d_ol': [293, 607, 951, 87], '1280x800 3d_map3d': [293, 607, 951, 87], '1440x900 2d_svg': [281, 769.7, 1135, 56], '1440x900 2d_ol': [293, 927, 1111, 57], '1440x900 3d_map3d': [293, 927, 1111, 57] };
   const combos = []; for (const [w, h] of [[1280, 800], [1440, 900]]) for (const eng of ['2d_svg', '2d_ol', '3d_map3d']) combos.push([w, h, eng]);
   const per = await par(combos, ([w, h, eng]) => with_({ w, h, dpr: 1 }, async c => {
     await toEngine(c, eng); await settle(c, '.atlas-map-legend');

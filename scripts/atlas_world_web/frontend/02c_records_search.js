@@ -5,9 +5,8 @@ let SEARCH_POPOVER_SEQ = 0;        // drops answers that arrive after a newer ke
 let SEARCH_POPOVER_TIMER = 0;
 
 function recordEntryLabel(viewUrl) {
-  const tab = new URLSearchParams((viewUrl.split('?')[1] || '')).get('tab');
-  const item = NAV_GROUPS.flatMap(g => g.items).find(it => it.id === tab);
-  return item ? item.label : 'image';
+  const group = navGroupOf(new URLSearchParams((viewUrl.split('?')[1] || '')).get('tab'));
+  return group ? group.section : 'image';
 }
 
 let HOME_COUNTS;                   // undefined = not asked yet, null = loading, array = loaded (empty when the route failed)

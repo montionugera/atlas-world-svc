@@ -130,88 +130,65 @@ const ATLAS_SUBVIEWS = {
   review: { dflt: 'proposals', views: [['proposals', 'Proposals'], ['verdicts', 'Asset verdicts']] }
 };
 
+// One sidebar entry per group; its items are that entry's sub-view pills. Tab ids are the old
+// ones, so every old ?tab=<id> link still opens the same content (F-219).
 const NAV_GROUPS = [
-  {
-    section: 'Systematic Top-Down World Studio',
-    items: [
-      { id: 'studio', label: '🌌 Top-Down World Studio (4 Perspectives)', countKey: d => {
-        const sp = (d && d.studioPerspectives) || {};
-        const dists = (sp.districts || []).length;
-        const canonMaps = (sp.nodes || []).filter(n => n.status === 'canon').length;
-        return dists + 'D · ' + canonMaps + ' Maps';
-      } },
-    ]
-  },
-  {
-    section: 'World Bible',
-    items: [
-      { id: 'lore', label: '📜 Lore and History', panel: true, countKey: () => atlasPanelCount('lore') },
-      { id: 'concept-arts', label: '🎨 Game Concept Arts', panel: true, countKey: () => atlasPanelCount('concept-arts') },
-    ]
-  },
-  {
-    section: 'World Map & Atlas (Maxion / Lineage)',
-    items: [
-      { id: 'world', label: '🧭 Interactive World Map', countKey: () => getAllWorldTiles().length + ' Tiles' },
-      { id: 'maps',  label: '🗺️ Connected Map Directory', countKey: () => getAllWorldTiles().length + ' Maps' },
-      { id: 'map-sheets',  label: '📐 Map Sheets (mapforge)', panel: true, countKey: () => atlasPanelCount('map-sheets') },
-      { id: 'map-builder', label: '🧱 Map Builder (draft · publish)', panel: true, countKey: () => atlasPanelCount('map-builder') },
-      { id: 'mobs',  label: '👾 Monster Detail (mob_db)', countKey: () => getAllMonsters().length + ' Mobs' },
-      { id: 'bestiary', label: '🐉 World Bestiary (116 Fauna)', countKey: d => (d.bestiary || []).length },
-    ]
-  },
-  {
-    section: 'MMORPG Databases (RMS)',
-    items: [
-      { id: 'gear',     label: '⚔️ Item & Card DB (item_db)', countKey: d => d.items.length + d.cards.length },
-      { id: 'jobs',     label: '🛡️ Job & Skill DB (skill_db)', countKey: d => d.jobs.length + d.skills.length },
-      { id: 'races',    label: '🧬 6 Canonical Races & Towns', countKey: d => (d.races || []).length },
-      { id: 'dungeons', label: '🏰 60-Dungeon Spires (dungeon_db)', countKey: d => (d.dungeons || []).length },
-      { id: 'enchant',  label: '✨ High-Stakes +20 Forge', countKey: () => 20 },
-      { id: 'quests',   label: '📜 Quest Database (quest_db)', countKey: d => d.quests.length },
-      { id: 'story',    label: '📖 Story & Undertow Reader', countKey: d => ((d.worldSpine || {}).storyNodes || []).length },
-      { id: 'home',     label: 'Home', countKey: () => '' },
-    ]
-  },
-  {
-    section: 'Asset Library',
-    items: [
-      { id: 'assets',   label: '🧊 Asset Classes & 3D Viewer', panel: true, countKey: () => atlasPanelCount('assets') },
-      { id: 'audio',    label: '🔊 SFX & Music Soundboard', panel: true, countKey: () => atlasPanelCount('audio') },
-      { id: 'art',      label: '🎨 Concept Art', panel: true, countKey: () => atlasPanelCount('art') },
-      { id: 'coverage', label: '🧩 Asset Key Coverage', panel: true, countKey: () => atlasPanelCount('coverage') },
-    ]
-  },
-  {
-    section: 'AI Asset & Map Studio',
-    items: [
-      { id: 'review',  label: '✨ Review Gate Inbox (Step 3)', countKey: d => ((d.reviewQueue && d.reviewQueue.proposals) || []).length },
-      { id: 'forge',   label: '🔥 Art Forge Runs & Briefs', panel: true, countKey: () => atlasPanelCount('forge') },
-      { id: 'brushes', label: '🌿 Biome Brush & Tag Pools',    countKey: d => Object.keys(d.groundPalettes || {}).length },
-    ]
-  },
-  {
-    section: 'Tools & Calculators',
-    items: [
-      { id: 'elements', label: '🔥 Property & Size Chart', countKey: d => (d.elements.elements || []).length },
-      { id: 'siege',    label: '🏰 WoE Castle Calculator', countKey: d => d.castles.length },
-      { id: 'sql',      label: '🗄️ SQLite Query Studio', countKey: () => 'SQL' },
-      { id: 'combat-lab', label: '🧮 Combat Model Lab (design)', panel: true, countKey: () => atlasPanelCount('combat-lab') },
-      { id: 'docs',     label: '📖 Architecture Specs', countKey: d => d.docs.length },
-    ]
-  }
+  { section: 'Home', items: [
+      { id: 'home', label: 'Home' },
+  ] },
+  { section: 'World', items: [
+      { id: 'studio', label: 'World studio' },
+      { id: 'world', label: 'World map' },
+      { id: 'maps', label: 'Map directory' },
+      { id: 'map-sheets', label: 'Map sheets', panel: true },
+  ] },
+  { section: 'Monsters', items: [
+      { id: 'mobs', label: 'Monsters' },
+      { id: 'bestiary', label: 'Bestiary' },
+  ] },
+  { section: 'Items and cards', items: [
+      { id: 'gear', label: 'Items and cards' },
+  ] },
+  { section: 'Jobs and skills', items: [
+      { id: 'jobs', label: 'Jobs and skills' },
+  ] },
+  { section: 'Quests and dungeons', items: [
+      { id: 'quests', label: 'Quests' },
+      { id: 'dungeons', label: 'Dungeons' },
+  ] },
+  { section: 'Lore and canon', items: [
+      { id: 'lore', label: 'Lore', panel: true },
+      { id: 'races', label: 'Races' },
+  ] },
+  { section: 'Art', items: [
+      { id: 'concept-arts', label: 'Concept art', panel: true },
+      { id: 'art', label: 'Art library', panel: true },
+  ] },
+  { section: 'Assets and audio', items: [
+      { id: 'assets', label: 'Assets', panel: true },
+      { id: 'audio', label: 'Audio', panel: true },
+      { id: 'coverage', label: 'Coverage', panel: true },
+  ] },
+  { section: 'Tools', items: [
+      { id: 'sql', label: 'SQL' },
+      { id: 'combat-lab', label: 'Combat lab', panel: true },
+      { id: 'docs', label: 'Docs' },
+      { id: 'elements', label: 'Elements' },
+      { id: 'siege', label: 'Siege' },
+      { id: 'enchant', label: 'Enchant' },
+      { id: 'brushes', label: 'Brushes' },
+      { id: 'map-builder', label: 'Map builder', panel: true },
+      { id: 'forge', label: 'Art forge', panel: true },
+      { id: 'review', label: 'Review inbox' },
+  ] },
+  { section: 'Archive (old concept)', items: [
+      { id: 'story', label: 'Story' },
+  ] },
 ];
 
 function navGroupOf(tab) { return NAV_GROUPS.find(g => g.items.some(it => it.id === tab)); }
 // Removed tab ids (sim, overview) and unknown ones land on Home.
 function normalizeTab(tab) { return navGroupOf(tab) ? tab : 'home'; }
-
-// Mounted storybook panels (atelier/atlas-world-panels/js/panels/registry.mjs) report their own
-// counts once mounted; until then the sidebar shows an ellipsis.
-function atlasPanelCount(id) {
-  const c = window.ATLAS_PANELS && window.ATLAS_PANELS.count ? window.ATLAS_PANELS.count(id) : null;
-  return c === null || c === undefined ? '…' : c;
-}
 
 // Which tab+params the panel host owns. registry.mjs is the authority once loaded; this mirror
 // (checked against the registry by tests) only covers the moment before the module has run.
@@ -263,13 +240,18 @@ if (typeof window !== 'undefined') {
 function renderSubViewBar() {
   const bar = document.getElementById('subViewBar');
   if (!bar) return;
+  const group = navGroupOf(CURRENT_TAB);
+  const tabs = group && group.items.length > 1 ? group.items : [];
   const cfg = ATLAS_SUBVIEWS[CURRENT_TAB];
-  if (!cfg) { bar.hidden = true; bar.innerHTML = ''; return; }
-  const cur = ATLAS_PARAMS.view || cfg.dflt;
+  if (!tabs.length && !cfg) { bar.hidden = true; bar.innerHTML = ''; return; }
+  const cur = cfg ? (ATLAS_PARAMS.view || cfg.dflt) : '';
+  const pill = (attr, on, click, label) =>
+    `<button type="button" class="joy-button joy-button--sm ${on ? 'joy-button--solid' : 'joy-button--outline'}" ${attr} aria-pressed="${on}" onclick="${click}">${label}</button>`;
   bar.hidden = false;
-  bar.innerHTML = cfg.views.map(([id, label]) =>
-    `<button type="button" class="joy-button joy-button--sm ${id === cur ? 'joy-button--solid' : 'joy-button--outline'}" data-subview="${id}" aria-pressed="${id === cur}" onclick="setSubView('${id}')">${label}</button>`
-  ).join('');
+  bar.innerHTML =
+    tabs.map(it => pill(`data-tab-pill="${it.id}"`, it.id === CURRENT_TAB, `switchTab('${it.id}')`, it.label)).join('') +
+    (tabs.length && cfg ? '<span class="subview-bar__sep" aria-hidden="true"></span>' : '') +
+    (cfg ? cfg.views.map(([id, label]) => pill(`data-subview="${id}"`, id === cur, `setSubView('${id}')`, label)).join('') : '');
 }
 
 function setSubView(view) {
@@ -677,7 +659,6 @@ async function init() {
   window.addEventListener('popstate', () => { closeSearchPopover(); window.LAST_WORLD_TILE_ID = ''; syncUrlState(); renderSidebar(); render(); });
   // registry.mjs is a deferred module: it may finish before or after the bundle fetch below.
   window.addEventListener('atlas-panels-ready', () => { if (DATA) { renderSidebar(); if (window.ATLAS_PANELS?.has(CURRENT_TAB)) render(); } });
-  window.addEventListener('atlas-panels-updated', () => { if (DATA) renderSidebar(); });
   await loadRuntime();
   let res;
   try {
@@ -746,16 +727,11 @@ function switchTab(id) {
 
 function renderSidebar() {
   if (!DATA) return;
-  const nav = document.getElementById('sidebarNav');
-  nav.innerHTML = NAV_GROUPS.map(group => `
-    <div class="nav-section">${group.section}</div>
-    ${group.items.map(it => `
-      <div class="nav-item ${it.id === CURRENT_TAB ? 'active' : ''}" onclick="switchTab('${it.id}')">
-        <span>${it.label}</span>
-        <span class="nav-section-count">${it.countKey(DATA)}</span>
-      </div>
-    `).join('')}
-  `).join('');
+  const cur = navGroupOf(CURRENT_TAB);
+  document.getElementById('sidebarNav').innerHTML = NAV_GROUPS.map(g => {
+    const first = g.items[0].id;
+    return `<div class="nav-item ${g === cur ? 'active' : ''}" role="button" tabindex="0" data-entry="${first}" ${g === cur ? 'aria-current="page"' : ''} onclick="switchTab('${first}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('${first}')}"><span>${g.section}</span></div>`;
+  }).join('');
 }
 
 function matchesSearch(obj) {

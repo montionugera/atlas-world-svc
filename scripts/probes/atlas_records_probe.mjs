@@ -57,7 +57,7 @@ for (const v of [{ name: 'desktop 1280x800', w: 1280, h: 800, dpr: 1 }, { name: 
       await c.eval(`document.querySelector('#recordPage h1').textContent.includes('Hearthbloom Basin') && new URLSearchParams(location.search||location.hash.slice(1)).get('r')==='continent:continent-01-hearthbloom-basin'`),
       await c.eval('location.href'));
     ck(`R7 ${v.name}: related records are grouped, with an "Open in" link`,
-      await c.eval(`document.querySelectorAll('#recordPage section[data-relation="Contains"] [data-record]').length>0 && /^Open in /.test((document.getElementById('recordOpenLink')||{}).textContent||'')`));
+      await c.eval(`document.querySelectorAll('#recordPage section[data-relation="Contains"] [data-record]').length>0 && /^Open in World$/.test((document.getElementById('recordOpenLink')||{}).textContent||'')`));
 
     await back(c);
     await waitFor(c, `!document.getElementById('recordPage')`, 8000);
@@ -103,6 +103,83 @@ for (const v of [{ name: 'desktop 1280x800', w: 1280, h: 800, dpr: 1 }, { name: 
       await c.eval(`document.querySelector('#recordPage section[data-relation="Part of"]').textContent.includes('Hearthbloom Basin') && document.querySelectorAll('#recordPage section[data-relation="Contains"] [data-record]').length>0`));
     ck(`A8 ${v.name}: the record page does not overflow sideways`, await c.eval(`document.documentElement.scrollWidth<=innerWidth+1`), await c.eval(`document.documentElement.scrollWidth+'/'+innerWidth`));
 
+    const LABELS = ['Home', 'World', 'Monsters', 'Items and cards', 'Jobs and skills', 'Quests and dungeons', 'Lore and canon', 'Art', 'Assets and audio', 'Tools', 'Archive (old concept)'];
+    await goto(c, `${BASE}?tab=bestiary`);
+    ck(`F-219 A1 ${v.name}: the sidebar has exactly the 11 entries`,
+      JSON.stringify(await c.eval(`[...document.querySelectorAll('#sidebarNav .nav-item')].map(e=>e.textContent.trim())`)) === JSON.stringify(LABELS),
+      await c.eval(`document.querySelectorAll('#sidebarNav .nav-item').length`));
+    const open = `({entry:(document.querySelector('#sidebarNav .nav-item[aria-current="page"]')||{textContent:''}).textContent.trim(), pill:(document.querySelector('#subViewBar [data-tab-pill][aria-pressed="true"]')||{dataset:{}}).dataset.tabPill||'', view:(document.querySelector('#subViewBar [data-subview][aria-pressed="true"]')||{dataset:{}}).dataset.subview||''})`;
+    let o = await c.eval(open);
+    ck(`F-219 A2 ${v.name}: ?tab=bestiary opens Monsters with the bestiary pill`, o.entry === 'Monsters' && o.pill === 'bestiary', JSON.stringify(o));
+    await goto(c, `${BASE}?tab=map-sheets`);
+    o = await c.eval(open);
+    ck(`F-219 A2 ${v.name}: ?tab=map-sheets opens World with the map-sheets pill`, o.entry === 'World' && o.pill === 'map-sheets', JSON.stringify(o));
+    await goto(c, `${BASE}?tab=story&view=reader`);
+    o = await c.eval(open);
+    ck(`F-219 A2 ${v.name}: ?tab=story&view=reader opens Archive with the Reader pill`, o.entry === 'Archive (old concept)' && o.view === 'reader', JSON.stringify(o));
+
+    // A4: every tab is reachable by a real click on an entry and then a pill, and shows something.
+    await goto(c, `${BASE}?tab=home`);
+    const tabs = await c.eval(`NAV_GROUPS.flatMap(g => g.items.map(it => ({ entry: g.items[0].id, id: it.id, solo: g.items.length === 1 })))`);
+    const dead = [];
+    for (const tb of tabs) {
+      if (v.touch) { await click(c, await rect(c, '#mobileNavMenuBtn'), true); await settle(c); }
+      await click(c, await rect(c, `#sidebarNav .nav-item[data-entry="${tb.entry}"]`), v.touch);
+      await settle(c);
+      if (!tb.solo) { await c.eval(`(()=>{document.querySelector('#subViewBar [data-tab-pill="${tb.id}"]').scrollIntoView({inline:'center',block:'nearest'}); 0})()`); await click(c, await rect(c, `#subViewBar [data-tab-pill="${tb.id}"]`), v.touch); await settle(c); }
+      // panels mount after a module load, so wait instead of looking once
+      try { await waitFor(c, `CURRENT_TAB==='${tb.id}' && ['mainContent','panelHost'].some(id => { const e = document.getElementById(id); return e && !e.hidden && e.getBoundingClientRect().height > 40 && e.textContent.trim().length > 0; })`, 8000); }
+      catch { dead.push(tb.id); }
+    }
+    ck(`F-219 A4 ${v.name}: ${tabs.length} tabs reachable by entry click then pill click`, tabs.length === 29 && dead.length === 0, dead.join(','));
+
+    if (v.touch) {
+      await click(c, await rect(c, '#mobileNavMenuBtn'), true);
+      await settle(c);
+      const navH = await c.eval(`document.getElementById('sidebarNav').scrollHeight`);
+      ck(`F-219 A8 ${v.name}: nav drawer shows all 11 entries within two screens`, navH <= 2 * v.h, String(navH));
+      await click(c, await rect(c, '#sidebarNav .nav-item[data-entry="sql"]'), true);
+      await settle(c);
+      const pillBar = await c.eval(`(()=>{const b=document.getElementById('subViewBar'); const cs=getComputedStyle(b); const r=b.getBoundingClientRect(); return {wrap:cs.flexWrap, ox:cs.overflowX, h:r.height, sw:b.scrollWidth, cw:b.clientWidth};})()`);
+      ck(`F-219 A8 ${v.name}: pills row scrolls sideways without wrapping`, pillBar.wrap === 'nowrap' && pillBar.h <= 60 && pillBar.sw > pillBar.cw, JSON.stringify(pillBar));
+    } else {
+      for (const w of [1024, 1280, 1440]) {
+        await c.send('Emulation.setDeviceMetricsOverride', { width: w, height: 800, deviceScaleFactor: 1, mobile: false });
+        await settle(c);
+        const tb = await c.eval(`(()=>{
+          const st = document.getElementById('topbarStatus');
+          st.textContent = 'Editable · atlas-edit.joymify.local.com';
+          const bar = document.querySelector('.topbar').getBoundingClientRect();
+          const sKids = [...document.querySelectorAll('.topbar__start > *')].filter(e => e.offsetParent);
+          const eKids = [...document.querySelectorAll('.topbar__end > *')].filter(e => e.offsetParent);
+          let overlap = false;
+          for (const a of sKids) for (const b of eKids) {
+            const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+            if (ra.left < rb.right - 0.5 && rb.left < ra.right - 0.5 && ra.top < rb.bottom - 0.5 && rb.top < ra.bottom - 0.5) overlap = true;
+          }
+          const gs = document.getElementById('globalSearch').getBoundingClientRect();
+          const ss = document.querySelector('.topbar .sidebar-search').getBoundingClientRect();
+          const trunc = st.scrollWidth > st.clientWidth + 1;
+          return { h: Math.round(bar.height), overlap, trunc, gsW: Math.round(gs.width), ssW: Math.round(ss.width) };
+        })()`);
+        const ok = !tb.overlap && !tb.trunc && (w !== 1280 || (tb.gsW >= 200 && tb.ssW >= 200)) && (w < 1280 || tb.h <= 56);
+        ck(`F-219 A10 desktop ${w}px: topbar no overlap, status untruncated, search >=200px at 1280, single-row >=1280`, ok, JSON.stringify(tb));
+      }
+      await c.send('Emulation.setDeviceMetricsOverride', { width: v.w, height: v.h, deviceScaleFactor: v.dpr, mobile: false });
+      await settle(c);
+    }
+
+    // A6: real click on "Open in World" from continent record opens World with studio pill selected.
+    await goto(c, `${BASE}?r=continent:continent-01-hearthbloom-basin`);
+    await waitFor(c, `!!document.getElementById('recordOpenLink')`, 20000);
+    ck(`F-219 A6 ${v.name}: continent record shows "Open in World"`,
+      (await c.eval(`document.getElementById('recordOpenLink').textContent.trim()`)) === 'Open in World');
+    await click(c, await rect(c, '#recordOpenLink'), v.touch);
+    await waitFor(c, `typeof DATA !== 'undefined' && !!DATA && CURRENT_TAB==='studio' && !document.getElementById('recordPage')`, 20000);
+    await settle(c);
+    o = await c.eval(open);
+    ck(`F-219 A6 ${v.name}: clicking "Open in World" opens World with studio pill selected`, o.entry === 'World' && o.pill === 'studio', JSON.stringify(o));
+
     for (const gone of ['sim', 'overview', 'nope']) {
       await goto(c, `${BASE}?tab=${gone}`);
       ck(`F-219 A3 ${v.name}: ?tab=${gone} opens Home`, await c.eval(`CURRENT_TAB==='home' && !!document.getElementById('homePage')`), await c.eval('CURRENT_TAB'));
@@ -116,6 +193,8 @@ for (const v of [{ name: 'desktop 1280x800', w: 1280, h: 800, dpr: 1 }, { name: 
     await click(c, await rect(c, '#homePage [data-kind="district"]'), v.touch);
     await waitFor(c, `CURRENT_TAB==='studio'`, 8000);
     ck(`F-219 A5 ${v.name}: a real click on the district count opens its tab`, await c.eval(`CURRENT_TAB==='studio' && !document.getElementById('homePage')`));
+    o = await c.eval(open);
+    ck(`F-219 A5 ${v.name}: clicking district count highlights World`, o.entry === 'World' && o.pill === 'studio', JSON.stringify(o));
 
     await goto(c, `${BASE}?r=district:nope`);
     await waitFor(c, `!!document.getElementById('recordPage')`, 20000);
