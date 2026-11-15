@@ -2875,8 +2875,10 @@
     "from_idea": "I-308",
     "created_at": "2026-11-15T12:31:35.692435+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-11-15T12:32:26.442920+00:00"
+    "status": "shipped",
+    "release_version": "1.34",
+    "claimed_at": "2026-11-15T12:32:26.442920+00:00",
+    "shipped_at": "2026-11-15T13:03:16.257432+00:00",
+    "shipped_sha": "007603c6f7a2f7ddb1b872ad41c8e554bdcd6dff"
   }
 ]
