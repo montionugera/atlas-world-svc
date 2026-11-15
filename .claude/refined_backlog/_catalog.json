@@ -2896,8 +2896,9 @@
     "title": "Maro Bell concept-faithful town overhaul: clean outlines, 3-tier terraces, river, bridges, walls, modular buildings, foliage, and 9-zone layout",
     "from_idea": "I-309",
     "created_at": "2026-11-15T14:21:10.026244+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-15T14:21:19.875729+00:00"
   }
 ]
