@@ -2,8 +2,9 @@
 // Metres are centred on the map (x east, z south); server units = centre + metres / 0.1.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync, statSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { isPullOnly } from "../lib/pull-entry.mjs";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -211,7 +212,7 @@ test("only the 2 gate obstacle rows changed, with the spec values", () => {
   assert.equal(doc.staticObstacles.length, 42);
 });
 
-test("every assetPath is a manifest key whose scene file exists; map holds no res:// or studio-cache", () => {
+test("every assetPath is a pull-only manifest key; map holds no res:// or studio-cache", () => {
   const withAsset = [...doc.structures, ...doc.props].filter(
     (x) => x.assetPath,
   );
@@ -224,17 +225,23 @@ test("every assetPath is a manifest key whose scene file exists; map holds no re
   for (const x of withAsset) {
     const e = manifest[x.assetPath];
     assert.ok(e, `no manifest entry for ${x.assetPath}`);
-    const p = resolve(ROOT, "game-client", e.scene.replace("res://", ""));
-    assert.ok(
-      existsSync(p) && statSync(p).size > 0,
-      `missing scene ${e.scene}`,
-    );
+    assert.ok(isPullOnly(e), `${x.assetPath} must be pull-only`);
+    assert.equal(e.license, "studio-private", x.assetPath);
+    assert.equal(e.render, "model3d", x.assetPath);
   }
   const text = JSON.stringify(doc);
   assert.ok(
     !text.includes("studio-cache") && !text.includes("res://"),
     "keys only",
   );
+});
+
+test("the 3 env pilot glbs are not committed in the tree", () => {
+  for (const n of ["gate_tower", "lantern_post", "barrel"])
+    assert.ok(
+      !existsSync(resolve(ROOT, `game-client/assets/env/maro_${n}.glb`)),
+      n,
+    );
 });
 
 test("barrel props sit beside the gate: no collision, off the road margin, clear of the tower", () => {
