@@ -990,8 +990,8 @@ namespace AtlasWorld.Client
             if (envProps == null)
                 return;
 
-            // Upgrade existing static scene props to warm anime toon shading
-            EntityView.ApplyAnimeToonShading(envProps, EntityKind.Npc);
+            // Upgrade existing static scene props to warm painterly shading without black outline NextPass
+            EntityView.ApplyAnimeToonShading(envProps, EntityKind.Npc, includeOutline: false);
             _cameraOccluder.RegisterEnvironmentHierarchy(envProps);
 
             _meadowRingRoot = new Node3D { Name = "MeadowRing" };
