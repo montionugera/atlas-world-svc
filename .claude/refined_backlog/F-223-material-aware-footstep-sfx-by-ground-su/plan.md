@@ -299,12 +299,13 @@ Expected: `[AudioVerify] RESULT: PASS (all cases)`
                 if (resolved != pad.Surface || played == null || played.Stream == null || !played.Playing)
                     allPadsResolveAndPlay = false;
             }
-            // Also verify open meadow grass resolution outside roads/pads
-            var grassProbe = new Vector3(42f, 0f, 42f);
+            // Also verify open meadow grass resolution outside roads/pads (in-bounds on maro-bell width=80)
+            var grassProbe = new Vector3(12f, 0f, -15f);
             var grassSurface = sandbox.ResolveSurfaceAt(grassProbe);
             var grassPlayed = audioReg?.PlayFootstep(grassProbe, isRightFoot: true, isRunning: true, surface: grassSurface);
-            Report($"All 4 sandbox surface pads (Stone, Dirt, Water, Glass) + open terrain ({grassSurface}) resolve and play material footsteps",
-                allPadsResolveAndPlay && grassPlayed != null && grassPlayed.Stream != null);
+            Report($"All 4 sandbox surface pads (Stone, Dirt, Water, Glass) + open terrain ({grassSurface}==Grass) resolve and play material footsteps",
+                allPadsResolveAndPlay && grassSurface == FootstepSurface.Grass &&
+                grassPlayed != null && grassPlayed.Stream != null && grassPlayed.Playing);
 ```
 
 Verify-Cmd: `ATLAS_VERIFY_PLAYTEST_SANDBOX=1 "$HOME/Applications/godot-mono-4.7.2/Godot_mono.app/Contents/MacOS/Godot" --headless --path game-client res://scenes/PlaytestSandbox.tscn`
@@ -315,7 +316,7 @@ In `PlaytestSandboxRoot.cs`:
 - Add `private readonly List<SurfacePadOverride> _surfacePads = new();` and `private Node3D? _surfacePadsRoot;`
 - Expose `public IReadOnlyList<SurfacePadOverride> SurfacePads => _surfacePads;` and `public FootstepSurface ResolveSurfaceAt(Vector3 worldPos) => FootstepSurfaceResolver.Resolve(worldPos, _mapDoc, _surfacePads);`
 - In `LoadMap(string mapId)`, call `SpawnSurfaceTestPads();` right after `SpawnTargetDummies();` to place 4 visually distinct, labeled walkable pads (`Stone`, `Dirt`, `Water`, `Glass`, each `2.2m x 2.2m` thin box mesh + floating `Label3D`) in a convenient row beside the Bell Terrace spawn (`z = -12.5f`, `x = -4.2f, -1.4f, +1.4f, +4.2f` on `maro-bell`, or `z = -1.5f` on `freja-south-gate`).
-- Update `PlaytestSandboxRoot._Process` line 1349, `VerticalSliceRoot._Process` line 2109, and `MaroBellPocController.StepPlayer` line 530 (and timer fallback line 546) to resolve `FootstepSurface` via `FootstepSurfaceResolver.Resolve` and pass `surface` to `PlayFootstep`.
+- Update `PlaytestSandboxRoot._Process` line 1349, `VerticalSliceRoot._Process` line 2109, and `MaroBellPocController.StepPlayer` line 530 to resolve `FootstepSurface` via `FootstepSurfaceResolver.Resolve` (storing `private UnifiedMapDocument? _mapDoc;` in `MaroBellPocController.Initialize(UnifiedMapDocument? mapDoc)` and keeping `"sfx:footstep"` on the line 546 fallback so `scripts/tests/poc-maro-wonder.test.mjs:92` continues to pass) and pass `surface` to `PlayFootstep`.
 - Also display the current ground surface (`Surface: Stone/Dirt/Grass/Water/Glass`) in `PlaytestSandboxRoot`'s telemetry readout so the player can see the active material while walking across pads.
 
 - [ ] **Step 3: Run `PlaytestSandboxVerify` and `AudioVerify` to verify they pass**
@@ -366,7 +367,7 @@ Normalize/trim to `0.3–1.2s` single-strike `.ogg` (Vorbis, 44.1/48kHz mono/ste
 
 - [ ] **Step 2: Register all material keys in `game-client/assets/audio-manifest.json` and regenerate `atelier/atlas-world-panels/audio-index.json`**
 
-Add `sfx:footstep_stone_1..8`, `sfx:footstep_dirt_1..8`, `sfx:footstep_grass_1..8`, `sfx:footstep_water_1..8`, and `sfx:footstep_glass_1..8` to `game-client/assets/audio-manifest.json`, run Godot `--headless --import` (or copy `.ogg.import` sidecars and import), and run:
+Add `sfx:footstep_stone_1..8`, `sfx:footstep_dirt_1..8`, `sfx:footstep_grass_1..8`, `sfx:footstep_water_1..8`, and `sfx:footstep_glass_1..8` (each with `"license": "CC0"` to satisfy `scripts/check_asset_manifest.mjs`) to `game-client/assets/audio-manifest.json`, run Godot `--headless --import` (or copy `.ogg.import` sidecars and import), and run:
 ```bash
 node scripts/gen_audio_index.mjs
 ```
@@ -417,3 +418,6 @@ git commit -m "feat(audio): add ElevenLabs dirt/grass/water/glass footstep banks
 - [ ] **Step 6: Phase gate & Owner Ear-Check (Rule #7 & Rule #17)**
   1. Run independent code review (`invoke_subagent(TypeName: "self", Model: "inherit")`), apply any fixes, and re-verify.
   2. Launch interactive `PlaytestSandbox.tscn` under `Godot_mono.app` so the owner can walk across the 4 labeled pads (`Stone`, `Dirt`, `Water`, `Glass`) plus surrounding grass and ear-check the new SFX before `psrw ship`.
+
+## Appendix — audit trail
+- 2026-11-15 self-grill-audit: verdict `safe-with-fixes`. Corrected: (1) store `_mapDoc` in `MaroBellPocController.Initialize` and keep `"sfx:footstep"` literal on line 546 for `poc-maro-wonder.test.mjs:92`; (2) use in-bounds meadow coordinate `(12, 0, -15)` and assert `grassSurface == FootstepSurface.Grass && grassPlayed.Playing` in `PlaytestSandboxVerify.cs`; (3) specify `"license": "CC0"` in `audio-manifest.json` for `check_asset_manifest.mjs`. Open: none.
