@@ -43,8 +43,9 @@ Batch: 1,2
 - Modify: `scripts/atlas_world_web/records.py` (add `counts()` after `search()`, before `record()`)
 - Modify: `scripts/atlas_world_web/routes.py:129-160` (add `_record_counts`, one `ROUTES` row)
 - Modify: `scripts/atlas_world_web/frontend/02c_records_search.js` (add `HOME_COUNTS`, `renderHome()`)
-- Modify: `scripts/atlas_world_web/frontend/02_state_and_composable_layers.js` (`:122-123` delete the two `SIM_*` lets; `:175` replace the `overview` item; `:202` delete the `sim` item; add `navGroupOf` / `normalizeTab` after `NAV_GROUPS`; `:396`, `:733`; `titleMap` `:810-839`; render dispatch `:859`, `:871`)
+- Modify: `scripts/atlas_world_web/frontend/02_state_and_composable_layers.js` (`:122-123` delete the two `SIM_*` lets; `:175` replace the `overview` item; `:202` delete the `sim` item; add `navGroupOf` / `normalizeTab` after `NAV_GROUPS`; `:226-227` `atlasSetParams`; `:396` `syncUrlState`; `:733` `switchTab`; `titleMap` `:810-839`; render dispatch `:859`, `:871`)
 - Modify: `scripts/atlas_world_web/frontend/08_catalog_and_3d_modal_views.js` (delete `renderOverview()` at `:1349` and `renderSim()` at `:2719`, whole functions)
+- Modify: `atelier/atlas-world-panels/js/panels/combat-lab.mjs` (remove `SIM_TAB` and the dead `sim` anchor)
 - Modify: `scripts/atlas_world_web/frontend/01_shell_and_styles.html` (Home CSS from `design-brief.md`)
 - Test: `scripts/tests/atlas-web-records.test.mjs`, `scripts/probes/atlas_records_probe.mjs`
 
@@ -115,9 +116,11 @@ and in `ROUTES["GET"]`, directly after the `("/api/record", _record),` row: `("/
       ck(`F-219 A3 ${v.name}: ?tab=${gone} opens Home`, await c.eval(`CURRENT_TAB==='home' && !!document.getElementById('homePage')`), await c.eval('CURRENT_TAB'));
     }
     await waitFor(c, `!!document.querySelector('#homePage [data-kind="district"]')`, 8000);
-    const want = await c.eval(`fetch('/api/record-counts').then(r=>r.json()).then(b=>String(b.counts.find(x=>x.kind==='district').n))`);
-    ck(`F-219 A5 ${v.name}: Home shows the district count`,
-      (await c.eval(`document.querySelector('#homePage [data-kind="district"] .home-count__n').textContent.trim()`)) === want, want);
+    const wantCounts = await c.eval(`fetch('/api/record-counts').then(r=>r.json()).then(b=>Object.fromEntries(b.counts.map(x=>[x.kind,String(x.n)])))`);
+    for (const kind of ['continent', 'district', 'node']) {
+      ck(`F-219 A5 ${v.name}: Home shows the ${kind} count`,
+        (await c.eval(`(document.querySelector('#homePage [data-kind="${kind}"] .home-count__n')||{textContent:''}).textContent.trim()`)) === wantCounts[kind], wantCounts[kind]);
+    }
     await click(c, await rect(c, '#homePage [data-kind="district"]'), v.touch);
     await waitFor(c, `CURRENT_TAB==='studio'`, 8000);
     ck(`F-219 A5 ${v.name}: a real click on the district count opens its tab`, await c.eval(`CURRENT_TAB==='studio' && !document.getElementById('homePage')`));
@@ -144,11 +147,13 @@ function navGroupOf(tab) { return NAV_GROUPS.find(g => g.items.some(it => it.id 
 function normalizeTab(tab) { return navGroupOf(tab) ? tab : 'home'; }
 ```
 
-  - `:396` `if (t) CURRENT_TAB = t;` becomes `if (t) CURRENT_TAB = normalizeTab(t);`
+  - In `atlasSetParams(patch, opts)`, normalize `patch.tab`: `const nextTab = patch && patch.tab ? normalizeTab(String(patch.tab)) : ''; if (nextTab && nextTab !== CURRENT_TAB) { CURRENT_TAB = nextTab; ATLAS_PARAMS = {}; tabChanged = true; }`
+  - `:396` `if (t) CURRENT_TAB = t;` becomes `if (t) CURRENT_TAB = normalizeTab(t); else if (!perspective && !CURRENT_RECORD) CURRENT_TAB = 'studio';`
   - In `switchTab(id)`, `CURRENT_TAB = id;` becomes `CURRENT_TAB = normalizeTab(id);` and the line above it becomes `if (normalizeTab(id) !== CURRENT_TAB) ATLAS_PARAMS = {};`
   - In `titleMap`: delete the `overview:` and `sim:` lines, add `home:     'Atlas World DB',`.
   - In the render dispatch: replace `else if (CURRENT_TAB === 'overview') main.innerHTML = renderOverview();` with `else if (CURRENT_TAB === 'home') main.innerHTML = renderHome();` and delete the `sim` line.
-  - In `08_catalog_and_3d_modal_views.js` delete the whole functions `renderOverview()` and `renderSim()`. Then `grep -n "renderOverview\|renderSim\|rmsLink('sim'\|'overview'" scripts/atlas_world_web/frontend/*.js scripts/probes/*.py tests/*.py` must print nothing; a helper used only by the two deleted functions is deleted too, one used elsewhere stays.
+  - In `atelier/atlas-world-panels/js/panels/combat-lab.mjs`, delete `const SIM_TAB = "sim";` and the `const sim = ...` anchor so Combat Lab no longer links to the removed `sim` tab.
+  - In `08_catalog_and_3d_modal_views.js` delete the whole functions `renderOverview()` and `renderSim()`. Then `grep -n "renderOverview\|renderSim\|rmsLink('sim'\|'overview'\|SIM_TAB" scripts/atlas_world_web/frontend/*.js atelier/atlas-world-panels/js/panels/*.mjs scripts/probes/*.py tests/*.py` must print nothing; a helper used only by the two deleted functions is deleted too, one used elsewhere stays.
 
 - [ ] **Step 8: Frontend, Home.** In `02c_records_search.js`, after `recordEntryLabel`:
 
@@ -181,7 +186,7 @@ function renderHome() {
 
 - [ ] **Step 9: Run** the probe (Step 6 commands) and `cd scripts && rtk proxy node --test tests/catalog-records.test.mjs tests/atlas-web-records.test.mjs > /tmp/f219-t.out 2>&1; grep -E "^ℹ (pass|fail)" /tmp/f219-t.out`. Expected: probe all PASS, `ℹ fail 0`.
 
-- [ ] **Step 10: Commit.** `git add scripts/atlas_world_web scripts/tests/atlas-web-records.test.mjs scripts/probes/atlas_records_probe.mjs && git commit -m "feat(explorer): Home page with record counts; the sim page and the old overview go (F-219)"`
+- [ ] **Step 10: Commit.** `git add scripts/atlas_world_web atelier/atlas-world-panels/js/panels/combat-lab.mjs scripts/tests/atlas-web-records.test.mjs scripts/probes/atlas_records_probe.mjs && git commit -m "feat(explorer): Home page with record counts; the sim page and the old overview go (F-219)"`
 
 ---
 
@@ -192,6 +197,7 @@ function renderHome() {
 - Modify: `scripts/atlas_world_web/frontend/02c_records_search.js` (`recordEntryLabel`)
 - Modify: `scripts/atlas_world_web/frontend/01_shell_and_styles.html` (sidebar, pills and top bar CSS from `design-brief.md`)
 - Modify: `scripts/tests/e2e/atlas-upright-toggle.e2e.mjs:141,144` (nav label text)
+- Modify: `scripts/tests/e2e/atlas-web-tabs.e2e.mjs:139` (`Tools` nav item + `map-builder` pill)
 - Modify: `scripts/atlas_world_web/catalog_index.py:32` (comment only: tab ids live in `NAV_GROUPS` items)
 - Modify: `README.md` (explorer section: the menu has 11 entries; Home; `GET /api/record-counts`)
 - Test: `scripts/probes/atlas_records_probe.mjs`
@@ -232,9 +238,31 @@ function renderHome() {
       catch { dead.push(tb.id); }
     }
     ck(`F-219 A4 ${v.name}: ${tabs.length} tabs reachable by entry click then pill click`, tabs.length === 29 && dead.length === 0, dead.join(','));
+
+    if (v.touch) {
+      await click(c, await rect(c, '#mobileNavMenuBtn'), true);
+      await settle(c);
+      const navH = await c.eval(`document.getElementById('sidebarNav').scrollHeight`);
+      ck(`F-219 A8 ${v.name}: nav drawer shows all 11 entries within two screens`, navH <= 2 * v.h, String(navH));
+      await click(c, await rect(c, '#sidebarNav .nav-item[data-entry="sql"]'), true);
+      await settle(c);
+      const pillBar = await c.eval(`(()=>{const b=document.getElementById('subViewBar'); const cs=getComputedStyle(b); const r=b.getBoundingClientRect(); return {wrap:cs.flexWrap, ox:cs.overflowX, h:r.height, sw:b.scrollWidth, cw:b.clientWidth};})()`);
+      ck(`F-219 A8 ${v.name}: pills row scrolls sideways without wrapping`, pillBar.wrap === 'nowrap' && pillBar.h <= 60 && pillBar.sw > pillBar.cw, JSON.stringify(pillBar));
+    }
+
+    // A6: real click on "Open in World" from continent record opens World with studio pill selected.
+    await goto(c, `${BASE}?r=continent:continent-01-hearthbloom-basin`);
+    await waitFor(c, `!!document.getElementById('recordOpenLink')`, 20000);
+    ck(`F-219 A6 ${v.name}: continent record shows "Open in World"`,
+      (await c.eval(`document.getElementById('recordOpenLink').textContent.trim()`)) === 'Open in World');
+    await click(c, await rect(c, '#recordOpenLink'), v.touch);
+    await waitFor(c, `typeof DATA !== 'undefined' && !!DATA && CURRENT_TAB==='studio' && !document.getElementById('recordPage')`, 20000);
+    await settle(c);
+    o = await c.eval(open);
+    ck(`F-219 A6 ${v.name}: clicking "Open in World" opens World with studio pill selected`, o.entry === 'World' && o.pill === 'studio', JSON.stringify(o));
 ```
 
-  and change the existing R7 check so it reads the entry label: in the `ck(\`R7 ${v.name}: related records are grouped, with an "Open in" link\`` line replace `/^Open in /.test(` with `/^Open in World$/.test(`.
+  also in Task 1's A5 block, assert the active entry is `'World'` (`o = await c.eval(open); ck(\`F-219 A5 ${v.name}: clicking district count highlights World\`, o.entry === 'World' && o.pill === 'studio', JSON.stringify(o));`); change the existing R7 check so it reads the entry label: in the `ck(\`R7 ${v.name}: related records are grouped, with an "Open in" link\`` line replace `/^Open in /.test(` with `/^Open in World$/.test(`; and add a desktop A10 top-bar check across `1024`, `1280` and `1440` px (with `#topbarStatus` set to `'Editable · atlas-edit.joymify.local.com'`) asserting zero overlap between `.topbar__start` and `.topbar__end`, `#topbarStatus` untruncated, `#globalSearch` width `>= 200` at `1280` px, and single-row `.topbar` at `1280` and `1440` px.
 
 - [ ] **Step 2: Run the probe (Task 1 Step 6 commands), expect the A1, A2, A4 and R7 checks FAIL** (the sidebar has 29 rows, there is no `data-tab-pill`).
 
@@ -341,7 +369,7 @@ function renderSidebar() {
 
 - [ ] **Step 5: CSS.** Apply the sidebar, pills and top bar blocks of `design-brief.md` to `01_shell_and_styles.html`. The `.nav-section` rule goes if `grep -n "nav-section\"" scripts/atlas_world_web/frontend/` shows no user (`.nav-section-count` stays: the record page uses it).
 
-- [ ] **Step 6: Follow the readers.** `scripts/tests/e2e/atlas-upright-toggle.e2e.mjs:141`: `'Lore and History'` becomes `'Lore and canon'`; `:144`: `'Top-Down World Studio'` becomes `'World'`. `scripts/atlas_world_web/catalog_index.py:32` comment: "Tab ids are the item ids in NAV_GROUPS". Then `grep -rn "Monster Detail\|Item & Card DB\|Database Hub\|Review Gate Inbox" scripts atelier/atlas-world-panels tests --include="*.mjs" --include="*.js" --include="*.py" | grep -v node_modules` must print nothing that is a test or probe selector.
+- [ ] **Step 6: Follow the readers.** `scripts/tests/e2e/atlas-upright-toggle.e2e.mjs:141`: `'Lore and History'` becomes `'Lore and canon'`; `:144`: `'Top-Down World Studio'` becomes `'World'`. `scripts/tests/e2e/atlas-web-tabs.e2e.mjs:139`: click `'Tools'` in `navSel` and then `#subViewBar [data-tab-pill="map-builder"]`. `scripts/atlas_world_web/catalog_index.py:32` comment: "Tab ids are the item ids in NAV_GROUPS". Then `grep -rn "Monster Detail\|Item & Card DB\|Database Hub\|Review Gate Inbox" scripts atelier/atlas-world-panels tests --include="*.mjs" --include="*.js" --include="*.py" | grep -v node_modules` must print nothing that is a test or probe selector.
 
 - [ ] **Step 7: Run everything this change can reach.**
 
