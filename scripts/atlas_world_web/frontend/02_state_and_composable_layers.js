@@ -119,8 +119,6 @@ let MAXION_PINNED_MOB_ID = 'poring';
 let MAXION_SELECTED_TILE_ID = 'freja-south-gate';
 let MAXION_SELECTED_MOB_ID = 'hunter_fly';
 let MAP_DIR_FILTER = 'all';
-let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute cargo run --bin balance_sim against the live Rust authoritative combat engine.';
-let SIM_RUNNING = false;
 // Panel params (SSOT merge): URL-borne state for mounted panels and the story/review sub-views.
 // Absent in the URL = cleared here, matching the other params (Back/forward never keeps stale state).
 const ATLAS_PARAM_KEYS = ['kind', 'key', 'mode', 'group', 'view', 'verdict', 'zone', 'chapter', 'ref', 'category', 'id', 'search'];
@@ -172,7 +170,7 @@ const NAV_GROUPS = [
       { id: 'enchant',  label: '✨ High-Stakes +20 Forge', countKey: () => 20 },
       { id: 'quests',   label: '📜 Quest Database (quest_db)', countKey: d => d.quests.length },
       { id: 'story',    label: '📖 Story & Undertow Reader', countKey: d => ((d.worldSpine || {}).storyNodes || []).length },
-      { id: 'overview', label: '📊 Database Hub & Matrix', countKey: () => 9 },
+      { id: 'home',     label: 'Home', countKey: () => '' },
     ]
   },
   {
@@ -199,11 +197,14 @@ const NAV_GROUPS = [
       { id: 'siege',    label: '🏰 WoE Castle Calculator', countKey: d => d.castles.length },
       { id: 'sql',      label: '🗄️ SQLite Query Studio', countKey: () => 'SQL' },
       { id: 'combat-lab', label: '🧮 Combat Model Lab (design)', panel: true, countKey: () => atlasPanelCount('combat-lab') },
-      { id: 'sim',      label: '⚙️ Rust Balance Simulator', countKey: () => 'RS' },
       { id: 'docs',     label: '📖 Architecture Specs', countKey: d => d.docs.length },
     ]
   }
 ];
+
+function navGroupOf(tab) { return NAV_GROUPS.find(g => g.items.some(it => it.id === tab)); }
+// Removed tab ids (sim, overview) and unknown ones land on Home.
+function normalizeTab(tab) { return navGroupOf(tab) ? tab : 'home'; }
 
 // Mounted storybook panels (atelier/atlas-world-panels/js/panels/registry.mjs) report their own
 // counts once mounted; until then the sidebar shows an ellipsis.
@@ -223,8 +224,9 @@ function atlasPanelGuess(tab, params) {
 // Panels adjust their own URL params (selected asset, mode, ...) without a re-render.
 function atlasSetParams(patch, opts) {
   let tabChanged = false;
-  if (patch && patch.tab && patch.tab !== CURRENT_TAB) {
-    CURRENT_TAB = String(patch.tab);
+  const nextTab = patch && patch.tab ? normalizeTab(String(patch.tab)) : '';
+  if (nextTab && nextTab !== CURRENT_TAB) {
+    CURRENT_TAB = nextTab;
     ATLAS_PARAMS = {};
     tabChanged = true;
   }
@@ -393,7 +395,8 @@ function syncUrlState() {
     STUDIO_SELECTED_MONSTER_ID = studioMonster;
     STUDIO_PINNED_MONSTER_ID = studioMonster;
   }
-  if (t) CURRENT_TAB = t;
+  if (t) CURRENT_TAB = normalizeTab(t);
+  else if (!perspective && !CURRENT_RECORD) CURRENT_TAB = 'studio';
   SEARCH_QUERY = q || ''; const inp = document.getElementById('globalSearch'); if (inp) inp.value = SEARCH_QUERY;
   if (mob) {
     MAXION_SELECTED_MOB_ID = mob;
@@ -730,8 +733,8 @@ function toggleMobileNavDrawer(forceState) {
 function switchTab(id) {
   closeSearchPopover();
   CURRENT_RECORD = '';
-  if (id !== CURRENT_TAB) ATLAS_PARAMS = {};
-  CURRENT_TAB = id;
+  if (normalizeTab(id) !== CURRENT_TAB) ATLAS_PARAMS = {};
+  CURRENT_TAB = normalizeTab(id);
   HIGHLIGHT_ENTITY_ID = '';
   toggleMobileNavDrawer(false);
   writeUrlState();
@@ -815,7 +818,7 @@ function render() {
     bestiary: 'World Bestiary, Regional Ecology & 3D/2D Visual Briefs (116 Creatures)',
     review:   'Step 3 Review Gate Inbox — 1-Map Pilot (prontera_south_field)',
     brushes:  'Biome Brush & Smart Tag-Pool Studio (ground_id)',
-    overview: 'RateMyServer Hub & Cross-Repo Telemetry',
+    home:     'Atlas World DB',
     gear:     'Item & Card Database (item_db)',
     mobs:     'Monster Database & Spawn Drops (mob_db)',
     jobs:     'Skill & Class Branch Database (skill_db_class)',
@@ -824,7 +827,6 @@ function render() {
     siege:    'War of Emperium (GvG Castle Siege) Calculator',
     maps:     'Map Database & Area Monster Spawns (map_db / areainfo)',
     sql:      'Live Read-Only SQLite Query Studio',
-    sim:      'Authoritative Rust Balance Simulator (balance_sim)',
     docs:     'RO Writings — Architecture Specs & Lore Canon',
     lore:          'Lore and History — the Cradle of Sealed Gods',
     'concept-arts': 'Game Concept Arts — the world, zone by zone',
@@ -856,7 +858,7 @@ function render() {
   else if (CURRENT_TAB === 'bestiary') main.innerHTML = renderBestiary();
   else if (CURRENT_TAB === 'review') main.innerHTML = renderReviewInbox();
   else if (CURRENT_TAB === 'brushes') main.innerHTML = renderBiomeBrushes();
-  else if (CURRENT_TAB === 'overview') main.innerHTML = renderOverview();
+  else if (CURRENT_TAB === 'home') main.innerHTML = renderHome();
   else if (CURRENT_TAB === 'jobs') main.innerHTML = renderJobs();
   else if (CURRENT_TAB === 'mobs') main.innerHTML = renderMobs();
   else if (CURRENT_TAB === 'elements') { main.innerHTML = renderElements(); updateElemCalc(); }
@@ -868,7 +870,6 @@ function render() {
   else if (CURRENT_TAB === 'siege') { main.innerHTML = renderSiege(); updateSiegeCalc(); }
   else if (CURRENT_TAB === 'maps') main.innerHTML = renderMapDirectory();
   else if (CURRENT_TAB === 'sql') { main.innerHTML = renderSqlStudio(); executeSql(); }
-  else if (CURRENT_TAB === 'sim') main.innerHTML = renderSim();
   else if (CURRENT_TAB === 'docs') main.innerHTML = renderDocs();
 }
 

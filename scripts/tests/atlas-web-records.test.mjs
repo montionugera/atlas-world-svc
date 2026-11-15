@@ -101,3 +101,22 @@ test('A2 (banner half): a failed rebuild keeps the old DB and says so on the pag
   assert.match(html, /forced failure/);
   assert.equal((await get(srv, '/api/search?q=hearthbloom')).body.results.length > 0, true, 'the old DB must still serve search');
 });
+
+test('F-219 A5 (API): /api/record-counts equals the records table, current concept only', async (t) => {
+  const srv = await startServer();
+  t.after(() => srv.stop());
+  const q = spawnSync('python3', ['-c',
+    "import sqlite3,sys,json; print(json.dumps(dict(sqlite3.connect(sys.argv[1]).execute(\"select kind, count(*) from records where concept != 'legacy' group by kind\").fetchall())))",
+    DB], { encoding: 'utf8' });
+  assert.equal(q.status, 0, q.stderr);
+  const want = JSON.parse(q.stdout);
+  const got = await get(srv, '/api/record-counts');
+  assert.equal(got.status, 200);
+  assert.equal(got.body.ok, true);
+  assert.deepEqual(Object.fromEntries(got.body.counts.map((c) => [c.kind, c.n])), want);
+  for (const kind of ['continent', 'district', 'node']) assert.ok(want[kind] > 0, `${kind} has records`);
+  const district = got.body.counts.find((c) => c.kind === 'district');
+  assert.match(district.viewUrl, /[?&]tab=studio(&|$)/, 'the sample link names the tab that holds the kind');
+  const ns = got.body.counts.map((c) => c.n);
+  assert.deepEqual(ns, [...ns].sort((a, b) => b - a), 'largest first');
+});

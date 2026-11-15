@@ -2,12 +2,9 @@
 //
 // Embeds atelier/combat-lab/index.html in ONE iframe, created on mount and never
 // reparented or destroyed (the registry only toggles `hidden`), so slider and scroll
-// state survive tab switches. The lab is the DESIGN model (I-028, combat-model.json);
-// the runtime prototype is the Rust balance sim (`?tab=sim`) — kept side by side, not merged.
+// state survive tab switches. The lab is the DESIGN model (I-028, combat-model.json).
 import { COMBAT_LAB_URL, buildCombatLabFrame } from "../combat-lab.mjs";
 import { register } from "./registry.mjs";
-
-const SIM_TAB = "sim";
 
 function headerBar() {
   const bar = document.createElement("div");
@@ -32,17 +29,6 @@ function headerBar() {
     ").",
   );
 
-  const sim = document.createElement("a");
-  sim.className = "joy-button joy-button--outline joy-button--sm";
-  sim.href = "/?tab=" + SIM_TAB;
-  sim.dataset.combatLabSim = "1";
-  sim.textContent = "⚙️ Rust Balance Simulator";
-  sim.addEventListener("click", (ev) => {
-    if (typeof window.switchTab !== "function") return; // standalone: follow the href
-    ev.preventDefault();
-    window.switchTab(SIM_TAB);
-  });
-
   const full = document.createElement("a");
   full.className = "joy-button joy-button--ghost joy-button--sm";
   full.href = COMBAT_LAB_URL;
@@ -50,7 +36,7 @@ function headerBar() {
   full.rel = "noopener";
   full.textContent = "Open full screen ↗";
 
-  bar.append(text, sim, full);
+  bar.append(text, full);
   return bar;
 }
 

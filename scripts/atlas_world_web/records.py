@@ -36,6 +36,16 @@ def search(q: str, include_archive: bool = False) -> list[dict]:
     return [dict(zip(("kind", "id", "title", "summary", "concept", "viewUrl"), row)) for row in rows]
 
 
+def counts() -> list[dict]:
+    """Records per kind for Home, current concept only. viewUrl is one sample link: it names the kind's tab."""
+    with _connect() as conn:
+        rows = conn.execute(
+            "SELECT kind, count(*), max(view_url) FROM records WHERE concept != 'legacy' "
+            "GROUP BY kind ORDER BY count(*) DESC, kind"
+        ).fetchall()
+    return [dict(zip(("kind", "n", "viewUrl"), row)) for row in rows]
+
+
 def record(kind: str, id_: str) -> dict | None:
     with _connect() as conn:
         row = conn.execute(

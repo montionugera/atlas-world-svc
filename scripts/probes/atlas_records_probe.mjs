@@ -103,6 +103,20 @@ for (const v of [{ name: 'desktop 1280x800', w: 1280, h: 800, dpr: 1 }, { name: 
       await c.eval(`document.querySelector('#recordPage section[data-relation="Part of"]').textContent.includes('Hearthbloom Basin') && document.querySelectorAll('#recordPage section[data-relation="Contains"] [data-record]').length>0`));
     ck(`A8 ${v.name}: the record page does not overflow sideways`, await c.eval(`document.documentElement.scrollWidth<=innerWidth+1`), await c.eval(`document.documentElement.scrollWidth+'/'+innerWidth`));
 
+    for (const gone of ['sim', 'overview', 'nope']) {
+      await goto(c, `${BASE}?tab=${gone}`);
+      ck(`F-219 A3 ${v.name}: ?tab=${gone} opens Home`, await c.eval(`CURRENT_TAB==='home' && !!document.getElementById('homePage')`), await c.eval('CURRENT_TAB'));
+    }
+    await waitFor(c, `!!document.querySelector('#homePage [data-kind="district"]')`, 8000);
+    const wantCounts = await c.eval(`fetch('/api/record-counts').then(r=>r.json()).then(b=>Object.fromEntries(b.counts.map(x=>[x.kind,String(x.n)])))`);
+    for (const kind of ['continent', 'district', 'node']) {
+      ck(`F-219 A5 ${v.name}: Home shows the ${kind} count`,
+        (await c.eval(`(document.querySelector('#homePage [data-kind="${kind}"] .home-count__n')||{textContent:''}).textContent.trim()`)) === wantCounts[kind], wantCounts[kind]);
+    }
+    await click(c, await rect(c, '#homePage [data-kind="district"]'), v.touch);
+    await waitFor(c, `CURRENT_TAB==='studio'`, 8000);
+    ck(`F-219 A5 ${v.name}: a real click on the district count opens its tab`, await c.eval(`CURRENT_TAB==='studio' && !document.getElementById('homePage')`));
+
     await goto(c, `${BASE}?r=district:nope`);
     await waitFor(c, `!!document.getElementById('recordPage')`, 20000);
     await settle(c);
