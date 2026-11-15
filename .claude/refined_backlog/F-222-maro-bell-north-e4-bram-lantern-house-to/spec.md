@@ -1,12 +1,11 @@
 ---
-title: "Maro Bell north E4: Bram lantern house, Tovin shrine, Old Lantern, Great Bell, and northern zone scene hookup (z = 20..-70)"
-id: F-222
+title: "I-308 Maro Bell north E4: Bram lantern house, Tovin shrine, Old Lantern, Great Bell, and northern zone scene hookup (z = 20..-70)"
+id: I-308
 date: 2026-11-15
-status: refined
-from_idea: I-308
+status: approved (owner decision 2026-11-15: generate r17..r20 in Tripo and dress Maro Bell north z = 20..-70 end-to-end)
 ---
 
-# I-308 Maro Bell north E4: northern slice scene hookup (`z = 20..-70`)
+# F-222 Maro Bell north E4: northern slice scene hookup (`z = 20..-70`)
 
 Canonical spec: `docs/superpowers/specs/2026-11-15-i308-maro-bell-north-e4-scene-hookup-design.md`
 
