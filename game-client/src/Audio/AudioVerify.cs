@@ -158,6 +158,25 @@ namespace AtlasWorld.Client.Audio
                     p != null && p.Stream != null && p.Playing);
             }
 
+            foreach (string surf in new[] { "stone", "dirt", "grass", "water", "glass" })
+            {
+                for (int i = 1; i <= 8; i++)
+                {
+                    failures += ReportResolves(reg, $"sfx:footstep_{surf}_{i}");
+                }
+            }
+            var stoneStream = reg.ResolveStream("sfx:footstep_stone_1");
+            var dirtStream = reg.ResolveStream("sfx:footstep_dirt_1");
+            var grassStream = reg.ResolveStream("sfx:footstep_grass_1");
+            var waterStream = reg.ResolveStream("sfx:footstep_water_1");
+            var glassStream = reg.ResolveStream("sfx:footstep_glass_1");
+            failures += Report("Each material surface resolves to its own distinct AudioStream resource",
+                stoneStream != null && dirtStream != null && grassStream != null && waterStream != null && glassStream != null &&
+                stoneStream.ResourcePath != dirtStream.ResourcePath &&
+                dirtStream.ResourcePath != grassStream.ResourcePath &&
+                grassStream.ResourcePath != waterStream.ResourcePath &&
+                waterStream.ResourcePath != glassStream.ResourcePath);
+
             if (failures == 0)
                 GD.Print("[AudioVerify] RESULT: PASS (all cases)");
             else

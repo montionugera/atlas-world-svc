@@ -215,6 +215,206 @@
       "stream": "res://assets/audio/footstep_stone_08.ogg",
       "license": "CC0",
       "source": "ElevenLabs v3 RPG stone road footstep (08)"
+    },
+    "sfx:footstep_stone_1": {
+      "stream": "res://assets/audio/footstep_stone_01.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (01)"
+    },
+    "sfx:footstep_stone_2": {
+      "stream": "res://assets/audio/footstep_stone_02.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (02)"
+    },
+    "sfx:footstep_stone_3": {
+      "stream": "res://assets/audio/footstep_stone_03.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (03)"
+    },
+    "sfx:footstep_stone_4": {
+      "stream": "res://assets/audio/footstep_stone_04.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (04)"
+    },
+    "sfx:footstep_stone_5": {
+      "stream": "res://assets/audio/footstep_stone_05.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (05)"
+    },
+    "sfx:footstep_stone_6": {
+      "stream": "res://assets/audio/footstep_stone_06.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (06)"
+    },
+    "sfx:footstep_stone_7": {
+      "stream": "res://assets/audio/footstep_stone_07.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (07)"
+    },
+    "sfx:footstep_stone_8": {
+      "stream": "res://assets/audio/footstep_stone_08.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG stone road footstep (08)"
+    },
+    "sfx:footstep_dirt_1": {
+      "stream": "res://assets/audio/footstep_dirt_01.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG dirt trail footstep (01)"
+    },
+    "sfx:footstep_dirt_2": {
+      "stream": "res://assets/audio/footstep_dirt_02.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG dirt trail footstep (02)"
+    },
+    "sfx:footstep_dirt_3": {
+      "stream": "res://assets/audio/footstep_dirt_03.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG dirt trail footstep (03)"
+    },
+    "sfx:footstep_dirt_4": {
+      "stream": "res://assets/audio/footstep_dirt_04.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG dirt trail footstep (04)"
+    },
+    "sfx:footstep_dirt_5": {
+      "stream": "res://assets/audio/footstep_dirt_05.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG dirt trail footstep (05)"
+    },
+    "sfx:footstep_dirt_6": {
+      "stream": "res://assets/audio/footstep_dirt_06.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG dirt trail footstep (06)"
+    },
+    "sfx:footstep_dirt_7": {
+      "stream": "res://assets/audio/footstep_dirt_07.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG dirt trail footstep (07)"
+    },
+    "sfx:footstep_dirt_8": {
+      "stream": "res://assets/audio/footstep_dirt_08.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG dirt trail footstep (08)"
+    },
+    "sfx:footstep_grass_1": {
+      "stream": "res://assets/audio/footstep_grass_01.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG meadow grass footstep (01)"
+    },
+    "sfx:footstep_grass_2": {
+      "stream": "res://assets/audio/footstep_grass_02.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG meadow grass footstep (02)"
+    },
+    "sfx:footstep_grass_3": {
+      "stream": "res://assets/audio/footstep_grass_03.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG meadow grass footstep (03)"
+    },
+    "sfx:footstep_grass_4": {
+      "stream": "res://assets/audio/footstep_grass_04.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG meadow grass footstep (04)"
+    },
+    "sfx:footstep_grass_5": {
+      "stream": "res://assets/audio/footstep_grass_05.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG meadow grass footstep (05)"
+    },
+    "sfx:footstep_grass_6": {
+      "stream": "res://assets/audio/footstep_grass_06.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG meadow grass footstep (06)"
+    },
+    "sfx:footstep_grass_7": {
+      "stream": "res://assets/audio/footstep_grass_07.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG meadow grass footstep (07)"
+    },
+    "sfx:footstep_grass_8": {
+      "stream": "res://assets/audio/footstep_grass_08.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG meadow grass footstep (08)"
+    },
+    "sfx:footstep_water_1": {
+      "stream": "res://assets/audio/footstep_water_01.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG shallow water footstep (01)"
+    },
+    "sfx:footstep_water_2": {
+      "stream": "res://assets/audio/footstep_water_02.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG shallow water footstep (02)"
+    },
+    "sfx:footstep_water_3": {
+      "stream": "res://assets/audio/footstep_water_03.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG shallow water footstep (03)"
+    },
+    "sfx:footstep_water_4": {
+      "stream": "res://assets/audio/footstep_water_04.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG shallow water footstep (04)"
+    },
+    "sfx:footstep_water_5": {
+      "stream": "res://assets/audio/footstep_water_05.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG shallow water footstep (05)"
+    },
+    "sfx:footstep_water_6": {
+      "stream": "res://assets/audio/footstep_water_06.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG shallow water footstep (06)"
+    },
+    "sfx:footstep_water_7": {
+      "stream": "res://assets/audio/footstep_water_07.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG shallow water footstep (07)"
+    },
+    "sfx:footstep_water_8": {
+      "stream": "res://assets/audio/footstep_water_08.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG shallow water footstep (08)"
+    },
+    "sfx:footstep_glass_1": {
+      "stream": "res://assets/audio/footstep_glass_01.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG glass floor footstep (01)"
+    },
+    "sfx:footstep_glass_2": {
+      "stream": "res://assets/audio/footstep_glass_02.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG glass floor footstep (02)"
+    },
+    "sfx:footstep_glass_3": {
+      "stream": "res://assets/audio/footstep_glass_03.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG glass floor footstep (03)"
+    },
+    "sfx:footstep_glass_4": {
+      "stream": "res://assets/audio/footstep_glass_04.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG glass floor footstep (04)"
+    },
+    "sfx:footstep_glass_5": {
+      "stream": "res://assets/audio/footstep_glass_05.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG glass floor footstep (05)"
+    },
+    "sfx:footstep_glass_6": {
+      "stream": "res://assets/audio/footstep_glass_06.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG glass floor footstep (06)"
+    },
+    "sfx:footstep_glass_7": {
+      "stream": "res://assets/audio/footstep_glass_07.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG glass floor footstep (07)"
+    },
+    "sfx:footstep_glass_8": {
+      "stream": "res://assets/audio/footstep_glass_08.ogg",
+      "license": "CC0",
+      "source": "ElevenLabs v3 RPG glass floor footstep (08)"
     }
   }
 }
