@@ -196,9 +196,9 @@ namespace AtlasWorld.Client.Audio
             (float volTrim, float pitchTrim) = surface switch
             {
                 FootstepSurface.Dirt => (0.0f, 0.0f),
-                FootstepSurface.Grass => (1.8f, 0.0f),
-                FootstepSurface.Water => (-0.4f, 0.0f),
-                FootstepSurface.Glass => (-0.6f, 0.03f),
+                FootstepSurface.Grass => (0.6f, 0.0f),
+                FootstepSurface.Water => (0.0f, 0.0f),
+                FootstepSurface.Glass => (0.5f, 0.03f),
                 _ => (0.0f, 0.0f), // Stone
             };
 

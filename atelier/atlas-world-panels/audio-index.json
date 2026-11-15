@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T14:43:09.955Z",
+  "generatedAt": "2026-11-15T14:49:50.895Z",
   "sourceDir": "game-client/assets/audio",
   "files": [
     {
@@ -21,99 +21,99 @@
     },
     {
       "name": "footstep_dirt_01.ogg",
-      "bytes": 8070
+      "bytes": 9076
     },
     {
       "name": "footstep_dirt_02.ogg",
-      "bytes": 8776
+      "bytes": 8984
     },
     {
       "name": "footstep_dirt_03.ogg",
-      "bytes": 8441
+      "bytes": 8874
     },
     {
       "name": "footstep_dirt_04.ogg",
-      "bytes": 8439
+      "bytes": 9290
     },
     {
       "name": "footstep_dirt_05.ogg",
-      "bytes": 8032
+      "bytes": 8714
     },
     {
       "name": "footstep_dirt_06.ogg",
-      "bytes": 9439
+      "bytes": 9392
     },
     {
       "name": "footstep_dirt_07.ogg",
-      "bytes": 9113
+      "bytes": 10629
     },
     {
       "name": "footstep_dirt_08.ogg",
-      "bytes": 8815
+      "bytes": 7996
     },
     {
       "name": "footstep_glass_01.ogg",
-      "bytes": 10226
+      "bytes": 10677
     },
     {
       "name": "footstep_glass_02.ogg",
-      "bytes": 10508
+      "bytes": 10691
     },
     {
       "name": "footstep_glass_03.ogg",
-      "bytes": 9730
+      "bytes": 10465
     },
     {
       "name": "footstep_glass_04.ogg",
-      "bytes": 9915
+      "bytes": 9621
     },
     {
       "name": "footstep_glass_05.ogg",
-      "bytes": 10006
+      "bytes": 10650
     },
     {
       "name": "footstep_glass_06.ogg",
-      "bytes": 10196
+      "bytes": 10508
     },
     {
       "name": "footstep_glass_07.ogg",
-      "bytes": 8453
+      "bytes": 11060
     },
     {
       "name": "footstep_glass_08.ogg",
-      "bytes": 9725
+      "bytes": 10986
     },
     {
       "name": "footstep_grass_01.ogg",
-      "bytes": 9013
+      "bytes": 10417
     },
     {
       "name": "footstep_grass_02.ogg",
-      "bytes": 9686
+      "bytes": 10770
     },
     {
       "name": "footstep_grass_03.ogg",
-      "bytes": 8951
+      "bytes": 10522
     },
     {
       "name": "footstep_grass_04.ogg",
-      "bytes": 9274
+      "bytes": 9732
     },
     {
       "name": "footstep_grass_05.ogg",
-      "bytes": 9003
+      "bytes": 10735
     },
     {
       "name": "footstep_grass_06.ogg",
-      "bytes": 9795
+      "bytes": 10708
     },
     {
       "name": "footstep_grass_07.ogg",
-      "bytes": 8939
+      "bytes": 9154
     },
     {
       "name": "footstep_grass_08.ogg",
-      "bytes": 8786
+      "bytes": 10013
     },
     {
       "name": "footstep_stone_01.ogg",
@@ -149,35 +149,35 @@
     },
     {
       "name": "footstep_water_01.ogg",
-      "bytes": 9674
+      "bytes": 12348
     },
     {
       "name": "footstep_water_02.ogg",
-      "bytes": 9931
+      "bytes": 12239
     },
     {
       "name": "footstep_water_03.ogg",
-      "bytes": 9097
+      "bytes": 11595
     },
     {
       "name": "footstep_water_04.ogg",
-      "bytes": 9626
+      "bytes": 11256
     },
     {
       "name": "footstep_water_05.ogg",
-      "bytes": 9125
+      "bytes": 11021
     },
     {
       "name": "footstep_water_06.ogg",
-      "bytes": 10488
+      "bytes": 11674
     },
     {
       "name": "footstep_water_07.ogg",
-      "bytes": 9631
+      "bytes": 11265
     },
     {
       "name": "footstep_water_08.ogg",
-      "bytes": 9549
+      "bytes": 11102
     },
     {
       "name": "impact_flesh_heavy.ogg",
