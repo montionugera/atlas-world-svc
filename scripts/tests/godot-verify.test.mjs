@@ -83,6 +83,14 @@ test("a pulled glb without its .import sidecar also triggers the import", () => 
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.calls[0], /--import/);
 });
+test("a procedural glb under assets/ without its .import sidecar triggers the import", () => {
+  const proj = project();
+  mkdirSync(join(proj, "assets/env"), { recursive: true });
+  writeFileSync(join(proj, "assets/env/tree.glb"), "x");
+  const r = run(stubs({ body: 'echo "[PipelineCharVerify] VERDICT PASS"; exit 0' }), { proj });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.calls[0], /--import/);
+});
 test("a probe that ignores SIGTERM is still killed (timeout -k), it cannot hang Gate 1", () => {
   const t0 = Date.now();
   const r = run(stubs({ body: "trap '' TERM; while :; do sleep 1; done" }), { env: { ATLAS_GODOT_TIMEOUT: "1" } });

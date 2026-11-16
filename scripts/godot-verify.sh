@@ -74,6 +74,20 @@ for ogg in "$PROJECT"/assets/audio/*.ogg; do
     fi
   fi
 done
+# Check procedural environment / asset .glb files under assets/ for missing or stale imports / .scn files
+if [ "$needs_import" = 0 ] && [ -d "$PROJECT/assets" ]; then
+  while IFS= read -r -d '' g; do
+    if [ ! -e "$g.import" ]; then
+      needs_import=1
+      break
+    fi
+    scn=$(grep -m1 '^path="res://\.godot/imported/' "$g.import" 2>/dev/null | cut -d'"' -f2 | sed 's|^res://||')
+    if [ -z "$scn" ] || [ ! -e "$PROJECT/$scn" ] || [ "$g" -nt "$PROJECT/$scn" ]; then
+      needs_import=1
+      break
+    fi
+  done < <(find "$PROJECT/assets" -name '*.glb' -print0 2>/dev/null)
+fi
 if [ "$needs_import" = 1 ]; then
   echo "▶ godot --import (fresh worktree or new pull)"
   attempt=1

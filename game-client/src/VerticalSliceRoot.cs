@@ -226,6 +226,17 @@ namespace AtlasWorld.Client
                 return;
             }
 
+            // Env-gated F-229 probe (ATLAS_VERIFY_ENV_PREGATE=1).
+            if (OS.GetEnvironment("ATLAS_VERIFY_ENV_PREGATE") == "1")
+            {
+                SetProcess(false);
+                SetPhysicsProcess(false);
+                SetProcessInput(false);
+                SetProcessUnhandledInput(false);
+                AddChild(new EnvRenderPreGateVerify { Name = "EnvRenderPreGateVerify" });
+                return;
+            }
+
             if (!string.IsNullOrEmpty(OS.GetEnvironment("ATLAS_RENDER_PIPELINE_STRIP")))
             {
                 SetProcess(false);
