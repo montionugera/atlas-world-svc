@@ -835,7 +835,7 @@ namespace AtlasWorld.Client.World
             var navDebugRoot = VerifyAndBuildM2TraversalDebug(m1Root);
             navDebugRoot.Visible = false;
 
-            var (s0, s1, s2, s3) = await SetupM4WaterSystemMaterialsAndProfile(m1Root);
+            var (s0, s1, s2, s3, m4ShaderMats) = await SetupM4WaterSystemMaterialsAndProfile(m1Root);
 
             // Spawn 1.30m player character (maro_folk_girl) on the southern approach & upper sanctuary landing for scale verification
             if (AssetRegistry.Instance is { } reg)
@@ -954,23 +954,23 @@ namespace AtlasWorld.Client.World
             await Save(outDir, "m4_view1_daylight_river_waterfall_overview_raw.png");
 
             // M4 View 2: Underwater Depth & Shoreline Closeup (and individual panels)
-            // Panel A: Underwater shallow shelf to deep channel
+            // Panel A: Underwater shallow shelf to deep channel + submerged river boulders & pier foam
             m1Cam.Fov = 50f;
-            m1Cam.Position = new Vector3(-19.5f, -0.65f, 207.5f);
-            m1Cam.LookAt(new Vector3(-6.0f, -2.55f, 222.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(-24.0f, 4.2f, 204.0f);
+            m1Cam.LookAt(new Vector3(-8.0f, -2.55f, 222.0f), Vector3.Up);
             await Save(outDir, "m4_view2a_underwater_depth_raw.png");
             await Save(outDir, "m4_view2_underwater_depth_shoreline_closeup_raw.png");
 
-            // Panel B: Wet-edge bank darkening along QW01
+            // Panel B: Wet-edge bank darkening & shoreline foam along QW01
             m1Cam.Fov = 48f;
-            m1Cam.Position = new Vector3(-32.0f, 0.40f, 205.0f);
-            m1Cam.LookAt(new Vector3(-14.0f, -1.80f, 203.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(-42.0f, 1.8f, 214.0f);
+            m1Cam.LookAt(new Vector3(-18.0f, -1.5f, 203.0f), Vector3.Up);
             await Save(outDir, "m4_view2b_wet_edge_shoreline_raw.png");
 
             // Panel C: Central Plaza Astrolabe Fountain (J05)
             m1Cam.Fov = 52f;
-            m1Cam.Position = new Vector3(-5.2f, 17.20f, 5.2f);
-            m1Cam.LookAt(new Vector3(0.0f, 15.60f, 0.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(-8.5f, 18.5f, 8.5f);
+            m1Cam.LookAt(new Vector3(0.0f, 15.6f, 0.0f), Vector3.Up);
             await Save(outDir, "m4_view2c_fountain_ripples_raw.png");
 
             // M4 View 3: Bridge Arch Waterline & Cutwaters (Hero 3/4 Player-Eye closeup)
@@ -979,22 +979,29 @@ namespace AtlasWorld.Client.World
             m1Cam.LookAt(new Vector3(1.5f, 3.10f, 218.0f), Vector3.Up);
             await Save(outDir, "m4_view3_bridge_arch_waterline_cutwaters_raw.png");
 
-            // M4 View 4: Waterfall Profile & Plunge Pool (West Valley Waterfall)
+            // M4 View 4: Waterfall Profile & Plunge Pool (West Valley Waterfall plunging into West river lagoon)
             m1Cam.Fov = 52f;
-            m1Cam.Position = new Vector3(-182.0f, 8.80f, 35.0f);
-            m1Cam.LookAt(new Vector3(-212.0f, 7.50f, 8.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(-216.0f, 12.0f, 32.0f);
+            m1Cam.LookAt(new Vector3(-246.0f, 6.0f, 10.0f), Vector3.Up);
             await Save(outDir, "m4_view4_waterfall_profile_plunge_pool_raw.png");
 
-            // M4 View 5: Time-Delta Flow Animation Strip (t = 0.0s, 0.8s, 1.6s)
+            // M4 View 5: Time-Delta Flow Animation Strip (time_offset = 0.0s, 3.5s, 7.0s)
             m1Cam.Fov = 50f;
             m1Cam.Position = new Vector3(-45.0f, 12.5f, 248.0f);
             m1Cam.LookAt(new Vector3(0.0f, 1.5f, 215.0f), Vector3.Up);
+            foreach (var sm in m4ShaderMats) sm.SetShaderParameter("time_offset", 0.0f);
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             await Save(outDir, "m4_view5a_flow_t0_raw.png");
             await Save(outDir, "m4_view5_time_delta_flow_animation_strip_raw.png");
-            for (int f = 0; f < 8; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
+            foreach (var sm in m4ShaderMats) sm.SetShaderParameter("time_offset", 3.5f);
+            for (int f = 0; f < 4; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             await Save(outDir, "m4_view5b_flow_t1_raw.png");
-            for (int f = 0; f < 8; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
+            foreach (var sm in m4ShaderMats) sm.SetShaderParameter("time_offset", 7.0f);
+            for (int f = 0; f < 4; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             await Save(outDir, "m4_view5c_flow_t2_raw.png");
+            foreach (var sm in m4ShaderMats) sm.SetShaderParameter("time_offset", 0.0f);
 
             // M4 View 6: Godot GPU Frametime & Collision QA
             navDebugRoot.Visible = true;
@@ -1008,7 +1015,7 @@ namespace AtlasWorld.Client.World
             m1Vp.QueueFree();
         }
 
-        private async Task<(float s0, float s1, float s2, float s3)> SetupM4WaterSystemMaterialsAndProfile(Node3D m1Root)
+        private async Task<(float s0, float s1, float s2, float s3, List<ShaderMaterial> mats)> SetupM4WaterSystemMaterialsAndProfile(Node3D m1Root)
         {
             // 1. Load the 5 .gdshader resources
             var riverShader = GD.Load<Shader>("res://assets/shaders/maro_river_water.gdshader");
@@ -1023,61 +1030,26 @@ namespace AtlasWorld.Client.World
             Report("F-228 M4 fountain water shader loaded", fountainShader != null);
             Report("F-228 M4 wet bank shader loaded", wetBankShader != null);
 
-            // Procedural noise textures
-            var simplexNoise = new FastNoiseLite
-            {
-                NoiseType = FastNoiseLite.NoiseTypeEnum.SimplexSmooth,
-                Frequency = 0.045f,
-            };
-            var normalTexA = new NoiseTexture2D
-            {
-                Noise = simplexNoise,
-                AsNormalMap = true,
-                Width = 256,
-                Height = 256,
-            };
-            var normalTexB = new NoiseTexture2D
-            {
-                Noise = new FastNoiseLite { NoiseType = FastNoiseLite.NoiseTypeEnum.SimplexSmooth, Frequency = 0.08f },
-                AsNormalMap = true,
-                Width = 256,
-                Height = 256,
-            };
-            var foamNoiseTex = new NoiseTexture2D
-            {
-                Noise = simplexNoise,
-                AsNormalMap = false,
-                Width = 256,
-                Height = 256,
-            };
-
-            // Create ShaderMaterial instances
+            // Create ShaderMaterial instances (self-contained procedural GLSL FBM + time_offset)
             var riverMat = new ShaderMaterial { Shader = riverShader };
-            riverMat.SetShaderParameter("normal_a", normalTexA);
-            riverMat.SetShaderParameter("normal_b", normalTexB);
-            riverMat.SetShaderParameter("foam_noise", foamNoiseTex);
             riverMat.SetShaderParameter("shallow_color", new Color(0.19f, 0.72f, 0.72f, 1.0f));
             riverMat.SetShaderParameter("deep_color", new Color(0.025f, 0.22f, 0.36f, 1.0f));
-            riverMat.SetShaderParameter("foam_color", new Color(0.83f, 0.96f, 0.90f, 1.0f));
-            riverMat.SetShaderParameter("flow_speed", 0.12f);
-            riverMat.SetShaderParameter("sparkle_strength", 0.15f);
+            riverMat.SetShaderParameter("foam_color", new Color(0.88f, 0.98f, 0.95f, 1.0f));
+            riverMat.SetShaderParameter("flow_speed", 0.22f);
+            riverMat.SetShaderParameter("sparkle_strength", 0.28f);
 
             var fallMat = new ShaderMaterial { Shader = fallShader };
-            fallMat.SetShaderParameter("flow_noise", foamNoiseTex);
-            fallMat.SetShaderParameter("foam_tex", foamNoiseTex);
-            fallMat.SetShaderParameter("water_tint", new Color(0.30f, 0.75f, 0.88f, 1.0f));
-            fallMat.SetShaderParameter("whitewater_tint", new Color(0.88f, 0.97f, 1.0f, 1.0f));
-            fallMat.SetShaderParameter("fall_speed", 0.65f);
+            fallMat.SetShaderParameter("water_tint", new Color(0.22f, 0.72f, 0.86f, 1.0f));
+            fallMat.SetShaderParameter("whitewater_tint", new Color(0.92f, 0.98f, 1.0f, 1.0f));
+            fallMat.SetShaderParameter("fall_speed", 0.85f);
 
             var foamMat = new ShaderMaterial { Shader = foamShader };
-            foamMat.SetShaderParameter("noise_tex", foamNoiseTex);
-
             var fountainMat = new ShaderMaterial { Shader = fountainShader };
-            fountainMat.SetShaderParameter("ripple_noise", foamNoiseTex);
-
             var wetBankMat = new ShaderMaterial { Shader = wetBankShader };
 
-            // Apply materials to meshes
+            var m4ShaderMats = new List<ShaderMaterial> { riverMat, fallMat, foamMat, fountainMat };
+
+            // Apply materials to M4 meshes & hide legacy M1 placeholder water/fountain nodes so they never z-fight
             int appliedCount = 0;
             var waterMeshes = new List<MeshInstance3D>();
             var stack = new Stack<Node>();
@@ -1091,7 +1063,16 @@ namespace AtlasWorld.Client.World
                 if (cur is MeshInstance3D mi)
                 {
                     string nm = mi.Name;
-                    if (nm == "M4_RiverSurface_Main")
+                    if (nm == "M1_River_WaterSurface"
+                        || nm == "M1_River_ShallowFoamEdge"
+                        || nm.StartsWith("M1_Waterfall_")
+                        || nm == "M1_Zone1_FountainBasin"
+                        || nm == "M1_Zone1_FountainPedestal"
+                        || nm.StartsWith("M1_Zone1_AstrolabeFountain_"))
+                    {
+                        mi.Visible = false;
+                    }
+                    else if (nm == "M4_RiverSurface_Main")
                     {
                         mi.MaterialOverride = riverMat;
                         waterMeshes.Add(mi);
@@ -1109,9 +1090,21 @@ namespace AtlasWorld.Client.World
                         waterMeshes.Add(mi);
                         appliedCount++;
                     }
-                    else if (nm == "M4_Fountain_WaterSurface" || nm == "M4_Fountain_SpilloverRibbons" || nm == "M4_Fountain_FoamRing")
+                    else if (nm == "M4_Fountain_WaterSurface")
                     {
                         mi.MaterialOverride = fountainMat;
+                        waterMeshes.Add(mi);
+                        appliedCount++;
+                    }
+                    else if (nm == "M4_Fountain_SpilloverRibbons")
+                    {
+                        mi.MaterialOverride = fallMat;
+                        waterMeshes.Add(mi);
+                        appliedCount++;
+                    }
+                    else if (nm == "M4_Fountain_FoamRing")
+                    {
+                        mi.MaterialOverride = foamMat;
                         waterMeshes.Add(mi);
                         appliedCount++;
                     }
@@ -1124,14 +1117,22 @@ namespace AtlasWorld.Client.World
             }
             Report($"F-228 M4 applied ShaderMaterials to water/foam/fountain geometry ({appliedCount} >= 12 meshes)", appliedCount >= 12);
 
-            // Add GPUParticles3D mist emitters
+            // Add GPUParticles3D mist emitters with soft translucent billboard QuadMesh material
+            var mistQuadMat = new StandardMaterial3D
+            {
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                VertexColorUseAsAlbedo = true,
+                BillboardMode = BaseMaterial3D.BillboardModeEnum.Particles,
+                AlbedoColor = new Color(0.92f, 0.98f, 1.0f, 0.32f),
+            };
             var mistParticles = new List<GpuParticles3D>();
             var mistPositions = new (string Name, Vector3 Pos)[]
             {
-                ("M4_WaterfallMist_West", new Vector3(-208f, -2.45f, 8f)),
-                ("M4_WaterfallMist_East", new Vector3(208f, -2.45f, 12f)),
-                ("M4_WaterfallMist_North", new Vector3(-42f, 14.85f, -205f)),
-                ("M4_FountainSplash_Plaza", new Vector3(0f, 15.35f, 0f)),
+                ("M4_WaterfallMist_West", new Vector3(-241.5f, -1.8f, 10.0f)),
+                ("M4_WaterfallMist_East", new Vector3(250.0f, -1.8f, -10.0f)),
+                ("M4_WaterfallMist_North", new Vector3(-258.0f, -1.8f, -166.5f)),
+                ("M4_FountainSplash_Plaza", new Vector3(0f, 15.65f, 0f)),
             };
             foreach (var mp in mistPositions)
             {
@@ -1144,17 +1145,17 @@ namespace AtlasWorld.Client.World
                     ProcessMaterial = new ParticleProcessMaterial
                     {
                         EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box,
-                        EmissionBoxExtents = new Vector3(2.5f, 0.8f, 2.5f),
+                        EmissionBoxExtents = new Vector3(2.8f, 0.8f, 2.8f),
                         Direction = new Vector3(0f, 1f, 0f),
-                        Spread = 30f,
+                        Spread = 32f,
                         InitialVelocityMin = 1.0f,
-                        InitialVelocityMax = 2.5f,
+                        InitialVelocityMax = 2.4f,
                         Gravity = new Vector3(0f, -0.3f, 0f),
-                        ScaleMin = 1.2f,
-                        ScaleMax = 2.8f,
-                        Color = new Color(0.90f, 0.95f, 1.0f, 0.35f),
+                        ScaleMin = 0.35f,
+                        ScaleMax = 0.75f,
+                        Color = new Color(0.92f, 0.98f, 1.0f, 0.22f),
                     },
-                    DrawPass1 = new QuadMesh { Size = new Vector2(1.5f, 1.5f) },
+                    DrawPass1 = new QuadMesh { Size = new Vector2(0.32f, 0.32f), Material = mistQuadMat },
                 };
                 m1Root.AddChild(mist);
                 mistParticles.Add(mist);
@@ -1199,7 +1200,7 @@ namespace AtlasWorld.Client.World
             GD.Print($"[MaroBellVerify] M4 WATER SYSTEM GPU FRAME-TIME PROFILE: Stage 0 (Disabled)={s0:F2}ms, Stage 1 (Base River)={s1:F2}ms, Stage 2 (Water+Foam)={s2:F2}ms, Stage 3 (Full Water+Mist)={s3:F2}ms");
             Report($"F-228 M4 4-stage GPU/CPU frame-time profile PASS (Stage 0: {s0:F2}ms, Stage 1: {s1:F2}ms, Stage 2: {s2:F2}ms, Stage 3: {s3:F2}ms <= 25.0ms)", s3 <= 25.0f);
 
-            return (s0, s1, s2, s3);
+            return (s0, s1, s2, s3, m4ShaderMats);
         }
 
         private static int AttachM2WalkableColliders(Node root)

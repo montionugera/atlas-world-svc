@@ -2,20 +2,18 @@ shader_type spatial;
 render_mode blend_mix, depth_draw_never, cull_disabled, unshaded;
 
 // Maro Bell M4 Plunge-Pool Foam & Expanding Ripple Rings Shader (Godot 4 Forward+)
-// Implements gpt-m1-m7-engineering-standard-2026-11-16.md Section C8:
-//   - Layered drifting impact foam patch at the base of waterfalls
-//   - Expanding concentric ripple rings moving outward from impact point
-//   - Radial edge fade and turbulent noise breakup
+// Self-contained procedural FBM aerated whitewater core and expanding concentric ripple rings.
 
 uniform sampler2D noise_tex : repeat_enable, filter_linear_mipmap;
 
-uniform vec4 foam_tint : source_color = vec4(0.88, 0.96, 1.0, 1.0);
-uniform vec4 ripple_tint : source_color = vec4(0.45, 0.82, 0.92, 0.65);
+uniform vec4 foam_tint : source_color = vec4(0.92, 0.98, 1.0, 1.0);
+uniform vec4 ripple_tint : source_color = vec4(0.36, 0.84, 0.94, 0.85);
 
-uniform float drift_speed : hint_range(0.01, 1.0) = 0.15;
-uniform float expansion_speed : hint_range(0.1, 3.0) = 0.85;
-uniform float ring_frequency : hint_range(1.0, 30.0) = 12.0;
-uniform float opacity : hint_range(0.1, 1.0) = 0.85;
+uniform float drift_speed : hint_range(0.01, 1.0) = 0.22;
+uniform float expansion_speed : hint_range(0.1, 3.0) = 1.15;
+uniform float ring_frequency : hint_range(1.0, 30.0) = 16.0;
+uniform float opacity : hint_range(0.1, 1.0) = 0.92;
+uniform float time_offset = 0.0;
 
 float hash21(vec2 p) {
     p = fract(p * vec2(234.34, 435.345));
@@ -34,30 +32,39 @@ float pnoise(vec2 p) {
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
+float fbm(vec2 p) {
+    float v = 0.0;
+    float amp = 0.5;
+    for (int k = 0; k < 3; k++) {
+        v += amp * pnoise(p);
+        p = p * 2.02 + vec2(19.3, 41.2);
+        amp *= 0.5;
+    }
+    return v;
+}
+
 void fragment() {
+    float t = TIME + time_offset;
     vec2 centered_uv = UV - vec2(0.5);
     float dist = length(centered_uv) * 2.0;
 
-    // Drifting radial noise
-    vec2 drift_uv = UV * 2.0 + vec2(sin(TIME * drift_speed * 1.5), cos(TIME * drift_speed)) * 0.25;
-    float n_val = texture(noise_tex, drift_uv).r;
-    if (n_val < 0.01) {
-        n_val = pnoise(drift_uv * 4.0);
-    }
+    // Drifting cellular FBM turbulence
+    vec2 drift_uv = UV * 5.0 + vec2(sin(t * drift_speed * 1.4), cos(t * drift_speed)) * 0.45;
+    float n_val = fbm(drift_uv);
 
     // Expanding concentric ripple rings
-    float ring_phase = dist * ring_frequency - TIME * expansion_speed;
+    float ring_phase = dist * ring_frequency - t * expansion_speed + (n_val - 0.5) * 1.2;
     float ring_wave = 0.5 + 0.5 * sin(ring_phase);
-    ring_wave = pow(ring_wave, 3.0);
+    ring_wave = smoothstep(0.42, 0.92, ring_wave);
 
-    // Impact foam core (dist < 0.65) vs outer ripples
-    float core_foam = smoothstep(0.75, 0.20, dist) * (0.65 + 0.35 * n_val);
-    float outer_ripples = ring_wave * smoothstep(1.0, 0.30, dist) * smoothstep(0.10, 0.40, dist);
+    // Impact foam core vs outer ripples
+    float core_foam = smoothstep(0.82, 0.18, dist) * smoothstep(0.28, 0.68, n_val + 0.25);
+    float outer_ripples = ring_wave * smoothstep(1.05, 0.25, dist);
 
-    float combined = max(core_foam, outer_ripples);
-    float edge_fade = smoothstep(1.0, 0.65, dist);
+    float combined = max(core_foam, outer_ripples * 0.88);
+    float edge_fade = smoothstep(1.05, 0.72, dist);
 
-    vec3 final_color = mix(ripple_tint.rgb, foam_tint.rgb, core_foam);
+    vec3 final_color = mix(ripple_tint.rgb, foam_tint.rgb, clamp(core_foam + outer_ripples * 0.45, 0.0, 1.0));
     ALBEDO = final_color;
-    ALPHA = opacity * combined * edge_fade;
+    ALPHA = clamp(opacity * combined * edge_fade, 0.0, 0.96);
 }
