@@ -72,6 +72,8 @@ Single-context (`CONTEXT.md` + `docs/adr/` at repo root). Repo is a monorepo —
 
 ### 3D Environment Milestone Visual QA Pipeline (`M1–M7`, owner rule 2026-11-17)
 
+- **Godot GPU Screenshot & Probe Runner (owner rule 2026-11-17):** NEVER invoke `Godot_mono.app/Contents/MacOS/Godot` directly on Godot GPU screenshot/probe runs — **always use `/Users/pasitnusso/.local/bin/godot-bg`** instead (wraps `Godot_mono_bg.app` with `LSUIElement=true` + `--audio-driver Dummy` + `--windowed --position -10000,-10000` so Godot stays 100% muted, off-screen, and never steals macOS focus while preserving Metal 4.0 Forward+ GPU rendering). Persist `/Users/pasitnusso/.local/bin/godot-bg` in any handoff or render script, and use `--quit-after 60000` (not `9000`) when running full M1–M5 traversal + render passes.
+
 For Maro Bell and 3D environment milestones (`M1..M7`), **do NOT use Browser ChatGPT / `chrome-devtools` MCP (`pageId: 29`)**, and **STOP writing ad-hoc Python heredoc scripts (`python3 - <<'PY'` with `struct`/`numpy`/`PIL`)** for `.glb` mesh/weight inspection, image cropping, Jev pre-gates, or Vision QA. Always use the registered **`atlas-3d` MCP server** (`call_mcp_tool(ServerName='atlas-3d', ...)`, or `/Users/pasitnusso/.local/bin/atlas-3d-mcp call <tool_name> '<json_args>'` in sessions opened before `mcp_config.json` reload; include `atlas-3d` MCP in any handoff):
 - `glb_inspect` (`glb_path`, `mesh_filter`, `material_filter`, `bbox_filter`, `bone_filter`, `slice_axis`, `slice_bins`, `top_stretched_tris`, `sample_vertices`)
 - `image_crop_inspect` (`image_path`, `crop_box_norm` / `crop_box_px`, `max_dim<=1024` -> `/tmp` PNG)

@@ -891,31 +891,40 @@ namespace AtlasWorld.Client.World
 
             m1Root.AddChild(new DirectionalLight3D
             {
-                RotationDegrees = new Vector3(-46f, 34f, 0f),
-                LightColor = new Color(1.0f, 0.95f, 0.86f),
-                LightEnergy = 1.15f,
+                RotationDegrees = new Vector3(-40f, 38f, 0f),
+                LightColor = new Color(1.0f, 0.94f, 0.84f),
+                LightEnergy = 1.28f,
                 ShadowEnabled = true,
                 DirectionalShadowMaxDistance = 750f,
+                ShadowBias = 0.04f,
+                ShadowNormalBias = 1.4f,
             });
             var skyMat = new ProceduralSkyMaterial
             {
-                SkyTopColor = new Color(0.22f, 0.48f, 0.84f),
-                SkyHorizonColor = new Color(0.74f, 0.88f, 0.98f),
+                SkyTopColor = new Color(0.18f, 0.44f, 0.84f),
+                SkyHorizonColor = new Color(0.70f, 0.86f, 0.98f),
                 GroundBottomColor = new Color(0.24f, 0.36f, 0.22f),
-                GroundHorizonColor = new Color(0.68f, 0.82f, 0.92f),
+                GroundHorizonColor = new Color(0.66f, 0.80f, 0.92f),
             };
             var m1Env = new Godot.Environment
             {
                 BackgroundMode = Godot.Environment.BGMode.Sky,
                 Sky = new Sky { SkyMaterial = skyMat },
                 AmbientLightSource = Godot.Environment.AmbientSource.Sky,
-                AmbientLightColor = new Color(0.76f, 0.82f, 0.90f),
-                AmbientLightEnergy = 0.65f,
+                AmbientLightColor = new Color(0.72f, 0.80f, 0.90f),
+                AmbientLightEnergy = 0.50f,
                 TonemapMode = Godot.Environment.ToneMapper.Filmic,
+                SsaoEnabled = true,
+                SsaoRadius = 1.65f,
+                SsaoIntensity = 2.35f,
+                SsaoPower = 1.35f,
+                GlowEnabled = true,
+                GlowIntensity = 0.24f,
+                GlowBloom = 0.04f,
                 FogEnabled = true,
                 FogLightColor = new Color(0.74f, 0.86f, 0.96f),
-                FogDensity = 0.0008f,
-                FogSkyAffect = 0.15f,
+                FogDensity = 0.0007f,
+                FogSkyAffect = 0.14f,
             };
             m1Root.AddChild(new WorldEnvironment
             {
@@ -1121,7 +1130,9 @@ namespace AtlasWorld.Client.World
             HideIfMatch(nm => nm == "M1_ValleyTerrain" || nm.StartsWith("M1_DistrictHouse_") || nm.StartsWith("M1_Z2_")
                            || nm.StartsWith("M1_Plaza") || nm.StartsWith("M5_Astrolabe_") || nm.StartsWith("M4_")
                            || nm.StartsWith("CW") || nm.StartsWith("RW") || nm.StartsWith("QW")
-                           || nm.StartsWith("M2_Route") || nm.StartsWith("M2_Junction_J0") || nm.StartsWith("M2_Stair01") || nm.StartsWith("M2_Stair02")
+                           || nm.StartsWith("M2_Route") || nm.StartsWith("M2_Junction_J0") || nm.StartsWith("M2_Junction_J10")
+                           || nm.StartsWith("M2_Junction_J11") || nm.StartsWith("M2_Junction_J12") || nm.StartsWith("M2_Junction_J13") || nm.StartsWith("M2_Junction_J14")
+                           || nm.StartsWith("M2_Stair01") || nm.StartsWith("M2_Stair02")
                            || nm.StartsWith("M3_NorthGate") || nm.StartsWith("M3_SouthGate")
                            || nm.StartsWith("M3_Bastion_B0") || nm.StartsWith("M3_Bastion_B10") || nm.StartsWith("M3_Bastion_B11")
                            || nm.StartsWith("M3_Bastion_B12") || nm.StartsWith("M3_Bastion_B13") || nm.StartsWith("M3_Bastion_B14")
@@ -1129,28 +1140,28 @@ namespace AtlasWorld.Client.World
             if (girlPlaza != null) { girlPlaza.Visible = false; hiddenForOrtho.Add(girlPlaza); }
 
             m1Cam.Projection = Camera3D.ProjectionType.Orthogonal;
-            m1Cam.Size = 90.0f;
+            m1Cam.Size = 92.0f;
             m1Cam.Near = 0.5f;
             m1Cam.Far = 220.0f;
-            m1Cam.Position = new Vector3(0.0f, 53.5f, 12.0f);
-            m1Cam.LookAt(new Vector3(0.0f, 53.5f, -106.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(0.0f, 54.5f, 12.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 54.5f, -106.0f), Vector3.Up);
             await Save(outDir, "m5_view1a_sanctuary_ortho_front_raw.png");
 
-            // East-to-West Side Ortho Profile: Full Grand Staircase (Z=-35.8m on Left) -> Sanctuary Vault & Spire (Z=-120m, Top +89.6m on Right)
-            m1Cam.Size = 118.0f;
-            m1Cam.Position = new Vector3(95.0f, 52.5f, -72.0f);
-            m1Cam.LookAt(new Vector3(0.0f, 52.5f, -72.0f), Vector3.Up);
+            // East-to-West Side Ortho Profile: Full Grand Staircase (Z=-35.8m on Left) -> Sanctuary Vault, Grounded Plinth & +92.4m Spire (Right)
+            m1Cam.Size = 116.0f;
+            m1Cam.Position = new Vector3(95.0f, 53.5f, -74.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 53.5f, -74.0f), Vector3.Up);
             await Save(outDir, "m5_view1b_sanctuary_ortho_side_raw.png");
             RestoreHidden();
 
             // M5 View 2A: Orthographic Front Elevation of Golden Astrolabe Fountain + 1.30m Bespoke Player Character
             if (girlPlaza != null)
             {
-                girlPlaza.Position = new Vector3(-5.55f, 15.08f, 1.8f);
+                girlPlaza.Position = new Vector3(-5.65f, 15.08f, 1.8f);
                 girlPlaza.Rotation = new Vector3(0f, 0.25f, 0f);
             }
             m1Cam.Projection = Camera3D.ProjectionType.Orthogonal;
-            m1Cam.Size = 18.8f;
+            m1Cam.Size = 19.2f;
             m1Cam.Near = 6.0f;
             m1Cam.Far = 34.0f;
             m1Cam.Position = new Vector3(0.0f, 22.4f, 22.0f);
@@ -1167,43 +1178,43 @@ namespace AtlasWorld.Client.World
             m1Cam.Near = 0.2f;
             m1Cam.Far = 1400.0f;
             m1Cam.Fov = 50f;
-            m1Cam.Position = new Vector3(12.8f, 20.8f, 14.6f);
-            m1Cam.LookAt(new Vector3(-0.4f, 20.8f, 0.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(13.2f, 20.9f, 15.0f);
+            m1Cam.LookAt(new Vector3(-0.3f, 20.8f, 0.0f), Vector3.Up);
             await Save(outDir, "m5_view2b_astrolabe_3q_closeup_raw.png");
 
             // M5 View 3: Southern Market Boulevard Hero Camera (Shot 2) centered on Stair02 -> Plaza Astrolabe -> Great Bell Sanctuary
             m1Cam.Fov = 50f;
-            m1Cam.Position = new Vector3(0.0f, 18.8f, 55.5f);
-            m1Cam.LookAt(new Vector3(0.0f, 36.5f, -80.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(0.0f, 19.4f, 52.5f);
+            m1Cam.LookAt(new Vector3(0.0f, 37.8f, -80.0f), Vector3.Up);
             await Save(outDir, "m5_view3_south_boulevard_hero_shot2_raw.png");
 
             // M5 View 4: Central Bell Plaza & Golden Astrolabe Fountain Hero Camera (Shot 3) with Unobstructed Grand Staircase & Sanctuary
             m1Cam.Fov = 54f;
-            m1Cam.Position = new Vector3(12.4f, 18.4f, 18.2f);
-            m1Cam.LookAt(new Vector3(-0.8f, 24.6f, -22.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(12.6f, 18.5f, 18.6f);
+            m1Cam.LookAt(new Vector3(-0.8f, 25.4f, -22.0f), Vector3.Up);
             await Save(outDir, "m5_view4_central_plaza_astrolabe_shot3_raw.png");
 
-            // M5 View 5: Sanctuary Approach & Flared Grand Staircase Hero Camera (Shot 4 + 1.30m Player Scale clearly visible at base)
+            // M5 View 5: Sanctuary Approach & Flared Grand Staircase Hero Camera (Shot 4 + Full 1.30m Player Scale clearly visible at base)
             if (girlStairBase != null)
             {
                 girlStairBase.Position = new Vector3(1.5f, 15.08f, -33.2f);
                 girlStairBase.Rotation = new Vector3(0f, Mathf.Pi, 0f);
             }
             m1Cam.Fov = 56f;
-            m1Cam.Position = new Vector3(0.0f, 20.6f, -8.5f);
-            m1Cam.LookAt(new Vector3(0.0f, 49.5f, -106.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(0.0f, 20.4f, -7.2f);
+            m1Cam.LookAt(new Vector3(0.0f, 48.2f, -106.0f), Vector3.Up);
             await Save(outDir, "m5_view5_sanctuary_arch_stairs_shot4_raw.png");
 
-            // M5 View 6A: Structural Closeup — 3-Order Radial Voussoir Arch, Coffered Vault & Great Bell Yoke Hanger Support
-            m1Cam.Fov = 46f;
-            m1Cam.Position = new Vector3(-7.4f, 44.8f, -84.5f);
-            m1Cam.LookAt(new Vector3(0.0f, 55.8f, -106.0f), Vector3.Up);
+            // M5 View 6A: Structural Closeup — 72-Seg 4-Order Radial Voussoir Arch, Coffered Vault, Yoke Trunnions & Diagonal Impost Braces
+            m1Cam.Fov = 54f;
+            m1Cam.Position = new Vector3(-8.6f, 43.8f, -81.5f);
+            m1Cam.LookAt(new Vector3(0.0f, 54.8f, -106.0f), Vector3.Up);
             await Save(outDir, "m5_view6a_arch_bell_yoke_closeup_raw.png");
 
             // M5 View 6B: Structural Closeup — Flared Grand Staircase Open Turned Balustrades, Smooth Stringer & Balcony Brazier
-            m1Cam.Fov = 45f;
-            m1Cam.Position = new Vector3(-19.5f, 21.4f, -39.5f);
-            m1Cam.LookAt(new Vector3(-13.6f, 19.8f, -47.5f), Vector3.Up);
+            m1Cam.Fov = 44f;
+            m1Cam.Position = new Vector3(-19.2f, 21.8f, -39.8f);
+            m1Cam.LookAt(new Vector3(-13.4f, 20.8f, -47.8f), Vector3.Up);
             await Save(outDir, "m5_view6b_grand_stair_balustrade_closeup_raw.png");
 
             // M5 View 6C: Godot 4 Runtime Navigation Regression & Landmark Sightline Debug Capture (low aerial haze for crisp clarity)
@@ -1259,34 +1270,34 @@ namespace AtlasWorld.Client.World
                 },
                 ["M5_SanctuaryRoofBlue"] = new StandardMaterial3D
                 {
-                    AlbedoColor = new Color(0.14f, 0.33f, 0.68f),
-                    Metallic = 0.08f,
-                    Roughness = 0.38f,
+                    AlbedoColor = new Color(0.11f, 0.30f, 0.72f),
+                    Metallic = 0.12f,
+                    Roughness = 0.34f,
                 },
                 ["M5_BannerRoyalBlue"] = new StandardMaterial3D
                 {
-                    AlbedoColor = new Color(0.11f, 0.26f, 0.65f),
-                    Metallic = 0.05f,
-                    Roughness = 0.50f,
+                    AlbedoColor = new Color(0.10f, 0.25f, 0.68f),
+                    Metallic = 0.06f,
+                    Roughness = 0.46f,
                     CullMode = BaseMaterial3D.CullModeEnum.Disabled,
                 },
                 ["M5_SanctuaryLimestone"] = new StandardMaterial3D
                 {
-                    AlbedoColor = new Color(0.86f, 0.81f, 0.72f),
+                    AlbedoColor = new Color(0.84f, 0.78f, 0.68f),
                     Metallic = 0.02f,
-                    Roughness = 0.66f,
+                    Roughness = 0.68f,
                 },
                 ["M5_SanctuaryWarmStone"] = new StandardMaterial3D
                 {
-                    AlbedoColor = new Color(0.76f, 0.69f, 0.58f),
+                    AlbedoColor = new Color(0.71f, 0.63f, 0.51f),
                     Metallic = 0.02f,
-                    Roughness = 0.70f,
+                    Roughness = 0.72f,
                 },
                 ["M5_SanctuaryPlinthStone"] = new StandardMaterial3D
                 {
-                    AlbedoColor = new Color(0.63f, 0.59f, 0.53f),
+                    AlbedoColor = new Color(0.52f, 0.47f, 0.41f),
                     Metallic = 0.03f,
-                    Roughness = 0.66f,
+                    Roughness = 0.68f,
                 },
                 ["M5_DarkOakTimber"] = new StandardMaterial3D
                 {
@@ -1333,6 +1344,18 @@ namespace AtlasWorld.Client.World
                     {
                         mi.CreateTrimeshCollision();
                     }
+                }
+                else if (cur is MeshInstance3D stairPlzMi && stairPlzMi.Mesh != null
+                      && (stairPlzMi.Name.ToString().StartsWith("M2_Stair0") || stairPlzMi.Name.ToString().StartsWith("M1_Zone1_CentralCircularPlaza")))
+                {
+                    stairPlzMi.MaterialOverride = new StandardMaterial3D
+                    {
+                        AlbedoColor = stairPlzMi.Name.ToString().Contains("Inner")
+                            ? new Color(0.70f, 0.66f, 0.56f)
+                            : new Color(0.80f, 0.74f, 0.64f),
+                        Roughness = 0.72f,
+                        Metallic = 0.02f,
+                    };
                 }
                 else if (cur is MeshInstance3D treeMi && treeMi.Mesh != null
                       && (treeMi.Name.ToString().Contains("TreeCrown")
