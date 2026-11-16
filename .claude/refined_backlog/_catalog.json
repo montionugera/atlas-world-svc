@@ -2934,8 +2934,9 @@
     "title": "Maro Bell M3 continuous spline retaining walls bastions three-arch bridge and canal edge",
     "from_idea": "I-312",
     "created_at": "2026-11-16T11:50:55.353258+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-16T11:51:05.709966+00:00"
   }
 ]
