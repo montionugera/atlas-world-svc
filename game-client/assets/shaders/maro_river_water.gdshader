@@ -84,25 +84,43 @@ void fragment() {
     float wake_turbulence = wake_x * wake_z;
 
     // 4. Depth factor: Shallow Turquoise (#30B8B8) along banks & pier scour mounds -> Deep Teal (#06385C) in center
-    float uv_depth = smoothstep(0.05, 0.28, bank_dist);
+    float uv_depth = smoothstep(0.05, 0.30, bank_dist);
     // Scour shelves around piers are shallow turquoise
     float pier_shallow_shelf = 1.0 - smoothstep(1.5, 5.2, pier_dist);
     float depth_factor = clamp(uv_depth * (1.0 - pier_shallow_shelf * 0.78), 0.0, 1.0);
 
-    // 5. Shoreline, Cutwater Pier & Downstream Wake Foam
+    // Spatial flow-energy mask: turbulent strictly at bridge cutwater piers/wakes, waterfall plunge lagoons & rocky shallows; calm in deep reaches
+    float plunge_west = 1.0 - smoothstep(6.0, 22.0, length(world_pos.xz - vec2(-241.5, 10.0)));
+    float plunge_east = 1.0 - smoothstep(6.0, 22.0, length(world_pos.xz - vec2(250.0, -12.0)));
+    float plunge_north = 1.0 - smoothstep(6.0, 22.0, length(world_pos.xz - vec2(-255.0, -165.0)));
+    float plunge_zone = max(plunge_west, max(plunge_east, plunge_north));
+    float shallow_riffle = (1.0 - smoothstep(0.03, 0.14, bank_dist)) * 0.25;
+    float flow_energy = clamp(max(pier_collar * 0.90, max(wake_turbulence * 0.95, max(plunge_zone * 0.85, shallow_riffle))), 0.0, 1.0);
+
+    // 5. Intermittent Shoreline Pockets, Cutwater Pier & Downstream Wake Foam
     float f_noise = fbm(flow_uv1 * 4.2 + vec2(-t * 0.42, t * 0.15));
-    float bank_foam = 1.0 - smoothstep(0.015, 0.075 + (f_noise - 0.5) * 0.045, bank_dist);
-    float pier_foam = smoothstep(0.30, 0.72, pier_collar + (f_noise - 0.45) * 0.45);
-    float wake_foam = smoothstep(0.42, 0.78, wake_turbulence * 0.75 + (f_noise - 0.45) * 0.55);
+    float bank_pocket_noise = fbm(vec2(UV.x * 24.0 - t * 0.32, UV.y * 10.0));
+    float bank_pocket_mask = smoothstep(0.42, 0.76, bank_pocket_noise * 0.65 + f_noise * 0.35);
+    float bank_raw = 1.0 - smoothstep(0.004, 0.044 + (f_noise - 0.45) * 0.038, bank_dist);
+    float bank_foam = bank_raw * mix(0.18, 0.88, bank_pocket_mask);
+
+    float pier_foam = smoothstep(0.28, 0.70, pier_collar + (f_noise - 0.45) * 0.45);
+    float wake_foam = smoothstep(0.42, 0.78, wake_turbulence * 0.75 + (f_noise - 0.45) * 0.50);
     float foam_edge = clamp(max(bank_foam, max(pier_foam, wake_foam)), 0.0, 1.0);
 
-    // 6. Flow-aligned wave-crest ribbons (visibly scrolling downstream with t for View 5 time-delta QA)
-    float wave_phase = sin(UV.x * 44.0 - t * 2.8 + h_c * 5.5 + UV.y * 6.0);
-    float wave_crest = smoothstep(0.72, 0.96, wave_phase) * (0.42 + 0.38 * wake_turbulence);
+    // 6. Organic 2D FBM wave crests & turquoise current ribbons (zero periodic 1D white stripe gratings!)
+    float cell_a = fbm(vec2(UV.x * 14.0 - t * 1.35, UV.y * 10.0 + h_c * 2.2));
+    float cell_b = fbm(vec2(UV.x * 22.0 - t * 1.95, UV.y * 16.0 - h_c * 1.8));
+    float organic_ripple = cell_a * 0.55 + cell_b * 0.45;
+    float wave_crest = smoothstep(0.56, 0.80, organic_ripple) * flow_energy * 0.78;
+
+    // Subtle moving turquoise current ribbons in calm water (visibly scrolling in View 5 without white stripes)
+    float calm_current = smoothstep(0.48, 0.74, organic_ripple) * (0.18 + 0.20 * (1.0 - depth_factor));
 
     // 7. Water color absorption (Shallow Turquoise #30B8B8 -> Deep Teal-Blue #06385C)
     vec3 water_color = mix(shallow_color.rgb, deep_color.rgb, depth_factor);
-    water_color = mix(water_color, mix(shallow_color.rgb, foam_color.rgb, 0.60), wave_crest);
+    water_color = mix(water_color, shallow_color.rgb * 1.08, calm_current);
+    water_color = mix(water_color, mix(shallow_color.rgb, foam_color.rgb, 0.58), wave_crest);
 
     // Screen refraction in shallow shelves so submerged gravel & 45 river boulders read clearly
     vec2 refr_uv = SCREEN_UV + proc_normal.xy * refraction_strength * (1.0 - foam_edge);

@@ -48,26 +48,34 @@ void fragment() {
     float t = TIME + time_offset;
     vec2 flow_uv = vec2(UV.x * 7.5, UV.y * flow_tiling - t * fall_speed);
 
-    // High-contrast vertical water streaks + downward foam bands
-    float streaks = fbm(vec2(UV.x * 9.0, flow_uv.y * 1.4));
-    float cascade_waves = 0.5 + 0.5 * sin(UV.y * 22.0 - t * fall_speed * 4.5 + streaks * 4.0);
-    float foam = fbm(vec2(UV.x * 12.0, flow_uv.y * 2.2 - t * 0.45));
+    // Multi-frequency vertical water strands + downward accelerating foam cascades
+    float streaks = fbm(vec2(UV.x * 11.0, flow_uv.y * 1.15));
+    float fine_strands = fbm(vec2(UV.x * 24.0 + (streaks - 0.5) * 1.8, flow_uv.y * 0.85 - t * 0.4));
+    float strand_ribbons = 0.5 + 0.5 * sin(UV.x * 26.0 + streaks * 4.2);
+    float strand_mask = clamp(streaks * 0.50 + fine_strands * 0.35 + strand_ribbons * 0.35, 0.0, 1.0);
 
-    // Upper lip & lower plunge turbulence
-    float lip_foam = 1.0 - smoothstep(0.0, 0.16, UV.y);
-    float lower_turbulence = smoothstep(0.45, 0.96, UV.y);
+    float cascade_waves = 0.5 + 0.5 * sin(UV.y * 24.0 - t * fall_speed * 4.8 + streaks * 5.2);
+    float foam = fbm(vec2(UV.x * 14.0, flow_uv.y * 2.1 - t * 0.55));
+
+    // Upper cliff-lip acceleration & lower plunge-pool whitewater crash (preserve deep cyan water grooves between foam strands)
+    float lip_foam = (1.0 - smoothstep(0.0, 0.16, UV.y)) * smoothstep(0.35, 0.72, strand_mask);
+    float mid_ledge_step = exp(-pow((UV.y - 0.42) * 8.0, 2.0)) * 0.32 * strand_ribbons;
+    float lower_turbulence = smoothstep(0.58, 0.98, UV.y) * 0.35;
     float whitewater = smoothstep(
-        0.34,
-        0.68,
-        foam * 0.55 + streaks * 0.35 + cascade_waves * 0.25 + lower_turbulence * 0.38 + lip_foam * 0.32
+        0.44,
+        0.78,
+        foam * 0.38 + strand_ribbons * 0.36 + streaks * 0.26 + cascade_waves * 0.18 + lower_turbulence + lip_foam * 0.35 + mid_ledge_step
     );
 
-    // Soft lateral edge fade
-    float edge = min(UV.x, 1.0 - UV.x);
-    float edge_fade = smoothstep(0.0, max(edge_softness, 0.001), edge);
+    // Organic FBM-perturbed lateral edge fade (eliminates straight geometric ribbon edges)
+    float raw_edge = min(UV.x, 1.0 - UV.x);
+    float organic_edge = raw_edge + (streaks - 0.5) * 0.14 * smoothstep(0.0, 0.12, raw_edge);
+    float edge_fade = smoothstep(0.01, max(edge_softness * 1.35, 0.05), organic_edge);
 
-    float alpha_variation = mix(0.72, 1.0, max(streaks, whitewater));
+    // Distinct vertical strand breakup with translucent gaps between falling water chutes
+    float strand_alpha = smoothstep(0.26, 0.68, strand_mask * 0.85 + whitewater * 0.35 + lower_turbulence * 0.25);
 
-    ALBEDO = mix(water_tint.rgb, whitewater_tint.rgb, whitewater);
-    ALPHA = opacity * edge_fade * alpha_variation;
+    vec3 deep_water_groove = water_tint.rgb * mix(0.65, 1.05, streaks);
+    ALBEDO = mix(deep_water_groove, whitewater_tint.rgb, whitewater);
+    ALPHA = clamp(opacity * edge_fade * strand_alpha, 0.0, 0.92);
 }

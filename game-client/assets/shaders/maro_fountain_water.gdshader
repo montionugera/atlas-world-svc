@@ -55,10 +55,12 @@ void fragment() {
     vec3 water_color = mix(fountain_deep_color.rgb, fountain_shallow_color.rgb, clamp(dist * 0.90, 0.0, 1.0));
     water_color = mix(water_color, mix(fountain_shallow_color.rgb, fountain_foam_color.rgb, 0.55), crest_highlight * 0.55);
 
-    // Spillover jet impact foam ring at dist ~ 0.75 (radius ~3.10m) + outer rim foam
-    float jet_impact_ring = smoothstep(0.18, 0.0, abs(dist - 0.75)) * (0.65 + 0.35 * n_val);
-    float rim_foam = smoothstep(0.88, 0.98, dist) * 0.75;
-    float total_foam = clamp(max(jet_impact_ring, rim_foam), 0.0, 1.0);
+    // Spillover jet impact foam clusters at dist ~ 0.75 (radius ~3.10m, 8 radial splash lobes) + subtle outer rim foam
+    float ang = atan(centered_uv.y, centered_uv.x);
+    float jet_lobes = smoothstep(0.15, 0.85, 0.5 + 0.5 * cos(ang * 8.0 + (n_val - 0.5) * 1.2));
+    float jet_impact_ring = smoothstep(0.16, 0.0, abs(dist - 0.75 + (n_val - 0.5) * 0.08)) * mix(0.22, 0.78, jet_lobes) * (0.55 + 0.45 * n_val);
+    float rim_foam = smoothstep(0.90, 0.99, dist) * (0.35 + 0.40 * n_val);
+    float total_foam = clamp(max(jet_impact_ring, rim_foam), 0.0, 0.85);
     vec3 final_albedo = mix(water_color, fountain_foam_color.rgb, total_foam);
 
     // Sun sparkle glints on wave crests

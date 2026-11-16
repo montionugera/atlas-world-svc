@@ -973,16 +973,16 @@ namespace AtlasWorld.Client.World
             m1Cam.LookAt(new Vector3(0.0f, 15.6f, 0.0f), Vector3.Up);
             await Save(outDir, "m4_view2c_fountain_ripples_raw.png");
 
-            // M4 View 3: Bridge Arch Waterline & Cutwaters (Hero 3/4 Player-Eye closeup)
-            m1Cam.Fov = 54f;
-            m1Cam.Position = new Vector3(-29.5f, 3.40f, 238.0f);
-            m1Cam.LookAt(new Vector3(1.5f, 3.10f, 218.0f), Vector3.Up);
+            // M4 View 3: Bridge Arch Waterline & Cutwaters (Symmetrically centered on Z=225.2m at X=-42.0m so all 3 barrel vaults show open water & sky through the back)
+            m1Cam.Fov = 45f;
+            m1Cam.Position = new Vector3(-42.0f, 2.50f, 225.4f);
+            m1Cam.LookAt(new Vector3(0.0f, 1.95f, 225.0f), Vector3.Up);
             await Save(outDir, "m4_view3_bridge_arch_waterline_cutwaters_raw.png");
 
-            // M4 View 4: Waterfall Profile & Plunge Pool (West Valley Waterfall plunging into West river lagoon)
+            // M4 View 4: Waterfall Profile & Plunge Pool (West Valley Waterfall plunging into West river lagoon with cliff ledges & boulders)
             m1Cam.Fov = 52f;
-            m1Cam.Position = new Vector3(-216.0f, 12.0f, 32.0f);
-            m1Cam.LookAt(new Vector3(-246.0f, 6.0f, 10.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(-214.0f, 9.2f, 29.5f);
+            m1Cam.LookAt(new Vector3(-245.5f, 5.8f, 10.0f), Vector3.Up);
             await Save(outDir, "m4_view4_waterfall_profile_plunge_pool_raw.png");
 
             // M4 View 5: Time-Delta Flow Animation Strip (time_offset = 0.0s, 3.5s, 7.0s)
@@ -1039,7 +1039,7 @@ namespace AtlasWorld.Client.World
             riverMat.SetShaderParameter("sparkle_strength", 0.28f);
 
             var fallMat = new ShaderMaterial { Shader = fallShader };
-            fallMat.SetShaderParameter("water_tint", new Color(0.22f, 0.72f, 0.86f, 1.0f));
+            fallMat.SetShaderParameter("water_tint", new Color(0.08f, 0.48f, 0.68f, 1.0f));
             fallMat.SetShaderParameter("whitewater_tint", new Color(0.92f, 0.98f, 1.0f, 1.0f));
             fallMat.SetShaderParameter("fall_speed", 0.85f);
 
@@ -1162,40 +1162,48 @@ namespace AtlasWorld.Client.World
             }
             Report($"F-228 M4 GPUParticles3D mist & splash emitters spawned ({mistParticles.Count}/4 systems)", mistParticles.Count == 4);
 
-            // 4-Stage GPU/CPU Frame-Time Profiling
+            // 4-Stage GPU/CPU Frame-Time Profiling (with 12 warmup frames so first-frame shader compile never skews Stage 0)
+            foreach (var mi in waterMeshes) mi.Visible = true;
+            foreach (var p in mistParticles) p.Emitting = true;
+            for (int w = 0; w < 12; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
             // Stage 0: Water Disabled
             foreach (var mi in waterMeshes) mi.Visible = false;
             foreach (var p in mistParticles) p.Emitting = false;
-            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            for (int w = 0; w < 3; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             var sw0 = System.Diagnostics.Stopwatch.StartNew();
-            for (int f = 0; f < 6; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            for (int f = 0; f < 8; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             sw0.Stop();
-            float s0 = (float)sw0.Elapsed.TotalMilliseconds / 6.0f;
+            float s0 = (float)sw0.Elapsed.TotalMilliseconds / 8.0f;
 
             // Stage 1: Base River Water
             var riv = m1Root.FindChild("M4_RiverSurface_Main", true, false) as MeshInstance3D;
             if (riv != null) riv.Visible = true;
-            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            for (int w = 0; w < 2; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             var sw1 = System.Diagnostics.Stopwatch.StartNew();
-            for (int f = 0; f < 6; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            for (int f = 0; f < 8; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             sw1.Stop();
-            float s1 = (float)sw1.Elapsed.TotalMilliseconds / 6.0f;
+            float s1 = (float)sw1.Elapsed.TotalMilliseconds / 8.0f;
 
             // Stage 2: Water + Shoreline/Waterfall Foam
             foreach (var mi in waterMeshes) mi.Visible = true;
-            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            for (int w = 0; w < 2; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             var sw2 = System.Diagnostics.Stopwatch.StartNew();
-            for (int f = 0; f < 6; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            for (int f = 0; f < 8; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             sw2.Stop();
-            float s2 = (float)sw2.Elapsed.TotalMilliseconds / 6.0f;
+            float s2 = (float)sw2.Elapsed.TotalMilliseconds / 8.0f;
 
             // Stage 3: Full Water + Mist Particles + Screen-Reading Reflections
             foreach (var p in mistParticles) p.Emitting = true;
-            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            for (int w = 0; w < 2; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             var sw3 = System.Diagnostics.Stopwatch.StartNew();
-            for (int f = 0; f < 6; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            for (int f = 0; f < 8; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             sw3.Stop();
-            float s3 = (float)sw3.Elapsed.TotalMilliseconds / 6.0f;
+            float s3 = (float)sw3.Elapsed.TotalMilliseconds / 8.0f;
+
+            string profileJsonPath = "/Users/pasitnusso/asset-studio-private/atlas-3d-plan/env/m4/m4_gpu_profile.json";
+            string profileJson = $"{{\n  \"stage0_disabled_ms\": {s0:F2},\n  \"stage1_base_river_ms\": {s1:F2},\n  \"stage2_water_foam_ms\": {s2:F2},\n  \"stage3_full_water_mist_ms\": {s3:F2},\n  \"target_budget_ms\": 25.0\n}}\n";
+            System.IO.File.WriteAllText(profileJsonPath, profileJson);
 
             GD.Print($"[MaroBellVerify] M4 WATER SYSTEM GPU FRAME-TIME PROFILE: Stage 0 (Disabled)={s0:F2}ms, Stage 1 (Base River)={s1:F2}ms, Stage 2 (Water+Foam)={s2:F2}ms, Stage 3 (Full Water+Mist)={s3:F2}ms");
             Report($"F-228 M4 4-stage GPU/CPU frame-time profile PASS (Stage 0: {s0:F2}ms, Stage 1: {s1:F2}ms, Stage 2: {s2:F2}ms, Stage 3: {s3:F2}ms <= 25.0ms)", s3 <= 25.0f);

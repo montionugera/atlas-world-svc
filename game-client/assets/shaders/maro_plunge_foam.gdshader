@@ -47,24 +47,32 @@ void fragment() {
     float t = TIME + time_offset;
     vec2 centered_uv = UV - vec2(0.5);
     float dist = length(centered_uv) * 2.0;
+    float ang = atan(centered_uv.y, centered_uv.x);
 
-    // Drifting cellular FBM turbulence
-    vec2 drift_uv = UV * 5.0 + vec2(sin(t * drift_speed * 1.4), cos(t * drift_speed)) * 0.45;
-    float n_val = fbm(drift_uv);
+    // Multi-scale drifting cellular FBM turbulence (never circular bullseye rings)
+    vec2 drift_uv1 = UV * 5.5 + vec2(sin(t * drift_speed * 1.3), cos(t * drift_speed * 0.9)) * 0.42;
+    vec2 drift_uv2 = UV * 9.2 - vec2(cos(t * drift_speed * 1.1), sin(t * drift_speed * 1.4)) * 0.35;
+    float n_val = fbm(drift_uv1) * 0.62 + fbm(drift_uv2) * 0.38;
 
-    // Expanding concentric ripple rings
-    float ring_phase = dist * ring_frequency - t * expansion_speed + (n_val - 0.5) * 1.2;
-    float ring_wave = 0.5 + 0.5 * sin(ring_phase);
-    ring_wave = smoothstep(0.42, 0.92, ring_wave);
+    // Multi-lobed radial warp so foam patch & outward wave arcs have irregular organic boundaries
+    float lobe_warp = 0.16 * sin(ang * 3.0 + n_val * 4.5) + 0.11 * cos(ang * 5.0 - t * 0.55) + 0.08 * sin(ang * 7.0);
+    float warped_dist = dist + (n_val - 0.5) * 0.46 + lobe_warp;
 
-    // Impact foam core vs outer ripples
-    float core_foam = smoothstep(0.82, 0.18, dist) * smoothstep(0.28, 0.68, n_val + 0.25);
-    float outer_ripples = ring_wave * smoothstep(1.05, 0.25, dist);
+    // Broken, intermittent outward wave arcs (gated by angular + FBM pocket mask so zero full circles appear)
+    float ring_phase = warped_dist * (ring_frequency * 0.72) - t * expansion_speed + n_val * 2.4;
+    float ring_wave = smoothstep(0.58, 0.95, 0.5 + 0.5 * sin(ring_phase));
+    float arc_breakup = smoothstep(0.45, 0.76, fbm(centered_uv * 7.8 + vec2(-t * 0.25, t * 0.18)));
+    float outer_ripples = ring_wave * arc_breakup * smoothstep(1.02, 0.28, warped_dist) * 0.65;
 
-    float combined = max(core_foam, outer_ripples * 0.88);
-    float edge_fade = smoothstep(1.05, 0.72, dist);
+    // Aerated boiling whitewater core with frothy cellular pockets
+    float core_envelope = smoothstep(0.86, 0.14, warped_dist);
+    float cellular_froth = smoothstep(0.26, 0.68, n_val + 0.26 * core_envelope);
+    float core_foam = core_envelope * cellular_froth;
 
-    vec3 final_color = mix(ripple_tint.rgb, foam_tint.rgb, clamp(core_foam + outer_ripples * 0.45, 0.0, 1.0));
+    float combined = clamp(max(core_foam, outer_ripples), 0.0, 1.0);
+    float edge_fade = smoothstep(1.02, 0.64, warped_dist) * smoothstep(1.0, 0.82, dist);
+
+    vec3 final_color = mix(ripple_tint.rgb, foam_tint.rgb, clamp(core_foam * 1.15 + outer_ripples * 0.35, 0.0, 1.0));
     ALBEDO = final_color;
-    ALPHA = clamp(opacity * combined * edge_fade, 0.0, 0.96);
+    ALPHA = clamp(opacity * combined * edge_fade, 0.0, 0.94);
 }
