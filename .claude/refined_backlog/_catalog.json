@@ -2910,8 +2910,9 @@
     "title": "Maro Bell M1: circular 9-zone 3-tier hillside, recessed river channel, and outer valley master plan",
     "from_idea": "I-310",
     "created_at": "2026-11-16T07:29:00.709617+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claudia-m1",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-16T07:29:35.902446+00:00"
   }
 ]
