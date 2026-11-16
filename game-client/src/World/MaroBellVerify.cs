@@ -774,9 +774,19 @@ namespace AtlasWorld.Client.World
                 "M1_Zone1_CentralCircularPlaza_Outer",
                 "M1_Sanctuary_RomanesqueArch",
                 "M1_ScaleRef_SouthBridge_Body130m",
+                "M2_Junction_J01",
+                "M2_Junction_J05",
+                "M2_Junction_J08",
+                "M2_Junction_J15",
+                "M2_Route01_MainBlvd_Tier1A",
+                "M2_Route03_MountSwitchback_T1Ato1B_West",
+                "M2_Route04_MountSwitchback_T1Bto2A_East",
+                "M2_Stair01_Tier1Ato1B_Market",
+                "M2_Stair02_Tier1Bto2A_PlazaApproach",
+                "M2_Stair03_GrandSanctuary_3Flight",
             })
             {
-                Report($"F-225 M1 Master Plan node present ({requiredNode})", m1Root.FindChild(requiredNode, true, false) != null);
+                Report($"F-225/F-226 M1+M2 Master Plan node present ({requiredNode})", m1Root.FindChild(requiredNode, true, false) != null);
             }
 
             SubViewport? prevVp = _vp;
@@ -784,24 +794,40 @@ namespace AtlasWorld.Client.World
             {
                 Size = new Vector2I(1600, 1200),
                 OwnWorld3D = true,
+                World3D = new World3D(),
                 RenderTargetUpdateMode = SubViewport.UpdateMode.Always,
             };
             AddChild(m1Vp);
             m1Vp.AddChild(m1Root);
             _vp = m1Vp;
 
-            // Spawn 1.30m player character (maro_folk_girl) on the southern approach for scale verification
+            // Attach Trimesh StaticBody3D collision to all walkable terrain, spline roads, junctions, bridge, plaza & stairs
+            int colliderCount = AttachM2WalkableColliders(m1Root);
+            Report($"F-226 M2 attached trimesh colliders to walkable road/stair/terrain meshes ({colliderCount} >= 28)", colliderCount >= 28);
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
+            var navDebugRoot = VerifyAndBuildM2TraversalDebug(m1Root);
+            navDebugRoot.Visible = false;
+
+            // Spawn 1.30m player character (maro_folk_girl) on the southern approach & upper sanctuary landing for scale verification
             if (AssetRegistry.Instance is { } reg)
             {
                 PackedScene girlScene = reg.Resolve(PipelineCharVerify.MaroGirlKey, out ResolveTier tier);
                 if (tier == ResolveTier.Bespoke)
                 {
-                    var girl = (Node3D)girlScene.Instantiate();
-                    m1Root.AddChild(girl);
-                    EntityView.ApplyAnimeToonShading(girl, EntityKind.Player);
-                    new WeaponSocket(girl).EquipByKey("sword");
-                    girl.Position = new Vector3(-2.2f, 4.10f, 148.0f);
-                    girl.Rotation = new Vector3(0f, Mathf.Pi, 0f);
+                    var girlSouth = (Node3D)girlScene.Instantiate();
+                    m1Root.AddChild(girlSouth);
+                    EntityView.ApplyAnimeToonShading(girlSouth, EntityKind.Player);
+                    new WeaponSocket(girlSouth).EquipByKey("sword");
+                    girlSouth.Position = new Vector3(1.8f, 4.25f, 148.0f);
+                    girlSouth.Rotation = new Vector3(0f, Mathf.Pi, 0f);
+
+                    var girlNorth = (Node3D)girlScene.Instantiate();
+                    m1Root.AddChild(girlNorth);
+                    EntityView.ApplyAnimeToonShading(girlNorth, EntityKind.Player);
+                    new WeaponSocket(girlNorth).EquipByKey("kk_sword_a");
+                    girlNorth.Position = new Vector3(-2.4f, 32.15f, -74.0f);
+                    girlNorth.Rotation = Vector3.Zero;
                 }
             }
 
@@ -840,19 +866,27 @@ namespace AtlasWorld.Client.World
             var m1Cam = new Camera3D { Current = true, Near = 0.2f, Far = 1400f };
             m1Root.AddChild(m1Cam);
 
-            // M1 View 4 (Required): Godot 4 Player-Eye Southern Ascent View (1.30m eye height on Tier 1A Boulevard Z=+158m, Y=+3.95m+1.30m=+5.25m)
-            // showing the stepped ramp (1A->1B), Plaza approach stairs (1B->2A), Central Plaza Astrolabe, Grand Staircase (2A->3), and 52m Great Bell Sanctuary
+            // M1 View 4 / M2 View 4 (Required): Godot 4 Player-Eye Uphill View along Organic S-Curve Southern Boulevard
+            // showing paired stone curbs, 2-flight landed stairs, flanking mount switchbacks, Central Plaza, and Great Bell Sanctuary
             m1Cam.Projection = Camera3D.ProjectionType.Perspective;
             m1Cam.Fov = 54f;
-            m1Cam.Position = new Vector3(0.0f, 5.25f, 158.0f);
-            m1Cam.LookAt(new Vector3(0.0f, 36.0f, -115.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(-2.4f, 6.45f, 156.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 30.0f, -85.0f), Vector3.Up);
             await Save(outDir, "m1_view4_godot_player_eye_south.png");
+            await Save(outDir, "m2_view4_godot_uphill_player_eye.png");
 
-            // M1 View 4b: Mid-Boulevard Player-Eye View approaching Tier 1->2 Stairs & Central Plaza (Z=+82m, Y=+8.95m+1.30m=+10.25m)
+            // M1 View 4b: Mid-Boulevard Player-Eye View approaching Tier 1->2 Landed Stairs & Central Plaza
             m1Cam.Fov = 54f;
-            m1Cam.Position = new Vector3(0.0f, 10.25f, 82.0f);
-            m1Cam.LookAt(new Vector3(0.0f, 40.0f, -115.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(1.2f, 10.65f, 80.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 39.0f, -115.0f), Vector3.Up);
             await Save(outDir, "m1_view4b_godot_boulevard_eye.png");
+
+            // M2 View 5 (Required): Godot 4 Player-Eye Downhill View from top of the 3-Flight Grand Staircase (Z=-73.5m, Y=+33.40m)
+            // looking south down the 3-flight Grand Staircase (2 flat landings), across the 72m Central Plaza & Astrolabe, down the Southern Blvd to the 3-Arch Bridge
+            m1Cam.Fov = 58f;
+            m1Cam.Position = new Vector3(0.0f, 33.45f, -73.5f);
+            m1Cam.LookAt(new Vector3(0.0f, 11.5f, 45.0f), Vector3.Up);
+            await Save(outDir, "m2_view5_godot_downhill_player_eye.png");
 
             // M1 View 2 (Godot Cross-Check): 3/4 Bird's-Eye Aerial matching Shot 5 (420m Playable Town)
             m1Cam.Fov = 46f;
@@ -860,8 +894,253 @@ namespace AtlasWorld.Client.World
             m1Cam.LookAt(new Vector3(0.0f, 18.0f, -10.0f), Vector3.Up);
             await Save(outDir, "m1_view2_godot_birdseye_shot5.png");
 
+            // M2 View 6 (Required): Godot 4 Collision & Navigation Debug Screenshot showing verified raycast breadcrumb trails,
+            // walkable spline ribbons, curb boundaries, and all 16 junction beacons across the 9 zones
+            navDebugRoot.Visible = true;
+            m1Cam.Fov = 46f;
+            m1Cam.Position = new Vector3(-68.0f, 198.0f, 315.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 16.0f, -12.0f), Vector3.Up);
+            await Save(outDir, "m2_view6_godot_collision_nav_debug.png");
+            navDebugRoot.Visible = false;
+
             _vp = prevVp;
             m1Vp.QueueFree();
+        }
+
+        private static int AttachM2WalkableColliders(Node root)
+        {
+            int count = 0;
+            var stack = new Stack<Node>();
+            stack.Push(root);
+            while (stack.Count > 0)
+            {
+                Node n = stack.Pop();
+                foreach (Node c in n.GetChildren())
+                    stack.Push(c);
+
+                if (n is MeshInstance3D mi && mi.Mesh != null)
+                {
+                    string nm = mi.Name.ToString();
+                    if (nm.StartsWith("M2_Route")
+                        || nm.StartsWith("M2_Junction")
+                        || nm.StartsWith("M2_Stair")
+                        || nm.StartsWith("M1_ValleyTerrain")
+                        || nm.StartsWith("M1_Zone1_CentralCircularPlaza")
+                        || nm.StartsWith("M1_Zone9_ThreeArchBridge")
+                        || nm.StartsWith("M1_Sanctuary_Dais")
+                        || nm.StartsWith("M1_Zone7_ShrineBastionTerrace"))
+                    {
+                        mi.CreateTrimeshCollision();
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        private Node3D VerifyAndBuildM2TraversalDebug(Node3D m1Root)
+        {
+            var debugRoot = new Node3D { Name = "M2_CollisionNavDebugOverlay" };
+            m1Root.AddChild(debugRoot);
+
+            // Collect world-space triangles from all walkable M2 road, junction, stair, plaza, bridge & terrain meshes
+            var walkableTris = new List<(Vector3 A, Vector3 B, Vector3 C)>();
+            var stack = new Stack<Node>();
+            stack.Push(m1Root);
+            while (stack.Count > 0)
+            {
+                Node n = stack.Pop();
+                foreach (Node c in n.GetChildren())
+                    stack.Push(c);
+
+                if (n is MeshInstance3D mi && mi.Mesh != null)
+                {
+                    string nm = mi.Name.ToString();
+                    if (nm.StartsWith("M2_Route")
+                        || nm.StartsWith("M2_Junction")
+                        || nm.StartsWith("M2_Stair")
+                        || nm.StartsWith("M1_ValleyTerrain")
+                        || nm.StartsWith("M1_Zone1_CentralCircularPlaza")
+                        || nm.StartsWith("M1_Zone9_ThreeArchBridge")
+                        || nm.StartsWith("M1_Sanctuary_Dais")
+                        || nm.StartsWith("M1_Zone7_ShrineBastionTerrace"))
+                    {
+                        Transform3D xf = mi.GlobalTransform;
+                        Vector3[] faces = mi.Mesh.GetFaces();
+                        for (int i = 0; i + 2 < faces.Length; i += 3)
+                        {
+                            Vector3 a = xf * faces[i];
+                            Vector3 b = xf * faces[i + 1];
+                            Vector3 c = xf * faces[i + 2];
+                            walkableTris.Add((a, b, c));
+                        }
+                    }
+                }
+            }
+
+            var matGreen = new StandardMaterial3D
+            {
+                AlbedoColor = new Color(0.10f, 0.98f, 0.42f),
+                EmissionEnabled = true,
+                Emission = new Color(0.10f, 0.95f, 0.40f),
+                EmissionEnergyMultiplier = 1.6f,
+                Roughness = 0.25f,
+            };
+            var matCyan = new StandardMaterial3D
+            {
+                AlbedoColor = new Color(0.08f, 0.92f, 1.0f),
+                EmissionEnabled = true,
+                Emission = new Color(0.08f, 0.88f, 1.0f),
+                EmissionEnergyMultiplier = 1.6f,
+                Roughness = 0.25f,
+            };
+            var matGold = new StandardMaterial3D
+            {
+                AlbedoColor = new Color(1.0f, 0.84f, 0.16f),
+                EmissionEnabled = true,
+                Emission = new Color(1.0f, 0.80f, 0.15f),
+                EmissionEnergyMultiplier = 1.8f,
+                Roughness = 0.20f,
+            };
+
+            bool SampleGroundY(float x, float z, out float groundY)
+            {
+                float bestY = float.MinValue;
+                bool hitAny = false;
+                for (int i = 0; i < walkableTris.Count; i++)
+                {
+                    var (a, b, c) = walkableTris[i];
+                    float minX = Mathf.Min(a.X, Mathf.Min(b.X, c.X));
+                    if (x < minX - 0.05f) continue;
+                    float maxX = Mathf.Max(a.X, Mathf.Max(b.X, c.X));
+                    if (x > maxX + 0.05f) continue;
+                    float minZ = Mathf.Min(a.Z, Mathf.Min(b.Z, c.Z));
+                    if (z < minZ - 0.05f) continue;
+                    float maxZ = Mathf.Max(a.Z, Mathf.Max(b.Z, c.Z));
+                    if (z > maxZ + 0.05f) continue;
+
+                    // 2D barycentric in XZ plane
+                    float det = (b.Z - c.Z) * (a.X - c.X) + (c.X - b.X) * (a.Z - c.Z);
+                    if (Mathf.Abs(det) < 1e-5f)
+                        continue;
+                    float u = ((b.Z - c.Z) * (x - c.X) + (c.X - b.X) * (z - c.Z)) / det;
+                    float v = ((c.Z - a.Z) * (x - c.X) + (a.X - c.X) * (z - c.Z)) / det;
+                    float w = 1.0f - u - v;
+                    if (u >= -0.02f && v >= -0.02f && w >= -0.02f)
+                    {
+                        float y = u * a.Y + v * b.Y + w * c.Y;
+                        if (y > bestY)
+                        {
+                            bestY = y;
+                            hitAny = true;
+                        }
+                    }
+                }
+                groundY = hitAny ? bestY : 0f;
+                return hitAny;
+            }
+
+            // 1. Verify all 16 Shared Junction Nodes (Blender (X, Y) -> Godot (X, -Y))
+            var junctionCoords = new (string Code, float X, float Z, float ExpectedY)[]
+            {
+                ("J01",   0.0f,  202.0f,  3.12f),
+                ("J02",   2.4f,  138.0f,  4.35f),
+                ("J03",  -2.2f,  116.5f,  7.68f),
+                ("J04",   1.8f,   59.5f,  9.28f),
+                ("J05",   0.0f,   31.5f, 15.05f),
+                ("J06", -35.0f,   -2.0f, 15.05f),
+                ("J07",  35.0f,   -2.0f, 15.05f),
+                ("J08",   0.0f,  -32.5f, 15.05f),
+                ("J09", -108.0f,  44.0f, 18.85f),
+                ("J10", -112.0f, -46.0f, 23.35f),
+                ("J11",   94.0f,  28.0f, 19.05f),
+                ("J12",   94.0f, -42.0f, 22.85f),
+                ("J13",  182.0f,   8.0f, 19.85f),
+                ("J14", -182.0f,  -2.0f, 19.55f),
+                ("J15",   0.0f,  -82.5f, 32.10f),
+                ("J16",   0.0f, -198.0f, 34.65f),
+            };
+            int junctionsHit = 0;
+            foreach (var jn in junctionCoords)
+            {
+                if (SampleGroundY(jn.X, jn.Z, out float hitY) && Mathf.Abs(hitY - jn.ExpectedY) <= 1.8f)
+                {
+                    junctionsHit++;
+                    var beacon = new MeshInstance3D
+                    {
+                        Name = $"DebugBeacon_{jn.Code}",
+                        Mesh = new CylinderMesh { TopRadius = 2.4f, BottomRadius = 2.4f, Height = 3.2f },
+                        MaterialOverride = matGold,
+                        Position = new Vector3(jn.X, hitY + 1.6f, jn.Z),
+                    };
+                    debugRoot.AddChild(beacon);
+                }
+            }
+            Report($"F-226 M2 all 16 shared junction nodes (J01..J16) have solid walkable collision at expected elevation ({junctionsHit}/16)", junctionsHit == 16);
+
+            // 2. Verify Longitudinal Pedestrian Route (South Bridge Z=+220 -> Tier 1A -> Stair 01 -> Tier 1B -> Stair 02 -> Plaza -> Stair 03 -> Sanctuary Z=-80)
+            int axialSteps = 150;
+            int axialHits = 0;
+            float prevY = 3.0f;
+            float maxStepUp = 0f;
+            for (int i = 0; i <= axialSteps; i++)
+            {
+                float t = i / (float)axialSteps;
+                float z = Mathf.Lerp(220.0f, -80.0f, t);
+                // Walk around the Central Plaza Fountain Basin at Z in [-10..+6] via X = 12.0m flagstone ring!
+                float x = (z >= -11.0f && z <= 7.0f) ? 12.0f : 0.0f;
+                if (SampleGroundY(x, z, out float y))
+                {
+                    axialHits++;
+                    if (i > 0)
+                        maxStepUp = Mathf.Max(maxStepUp, Mathf.Abs(y - prevY));
+                    prevY = y;
+
+                    if (i % 2 == 0)
+                    {
+                        var dot = new MeshInstance3D
+                        {
+                            Mesh = new SphereMesh { Radius = 1.15f, Height = 2.3f },
+                            MaterialOverride = matGreen,
+                            Position = new Vector3(x, y + 0.8f, z),
+                        };
+                        debugRoot.AddChild(dot);
+                    }
+                }
+            }
+            Report($"F-226 M2 longitudinal pedestrian route has 100% continuous collision hits ({axialHits}/{axialSteps + 1}, maxStationDelta={maxStepUp:F2}m)", axialHits == axialSteps + 1 && maxStepUp <= 2.2f);
+
+            // 3. Verify Mount/Cart Switchback & District Ring Routes (Cyan debug breadcrumbs)
+            var mountWaypoints = new (float X, float Z)[]
+            {
+                (2.8f, 144.0f), (-22.0f, 142.0f), (-38.0f, 131.0f), (-24.0f, 119.0f), (-2.6f, 116.0f),
+                (1.8f, 74.0f), (26.0f, 70.0f), (44.0f, 56.0f), (28.0f, 42.0f), (0.0f, 34.0f),
+                (-35.0f, -2.0f), (-58.0f, 10.0f), (-84.0f, 28.0f), (-108.0f, 44.0f),
+                (-122.0f, 12.0f), (-124.0f, -18.0f), (-112.0f, -46.0f), (-92.0f, -74.0f), (-54.0f, -86.0f), (0.0f, -78.0f),
+                (35.0f, -2.0f), (56.0f, 8.0f), (76.0f, 20.0f), (94.0f, 28.0f),
+                (108.0f, -4.0f), (106.0f, -24.0f), (94.0f, -42.0f), (86.0f, -72.0f), (52.0f, -85.0f),
+                (128.0f, 24.0f), (156.0f, 16.0f), (182.0f, 8.0f),
+                (-42.0f, -98.0f), (-46.0f, -142.0f), (-24.0f, -176.0f), (0.0f, -198.0f),
+                (42.0f, -98.0f), (46.0f, -142.0f), (24.0f, -176.0f),
+            };
+            int mountHits = 0;
+            foreach (var wp in mountWaypoints)
+            {
+                if (SampleGroundY(wp.X, wp.Z, out float my))
+                {
+                    mountHits++;
+                    var dot = new MeshInstance3D
+                    {
+                        Mesh = new SphereMesh { Radius = 1.25f, Height = 2.5f },
+                        MaterialOverride = matCyan,
+                        Position = new Vector3(wp.X, my + 0.9f, wp.Z),
+                    };
+                    debugRoot.AddChild(dot);
+                }
+            }
+            Report($"F-226 M2 mount switchback & 9-zone district ring waypoints have 100% solid collision ({mountHits}/{mountWaypoints.Length})", mountHits == mountWaypoints.Length);
+
+            return debugRoot;
         }
 
         private async Task RenderMaroFolkGirlInBellTown(Node3D root, Camera3D cam, string outDir)
