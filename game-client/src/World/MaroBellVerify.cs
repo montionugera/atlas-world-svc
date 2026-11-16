@@ -742,8 +742,126 @@ namespace AtlasWorld.Client.World
             cam.LookAt(new Vector3(0.0f, 2.0f, -5.0f), Vector3.Up);
             await Save(outDir, "maro-bell-concept-f5-birdseye-9zones.png");
 
+            await RenderM1MasterPlanViews(outDir);
+
             if (OS.GetEnvironment("ATLAS_RENDER_MARO_GIRL_FRAMES") == "1")
                 await RenderMaroFolkGirlInBellTown(root, cam, outDir);
+        }
+
+        private async Task RenderM1MasterPlanViews(string outDir)
+        {
+            string m1GlbPath = ProjectSettings.GlobalizePath("res://studio-cache/env/m1/maro_bell_m1_masterplan.glb");
+            if (!System.IO.File.Exists(m1GlbPath))
+                return;
+
+            var gltfDoc = new GltfDocument();
+            var gltfState = new GltfState();
+            Error err = gltfDoc.AppendFromFile(m1GlbPath, gltfState);
+            Report("F-225 M1 Master Plan GLB loads via GltfDocument", err == Error.Ok);
+            if (err != Error.Ok)
+                return;
+
+            Node? sceneNode = gltfDoc.GenerateScene(gltfState);
+            Report("F-225 M1 Master Plan instantiates Node3D root", sceneNode is Node3D);
+            if (sceneNode is not Node3D m1Root)
+                return;
+
+            foreach (string requiredNode in new[]
+            {
+                "M1_ValleyTerrain",
+                "M1_River_WaterSurface",
+                "M1_Zone9_ThreeArchBridge",
+                "M1_Zone1_CentralCircularPlaza_Outer",
+                "M1_Sanctuary_RomanesqueArch",
+                "M1_ScaleRef_SouthBridge_Body130m",
+            })
+            {
+                Report($"F-225 M1 Master Plan node present ({requiredNode})", m1Root.FindChild(requiredNode, true, false) != null);
+            }
+
+            SubViewport? prevVp = _vp;
+            var m1Vp = new SubViewport
+            {
+                Size = new Vector2I(1600, 1200),
+                OwnWorld3D = true,
+                RenderTargetUpdateMode = SubViewport.UpdateMode.Always,
+            };
+            AddChild(m1Vp);
+            m1Vp.AddChild(m1Root);
+            _vp = m1Vp;
+
+            // Spawn 1.30m player character (maro_folk_girl) on the southern approach for scale verification
+            if (AssetRegistry.Instance is { } reg)
+            {
+                PackedScene girlScene = reg.Resolve(PipelineCharVerify.MaroGirlKey, out ResolveTier tier);
+                if (tier == ResolveTier.Bespoke)
+                {
+                    var girl = (Node3D)girlScene.Instantiate();
+                    m1Root.AddChild(girl);
+                    EntityView.ApplyAnimeToonShading(girl, EntityKind.Player);
+                    new WeaponSocket(girl).EquipByKey("sword");
+                    girl.Position = new Vector3(-2.2f, 4.10f, 148.0f);
+                    girl.Rotation = new Vector3(0f, Mathf.Pi, 0f);
+                }
+            }
+
+            m1Root.AddChild(new DirectionalLight3D
+            {
+                RotationDegrees = new Vector3(-46f, 34f, 0f),
+                LightColor = new Color(1.0f, 0.95f, 0.86f),
+                LightEnergy = 1.15f,
+                ShadowEnabled = true,
+                DirectionalShadowMaxDistance = 750f,
+            });
+            var skyMat = new ProceduralSkyMaterial
+            {
+                SkyTopColor = new Color(0.22f, 0.48f, 0.84f),
+                SkyHorizonColor = new Color(0.74f, 0.88f, 0.98f),
+                GroundBottomColor = new Color(0.24f, 0.36f, 0.22f),
+                GroundHorizonColor = new Color(0.68f, 0.82f, 0.92f),
+            };
+            m1Root.AddChild(new WorldEnvironment
+            {
+                Environment = new Godot.Environment
+                {
+                    BackgroundMode = Godot.Environment.BGMode.Sky,
+                    Sky = new Sky { SkyMaterial = skyMat },
+                    AmbientLightSource = Godot.Environment.AmbientSource.Sky,
+                    AmbientLightColor = new Color(0.76f, 0.82f, 0.90f),
+                    AmbientLightEnergy = 0.65f,
+                    TonemapMode = Godot.Environment.ToneMapper.Filmic,
+                    FogEnabled = true,
+                    FogLightColor = new Color(0.74f, 0.86f, 0.96f),
+                    FogDensity = 0.0008f,
+                    FogSkyAffect = 0.15f,
+                },
+            });
+
+            var m1Cam = new Camera3D { Current = true, Near = 0.2f, Far = 1400f };
+            m1Root.AddChild(m1Cam);
+
+            // M1 View 4 (Required): Godot 4 Player-Eye Southern Ascent View (1.30m eye height on Tier 1A Boulevard Z=+158m, Y=+3.95m+1.30m=+5.25m)
+            // showing the stepped ramp (1A->1B), Plaza approach stairs (1B->2A), Central Plaza Astrolabe, Grand Staircase (2A->3), and 52m Great Bell Sanctuary
+            m1Cam.Projection = Camera3D.ProjectionType.Perspective;
+            m1Cam.Fov = 54f;
+            m1Cam.Position = new Vector3(0.0f, 5.25f, 158.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 36.0f, -115.0f), Vector3.Up);
+            await Save(outDir, "m1_view4_godot_player_eye_south.png");
+
+            // M1 View 4b: Mid-Boulevard Player-Eye View approaching Tier 1->2 Stairs & Central Plaza (Z=+82m, Y=+8.95m+1.30m=+10.25m)
+            m1Cam.Fov = 54f;
+            m1Cam.Position = new Vector3(0.0f, 10.25f, 82.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 40.0f, -115.0f), Vector3.Up);
+            await Save(outDir, "m1_view4b_godot_boulevard_eye.png");
+
+            // M1 View 2 (Godot Cross-Check): 3/4 Bird's-Eye Aerial matching Shot 5 (420m Playable Town)
+            m1Cam.Fov = 46f;
+            m1Cam.Position = new Vector3(-85.0f, 245.0f, 430.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 18.0f, -10.0f), Vector3.Up);
+            await Save(outDir, "m1_view2_godot_birdseye_shot5.png");
+
+            _vp = prevVp;
+            m1Vp.QueueFree();
         }
 
         private async Task RenderMaroFolkGirlInBellTown(Node3D root, Camera3D cam, string outDir)
