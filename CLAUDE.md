@@ -72,8 +72,13 @@ Single-context (`CONTEXT.md` + `docs/adr/` at repo root). Repo is a monorepo —
 
 ### 3D Environment Milestone Visual QA Pipeline (`M1–M7`, owner rule 2026-11-17)
 
-For Maro Bell and 3D environment milestones (`M1..M7`), **do NOT use Browser ChatGPT / `chrome-devtools` MCP (`pageId: 29`)**. Always execute the 3-layer deterministic headless pipeline in order:
+For Maro Bell and 3D environment milestones (`M1..M7`), **do NOT use Browser ChatGPT / `chrome-devtools` MCP (`pageId: 29`)**, and **STOP writing ad-hoc Python heredoc scripts (`python3 - <<'PY'` with `struct`/`numpy`/`PIL`)** for `.glb` mesh/weight inspection, image cropping, Jev pre-gates, or Vision QA. Always use the registered **`atlas-3d` MCP server** (`call_mcp_tool(ServerName='atlas-3d', ...)`, or `/Users/pasitnusso/.local/bin/atlas-3d-mcp call <tool_name> '<json_args>'` in sessions opened before `mcp_config.json` reload; include `atlas-3d` MCP in any handoff):
+- `glb_inspect` (`glb_path`, `mesh_filter`, `material_filter`, `bbox_filter`, `bone_filter`, `slice_axis`, `slice_bins`, `top_stretched_tris`, `sample_vertices`)
+- `image_crop_inspect` (`image_path`, `crop_box_norm` / `crop_box_px`, `max_dim<=1024` -> `/tmp` PNG)
+- `jev_qa` (`mode`: `env` | `char_calib` | `prop` | `ui_ground`)
+- `vision_qa` / `codex_qa` (`images`, `rubric`: `env` | `char` | `raw`, `milestone`, `structured: true`)
+
+Execute the 3-layer deterministic headless pipeline in order:
 1. **Godot Runtime Pre-Gate (`F-229`):** Run with `ATLAS_VERIFY_ENV_PREGATE=1` (`game-client/src/World/EnvRenderPreGate.cs`: `CheckCameraSightline`, `CheckDeprecatedMilestoneClutter`, `CheckStripDelta`) and `./scripts/godot-verify.sh` (`.glb` `.import` preflight).
-2. **Jev System-1 Fast Pre-Gate (`~1.1s`):** `/Users/pasitnusso/asset-studio-private/atlas-3d-plan/bin/jev-env-qa --milestone <M1..M7> <views.png>`
-3. **Headless `codex-qa` Milestone Verdict (`>= 8.0 / 10` required, zero Chrome modals):**
-   `/Users/pasitnusso/.local/bin/codex-qa --rubric env --milestone <M1..M7> --structured --out <verdict.json> <concept_refs_and_views.png>`
+2. **Jev System-1 Fast Pre-Gate (`~1.1s`):** `atlas-3d` MCP `jev_qa` (`mode: "env"`, `milestone: "<M1..M7>"`, `images: [...]`).
+3. **Headless `codex_qa` Milestone Verdict (`>= 8.0 / 10` required, zero Chrome modals):** `atlas-3d` MCP `codex_qa` (`rubric: "env"`, `milestone: "<M1..M7>"`, `structured: true`, `images: [<concept_refs_and_views.png>]`).
