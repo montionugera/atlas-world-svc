@@ -1147,7 +1147,7 @@ namespace AtlasWorld.Client.World
             m1Cam.LookAt(new Vector3(0.0f, 54.5f, -106.0f), Vector3.Up);
             await Save(outDir, "m5_view1a_sanctuary_ortho_front_raw.png");
 
-            // East-to-West Side Ortho Profile: Full Grand Staircase (Z=-35.8m on Left) -> Sanctuary Vault, Grounded Plinth & +92.4m Spire (Right)
+            // East-to-West Side Ortho Profile: Full Grand Staircase (Z=-35.8m on Left) -> Sanctuary Vault, Grounded Plinth & +93.6m Spire (Right)
             m1Cam.Size = 116.0f;
             m1Cam.Position = new Vector3(95.0f, 53.5f, -74.0f);
             m1Cam.LookAt(new Vector3(0.0f, 53.5f, -74.0f), Vector3.Up);
@@ -1182,10 +1182,10 @@ namespace AtlasWorld.Client.World
             m1Cam.LookAt(new Vector3(-0.3f, 20.8f, 0.0f), Vector3.Up);
             await Save(outDir, "m5_view2b_astrolabe_3q_closeup_raw.png");
 
-            // M5 View 3: Southern Market Boulevard Hero Camera (Shot 2) centered on Stair02 -> Plaza Astrolabe -> Great Bell Sanctuary
+            // M5 View 3: Southern Market Boulevard Hero Camera (Shot 2) raised on the centre axis so Astrolabe, Grand Staircase and Great Bell stack with clear vertical gaps
             m1Cam.Fov = 50f;
-            m1Cam.Position = new Vector3(0.0f, 19.4f, 52.5f);
-            m1Cam.LookAt(new Vector3(0.0f, 37.8f, -80.0f), Vector3.Up);
+            m1Cam.Position = new Vector3(0.0f, 27.0f, 58.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 39.0f, -82.0f), Vector3.Up);
             await Save(outDir, "m5_view3_south_boulevard_hero_shot2_raw.png");
 
             // M5 View 4: Central Bell Plaza & Golden Astrolabe Fountain Hero Camera (Shot 3) with Unobstructed Grand Staircase & Sanctuary
@@ -1336,6 +1336,9 @@ namespace AtlasWorld.Client.World
                         Material? surfMat = mi.Mesh.SurfaceGetMaterial(s);
                         if (surfMat != null && pbrSpecs.TryGetValue(surfMat.ResourceName, out var upgraded))
                         {
+                            // Keep the GLB's neutral ashlar masonry map; AlbedoColor above tints it.
+                            if (surfMat is BaseMaterial3D srcMat && srcMat.AlbedoTexture != null && upgraded.AlbedoTexture == null)
+                                upgraded.AlbedoTexture = srcMat.AlbedoTexture;
                             mi.SetSurfaceOverrideMaterial(s, upgraded);
                             m5StyledSurfaces++;
                         }
@@ -1534,7 +1537,7 @@ namespace AtlasWorld.Client.World
             var camChecks = new (string ViewId, Vector3 CamPos, Aabb TargetAabb)[]
             {
                 ("M5_View2B_Astrolabe3Q", new Vector3(12.8f, 20.8f, 14.6f), astrolabeTarget),
-                ("M5_View3_SouthBlvd_Shot2", new Vector3(0.0f, 18.8f, 55.5f), sanctuaryArchTarget),
+                ("M5_View3_SouthBlvd_Shot2", new Vector3(0.0f, 27.0f, 58.0f), sanctuaryArchTarget),
                 ("M5_View4_PlazaAstrolabe_Shot3", new Vector3(12.4f, 18.4f, 18.2f), astrolabeTarget),
                 ("M5_View5_SanctuaryStairs_Shot4", new Vector3(0.0f, 20.6f, -8.5f), sanctuaryArchTarget),
                 ("M5_View6A_BellYokeSupport", new Vector3(-7.4f, 44.8f, -84.5f), bellYokeTarget),
