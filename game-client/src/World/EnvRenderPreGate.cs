@@ -79,20 +79,24 @@ namespace AtlasWorld.Client.World
             foreach (var target in targets)
             {
                 var query = PhysicsRayQueryParameters3D.Create(camPos, target);
+                query.HitFromInside = true;
                 if (exclude != null)
                     query.Exclude = exclude;
 
                 var hit = space.IntersectRay(query);
                 if (hit != null && hit.Count > 0)
                 {
-                    blocked++;
-                    if (firstColliderName == null && hit.TryGetValue("collider", out Variant colVar))
+                    if (IsPhysicsRayOccluded(hit, targetBounds))
                     {
-                        var colObj = colVar.AsGodotObject();
-                        if (colObj is Node n)
-                            firstColliderName = n.Name;
-                        else if (colObj != null)
-                            firstColliderName = colObj.ToString();
+                        blocked++;
+                        if (firstColliderName == null && hit.TryGetValue("collider", out Variant colVar))
+                        {
+                            var colObj = colVar.AsGodotObject();
+                            if (colObj is Node n)
+                                firstColliderName = n.Name;
+                            else if (colObj != null)
+                                firstColliderName = colObj.ToString();
+                        }
                     }
                 }
             }
@@ -109,9 +113,13 @@ namespace AtlasWorld.Client.World
                     foreach (var target in targets)
                     {
                         var query = PhysicsRayQueryParameters3D.Create(testPos, target);
+                        query.HitFromInside = true;
                         if (exclude != null) query.Exclude = exclude;
                         var hit = space.IntersectRay(query);
-                        if (hit != null && hit.Count > 0) hits++;
+                        if (hit != null && hit.Count > 0 && IsPhysicsRayOccluded(hit, targetBounds))
+                        {
+                            hits++;
+                        }
                     }
                     return hits;
                 }, maxOcclusionRatio);
@@ -141,6 +149,7 @@ namespace AtlasWorld.Client.World
         {
             Vector3[] targets = GetFiveTargetPoints(targetBounds);
             var boxList = obstacleBoxes?.ToList() ?? new List<Aabb>();
+            Aabb expandedTarget = targetBounds.Grow(0.05f);
 
             int blocked = 0;
             string? firstColliderName = null;
@@ -150,8 +159,29 @@ namespace AtlasWorld.Client.World
                 bool hitAny = false;
                 foreach (var box in boxList)
                 {
-                    if (RayIntersectsAabb(camPos, target, box))
+                    // Ignore any obstacle box that equals or is contained within targetBounds
+                    if (IsTargetObstacleBox(box, targetBounds))
+                        continue;
+
+                    // Treat camPos inside a non-target obstacle box as immediate t = 0 occlusion!
+                    if (box.HasPoint(camPos))
                     {
+                        hitAny = true;
+                        if (firstColliderName == null)
+                            firstColliderName = $"Aabb({box.Position}, {box.Size}) (camera inside obstacle)";
+                        break;
+                    }
+
+                    if (RayIntersectsAabb(camPos, target, box, out float tHit))
+                    {
+                        Vector3 dir = target - camPos;
+                        float len = dir.Length();
+                        Vector3 hitPos = len > 1e-5f ? camPos + (dir / len) * tHit : camPos;
+
+                        // Ignore where the ray intersection t_hit occurs at/inside targetBounds
+                        if (expandedTarget.HasPoint(hitPos))
+                            continue;
+
                         hitAny = true;
                         if (firstColliderName == null)
                             firstColliderName = $"Aabb({box.Position}, {box.Size})";
@@ -176,8 +206,23 @@ namespace AtlasWorld.Client.World
                         bool hit = false;
                         foreach (var box in boxList)
                         {
-                            if (RayIntersectsAabb(testPos, target, box))
+                            if (IsTargetObstacleBox(box, targetBounds))
+                                continue;
+
+                            if (box.HasPoint(testPos))
                             {
+                                hit = true;
+                                break;
+                            }
+
+                            if (RayIntersectsAabb(testPos, target, box, out float tHit))
+                            {
+                                Vector3 dir = target - testPos;
+                                float len = dir.Length();
+                                Vector3 hitPos = len > 1e-5f ? testPos + (dir / len) * tHit : testPos;
+                                if (expandedTarget.HasPoint(hitPos))
+                                    continue;
+
                                 hit = true;
                                 break;
                             }
@@ -198,6 +243,42 @@ namespace AtlasWorld.Client.World
                 SuggestedCamPos = suggestedPos,
                 SuggestedCamOffset = suggestedPos - camPos
             };
+        }
+
+        private static bool IsPhysicsRayOccluded(Godot.Collections.Dictionary hit, Aabb targetBounds)
+        {
+            Aabb expandedTarget = targetBounds.Grow(0.05f);
+
+            if (hit.TryGetValue("position", out Variant posVar))
+            {
+                Vector3 hitPos = posVar.AsVector3();
+                if (expandedTarget.HasPoint(hitPos))
+                    return false; // Ray reached target surface/interior -> clear!
+            }
+
+            if (hit.TryGetValue("collider", out Variant colVar))
+            {
+                var colObj = colVar.AsGodotObject();
+                if (colObj is Node3D n3d)
+                {
+                    if (expandedTarget.HasPoint(n3d.GlobalPosition))
+                        return false; // Target collider placed inside targetBounds -> clear!
+                }
+                if (colObj is VisualInstance3D vi)
+                {
+                    Aabb viAabb = vi.GlobalTransform * vi.GetAabb();
+                    if (expandedTarget.Encloses(viAabb) || expandedTarget.Intersects(viAabb))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsTargetObstacleBox(Aabb box, Aabb targetBounds)
+        {
+            Aabb expanded = targetBounds.Grow(0.01f);
+            return expanded.Encloses(box);
         }
 
         private static Vector3[] GetFiveTargetPoints(Aabb targetBounds)
@@ -258,10 +339,32 @@ namespace AtlasWorld.Client.World
         /// </summary>
         public static bool RayIntersectsAabb(Vector3 origin, Vector3 target, Aabb box)
         {
+            return RayIntersectsAabb(origin, target, box, out _);
+        }
+
+        /// <summary>
+        /// Ray-AABB intersection test for segment from origin to target, returning entry hit distance tHit along ray direction.
+        /// </summary>
+        public static bool RayIntersectsAabb(Vector3 origin, Vector3 target, Aabb box, out float tHit)
+        {
+            tHit = 0.0f;
             Vector3 dir = target - origin;
             float len = dir.Length();
             if (len < 1e-5f)
-                return box.HasPoint(origin);
+            {
+                if (box.HasPoint(origin))
+                {
+                    tHit = 0.0f;
+                    return true;
+                }
+                return false;
+            }
+
+            if (box.HasPoint(origin))
+            {
+                tHit = 0.0f;
+                return true;
+            }
 
             Vector3 u = dir / len;
             float tmin = 0.0f;
@@ -297,7 +400,18 @@ namespace AtlasWorld.Client.World
                 }
             }
 
-            return tmin <= tmax && tmin <= len && tmax >= 0.0f;
+            if (tmin <= tmax && tmin <= len && tmax >= 0.0f)
+            {
+                tHit = tmin;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsNodeVisible(Node3D node3D)
+        {
+            return node3D.IsInsideTree() ? node3D.IsVisibleInTree() : node3D.Visible;
         }
 
         /// <summary>
@@ -335,7 +449,7 @@ namespace AtlasWorld.Client.World
                                 keywordMatch = keywords.Any(k => lower.Contains(k));
                             }
 
-                            if (keywordMatch && node.Visible)
+                            if (keywordMatch && IsNodeVisible(node))
                             {
                                 result.DeprecatedNodesFound.Add(node);
                                 if (autoHide)
@@ -353,7 +467,7 @@ namespace AtlasWorld.Client.World
             var visibleMeshes = new List<(VisualInstance3D vi, Aabb aabb)>();
             foreach (var n in allNodes)
             {
-                if (n is VisualInstance3D vi && vi.Visible)
+                if (n is VisualInstance3D vi && IsNodeVisible(vi))
                 {
                     Aabb local = vi.GetAabb();
                     if (local.Size.X > 0.001f && local.Size.Z > 0.001f)
@@ -376,7 +490,15 @@ namespace AtlasWorld.Client.World
                     float dyCenter = Mathf.Abs(aabbA.GetCenter().Y - aabbB.GetCenter().Y);
                     float minDy = Mathf.Min(Mathf.Min(dyPos, dyEnd), dyCenter);
 
-                    if (minDy < 0.01f)
+                    // Fix false-positive z-fighting on tall walls sharing a floor Y:
+                    // Two visible meshes only z-fight as horizontal coplanar surfaces when they overlap in XZ
+                    // (> 50% of smaller XZ area) AND BOTH are either thin horizontal surfaces (aabb.Size.Y <= 0.35f)
+                    // OR their top surfaces (aabb.End.Y) match within 0.01f AND bottom surfaces (aabb.Position.Y) match within 0.01f
+                    bool bothThinHorizontal = (aabbA.Size.Y <= 0.35f) && (aabbB.Size.Y <= 0.35f);
+                    bool identicalVerticalSlab = (dyEnd < 0.01f) && (dyPos < 0.01f);
+                    bool isCoplanarCandidate = (bothThinHorizontal && minDy < 0.01f) || identicalVerticalSlab;
+
+                    if (isCoplanarCandidate)
                     {
                         float oxMin = Mathf.Max(aabbA.Position.X, aabbB.Position.X);
                         float oxMax = Mathf.Min(aabbA.End.X, aabbB.End.X);
@@ -481,7 +603,7 @@ namespace AtlasWorld.Client.World
     /// Probe entrypoint for ATLAS_VERIFY_ENV_PREGATE=1.
     /// Runs positive and negative synthetic fixtures and reports "[EnvRenderPreGateVerify] VERDICT PASS".
     /// </summary>
-    public sealed partial class EnvRenderPreGateVerify : Node
+    public sealed partial class EnvRenderPreGateVerify : Node3D
     {
         private const string Tag = "[EnvRenderPreGateVerify]";
         private int _failures;
@@ -517,7 +639,10 @@ namespace AtlasWorld.Client.World
         private void RunSelfTest()
         {
             TestSightlineCliffWall();
+            TestSightlineCameraInsideCliffStaticBody();
+            TestSightlineTargetStaticBodySelfOcclusion();
             TestMilestoneSweepAndZFight();
+            TestWallRestingOnFloorNoZFight();
             TestTimeDeltaStrip();
         }
 
@@ -536,6 +661,74 @@ namespace AtlasWorld.Client.World
             bool greenOk = greenResult.Passed && greenResult.BlockedRayCount == 0 && redResult.SuggestedCamOffset.Y > 0;
 
             Report("Sightline: cliff-wall occlusion caught RED and auto-offset clears sightline GREEN", redOk && greenOk);
+        }
+
+        private void TestSightlineCameraInsideCliffStaticBody()
+        {
+            var targetBounds = new Aabb(new Vector3(-1, 0, -1), new Vector3(2, 2, 2));
+            var camPos = new Vector3(0, 1, -10);
+
+            // Cliff StaticBody3D with BoxShape3D placed at camPos (camera inside cliff)
+            var cliffBody = new StaticBody3D { Name = "CliffStaticBody", Position = camPos };
+            var cliffShape = new CollisionShape3D
+            {
+                Shape = new BoxShape3D { Size = new Vector3(4, 4, 4) }
+            };
+            cliffBody.AddChild(cliffShape);
+            AddChild(cliffBody);
+
+            // Pure-math ray-box check
+            var cliffAabb = new Aabb(camPos - new Vector3(2, 2, 2), new Vector3(4, 4, 4));
+            var boxResult = EnvRenderPreGate.CheckRayBoxSightline(camPos, targetBounds, new[] { cliffAabb });
+            bool boxOk = !boxResult.Passed && boxResult.BlockedRayCount == 5;
+
+            // Physics raycast check: camera placed inside cliff -> caught RED (HitFromInside = true)
+            var space = GetWorld3D()?.DirectSpaceState ?? GetTree().Root.World3D?.DirectSpaceState;
+            bool physOk = true;
+            if (space != null)
+            {
+                var physResult = EnvRenderPreGate.CheckCameraSightline(space, camPos, targetBounds);
+                physOk = !physResult.Passed && physResult.BlockedRayCount == 5;
+            }
+
+            RemoveChild(cliffBody);
+            cliffBody.Free();
+
+            Report("Sightline 1b: camera inside cliff StaticBody3D BoxShape3D caught RED (HitFromInside=true)", boxOk && physOk);
+        }
+
+        private void TestSightlineTargetStaticBodySelfOcclusion()
+        {
+            var targetBounds = new Aabb(new Vector3(-1, 0, -1), new Vector3(2, 2, 2));
+            var camPos = new Vector3(0, 1, -10);
+
+            // Target landmark has a StaticBody3D BoxShape3D inside targetBounds
+            var targetBody = new StaticBody3D { Name = "TargetLandmarkBody", Position = new Vector3(0, 1, 0) };
+            var targetShape = new CollisionShape3D
+            {
+                Shape = new BoxShape3D { Size = new Vector3(1.8f, 1.8f, 1.8f) }
+            };
+            targetBody.AddChild(targetShape);
+            AddChild(targetBody);
+
+            // Pure math: obstacle box equals/inside targetBounds should NOT occlude
+            var targetAabb = new Aabb(new Vector3(-0.9f, 0.1f, -0.9f), new Vector3(1.8f, 1.8f, 1.8f));
+            var boxResult = EnvRenderPreGate.CheckRayBoxSightline(camPos, targetBounds, new[] { targetAabb });
+            bool boxOk = boxResult.Passed && boxResult.BlockedRayCount == 0;
+
+            // Physics raycast check: clear line of sight to target landmark inside targetBounds passes GREEN without manual RID exclusion
+            var space = GetWorld3D()?.DirectSpaceState ?? GetTree().Root.World3D?.DirectSpaceState;
+            bool physOk = true;
+            if (space != null)
+            {
+                var physResult = EnvRenderPreGate.CheckCameraSightline(space, camPos, targetBounds, excludeRids: null);
+                physOk = physResult.Passed && physResult.BlockedRayCount == 0;
+            }
+
+            RemoveChild(targetBody);
+            targetBody.Free();
+
+            Report("Sightline 1c: target landmark StaticBody3D inside targetBounds passes GREEN without manual RID exclusion", boxOk && physOk);
         }
 
         private void TestMilestoneSweepAndZFight()
@@ -563,9 +756,17 @@ namespace AtlasWorld.Client.World
             };
             testRoot.AddChild(m4);
 
+            // Sub-test for visibility hierarchy: node under an already-hidden parent is not flagged
+            var hiddenParent = new Node3D { Name = "HiddenParent", Visible = false };
+            testRoot.AddChild(hiddenParent);
+            var m1UnderHidden = new Node3D { Name = "M1_OldSub_Hidden", Visible = true };
+            hiddenParent.AddChild(m1UnderHidden);
+
             // Negative check: autoHide=false detects deprecation and coplanar z-fight -> caught RED
             var redResult = EnvRenderPreGate.SweepDeprecatedMilestoneNodes(testRoot, activeMilestone: 4, subsystemKeywords: new[] { "Water" }, autoHide: false);
             bool redOk = redResult.DeprecatedNodesFound.Count == 1 &&
+                         redResult.DeprecatedNodesFound.Contains(m1) &&
+                         !redResult.DeprecatedNodesFound.Contains(m1UnderHidden) &&
                          redResult.ZFightConflicts.Count >= 1 &&
                          m1.Visible;
 
@@ -575,9 +776,46 @@ namespace AtlasWorld.Client.World
                            greenResult.HiddenNodes.Count == 1 &&
                            greenResult.ZFightConflicts.Count == 0;
 
-            testRoot.QueueFree();
+            RemoveChild(testRoot);
+            testRoot.Free();
 
             Report("MilestoneSweep: M1_River_WaterSurface deprecation & z-fight caught RED and auto-hidden GREEN", redOk && greenOk);
+        }
+
+        private void TestWallRestingOnFloorNoZFight()
+        {
+            var testRoot = new Node3D { Name = "WallFloorTestRoot" };
+            AddChild(testRoot);
+
+            // Floor at Y=0, Size.Y=0.1f (from Y=0.0 to Y=0.1)
+            var floorMesh = new BoxMesh { Size = new Vector3(10, 0.1f, 10) };
+            var floor = new MeshInstance3D
+            {
+                Name = "StoneFloor",
+                Mesh = floorMesh,
+                Position = new Vector3(0, 0.05f, 0),
+                Visible = true
+            };
+            testRoot.AddChild(floor);
+
+            // 10m-tall wall (Size.Y=10f) resting on Y=0 floor (Position.Y=0..10)
+            var wallMesh = new BoxMesh { Size = new Vector3(2, 10f, 0.5f) };
+            var wall = new MeshInstance3D
+            {
+                Name = "StoneWall",
+                Mesh = wallMesh,
+                Position = new Vector3(0, 5.0f, 0),
+                Visible = true
+            };
+            testRoot.AddChild(wall);
+
+            var result = EnvRenderPreGate.SweepDeprecatedMilestoneNodes(testRoot, activeMilestone: 4, autoHide: false);
+            bool noZFight = result.ZFightConflicts.Count == 0;
+
+            RemoveChild(testRoot);
+            testRoot.Free();
+
+            Report("MilestoneSweep 2b: 10m wall resting on 0.1m floor NOT flagged as z-fighting GREEN", noZFight);
         }
 
         private void TestTimeDeltaStrip()
