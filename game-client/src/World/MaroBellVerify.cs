@@ -835,8 +835,6 @@ namespace AtlasWorld.Client.World
             var navDebugRoot = VerifyAndBuildM2TraversalDebug(m1Root);
             navDebugRoot.Visible = false;
 
-            var (s0, s1, s2, s3, m4ShaderMats) = await SetupM4WaterSystemMaterialsAndProfile(m1Root);
-
             // Spawn 1.30m player character (maro_folk_girl) on the southern approach & upper sanctuary landing for scale verification
             if (AssetRegistry.Instance is { } reg)
             {
@@ -893,6 +891,13 @@ namespace AtlasWorld.Client.World
 
             var m1Cam = new Camera3D { Current = true, Near = 0.2f, Far = 1400f };
             m1Root.AddChild(m1Cam);
+            m1Cam.Projection = Camera3D.ProjectionType.Perspective;
+            m1Cam.Fov = 50f;
+            m1Cam.Position = new Vector3(-92.0f, 155.0f, 385.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 14.0f, 75.0f), Vector3.Up);
+
+            var (m4ShaderMats, waterMeshes, wetBankMeshes, mistParticles) = SetupM4WaterSystemMaterials(m1Root);
+            for (int w = 0; w < 6; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 
             // M1 View 4 / M2 View 4 (Required): Godot 4 Player-Eye Uphill View at 1.30m character eye height (+1.22m above ground)
             // showing paired stone curbs, 2-flight landed stairs, flanking mount switchbacks, Central Plaza, and Great Bell Sanctuary
@@ -985,37 +990,65 @@ namespace AtlasWorld.Client.World
             m1Cam.LookAt(new Vector3(-245.5f, 5.8f, 10.0f), Vector3.Up);
             await Save(outDir, "m4_view4_waterfall_profile_plunge_pool_raw.png");
 
-            // M4 View 5: Time-Delta Flow Animation Strip (time_offset = 0.0s, 3.5s, 7.0s)
-            m1Cam.Fov = 50f;
-            m1Cam.Position = new Vector3(-45.0f, 12.5f, 248.0f);
-            m1Cam.LookAt(new Vector3(0.0f, 1.5f, 215.0f), Vector3.Up);
+            // M4 View 5: Continuous 8-Frame High-Cadence Flow Animation Sequence (Δt = 0.25s, t = 0.00s .. 1.75s)
+            // Captures both the River/Bridge Pier-Wake vantage AND the West Waterfall Plunge vantage at each 0.25s step
+            float[] flowOffsets = { 0.00f, 0.25f, 0.50f, 0.75f, 1.00f, 1.25f, 1.50f, 1.75f };
+            m1Cam.Fov = 46f;
+            m1Cam.Position = new Vector3(-34.0f, 7.6f, 238.5f);
+            m1Cam.LookAt(new Vector3(3.0f, -1.5f, 217.5f), Vector3.Up);
+            for (int fi = 0; fi < flowOffsets.Length; fi++)
+            {
+                float tOff = flowOffsets[fi];
+                foreach (var sm in m4ShaderMats) sm.SetShaderParameter("time_offset", tOff);
+                for (int w = 0; w < 2; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                await Save(outDir, $"m4_view5_f{fi}_raw.png");
+                if (fi == 0)
+                {
+                    await Save(outDir, "m4_view5a_flow_t0_raw.png");
+                    await Save(outDir, "m4_view5_time_delta_flow_animation_strip_raw.png");
+                }
+                else if (fi == 3)
+                {
+                    await Save(outDir, "m4_view5b_flow_t1_raw.png");
+                }
+                else if (fi == 7)
+                {
+                    await Save(outDir, "m4_view5c_flow_t2_raw.png");
+                }
+            }
+
+            // Also capture 8 continuous 0.25s frames of the West Waterfall & Plunge Pool for the animation inset & MP4
+            m1Cam.Fov = 52f;
+            m1Cam.Position = new Vector3(-214.0f, 9.2f, 29.5f);
+            m1Cam.LookAt(new Vector3(-245.5f, 5.8f, 10.0f), Vector3.Up);
+            for (int fi = 0; fi < flowOffsets.Length; fi++)
+            {
+                float tOff = flowOffsets[fi];
+                foreach (var sm in m4ShaderMats) sm.SetShaderParameter("time_offset", tOff);
+                for (int w = 0; w < 2; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                await Save(outDir, $"m4_view5_wf_f{fi}_raw.png");
+            }
             foreach (var sm in m4ShaderMats) sm.SetShaderParameter("time_offset", 0.0f);
-            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            await Save(outDir, "m4_view5a_flow_t0_raw.png");
-            await Save(outDir, "m4_view5_time_delta_flow_animation_strip_raw.png");
 
-            foreach (var sm in m4ShaderMats) sm.SetShaderParameter("time_offset", 3.5f);
-            for (int f = 0; f < 4; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            await Save(outDir, "m4_view5b_flow_t1_raw.png");
-
-            foreach (var sm in m4ShaderMats) sm.SetShaderParameter("time_offset", 7.0f);
-            for (int f = 0; f < 4; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            await Save(outDir, "m4_view5c_flow_t2_raw.png");
-            foreach (var sm in m4ShaderMats) sm.SetShaderParameter("time_offset", 0.0f);
-
-            // M4 View 6: Godot GPU Frametime & Collision QA
+            // M4 View 6: Godot GPU Frametime & Collision QA (show 3D traversal ribbons/nodes, hide overlapping 3D text labels)
             navDebugRoot.Visible = true;
+            foreach (Node ch in navDebugRoot.GetChildren())
+            {
+                if (ch is Label3D lbl) lbl.Visible = false;
+            }
             m1Cam.Fov = 48f;
             m1Cam.Position = new Vector3(-72.0f, 186.0f, 362.0f);
             m1Cam.LookAt(new Vector3(0.0f, 10.0f, 38.0f), Vector3.Up);
             await Save(outDir, "m4_view6_godot_gpu_frametime_collision_qa_raw.png");
             navDebugRoot.Visible = false;
 
+            await RunM4UncappedGpuProfile(m1Root, waterMeshes, wetBankMeshes, mistParticles);
+
             _vp = prevVp;
             m1Vp.QueueFree();
         }
 
-        private async Task<(float s0, float s1, float s2, float s3, List<ShaderMaterial> mats)> SetupM4WaterSystemMaterialsAndProfile(Node3D m1Root)
+        private (List<ShaderMaterial> mats, List<MeshInstance3D> waterMeshes, List<MeshInstance3D> wetBankMeshes, List<GpuParticles3D> mistParticles) SetupM4WaterSystemMaterials(Node3D m1Root)
         {
             // 1. Load the 5 .gdshader resources
             var riverShader = GD.Load<Shader>("res://assets/shaders/maro_river_water.gdshader");
@@ -1035,23 +1068,29 @@ namespace AtlasWorld.Client.World
             riverMat.SetShaderParameter("shallow_color", new Color(0.19f, 0.72f, 0.72f, 1.0f));
             riverMat.SetShaderParameter("deep_color", new Color(0.025f, 0.22f, 0.36f, 1.0f));
             riverMat.SetShaderParameter("foam_color", new Color(0.88f, 0.98f, 0.95f, 1.0f));
-            riverMat.SetShaderParameter("flow_speed", 0.22f);
+            riverMat.SetShaderParameter("flow_speed", 0.26f);
             riverMat.SetShaderParameter("sparkle_strength", 0.28f);
 
             var fallMat = new ShaderMaterial { Shader = fallShader };
-            fallMat.SetShaderParameter("water_tint", new Color(0.08f, 0.48f, 0.68f, 1.0f));
-            fallMat.SetShaderParameter("whitewater_tint", new Color(0.92f, 0.98f, 1.0f, 1.0f));
-            fallMat.SetShaderParameter("fall_speed", 0.85f);
+            fallMat.SetShaderParameter("water_tint", new Color(0.14f, 0.62f, 0.78f, 1.0f));
+            fallMat.SetShaderParameter("whitewater_tint", new Color(0.90f, 0.97f, 1.0f, 1.0f));
+            fallMat.SetShaderParameter("fall_speed", 0.95f);
 
             var foamMat = new ShaderMaterial { Shader = foamShader };
+            foamMat.SetShaderParameter("opacity", 0.86f);
+
+            var rippleRingMat = new ShaderMaterial { Shader = foamShader };
+            rippleRingMat.SetShaderParameter("opacity", 0.56f);
+
             var fountainMat = new ShaderMaterial { Shader = fountainShader };
             var wetBankMat = new ShaderMaterial { Shader = wetBankShader };
 
-            var m4ShaderMats = new List<ShaderMaterial> { riverMat, fallMat, foamMat, fountainMat };
+            var m4ShaderMats = new List<ShaderMaterial> { riverMat, fallMat, foamMat, rippleRingMat, fountainMat };
 
             // Apply materials to M4 meshes & hide legacy M1 placeholder water/fountain nodes so they never z-fight
             int appliedCount = 0;
             var waterMeshes = new List<MeshInstance3D>();
+            var wetBankMeshes = new List<MeshInstance3D>();
             var stack = new Stack<Node>();
             stack.Push(m1Root);
             while (stack.Count > 0)
@@ -1084,9 +1123,15 @@ namespace AtlasWorld.Client.World
                         waterMeshes.Add(mi);
                         appliedCount++;
                     }
-                    else if (nm.StartsWith("M4_PlungeFoam_") || nm.StartsWith("M4_RippleRings_"))
+                    else if (nm.StartsWith("M4_PlungeFoam_"))
                     {
                         mi.MaterialOverride = foamMat;
+                        waterMeshes.Add(mi);
+                        appliedCount++;
+                    }
+                    else if (nm.StartsWith("M4_RippleRings_"))
+                    {
+                        mi.MaterialOverride = rippleRingMat;
                         waterMeshes.Add(mi);
                         appliedCount++;
                     }
@@ -1111,6 +1156,7 @@ namespace AtlasWorld.Client.World
                     else if (nm.StartsWith("M4_WetBankBand_"))
                     {
                         mi.MaterialOverride = wetBankMat;
+                        wetBankMeshes.Add(mi);
                         appliedCount++;
                     }
                 }
@@ -1162,53 +1208,184 @@ namespace AtlasWorld.Client.World
             }
             Report($"F-228 M4 GPUParticles3D mist & splash emitters spawned ({mistParticles.Count}/4 systems)", mistParticles.Count == 4);
 
-            // 4-Stage GPU/CPU Frame-Time Profiling (with 12 warmup frames so first-frame shader compile never skews Stage 0)
+            return (m4ShaderMats, waterMeshes, wetBankMeshes, mistParticles);
+        }
+
+        private async Task RunM4UncappedGpuProfile(Node3D m1Root, List<MeshInstance3D> waterMeshes, List<MeshInstance3D> wetBankMeshes, List<GpuParticles3D> mistParticles)
+        {
+
+            // -----------------------------------------------------------------
+            // Uncapped VSync-Off 4-Stage GPU & CPU Render-Time Benchmark (N = 30 frames/stage)
+            // -----------------------------------------------------------------
+            DisplayServer.WindowSetVsyncMode(DisplayServer.VSyncMode.Disabled);
+            Engine.MaxFps = 0;
+
+            Rid vpRid = _vp != null ? _vp.GetViewportRid() : GetViewport().GetViewportRid();
+            Rid rootVpRid = GetViewport().GetViewportRid();
+            RenderingServer.ViewportSetMeasureRenderTime(vpRid, true);
+            RenderingServer.ViewportSetMeasureRenderTime(rootVpRid, true);
+
+            // 15 warmup frames with all water shaders and particle PSOs active
             foreach (var mi in waterMeshes) mi.Visible = true;
-            foreach (var p in mistParticles) p.Emitting = true;
-            for (int w = 0; w < 12; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            foreach (var wb in wetBankMeshes) wb.Visible = true;
+            foreach (var p in mistParticles) { p.Visible = true; p.Emitting = true; }
+            for (int w = 0; w < 15; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
+            static (float med, float p95) CalcStats(List<float> samples)
+            {
+                if (samples.Count == 0) return (0f, 0f);
+                var sorted = new List<float>(samples);
+                sorted.Sort();
+                int mid = sorted.Count / 2;
+                float med = sorted.Count % 2 == 1 ? sorted[mid] : 0.5f * (sorted[mid - 1] + sorted[mid]);
+                int idx95 = Math.Clamp((int)Math.Ceiling(sorted.Count * 0.95) - 1, 0, sorted.Count - 1);
+                return (med, sorted[idx95]);
+            }
+
+            async Task<(float gpuMed, float gpuP95, float cpuMed, float cpuP95, float wallMed, float wallP95, long drawCalls, long primitives)> MeasureStageAsync(int warmupFrames, int sampleFrames)
+            {
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+                for (int w = 0; w < warmupFrames; w++)
+                {
+                    RenderingServer.ForceDraw(false, 1.0 / 120.0);
+                    RenderingServer.ForceSync();
+                }
+
+                var gpuSamples = new List<float>(sampleFrames);
+                var cpuSamples = new List<float>(sampleFrames);
+                var wallSamples = new List<float>(sampleFrames);
+                long lastDraws = 0;
+                long lastPrims = 0;
+
+                for (int f = 0; f < sampleFrames; f++)
+                {
+                    var swFrame = System.Diagnostics.Stopwatch.StartNew();
+                    RenderingServer.ForceDraw(false, 1.0 / 120.0);
+                    RenderingServer.ForceSync();
+                    swFrame.Stop();
+
+                    float wallMs = (float)swFrame.Elapsed.TotalMilliseconds;
+                    float vpGpu = (float)RenderingServer.ViewportGetMeasuredRenderTimeGpu(vpRid);
+                    float vpCpu = (float)RenderingServer.ViewportGetMeasuredRenderTimeCpu(vpRid);
+                    float setupCpu = (float)RenderingServer.GetFrameSetupTimeCpu();
+
+                    float cpuTotal = vpCpu + setupCpu;
+                    float gpuTotal = vpGpu > 0.01f ? vpGpu : Math.Max(0.05f, wallMs - cpuTotal);
+
+                    gpuSamples.Add(gpuTotal);
+                    cpuSamples.Add(cpuTotal);
+                    wallSamples.Add(wallMs);
+
+                    lastDraws = RenderingServer.ViewportGetRenderInfo(vpRid, RenderingServer.ViewportRenderInfoType.Visible, RenderingServer.ViewportRenderInfo.DrawCallsInFrame);
+                    lastPrims = RenderingServer.ViewportGetRenderInfo(vpRid, RenderingServer.ViewportRenderInfoType.Visible, RenderingServer.ViewportRenderInfo.PrimitivesInFrame);
+                    if (lastDraws == 0)
+                    {
+                        lastDraws = (long)RenderingServer.GetRenderingInfo(RenderingServer.RenderingInfo.TotalDrawCallsInFrame);
+                        lastPrims = (long)RenderingServer.GetRenderingInfo(RenderingServer.RenderingInfo.TotalPrimitivesInFrame);
+                    }
+                }
+
+                var (gpuMed, gpuP95) = CalcStats(gpuSamples);
+                var (cpuMed, cpuP95) = CalcStats(cpuSamples);
+                var (wallMed, wallP95) = CalcStats(wallSamples);
+                return (gpuMed, gpuP95, cpuMed, cpuP95, wallMed, wallP95, lastDraws, lastPrims);
+            }
 
             // Stage 0: Water Disabled
             foreach (var mi in waterMeshes) mi.Visible = false;
-            foreach (var p in mistParticles) p.Emitting = false;
-            for (int w = 0; w < 3; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            var sw0 = System.Diagnostics.Stopwatch.StartNew();
-            for (int f = 0; f < 8; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            sw0.Stop();
-            float s0 = (float)sw0.Elapsed.TotalMilliseconds / 8.0f;
+            foreach (var wb in wetBankMeshes) wb.Visible = false;
+            foreach (var p in mistParticles) { p.Emitting = false; p.Visible = false; }
+            var st0 = await MeasureStageAsync(6, 30);
 
-            // Stage 1: Base River Water
+            // Stage 1: Base River Water Only
             var riv = m1Root.FindChild("M4_RiverSurface_Main", true, false) as MeshInstance3D;
             if (riv != null) riv.Visible = true;
-            for (int w = 0; w < 2; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            var sw1 = System.Diagnostics.Stopwatch.StartNew();
-            for (int f = 0; f < 8; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            sw1.Stop();
-            float s1 = (float)sw1.Elapsed.TotalMilliseconds / 8.0f;
+            var st1 = await MeasureStageAsync(6, 30);
 
-            // Stage 2: Water + Shoreline/Waterfall Foam
+            // Stage 2: Water + Shoreline/Waterfall Foam + Fountain + Wet Banks
             foreach (var mi in waterMeshes) mi.Visible = true;
-            for (int w = 0; w < 2; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            var sw2 = System.Diagnostics.Stopwatch.StartNew();
-            for (int f = 0; f < 8; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            sw2.Stop();
-            float s2 = (float)sw2.Elapsed.TotalMilliseconds / 8.0f;
+            foreach (var wb in wetBankMeshes) wb.Visible = true;
+            var st2 = await MeasureStageAsync(6, 30);
 
             // Stage 3: Full Water + Mist Particles + Screen-Reading Reflections
-            foreach (var p in mistParticles) p.Emitting = true;
-            for (int w = 0; w < 2; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            var sw3 = System.Diagnostics.Stopwatch.StartNew();
-            for (int f = 0; f < 8; f++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-            sw3.Stop();
-            float s3 = (float)sw3.Elapsed.TotalMilliseconds / 8.0f;
+            foreach (var p in mistParticles) { p.Visible = true; p.Emitting = true; }
+            var st3 = await MeasureStageAsync(6, 30);
 
+            // Use uncapped GPU median if reported > 0.05ms, else CPU+GPU composite
+            float s0 = st0.gpuMed > 0.05f ? st0.gpuMed : st0.wallMed;
+            float s1 = st1.gpuMed > 0.05f ? st1.gpuMed : st1.wallMed;
+            float s2 = st2.gpuMed > 0.05f ? st2.gpuMed : st2.wallMed;
+            float s3 = st3.gpuMed > 0.05f ? st3.gpuMed : st3.wallMed;
+
+            string adapterName = RenderingServer.GetVideoAdapterName().Replace("\"", "'");
+            string adapterVendor = RenderingServer.GetVideoAdapterVendor().Replace("\"", "'");
             string profileJsonPath = "/Users/pasitnusso/asset-studio-private/atlas-3d-plan/env/m4/m4_gpu_profile.json";
-            string profileJson = $"{{\n  \"stage0_disabled_ms\": {s0:F2},\n  \"stage1_base_river_ms\": {s1:F2},\n  \"stage2_water_foam_ms\": {s2:F2},\n  \"stage3_full_water_mist_ms\": {s3:F2},\n  \"target_budget_ms\": 25.0\n}}\n";
+            string profileJson =
+$@"{{
+  ""hardware_adapter"": ""{adapterName} ({adapterVendor})"",
+  ""rendering_driver"": ""Godot 4.6 Forward+ (Metal)"",
+  ""viewport_resolution"": ""1600x1200"",
+  ""vsync_mode"": ""Disabled"",
+  ""max_fps"": 0,
+  ""warmup_frames_per_stage"": 6,
+  ""sample_frames_per_stage"": 30,
+  ""stage0_disabled_ms"": {s0:F2},
+  ""stage1_base_river_ms"": {s1:F2},
+  ""stage2_water_foam_ms"": {s2:F2},
+  ""stage3_full_water_mist_ms"": {s3:F2},
+  ""stages"": {{
+    ""stage0_water_disabled"": {{
+      ""gpu_median_ms"": {st0.gpuMed:F3},
+      ""gpu_p95_ms"": {st0.gpuP95:F3},
+      ""cpu_median_ms"": {st0.cpuMed:F3},
+      ""cpu_p95_ms"": {st0.cpuP95:F3},
+      ""uncapped_frame_median_ms"": {st0.wallMed:F3},
+      ""uncapped_frame_p95_ms"": {st0.wallP95:F3},
+      ""draw_calls"": {st0.drawCalls},
+      ""primitives"": {st0.primitives}
+    }},
+    ""stage1_base_river"": {{
+      ""gpu_median_ms"": {st1.gpuMed:F3},
+      ""gpu_p95_ms"": {st1.gpuP95:F3},
+      ""cpu_median_ms"": {st1.cpuMed:F3},
+      ""cpu_p95_ms"": {st1.cpuP95:F3},
+      ""uncapped_frame_median_ms"": {st1.wallMed:F3},
+      ""uncapped_frame_p95_ms"": {st1.wallP95:F3},
+      ""draw_calls"": {st1.drawCalls},
+      ""primitives"": {st1.primitives}
+    }},
+    ""stage2_water_foam_fountain"": {{
+      ""gpu_median_ms"": {st2.gpuMed:F3},
+      ""gpu_p95_ms"": {st2.gpuP95:F3},
+      ""cpu_median_ms"": {st2.cpuMed:F3},
+      ""cpu_p95_ms"": {st2.cpuP95:F3},
+      ""uncapped_frame_median_ms"": {st2.wallMed:F3},
+      ""uncapped_frame_p95_ms"": {st2.wallP95:F3},
+      ""draw_calls"": {st2.drawCalls},
+      ""primitives"": {st2.primitives}
+    }},
+    ""stage3_full_water_mist_ssr"": {{
+      ""gpu_median_ms"": {st3.gpuMed:F3},
+      ""gpu_p95_ms"": {st3.gpuP95:F3},
+      ""cpu_median_ms"": {st3.cpuMed:F3},
+      ""cpu_p95_ms"": {st3.cpuP95:F3},
+      ""uncapped_frame_median_ms"": {st3.wallMed:F3},
+      ""uncapped_frame_p95_ms"": {st3.wallP95:F3},
+      ""draw_calls"": {st3.drawCalls},
+      ""primitives"": {st3.primitives}
+    }}
+  }},
+  ""target_budget_ms"": 25.0
+}}
+";
             System.IO.File.WriteAllText(profileJsonPath, profileJson);
 
-            GD.Print($"[MaroBellVerify] M4 WATER SYSTEM GPU FRAME-TIME PROFILE: Stage 0 (Disabled)={s0:F2}ms, Stage 1 (Base River)={s1:F2}ms, Stage 2 (Water+Foam)={s2:F2}ms, Stage 3 (Full Water+Mist)={s3:F2}ms");
-            Report($"F-228 M4 4-stage GPU/CPU frame-time profile PASS (Stage 0: {s0:F2}ms, Stage 1: {s1:F2}ms, Stage 2: {s2:F2}ms, Stage 3: {s3:F2}ms <= 25.0ms)", s3 <= 25.0f);
-
-            return (s0, s1, s2, s3, m4ShaderMats);
+            GD.Print($"[MaroBellVerify] M4 UNCAPPED GPU/CPU PROFILE (VSync=Disabled, N=30): " +
+                     $"S0(Disabled) GPU={st0.gpuMed:F2}/{st0.gpuP95:F2}ms CPU={st0.cpuMed:F2}/{st0.cpuP95:F2}ms Frame={st0.wallMed:F2}ms Draws={st0.drawCalls} | " +
+                     $"S1(River) GPU={st1.gpuMed:F2}/{st1.gpuP95:F2}ms CPU={st1.cpuMed:F2}/{st1.cpuP95:F2}ms Frame={st1.wallMed:F2}ms Draws={st1.drawCalls} | " +
+                     $"S2(Water+Foam) GPU={st2.gpuMed:F2}/{st2.gpuP95:F2}ms CPU={st2.cpuMed:F2}/{st2.cpuP95:F2}ms Frame={st2.wallMed:F2}ms Draws={st2.drawCalls} | " +
+                     $"S3(Full+Mist) GPU={st3.gpuMed:F2}/{st3.gpuP95:F2}ms CPU={st3.cpuMed:F2}/{st3.cpuP95:F2}ms Frame={st3.wallMed:F2}ms Draws={st3.drawCalls}");
+            Report($"F-228 M4 4-stage uncapped GPU/CPU frame-time profile PASS (Stage 0: {s0:F2}ms, Stage 1: {s1:F2}ms, Stage 2: {s2:F2}ms, Stage 3: {s3:F2}ms <= 25.0ms)", s3 <= 25.0f);
         }
 
         private static int AttachM2WalkableColliders(Node root)
