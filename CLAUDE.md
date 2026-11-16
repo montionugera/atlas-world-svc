@@ -69,3 +69,11 @@ Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `
 ### Domain docs
 
 Single-context (`CONTEXT.md` + `docs/adr/` at repo root). Repo is a monorepo — switch this line to multi-context (`CONTEXT-MAP.md`) if you split docs per package. See `docs/agents/domain.md`.
+
+### 3D Environment Milestone Visual QA Pipeline (`M1–M7`, owner rule 2026-11-17)
+
+For Maro Bell and 3D environment milestones (`M1..M7`), **do NOT use Browser ChatGPT / `chrome-devtools` MCP (`pageId: 29`)**. Always execute the 3-layer deterministic headless pipeline in order:
+1. **Godot Runtime Pre-Gate (`F-229`):** Run with `ATLAS_VERIFY_ENV_PREGATE=1` (`game-client/src/World/EnvRenderPreGate.cs`: `CheckCameraSightline`, `CheckDeprecatedMilestoneClutter`, `CheckStripDelta`) and `./scripts/godot-verify.sh` (`.glb` `.import` preflight).
+2. **Jev System-1 Fast Pre-Gate (`~1.1s`):** `/Users/pasitnusso/asset-studio-private/atlas-3d-plan/bin/jev-env-qa --milestone <M1..M7> <views.png>`
+3. **Headless `codex-qa` Milestone Verdict (`>= 8.0 / 10` required, zero Chrome modals):**
+   `/Users/pasitnusso/.local/bin/codex-qa --rubric env --milestone <M1..M7> --structured --out <verdict.json> <concept_refs_and_views.png>`

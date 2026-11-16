@@ -810,9 +810,25 @@ namespace AtlasWorld.Client.World
                 "M4_Fountain_Basin",
                 "M4_Fountain_WaterSurface",
                 "M4_Fountain_SpilloverRibbons",
+                "M5_BellSanctuary_Piers",
+                "M5_BellSanctuary_CofferedVault",
+                "M5_BellSanctuary_LanternSpire",
+                "M5_BellSanctuary_SideTowers",
+                "M5_BellSanctuary_Banners",
+                "M5_GreatBell_Body",
+                "M5_GreatBell_Clapper",
+                "M5_GreatBell_YokeAndSupport",
+                "M5_SanctuaryGrandStairs_FlaredWings",
+                "M5_SanctuaryGrandStairs_Balustrades",
+                "M5_SanctuaryGrandStairs_UpperDais",
+                "M5_Astrolabe_BasinCopingAndPlinth",
+                "M5_Astrolabe_PedestalAndSpouts",
+                "M5_Astrolabe_UpperBowlWater",
+                "M5_Astrolabe_ArmillaryRings",
+                "M5_Astrolabe_SunCoreAndAxis",
             })
             {
-                Report($"F-225/F-226/F-227 M1+M2+M3 Master Plan node present ({requiredNode})", m1Root.FindChild(requiredNode, true, false) != null);
+                Report($"F-225..F-230 M1..M5 Master Plan node present ({requiredNode})", m1Root.FindChild(requiredNode, true, false) != null);
             }
 
             SubViewport? prevVp = _vp;
@@ -835,7 +851,9 @@ namespace AtlasWorld.Client.World
             var navDebugRoot = VerifyAndBuildM2TraversalDebug(m1Root);
             navDebugRoot.Visible = false;
 
-            // Spawn 1.30m player character (maro_folk_girl) on the southern approach & upper sanctuary landing for scale verification
+            // Spawn 1.30m player character (maro_folk_girl) on the southern approach, central astrolabe plaza, grand staircase base & upper sanctuary landing
+            Node3D? girlPlaza = null;
+            Node3D? girlStairBase = null;
             if (AssetRegistry.Instance is { } reg)
             {
                 PackedScene girlScene = reg.Resolve(PipelineCharVerify.MaroGirlKey, out ResolveTier tier);
@@ -854,6 +872,20 @@ namespace AtlasWorld.Client.World
                     new WeaponSocket(girlNorth).EquipByKey("kk_sword_a");
                     girlNorth.Position = new Vector3(-2.4f, 32.15f, -74.0f);
                     girlNorth.Rotation = Vector3.Zero;
+
+                    girlPlaza = (Node3D)girlScene.Instantiate();
+                    m1Root.AddChild(girlPlaza);
+                    EntityView.ApplyAnimeToonShading(girlPlaza, EntityKind.Player);
+                    new WeaponSocket(girlPlaza).EquipByKey("sword");
+                    girlPlaza.Position = new Vector3(-6.45f, 15.08f, 3.6f);
+                    girlPlaza.Rotation = new Vector3(0f, -0.55f, 0f);
+
+                    girlStairBase = (Node3D)girlScene.Instantiate();
+                    m1Root.AddChild(girlStairBase);
+                    EntityView.ApplyAnimeToonShading(girlStairBase, EntityKind.Player);
+                    new WeaponSocket(girlStairBase).EquipByKey("claymore");
+                    girlStairBase.Position = new Vector3(1.4f, 15.08f, -31.8f);
+                    girlStairBase.Rotation = new Vector3(0f, Mathf.Pi, 0f);
                 }
             }
 
@@ -1042,10 +1074,392 @@ namespace AtlasWorld.Client.World
             await Save(outDir, "m4_view6_godot_gpu_frametime_collision_qa_raw.png");
             navDebugRoot.Visible = false;
 
+            // -----------------------------------------------------------------
+            // F-230 M5 Monumental Landmarks: PBR Styling, Structural/Traversal Gates & 6 QA Views
+            // -----------------------------------------------------------------
+            SetupAndVerifyM5Landmarks(m1Root, navDebugRoot);
+            for (int w = 0; w < 3; w++) await ToSignal(GetTree(), SceneTree.SignalName.PhysicsFrame);
+            for (int w = 0; w < 3; w++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            VerifyM5EnvRenderPreGate(m1Root);
+
+            // M5 View 1 (2-Panel Orthographic Front & Side Elevations of Great Bell Sanctuary + Flared Grand Staircase)
+            var hiddenForOrtho = new List<Node3D>();
+            void HideIfMatch(Func<string, bool> pred)
+            {
+                var st = new Stack<Node>();
+                st.Push(m1Root);
+                while (st.Count > 0)
+                {
+                    Node cur = st.Pop();
+                    foreach (Node c in cur.GetChildren()) st.Push(c);
+                    if (cur is Node3D n3 && n3.Visible && pred(n3.Name.ToString()))
+                    {
+                        n3.Visible = false;
+                        hiddenForOrtho.Add(n3);
+                    }
+                }
+            }
+            void RestoreHidden()
+            {
+                foreach (var n3 in hiddenForOrtho) n3.Visible = true;
+                hiddenForOrtho.Clear();
+            }
+
+            // Hide foreground plaza/district props so Ortho Front Elevation shows 100% of Grand Staircase (+15.05m) -> Spire (+89.60m)
+            HideIfMatch(nm => nm.StartsWith("M1_DistrictHouse_") || nm.StartsWith("M1_Z2_") || nm.StartsWith("M1_Plaza")
+                           || nm.StartsWith("M5_Astrolabe_") || nm.StartsWith("M4_Fountain_") || nm.StartsWith("M5_ScaleRef_Plaza"));
+            if (girlPlaza != null) { girlPlaza.Visible = false; hiddenForOrtho.Add(girlPlaza); }
+
+            m1Cam.Projection = Camera3D.ProjectionType.Orthogonal;
+            m1Cam.Size = 82.0f;
+            m1Cam.Near = 0.5f;
+            m1Cam.Far = 450.0f;
+            m1Cam.Position = new Vector3(0.0f, 52.0f, 12.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 52.0f, -106.0f), Vector3.Up);
+            await Save(outDir, "m5_view1a_sanctuary_ortho_front_raw.png");
+
+            // Hide West terrain/walls for clean Orthographic West-to-East Side Profile of Stairs + Sanctuary Vault + Spire
+            HideIfMatch(nm => nm == "M1_ValleyTerrain" || nm.StartsWith("CW") || nm.StartsWith("RW09") || nm.StartsWith("RW01")
+                           || nm.StartsWith("RW03") || nm.StartsWith("M3_Bastion_B0") || nm.StartsWith("M3_Bastion_B10")
+                           || nm.StartsWith("M3_Bastion_B11") || nm.StartsWith("M3_Bastion_B12") || nm.StartsWith("M3_Bastion_B13")
+                           || nm.StartsWith("M3_Bastion_B14") || nm.StartsWith("M1_Windmill_") || nm.StartsWith("M1_ValleyTree"));
+            m1Cam.Size = 82.0f;
+            m1Cam.Position = new Vector3(-92.0f, 52.0f, -74.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 52.0f, -74.0f), Vector3.Up);
+            await Save(outDir, "m5_view1b_sanctuary_ortho_side_raw.png");
+            RestoreHidden();
+
+            // M5 View 2A: Orthographic Front Elevation of Golden Astrolabe Fountain + 1.30m Player Scale Reference
+            m1Cam.Projection = Camera3D.ProjectionType.Orthogonal;
+            m1Cam.Size = 15.6f;
+            m1Cam.Near = 4.0f;
+            m1Cam.Far = 34.0f;
+            m1Cam.Position = new Vector3(-0.8f, 21.0f, 22.0f);
+            m1Cam.LookAt(new Vector3(-0.8f, 21.0f, 0.0f), Vector3.Up);
+            await Save(outDir, "m5_view2a_astrolabe_ortho_front_raw.png");
+
+            // M5 View 2B: Perspective 3/4 Hero Closeup of Golden Astrolabe Fountain, Radial Water Basin, 8 Spouts & 1.30m Player Scale
+            m1Cam.Projection = Camera3D.ProjectionType.Perspective;
+            m1Cam.Near = 0.2f;
+            m1Cam.Far = 1400.0f;
+            m1Cam.Fov = 48f;
+            m1Cam.Position = new Vector3(-10.4f, 19.3f, 11.6f);
+            m1Cam.LookAt(new Vector3(-0.4f, 20.6f, 0.0f), Vector3.Up);
+            await Save(outDir, "m5_view2b_astrolabe_3q_closeup_raw.png");
+
+            // M5 View 3: Southern Market Boulevard Hero Camera (Shot 2) looking North toward Astrolabe & Great Bell Sanctuary
+            m1Cam.Fov = 52f;
+            m1Cam.Position = new Vector3(1.2f, 10.65f, 82.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 38.5f, -106.0f), Vector3.Up);
+            await Save(outDir, "m5_view3_south_boulevard_hero_shot2_raw.png");
+
+            // M5 View 4: Central Bell Plaza & Golden Astrolabe Fountain Hero Camera (Shot 3) with Sanctuary Backdrop
+            m1Cam.Fov = 54f;
+            m1Cam.Position = new Vector3(-11.8f, 17.55f, 17.2f);
+            m1Cam.LookAt(new Vector3(1.0f, 23.2f, -18.0f), Vector3.Up);
+            await Save(outDir, "m5_view4_central_plaza_astrolabe_shot3_raw.png");
+
+            // M5 View 5: Sanctuary Approach & Flared Grand Staircase Hero Camera (Shot 4 + 1.30m Player Scale)
+            m1Cam.Fov = 56f;
+            m1Cam.Position = new Vector3(0.0f, 17.75f, -18.5f);
+            m1Cam.LookAt(new Vector3(0.0f, 51.5f, -106.0f), Vector3.Up);
+            await Save(outDir, "m5_view5_sanctuary_arch_stairs_shot4_raw.png");
+
+            // M5 View 6A: Structural Closeup — 3-Order Radial Voussoir Arch, Coffered Vault & Great Bell Yoke Hanger Support
+            m1Cam.Fov = 46f;
+            m1Cam.Position = new Vector3(-7.4f, 44.8f, -84.5f);
+            m1Cam.LookAt(new Vector3(0.0f, 55.2f, -106.0f), Vector3.Up);
+            await Save(outDir, "m5_view6a_arch_bell_yoke_closeup_raw.png");
+
+            // M5 View 6B: Structural Closeup — Flared Grand Staircase Open Colonnette Balustrades, Landing Balcony & Braziers
+            m1Cam.Fov = 50f;
+            m1Cam.Position = new Vector3(-23.5f, 22.8f, -33.5f);
+            m1Cam.LookAt(new Vector3(-5.5f, 21.5f, -50.5f), Vector3.Up);
+            await Save(outDir, "m5_view6b_grand_stair_balustrade_closeup_raw.png");
+
+            // M5 View 6C: Godot 4 Runtime Navigation Regression & Landmark Sightline Debug Capture
+            navDebugRoot.Visible = true;
+            foreach (Node ch in navDebugRoot.GetChildren())
+            {
+                if (ch is Label3D lbl) lbl.Visible = false;
+            }
+            m1Cam.Fov = 48f;
+            m1Cam.Position = new Vector3(-68.0f, 178.0f, 342.0f);
+            m1Cam.LookAt(new Vector3(0.0f, 20.0f, 8.0f), Vector3.Up);
+            await Save(outDir, "m5_view6c_godot_gpu_nav_qa_raw.png");
+            navDebugRoot.Visible = false;
+
             await RunM4UncappedGpuProfile(m1Root, waterMeshes, wetBankMeshes, mistParticles);
 
             _vp = prevVp;
             m1Vp.QueueFree();
+        }
+
+        private void SetupAndVerifyM5Landmarks(Node3D m1Root, Node3D navDebugRoot)
+        {
+            // 1. Upgrade PBR metallic/roughness materials across M5 Sanctuary, Bell, Stairs & Astrolabe meshes
+            var pbrSpecs = new Dictionary<string, StandardMaterial3D>
+            {
+                ["M5_GoldOrnament"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.98f, 0.79f, 0.25f),
+                    Metallic = 0.88f,
+                    Roughness = 0.20f,
+                    MetallicSpecular = 0.75f,
+                },
+                ["M5_SanctuaryTrimGold"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.93f, 0.73f, 0.23f),
+                    Metallic = 0.84f,
+                    Roughness = 0.25f,
+                },
+                ["M5_BellBronzeGold"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.95f, 0.74f, 0.22f),
+                    Metallic = 0.90f,
+                    Roughness = 0.22f,
+                    MetallicSpecular = 0.80f,
+                },
+                ["M5_BellDarkBronze"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.36f, 0.26f, 0.12f),
+                    Metallic = 0.78f,
+                    Roughness = 0.40f,
+                },
+                ["M5_SanctuaryRoofBlue"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.14f, 0.33f, 0.68f),
+                    Metallic = 0.08f,
+                    Roughness = 0.38f,
+                },
+                ["M5_BannerRoyalBlue"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.11f, 0.26f, 0.65f),
+                    Metallic = 0.05f,
+                    Roughness = 0.50f,
+                    CullMode = BaseMaterial3D.CullModeEnum.Disabled,
+                },
+                ["M5_SanctuaryLimestone"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.92f, 0.88f, 0.79f),
+                    Metallic = 0.02f,
+                    Roughness = 0.56f,
+                },
+                ["M5_SanctuaryWarmStone"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.82f, 0.75f, 0.64f),
+                    Metallic = 0.02f,
+                    Roughness = 0.62f,
+                },
+                ["M5_SanctuaryPlinthStone"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.63f, 0.59f, 0.53f),
+                    Metallic = 0.03f,
+                    Roughness = 0.66f,
+                },
+                ["M5_DarkOakTimber"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.28f, 0.17f, 0.09f),
+                    Metallic = 0.04f,
+                    Roughness = 0.64f,
+                },
+                ["M5_ForgedIron"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(0.22f, 0.23f, 0.26f),
+                    Metallic = 0.82f,
+                    Roughness = 0.36f,
+                },
+                ["M5_LanternWarmGlow"] = new StandardMaterial3D
+                {
+                    AlbedoColor = new Color(1.0f, 0.82f, 0.34f),
+                    EmissionEnabled = true,
+                    Emission = new Color(1.0f, 0.72f, 0.22f),
+                    EmissionEnergyMultiplier = 2.4f,
+                    Roughness = 0.18f,
+                },
+            };
+
+            int m5StyledSurfaces = 0;
+            var stack = new Stack<Node>();
+            stack.Push(m1Root);
+            while (stack.Count > 0)
+            {
+                Node cur = stack.Pop();
+                foreach (Node ch in cur.GetChildren()) stack.Push(ch);
+                if (cur is MeshInstance3D mi && mi.Mesh != null && (mi.Name.ToString().StartsWith("M5_") || mi.Name == "M1_Sanctuary_RomanesqueArch"))
+                {
+                    int surfCount = mi.Mesh.GetSurfaceCount();
+                    for (int s = 0; s < surfCount; s++)
+                    {
+                        Material? surfMat = mi.Mesh.SurfaceGetMaterial(s);
+                        if (surfMat != null && pbrSpecs.TryGetValue(surfMat.ResourceName, out var upgraded))
+                        {
+                            mi.SetSurfaceOverrideMaterial(s, upgraded);
+                            m5StyledSurfaces++;
+                        }
+                    }
+                    if (mi.Name == "M5_SanctuaryGrandStairs_UpperDais" || mi.Name == "M5_Sanctuary_ForecourtPaving" || mi.Name == "M5_SanctuaryGrandStairs_FlaredWings")
+                    {
+                        mi.CreateTrimeshCollision();
+                    }
+                }
+            }
+            Report($"F-230 M5 applied upgraded PBR metallic/limestone/blue-roof/gold materials ({m5StyledSurfaces} >= 24 surfaces)", m5StyledSurfaces >= 24);
+
+            // 2. Verify World-Space Bounding Boxes & Physical Structural Continuity of Sanctuary, Bell & Astrolabe
+            static (Vector3 min, Vector3 max, bool ok) GetWorldBounds(Node3D root, string nodeName)
+            {
+                if (root.FindChild(nodeName, true, false) is not MeshInstance3D mi || mi.Mesh == null)
+                    return (Vector3.Zero, Vector3.Zero, false);
+                Transform3D xf = mi.GlobalTransform;
+                Vector3[] faces = mi.Mesh.GetFaces();
+                if (faces.Length == 0) return (Vector3.Zero, Vector3.Zero, false);
+                Vector3 mn = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+                Vector3 mx = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+                for (int i = 0; i < faces.Length; i++)
+                {
+                    Vector3 p = xf * faces[i];
+                    mn = mn.Min(p);
+                    mx = mx.Max(p);
+                }
+                return (mn, mx, true);
+            }
+
+            var archB = GetWorldBounds(m1Root, "M1_Sanctuary_RomanesqueArch");
+            var spireB = GetWorldBounds(m1Root, "M5_BellSanctuary_LanternSpire");
+            var sideB = GetWorldBounds(m1Root, "M5_BellSanctuary_SideTowers");
+            var bellB = GetWorldBounds(m1Root, "M5_GreatBell_Body");
+            var yokeB = GetWorldBounds(m1Root, "M5_GreatBell_YokeAndSupport");
+            var astroB = GetWorldBounds(m1Root, "M5_Astrolabe_ArmillaryRings");
+            var coreB = GetWorldBounds(m1Root, "M5_Astrolabe_SunCoreAndAxis");
+
+            float sanctuaryHeightAboveDais = spireB.max.Y - 34.70f;
+            float sanctuaryWingspan = sideB.max.X - sideB.min.X;
+            Report($"F-230 M5 Great Bell Sanctuary silhouette scale PASS (worldTopY={spireB.max.Y:F2}m, heightAboveDais={sanctuaryHeightAboveDais:F2}m in [50..60m], wingspan={sanctuaryWingspan:F2}m >= 56m)",
+                spireB.ok && sideB.ok && sanctuaryHeightAboveDais >= 50.0f && sanctuaryHeightAboveDais <= 60.0f && sanctuaryWingspan >= 56.0f);
+
+            float bellDiameter = bellB.max.X - bellB.min.X;
+            float bellHeight = bellB.max.Y - bellB.min.Y;
+            bool yokeWeldedToBellAndVault = yokeB.ok && yokeB.min.Y <= bellB.max.Y + 0.05f && yokeB.max.Y >= 60.49f;
+            Report($"F-230 M5 Great Bell dimensions & zero-gap structural yoke suspension PASS (D={bellDiameter:F2}m >= 7.0m, H={bellHeight:F2}m >= 7.2m, yokeSpanY=[{yokeB.min.Y:F2}..{yokeB.max.Y:F2}m] anchored into +60.49m vault)",
+                bellB.ok && archB.ok && bellDiameter >= 7.0f && bellHeight >= 7.2f && yokeWeldedToBellAndVault);
+
+            float astrolabeOuterD = Mathf.Max(astroB.max.X - astroB.min.X, astroB.max.Z - astroB.min.Z);
+            float astrolabeTopY = Mathf.Max(astroB.max.Y, coreB.max.Y);
+            Report($"F-230 M5 Central Golden Astrolabe Fountain dominance PASS (outerD={astrolabeOuterD:F2}m >= 7.5m, topFinialY={astrolabeTopY:F2}m >= 26.5m, heightAbovePlaza={astrolabeTopY - 15.05f:F2}m)",
+                astroB.ok && coreB.ok && astrolabeOuterD >= 7.5f && astrolabeTopY >= 26.5f);
+
+            // 3. Verify Upper Sanctuary Dais Stair & Open Romanesque Archway Walk-Through (J15 Z=-82.5 -> Dais Stair -> Under Great Bell Z=-112.0)
+            var m5WalkTris = new List<(Vector3 A, Vector3 B, Vector3 C)>();
+            foreach (string walkNode in new[] { "M2_Junction_J15", "M1_Sanctuary_Dais", "M5_SanctuaryGrandStairs_UpperDais", "M5_Sanctuary_ForecourtPaving" })
+            {
+                if (m1Root.FindChild(walkNode, true, false) is MeshInstance3D wmi && wmi.Mesh != null)
+                {
+                    Transform3D xf = wmi.GlobalTransform;
+                    Vector3[] faces = wmi.Mesh.GetFaces();
+                    for (int i = 0; i + 2 < faces.Length; i += 3)
+                        m5WalkTris.Add((xf * faces[i], xf * faces[i + 1], xf * faces[i + 2]));
+                }
+            }
+
+            int archWalkHits = 0;
+            int archWalkTotal = 32;
+            float prevWalkY = 32.10f;
+            float maxDaisStep = 0f;
+            var matM5Gold = new StandardMaterial3D
+            {
+                AlbedoColor = new Color(1.0f, 0.84f, 0.18f),
+                EmissionEnabled = true,
+                Emission = new Color(1.0f, 0.78f, 0.16f),
+                EmissionEnergyMultiplier = 1.8f,
+            };
+            for (int i = 0; i <= archWalkTotal; i++)
+            {
+                float z = Mathf.Lerp(-82.5f, -114.0f, i / (float)archWalkTotal);
+                float bestY = float.MinValue;
+                foreach (var (a, b, c) in m5WalkTris)
+                {
+                    float det = (b.Z - c.Z) * (a.X - c.X) + (c.X - b.X) * (a.Z - c.Z);
+                    if (Mathf.Abs(det) < 1e-5f) continue;
+                    float u = ((b.Z - c.Z) * (0f - c.X) + (c.X - b.X) * (z - c.Z)) / det;
+                    float v = ((c.Z - a.Z) * (0f - c.X) + (a.X - c.X) * (z - c.Z)) / det;
+                    float w = 1.0f - u - v;
+                    if (u >= -0.02f && v >= -0.02f && w >= -0.02f)
+                    {
+                        float y = u * a.Y + v * b.Y + w * c.Y;
+                        if (y > bestY) bestY = y;
+                    }
+                }
+                if (bestY > 30.0f)
+                {
+                    archWalkHits++;
+                    if (i > 0) maxDaisStep = Mathf.Max(maxDaisStep, Mathf.Abs(bestY - prevWalkY));
+                    prevWalkY = bestY;
+                    if (i % 3 == 0)
+                    {
+                        navDebugRoot.AddChild(new MeshInstance3D
+                        {
+                            Mesh = new SphereMesh { Radius = 0.95f, Height = 1.9f },
+                            MaterialOverride = matM5Gold,
+                            Position = new Vector3(0.0f, bestY + 0.65f, z),
+                        });
+                    }
+                }
+            }
+            Report($"F-230 M5 Sanctuary Forecourt -> Upper Dais Stair -> Curved Romanesque Archway walk-through PASS ({archWalkHits}/{archWalkTotal + 1} hits, maxStep={maxDaisStep:F2}m <= 0.45m, headroomUnderBell={bellB.min.Y - 34.70f:F2}m >= 12.0m)",
+                archWalkHits == archWalkTotal + 1 && maxDaisStep <= 0.45f && (bellB.min.Y - 34.70f) >= 12.0f);
+        }
+
+        private void VerifyM5EnvRenderPreGate(Node3D m1Root)
+        {
+            // F-229 Pre-Render Gate 1: Sweep deprecated M1..M4 landmark placeholders & M5 z-fight conflicts
+            var sweep = EnvRenderPreGate.SweepDeprecatedMilestoneNodes(
+                m1Root,
+                activeMilestone: 5,
+                subsystemKeywords: new[]
+                {
+                    "AstrolabeRing",
+                    "GreatBell",
+                    "BlueSpire",
+                    "CrownDrum",
+                    "SideDome",
+                    "SideTower",
+                    "Sanctuary_Pier",
+                    "Sanctuary_Banner",
+                    "Stair03_GrandSanctuary_3Flight_Balustrade",
+                },
+                autoHide: true);
+
+            int m5ZFightCount = sweep.ZFightConflicts.Count(c =>
+                c.NodeA.Name.ToString().StartsWith("M5_") || c.NodeB.Name.ToString().StartsWith("M5_"));
+            Report($"F-229/F-230 EnvRenderPreGate deprecated landmark clutter & M5 z-fight check PASS (deprecatedFound={sweep.DeprecatedNodesFound.Count}, m5ZFights={m5ZFightCount})",
+                sweep.DeprecatedNodesFound.Count == 0 && m5ZFightCount == 0);
+
+            // F-229 Pre-Render Gate 2: Physics Sightline Occlusion checks across M5 perspective hero & closeup cameras
+            PhysicsDirectSpaceState3D? space = m1Root.GetWorld3D()?.DirectSpaceState;
+            if (space == null)
+                return;
+
+            var sanctuaryArchTarget = new Aabb(new Vector3(-12.0f, 46.0f, -111.0f), new Vector3(24.0f, 36.0f, 10.0f));
+            var astrolabeTarget = new Aabb(new Vector3(-3.8f, 18.2f, -3.8f), new Vector3(7.6f, 8.2f, 7.6f));
+            var bellYokeTarget = new Aabb(new Vector3(-4.2f, 48.5f, -108.0f), new Vector3(8.4f, 12.0f, 4.0f));
+            var grandStairTarget = new Aabb(new Vector3(-14.0f, 16.5f, -54.0f), new Vector3(12.0f, 9.0f, 14.0f));
+
+            var camChecks = new (string ViewId, Vector3 CamPos, Aabb TargetAabb)[]
+            {
+                ("M5_View2B_Astrolabe3Q", new Vector3(-10.4f, 19.3f, 11.6f), astrolabeTarget),
+                ("M5_View3_SouthBlvd_Shot2", new Vector3(1.2f, 10.65f, 82.0f), sanctuaryArchTarget),
+                ("M5_View4_PlazaAstrolabe_Shot3", new Vector3(-11.8f, 17.55f, 17.2f), astrolabeTarget),
+                ("M5_View5_SanctuaryStairs_Shot4", new Vector3(0.0f, 17.75f, -18.5f), sanctuaryArchTarget),
+                ("M5_View6A_BellYokeSupport", new Vector3(-7.4f, 44.8f, -84.5f), bellYokeTarget),
+                ("M5_View6B_StairBalustrades", new Vector3(-23.5f, 22.8f, -33.5f), grandStairTarget),
+            };
+            foreach (var chk in camChecks)
+            {
+                var sl = EnvRenderPreGate.CheckCameraSightline(space, chk.CamPos, chk.TargetAabb, maxOcclusionRatio: 0.4f);
+                Report($"F-229/F-230 EnvRenderPreGate camera sightline unoccluded ({chk.ViewId}: blocked={sl.BlockedRayCount}/{sl.TotalRayCount}, occl={sl.OcclusionRatio:P0}, blocker={sl.BlockingColliderName ?? "none"})",
+                    sl.Passed);
+            }
         }
 
         private (List<ShaderMaterial> mats, List<MeshInstance3D> waterMeshes, List<MeshInstance3D> wetBankMeshes, List<GpuParticles3D> mistParticles) SetupM4WaterSystemMaterials(Node3D m1Root)
@@ -1135,7 +1549,7 @@ namespace AtlasWorld.Client.World
                         waterMeshes.Add(mi);
                         appliedCount++;
                     }
-                    else if (nm == "M4_Fountain_WaterSurface")
+                    else if (nm == "M4_Fountain_WaterSurface" || nm == "M5_Astrolabe_UpperBowlWater")
                     {
                         mi.MaterialOverride = fountainMat;
                         waterMeshes.Add(mi);
@@ -1379,6 +1793,8 @@ $@"{{
 }}
 ";
             System.IO.File.WriteAllText(profileJsonPath, profileJson);
+            System.IO.Directory.CreateDirectory("/Users/pasitnusso/asset-studio-private/atlas-3d-plan/env/m5");
+            System.IO.File.WriteAllText("/Users/pasitnusso/asset-studio-private/atlas-3d-plan/env/m5/m5_gpu_profile.json", profileJson);
 
             GD.Print($"[MaroBellVerify] M4 UNCAPPED GPU/CPU PROFILE (VSync=Disabled, N=30): " +
                      $"S0(Disabled) GPU={st0.gpuMed:F2}/{st0.gpuP95:F2}ms CPU={st0.cpuMed:F2}/{st0.cpuP95:F2}ms Frame={st0.wallMed:F2}ms Draws={st0.drawCalls} | " +
