@@ -1288,18 +1288,21 @@ namespace AtlasWorld.Client.World
                     AlbedoColor = new Color(0.86f, 0.74f, 0.57f),
                     Metallic = 0.02f,
                     Roughness = 0.74f,
+                    VertexColorUseAsAlbedo = true, // Rev 8: per-piece tint, grime and tread wear baked as COLOR_0
                 },
                 ["M5_SanctuaryWarmStone"] = new StandardMaterial3D
                 {
                     AlbedoColor = new Color(0.74f, 0.58f, 0.41f),
                     Metallic = 0.02f,
                     Roughness = 0.72f,
+                    VertexColorUseAsAlbedo = true, // Rev 8: per-piece tint, grime and tread wear baked as COLOR_0
                 },
                 ["M5_SanctuaryPlinthStone"] = new StandardMaterial3D
                 {
                     AlbedoColor = new Color(0.47f, 0.39f, 0.31f),
                     Metallic = 0.03f,
                     Roughness = 0.68f,
+                    VertexColorUseAsAlbedo = true, // Rev 8: per-piece tint, grime and tread wear baked as COLOR_0
                 },
                 ["M5_DarkOakTimber"] = new StandardMaterial3D
                 {
