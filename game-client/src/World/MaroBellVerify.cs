@@ -1289,6 +1289,10 @@ namespace AtlasWorld.Client.World
                     Metallic = 0.02f,
                     Roughness = 0.74f,
                     VertexColorUseAsAlbedo = true, // Rev 8: per-piece tint, grime and tread wear baked as COLOR_0
+                    // Rev 9: world triplanar (one 16 m ashlar tile) so drums/cones have no box-projection UV seams
+                    Uv1Triplanar = true,
+                    Uv1WorldTriplanar = true,
+                    Uv1Scale = new Vector3(0.0625f, 0.0625f, 0.0625f),
                 },
                 ["M5_SanctuaryWarmStone"] = new StandardMaterial3D
                 {
@@ -1296,6 +1300,10 @@ namespace AtlasWorld.Client.World
                     Metallic = 0.02f,
                     Roughness = 0.72f,
                     VertexColorUseAsAlbedo = true, // Rev 8: per-piece tint, grime and tread wear baked as COLOR_0
+                    // Rev 9: world triplanar (one 16 m ashlar tile) so drums/cones have no box-projection UV seams
+                    Uv1Triplanar = true,
+                    Uv1WorldTriplanar = true,
+                    Uv1Scale = new Vector3(0.0625f, 0.0625f, 0.0625f),
                 },
                 ["M5_SanctuaryPlinthStone"] = new StandardMaterial3D
                 {
@@ -1303,6 +1311,10 @@ namespace AtlasWorld.Client.World
                     Metallic = 0.03f,
                     Roughness = 0.68f,
                     VertexColorUseAsAlbedo = true, // Rev 8: per-piece tint, grime and tread wear baked as COLOR_0
+                    // Rev 9: world triplanar (one 16 m ashlar tile) so drums/cones have no box-projection UV seams
+                    Uv1Triplanar = true,
+                    Uv1WorldTriplanar = true,
+                    Uv1Scale = new Vector3(0.0625f, 0.0625f, 0.0625f),
                 },
                 ["M5_DarkOakTimber"] = new StandardMaterial3D
                 {
@@ -1360,7 +1372,10 @@ namespace AtlasWorld.Client.World
             {
                 Node cur = stack.Pop();
                 foreach (Node ch in cur.GetChildren()) stack.Push(ch);
-                if (cur is MeshInstance3D mi && mi.Mesh != null && (mi.Name.ToString().StartsWith("M5_") || mi.Name == "M1_Sanctuary_RomanesqueArch"))
+                if (cur is MeshInstance3D mi && mi.Mesh != null && (mi.Name.ToString().StartsWith("M5_") || mi.Name == "M1_Sanctuary_RomanesqueArch"
+                    // Rev 9 owner unlock (look only): these now carry the sanctuary stone materials + baked weathering
+                    || mi.Name == "M2_Stair03_GrandSanctuary_3Flight" || mi.Name == "M3_Bastion_B15" || mi.Name == "M3_Bastion_B16"
+                    || mi.Name.ToString().StartsWith("RW09") || mi.Name.ToString().StartsWith("RW10")))
                 {
                     int surfCount = mi.Mesh.GetSurfaceCount();
                     for (int s = 0; s < surfCount; s++)
