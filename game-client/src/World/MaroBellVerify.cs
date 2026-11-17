@@ -1178,20 +1178,20 @@ namespace AtlasWorld.Client.World
             m1Cam.Near = 0.2f;
             m1Cam.Far = 1400.0f;
             m1Cam.Fov = 50f;
-            m1Cam.Position = new Vector3(13.2f, 20.9f, 15.0f);
-            m1Cam.LookAt(new Vector3(-0.3f, 20.8f, 0.0f), Vector3.Up);
+            m1Cam.Position = M5CamView2B.Pos;
+            m1Cam.LookAt(M5CamView2B.LookAt, Vector3.Up);
             await Save(outDir, "m5_view2b_astrolabe_3q_closeup_raw.png");
 
             // M5 View 3: Southern Market Boulevard Hero Camera (Shot 2) raised on the centre axis so Astrolabe, Grand Staircase and Great Bell stack with clear vertical gaps
             m1Cam.Fov = 50f;
-            m1Cam.Position = new Vector3(0.0f, 27.0f, 58.0f);
-            m1Cam.LookAt(new Vector3(0.0f, 39.0f, -82.0f), Vector3.Up);
+            m1Cam.Position = M5CamView3.Pos;
+            m1Cam.LookAt(M5CamView3.LookAt, Vector3.Up);
             await Save(outDir, "m5_view3_south_boulevard_hero_shot2_raw.png");
 
             // M5 View 4: Central Bell Plaza & Golden Astrolabe Fountain Hero Camera (Shot 3) with Unobstructed Grand Staircase & Sanctuary
             m1Cam.Fov = 54f;
-            m1Cam.Position = new Vector3(12.6f, 18.5f, 18.6f);
-            m1Cam.LookAt(new Vector3(-0.8f, 25.4f, -22.0f), Vector3.Up);
+            m1Cam.Position = M5CamView4.Pos;
+            m1Cam.LookAt(M5CamView4.LookAt, Vector3.Up);
             await Save(outDir, "m5_view4_central_plaza_astrolabe_shot3_raw.png");
 
             // M5 View 5: Sanctuary Approach & Flared Grand Staircase Hero Camera (Shot 4 + Full 1.30m Player Scale clearly visible at base)
@@ -1201,24 +1201,25 @@ namespace AtlasWorld.Client.World
                 girlStairBase.Rotation = new Vector3(0f, Mathf.Pi, 0f);
             }
             m1Cam.Fov = 56f;
-            m1Cam.Position = new Vector3(0.0f, 20.4f, -7.2f);
-            m1Cam.LookAt(new Vector3(0.0f, 48.2f, -106.0f), Vector3.Up);
+            m1Cam.Position = M5CamView5.Pos;
+            m1Cam.LookAt(M5CamView5.LookAt, Vector3.Up);
             await Save(outDir, "m5_view5_sanctuary_arch_stairs_shot4_raw.png");
 
             // M5 View 6A: Structural Closeup — 72-Seg 4-Order Radial Voussoir Arch, Coffered Vault, Yoke Trunnions & Diagonal Impost Braces
             m1Cam.Fov = 54f;
-            m1Cam.Position = new Vector3(-8.6f, 43.8f, -81.5f);
-            m1Cam.LookAt(new Vector3(0.0f, 54.8f, -106.0f), Vector3.Up);
+            m1Cam.Position = M5CamView6A.Pos;
+            m1Cam.LookAt(M5CamView6A.LookAt, Vector3.Up);
             await Save(outDir, "m5_view6a_arch_bell_yoke_closeup_raw.png");
 
             // M5 View 6B: Structural Closeup — Flared Grand Staircase Open Turned Balustrades, Smooth Stringer & Balcony Brazier
             m1Cam.Fov = 44f;
             // Rev 6: stair is narrower (balcony now at x ~ -10), so frame it from above the steps instead of from outside the old edge
-            m1Cam.Position = new Vector3(-3.5f, 22.6f, -41.0f);
-            m1Cam.LookAt(new Vector3(-10.0f, 21.0f, -48.6f), Vector3.Up);
+            m1Cam.Position = M5CamView6B.Pos;
+            m1Cam.LookAt(M5CamView6B.LookAt, Vector3.Up);
             await Save(outDir, "m5_view6b_grand_stair_balustrade_closeup_raw.png");
 
             // M5 View 6C: Godot 4 Runtime Navigation Regression & Landmark Sightline Debug Capture (low aerial haze for crisp clarity)
+            float fogBefore6C = m1Env.FogDensity;
             m1Env.FogDensity = 0.00014f;
             navDebugRoot.Visible = true;
             foreach (Node ch in navDebugRoot.GetChildren())
@@ -1230,7 +1231,7 @@ namespace AtlasWorld.Client.World
             m1Cam.LookAt(new Vector3(0.0f, 14.0f, 18.0f), Vector3.Up);
             await Save(outDir, "m5_view6c_godot_gpu_nav_qa_raw.png");
             navDebugRoot.Visible = false;
-            m1Env.FogDensity = 0.0008f;
+            m1Env.FogDensity = fogBefore6C;
 
             await RunM4UncappedGpuProfile(m1Root, waterMeshes, wetBankMeshes, mistParticles);
 
@@ -1389,7 +1390,7 @@ namespace AtlasWorld.Client.World
                             if (surfMat is BaseMaterial3D srcMat && srcMat.AlbedoTexture != null && upgraded.AlbedoTexture == null)
                                 upgraded.AlbedoTexture = srcMat.AlbedoTexture;
                             mi.SetSurfaceOverrideMaterial(s, upgraded);
-                            m5StyledSurfaces++;
+                            if (mi.Name.ToString().StartsWith("M5_")) m5StyledSurfaces++; // gate counts M5 meshes only
                         }
                     }
                     if (mi.Name == "M5_SanctuaryGrandStairs_UpperDais" || mi.Name == "M5_Sanctuary_ForecourtPaving" || mi.Name == "M5_SanctuaryGrandStairs_FlaredWings")
@@ -1548,6 +1549,14 @@ namespace AtlasWorld.Client.World
                 archWalkHits == archWalkTotal + 1 && maxDaisStep <= 0.45f && (bellB.min.Y - 34.70f) >= 12.0f);
         }
 
+        // Single source of truth for the M5 perspective cameras: the renders and the sightline gates both read these.
+        private static readonly (Vector3 Pos, Vector3 LookAt) M5CamView2B = (new Vector3(13.2f, 20.9f, 15.0f), new Vector3(-0.3f, 20.8f, 0.0f));
+        private static readonly (Vector3 Pos, Vector3 LookAt) M5CamView3 = (new Vector3(0.0f, 27.0f, 58.0f), new Vector3(0.0f, 39.0f, -82.0f));
+        private static readonly (Vector3 Pos, Vector3 LookAt) M5CamView4 = (new Vector3(12.6f, 18.5f, 18.6f), new Vector3(-0.8f, 25.4f, -22.0f));
+        private static readonly (Vector3 Pos, Vector3 LookAt) M5CamView5 = (new Vector3(0.0f, 20.4f, -7.2f), new Vector3(0.0f, 48.2f, -106.0f));
+        private static readonly (Vector3 Pos, Vector3 LookAt) M5CamView6A = (new Vector3(-8.6f, 43.8f, -81.5f), new Vector3(0.0f, 54.8f, -106.0f));
+        private static readonly (Vector3 Pos, Vector3 LookAt) M5CamView6B = (new Vector3(-3.5f, 22.6f, -41.0f), new Vector3(-10.0f, 21.0f, -48.6f));
+
         private void VerifyM5EnvRenderPreGate(Node3D m1Root)
         {
             // F-229 Pre-Render Gate 1: Sweep deprecated M1..M4 landmark placeholders & M5 z-fight conflicts
@@ -1576,28 +1585,94 @@ namespace AtlasWorld.Client.World
             // F-229 Pre-Render Gate 2: Physics Sightline Occlusion checks across M5 perspective hero & closeup cameras
             PhysicsDirectSpaceState3D? space = m1Root.GetWorld3D()?.DirectSpaceState;
             if (space == null)
+            {
+                Report("F-229/F-230 EnvRenderPreGate camera sightline gates ran (no physics space: 6 M5 sightline gates not measured)", false);
                 return;
+            }
 
             var sanctuaryArchTarget = new Aabb(new Vector3(-12.0f, 46.0f, -111.0f), new Vector3(24.0f, 36.0f, 10.0f));
             var astrolabeTarget = new Aabb(new Vector3(-3.8f, 18.2f, -3.8f), new Vector3(7.6f, 8.2f, 7.6f));
             var bellYokeTarget = new Aabb(new Vector3(-4.2f, 48.5f, -108.0f), new Vector3(8.4f, 12.0f, 4.0f));
             var grandStairTarget = new Aabb(new Vector3(-18.5f, 16.0f, -52.0f), new Vector3(10.0f, 8.0f, 14.0f));
 
-            var camChecks = new (string ViewId, Vector3 CamPos, Aabb TargetAabb)[]
+            // Each view names its subject (mesh-name prefixes) so the subject never counts as its own occluder.
+            string[] astrolabeSubject = { "M5_Astrolabe_" };
+            string[] archSubject = { "M1_Sanctuary_RomanesqueArch", "M5_BellSanctuary_CofferedVault", "M5_GreatBell_" };
+            string[] bellSubject = { "M5_GreatBell_" };
+            string[] stairSubject = { "M5_SanctuaryGrandStairs_", "M2_Stair03_GrandSanctuary_3Flight" };
+            var camChecks = new (string ViewId, Vector3 CamPos, Aabb TargetAabb, string[] Subject)[]
             {
-                ("M5_View2B_Astrolabe3Q", new Vector3(12.8f, 20.8f, 14.6f), astrolabeTarget),
-                ("M5_View3_SouthBlvd_Shot2", new Vector3(0.0f, 27.0f, 58.0f), sanctuaryArchTarget),
-                ("M5_View4_PlazaAstrolabe_Shot3", new Vector3(12.4f, 18.4f, 18.2f), astrolabeTarget),
-                ("M5_View5_SanctuaryStairs_Shot4", new Vector3(0.0f, 20.6f, -8.5f), sanctuaryArchTarget),
-                ("M5_View6A_BellYokeSupport", new Vector3(-7.4f, 44.8f, -84.5f), bellYokeTarget),
-                ("M5_View6B_StairBalustrades", new Vector3(-19.5f, 21.4f, -39.5f), grandStairTarget),
+                ("M5_View2B_Astrolabe3Q", M5CamView2B.Pos, astrolabeTarget, astrolabeSubject),
+                ("M5_View3_SouthBlvd_Shot2", M5CamView3.Pos, sanctuaryArchTarget, archSubject),
+                ("M5_View4_PlazaAstrolabe_Shot3", M5CamView4.Pos, astrolabeTarget, astrolabeSubject),
+                ("M5_View5_SanctuaryStairs_Shot4", M5CamView5.Pos, sanctuaryArchTarget, archSubject),
+                ("M5_View6A_BellYokeSupport", M5CamView6A.Pos, bellYokeTarget, bellSubject),
+                ("M5_View6B_StairBalustrades", M5CamView6B.Pos, grandStairTarget, stairSubject),
             };
+
+            // The M5 landmark meshes (arch, piers, vault, spire, bell...) carry no colliders, so physics rays alone
+            // cannot see them. Test the rays against their render triangles directly; no physics bodies are added.
+            var occluders = new List<(string Name, Aabb Bounds, Vector3[] Tris)>();
+            var occStack = new Stack<Node>();
+            occStack.Push(m1Root);
+            while (occStack.Count > 0)
+            {
+                Node cur = occStack.Pop();
+                foreach (Node ch in cur.GetChildren()) occStack.Push(ch);
+                if (cur is not MeshInstance3D mi || mi.Mesh == null || !mi.IsVisibleInTree()) continue;
+                string n = mi.Name.ToString();
+                if (!(n.StartsWith("M5_") || n == "M1_Sanctuary_RomanesqueArch" || n == "M2_Stair03_GrandSanctuary_3Flight"
+                      || n == "M3_Bastion_B15" || n == "M3_Bastion_B16" || n.StartsWith("RW09") || n.StartsWith("RW10")))
+                    continue;
+                Vector3[] faces = mi.Mesh.GetFaces();
+                if (faces.Length == 0) continue;
+                Transform3D xf = mi.GlobalTransform;
+                for (int i = 0; i < faces.Length; i++) faces[i] = xf * faces[i];
+                occluders.Add((n, xf * mi.GetAabb(), faces));
+            }
+
             foreach (var chk in camChecks)
             {
-                var sl = EnvRenderPreGate.CheckCameraSightline(space, chk.CamPos, chk.TargetAabb, maxOcclusionRatio: 0.4f);
-                Report($"F-229/F-230 EnvRenderPreGate camera sightline unoccluded ({chk.ViewId}: blocked={sl.BlockedRayCount}/{sl.TotalRayCount}, occl={sl.OcclusionRatio:P0}, blocker={sl.BlockingColliderName ?? "none"})",
+                Aabb grownTarget = chk.TargetAabb.Grow(0.05f);
+                string? MeshOccluder(Vector3 from, Vector3 to)
+                {
+                    foreach (var occ in occluders)
+                    {
+                        if (chk.Subject.Any(pre => occ.Name.StartsWith(pre))) continue;
+                        if (!occ.Bounds.IntersectsSegment(from, to)) continue;
+                        if (SegmentHitsTriangles(from, to, occ.Tris, grownTarget)) return occ.Name;
+                    }
+                    return null;
+                }
+                var sl = EnvRenderPreGate.CheckCameraSightline(space, chk.CamPos, chk.TargetAabb, maxOcclusionRatio: 0.4f, extraOccluder: MeshOccluder);
+                Report($"F-229/F-230 EnvRenderPreGate camera sightline unoccluded ({chk.ViewId}: blocked={sl.BlockedRayCount}/{sl.TotalRayCount}, occl={sl.OcclusionRatio:P0}, blocker={sl.BlockingColliderName ?? "none"}, meshOccluders={occluders.Count})",
                     sl.Passed);
             }
+        }
+
+        // True when segment from->to crosses a triangle at a point outside `clearZone` (hits inside the target box mean the ray arrived).
+        private static bool SegmentHitsTriangles(Vector3 from, Vector3 to, Vector3[] tris, Aabb clearZone)
+        {
+            Vector3 dir = to - from;
+            for (int i = 0; i + 2 < tris.Length; i += 3)
+            {
+                // Moller-Trumbore, double-sided
+                Vector3 e1 = tris[i + 1] - tris[i], e2 = tris[i + 2] - tris[i];
+                Vector3 pv = dir.Cross(e2);
+                float det = e1.Dot(pv);
+                if (Mathf.Abs(det) < 1e-8f) continue;
+                float inv = 1f / det;
+                Vector3 tv = from - tris[i];
+                float u = tv.Dot(pv) * inv;
+                if (u < 0f || u > 1f) continue;
+                Vector3 qv = tv.Cross(e1);
+                float v = dir.Dot(qv) * inv;
+                if (v < 0f || u + v > 1f) continue;
+                float t = e2.Dot(qv) * inv;
+                if (t <= 1e-4f || t >= 1f) continue;
+                if (!clearZone.HasPoint(from + dir * t)) return true;
+            }
+            return false;
         }
 
         private (List<ShaderMaterial> mats, List<MeshInstance3D> waterMeshes, List<MeshInstance3D> wetBankMeshes, List<GpuParticles3D> mistParticles) SetupM4WaterSystemMaterials(Node3D m1Root)

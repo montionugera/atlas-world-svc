@@ -31,3 +31,7 @@ F-174 backlog (2026-11-06): NotifyHit only fires for hits the local player deals
 - 2026-11-15: `scripts/fastcheck.sh` splits changed paths on spaces.
 - 2026-11-15: concept-art gallery keeps its own search box until the record index covers zone, prompt and tags (deferred from F-219).
 - 2026-11-15 (tooling, not this repo): `sdd-workspace` prints `.superpowers/sdd/plan` but `sdd-drive` uses a hash folder; `psrw ship | tail` hangs after the ship because a child keeps the pipe open; the probe Chrome (`atlas_audit_lib.mjs`) cannot reach `*.joymify.local.com` and `waitFor` still reports ready on its error page.
+- 2026-11-17 (F-230 review): the M4 frame-time gate (`RunM4UncappedGpuProfile`) now runs after the M5 scene setup, so it measures the M5 scene, and `m5_gpu_profile.json` is a copy of the M4 profile.
+- 2026-11-17 (F-230 review): the sun/shadow/SSAO/ambient/fog settings and two extra characters set in `MaroBellVerify.RenderM1MasterPlanViews` (~L868-905) change every M1-M4 render, not only M5.
+- 2026-11-17 (F-230 review): dais height `34.70f` is hard-coded in the M5 walk-through gate (`MaroBellVerify.cs` ~L1474/~L1547); derive it from the `M5_SanctuaryGrandStairs_UpperDais` bounds.
+- 2026-11-17 (F-230 review): hard-coded `/Users/...` path in `MaroBellVerify.cs` (~L1934) and `scripts/godot-verify.sh`, plus personal paths in `CLAUDE.md`, in a public repo.

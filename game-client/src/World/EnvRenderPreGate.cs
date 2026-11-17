@@ -59,8 +59,10 @@ namespace AtlasWorld.Client.World
             Vector3 camPos,
             Aabb targetBounds,
             Rid[]? excludeRids = null,
-            float maxOcclusionRatio = 0.4f)
+            float maxOcclusionRatio = 0.4f,
+            Func<Vector3, Vector3, string?>? extraOccluder = null)
         {
+            // extraOccluder(from, to): name of a non-physics blocker on the segment (e.g. render-only meshes), or null when clear.
             if (space == null)
                 throw new ArgumentNullException(nameof(space));
 
@@ -84,20 +86,22 @@ namespace AtlasWorld.Client.World
                     query.Exclude = exclude;
 
                 var hit = space.IntersectRay(query);
-                if (hit != null && hit.Count > 0)
+                if (hit != null && hit.Count > 0 && IsPhysicsRayOccluded(hit, targetBounds))
                 {
-                    if (IsPhysicsRayOccluded(hit, targetBounds))
+                    blocked++;
+                    if (firstColliderName == null && hit.TryGetValue("collider", out Variant colVar))
                     {
-                        blocked++;
-                        if (firstColliderName == null && hit.TryGetValue("collider", out Variant colVar))
-                        {
-                            var colObj = colVar.AsGodotObject();
-                            if (colObj is Node n)
-                                firstColliderName = n.Name;
-                            else if (colObj != null)
-                                firstColliderName = colObj.ToString();
-                        }
+                        var colObj = colVar.AsGodotObject();
+                        if (colObj is Node n)
+                            firstColliderName = n.Name;
+                        else if (colObj != null)
+                            firstColliderName = colObj.ToString();
                     }
+                }
+                else if (extraOccluder?.Invoke(camPos, target) is string meshBlocker)
+                {
+                    blocked++;
+                    firstColliderName ??= meshBlocker;
                 }
             }
 
@@ -116,7 +120,8 @@ namespace AtlasWorld.Client.World
                         query.HitFromInside = true;
                         if (exclude != null) query.Exclude = exclude;
                         var hit = space.IntersectRay(query);
-                        if (hit != null && hit.Count > 0 && IsPhysicsRayOccluded(hit, targetBounds))
+                        if ((hit != null && hit.Count > 0 && IsPhysicsRayOccluded(hit, targetBounds))
+                            || extraOccluder?.Invoke(testPos, target) != null)
                         {
                             hits++;
                         }
