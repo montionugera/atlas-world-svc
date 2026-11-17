@@ -2971,8 +2971,10 @@
     "from_idea": "I-315",
     "created_at": "2026-11-16T17:34:30.551424+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-11-16T17:34:42.330771+00:00"
+    "status": "shipped",
+    "release_version": "1.34",
+    "claimed_at": "2026-11-16T17:34:42.330771+00:00",
+    "shipped_at": "2026-11-17T14:46:01.827509+00:00",
+    "shipped_sha": "4f73e70ef44f8d58849d5d9ff7041f5e6fccc194"
   }
 ]
