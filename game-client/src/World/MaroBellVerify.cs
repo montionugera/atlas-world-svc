@@ -1213,8 +1213,9 @@ namespace AtlasWorld.Client.World
 
             // M5 View 6B: Structural Closeup — Flared Grand Staircase Open Turned Balustrades, Smooth Stringer & Balcony Brazier
             m1Cam.Fov = 44f;
-            m1Cam.Position = new Vector3(-19.2f, 21.8f, -39.8f);
-            m1Cam.LookAt(new Vector3(-13.4f, 20.8f, -47.8f), Vector3.Up);
+            // Rev 6: stair is narrower (balcony now at x ~ -10), so frame it from above the steps instead of from outside the old edge
+            m1Cam.Position = new Vector3(-3.5f, 22.6f, -41.0f);
+            m1Cam.LookAt(new Vector3(-10.0f, 21.0f, -48.6f), Vector3.Up);
             await Save(outDir, "m5_view6b_grand_stair_balustrade_closeup_raw.png");
 
             // M5 View 6C: Godot 4 Runtime Navigation Regression & Landmark Sightline Debug Capture (low aerial haze for crisp clarity)
@@ -1268,34 +1269,35 @@ namespace AtlasWorld.Client.World
                     Metallic = 0.78f,
                     Roughness = 0.40f,
                 },
+                // Rev 6 (QA P1 "saturated blue roofs"): deeper navy slate instead of saturated royal blue.
                 ["M5_SanctuaryRoofBlue"] = new StandardMaterial3D
                 {
-                    AlbedoColor = new Color(0.11f, 0.30f, 0.72f),
-                    Metallic = 0.12f,
-                    Roughness = 0.34f,
+                    AlbedoColor = new Color(0.07f, 0.14f, 0.36f),
+                    Metallic = 0.14f,
+                    Roughness = 0.40f,
                 },
                 ["M5_BannerRoyalBlue"] = new StandardMaterial3D
                 {
-                    AlbedoColor = new Color(0.10f, 0.25f, 0.68f),
+                    AlbedoColor = new Color(0.08f, 0.15f, 0.44f),
                     Metallic = 0.06f,
                     Roughness = 0.46f,
                     CullMode = BaseMaterial3D.CullModeEnum.Disabled,
                 },
                 ["M5_SanctuaryLimestone"] = new StandardMaterial3D
                 {
-                    AlbedoColor = new Color(0.84f, 0.78f, 0.68f),
+                    AlbedoColor = new Color(0.86f, 0.74f, 0.57f),
                     Metallic = 0.02f,
-                    Roughness = 0.68f,
+                    Roughness = 0.74f,
                 },
                 ["M5_SanctuaryWarmStone"] = new StandardMaterial3D
                 {
-                    AlbedoColor = new Color(0.71f, 0.63f, 0.51f),
+                    AlbedoColor = new Color(0.74f, 0.58f, 0.41f),
                     Metallic = 0.02f,
                     Roughness = 0.72f,
                 },
                 ["M5_SanctuaryPlinthStone"] = new StandardMaterial3D
                 {
-                    AlbedoColor = new Color(0.52f, 0.47f, 0.41f),
+                    AlbedoColor = new Color(0.47f, 0.39f, 0.31f),
                     Metallic = 0.03f,
                     Roughness = 0.68f,
                 },
@@ -1321,6 +1323,33 @@ namespace AtlasWorld.Client.World
                 },
             };
 
+            // Rev 6 (QA P2 "dark heavy rings dominate"): the armillary rings share the roof material, so give them a lighter enamel blue.
+            var astrolabeEnamel = new StandardMaterial3D
+            {
+                AlbedoColor = new Color(0.24f, 0.46f, 0.82f),
+                Metallic = 0.45f,
+                Roughness = 0.26f,
+            };
+
+            // Rev 6 (QA P1 "uniformly lit, no warm-cool contrast"): M5 views render after every M1-M4 view, so retune the shared
+            // sun/environment here: warmer, lower, stronger key; dimmer sky (cool) fill; deeper SSAO.
+            foreach (Node ch in m1Root.GetChildren())
+            {
+                if (ch is DirectionalLight3D sun)
+                {
+                    sun.RotationDegrees = new Vector3(-31f, 38f, 0f);
+                    sun.LightColor = new Color(1.0f, 0.86f, 0.66f);
+                    sun.LightEnergy = 1.45f;
+                }
+                else if (ch is WorldEnvironment we && we.Environment != null)
+                {
+                    we.Environment.AmbientLightEnergy = 0.34f;
+                    we.Environment.TonemapExposure = 0.92f;
+                    we.Environment.SsaoIntensity = 2.9f;
+                    we.Environment.SsaoPower = 1.6f;
+                }
+            }
+
             int m5StyledSurfaces = 0;
             var stack = new Stack<Node>();
             stack.Push(m1Root);
@@ -1336,6 +1365,8 @@ namespace AtlasWorld.Client.World
                         Material? surfMat = mi.Mesh.SurfaceGetMaterial(s);
                         if (surfMat != null && pbrSpecs.TryGetValue(surfMat.ResourceName, out var upgraded))
                         {
+                            if (mi.Name == "M5_Astrolabe_ArmillaryRings" && surfMat.ResourceName == "M5_SanctuaryRoofBlue")
+                                upgraded = astrolabeEnamel;
                             // Keep the GLB's neutral ashlar masonry map; AlbedoColor above tints it.
                             if (surfMat is BaseMaterial3D srcMat && srcMat.AlbedoTexture != null && upgraded.AlbedoTexture == null)
                                 upgraded.AlbedoTexture = srcMat.AlbedoTexture;
