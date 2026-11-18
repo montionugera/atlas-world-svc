@@ -2995,9 +2995,11 @@
     "from_idea": "I-317",
     "created_at": "2026-11-18T00:35:39.332982+00:00",
     "claimed_by": "agy-e19e7766",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-11-18T00:35:56.283109+00:00"
+    "status": "shipped",
+    "release_version": "1.34",
+    "claimed_at": "2026-11-18T00:35:56.283109+00:00",
+    "shipped_at": "2026-11-18T01:46:29.225600+00:00",
+    "shipped_sha": "19bfcf036b4154673e1ca8d66750a012ae128af0"
   },
   {
     "id": "F-233",
