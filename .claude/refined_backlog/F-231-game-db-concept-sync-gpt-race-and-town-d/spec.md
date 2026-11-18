@@ -42,6 +42,8 @@ locking Canon"; extract status `owner_locked`), `proposed` (extract `agent_agree
 
 - `races[]` gains `hook: {motive, problem, resolve_chapters[], keepsake, status, source}` and, where the
   transcripts state one, `prologue: {time_wound, small_job, invitation, status, source}`.
+- `races[]` also gains `culture` and `appearance` (`{text, status: "proposed", source, note}`; older-draft descriptors under old working names, `appearance` only where a physical trait is stated) and `hook.resolution` (the resolution text).
+- `towns[]` also gains `geography` and `travel` (`{text, status, source, note?}`, omitted when "none stated") and `look_status: "older proposal"` where the look text is an older draft. A traveller NPC in a cast is `status: "canon"` with `role_status: "proposed"`; a Sera-style naming clash is recorded in `name_flag`.
 - new `towns[]`: `{id, name, race, tagline, tagline_thai, role, economy, look, landmark, terrain_group,
   studio_node_id, status, source}` for the six home towns and Kilnwatch Bastion. `studio_node_id` is the
   existing `content/studio/nodes/**/town-*.json` id from `race_taxonomy.home_town_id`, or null. Fields the
@@ -66,7 +68,7 @@ Derived: `canon_rows()` emits `town`, all town `npc` rows (parent = town name) a
 ## Acceptance criteria
 
 - [ ] `glossary.json` has 7 `towns`, each with `status` and `source`; the six home towns resolve `race` to a `races[].id`.
-- [ ] `npcs.town` has six towns with at least 3 NPCs each (18+), every non-Maro one `status: "proposed"`.
+- [ ] `npcs.town` has six towns with at least 3 NPCs each (18+), every non-Maro one `status: "proposed"` (locked travellers: `status: "canon"`, `role_status: "proposed"`).
 - [ ] All six races have `hook.motive`; all 9 regions have `kind`.
 - [ ] `world_model.rules` has at least 10 entries, each with `status` in {canon, chosen, proposed} and a `source`.
 - [ ] After `python3 scripts/build_catalog_db.py`, `GET /api/search?q=Torren` and `?q=Ondo Kiln` each return a record, and the Ondo Kiln record lists its race and its NPCs as relations.

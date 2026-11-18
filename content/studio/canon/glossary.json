@@ -49,7 +49,8 @@
         ],
         "keepsake": "old lantern wick",
         "status": "proposed",
-        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)",
+        "resolution": "Ch 0 help protect its keeper; Ch VII learn to share limited light with others"
       },
       "prologue": {
         "time_wound": "a lantern burns through its oil in seconds",
@@ -57,6 +58,12 @@
         "invitation": "If you want to know why our lanterns keep failing, follow the road to Kilnwatch Bastion - someone there may have an answer.",
         "status": "proposed",
         "source": "write-atlas-storyline.txt:631-634 (Story Structure v1 section 3); write-atlas-storyline.txt:1719 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      },
+      "culture": {
+        "text": "Hearthfolk (old working name, now Maro Folk): ordinary people who preserve home and community. Old small-story moment: an elderly lantern-maker keeps a lamp lit for a customer who promised to return thirty years ago (loss theme: forgetting ordinary days).",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:1051-1056 (V7 glossary) and game-roadmap-ideation.txt:800-830 (V4 homes and intimate losses) and game-roadmap-ideation.txt:642",
+        "note": "Older draft descriptor under old working names; Old working names."
       }
     },
     {
@@ -74,7 +81,8 @@
         ],
         "keepsake": "brass tool fitting",
         "status": "proposed",
-        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)",
+        "resolution": "Ch I complete the work they left unfinished"
       },
       "prologue": {
         "time_wound": "an unfinished tool repeatedly returns to an earlier state",
@@ -82,6 +90,12 @@
         "invitation": "You've got steady hands; the Kilnwatch Wardens always have broken things that need fixing, and they'll pay for honest work.",
         "status": "proposed",
         "source": "write-atlas-storyline.txt:635-638 (Story Structure v1 section 3); write-atlas-storyline.txt:1722 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      },
+      "culture": {
+        "text": "Stonekin (old working name, now Ondo Forge): builders, smiths and kiln engineers. Old small-story moment: a smith polishes a tiny hammer every morning because their apprentice died before completing it (loss theme: work left unfinished). Ch I race focus in the locked card: Ondo Forge + Daro Guard.",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:1057-1062 (V7 glossary) and game-roadmap-ideation.txt:800-830 (V4 homes and intimate losses) and game-roadmap-ideation.txt:642",
+        "note": "Older draft descriptor under old working names; Old working names."
       }
     },
     {
@@ -99,7 +113,8 @@
         ],
         "keepsake": "pressed flower",
         "status": "proposed",
-        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)",
+        "resolution": "Ch IV find their final message and understand their farewell"
       },
       "prologue": {
         "time_wound": "a farewell repeats each evening",
@@ -107,6 +122,18 @@
         "invitation": "Some journeys begin when we're ready to leave; if yours leads beyond our gardens, Kilnwatch Bastion is a good place to start.",
         "status": "proposed",
         "source": "write-atlas-storyline.txt:639-642 (Story Structure v1 section 3); write-atlas-storyline.txt:1724 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      },
+      "culture": {
+        "text": "Elenborn (old working name, now Linde Folk): long-lived artisans of star-patterned porcelain. Old small-story moment: an elf visits a bench where a human friend once sat; the tree beside it has grown around the seat (loss theme: outliving shared memories). Locked-card Ch II focus: Tava Kin + Linde Folk (later moved: Linde resolves in Ch IV).",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:1063-1068 (V7 glossary) and game-roadmap-ideation.txt:800-830 (V4 homes and intimate losses) and game-roadmap-ideation.txt:642",
+        "note": "Older draft descriptor under old working names; Old working names."
+      },
+      "appearance": {
+        "text": "long-lived (earlier name Lunar, elf-like)",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:1063-1068 (V7 glossary) and game-roadmap-ideation.txt:800-830 (V4 homes and intimate losses) and game-roadmap-ideation.txt:642",
+        "note": "Older draft descriptor; lifespan is the only stated physical trait, no numbers are stated."
       }
     },
     {
@@ -124,7 +151,8 @@
         ],
         "keepsake": "watch insignia",
         "status": "proposed",
-        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)",
+        "resolution": "Ch III uncover the failed watch's records and bring the truth to its survivors"
       },
       "prologue": {
         "time_wound": "a guard's watch refuses to end",
@@ -132,6 +160,12 @@
         "invitation": "You held your ground when it mattered; if you want to help protect more people, ask for the Wardens at Kilnwatch Bastion.",
         "status": "proposed",
         "source": "write-atlas-storyline.txt:643-646 (Story Structure v1 section 3); write-atlas-storyline.txt:1727 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      },
+      "culture": {
+        "text": "Oathguard (old working name, now Daro Guard): watch-keepers bound by inherited duty; identity is endurance, vigilance and inherited duty, not aggression. Old small-story moment: a young watch-keeper rings a bell each evening though nobody remembers what the warning meant (loss theme: duty inherited without explanation).",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:1069-1074 (V7 glossary) and game-roadmap-ideation.txt:800-830 (V4 homes and intimate losses) and game-roadmap-ideation.txt:642",
+        "note": "Older draft descriptor under old working names; Old working names."
       }
     },
     {
@@ -149,7 +183,8 @@
         ],
         "keepsake": "festival ribbon",
         "status": "proposed",
-        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)",
+        "resolution": "Ch II recreate the celebration together rather than trapping it in repetition"
       },
       "prologue": {
         "time_wound": "a joyful performance disappears from everyone's memory",
@@ -157,6 +192,18 @@
         "invitation": "You've survived our festival chaos! Go see Kilnwatch Bastion - there's work, new friends, and probably someone who needs cheering up.",
         "status": "proposed",
         "source": "write-atlas-storyline.txt:647-650 (Story Structure v1 section 3); write-atlas-storyline.txt:1730 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      },
+      "culture": {
+        "text": "Wildkin (old working name, now Tava Kin; earlier Beastfolk/Furral): animal-featured people who celebrate fleeting life. Old small-story moment: a baker keeps making an awful cake because it was their grandmother's favourite and everyone pretends to enjoy it (loss theme: joy that cannot be repeated). Festival town famous for painted pottery and terrible traditional cakes.",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:1075-1080 (V7 glossary) and game-roadmap-ideation.txt:800-830 (V4 homes and intimate losses) and game-roadmap-ideation.txt:642",
+        "note": "Older draft descriptor under old working names; Old working names."
+      },
+      "appearance": {
+        "text": "animal-featured people (earlier name Beastfolk/Furral)",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:1075-1080 (V7 glossary) and game-roadmap-ideation.txt:800-830 (V4 homes and intimate losses) and game-roadmap-ideation.txt:642",
+        "note": "Older draft descriptor; the only stated physical trait besides Linde long life. No height, build or skin is stated anywhere in the transcripts."
       }
     },
     {
@@ -174,7 +221,8 @@
         ],
         "keepsake": "glass record shard",
         "status": "proposed",
-        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)",
+        "resolution": "Ch V discover its connection to the stolen years"
       },
       "prologue": {
         "time_wound": "an old warning repeats before its cause can be understood",
@@ -182,6 +230,12 @@
         "invitation": "The records here cannot explain what happened; perhaps the archives at Kilnwatch Bastion contain the missing pieces.",
         "status": "proposed",
         "source": "write-atlas-storyline.txt:651-654 (Story Structure v1 section 3); write-atlas-storyline.txt:1733 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      },
+      "culture": {
+        "text": "Lomewalkers / Ummari (old working names, now Silme Seers; earlier Dark-Lunar): seal-listeners who perceive echoes in porcelain and interpret vibrations and memories trapped in fired porcelain. Old small-story moment: a child hears humming through a porcelain wall and learns the melody belongs to a mother they may never meet (loss theme: remembering what never happened).",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:1081-1086 (V7 glossary) and game-roadmap-ideation.txt:800-830 (V4 homes and intimate losses) and game-roadmap-ideation.txt:642",
+        "note": "Older draft descriptor under old working names; Old working names."
       }
     }
   ],
@@ -494,7 +548,8 @@
           "age": 19,
           "want": "see all six regions",
           "secret": "secretly afraid of leaving home",
-          "voice": "Race you to the bell! Winner buys breakfast!"
+          "voice": "Race you to the bell! Winner buys breakfast!",
+          "status": "canon"
         },
         {
           "name": "Edda",
@@ -555,8 +610,9 @@
           "want": "Invent tools",
           "secret": null,
           "voice": null,
-          "status": "proposed",
-          "source": "write-atlas-storyline.txt:1144-1145,1291-1293"
+          "status": "canon",
+          "source": "write-atlas-storyline.txt:1144-1145,1291-1293",
+          "role_status": "proposed"
         },
         {
           "name": "Hald",
@@ -581,8 +637,9 @@
           "want": "Help others understand change, love and farewell",
           "secret": null,
           "voice": null,
-          "status": "proposed",
-          "source": "write-atlas-storyline.txt:1155-1156,1294-1296"
+          "status": "canon",
+          "source": "write-atlas-storyline.txt:1155-1156,1294-1296",
+          "role_status": "proposed"
         },
         {
           "name": "Fenn",
@@ -606,7 +663,8 @@
           "secret": "Tied to unchecked growth that Ch IV exposes",
           "voice": null,
           "status": "proposed",
-          "source": "write-atlas-storyline.txt:1159-1160"
+          "source": "write-atlas-storyline.txt:1159-1160",
+          "name_flag": "Name conflict: Sera was flagged as an unresolved clash with the earlier mortal potter named Sera (game-roadmap-ideation.txt:1329-1400 glossary note) when it was proposed for the Architect; not checked against the naming rule."
         }
       ],
       "daro_post": [
@@ -619,8 +677,9 @@
           "want": "Protect",
           "secret": "Remembers the failed watch night differently from Vessa",
           "voice": null,
-          "status": "proposed",
-          "source": "write-atlas-storyline.txt:1168-1169,1297-1299"
+          "status": "canon",
+          "source": "write-atlas-storyline.txt:1168-1169,1297-1299",
+          "role_status": "proposed"
         },
         {
           "name": "Rook",
@@ -669,8 +728,9 @@
           "want": "Make people laugh / mini-games",
           "secret": "Hides difficult feelings behind humour",
           "voice": null,
-          "status": "proposed",
-          "source": "write-atlas-storyline.txt:1183-1184,1300-1302"
+          "status": "canon",
+          "source": "write-atlas-storyline.txt:1183-1184,1300-1302",
+          "role_status": "proposed"
         },
         {
           "name": "Lasse",
@@ -681,9 +741,10 @@
           "want": null,
           "secret": "Finds drawings of people in her notebook that she does not recognise",
           "voice": null,
-          "status": "proposed",
+          "status": "canon",
           "source": "write-atlas-storyline.txt:1185-1186,1976-1978,1993-1998",
-          "thai": "ลัสเซ"
+          "thai": "ลัสเซ",
+          "role_status": "proposed"
         }
       ],
       "silme_echo": [
@@ -708,8 +769,9 @@
           "want": "Write a compendium of wonders; uncover the world's history",
           "secret": "Strange echo in the library speaking of events that have not happened",
           "voice": null,
-          "status": "proposed",
-          "source": "write-atlas-storyline.txt:1196-1197,1303-1305,1437-1439"
+          "status": "canon",
+          "source": "write-atlas-storyline.txt:1196-1197,1303-1305,1437-1439",
+          "role_status": "proposed"
         },
         {
           "name": "Sarn",
@@ -720,9 +782,10 @@
           "want": null,
           "secret": "Knows some records contradict the taught history; Ch V changes the meaning of her records and of certain birth years",
           "voice": null,
-          "status": "proposed",
+          "status": "canon",
           "source": "write-atlas-storyline.txt:1198-1201,1976-1998",
-          "thai": "ซาร์น"
+          "thai": "ซาร์น",
+          "role_status": "proposed"
         }
       ]
     },
@@ -944,7 +1007,18 @@
       "terrain_group": "Green Lowlands",
       "studio_node_id": "town-lantern-hollow",
       "status": "proposed",
-      "source": "write-atlas-storyline.txt:1124; game-roadmap-ideation.txt:955-960,1091,1121; write-atlas-storyline.txt:1834-1836; game-roadmap-ideation.txt:4826-4828; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+      "source": "write-atlas-storyline.txt:1124; game-roadmap-ideation.txt:955-960,1091,1121; write-atlas-storyline.txt:1834-1836; game-roadmap-ideation.txt:4826-4828; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915",
+      "geography": {
+        "text": "Riverside plain: agriculture, trade, transport; Green Lowlands (river valleys, plains, open woodland); Maro Valley sub-structure example: World > Maro Valley > Maro Riverside > Old Stone Bridge",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:5933-5955 (One Main Continent layout, owner chose at game-roadmap-ideation.txt:5914) and game-roadmap-ideation.txt:4905-4915,4998-5010",
+        "note": "Owner chose 'World Map Layout A One Main Continent' but the message states 'not locking Canon'. NO climate or weather statement exists in the transcripts beyond Great-Kiln anomalies."
+      },
+      "travel": {
+        "text": "Maro Bell - Kilnwatch Bastion via a regional route with NPCs, gathering, encounters, landmarks (number of zones and distance undefined); Maro Bell to the nearby forest is a design-target 2-4 min walk; Maro Bell to Ondo Kiln has two options: safer main road through trade settlements, or shorter mountain-foot trail",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:4241-4250,4929-4932,5970-5972"
+      }
     },
     {
       "id": "ondo_kiln",
@@ -958,7 +1032,19 @@
       "terrain_group": "Stone Highlands",
       "studio_node_id": "town-root-train-roundhouse",
       "status": "proposed",
-      "source": "write-atlas-storyline.txt:1138; game-roadmap-ideation.txt:763,957-960,1096; game-roadmap-ideation.txt:4829-4831; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+      "source": "write-atlas-storyline.txt:1138; game-roadmap-ideation.txt:763,957-960,1096; game-roadmap-ideation.txt:4829-4831; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915",
+      "geography": {
+        "text": "Upland plain near ore deposits: kilns, metalwork, industry; Stone Highlands (ore, mountain passes, cliffs, route forts); region Ondo Heights; Ch I Brass Castellan site = old fort or industrial structure",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:5933-5955 (One Main Continent layout, owner chose at game-roadmap-ideation.txt:5914) and game-roadmap-ideation.txt:4905-4915,4998-5010",
+        "note": "Owner chose 'World Map Layout A One Main Continent' but the message states 'not locking Canon'. NO climate or weather statement exists in the transcripts beyond Great-Kiln anomalies."
+      },
+      "travel": {
+        "text": "Mountain-foot or main-road link to Maro Bell; mixed settlement stop on route Ondo -> mixed town -> Kilnwatch",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:4241-4250,4929-4932,5970-5972"
+      },
+      "look_status": "older proposal"
     },
     {
       "id": "linde_glaze",
@@ -972,7 +1058,13 @@
       "terrain_group": "Green Lowlands",
       "studio_node_id": "town-porcelain-loom-sanctuary",
       "status": "proposed",
-      "source": "write-atlas-storyline.txt:1151; game-roadmap-ideation.txt:1101,957-960 and write-atlas-storyline.txt:313-318,1151-1163; game-roadmap-ideation.txt:4832-4834; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+      "source": "write-atlas-storyline.txt:1151; game-roadmap-ideation.txt:1101,957-960 and write-atlas-storyline.txt:313-318,1151-1163; game-roadmap-ideation.txt:4832-4834; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915",
+      "geography": {
+        "text": "Clay plain near water sources: pottery, glaze, production; Green Lowlands; homeland region still undefined ('Linde Homeland', not forced into Vinya Hollow); Linde location in the conceptual layout explicitly not set",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:5933-5955 (One Main Continent layout, owner chose at game-roadmap-ideation.txt:5914) and game-roadmap-ideation.txt:4905-4915,4998-5010",
+        "note": "Owner chose 'World Map Layout A One Main Continent' but the message states 'not locking Canon'. NO climate or weather statement exists in the transcripts beyond Great-Kiln anomalies."
+      }
     },
     {
       "id": "daro_post",
@@ -986,7 +1078,18 @@
       "terrain_group": "Stone Highlands",
       "studio_node_id": "town-draft-kiln-post",
       "status": "proposed",
-      "source": "write-atlas-storyline.txt:1164; game-roadmap-ideation.txt:1106,957-960 and write-atlas-storyline.txt:1164-1176; game-roadmap-ideation.txt:4835-4837; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+      "source": "write-atlas-storyline.txt:1164; game-roadmap-ideation.txt:1106,957-960 and write-atlas-storyline.txt:1164-1176; game-roadmap-ideation.txt:4835-4837; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915",
+      "geography": {
+        "text": "Mountain pass or key route choke point: route and transport defence; Stone Highlands; homeland region undefined (Nara Reach is the Ch III region, but homeland is not forced to be there)",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:5933-5955 (One Main Continent layout, owner chose at game-roadmap-ideation.txt:5914) and game-roadmap-ideation.txt:4905-4915,4998-5010",
+        "note": "Owner chose 'World Map Layout A One Main Continent' but the message states 'not locking Canon'. NO climate or weather statement exists in the transcripts beyond Great-Kiln anomalies."
+      },
+      "travel": {
+        "text": "Passing players meet convoys needing help (guild/event example)",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:4241-4250,4929-4932,5970-5972"
+      }
     },
     {
       "id": "tava_fair",
@@ -1000,7 +1103,13 @@
       "terrain_group": "Old Wilds",
       "studio_node_id": "town-cinnamon-mill-haven",
       "status": "proposed",
-      "source": "write-atlas-storyline.txt:1177; game-roadmap-ideation.txt:1111,957-960,773 and write-atlas-storyline.txt:1177-1189; game-roadmap-ideation.txt:4838-4840; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+      "source": "write-atlas-storyline.txt:1177; game-roadmap-ideation.txt:1111,957-960,773 and write-atlas-storyline.txt:1177-1189; game-roadmap-ideation.txt:4838-4840; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915",
+      "geography": {
+        "text": "Edge of old forest with open ground: community, exchange, festivals; Old Wilds (deep forest, hidden valleys, old paths); region Tava Grove: flowering forests, painted porcelain stalls, musical brass bells, thousands of paper lanterns",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:5933-5955 (One Main Continent layout, owner chose at game-roadmap-ideation.txt:5914) and game-roadmap-ideation.txt:4905-4915,4998-5010",
+        "note": "Owner chose 'World Map Layout A One Main Continent' but the message states 'not locking Canon'. NO climate or weather statement exists in the transcripts beyond Great-Kiln anomalies."
+      }
     },
     {
       "id": "silme_echo",
@@ -1014,7 +1123,14 @@
       "terrain_group": "Old Wilds",
       "studio_node_id": "town-carillon-hearth-belfry",
       "status": "proposed",
-      "source": "write-atlas-storyline.txt:1190; game-roadmap-ideation.txt:1116,957-960 and write-atlas-storyline.txt:1190-1201; game-roadmap-ideation.txt:4841-4843; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+      "source": "write-atlas-storyline.txt:1190; game-roadmap-ideation.txt:1116,957-960 and write-atlas-storyline.txt:1190-1201; game-roadmap-ideation.txt:4841-4843; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915",
+      "geography": {
+        "text": "Deep forest valley or ancient site: education, memory, exploration; Old Wilds; region Silme Deep: resonant porcelain caverns, brass listening pipes, translucent walls, blue lanterns burning leaked time (older proposal: underground settlement where seal-listeners hear memories); whether Silme Deep is fully underground is undecided",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:5933-5955 (One Main Continent layout, owner chose at game-roadmap-ideation.txt:5914) and game-roadmap-ideation.txt:4905-4915,4998-5010",
+        "note": "Owner chose 'World Map Layout A One Main Continent' but the message states 'not locking Canon'. NO climate or weather statement exists in the transcripts beyond Great-Kiln anomalies."
+      },
+      "look_status": "older proposal"
     },
     {
       "id": "kilnwatch_bastion",
@@ -1134,13 +1250,6 @@
         "source": "write-atlas-storyline.txt:298-320 and write-atlas-storyline.txt:1543-1552"
       },
       {
-        "id": "spatial_gap_ids",
-        "topic": "spatial_gap_ids",
-        "text": "Region-count ambiguity: canon card lists nine geographic entries including Kilnwatch Bastion and The First Kiln, mixing geographic regions, kiln regions and hub locations; distinguish them in the DB.",
-        "status": "proposed",
-        "source": "story-decision-gap-check.txt:158-162"
-      },
-      {
         "id": "mixed_settlement_example",
         "topic": "mixed_settlement_example",
         "text": "Example journey: Ondo Kiln (smith sells gear) -> mixed settlement on the road (Tava merchants, Silme explorers, mixed-level adventurers) -> Kilnwatch Bastion (trade, news, events). Not a mandatory quest route.",
@@ -1167,6 +1276,20 @@
         "status": "proposed",
         "source": "write-atlas-storyline.txt:1203-1214 (retired working names replaced by current names)",
         "text": "Proposed cross-town relationships: Bram-Torren old friends; Pip-Isil pen-pals; Elin-Nelli exchange flowers/sweets yearly; Garran-Vessa shared a watch night with mismatched memories; Sarn-Lasse both keep records and find contradictions."
+      },
+      {
+        "id": "hooks_converge",
+        "topic": "hooks_converge",
+        "text": "All six races' hooks converge on the same lean-year injustice via the brass-edged short-stamped birth token (millions have one, no power, no lifespan prediction, never required or checked; optional dialogue may acknowledge it generically).",
+        "status": "chosen",
+        "source": "write-atlas-storyline.txt:772-775, 1543-1552, 1564"
+      },
+      {
+        "id": "scale_conflict",
+        "topic": "scale_conflict",
+        "text": "Open conflict: the chosen walk-time targets (town to neighbouring town 8-15 min, across several regions 15-30 min on first walk) do not match the repo's 400x400 world with hour-scale travel (1 unit = 1 m). Not reconciled; the design targets and the repo scale need an owner decision.",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:6846"
       }
     ]
   }

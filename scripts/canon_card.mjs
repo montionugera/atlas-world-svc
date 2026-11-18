@@ -20,6 +20,7 @@ export function renderCanonCard(g) {
     `## Maro Bell cast (prototype)\n\n${table(["Name", "Thai", "Role", "Age", "Want", "Secret", "Voice"], g.npcs.town.maro_bell.map((n) => [n.name, n.thai, n.role, String(n.age), n.want, n.secret, n.voice]))}`,
     `## Towns\n\n${table(["Town", "Race", "Tagline", "Role", "Terrain", "Status"], g.towns.map((t) => [t.name, t.race ?? "", t.tagline ?? "", t.role, t.terrain_group ?? "", t.status]))}`,
     `## Other town casts (proposed)\n\n${table(["Town", "Name", "Role", "Age", "Want", "Secret"], Object.entries(g.npcs.town).filter(([id]) => id !== "maro_bell").flatMap(([id, cast]) => cast.map((n) => [g.towns.find((t) => t.id === id).name, n.name, n.role, String(n.age ?? ""), n.want ?? "", n.secret ?? ""])))}`,
+    `## Race culture (older drafts, proposed)\n\n${g.races.map((r) => `- **${r.name}**: ${r.culture.text}${r.appearance ? ` Appearance: ${r.appearance.text}.` : ""}`).join("\n")}`,
     `## World rules\n\n${g.world_model.rules.map((r) => `- **${r.topic}** (${r.status}): ${r.text}`).join("\n")}`,
     `## Scar renames\n\n${table(["Town", "Role", "Retired", "New name", "Thai", "Root"], g.npcs.scar_renames.map((r) => [r.town, r.role, r.retired, r.name, r.thai, r.root]))}`,
     `## Landmarks\n\n${Object.values(g.landmarks).map((l) => `- **${l.name}** (${l.thai}): ${l.description} Composition: ${l.composition}`).join("\n")}`,

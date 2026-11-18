@@ -130,6 +130,15 @@ Architect: Yara, the Architect (The First Kiln).
 | Silme Echo | Isil | Spark (trainee explorer) + traveller | 20 | Write a compendium of wonders; uncover the world's history | Strange echo in the library speaking of events that have not happened |
 | Silme Echo | Sarn | Scar (archive keeper) |  |  | Knows some records contradict the taught history; Ch V changes the meaning of her records and of certain birth years |
 
+## Race culture (older drafts, proposed)
+
+- **Maro Folk**: Hearthfolk (old working name, now Maro Folk): ordinary people who preserve home and community. Old small-story moment: an elderly lantern-maker keeps a lamp lit for a customer who promised to return thirty years ago (loss theme: forgetting ordinary days).
+- **Ondo Forge**: Stonekin (old working name, now Ondo Forge): builders, smiths and kiln engineers. Old small-story moment: a smith polishes a tiny hammer every morning because their apprentice died before completing it (loss theme: work left unfinished). Ch I race focus in the locked card: Ondo Forge + Daro Guard.
+- **Linde Folk**: Elenborn (old working name, now Linde Folk): long-lived artisans of star-patterned porcelain. Old small-story moment: an elf visits a bench where a human friend once sat; the tree beside it has grown around the seat (loss theme: outliving shared memories). Locked-card Ch II focus: Tava Kin + Linde Folk (later moved: Linde resolves in Ch IV). Appearance: long-lived (earlier name Lunar, elf-like).
+- **Daro Guard**: Oathguard (old working name, now Daro Guard): watch-keepers bound by inherited duty; identity is endurance, vigilance and inherited duty, not aggression. Old small-story moment: a young watch-keeper rings a bell each evening though nobody remembers what the warning meant (loss theme: duty inherited without explanation).
+- **Tava Kin**: Wildkin (old working name, now Tava Kin; earlier Beastfolk/Furral): animal-featured people who celebrate fleeting life. Old small-story moment: a baker keeps making an awful cake because it was their grandmother's favourite and everyone pretends to enjoy it (loss theme: joy that cannot be repeated). Festival town famous for painted pottery and terrible traditional cakes. Appearance: animal-featured people (earlier name Beastfolk/Furral).
+- **Silme Seers**: Lomewalkers / Ummari (old working names, now Silme Seers; earlier Dark-Lunar): seal-listeners who perceive echoes in porcelain and interpret vibrations and memories trapped in fired porcelain. Old small-story moment: a child hears humming through a porcelain wall and learns the melody belongs to a mother they may never meet (loss theme: remembering what never happened).
+
 ## World rules
 
 - **world_structure** (chosen): Hybrid World: shared persistent world, open regions, shared hubs, travel network, instanced dungeons/boss encounters; not everything instanced; regions can be managed/loaded separately.
@@ -147,11 +156,12 @@ Architect: Yara, the Architect (The First Kiln).
 - **boss_placement** (proposed): Chapter boss site types: Bellkeeper bell/lantern site; Brass Castellan old fort/industrial structure; Jubilant Collector anomalous festival area; Tithe Warden debt/collection place; Unwilting nature outside its cycle; Unborn Witness ancient ruin/memory vault; Sworn Sentinel pass or oath site; Counterfeit Hour inside or beneath the Bastion; First Regulator inner First Kiln. Field/Dungeon/World boss each placed by site logic, not one per zone.
 - **weather_season** (proposed): Only hints: Ch VIII visible wound - districts experience different seasons simultaneously and roads lead to places that no longer exist; Ch I - streets freeze for minutes; no stated climate, weather or season cycle for any town.
 - **volunteers_road** (chosen): Volunteers' Road: route of the first volunteers through the chapter regions; each region has a bell, marker or memorial (not identical in every region). Examples: Maro Valley bell that rings too early; Ondo Heights hammer missing its brass fitting; Vinya Hollow empty stone seat with yearly flowers.
-- **spatial_gap_ids** (proposed): Region-count ambiguity: canon card lists nine geographic entries including Kilnwatch Bastion and The First Kiln, mixing geographic regions, kiln regions and hub locations; distinguish them in the DB.
 - **mixed_settlement_example** (proposed): Example journey: Ondo Kiln (smith sells gear) -> mixed settlement on the road (Tava merchants, Silme explorers, mixed-level adventurers) -> Kilnwatch Bastion (trade, news, events). Not a mandatory quest route.
 - **mixed_race_towns** (proposed): Race home towns are not the only place each race lives: towns hold a majority local race plus craftspeople, traders and travellers from other races; no fixed ratios (Ancestral Homelands / Mixed Settlements / Shared Regional Hub model).
 - **race_not_destiny** (proposed): Player race does not decide destiny or profession: race gives a cultural starting perspective and a suggested hook only; players may pick a different motive; Ondo/Silme players are not forced into smithing/runes.
 - **cross_town_ties** (proposed): Proposed cross-town relationships: Bram-Torren old friends; Pip-Isil pen-pals; Elin-Nelli exchange flowers/sweets yearly; Garran-Vessa shared a watch night with mismatched memories; Sarn-Lasse both keep records and find contradictions.
+- **hooks_converge** (chosen): All six races' hooks converge on the same lean-year injustice via the brass-edged short-stamped birth token (millions have one, no power, no lifespan prediction, never required or checked; optional dialogue may acknowledge it generically).
+- **scale_conflict** (proposed): Open conflict: the chosen walk-time targets (town to neighbouring town 8-15 min, across several regions 15-30 min on first walk) do not match the repo's 400x400 world with hour-scale travel (1 unit = 1 m). Not reconciled; the design targets and the repo scale need an owner decision.
 
 ## Scar renames
 
