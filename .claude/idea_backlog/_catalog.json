@@ -1996,5 +1996,11 @@
     "title": "World structure merge v1: owner decisions, encounter bands, town roles and a portal-vs-route gate (new geography as the core axis)",
     "created_at": "2026-11-18T13:31:57.250571+00:00",
     "promoted_to": "F-235"
+  },
+  {
+    "id": "I-321",
+    "title": "Chapter 0 slice: rewire Maro-Linde-Kilnwatch portals and retune levels for Lv 1-15",
+    "created_at": "2026-11-18T13:49:38.286088+00:00",
+    "promoted_to": null
   }
 ]
