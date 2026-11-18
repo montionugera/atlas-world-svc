@@ -95,14 +95,14 @@ The test must fail when one of the new portals is removed from a fixture.
 
 ## Acceptance criteria
 
-1. From `town-lantern-hollow` there is an open-portal path to `town-porcelain-loom-sanctuary` and to
+- [ ] From `town-lantern-hollow` there is an open-portal path to `town-porcelain-loom-sanctuary` and to
    `town-kilnwatch-bastion`, and from `town-porcelain-loom-sanctuary` to `town-kilnwatch-bastion`, using only nodes in
    these three districts, in both directions. Show it with a short script run against the committed JSON, not by reading.
-2. No node portal from these three districts targets `town-draft-kiln-post`, and `legacy_portals` has exactly two fewer entries.
-3. The table in R3 holds (print node, `level_range`, sorted spawn levels).
-4. All R4 commands pass; `git status` is clean after regenerate + commit.
-5. GEO-11 exists, passes on the real data, and its test goes red when a portal is removed.
-6. The review links load: `http://atlas-edit.joymify.local.com/?r=district:district-teacup-meadows` and
+- [ ] No node portal from these three districts targets `town-draft-kiln-post`, and `legacy_portals` has exactly two fewer entries.
+- [ ] The table in R3 holds (print node, `level_range`, sorted spawn levels).
+- [ ] All R4 commands pass; `git status` is clean after regenerate + commit.
+- [ ] GEO-11 exists, passes on the real data, and its test goes red when a portal is removed.
+- [ ] The review links load: `http://atlas-edit.joymify.local.com/?r=district:district-teacup-meadows` and
    `http://atlas-edit.joymify.local.com/?r=district:district-porcelain-cradle` show the new level ranges.
 
 ## Not in this feature
