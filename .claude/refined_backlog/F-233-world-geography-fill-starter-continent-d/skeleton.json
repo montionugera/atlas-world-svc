@@ -123,7 +123,7 @@
       },
       "elevation_band": 2,
       "climate": {
-        "temperature": "cool",
+        "temperature": "mild",
         "moisture": "moderate"
       },
       "home_town": "Tava Fair"
@@ -151,7 +151,7 @@
       },
       "elevation_band": 4,
       "climate": {
-        "temperature": "cold",
+        "temperature": "cool",
         "moisture": "dry"
       },
       "home_town": "Silme Echo"
@@ -173,14 +173,6 @@
       "gateway_type": "stairs",
       "route_type": "main_road",
       "walk_minutes": 15
-    },
-    {
-      "id": "link-teacup-meadows--saffron-kiln-orchards",
-      "a": "district-teacup-meadows",
-      "b": "district-saffron-kiln-orchards",
-      "gateway_type": "road",
-      "route_type": "main_road",
-      "walk_minutes": 18
     },
     {
       "id": "link-teacup-meadows--ginger-steam-terraces",
@@ -293,6 +285,42 @@
       "gateway_type": "bridge",
       "route_type": "ancient_route",
       "walk_minutes": 20
+    },
+    {
+      "id": "link-teacup-meadows--ash-bellows-trench",
+      "a": "district-teacup-meadows",
+      "b": "district-ash-bellows-trench",
+      "gateway_type": "road",
+      "route_type": "main_road",
+      "walk_minutes": 22
+    },
+    {
+      "id": "link-cinnamon-bellows-bluff--porcelain-cradle",
+      "a": "district-cinnamon-bellows-bluff",
+      "b": "district-porcelain-cradle",
+      "gateway_type": "road",
+      "route_type": "wilderness_trail",
+      "walk_minutes": 16
     }
-  ]
+  ],
+  "revision": "r2 after canon review 2026-11-18",
+  "basin_features": {
+    "trunk_river": {
+      "name": "the Glaze River",
+      "course": [
+        "district-cardamom-kiln-caldera",
+        "district-cinnamon-bellows-bluff",
+        "district-ginger-steam-terraces",
+        "district-glaze-river-delta"
+      ],
+      "note": "Springs in the caldera (elevation 3), falls past the bluff and the steam terraces (2), skirts the south-west edge of Teacup Meadows where the meadow creeks join it (1), and fans out in the delta (0). The delta's outer mouth faces south. Every water field on or beside the course refers to it by this name; no other district claims a different river."
+    },
+    "prevailing_wind": "westerly: air climbs the western ridge, crosses the basin and leaves over the eastern highlands. Smells and sounds carry west to east.",
+    "temperature_rule": "The continent canon says the basin is kept at perpetual spring. No frost, ice, rime or snow anywhere. 'cool' means wind and thin air at height, not freezing.",
+    "terrain_group_content": {
+      "Old Wilds": "old forest is present in every Old Wilds district (glossary: deep forest, hidden valleys, old paths). Cinnamon-Bellows Bluff is the forest edge with open ground; Wind-Chime Ridge is a ridge above a deep forested valley.",
+      "Green Lowlands": "river valleys, plains, open woodland.",
+      "Stone Highlands": "ore, cliffs, mountain passes, upland plain."
+    }
+  }
 }
