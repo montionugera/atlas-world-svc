@@ -115,6 +115,14 @@ def build_index(conn: sqlite3.Connection, root: Path, studio_dir: Path, manifest
         tag(kind, id_, "unbound-to-studio-world")
     refs.extend(("mob", m, "Drops", "item", i) for m, i in conn.execute("SELECT mob_id, item_id FROM mob_drops"))
 
+    # canon links (F-231): race -> home town, npc -> town, town -> studio node
+    refs.extend(("race", r, "Home town", "canon", f"town:{t}") for r, t in conn.execute(
+        "SELECT r.id, t.id FROM canon_entries r JOIN canon_entries t ON t.kind = 'town' AND json_extract(t.raw_json, '$.race') = r.id WHERE r.kind = 'race'"))
+    refs.extend(("canon", f"npc:{n}", "Lives in", "canon", f"town:{t}") for n, t in conn.execute(
+        "SELECT n.id, t.id FROM canon_entries n JOIN canon_entries t ON t.kind = 'town' AND t.name = n.parent_id WHERE n.kind = 'npc'"))
+    refs.extend(("canon", f"town:{t}", "Studio node", "node", n) for t, n in conn.execute(
+        "SELECT id, json_extract(raw_json, '$.studio_node_id') FROM canon_entries WHERE kind = 'town' AND json_extract(raw_json, '$.studio_node_id') IS NOT NULL"))
+
     conn.executemany("INSERT INTO records VALUES (?, ?, ?, ?, ?, ?, ?)", recs)
     have = {(r[0], r[1]) for r in recs}
     for kind, id_, *_rest, concept, _src, _url in recs:
