@@ -2976,5 +2976,14 @@
     "claimed_at": "2026-11-16T17:34:42.330771+00:00",
     "shipped_at": "2026-11-17T14:46:01.827509+00:00",
     "shipped_sha": "4f73e70ef44f8d58849d5d9ff7041f5e6fccc194"
+  },
+  {
+    "id": "F-231",
+    "title": "Game DB concept sync: GPT race and town discussions into canon records (log in repo, 6 races, 6 home towns, 18 town NPCs)",
+    "from_idea": "I-316",
+    "created_at": "2026-11-18T00:33:28.484575+00:00",
+    "claimed_by": null,
+    "status": "open",
+    "release_version": null
   }
 ]
