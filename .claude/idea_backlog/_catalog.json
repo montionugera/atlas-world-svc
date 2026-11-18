@@ -1978,5 +1978,11 @@
     "title": "Env camera parity gate for milestone renders and sightline checks",
     "created_at": "2026-11-18T00:33:17.403888+00:00",
     "promoted_to": null
+  },
+  {
+    "id": "I-318",
+    "title": "World geography fill, starter continent: district routes, terrain groups, climate and weather so the land reads as continuous",
+    "created_at": "2026-11-18T00:35:14.528897+00:00",
+    "promoted_to": null
   }
 ]
