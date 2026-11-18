@@ -79,11 +79,16 @@ def canon_rows(g):
         add("town", x["id"], x["name"], None, x.get("status"), x)
     town_name = {t["id"]: t["name"] for t in g.get("towns", [])}
     travellers = {x["name"]: x for x in g.get("npcs", {}).get("travellers", [])}
+    cast_names = set()
     for tid, cast in g.get("npcs", {}).get("town", {}).items():
+        if tid not in town_name:
+            raise ValueError(f"glossary npcs.town.{tid}: no such town in glossary towns (its NPCs would lose their Lives-in link)")
         for x in cast:   # a traveller who is also a cast member is one row: traveller facts + cast facts
-            add("npc", x["name"], x["name"], town_name.get(tid, tid), x.get("status"), {**travellers.pop(x["name"], {}), **x, "town": tid})
+            cast_names.add(x["name"])
+            add("npc", x["name"], x["name"], town_name[tid], x.get("status"), {**travellers.get(x["name"], {}), **x, "town": tid})
     for x in travellers.values():
-        add("npc", x["name"], x["name"], x.get("home_town"), None, x)
+        if x["name"] not in cast_names:
+            add("npc", x["name"], x["name"], x.get("home_town"), None, x)
     for x in g.get("world_model", {}).get("rules", []):
         add("world_rule", x["id"], x["topic"], None, x.get("status"), x)
     if g.get("architect"):
