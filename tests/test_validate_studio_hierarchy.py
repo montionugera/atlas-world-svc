@@ -394,6 +394,13 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
 
         self._assert_only_geo({self.C01: stale}, "GEO-09")
 
+    def test_geo09_transport_link_does_not_whitelist_a_map_edge_portal(self) -> None:
+        def unlist(d: dict) -> None:
+            d["legacy_portals"] = [e for e in d["legacy_portals"] if e["ruling"] != "becomes_transport"]
+            assert d["transport_links"]  # the pairs stay declared as transport
+
+        self._assert_only_geo({self.C01: unlist}, "GEO-09")
+
     def test_geo10_rejects_link_without_priority(self) -> None:
         self._assert_only_geo({self.C01: self._links(lambda ls: ls[0].pop("priority"))}, "GEO-10")
 

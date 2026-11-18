@@ -818,8 +818,9 @@ def _validate_geography(
             if geo[did].get("terrain_group") != want:
                 errors.append(f"{label}: GEO-06 violation: district '{did}' terrain_group {geo[did].get('terrain_group')!r} differs from town '{town.get('name')}' ({want!r})")
 
-        # GEO-09: a node portal that leaves its district is a district link, a transport link or a listed legacy portal.
-        covered = {frozenset((l.get("a"), l.get("b"))) for l in links + (cont.get("transport_links") or [])}
+        # GEO-09: a node portal that leaves its district is a district link or a listed legacy portal.
+        # A transport link is a scheduled service, not a map edge, so it covers no portal.
+        covered = {frozenset((l.get("a"), l.get("b"))) for l in links}
         legacy = {(e.get("from_node_id"), e.get("to_node_id")) for e in cont.get("legacy_portals") or []}
         cross: set[tuple[str, str]] = set()
         for nid, node in nodes_by_id.items():
@@ -832,7 +833,7 @@ def _validate_geography(
                 if tid and dst != src:
                     cross.add((nid, tid))
                     if frozenset((src, dst)) not in covered and (nid, tid) not in legacy:
-                        errors.append(f"{label}: GEO-09 violation: portal {nid} -> {tid} leaves its district and is in no district_links, transport_links or legacy_portals")
+                        errors.append(f"{label}: GEO-09 violation: portal {nid} -> {tid} leaves its district and is in no district_links or legacy_portals")
         for pair in sorted(legacy - cross):
             errors.append(f"{label}: GEO-09 violation: legacy_portals entry {pair[0]} -> {pair[1]} has no matching node portal; remove it")
 
