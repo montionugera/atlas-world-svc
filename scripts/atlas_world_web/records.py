@@ -1,10 +1,13 @@
 """Read-only queries over the record index that build_catalog_db.py writes (F-216 S1)."""
 from __future__ import annotations
 
+import json
+import os
 import re
 import sqlite3
+from pathlib import Path
 
-from . import runtime
+from . import record_map, runtime
 
 MAX_RESULTS = 20
 # Shown on the page of the record a link points AT. "Map" has no inverse: the map already
@@ -48,6 +51,44 @@ def counts() -> list[dict]:
     return [dict(zip(("kind", "n", "viewUrl"), row)) for row in rows]
 
 
+def _studio_dir() -> Path:
+    return Path(os.environ.get("ATLAS_STUDIO_DIR", Path(__file__).resolve().parents[2] / "content" / "studio"))
+
+
+def _load_all(folder: Path) -> list[dict]:
+    """Studio files are read on every request (no cache), so an edited level shows on the next reload."""
+    out = []
+    for p in sorted(folder.rglob("*.json")):
+        try:
+            out.append(json.loads(p.read_text(encoding="utf-8")))
+        except (OSError, ValueError):
+            continue
+    return out
+
+
+def build_map(kind: str, id_: str) -> dict | None:
+    studio = _studio_dir()
+    if kind == "district":
+        districts = {d["id"]: d for d in _load_all(studio / "districts") if "id" in d}
+        d = districts.get(id_)
+        if d is None:
+            return None
+        nodes = {n["id"]: n for n in _load_all(studio / "nodes" / d.get("parent_continent_id", "")) if "id" in n}
+        mine = {i: n for i, n in nodes.items() if n.get("parent_district_id") == id_}
+        return record_map.district_map(mine, nodes, {i: x.get("name", i) for i, x in districts.items()})
+    if kind == "continent":
+        districts = [d for d in _load_all(studio / "districts" / id_) if "id" in d]
+        files = [c for c in _load_all(studio / "continents") if c.get("id") == id_]
+        if not files:
+            return None
+        towns = {}
+        for n in _load_all(studio / "nodes" / id_):
+            if n.get("node_type") == "town":
+                towns.setdefault(n.get("parent_district_id"), n.get("name"))
+        return record_map.continent_map(districts, files[0].get("district_links") or [], towns)
+    return None
+
+
 def record(kind: str, id_: str) -> dict | None:
     with _connect() as conn:
         row = conn.execute(
@@ -69,8 +110,12 @@ def record(kind: str, id_: str) -> dict | None:
             continue
         seen.add((k, i))
         groups.setdefault(label, []).append({"kind": k, "id": i, "title": title})
-    return {
+    out = {
         "record": dict(zip(("kind", "id", "title", "summary", "concept", "sourceFile", "viewUrl"), row)),
         "tags": tags,
         "relations": [{"label": name, "items": groups[name]} for name in LABEL_ORDER if name in groups],
     }
+    m = build_map(kind, id_)
+    if m:
+        out["map"] = m
+    return out
