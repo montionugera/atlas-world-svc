@@ -1,0 +1,298 @@
+{
+  "continent_id": "continent-01-hearthbloom-basin",
+  "note": "FROZEN skeleton (F-233). Prose fields are written on top of this; these values are not changed by the writer.",
+  "districts": [
+    {
+      "id": "district-teacup-meadows",
+      "terrain_group": "Green Lowlands",
+      "map_position": {
+        "x": 50,
+        "y": 50
+      },
+      "elevation_band": 1,
+      "climate": {
+        "temperature": "mild",
+        "moisture": "moderate"
+      },
+      "home_town": "Maro Bell"
+    },
+    {
+      "id": "district-porcelain-cradle",
+      "terrain_group": "Green Lowlands",
+      "map_position": {
+        "x": 42,
+        "y": 38
+      },
+      "elevation_band": 1,
+      "climate": {
+        "temperature": "mild",
+        "moisture": "moderate"
+      },
+      "home_town": "Linde Glaze"
+    },
+    {
+      "id": "district-glaze-river-delta",
+      "terrain_group": "Green Lowlands",
+      "map_position": {
+        "x": 45,
+        "y": 85
+      },
+      "elevation_band": 0,
+      "climate": {
+        "temperature": "warm",
+        "moisture": "wet"
+      },
+      "home_town": null
+    },
+    {
+      "id": "district-saffron-kiln-orchards",
+      "terrain_group": "Green Lowlands",
+      "map_position": {
+        "x": 62,
+        "y": 78
+      },
+      "elevation_band": 1,
+      "climate": {
+        "temperature": "warm",
+        "moisture": "dry"
+      },
+      "home_town": null
+    },
+    {
+      "id": "district-kilnfire-terraces",
+      "terrain_group": "Stone Highlands",
+      "map_position": {
+        "x": 55,
+        "y": 28
+      },
+      "elevation_band": 3,
+      "climate": {
+        "temperature": "cool",
+        "moisture": "dry"
+      },
+      "home_town": "Kilnwatch Bastion"
+    },
+    {
+      "id": "district-amber-root-hollows",
+      "terrain_group": "Stone Highlands",
+      "map_position": {
+        "x": 78,
+        "y": 40
+      },
+      "elevation_band": 2,
+      "climate": {
+        "temperature": "mild",
+        "moisture": "wet"
+      },
+      "home_town": "Ondo Kiln"
+    },
+    {
+      "id": "district-ash-bellows-trench",
+      "terrain_group": "Stone Highlands",
+      "map_position": {
+        "x": 75,
+        "y": 65
+      },
+      "elevation_band": 2,
+      "climate": {
+        "temperature": "warm",
+        "moisture": "dry"
+      },
+      "home_town": "Daro Post"
+    },
+    {
+      "id": "district-ginger-steam-terraces",
+      "terrain_group": "Old Wilds",
+      "map_position": {
+        "x": 30,
+        "y": 62
+      },
+      "elevation_band": 2,
+      "climate": {
+        "temperature": "mild",
+        "moisture": "wet"
+      },
+      "home_town": null
+    },
+    {
+      "id": "district-cinnamon-bellows-bluff",
+      "terrain_group": "Old Wilds",
+      "map_position": {
+        "x": 22,
+        "y": 45
+      },
+      "elevation_band": 2,
+      "climate": {
+        "temperature": "cool",
+        "moisture": "moderate"
+      },
+      "home_town": "Tava Fair"
+    },
+    {
+      "id": "district-cardamom-kiln-caldera",
+      "terrain_group": "Old Wilds",
+      "map_position": {
+        "x": 30,
+        "y": 18
+      },
+      "elevation_band": 3,
+      "climate": {
+        "temperature": "cool",
+        "moisture": "wet"
+      },
+      "home_town": null
+    },
+    {
+      "id": "district-terracotta-wind-chimes",
+      "terrain_group": "Old Wilds",
+      "map_position": {
+        "x": 12,
+        "y": 25
+      },
+      "elevation_band": 4,
+      "climate": {
+        "temperature": "cold",
+        "moisture": "dry"
+      },
+      "home_town": "Silme Echo"
+    }
+  ],
+  "district_links": [
+    {
+      "id": "link-teacup-meadows--porcelain-cradle",
+      "a": "district-teacup-meadows",
+      "b": "district-porcelain-cradle",
+      "gateway_type": "road",
+      "route_type": "main_road",
+      "walk_minutes": 10
+    },
+    {
+      "id": "link-teacup-meadows--kilnfire-terraces",
+      "a": "district-teacup-meadows",
+      "b": "district-kilnfire-terraces",
+      "gateway_type": "stairs",
+      "route_type": "main_road",
+      "walk_minutes": 15
+    },
+    {
+      "id": "link-teacup-meadows--saffron-kiln-orchards",
+      "a": "district-teacup-meadows",
+      "b": "district-saffron-kiln-orchards",
+      "gateway_type": "road",
+      "route_type": "main_road",
+      "walk_minutes": 18
+    },
+    {
+      "id": "link-teacup-meadows--ginger-steam-terraces",
+      "a": "district-teacup-meadows",
+      "b": "district-ginger-steam-terraces",
+      "gateway_type": "bridge",
+      "route_type": "main_road",
+      "walk_minutes": 13
+    },
+    {
+      "id": "link-teacup-meadows--amber-root-hollows",
+      "a": "district-teacup-meadows",
+      "b": "district-amber-root-hollows",
+      "gateway_type": "road",
+      "route_type": "wilderness_trail",
+      "walk_minutes": 22
+    },
+    {
+      "id": "link-saffron-kiln-orchards--glaze-river-delta",
+      "a": "district-saffron-kiln-orchards",
+      "b": "district-glaze-river-delta",
+      "gateway_type": "ford",
+      "route_type": "main_road",
+      "walk_minutes": 12
+    },
+    {
+      "id": "link-saffron-kiln-orchards--ash-bellows-trench",
+      "a": "district-saffron-kiln-orchards",
+      "b": "district-ash-bellows-trench",
+      "gateway_type": "pass",
+      "route_type": "main_road",
+      "walk_minutes": 14
+    },
+    {
+      "id": "link-ash-bellows-trench--amber-root-hollows",
+      "a": "district-ash-bellows-trench",
+      "b": "district-amber-root-hollows",
+      "gateway_type": "tunnel",
+      "route_type": "main_road",
+      "walk_minutes": 15
+    },
+    {
+      "id": "link-amber-root-hollows--kilnfire-terraces",
+      "a": "district-amber-root-hollows",
+      "b": "district-kilnfire-terraces",
+      "gateway_type": "road",
+      "route_type": "main_road",
+      "walk_minutes": 16
+    },
+    {
+      "id": "link-porcelain-cradle--kilnfire-terraces",
+      "a": "district-porcelain-cradle",
+      "b": "district-kilnfire-terraces",
+      "gateway_type": "stairs",
+      "route_type": "ancient_route",
+      "walk_minutes": 14
+    },
+    {
+      "id": "link-porcelain-cradle--ginger-steam-terraces",
+      "a": "district-porcelain-cradle",
+      "b": "district-ginger-steam-terraces",
+      "gateway_type": "bridge",
+      "route_type": "wilderness_trail",
+      "walk_minutes": 12
+    },
+    {
+      "id": "link-ginger-steam-terraces--cinnamon-bellows-bluff",
+      "a": "district-ginger-steam-terraces",
+      "b": "district-cinnamon-bellows-bluff",
+      "gateway_type": "road",
+      "route_type": "main_road",
+      "walk_minutes": 12
+    },
+    {
+      "id": "link-ginger-steam-terraces--glaze-river-delta",
+      "a": "district-ginger-steam-terraces",
+      "b": "district-glaze-river-delta",
+      "gateway_type": "stairs",
+      "route_type": "wilderness_trail",
+      "walk_minutes": 24
+    },
+    {
+      "id": "link-cinnamon-bellows-bluff--terracotta-wind-chimes",
+      "a": "district-cinnamon-bellows-bluff",
+      "b": "district-terracotta-wind-chimes",
+      "gateway_type": "pass",
+      "route_type": "main_road",
+      "walk_minutes": 20
+    },
+    {
+      "id": "link-cinnamon-bellows-bluff--cardamom-kiln-caldera",
+      "a": "district-cinnamon-bellows-bluff",
+      "b": "district-cardamom-kiln-caldera",
+      "gateway_type": "road",
+      "route_type": "wilderness_trail",
+      "walk_minutes": 15
+    },
+    {
+      "id": "link-cardamom-kiln-caldera--terracotta-wind-chimes",
+      "a": "district-cardamom-kiln-caldera",
+      "b": "district-terracotta-wind-chimes",
+      "gateway_type": "tunnel",
+      "route_type": "ancient_route",
+      "walk_minutes": 18
+    },
+    {
+      "id": "link-cardamom-kiln-caldera--kilnfire-terraces",
+      "a": "district-cardamom-kiln-caldera",
+      "b": "district-kilnfire-terraces",
+      "gateway_type": "bridge",
+      "route_type": "ancient_route",
+      "walk_minutes": 20
+    }
+  ]
+}
