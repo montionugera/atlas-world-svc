@@ -43,3 +43,4 @@ F-174 backlog (2026-11-06): NotifyHit only fires for hits the local player deals
 - F-236 follow-up: re-author the old mainline chain in `world_history_and_concept.json` (GOV-01/GOV-09) so the `remove`-ruled legacy portals can actually be deleted.
 - F-236 follow-up: `level_band_label` reads "Levels 1 to 20" on districts whose `level_range` is [1,15]; generate it or drop it.
 - F-236 follow-up (do first): Linde Lv 1-10 start has two open legacy portals into Lv 14+ maps (celadon-causeway West, loom-sanctuary East); close or convert them with the mainline-chain rework.
+- F-237 follow-up: record map polish from review: assert attribute-quote escaping in atlas-web-record-map.test.mjs; wrap/truncate long no-space labels; route edges around boxes (lines and danger mark can hide behind a box); draw portals of nodes unreached from the town; phone shrink-to-fit instead of scroll box.
