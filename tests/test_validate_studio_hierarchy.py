@@ -301,6 +301,84 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 f"Expected INV-06 violation, got: {errors}",
             )
 
+    # ---- F-233 GEO-01..GEO-07 -------------------------------------------------
+
+    C01 = "continents/continent-01-hearthbloom-basin.json"
+    D01 = "districts/continent-01-hearthbloom-basin/{}.json"
+
+    def _assert_only_geo(self, mutations: dict[str, Callable[[dict], None]], rule: str) -> None:
+        with self._mutated_files(mutations) as studio_dir:
+            errors = validate_studio_directory(studio_dir)
+        geo = [e for e in errors if "GEO-0" in e]
+        self.assertTrue(geo, f"Expected {rule} error, got: {errors}")
+        self.assertTrue(all(f"{rule} violation" in e for e in geo), f"Expected only {rule}: {geo}")
+
+    def _links(self, fn: Callable[[list], None]) -> Callable[[dict], None]:
+        return lambda d: fn(d["district_links"])
+
+    def _link(self, links: list, lid: str) -> dict:
+        return next(link for link in links if link["id"] == lid)
+
+    def test_geo01_rejects_district_without_geography(self) -> None:
+        self._assert_only_geo(
+            {self.D01.format("district-saffron-kiln-orchards"): lambda d: d.pop("geography")}, "GEO-01"
+        )
+
+    def test_geo02_rejects_duplicate_pair(self) -> None:
+        def dup(links: list) -> None:
+            twin = copy.deepcopy(links[0])
+            twin["id"] = "link-twin"
+            twin["a"], twin["b"] = twin["b"], twin["a"]
+            links.append(twin)
+
+        self._assert_only_geo({self.C01: self._links(dup)}, "GEO-02")
+
+    def test_geo02_rejects_disconnected_graph(self) -> None:
+        def cut(links: list) -> None:
+            links[:] = [l for l in links if "district-glaze-river-delta" not in (l["a"], l["b"])]
+
+        self._assert_only_geo({self.C01: self._links(cut)}, "GEO-02")
+
+    def test_geo03_rejects_walk_minutes_out_of_range(self) -> None:
+        def slow(links: list) -> None:
+            links[0]["walk_minutes"] = 40
+
+        self._assert_only_geo({self.C01: self._links(slow)}, "GEO-03")
+
+    def test_geo04_rejects_big_climb_on_plain_road(self) -> None:
+        def flat(links: list) -> None:
+            self._link(links, "link-teacup-meadows--kilnfire-terraces")["gateway"]["type"] = "road"
+
+        self._assert_only_geo({self.C01: self._links(flat)}, "GEO-04")
+
+    def test_geo05_rejects_two_step_temperature_jump(self) -> None:
+        def hot(d: dict) -> None:
+            d["geography"]["climate"]["temperature"] = "warm"
+
+        self._assert_only_geo({self.D01.format("district-kilnfire-terraces"): hot}, "GEO-05")
+
+    def test_geo06_rejects_wrong_terrain_group_for_home_town(self) -> None:
+        def wrong(d: dict) -> None:
+            d["geography"]["terrain_group"] = "Old Wilds"
+
+        self._assert_only_geo({self.D01.format("district-teacup-meadows"): wrong}, "GEO-06")
+
+    def test_geo07_rejects_linked_districts_with_same_weather_names(self) -> None:
+        def same(d: dict) -> None:
+            d["geography"]["weather"] = [
+                {"name": "Ember-pollen drift", "when": "afternoon", "feel": "x"},
+                {"name": "Clover rain", "when": "after rain", "feel": "y"},
+                {"name": "Cinnamon morning", "when": "dawn", "feel": "z"},
+            ]
+
+        self._assert_only_geo({self.D01.format("district-ginger-steam-terraces"): same}, "GEO-07")
+
+    def test_geo08_rejects_frost_words_on_a_perpetual_spring_continent(self) -> None:
+        def frosty(d: dict) -> None:
+            d["geography"]["weather"][0]["feel"] = "White frost coats the stones."
+
+        self._assert_only_geo({self.D01.format("district-kilnfire-terraces"): frosty}, "GEO-08")
+
     def test_build_runtime_manifest_excludes_mystery_and_includes_fog_of_lore(self) -> None:
         manifest = build_runtime_manifest(DEFAULT_STUDIO_DIR)
         self.assertEqual(manifest["defaultStarterMapId"], "lantern-hollow")

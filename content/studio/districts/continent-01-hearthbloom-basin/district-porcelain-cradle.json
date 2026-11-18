@@ -114,6 +114,38 @@
     "visual_silhouette": "A sunken amphitheater of translucent white porcelain domes glowing softly beneath shallow warm springs.",
     "unanswered_question": "What sleeps beyond the steaming Lotus Kiln Rim at the northern edge of Porcelain Cradle Sanctuary?"
   },
+  "geography": {
+    "terrain_group": "Green Lowlands",
+    "map_position": {
+      "x": 42,
+      "y": 38
+    },
+    "elevation_band": 1,
+    "biome": "A sunken pearl-white amphitheater around a shallow warm lake, with lotus pads on the water and a pale porcelain rim that keeps the air still inside.",
+    "climate": {
+      "temperature": "mild",
+      "moisture": "moderate"
+    },
+    "weather": [
+      {
+        "name": "Pearl-light",
+        "when": "dawn",
+        "feel": "Low sun turns the white domes pink-grey before the rim lights up."
+      },
+      {
+        "name": "Dome glare",
+        "when": "midday",
+        "feel": "White porcelain throws hard light, so the far side of the lake looks blank."
+      }
+    ],
+    "water": "A shallow lake fed by springs under the white domes; its overflow leaves south-east as a creek that joins the Teacup Meadows creeks.",
+    "far_landmark": "Lotus Kiln Rim, a pale lip above the sunken amphitheater, with a thin thread of vapour rising behind it, seen north-north-west from Teacup Meadows.",
+    "discovery_hooks": [
+      "A cracked white causeway slab on the creek path that rings like a bell when stepped on.",
+      "Lotus pads at the lake edge with glazed white undersides that turn up one by one at dusk."
+    ],
+    "status": "proposed"
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

@@ -4,7 +4,7 @@
   "name": "Cinnamon-Bellows Bluff",
   "parent_continent_id": "continent-01-hearthbloom-basin",
   "status": "canon",
-  "core_rationale": "Ninth warm terracotta spice-drying bluff of Continent 01 where Sola's aromatic hearth-drafts cure cinnamon-bark windbreaks above the eastern orchard rim.",
+  "core_rationale": "Ninth warm terracotta spice-drying bluff of Continent 01 where Sola's aromatic hearth-drafts cure cinnamon-bark windbreaks above the western orchard rim.",
   "local_conflict": "Cinnamon-bark beetles and playful ember-tail foxes nest inside the warm spice-drying flues.",
   "level_band_label": "Levels 1 to 20",
   "level_range": [
@@ -110,14 +110,51 @@
     }
   ],
   "mystery_hook": {
-    "in_world_rumor": "Bakers in Saffron-Press Village say the warm breezes from Cinnamon-Bellows Bluff smell of toasted cinnamon-sugar before every sunrise.",
-    "visual_silhouette": "Terraced terracotta spice-towers with curling cinnamon-bark louvers along the eastern basin rim.",
+    "in_world_rumor": "Bakers in Lantern Hollow say the warm breezes from Cinnamon-Bellows Bluff smell of toasted cinnamon-sugar before every sunrise.",
+    "visual_silhouette": "Terraced terracotta spice-towers with curling cinnamon-bark louvers along the western basin rim.",
     "unanswered_question": "What star-anise wind-belfry crowns Star-Anise Promontory?"
+  },
+  "geography": {
+    "terrain_group": "Old Wilds",
+    "map_position": {
+      "x": 22,
+      "y": 45
+    },
+    "elevation_band": 2,
+    "biome": "A breezy bluff on the western rim, with red-brown cinnamon-bark windbreaks and terraced spice towers; old forest begins at its back edge, with open grass between the trees and the towers.",
+    "climate": {
+      "temperature": "mild",
+      "moisture": "moderate"
+    },
+    "weather": [
+      {
+        "name": "Spice-smoke breeze",
+        "when": "dawn",
+        "feel": "A cinnamon-scented draft rises from the drying flues and leans east with the wind before sunrise."
+      },
+      {
+        "name": "Bluff dew",
+        "when": "night",
+        "feel": "Damp air leaves beads of dew on the bark louvers and the stone steps."
+      },
+      {
+        "name": "Forest-edge wind",
+        "when": "afternoon",
+        "feel": "Wind runs through the old trees behind the bluff and the bark louvers creak."
+      }
+    ],
+    "water": "The Glaze River runs past the foot of the bluff as a narrow fast brook and falls south to the Ginger-Steam Terraces.",
+    "far_landmark": "The slender crown of Star-Anise Promontory above the bark-louvered spice towers, with the smell of toasted cinnamon on the wind, seen north-north-west from Ginger-Steam Terraces.",
+    "discovery_hooks": [
+      "A louvered tower with no door, its flues still hot to the touch.",
+      "A fox den cut into a bark windbreak, with several ember-tail prints leading from it."
+    ],
+    "status": "proposed"
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the eastern spice-drying bluffs of Continent 01 and connects west to Saffron-Press Village."
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the western spice-drying bluffs of Continent 01 and connects west to Saffron-Press Village."
     },
     "fantasy_and_wonder": {
       "verified": true,

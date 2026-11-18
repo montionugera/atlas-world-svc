@@ -142,6 +142,43 @@
       "lock_reason": "The western teapot-sluice bridge is shrouded in silver steam-fog; Lantern-Keepers forbid crossing until the Great Kiln is relit."
     }
   ],
+  "geography": {
+    "terrain_group": "Green Lowlands",
+    "map_position": {
+      "x": 50,
+      "y": 50
+    },
+    "elevation_band": 1,
+    "biome": "A bowl of celadon-green clover pasture between two towering valley cliffs, with porcelain ribs showing in the cliff walls, thermal creeks, brick sluices and cream-white teacup cottages. Lantern Hollow sits in the middle, the Kiln East Orchard lies to the east and the Whispering Mire to the west.",
+    "climate": {
+      "temperature": "mild",
+      "moisture": "moderate"
+    },
+    "weather": [
+      {
+        "name": "Ember-pollen drift",
+        "when": "afternoon, on a light breeze",
+        "feel": "Orange flecks float over the clover and settle on bakery roofs, soft and harmless."
+      },
+      {
+        "name": "Clover rain",
+        "when": "after midday clouds build",
+        "feel": "Short soft showers bead the sluice bricks and stop within minutes."
+      },
+      {
+        "name": "Cinnamon morning",
+        "when": "dawn, with the westerly wind",
+        "feel": "The smell of toasted cinnamon arrives over the western rim and hangs above the bakery roofs."
+      }
+    ],
+    "water": "Thermal creeks run through brick sluices into the bakeries, then bend south-west to join the Glaze River at the edge of the meadow; one aqueduct channel branches south to Saffron Kiln Orchards.",
+    "far_landmark": "The Great Bell hangs between two towering cliffs among hundreds of brass lanterns, with giant porcelain ribs in the valley walls, seen from the lower roads of every neighbouring district.",
+    "discovery_hooks": [
+      "A row of teacups half-buried in the clover on the road to Porcelain Cradle, each one holding a different pebble.",
+      "A leaning waterwheel on the east creek that still turns with no mill attached."
+    ],
+    "status": "proposed"
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

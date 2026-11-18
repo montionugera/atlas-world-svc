@@ -151,3 +151,11 @@ test('F-231: removing a town NPC from the glossary removes its record', () => {
   assert.equal(one(r.db, "select count(*) from records where kind='canon' and id='npc:Torren'"), 0);
   assert.equal(one(r.db, "select count(*) from links where relation='Lives in' and to_id='town:ondo_kiln'"), 2);
 });
+
+test('F-233: district routes become "Route to" links, with terrain and temperature tags and the biome in the summary', () => {
+  const links = JSON.parse(readFileSync(path.join(STUDIO, 'continents/continent-01-hearthbloom-basin.json'), 'utf8')).district_links;
+  assert.equal(one(good.db, "select count(*) from links where relation='Route to' and from_kind='district' and to_kind='district'"), links.length);
+  const tags = sql(good.db, "select tag from record_tags where kind='district' and id='district-teacup-meadows'").flat();
+  assert.ok(tags.includes('Green Lowlands') && tags.includes('mild'), `tags: ${tags}`);
+  assert.match(one(good.db, "select summary from records where kind='district' and id='district-teacup-meadows'"), /celadon-green clover pasture/);
+});
