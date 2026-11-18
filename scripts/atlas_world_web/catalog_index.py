@@ -103,12 +103,17 @@ def build_index(conn: sqlite3.Connection, root: Path, studio_dir: Path, manifest
         d = _load(p)
         recs.append(("continent", d["id"], d["name"], d.get("core_rationale", ""), "studio", rel(p), f"/?tab=studio&perspective=continent&continent={d['id']}"))
         tag("continent", d["id"], d.get("status"))
+        for l in d.get("district_links") or []:  # F-233
+            refs.append(("district", l["a"], "Route to", "district", l["b"]))
     for p in sorted((studio_dir / "districts").rglob("*.json")):
         d = _load(p)
         cid = d.get("parent_continent_id", "")
-        recs.append(("district", d["id"], d["name"], d.get("core_rationale", ""), "studio", rel(p),
+        geo = d.get("geography") or {}
+        summary = " ".join(x for x in (d.get("core_rationale", ""), geo.get("biome", "")) if x)
+        recs.append(("district", d["id"], d["name"], summary, "studio", rel(p),
                      f"/?tab=studio&perspective=district&continent={cid}&district={d['id']}"))
-        tag("district", d["id"], d.get("status"), cid, *_levels(d.get("level_range")))
+        tag("district", d["id"], d.get("status"), cid, *_levels(d.get("level_range")),
+            geo.get("terrain_group"), (geo.get("climate") or {}).get("temperature"))
         refs.append(("district", d["id"], "Part of", "continent", cid))
         for e in d.get("portal_edges") or []:
             refs.append(("node", e["from_node_id"], "Connects to", "node", e["to_node_id"]))

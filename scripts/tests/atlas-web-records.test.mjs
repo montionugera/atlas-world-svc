@@ -144,3 +144,11 @@ test('F-219 A5 (API): /api/record-counts equals the records table, current conce
   const ns = got.body.counts.map((c) => c.n);
   assert.deepEqual(ns, [...ns].sort((a, b) => b - a), 'largest first');
 });
+
+test('F-233 (API): the Teacup Meadows record lists "Route to" districts, and a neighbour lists Teacup back', async (t) => {
+  const srv = await startServer();
+  t.after(() => srv.stop());
+  const routes = async (id) => ((await get(srv, `/api/record?kind=district&id=${id}`)).body.relations.find((g) => g.label === 'Route to') || { items: [] }).items.map((i) => i.id).sort();
+  assert.deepEqual(await routes('district-teacup-meadows'), ['district-amber-root-hollows', 'district-ginger-steam-terraces', 'district-kilnfire-terraces', 'district-porcelain-cradle', 'district-saffron-kiln-orchards']);
+  assert.ok((await routes('district-porcelain-cradle')).includes('district-teacup-meadows'));
+});
