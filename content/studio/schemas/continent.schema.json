@@ -191,6 +191,74 @@
         "type": "string",
         "pattern": "^district-[a-z0-9-]+$"
       }
+    },
+    "district_links": {
+      "type": "array",
+      "description": "F-233 optional district-to-district routes; enables GEO-01..07 for this continent.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "a",
+          "b",
+          "gateway",
+          "route_type",
+          "walk_minutes",
+          "transition",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "a": {
+            "type": "string"
+          },
+          "b": {
+            "type": "string"
+          },
+          "gateway": {
+            "type": "object",
+            "required": [
+              "type",
+              "name"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "road",
+                  "bridge",
+                  "pass",
+                  "tunnel",
+                  "ford",
+                  "stairs"
+                ]
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "route_type": {
+            "enum": [
+              "main_road",
+              "wilderness_trail",
+              "ancient_route"
+            ]
+          },
+          "walk_minutes": {
+            "type": "number",
+            "minimum": 8,
+            "maximum": 30
+          },
+          "transition": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "if": {

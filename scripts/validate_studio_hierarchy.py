@@ -725,6 +725,88 @@ def _validate_districts_and_nodes(
     return districts_by_id, nodes_by_id
 
 
+_TEMP_STEPS = {"cold": 0, "cool": 1, "mild": 2, "warm": 3}
+_BIG_CLIMB_GATEWAYS = {"pass", "tunnel", "stairs"}
+
+
+def _validate_geography(
+    studio_dir: Path,
+    continents_by_id: dict[str, dict[str, Any]],
+    districts_by_id: dict[str, dict[str, Any]],
+    nodes_by_id: dict[str, dict[str, Any]],
+    errors: list[str],
+) -> None:
+    """GEO-01..GEO-07 (F-233); active only for continents that declare district_links."""
+    glossary_path = studio_dir / "canon" / "glossary.json"
+    towns = []
+    if glossary_path.exists():
+        towns = json.loads(glossary_path.read_text(encoding="utf-8")).get("towns") or []
+
+    for cid, cont in continents_by_id.items():
+        links = cont.get("district_links")
+        if links is None:
+            continue
+        label = f"continent '{cid}'"
+        dids = list(cont.get("district_ids") or [])
+        geo = {did: (districts_by_id.get(did) or {}).get("geography") for did in dids}
+
+        for did, g in geo.items():  # GEO-01
+            if not g:
+                errors.append(f"{label}: GEO-01 violation: district '{did}' has no geography")
+
+        adj: dict[str, set[str]] = {did: set() for did in dids}
+        seen: set[frozenset] = set()
+        for link in links:
+            lid, a, b = link.get("id"), link.get("a"), link.get("b")
+            if a not in adj or b not in adj or a == b:  # GEO-02 ends exist
+                errors.append(f"{label}: GEO-02 violation: link '{lid}' ends {a!r}/{b!r} are not two districts of this continent")
+                continue
+            pair = frozenset((a, b))
+            if pair in seen:
+                errors.append(f"{label}: GEO-02 violation: duplicate link for pair {sorted(pair)}")
+            seen.add(pair)
+            adj[a].add(b)
+            adj[b].add(a)
+
+            minutes = link.get("walk_minutes")  # GEO-03
+            if not isinstance(minutes, (int, float)) or not 8 <= minutes <= 30:
+                errors.append(f"{label}: GEO-03 violation: link '{lid}' walk_minutes {minutes!r} outside 8-30")
+
+            ga, gb = geo.get(a), geo.get(b)
+            if not ga or not gb:
+                continue
+            climb = abs(ga.get("elevation_band", 0) - gb.get("elevation_band", 0))  # GEO-04
+            gw_type = (link.get("gateway") or {}).get("type")
+            if climb >= 2 and gw_type not in _BIG_CLIMB_GATEWAYS:
+                errors.append(f"{label}: GEO-04 violation: link '{lid}' climbs {climb} bands through a '{gw_type}' gateway (needs pass, tunnel or stairs)")
+            ta = _TEMP_STEPS.get(ga["climate"]["temperature"])  # GEO-05
+            tb = _TEMP_STEPS.get(gb["climate"]["temperature"])
+            if ta is None or tb is None or abs(ta - tb) > 1:
+                errors.append(f"{label}: GEO-05 violation: link '{lid}' joins temperatures {ga['climate']['temperature']!r} and {gb['climate']['temperature']!r} more than one step apart")
+            names_a = {w["name"] for w in ga.get("weather", [])}  # GEO-07
+            if names_a == {w["name"] for w in gb.get("weather", [])}:
+                errors.append(f"{label}: GEO-07 violation: link '{lid}' joins districts with the same weather names {sorted(names_a)}")
+
+        if adj:  # GEO-02 connectivity
+            start = next(iter(adj))
+            reach, queue = {start}, deque([start])
+            while queue:
+                for nxt in adj[queue.popleft()] - reach:
+                    reach.add(nxt)
+                    queue.append(nxt)
+            if reach != set(adj):
+                errors.append(f"{label}: GEO-02 violation: link graph is not connected, unreachable: {sorted(set(adj) - reach)}")
+
+        for town in towns:  # GEO-06
+            want = town.get("terrain_group")
+            node = nodes_by_id.get(town.get("studio_node_id"))
+            did = (node or {}).get("parent_district_id")
+            if not want or did not in geo or not geo[did]:
+                continue
+            if geo[did].get("terrain_group") != want:
+                errors.append(f"{label}: GEO-06 violation: district '{did}' terrain_group {geo[did].get('terrain_group')!r} differs from town '{town.get('name')}' ({want!r})")
+
+
 def build_runtime_manifest(studio_dir: Path = DEFAULT_STUDIO_DIR) -> dict[str, Any]:
     """Build content/maps/_manifest.runtime.json from validated studio hierarchy."""
     errors = validate_studio_directory(studio_dir)
@@ -1090,7 +1172,8 @@ def validate_studio_directory(studio_dir: Path) -> list[str]:
                     )
 
     # Validate Layer 3 Districts and Layer 4 Nodes (INV-01..INV-07)
-    _validate_districts_and_nodes(studio_dir, whc, continents_by_id, errors)
+    districts_by_id, nodes_by_id = _validate_districts_and_nodes(studio_dir, whc, continents_by_id, errors)
+    _validate_geography(studio_dir, continents_by_id, districts_by_id, nodes_by_id, errors)
 
     # Validate Long-Term Multi-Race, 4-Chapter History, Guild/Blacksmith & Boss Hierarchy Gates (GOV-01..GOV-06)
     try:
