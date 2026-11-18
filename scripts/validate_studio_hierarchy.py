@@ -727,6 +727,8 @@ def _validate_districts_and_nodes(
 
 _TEMP_STEPS = {"cold": 0, "cool": 1, "mild": 2, "warm": 3}
 _BIG_CLIMB_GATEWAYS = {"pass", "tunnel", "stairs"}
+# GEO-08: a continent kept at perpetual spring (canon) has no frost, ice, rime, snow or cold.
+_SPRING_BANNED = re.compile(r"\b(frost\w*|ice|icy|icicles?|rime|snow\w*|freez\w*|frozen|sleet|cold)\b", re.IGNORECASE)
 
 
 def _validate_geography(
@@ -736,7 +738,7 @@ def _validate_geography(
     nodes_by_id: dict[str, dict[str, Any]],
     errors: list[str],
 ) -> None:
-    """GEO-01..GEO-07 (F-233); active only for continents that declare district_links."""
+    """GEO-01..GEO-08 (F-233); active only for continents that declare district_links."""
     glossary_path = studio_dir / "canon" / "glossary.json"
     towns = []
     if glossary_path.exists():
@@ -786,6 +788,16 @@ def _validate_geography(
             names_a = {w["name"] for w in ga.get("weather", [])}  # GEO-07
             if names_a == {w["name"] for w in gb.get("weather", [])}:
                 errors.append(f"{label}: GEO-07 violation: link '{lid}' joins districts with the same weather names {sorted(names_a)}")
+
+        texts = [  # GEO-08 free text: geography prose (not enum values) and link transitions
+            (did, str(v)) for did, g in geo.items() for k, val in (g or {}).items()
+            if k in ("biome", "water", "far_landmark", "weather", "discovery_hooks")
+            for v in (val if isinstance(val, list) else [val])
+        ] + [(l.get("id"), str(l.get("transition", ""))) for l in links]
+        for owner, text in texts:
+            hit = _SPRING_BANNED.search(text)
+            if hit:
+                errors.append(f"{label}: GEO-08 violation: '{owner}' text mentions {hit.group(0)!r} but the continent is at perpetual spring")
 
         if adj:  # GEO-02 connectivity
             start = next(iter(adj))

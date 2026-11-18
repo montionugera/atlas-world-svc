@@ -367,10 +367,17 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
         def same(d: dict) -> None:
             d["geography"]["weather"] = [
                 {"name": "Ember-pollen drift", "when": "afternoon", "feel": "x"},
-                {"name": "Warm clover rain", "when": "after rain", "feel": "y"},
+                {"name": "Clover rain", "when": "after rain", "feel": "y"},
+                {"name": "Cinnamon morning", "when": "dawn", "feel": "z"},
             ]
 
         self._assert_only_geo({self.D01.format("district-ginger-steam-terraces"): same}, "GEO-07")
+
+    def test_geo08_rejects_frost_words_on_a_perpetual_spring_continent(self) -> None:
+        def frosty(d: dict) -> None:
+            d["geography"]["weather"][0]["feel"] = "White frost coats the stones."
+
+        self._assert_only_geo({self.D01.format("district-kilnfire-terraces"): frosty}, "GEO-08")
 
     def test_build_runtime_manifest_excludes_mystery_and_includes_fog_of_lore(self) -> None:
         manifest = build_runtime_manifest(DEFAULT_STUDIO_DIR)
