@@ -416,6 +416,27 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
 
         self._assert_only_geo({self.D01.format("district-teacup-meadows"): no_starter}, "GEO-10")
 
+    # ---- F-236 GEO-11 ----------------------------------------------------------
+
+    N01 = "nodes/continent-01-hearthbloom-basin/{}.json"
+
+    def test_geo11_rejects_built_link_missing_a_portal_direction(self) -> None:
+        # link-teacup-meadows--kilnfire-terraces is "built"; drop the Kilnwatch -> orchard half.
+        def drop_west(d: dict) -> None:
+            d["portals"]["West"] = None
+
+        self._assert_only_geo(
+            {self.N01.format("district-kilnfire-terraces/town-kilnwatch-bastion"): drop_west}, "GEO-11"
+        )
+
+    def test_geo11_rejects_built_link_with_gated_portal(self) -> None:
+        def gate(d: dict) -> None:
+            d["portals"]["West"]["gate_state"] = "fog_of_lore"
+
+        self._assert_only_geo(
+            {self.N01.format("district-kilnfire-terraces/town-kilnwatch-bastion"): gate}, "GEO-11"
+        )
+
     def test_build_runtime_manifest_excludes_mystery_and_includes_fog_of_lore(self) -> None:
         manifest = build_runtime_manifest(DEFAULT_STUDIO_DIR)
         self.assertEqual(manifest["defaultStarterMapId"], "lantern-hollow")
