@@ -174,6 +174,8 @@ for (const v of [{ name: 'desktop 1280x800', w: 1280, h: 800, dpr: 1 }, { name: 
     await waitFor(c, `!!document.getElementById('recordOpenLink')`, 20000);
     ck(`F-219 A6 ${v.name}: continent record shows "Open in World"`,
       (await c.eval(`document.getElementById('recordOpenLink').textContent.trim()`)) === 'Open in World');
+    // F-237: the record map can push the link below the fold on a phone; a user scrolls to it.
+    await c.eval(`document.getElementById('recordOpenLink').scrollIntoView({block:'center'})`);
     await click(c, await rect(c, '#recordOpenLink'), v.touch);
     await waitFor(c, `typeof DATA !== 'undefined' && !!DATA && CURRENT_TAB==='studio' && !document.getElementById('recordPage')`, 20000);
     await settle(c);
