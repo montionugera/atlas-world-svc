@@ -214,7 +214,9 @@ function renderRecordMap(map) {
           `<li><span class="rm-swatch rm-swatch--${E(k)}"></span>${E(RM_KIND_LABEL[k] || k)}</li>`,
       )
       .join("") +
-    '<li><span class="rm-line"></span>Open</li><li><span class="rm-line rm-line--closed"></span>Closed</li>' +
+    // continent edges are routes between districts, district edges are doors
+    `<li><span class="rm-line"></span>${plane ? "Route built, walkable now" : "Door open"}</li><li><span class="rm-line rm-line--closed"></span>${plane ? "Route planned, not built yet" : "Door closed"}</li>` +
+    (plane ? "<li>P0 build first · P1 next · P2 later</li>" : "") +
     (map.edges.some((e) => e.danger)
       ? '<li><span class="rm-line rm-line--danger"></span><b>!</b> Open door to a much higher level</li>'
       : "");
