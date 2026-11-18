@@ -126,3 +126,29 @@ The test must fail when one of the new portals is removed from a fixture.
 - A portal trigger box placed on a wall or outside the walkable area passes every validator and is still unusable in play. Nothing here tests it; noted for the first playable route check.
 - Monster level may be defined in two places (R3 guard).
 - Kilnwatch's geographically correct slot toward Porcelain Cradle (west / south-west) is already used, so the stairs will arrive on a different side than the map position suggests.
+
+## Build outcome and descope (2026-11-18)
+
+Shipped in this feature: R1a, R3, R4, R5. Two items were stopped during the build and are NOT part of F-236:
+
+- **R1b (Porcelain Cradle <-> Kilnfire Terraces) deferred.** INV-03 needs opposite directions on the two ends. The
+  only free slots are Kilnwatch North and, on the Porcelain side, slots that put the stairs on the wrong side of the
+  map (Kilnfire lies north-east of Porcelain) or route a Lv 10 traveller through Cinder Apron (Lv 15-18 spawns). The
+  link is named "Lotus Rim Stairs": the honest route runs through `hunting-area-lotus-kiln-rim`, which is still a
+  mystery node with no map. The link stays `P0`. Until then Linde players reach Kilnwatch through Lantern Hollow and
+  Kiln East Orchard (or the caravan). Acceptance 1 holds through that path, not through a direct pair.
+- **R2 (delete `town-draft-kiln-post` <-> `hunting-area-celadon-causeway`) deferred.** The old mainline chain in
+  `content/studio/world_history_and_concept.json` (ogre_orc `farming_area_id`, four spokes,
+  `ordered_mainline_node_chain`) runs over that edge and GOV-01 / GOV-09 in `scripts/studio_world_governance.py` fail
+  without it. Removing it means re-authoring that chain, which is its own feature. The two `legacy_portals` entries stay. Acceptance 2 is not met.
+
+### Known side effects found in review (not fixed here)
+
+- **Level cliffs next to the new Linde start.** With R2 deferred, `hunting-area-celadon-causeway` (now Lv 1-10) still
+  has an open West portal to `town-draft-kiln-post` (Lv 14-17), and `town-porcelain-loom-sanctuary` (now Lv 1-5) still
+  has an open East portal to `hunting-area-resin-arch-tunnel` (Lv 14-16). A Lv 2 player can walk one map into Lv 14+
+  content. Both are legacy portals already ruled `remove` / `becomes_transport`; they go away with the mainline-chain rework.
+- `level_band_label` is "Levels 1 to 20" on all three districts. It was already different from `level_range` before
+  this feature and nothing reads it, so it was left alone (filed in `docs/superpowers/ideas.md`).
+- The GEO-11 tests mutate the older Kilnwatch pair, not the new Lantern Hollow pair; the reviewer proved by mutation that the rule also catches the new pair.
+- The two `built` links still carry `status: "proposed"`.

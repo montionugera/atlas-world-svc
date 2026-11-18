@@ -211,8 +211,8 @@
         1
       ],
       "levelRange": [
-        10,
-        18
+        13,
+        15
       ]
     },
     {
@@ -715,8 +715,8 @@
         1
       ],
       "levelRange": [
-        10,
-        12
+        1,
+        10
       ]
     },
     {
@@ -931,7 +931,7 @@
         1
       ],
       "levelRange": [
-        6,
+        10,
         15
       ]
     },
@@ -1633,8 +1633,8 @@
         1
       ],
       "levelRange": [
-        11,
-        14
+        1,
+        5
       ]
     },
     {
@@ -2728,6 +2728,27 @@
       "arrivalPointMeters": {
         "x": 20.0,
         "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-celadon-causeway-south-lantern": {
+      "portalId": "portal-celadon-causeway-south-lantern",
+      "sourceNodeId": "hunting-area-celadon-causeway",
+      "sourceMapId": "celadon-causeway",
+      "direction": "South",
+      "targetNodeId": "town-lantern-hollow",
+      "targetMapId": "lantern-hollow",
+      "targetDirection": "North",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 380.0
       },
       "lockMessage": null
     },
@@ -5143,6 +5164,27 @@
       "arrivalPointMeters": {
         "x": 20.0,
         "y": 200.0
+      },
+      "lockMessage": null
+    },
+    "portal-lantern-hollow-north-celadon": {
+      "portalId": "portal-lantern-hollow-north-celadon",
+      "sourceNodeId": "town-lantern-hollow",
+      "sourceMapId": "lantern-hollow",
+      "direction": "North",
+      "targetNodeId": "hunting-area-celadon-causeway",
+      "targetMapId": "celadon-causeway",
+      "targetDirection": "South",
+      "gateState": "open",
+      "triggerBoxMeters": {
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
+      },
+      "arrivalPointMeters": {
+        "x": 200.0,
+        "y": 20.0
       },
       "lockMessage": null
     },

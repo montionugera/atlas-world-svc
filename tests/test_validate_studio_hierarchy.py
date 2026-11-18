@@ -270,11 +270,13 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 ].__setitem__(
                     "East", None
                 ),
+                # F-236: Kilnwatch now also reaches the orchard through Celadon; cut every door into the orchard.
                 "nodes/continent-01-hearthbloom-basin/district-teacup-meadows/hunting-area-kiln-east-orchard.json": lambda d: d[
                     "portals"
-                ].__setitem__(
-                    "West", None
-                ),
+                ].update({"West": None, "East": None}),
+                "nodes/continent-01-hearthbloom-basin/district-kilnfire-terraces/town-kilnwatch-bastion.json": lambda d: d[
+                    "portals"
+                ].__setitem__("West", None),
             }
         ) as studio_dir:
             errors = validate_studio_directory(studio_dir)
@@ -415,6 +417,27 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             d["geography"]["encounter_bands"]["starter"] = "safe"
 
         self._assert_only_geo({self.D01.format("district-teacup-meadows"): no_starter}, "GEO-10")
+
+    # ---- F-236 GEO-11 ----------------------------------------------------------
+
+    N01 = "nodes/continent-01-hearthbloom-basin/{}.json"
+
+    def test_geo11_rejects_built_link_missing_a_portal_direction(self) -> None:
+        # link-teacup-meadows--kilnfire-terraces is "built"; drop the Kilnwatch -> orchard half.
+        def drop_west(d: dict) -> None:
+            d["portals"]["West"] = None
+
+        self._assert_only_geo(
+            {self.N01.format("district-kilnfire-terraces/town-kilnwatch-bastion"): drop_west}, "GEO-11"
+        )
+
+    def test_geo11_rejects_built_link_with_gated_portal(self) -> None:
+        def gate(d: dict) -> None:
+            d["portals"]["West"]["gate_state"] = "fog_of_lore"
+
+        self._assert_only_geo(
+            {self.N01.format("district-kilnfire-terraces/town-kilnwatch-bastion"): gate}, "GEO-11"
+        )
 
     def test_build_runtime_manifest_excludes_mystery_and_includes_fog_of_lore(self) -> None:
         manifest = build_runtime_manifest(DEFAULT_STUDIO_DIR)

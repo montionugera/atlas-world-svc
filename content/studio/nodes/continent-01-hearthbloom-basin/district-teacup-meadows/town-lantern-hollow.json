@@ -39,7 +39,24 @@
     "water_feature": "Warm thermal canal encircling the central Ever-Hearth plaza"
   },
   "portals": {
-    "North": null,
+    "North": {
+      "portal_id": "portal-lantern-hollow-north-celadon",
+      "direction": "North",
+      "target_node_id": "hunting-area-celadon-causeway",
+      "target_map_id": "celadon-causeway",
+      "target_direction": "South",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 200.0,
+        "y": 16.0,
+        "width": 2.4,
+        "height": 1.2
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 20.0
+      }
+    },
     "South": {
       "portal_id": "portal-lantern-hollow-south",
       "direction": "South",

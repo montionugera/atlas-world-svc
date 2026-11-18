@@ -840,6 +840,18 @@ def _validate_geography(
         for l in links:  # GEO-10
             if l.get("priority") not in ("P0", "P1", "P2", "built"):
                 errors.append(f"{label}: GEO-10 violation: link '{l.get('id')}' priority {l.get('priority')!r} is not P0, P1, P2 or built")
+        open_dirs = {  # GEO-11: (src district, dst district) pairs that have an open node portal
+            (src, dst)
+            for n in nodes_by_id.values()
+            for p in (n.get("portals") or {}).values()
+            if p and p.get("gate_state") == "open"
+            for src, dst in [(n.get("parent_district_id"), (nodes_by_id.get(p.get("target_node_id")) or {}).get("parent_district_id"))]
+        }
+        for l in links:
+            if l.get("priority") == "built" and l.get("a") and l.get("b"):
+                for pair in ((l["a"], l["b"]), (l["b"], l["a"])):
+                    if pair not in open_dirs:
+                        errors.append(f"{label}: GEO-11 violation: link '{l.get('id')}' is built but has no open node portal from {pair[0]} to {pair[1]}")
         home = {(nodes_by_id.get(t.get("studio_node_id")) or {}).get("parent_district_id") for t in towns if t.get("race")}
         for did, g in geo.items():
             if not g:  # GEO-01 already reports it
