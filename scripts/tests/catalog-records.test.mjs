@@ -122,3 +122,32 @@ test('old-concept concept art is a legacy record, the rest stays studio', () => 
   ]);
   assert.equal(one(good.db, "select count(*) from records where kind='concept_art'"), one(good.db, 'select count(*) from concept_art'));
 });
+
+// F-231: canon towns, town casts and world rules are records; the glossary drives them.
+const glossary = () => JSON.parse(readFileSync(path.join(STUDIO, 'canon/glossary.json'), 'utf8'));
+const rels = (db, kind, id) => sql(db, `select relation, to_kind, to_id from links where from_kind='${kind}' and from_id='${id}'`);
+
+test('F-231: town, town-cast and world-rule records and their links', () => {
+  const g = glossary();
+  const casts = Object.values(g.npcs.town).flat().length;
+  assert.equal(one(good.db, "select count(*) from canon_entries where kind='town'"), g.towns.length);
+  assert.equal(one(good.db, "select count(*) from canon_entries where kind='world_rule'"), g.world_model.rules.length);
+  assert.ok(one(good.db, "select count(*) from canon_entries where kind='npc' and parent_id is not null") >= casts);
+  assert.equal(one(good.db, "select count(*) from records where kind='canon' and id='npc:Torren'"), 1);
+  assert.ok(rels(good.db, 'canon', 'npc:Torren').some((r) => r[0] === 'Lives in' && r[2] === 'town:ondo_kiln'));
+  assert.ok(rels(good.db, 'race', 'ondo').some((r) => r[0] === 'Home town' && r[2] === 'town:ondo_kiln'));
+  assert.deepEqual(rels(good.db, 'canon', 'town:ondo_kiln').filter((r) => r[0] === 'Studio node'), [['Studio node', 'node', 'town-root-train-roundhouse']]);
+  assert.equal(one(good.db, "select count(*) from links where relation='Lives in' and to_id='town:ondo_kiln'"), 3);
+});
+
+test('F-231: removing a town NPC from the glossary removes its record', () => {
+  const dir = studioCopy('no-torren');
+  const f = path.join(dir, 'canon/glossary.json');
+  const g = JSON.parse(readFileSync(f, 'utf8'));
+  g.npcs.town.ondo_kiln = g.npcs.town.ondo_kiln.filter((n) => n.name !== 'Torren');
+  writeFileSync(f, JSON.stringify(g));
+  const r = build('no-torren-db', { ATLAS_STUDIO_DIR: dir });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(one(r.db, "select count(*) from records where kind='canon' and id='npc:Torren'"), 0);
+  assert.equal(one(r.db, "select count(*) from links where relation='Lives in' and to_id='town:ondo_kiln'"), 2);
+});

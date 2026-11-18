@@ -78,6 +78,30 @@ test('A6 + A10 + A8 (API): search ranks the continent first, hides the archive, 
   assert.deepEqual([none.status, none.body], [404, { ok: false, error: 'No such record: district:nope' }]);
 });
 
+test('F-231 (API): the Ondo Kiln record shows its race, residents and studio node; summaries carry content and status', async (t) => {
+  const srv = await startServer();
+  t.after(() => srv.stop());
+  const items = (rec, label) => (rec.body.relations.find((g) => g.label === label) || { items: [] }).items.map((i) => i.id).sort();
+
+  const town = await get(srv, '/api/record?kind=canon&id=town:ondo_kiln');
+  assert.equal(town.status, 200);
+  assert.deepEqual(items(town, 'Home of'), ['ondo']);
+  assert.deepEqual(items(town, 'Residents'), ['npc:Hald', 'npc:Mika', 'npc:Torren']);
+  assert.deepEqual(items(town, 'Studio node'), ['town-root-train-roundhouse']);
+  assert.match(town.body.record.summary, /^Town of craftspeople and kilns · .* · proposed$/);
+
+  assert.deepEqual(items(await get(srv, '/api/record?kind=race&id=ondo'), 'Home town'), ['town:ondo_kiln']);
+  assert.deepEqual(items(await get(srv, '/api/record?kind=canon&id=npc:Mika'), 'Lives in'), ['town:ondo_kiln']);
+  assert.deepEqual(items(await get(srv, '/api/record?kind=node&id=town-root-train-roundhouse'), 'Canon town'), ['town:ondo_kiln']);
+
+  // identity is canon for a locked traveller; only a brand-new cast member is proposed
+  const sum = async (id) => (await get(srv, `/api/record?kind=canon&id=${id}`)).body.record.summary;
+  assert.match(await sum('npc:Mika'), / · Ondo Kiln · canon$/);
+  assert.match(await sum('npc:Torren'), / · Ondo Kiln · proposed$/);
+  for (const r of (await get(srv, '/api/search?q=craftspeople')).body.results) assert.doesNotMatch(r.summary, /None|undefined/);
+  assert.ok((await get(srv, '/api/search?q=craftspeople')).body.results.some((r) => r.id === 'town:ondo_kiln'), 'a tagline word finds the town');
+});
+
 test('A1: a DB older than the content is rebuilt before the edit host serves', async (t) => {
   utimesSync(DB, OLD, OLD);
   const t0 = Date.now();

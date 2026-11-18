@@ -30,6 +30,29 @@ CREATE VIRTUAL TABLE records_fts USING fts5(kind UNINDEXED, id UNINDEXED, concep
 
 # (kind, concept, "SELECT id, title, summary FROM <table the builder already filled>", view_url)
 # view_url may use {id}. Tab ids are the item ids in NAV_GROUPS (02_state_and_composable_layers.js).
+def _joined(*parts: str) -> str:
+    """SQL: the non-empty parts joined with ' · ', no dangling separator (F-231 canon summaries)."""
+    return "substr(" + " || ".join(f"coalesce(' · ' || nullif({p}, ''), '')" for p in parts) + ", 4)"
+
+
+def _jx(key: str) -> str:
+    return f"json_extract(raw_json, '$.{key}')"
+
+
+_REGION_KIND = f"replace({_jx('kind')}, '_', ' ')"
+_REGION_CHAPTER = f"'Chapter ' || {_jx('chapter')}"
+
+# Canon records carry their content in the summary so search finds a tagline or a rule (F-231).
+_CANON_SUMMARY = (
+    "CASE kind "
+    f"WHEN 'town' THEN {_joined(_jx('tagline'), _jx('role'), 'status')} "
+    f"WHEN 'npc' THEN {_joined(_jx('role'), 'parent_id', 'status')} "
+    f"WHEN 'world_rule' THEN {_joined(_jx('text'), 'status')} "
+    f"WHEN 'region' THEN {_joined(_REGION_KIND, _REGION_CHAPTER, 'status')} "
+    "ELSE kind END"
+)
+_RACE_SUMMARY = _joined(_jx("theme"), f"'Motive: ' || {_jx('hook.motive')}")
+
 TABLE_KINDS = [
     ("map", "studio", "SELECT id, name, biome || ' · levels ' || level_min || '-' || level_max FROM maps", "/?tab=maps&focus={id}"),
     ("mob", "studio", "SELECT id, name, 'Level ' || level || ' · ' || element || ' · ' || race FROM mobs", "/?tab=mobs&mob={id}"),
@@ -38,8 +61,8 @@ TABLE_KINDS = [
     ("job", "studio", "SELECT id, name, 'Tier ' || tier FROM jobs", "/?tab=jobs&focus={id}"),
     ("skill", "studio", "SELECT id, name, 'Max level ' || max_level FROM skills", "/?tab=jobs&focus={id}"),
     ("quest", "studio", "SELECT id, title, category FROM quest_board", "/?tab=quests&focus={id}"),
-    ("race", "studio", "SELECT id, name, 'Race' FROM canon_entries WHERE kind = 'race'", "/?tab=races"),
-    ("canon", "studio", "SELECT kind || ':' || id, name, kind FROM canon_entries WHERE kind NOT IN ('race', 'retired_name')", "/?tab=lore"),
+    ("race", "studio", f"SELECT id, name, coalesce({_RACE_SUMMARY}, 'Race') FROM canon_entries WHERE kind = 'race'", "/?tab=races"),
+    ("canon", "studio", f"SELECT kind || ':' || id, name, {_CANON_SUMMARY} FROM canon_entries WHERE kind NOT IN ('race', 'retired_name')", "/?tab=lore"),
     ("canon", "legacy", "SELECT kind || ':' || id, name, 'Retired name' FROM canon_entries WHERE kind = 'retired_name'", "/?tab=lore"),
     ("decision", "studio", "SELECT id, id, text FROM canon_decisions", "/?tab=lore"),
     # an index item marked "concept": "legacy" is an old design: out of search unless "Include archive"
@@ -114,6 +137,14 @@ def build_index(conn: sqlite3.Connection, root: Path, studio_dir: Path, manifest
     for kind, id_ in conn.execute("SELECT 'map', id FROM maps"):
         tag(kind, id_, "unbound-to-studio-world")
     refs.extend(("mob", m, "Drops", "item", i) for m, i in conn.execute("SELECT mob_id, item_id FROM mob_drops"))
+
+    # canon links (F-231): race -> home town, npc -> town, town -> studio node
+    refs.extend(("race", r, "Home town", "canon", f"town:{t}") for r, t in conn.execute(
+        "SELECT r.id, t.id FROM canon_entries r JOIN canon_entries t ON t.kind = 'town' AND json_extract(t.raw_json, '$.race') = r.id WHERE r.kind = 'race'"))
+    refs.extend(("canon", f"npc:{n}", "Lives in", "canon", f"town:{t}") for n, t in conn.execute(
+        "SELECT n.id, t.id FROM canon_entries n JOIN canon_entries t ON t.kind = 'town' AND t.name = n.parent_id WHERE n.kind = 'npc'"))
+    refs.extend(("canon", f"town:{t}", "Studio node", "node", n) for t, n in conn.execute(
+        "SELECT id, json_extract(raw_json, '$.studio_node_id') FROM canon_entries WHERE kind = 'town' AND json_extract(raw_json, '$.studio_node_id') IS NOT NULL"))
 
     conn.executemany("INSERT INTO records VALUES (?, ?, ?, ?, ?, ?, ?)", recs)
     have = {(r[0], r[1]) for r in recs}

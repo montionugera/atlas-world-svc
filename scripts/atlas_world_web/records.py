@@ -9,8 +9,10 @@ from . import runtime
 MAX_RESULTS = 20
 # Shown on the page of the record a link points AT. "Map" has no inverse: the map already
 # says "Part of" its node.
-INVERSE = {"Part of": "Contains", "Drops": "Dropped by", "Connects to": "Connects to"}
-LABEL_ORDER = ["Part of", "Contains", "Map", "Connects to", "Drops", "Dropped by"]
+INVERSE = {"Part of": "Contains", "Drops": "Dropped by", "Connects to": "Connects to",
+           "Home town": "Home of", "Lives in": "Residents", "Studio node": "Canon town"}
+LABEL_ORDER = ["Part of", "Contains", "Map", "Connects to", "Drops", "Dropped by",
+               "Home town", "Home of", "Lives in", "Residents", "Studio node", "Canon town"]
 
 
 def _connect() -> sqlite3.Connection:
