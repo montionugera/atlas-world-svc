@@ -288,6 +288,33 @@
       "status": "proposed",
       "applied_in": null,
       "owner_answer": null
+    },
+    {
+      "id": "kilnwatch-first-trip-caravan",
+      "text": "After each race prologue (Lv 10) the first trip to Kilnwatch is a one-way guided caravan; walking stays possible.",
+      "source_chat": "Owner answer to the agent, 2026-11-18 (F-235 world structure merge)",
+      "date": "2026-11-18",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "One-way guided caravan after each prologue; walking stays possible"
+    },
+    {
+      "id": "danger-fixed-monster-levels",
+      "text": "Monster levels are fixed and the danger is real; no world-wide level scaling.",
+      "source_chat": "Owner answer to the agent, 2026-11-18 (F-235 world structure merge)",
+      "date": "2026-11-18",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "Fixed levels and real danger"
+    },
+    {
+      "id": "first-content-target-lv1-15",
+      "text": "First content target is Lv 1-15, chapter 0 (Maro Bell + Kilnwatch), then expand.",
+      "source_chat": "Owner answer to the agent, 2026-11-18 (F-235 world structure merge)",
+      "date": "2026-11-18",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "Lv 1-15, Ch 0 (Maro Bell + Kilnwatch) first, then expand"
     }
   ]
 }

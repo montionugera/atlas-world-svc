@@ -343,6 +343,81 @@
         },
         "status": {
           "type": "string"
+        },
+        "encounter_bands": {
+          "type": "object",
+          "description": "F-235 proposed encounter bands; level_range is unchanged.",
+          "required": [
+            "main",
+            "identity",
+            "status"
+          ],
+          "properties": {
+            "starter": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "const": "safe"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ]
+            },
+            "main": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "identity": {
+              "type": "string"
+            },
+            "chapter": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            }
+          }
+        },
+        "town_role": {
+          "type": "object",
+          "description": "F-235 role of a mixed-settlement town that is not a canon town.",
+          "required": [
+            "primary",
+            "purpose",
+            "status"
+          ],
+          "properties": {
+            "primary": {
+              "type": "string"
+            },
+            "purpose": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            }
+          }
         }
       }
     }

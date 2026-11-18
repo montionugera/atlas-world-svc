@@ -177,7 +177,21 @@
       "A row of teacups half-buried in the clover on the road to Porcelain Cradle, each one holding a different pebble.",
       "A leaning waterwheel on the east creek that still turns with no mill attached."
     ],
-    "status": "proposed"
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": [
+        1,
+        10
+      ],
+      "main": [
+        10,
+        15
+      ],
+      "identity": "Maro prologue, Ch 0 core",
+      "chapter": "0",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {

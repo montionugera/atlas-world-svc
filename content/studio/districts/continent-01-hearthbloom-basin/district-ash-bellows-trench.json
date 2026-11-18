@@ -150,7 +150,21 @@
       "A duct mouth that blows a steady cool breath, so strong that loose ash hangs level in the air in front of it.",
       "A glazed bell hung on the pass road where the draft hums, which rings a three-note chord on its own at night."
     ],
-    "status": "proposed"
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": [
+        1,
+        10
+      ],
+      "main": [
+        15,
+        25
+      ],
+      "identity": "Daro prologue, Ch I combat",
+      "chapter": "I",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {

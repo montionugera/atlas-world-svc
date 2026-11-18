@@ -144,7 +144,24 @@
       "An aqueduct arch wide enough to walk under, with honey-glaze drips hardened into amber threads.",
       "A lone apricot tree on the ash side of the ridge that fruits a week ahead of the rest."
     ],
-    "status": "proposed"
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": "safe",
+      "main": [
+        22,
+        30
+      ],
+      "identity": "Farming materials, advanced resources",
+      "chapter": null,
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "town_role": {
+      "primary": "Agriculture / consumables",
+      "purpose": "Food production, cooking, consumable crafting, gathering contracts",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 5"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {

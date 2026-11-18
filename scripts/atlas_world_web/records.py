@@ -9,9 +9,9 @@ from . import runtime
 MAX_RESULTS = 20
 # Shown on the page of the record a link points AT. "Map" has no inverse: the map already
 # says "Part of" its node.
-INVERSE = {"Part of": "Contains", "Drops": "Dropped by", "Connects to": "Connects to", "Route to": "Route to",
+INVERSE = {"Part of": "Contains", "Drops": "Dropped by", "Connects to": "Connects to", "Route to": "Route to", "Transport to": "Transport to",
            "Home town": "Home of", "Lives in": "Residents", "Studio node": "Canon town"}
-LABEL_ORDER = ["Part of", "Contains", "Map", "Connects to", "Route to", "Drops", "Dropped by",
+LABEL_ORDER = ["Part of", "Contains", "Map", "Connects to", "Route to", "Transport to", "Drops", "Dropped by",
                "Home town", "Home of", "Lives in", "Residents", "Studio node", "Canon town"]
 
 

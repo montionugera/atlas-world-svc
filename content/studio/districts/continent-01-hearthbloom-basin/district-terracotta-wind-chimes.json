@@ -149,7 +149,21 @@
       "A lone pipe taller than the rest that plays one note whatever the wind does.",
       "A ring of pipes set in the forest floor below the ridge, each humming when the thermals rise."
     ],
-    "status": "proposed"
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": [
+        1,
+        10
+      ],
+      "main": [
+        25,
+        35
+      ],
+      "identity": "Silme prologue, later chapter side content",
+      "chapter": "later",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {

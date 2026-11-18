@@ -152,3 +152,11 @@ test('F-233 (API): the Teacup Meadows record lists "Route to" districts, and a n
   assert.deepEqual(await routes('district-teacup-meadows'), ['district-amber-root-hollows', 'district-ash-bellows-trench', 'district-ginger-steam-terraces', 'district-kilnfire-terraces', 'district-porcelain-cradle']);
   assert.ok((await routes('district-porcelain-cradle')).includes('district-teacup-meadows'));
 });
+
+test('F-235 (API): Terracotta Wind-Chime Ridge lists "Transport to" Glaze-River Delta, and the Delta lists it back', async (t) => {
+  const srv = await startServer();
+  t.after(() => srv.stop());
+  const transport = async (id) => ((await get(srv, `/api/record?kind=district&id=${id}`)).body.relations.find((g) => g.label === 'Transport to') || { items: [] }).items.map((i) => i.id);
+  assert.ok((await transport('district-terracotta-wind-chimes')).includes('district-glaze-river-delta'));
+  assert.ok((await transport('district-glaze-river-delta')).includes('district-terracotta-wind-chimes'));
+});

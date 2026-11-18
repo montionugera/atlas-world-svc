@@ -101,19 +101,32 @@ def build_index(conn: sqlite3.Connection, root: Path, studio_dir: Path, manifest
 
     for p in sorted((studio_dir / "continents").rglob("*.json")):
         d = _load(p)
-        recs.append(("continent", d["id"], d["name"], d.get("core_rationale", ""), "studio", rel(p), f"/?tab=studio&perspective=continent&continent={d['id']}"))
+        links, legacy = d.get("district_links") or [], d.get("legacy_portals") or []  # F-233, F-235
+        count = lambda items, key, order: ", ".join(f"{v} {sum(1 for x in items if x.get(key) == v)}" for v in order)
+        extra = [f"Routes by priority: {count(links, 'priority', ('P0', 'P1', 'P2', 'built'))}." if links else "",
+                 f"Legacy portals by ruling: {count(legacy, 'ruling', ('remove', 'becomes_transport', 'keep'))}." if legacy else ""]
+        recs.append(("continent", d["id"], d["name"], " ".join(x for x in [d.get("core_rationale", ""), *extra] if x), "studio", rel(p), f"/?tab=studio&perspective=continent&continent={d['id']}"))
         tag("continent", d["id"], d.get("status"))
-        for l in d.get("district_links") or []:  # F-233
+        for l in links:
             refs.append(("district", l["a"], "Route to", "district", l["b"]))
+        for l in d.get("transport_links") or []:
+            refs.append(("district", l["a"], "Transport to", "district", l["b"]))
     for p in sorted((studio_dir / "districts").rglob("*.json")):
         d = _load(p)
         cid = d.get("parent_continent_id", "")
         geo = d.get("geography") or {}
-        summary = " ".join(x for x in (d.get("core_rationale", ""), geo.get("biome", "")) if x)
+        bands = geo.get("encounter_bands") or {}
+        main = bands.get("main") or []
+        start = bands.get("starter")
+        band_text = " · ".join(x for x in (
+            f"starter {'safe' if start == 'safe' else f'{start[0]}-{start[1]}'}" if start else "",
+            f"main {main[0]}-{main[1]}" if len(main) == 2 else "") if x)
+        summary = " ".join(x for x in (d.get("core_rationale", ""), geo.get("biome", ""), band_text) if x)
         recs.append(("district", d["id"], d["name"], summary, "studio", rel(p),
                      f"/?tab=studio&perspective=district&continent={cid}&district={d['id']}"))
         tag("district", d["id"], d.get("status"), cid, *_levels(d.get("level_range")),
-            geo.get("terrain_group"), (geo.get("climate") or {}).get("temperature"))
+            geo.get("terrain_group"), (geo.get("climate") or {}).get("temperature"),
+            f"main-{main[0]}-{main[1]}" if len(main) == 2 else "")
         refs.append(("district", d["id"], "Part of", "continent", cid))
         for e in d.get("portal_edges") or []:
             refs.append(("node", e["from_node_id"], "Connects to", "node", e["to_node_id"]))

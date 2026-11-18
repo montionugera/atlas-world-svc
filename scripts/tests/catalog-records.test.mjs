@@ -159,3 +159,14 @@ test('F-233: district routes become "Route to" links, with terrain and temperatu
   assert.ok(tags.includes('Green Lowlands') && tags.includes('mild'), `tags: ${tags}`);
   assert.match(one(good.db, "select summary from records where kind='district' and id='district-teacup-meadows'"), /celadon-green clover pasture/);
 });
+
+test('F-235: transport links, encounter bands in the district summary and tag, route and legacy portal counts on the continent', () => {
+  const c = JSON.parse(readFileSync(path.join(STUDIO, 'continents/continent-01-hearthbloom-basin.json'), 'utf8'));
+  assert.equal(one(good.db, "select count(*) from links where relation='Transport to' and from_kind='district' and to_kind='district'"), c.transport_links.length);
+  assert.match(one(good.db, "select summary from records where kind='district' and id='district-terracotta-wind-chimes'"), /starter 1-10 · main 25-35/);
+  const tags = sql(good.db, "select tag from record_tags where kind='district' and id='district-terracotta-wind-chimes'").flat();
+  assert.ok(tags.includes('main-25-35'), `tags: ${tags}`);
+  const n = (k, v) => c[k].filter((x) => x[k === 'district_links' ? 'priority' : 'ruling'] === v).length;
+  assert.match(one(good.db, "select summary from records where kind='continent' and id='continent-01-hearthbloom-basin'"),
+    new RegExp(`P0 ${n('district_links', 'P0')}, P1 ${n('district_links', 'P1')}, P2 ${n('district_links', 'P2')}, built ${n('district_links', 'built')}.*remove ${n('legacy_portals', 'remove')}, becomes_transport ${n('legacy_portals', 'becomes_transport')}, keep ${n('legacy_portals', 'keep')}`));
+});

@@ -1023,6 +1023,12 @@
         "text": "Maro Bell - Kilnwatch Bastion via a regional route with NPCs, gathering, encounters, landmarks (number of zones and distance undefined); Maro Bell to the nearby forest is a design-target 2-4 min walk; Maro Bell to Ondo Kiln has two options: safer main road through trade settlements, or shorter mountain-foot trail",
         "status": "proposed",
         "source": "game-roadmap-ideation.txt:4241-4250,4929-4932,5970-5972"
+      },
+      "service_role": {
+        "primary": "Social / beginner center",
+        "purpose": "Beginner trade, accessible crafting, community festivals, affordable consumables",
+        "status": "proposed",
+        "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 5"
       }
     },
     {
@@ -1049,7 +1055,13 @@
         "status": "proposed",
         "source": "game-roadmap-ideation.txt:4241-4250,4929-4932,5970-5972"
       },
-      "look_status": "older proposal"
+      "look_status": "older proposal",
+      "service_role": {
+        "primary": "Forging / equipment center",
+        "purpose": "Weapon crafting, armor upgrades, specialist repairs, ore markets",
+        "status": "proposed",
+        "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 5"
+      }
     },
     {
       "id": "linde_glaze",
@@ -1069,6 +1081,12 @@
         "status": "proposed",
         "source": "game-roadmap-ideation.txt:5933-5955 (One Main Continent layout, owner chose at game-roadmap-ideation.txt:5914) and game-roadmap-ideation.txt:4905-4915,4998-5010",
         "note": "Owner chose 'World Map Layout A One Main Continent' but the message states 'not locking Canon'. NO climate or weather statement exists in the transcripts beyond Great-Kiln anomalies."
+      },
+      "service_role": {
+        "primary": "Artisan / magical commerce",
+        "purpose": "Spellglaze production, delicate equipment crafting, enchanting materials",
+        "status": "proposed",
+        "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 5"
       }
     },
     {
@@ -1094,6 +1112,12 @@
         "text": "Passing players meet convoys needing help (guild/event example)",
         "status": "proposed",
         "source": "game-roadmap-ideation.txt:4241-4250,4929-4932,5970-5972"
+      },
+      "service_role": {
+        "primary": "Combat staging base",
+        "purpose": "Party supplies, bounty boards, dungeon preparation, defensive equipment",
+        "status": "proposed",
+        "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 5"
       }
     },
     {
@@ -1114,6 +1138,12 @@
         "status": "proposed",
         "source": "game-roadmap-ideation.txt:5933-5955 (One Main Continent layout, owner chose at game-roadmap-ideation.txt:5914) and game-roadmap-ideation.txt:4905-4915,4998-5010",
         "note": "Owner chose 'World Map Layout A One Main Continent' but the message states 'not locking Canon'. NO climate or weather statement exists in the transcripts beyond Great-Kiln anomalies."
+      },
+      "service_role": {
+        "primary": "Forest resource market",
+        "purpose": "Wood, herbs, memory-related materials, gathering professions",
+        "status": "proposed",
+        "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 5"
       }
     },
     {
@@ -1135,7 +1165,13 @@
         "source": "game-roadmap-ideation.txt:5933-5955 (One Main Continent layout, owner chose at game-roadmap-ideation.txt:5914) and game-roadmap-ideation.txt:4905-4915,4998-5010",
         "note": "Owner chose 'World Map Layout A One Main Continent' but the message states 'not locking Canon'. NO climate or weather statement exists in the transcripts beyond Great-Kiln anomalies."
       },
-      "look_status": "older proposal"
+      "look_status": "older proposal",
+      "service_role": {
+        "primary": "Knowledge / exploration center",
+        "purpose": "Map research, discovery rewards, rare-component identification",
+        "status": "proposed",
+        "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 5"
+      }
     },
     {
       "id": "kilnwatch_bastion",
@@ -1144,7 +1180,13 @@
       "economy": "Trading Hub, Guild Services, full general services.",
       "studio_node_id": "town-kilnwatch-bastion",
       "status": "proposed",
-      "source": "game-roadmap-ideation.txt:4808-4830,4881,5954-5956,5990-5994 and write-atlas-storyline.txt:531-545; game-roadmap-ideation.txt:4342-4360"
+      "source": "game-roadmap-ideation.txt:4808-4830,4881,5954-5956,5990-5994 and write-atlas-storyline.txt:531-545; game-roadmap-ideation.txt:4342-4360",
+      "service_role": {
+        "primary": "Shared MMO hub",
+        "purpose": "Party finder, guild administration, shared storage, travel coordination, chapter dispatch, optional Warden faction",
+        "status": "proposed",
+        "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 5"
+      }
     }
   ],
   "world_model": {
@@ -1295,6 +1337,49 @@
         "text": "Open conflict: the chosen walk-time targets (town to neighbouring town 8-15 min, across several regions 15-30 min on first walk) do not match the repo's 400x400 world with hour-scale travel (1 unit = 1 m). Not reconciled; the design targets and the repo scale need an owner decision.",
         "status": "proposed",
         "source": "game-roadmap-ideation.txt:6846"
+      },
+      {
+        "id": "structure_layers",
+        "topic": "structure_layers",
+        "text": "Layers: (1) physical geography = the new 11-district geography, authoritative for places, routes and distances; (2) playable maps = existing content (maps, hunting areas, dungeons, monsters, portals); (3) progression (levels, XP, farming, parties); (4) narrative (prologues, chapters, events); (5) world services (economy, travel, bind points, streaming). Progression and narrative run over the same maps with independent rules. Five principles: geography never changes to solve a level problem; town access is not wilderness safety; every town has a primary economic or social identity; a chapter opens a story, not necessarily a road; one world graph governs portals, boats, roads and fast travel.",
+        "status": "proposed",
+        "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 1"
+      },
+      {
+        "id": "danger_model",
+        "topic": "danger_model",
+        "text": "Fixed monster levels with real danger; no world-wide level scaling. Fixed-level wilderness bands with a small overlap between neighbouring zones.",
+        "status": "chosen",
+        "source": "Owner decision 2026-11-18 (decisions.json)"
+      },
+      {
+        "id": "convergence_travel",
+        "topic": "convergence_travel",
+        "text": "After each race prologue (Lv 10) the first trip to Kilnwatch is a one-way guided caravan; walking stays possible; later trips use the ordinary travel network.",
+        "status": "chosen",
+        "source": "Owner decision 2026-11-18 (decisions.json)"
+      },
+      {
+        "id": "first_content_target",
+        "topic": "first_content_target",
+        "text": "First content target is Lv 1-15, chapter 0 (Maro Bell + Kilnwatch), then expand.",
+        "status": "chosen",
+        "source": "Owner decision 2026-11-18 (decisions.json)"
+      },
+      {
+        "id": "walk_minutes_meaning",
+        "topic": "walk_minutes_meaning",
+        "text": "District-link walk_minutes are relative distance, not literal minutes, until one playable route is measured on a real map.",
+        "status": "proposed",
+        "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 7.2",
+        "note": "Owner said earlier: no kilometre figures until tested on a playable map. Reason recorded from the reply: at 4 m/s, 15 minutes is 3.6 km of path, while town maps are about 400 m (about 100 seconds to cross), so literal minutes and current map sizes disagree."
+      },
+      {
+        "id": "enforced_rules",
+        "topic": "enforced_rules",
+        "text": "Three rules enforced as data validation: (1) geographic graph integrity: every cross-district portal is a district link, a declared transport link or a listed legacy portal (GEO-09); (2) progression reachability: each race reaches Kilnwatch from Lv 1 to 10 by a protected route or unlocked transport, and the Ch 0-II critical path has valid encounters (not yet automated); (3) one authoritative content registry: stable IDs, no duplicate IDs, no retired names (existing gates). GEO-10 requires link priority and encounter bands on every district.",
+        "status": "proposed",
+        "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 10"
       }
     ]
   }
