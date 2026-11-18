@@ -121,7 +121,7 @@
       "y": 62
     },
     "elevation_band": 2,
-    "biome": "Stepped golden-ochre travertine pools with wild ginger and glazed steam-chimneys, mild and wet on a west-facing slope.",
+    "biome": "Stepped ochre travertine pools with wild ginger and glazed steam-chimneys on a slope that faces east toward Teacup Meadows; old forest closes in behind the upper terraces and between the pools.",
     "climate": {
       "temperature": "mild",
       "moisture": "wet"
@@ -130,19 +130,19 @@
       {
         "name": "Steam banks",
         "when": "dawn",
-        "feel": "Low clouds of vent steam sit on the lower terraces and drift upward as the air warms."
+        "feel": "Low clouds of vent steam sit on the lower terraces and drift upward as the sun climbs."
       },
       {
-        "name": "Warm mineral rain",
+        "name": "Ochre rain",
         "when": "after rain",
         "feel": "Rain picks up ochre minerals and leaves orange rings on the stone."
       }
     ],
-    "water": "Hot mineral springs fill the travertine pools and overflow downhill from pool to pool; the run-off leaves south-east down the Travertine Run Steps to the Glaze-River Delta.",
-    "far_landmark": "Pale steam columns above the western tree line, with paper lanterns drifting over them, seen west from Teacup Meadows.",
+    "water": "Hot mineral springs fill the travertine pools and overflow from pool to pool into the Glaze River, which drops past the terraces in cascades and runs on south-east to skirt Teacup Meadows before the delta.",
+    "far_landmark": "The ridge of Cardamom-Cloud Overlook above pale steam columns, with paper lanterns drifting up past it, seen west-south-west from Teacup Meadows.",
     "discovery_hooks": [
       "A travertine pool far from any path that is exactly bath temperature.",
-      "A glazed chimney that whistles only when the wind comes from the north."
+      "A glazed chimney that whistles one note, only on the rare days the wind turns to the north."
     ],
     "status": "proposed"
   },

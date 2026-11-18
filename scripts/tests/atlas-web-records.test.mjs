@@ -149,6 +149,6 @@ test('F-233 (API): the Teacup Meadows record lists "Route to" districts, and a n
   const srv = await startServer();
   t.after(() => srv.stop());
   const routes = async (id) => ((await get(srv, `/api/record?kind=district&id=${id}`)).body.relations.find((g) => g.label === 'Route to') || { items: [] }).items.map((i) => i.id).sort();
-  assert.deepEqual(await routes('district-teacup-meadows'), ['district-amber-root-hollows', 'district-ginger-steam-terraces', 'district-kilnfire-terraces', 'district-porcelain-cradle', 'district-saffron-kiln-orchards']);
+  assert.deepEqual(await routes('district-teacup-meadows'), ['district-amber-root-hollows', 'district-ash-bellows-trench', 'district-ginger-steam-terraces', 'district-kilnfire-terraces', 'district-porcelain-cradle']);
   assert.ok((await routes('district-porcelain-cradle')).includes('district-teacup-meadows'));
 });

@@ -23,7 +23,7 @@
   "portal_edges": [],
   "mystery_hook": {
     "in_world_rumor": "Bathhouse keepers in Ginger-Bathhouse Haven say the eastern Cardamom-Kiln Caldera simmers with spiced porcelain glaze-springs that glow amber beneath the evening mist.",
-    "visual_silhouette": "Dome-shaped cardamom drying kilns and terraced porcelain glaze-basins rising beyond the eastern rim of Ginger-Steam Terraces.",
+    "visual_silhouette": "Dome-shaped cardamom drying kilns and terraced porcelain glaze-basins rising beyond the northern rim above Ginger-Steam Terraces.",
     "unanswered_question": "Which Primordial Kiln-Artisan carved the central spice-glaze crucible of Cardamom-Kiln Caldera?"
   },
   "geography": {
@@ -33,7 +33,7 @@
       "y": 18
     },
     "elevation_band": 3,
-    "biome": "A cool, wet caldera on the north rim, with warm mineral springs inside tiered drying kilns and green-grey rock above.",
+    "biome": "A caldera bowl on the north rim, green-grey rock around mineral springs and tiered drying kilns; old forest fills a hidden valley on its southern flank.",
     "climate": {
       "temperature": "cool",
       "moisture": "wet"
@@ -45,23 +45,28 @@
         "feel": "Cloud fills the bowl from the springs and sits level with the rim."
       },
       {
-        "name": "Evening spring mist",
+        "name": "Spring glow",
         "when": "evening",
-        "feel": "Amber-lit mist hangs on the glaze basins and carries a cardamom smell."
+        "feel": "Amber light lifts off the glaze basins and carries a cardamom smell across the rim."
+      },
+      {
+        "name": "Valley rain",
+        "when": "afternoon",
+        "feel": "Heavy drops fall on the forest below the rim and the leaves hiss loudly."
       }
     ],
-    "water": "Warm mineral springs fill the central glaze basins and spill south over the rim, feeding the brook near Cinnamon-Bellows Bluff.",
-    "far_landmark": "Dome-shaped drying kilns glowing amber on the caldera rim, seen north from Cinnamon-Bellows Bluff.",
+    "water": "Mineral springs fill the central glaze basins and spill south over the rim, forming the head of the Glaze River, which runs down through the forested valley toward Cinnamon-Bellows Bluff.",
+    "far_landmark": "An amber glow lifting from behind the caldera rim, with the tops of the drying domes just showing, seen north-north-east from Cinnamon-Bellows Bluff.",
     "discovery_hooks": [
       "A cracked drying dome with a ring of spent cardamom pods inside.",
-      "A rope-and-plank shortcut over a spillway that saves several minutes on the Star-Anise Trail."
+      "A spillway where the spring water runs over green-grey glaze in a perfect fan and sounds like a struck cup."
     ],
     "status": "proposed"
   },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the eastern geothermal rim of Continent 01."
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the north-western geothermal rim of Continent 01."
     },
     "fantasy_and_wonder": {
       "verified": true,

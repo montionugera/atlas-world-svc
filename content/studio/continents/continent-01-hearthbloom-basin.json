@@ -83,9 +83,9 @@
   },
   "mystery_hook": {
     "in_world_rumor": "Bathhouse keepers in Ginger-Bathhouse Haven say the eastern Cardamom-Kiln Caldera simmers with spiced porcelain glaze-springs that glow amber beneath the evening mist.",
-    "visual_silhouette": "Dome-shaped cardamom drying kilns and terraced porcelain glaze-basins rising beyond the eastern rim of Ginger-Steam Terraces.",
+    "visual_silhouette": "Dome-shaped cardamom drying kilns and terraced porcelain glaze-basins rising beyond the northern rim above Ginger-Steam Terraces.",
     "unanswered_question": "Which Primordial Kiln-Artisan carved the central spice-glaze crucible of Cardamom-Kiln Caldera?",
-    "discovery_trigger_hint": "Ten Districts on Continent 01 are Canon while Cardamom-Kiln Caldera awaits exploration along the eastern geothermal rim."
+    "discovery_trigger_hint": "Ten Districts on Continent 01 are Canon while Cardamom-Kiln Caldera awaits exploration along the north-western geothermal rim."
   },
   "district_links": [
     {
@@ -115,19 +115,6 @@
       "status": "proposed"
     },
     {
-      "id": "link-teacup-meadows--saffron-kiln-orchards",
-      "a": "district-teacup-meadows",
-      "b": "district-saffron-kiln-orchards",
-      "gateway": {
-        "type": "road",
-        "name": "Apricot Aqueduct Road"
-      },
-      "route_type": "main_road",
-      "walk_minutes": 18,
-      "transition": "The road runs south beside the sluice channels, and the air gets drier and warmer as clover turns into saffron rows.",
-      "status": "proposed"
-    },
-    {
       "id": "link-teacup-meadows--ginger-steam-terraces",
       "a": "district-teacup-meadows",
       "b": "district-ginger-steam-terraces",
@@ -137,7 +124,7 @@
       },
       "route_type": "main_road",
       "walk_minutes": 13,
-      "transition": "A bridge crosses the warm creek, and the road climbs west into steam from the mineral pools.",
+      "transition": "A bridge crosses the Glaze River just below where the meadow creeks join it, and the road climbs west into steam from the mineral pools.",
       "status": "proposed"
     },
     {
@@ -241,7 +228,7 @@
       },
       "route_type": "main_road",
       "walk_minutes": 12,
-      "transition": "The road leaves the steam and climbs to a cooler bluff, where cinnamon bark windbreaks replace the ginger fields.",
+      "transition": "The road leaves the steam, climbs through trees to a breezier bluff, and cinnamon bark windbreaks replace the ginger fields.",
       "status": "proposed"
     },
     {
@@ -254,7 +241,7 @@
       },
       "route_type": "wilderness_trail",
       "walk_minutes": 24,
-      "transition": "Steps follow the warm run-off from the travertine pools down to the delta, ending in fog and braided channels.",
+      "transition": "Steps follow the run-off from the travertine pools beside the Glaze River down to the delta, ending in fog and braided channels.",
       "status": "proposed"
     },
     {
@@ -267,7 +254,7 @@
       },
       "route_type": "main_road",
       "walk_minutes": 20,
-      "transition": "The pass climbs bare ground into cold, dry wind, and the first ceramic pipes can be heard well before the arches are seen.",
+      "transition": "The pass climbs from the forest edge through old trees onto bare ground and strong dry wind, and the first ceramic pipes can be heard well before the arches are seen.",
       "status": "proposed"
     },
     {
@@ -280,7 +267,7 @@
       },
       "route_type": "wilderness_trail",
       "walk_minutes": 15,
-      "transition": "A trail climbs north from the cool bluff into wetter air, ending at the caldera rim with warm mist below.",
+      "transition": "A trail climbs north from the bluff through old forest beside the Glaze River into wetter air, ending at the caldera rim with mist below.",
       "status": "proposed"
     },
     {
@@ -293,7 +280,7 @@
       },
       "route_type": "ancient_route",
       "walk_minutes": 18,
-      "transition": "An old tunnel runs from the wet caldera under the ridge, and you leave the mist for bare, cold, dry wind at the far end.",
+      "transition": "An old tunnel runs from the wet caldera under the ridge, and you leave the mist for bare, dry wind at the far end, above a deep forested valley.",
       "status": "proposed"
     },
     {
@@ -307,6 +294,32 @@
       "route_type": "ancient_route",
       "walk_minutes": 20,
       "transition": "An old bridge crosses a gap between the caldera and the kiln terraces; the mist stays behind you and the stone gets drier.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-teacup-meadows--ash-bellows-trench",
+      "a": "district-teacup-meadows",
+      "b": "district-ash-bellows-trench",
+      "gateway": {
+        "type": "road",
+        "name": "Draft-Kiln Post Road"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 22,
+      "transition": "The road leaves the clover and runs south-east, narrowing into the choke point guarded by Daro Post before it opens onto the grey ash slopes of the trench.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-cinnamon-bellows-bluff--porcelain-cradle",
+      "a": "district-cinnamon-bellows-bluff",
+      "b": "district-porcelain-cradle",
+      "gateway": {
+        "type": "road",
+        "name": "Lotus-Bark Trail"
+      },
+      "route_type": "wilderness_trail",
+      "walk_minutes": 16,
+      "transition": "The trail leaves the forest edge of the bluff, drops east-north-east through open woodland and ends at the pale clay rim of the Porcelain Cradle.",
       "status": "proposed"
     }
   ]

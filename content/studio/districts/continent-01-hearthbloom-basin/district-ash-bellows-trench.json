@@ -4,7 +4,7 @@
   "name": "Ash-Bellows Trench",
   "parent_continent_id": "continent-01-hearthbloom-basin",
   "status": "canon",
-  "core_rationale": "Southeastern sub-kiln firebrick trench of Continent 01 where Sola's deepest ceramic air-ducts draw cool valley air beneath Kilnfire Terraces.",
+  "core_rationale": "Southeastern sub-kiln firebrick trench of Continent 01 where Sola's deepest ceramic air-ducts draw cool valley air ducted under the basin to the great bellows beneath Kilnfire Terraces.",
   "local_conflict": "Dormant glaze-golems and ember-salamanders stir inside the firebrick intake tunnels beneath the shield rim.",
   "level_band_label": "Levels 1 to 20",
   "level_range": [
@@ -127,7 +127,7 @@
       "y": 65
     },
     "elevation_band": 2,
-    "biome": "A warm, dry firebrick trench on the southeast rim, with glazed intake arches and ash-grey slopes.",
+    "biome": "A warm, dry firebrick trench on the south-east rim, with glazed intake arches, ash-grey slopes and slate-blue cliffs along the pass road.",
     "climate": {
       "temperature": "warm",
       "moisture": "dry"
@@ -145,10 +145,10 @@
       }
     ],
     "water": "No surface water: the only damp is condensation on the firebrick intake ducts, which stay cool inside even when the trench is hot.",
-    "far_landmark": "Three plumes of warm exhaust rising from the trench vents, seen north-east from Saffron Kiln Orchards.",
+    "far_landmark": "Three grey plumes rising from Glaze Flue Vent on the trench rim, seen north-east from Saffron Kiln Orchards.",
     "discovery_hooks": [
-      "A duct opening that blows a cool breeze all day, popular with travellers resting at noon.",
-      "A signal bell on the pass road, rung by hand to tell Daro Post a convoy is coming."
+      "A duct mouth that blows a steady cool breath, so strong that loose ash hangs level in the air in front of it.",
+      "A glazed bell hung on the pass road where the draft hums, which rings a three-note chord on its own at night."
     ],
     "status": "proposed"
   },

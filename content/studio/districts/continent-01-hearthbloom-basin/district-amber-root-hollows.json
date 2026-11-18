@@ -121,7 +121,7 @@
       "y": 40
     },
     "elevation_band": 2,
-    "biome": "Dense banyan roots over damp stone with amber sap pillars, mild and wet in the root shade on the eastern rim.",
+    "biome": "Dense banyan roots over damp stone with amber resin pillars, rust-and-green ore outcrops where roots split the rock, and open upland ground above the tunnels; mild and wet in the root shade.",
     "climate": {
       "temperature": "mild",
       "moisture": "wet"
@@ -135,14 +135,14 @@
       {
         "name": "Tunnel breath",
         "when": "midday",
-        "feel": "Warm damp air pushes out of the tunnel mouths and fogs lantern glass."
+        "feel": "Damp air pushes out of the tunnel mouths and beads the lantern glass with water."
       }
     ],
-    "water": "Seep streams run out of the root mass and drip into amber-coloured pools, then drain west along the trail toward the Teacup Meadows creeks.",
-    "far_landmark": "Arches of amber root-glow where the viaduct piers meet the sky, seen east from Teacup Meadows.",
+    "water": "Seep springs run out of the root mass into amber-coloured pools, then drain west along the trail toward the Teacup Meadows creeks.",
+    "far_landmark": "The Banyan Canopy Spur lifts a crest of golden banyan crowns above the eastern ridge, seen east-north-east from Teacup Meadows.",
     "discovery_hooks": [
-      "A resin pillar with a hand-sized hollow where travellers leave coins.",
-      "A root bridge over a seep stream, shorter than the road but with no handrail."
+      "A root arch where amber sap has set into a clear gold ring big enough to stand inside.",
+      "A seep pool so clear that its stones look like amber coins, with copper-green ore showing in the bank."
     ],
     "status": "proposed"
   },

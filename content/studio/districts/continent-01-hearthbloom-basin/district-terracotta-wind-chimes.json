@@ -121,33 +121,33 @@
       "y": 25
     },
     "elevation_band": 4,
-    "biome": "A high, cold and dry ridge on the western rim, bare ground and hundreds of hollow ceramic pipes in glazed arches.",
+    "biome": "A high bare ridge on the western rim, with rust-red ceramic pipes hung in bone-white glazed arches; below it a deep old-forest valley drops away to the east, and the Resonator Tunnel comes up from the caldera.",
     "climate": {
-      "temperature": "cold",
+      "temperature": "cool",
       "moisture": "dry"
     },
     "weather": [
-      {
-        "name": "Rime on the pipes",
-        "when": "dawn",
-        "feel": "White frost coats every pipe and each one cracks as it warms."
-      },
       {
         "name": "Chime gale",
         "when": "windy days",
         "feel": "Strong gusts make all the pipes play at once, loud enough to drown out talking."
       },
       {
-        "name": "Star-cold night",
+        "name": "Midday thermals",
+        "when": "midday",
+        "feel": "Air rising off the lower slopes lifts through the pipes and sets them singing one after another up the ridge."
+      },
+      {
+        "name": "Clear night",
         "when": "night",
-        "feel": "Clear, very cold air with the arches ringing faintly in no wind at all."
+        "feel": "Thin clear air with the arches ringing faintly in no wind at all."
       }
     ],
-    "water": "Almost none: meltwater from frost drips into a few stone troughs, and the nearest running stream is the brook at Cinnamon-Bellows Bluff below.",
-    "far_landmark": "Glazed arches along the ridge skyline, with the sound of pipes carrying down the slope before they come into view, seen north-west from Cinnamon-Bellows Bluff.",
+    "water": "Almost none on the ridge: a few stone troughs catch rain, and the nearest running stream is the Glaze River in the forest valley below, to the east.",
+    "far_landmark": "The glazed arches of Flute-Crest Promontory on the ridge skyline, with the sound of pipes carried down the slope before they come into view, seen north-north-west from Cinnamon-Bellows Bluff.",
     "discovery_hooks": [
       "A lone pipe taller than the rest that plays one note whatever the wind does.",
-      "A stone trough at the ridge foot where ice forms in the middle of the day."
+      "A ring of pipes set in the forest floor below the ridge, each humming when the thermals rise."
     ],
     "status": "proposed"
   },

@@ -121,7 +121,7 @@
       "y": 78
     },
     "elevation_band": 1,
-    "biome": "Stepped golden-brick orchard terraces with apricot and saffron rows, dry and sunny on low rolling ground.",
+    "biome": "Stepped brick-gold orchard terraces with saffron-orange rows and apricot trees, dry and sunny on low rolling ground.",
     "climate": {
       "temperature": "warm",
       "moisture": "dry"
@@ -135,13 +135,13 @@
       {
         "name": "Saffron dust",
         "when": "windy days",
-        "feel": "Fine orange dust blows off the drying racks and coats boots and carts."
+        "feel": "Fine orange dust blows east off the drying racks and coats boots and carts."
       }
     ],
-    "water": "Golden ceramic aqueducts carry Teacup Meadows creek water along the terrace edges; there are no natural streams, and the aqueduct spills at the Cobalt Sandbar Ford.",
-    "far_landmark": "Honeycomb-Kiln Ridge glowing gold at dusk, seen south from Teacup Meadows.",
+    "water": "Golden ceramic aqueducts carry water drawn from the Teacup Meadows creeks along the terrace edges; there are no natural streams, and the aqueduct spills into the delta channels at the Cobalt Sandbar Ford.",
+    "far_landmark": "Honeycomb Kiln Ridge glowing gold at dusk, seen south-south-east from Teacup Meadows.",
     "discovery_hooks": [
-      "An aqueduct arch wide enough to walk under, with honey-glaze drips hardened into amber icicles.",
+      "An aqueduct arch wide enough to walk under, with honey-glaze drips hardened into amber threads.",
       "A lone apricot tree on the ash side of the ridge that fruits a week ahead of the rest."
     ],
     "status": "proposed"

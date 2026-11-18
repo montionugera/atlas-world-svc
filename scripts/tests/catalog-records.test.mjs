@@ -157,5 +157,5 @@ test('F-233: district routes become "Route to" links, with terrain and temperatu
   assert.equal(one(good.db, "select count(*) from links where relation='Route to' and from_kind='district' and to_kind='district'"), links.length);
   const tags = sql(good.db, "select tag from record_tags where kind='district' and id='district-teacup-meadows'").flat();
   assert.ok(tags.includes('Green Lowlands') && tags.includes('mild'), `tags: ${tags}`);
-  assert.match(one(good.db, "select summary from records where kind='district' and id='district-teacup-meadows'"), /Short clover pasture/);
+  assert.match(one(good.db, "select summary from records where kind='district' and id='district-teacup-meadows'"), /celadon-green clover pasture/);
 });

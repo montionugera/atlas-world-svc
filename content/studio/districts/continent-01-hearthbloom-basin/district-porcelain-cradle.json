@@ -121,16 +121,16 @@
       "y": 38
     },
     "elevation_band": 1,
-    "biome": "A sunken white-clay amphitheater around a shallow warm lake, with mild air held in by the surrounding rim.",
+    "biome": "A sunken pearl-white amphitheater around a shallow warm lake, with lotus pads on the water and a pale porcelain rim that keeps the air still inside.",
     "climate": {
       "temperature": "mild",
       "moisture": "moderate"
     },
     "weather": [
       {
-        "name": "Lake haze",
+        "name": "Pearl-light",
         "when": "dawn",
-        "feel": "Thin white haze lies on the water until the rim domes warm up."
+        "feel": "Low sun turns the white domes pink-grey before the rim lights up."
       },
       {
         "name": "Dome glare",
@@ -138,11 +138,11 @@
         "feel": "White porcelain throws hard light, so the far side of the lake looks blank."
       }
     ],
-    "water": "A shallow warm lake fed by springs under the white domes; its overflow leaves south-east as a creek that joins the Teacup Meadows channels.",
-    "far_landmark": "A pale glow over the amphitheater rim, white domes catching the evening sun, seen north-west from Teacup Meadows.",
+    "water": "A shallow lake fed by springs under the white domes; its overflow leaves south-east as a creek that joins the Teacup Meadows creeks.",
+    "far_landmark": "Lotus Kiln Rim, a pale lip above the sunken amphitheater, with a thin thread of vapour rising behind it, seen north-north-west from Teacup Meadows.",
     "discovery_hooks": [
       "A cracked white causeway slab on the creek path that rings like a bell when stepped on.",
-      "A viewing ledge on the south rim where the whole lake and every dome can be seen at once."
+      "Lotus pads at the lake edge with glazed white undersides that turn up one by one at dusk."
     ],
     "status": "proposed"
   },

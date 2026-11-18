@@ -124,7 +124,7 @@
       "y": 85
     },
     "elevation_band": 0,
-    "biome": "Flat braided channels and cobalt-and-gold sandbars at the lowest point of the basin, warm and wet all year.",
+    "biome": "Flat braided channels between cobalt-and-gold sandbars at the lowest point of the basin, where the Glaze River spreads into reed beds and giant terracotta waterwheels.",
     "climate": {
       "temperature": "warm",
       "moisture": "wet"
@@ -141,8 +141,8 @@
         "feel": "A short wet gust crosses the channels and rattles the waterwheels, then clears."
       }
     ],
-    "water": "The lowest water on the continent: the Saffron aqueduct runoff and the Ginger-Steam run-off spread into braided warm channels that reach open water at Kiln-Lighthouse Spit.",
-    "far_landmark": "A cobalt-blue light on Kiln-Lighthouse Spit, visible from the Saffron Kiln Orchards terraces on clear nights.",
+    "water": "The Glaze River arrives from the north-west and spreads into braided channels, taking the Saffron aqueduct spill at the Cobalt Sandbar Ford; the outer mouth faces south to open water.",
+    "far_landmark": "A cobalt-blue light on Kiln-Lighthouse Spit, low over the channels, seen west-south-west from Saffron Kiln Orchards on clear nights.",
     "discovery_hooks": [
       "A sunken potter-barge stuck on a sandbar with its kiln still holding heat.",
       "A footpath of flat cobalt tiles that only shows at low water between two channels."
