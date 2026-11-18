@@ -144,7 +144,24 @@
       "A travertine pool far from any path that is exactly bath temperature.",
       "A glazed chimney that whistles one note, only on the rare days the wind turns to the north."
     ],
-    "status": "proposed"
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": "safe",
+      "main": [
+        12,
+        20
+      ],
+      "identity": "Recovery, solo farming, travel junction",
+      "chapter": null,
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "town_role": {
+      "primary": "Recovery / rest town",
+      "purpose": "Bind services, travel supplies, small-party staging, social amenities",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 5"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {

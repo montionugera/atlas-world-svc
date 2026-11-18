@@ -144,7 +144,21 @@
       "A root arch where amber sap has set into a clear gold ring big enough to stand inside.",
       "A seep pool so clear that its stones look like amber coins, with copper-green ore showing in the bank."
     ],
-    "status": "proposed"
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": [
+        1,
+        10
+      ],
+      "main": [
+        15,
+        25
+      ],
+      "identity": "Ondo prologue, Ch I core",
+      "chapter": "I",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {

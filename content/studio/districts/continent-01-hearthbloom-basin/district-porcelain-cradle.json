@@ -144,7 +144,21 @@
       "A cracked white causeway slab on the creek path that rings like a bell when stepped on.",
       "Lotus pads at the lake edge with glazed white undersides that turn up one by one at dusk."
     ],
-    "status": "proposed"
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": [
+        1,
+        10
+      ],
+      "main": [
+        10,
+        15
+      ],
+      "identity": "Linde prologue, gentle Ch 0 farming",
+      "chapter": "0",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {

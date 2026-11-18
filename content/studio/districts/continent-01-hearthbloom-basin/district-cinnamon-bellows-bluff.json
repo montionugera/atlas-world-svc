@@ -149,7 +149,21 @@
       "A louvered tower with no door, its flues still hot to the touch.",
       "A fox den cut into a bark windbreak, with several ember-tail prints leading from it."
     ],
-    "status": "proposed"
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": [
+        1,
+        10
+      ],
+      "main": [
+        25,
+        35
+      ],
+      "identity": "Tava prologue, Ch II core",
+      "chapter": "II",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {

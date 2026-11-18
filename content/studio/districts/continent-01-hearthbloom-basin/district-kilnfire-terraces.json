@@ -125,7 +125,18 @@
       "A cracked kiln door left open, with fresh glaze samples still lined up inside.",
       "A terrace wall on the west side inlaid with hundreds of tiny glazed tiles, no two the same colour, facing the caldera bridge."
     ],
-    "status": "proposed"
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": "safe",
+      "main": [
+        10,
+        20
+      ],
+      "identity": "Convergence, party recruitment, Ch 0 staging",
+      "chapter": "0",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {
