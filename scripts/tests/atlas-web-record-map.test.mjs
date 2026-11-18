@@ -56,6 +56,16 @@ test("renderRecordMap escapes data and links nodes to their record", () => {
   assert.ok(svg.includes("Not built yet") && svg.includes("rm-edge--closed"));
 });
 
+test("a double quote in a data string cannot break out of an attribute; an unbroken long label stays inside its box", () => {
+  const svg = ctx.renderRecordMap({
+    nodes: [node("a", 0, 0, { record: 'node:a"b', label: "Supercalifragilisticexpialidocious" })],
+    edges: [],
+  });
+  assert.ok(svg.includes('data-record="node:a&quot;b"'));
+  assert.ok(!svg.includes('node:a"b'));
+  assert.ok(!/<tspan[^>]*>Supercalifragilisticexpialidocious</.test(svg), "a long word is cut into lines");
+});
+
 test("danger edges carry a text mark and the legend explains it; continent edges show priority", () => {
   const danger = ctx.renderRecordMap({
     nodes: [node("a", 0, 0), node("b", 1, 0, { kind: "outside" })],

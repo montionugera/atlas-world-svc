@@ -115,7 +115,8 @@ const RM_KIND_LABEL = {
 function rmWrap(text, max, lines) {
   const out = [];
   let cur = "";
-  for (const w of String(text).split(/\s+/)) {
+  const words = String(text).split(/\s+/).flatMap((w) => w.match(new RegExp(`.{1,${max}}`, "g")) || []); // a long unbroken word is cut so it stays inside its box
+  for (const w of words) {
     if (cur && (cur + " " + w).length > max) {
       out.push(cur);
       cur = w;
@@ -131,15 +132,15 @@ function rmWrap(text, max, lines) {
 function renderRecordMap(map) {
   const E = (v) => escapeHtml(v).replace(/"/g, "&quot;"); // escapeHtml leaves quotes, and some values land in attributes
   const plane = map.nodes.every((n) => n.kind === "district"); // continent: 0-100 coordinates; district: grid cells
-  const BW = plane ? 176 : 132,
-    BH = 76,
+  const BW = plane ? 176 : 92, // district: narrow boxes so the whole 4-column map fits a phone at ~0.8 scale
+    BH = plane ? 76 : 92,
     PAD = 24;
   const xs = map.nodes.map((n) => n.x),
     ys = map.nodes.map((n) => n.y);
   const minX = Math.min(...xs),
     minY = Math.min(...ys);
-  const ux = plane ? (860 - BW) / Math.max(1, Math.max(...xs) - minX) : 156;
-  const uy = plane ? 12 : 112;
+  const ux = plane ? (860 - BW) / Math.max(1, Math.max(...xs) - minX) : 104;
+  const uy = plane ? 12 : 118;
   const W = Math.ceil((Math.max(...xs) - minX) * ux + BW + PAD * 2),
     H = Math.ceil((Math.max(...ys) - minY) * uy + BH + PAD * 2);
   const at = Object.fromEntries(
@@ -151,6 +152,7 @@ function renderRecordMap(map) {
       },
     ]),
   );
+  let dangerMarks = ""; // drawn after the boxes so nothing hides them
   const edges = map.edges
     .map((e) => {
       const a = at[e.a],
@@ -161,10 +163,19 @@ function renderRecordMap(map) {
         : e.state === "open"
           ? "rm-edge"
           : "rm-edge rm-edge--closed";
-      const mx = (a.cx + b.cx) / 2,
-        my = (a.cy + b.cy) / 2;
+      // the mark sits on the edge at the point least covered by a box: halfway if that is clear, else the nearest clear spot
+      const dx = b.cx - a.cx,
+        dy = b.cy - a.cy;
+      const covered = (f) =>
+        Object.values(at).some(
+          (c) => Math.abs(a.cx + dx * f - c.cx) < BW / 2 + 14 && Math.abs(a.cy + dy * f - c.cy) < BH / 2 + 14,
+        );
+      const f = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8].find((q) => !covered(q)) ?? 0.5;
+      const mx = a.cx + dx * f,
+        my = a.cy + dy * f;
+      if (e.danger) dangerMarks += `<g class="rm-warn"><circle cx="${mx}" cy="${my}" r="13"/><text x="${mx}" y="${my + 5}" text-anchor="middle">!</text></g>`;
       const mark = e.danger
-        ? `<g class="rm-warn"><circle cx="${mx}" cy="${my}" r="12"/><text x="${mx}" y="${my + 5}" text-anchor="middle">!</text></g>`
+        ? ""
         : e.label
           ? `<g class="rm-pill"><rect x="${mx - 22}" y="${my - 11}" width="44" height="22" rx="11"/><text x="${mx}" y="${my + 4}" text-anchor="middle">${E(e.label)}</text></g>`
           : "";
@@ -176,15 +187,10 @@ function renderRecordMap(map) {
       const x = at[n.id].cx - BW / 2,
         y = at[n.id].cy - BH / 2;
       const range = n.level ? `Lv ${n.level[0]}-${n.level[1]}` : "";
-      const lv =
-        n.kind === "unbuilt"
-          ? RM_KIND_LABEL.unbuilt
-          : plane
-            ? range
-            : [RM_KIND_LABEL[n.kind] || n.kind, range]
-                .filter(Boolean)
-                .join(" \u00b7 ");
-      const lines = rmWrap(n.label, plane ? 23 : 17, 3)
+      const kindLabel = RM_KIND_LABEL[n.kind] || n.kind;
+      // continent: level range only; district: kind and range on two short lines (the box is narrow)
+      const subs = n.kind === "unbuilt" ? [kindLabel] : plane ? [range] : [kindLabel, range];
+      const lines = rmWrap(plane ? n.label.split(" \u00b7 ")[0] : n.label, plane ? 20 : 10, plane ? 2 : 3) // continent: full "new · old" name stays in the tooltip
         .map(
           (t, i) =>
             `<tspan x="${x + BW / 2}" dy="${i ? 15 : 0}">${E(t)}</tspan>`,
@@ -196,7 +202,7 @@ function renderRecordMap(map) {
       return (
         `<g class="rm-node rm-node--${E(n.kind)}"${link}><title>${E(n.label)}</title><rect x="${x}" y="${y}" width="${BW}" height="${BH}" rx="10"/>` +
         `<text class="rm-name" x="${x + BW / 2}" y="${y + 20}" text-anchor="middle">${lines}</text>` +
-        `<text class="rm-sub" x="${x + BW / 2}" y="${y + BH - 9}" text-anchor="middle">${E(lv)}</text></g>`
+        subs.filter(Boolean).map((t, i, all) => `<text class="rm-sub" x="${x + BW / 2}" y="${y + BH - 9 - (all.length - 1 - i) * 15}" text-anchor="middle">${E(t)}</text>`).join("") + "</g>"
       );
     })
     .join("");
@@ -212,7 +218,7 @@ function renderRecordMap(map) {
     (map.edges.some((e) => e.danger)
       ? '<li><span class="rm-line rm-line--danger"></span><b>!</b> Open door to a much higher level</li>'
       : "");
-  return `<figure class="record-map${plane ? " record-map--plane" : ""}" aria-label="Map"><div class="record-map__scroll"><svg viewBox="0 0 ${W} ${H}" style="min-width:${W}px" role="group" aria-label="Map of ${E(map.nodes.length)} places">${edges}${boxes}</svg></div><ul class="record-map__legend">${legend}</ul></figure>`;
+  return `<figure class="record-map${plane ? " record-map--plane" : ""}" aria-label="Map"><div class="record-map__scroll"><svg viewBox="0 0 ${W} ${H}" style="${plane ? `min-width:${W}px` : `max-width:${Math.round(W * 1.3)}px;margin:0 auto`}" role="group" aria-label="Map of ${E(map.nodes.length)} places">${edges}${boxes}${dangerMarks}</svg></div>${plane ? '<p class="record-map__hint">Swipe sideways to see the whole map</p>' : ""}<ul class="record-map__legend">${legend}</ul></figure>`;
 }
 
 async function renderRecordPage(main) {

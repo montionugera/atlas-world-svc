@@ -401,8 +401,10 @@
     .record-map .rm-node--unbuilt rect, .record-map .rm-node--outside rect { stroke-dasharray: 5 4; fill: var(--joy-surface-card); }
     .record-map .rm-node:hover rect, .record-map .rm-node:focus-visible rect { stroke-width: 4; fill: color-mix(in srgb, var(--k) 34%, var(--joy-surface-card)); }
     .record-map .rm-node:focus-visible rect { stroke: var(--joy-border-focus); }
-    .record-map .rm-name { fill: var(--joy-text-primary); font-size: 13px; font-weight: 650; }
-    .record-map .rm-sub { fill: var(--joy-text-secondary); font-size: 12px; }
+    .record-map .rm-name { fill: var(--joy-text-primary); font-size: 14px; font-weight: 650; }
+    .record-map .rm-sub { fill: var(--joy-text-secondary); font-size: 13px; }
+    .record-map__hint { display: none; margin: 8px 0 0; font-size: var(--joy-font-size-sm); color: var(--joy-text-secondary); }
+    @media (max-width: 900px) { .record-map__hint { display: block; } }
     .record-map__legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 0; padding: 0; font-size: var(--joy-font-size-sm); color: var(--joy-text-secondary); }
     .record-map__legend li { display: flex; align-items: center; gap: 6px; margin: 0; padding: 0; border: 0; }
     .rm-swatch { width: 16px; height: 12px; border-radius: 4px; border: 2px solid #8a8f98; background: color-mix(in srgb, #8a8f98 22%, var(--joy-surface-card)); }
