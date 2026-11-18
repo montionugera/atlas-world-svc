@@ -738,7 +738,7 @@ def _validate_geography(
     nodes_by_id: dict[str, dict[str, Any]],
     errors: list[str],
 ) -> None:
-    """GEO-01..GEO-08 (F-233); active only for continents that declare district_links."""
+    """GEO-01..GEO-08 (F-233), GEO-09/10 (F-235); active only for continents that declare district_links."""
     glossary_path = studio_dir / "canon" / "glossary.json"
     towns = []
     if glossary_path.exists():
@@ -817,6 +817,38 @@ def _validate_geography(
                 continue
             if geo[did].get("terrain_group") != want:
                 errors.append(f"{label}: GEO-06 violation: district '{did}' terrain_group {geo[did].get('terrain_group')!r} differs from town '{town.get('name')}' ({want!r})")
+
+        # GEO-09: a node portal that leaves its district is a district link, a transport link or a listed legacy portal.
+        covered = {frozenset((l.get("a"), l.get("b"))) for l in links + (cont.get("transport_links") or [])}
+        legacy = {(e.get("from_node_id"), e.get("to_node_id")) for e in cont.get("legacy_portals") or []}
+        cross: set[tuple[str, str]] = set()
+        for nid, node in nodes_by_id.items():
+            src = node.get("parent_district_id")
+            if src not in geo:
+                continue
+            for portal in (node.get("portals") or {}).values():
+                tid = (portal or {}).get("target_node_id")
+                dst = (nodes_by_id.get(tid) or {}).get("parent_district_id")
+                if tid and dst != src:
+                    cross.add((nid, tid))
+                    if frozenset((src, dst)) not in covered and (nid, tid) not in legacy:
+                        errors.append(f"{label}: GEO-09 violation: portal {nid} -> {tid} leaves its district and is in no district_links, transport_links or legacy_portals")
+        for pair in sorted(legacy - cross):
+            errors.append(f"{label}: GEO-09 violation: legacy_portals entry {pair[0]} -> {pair[1]} has no matching node portal; remove it")
+
+        for l in links:  # GEO-10
+            if l.get("priority") not in ("P0", "P1", "P2", "built"):
+                errors.append(f"{label}: GEO-10 violation: link '{l.get('id')}' priority {l.get('priority')!r} is not P0, P1, P2 or built")
+        home = {(nodes_by_id.get(t.get("studio_node_id")) or {}).get("parent_district_id") for t in towns if t.get("race")}
+        for did, g in geo.items():
+            if not g:  # GEO-01 already reports it
+                continue
+            bands = g.get("encounter_bands") or {}
+            main = bands.get("main")
+            if not (isinstance(main, list) and len(main) == 2):
+                errors.append(f"{label}: GEO-10 violation: district '{did}' has no encounter_bands.main [min, max]")
+            if did in home and bands.get("starter") != [1, 10]:
+                errors.append(f"{label}: GEO-10 violation: race home district '{did}' needs encounter_bands.starter [1, 10], got {bands.get('starter')!r}")
 
 
 def build_runtime_manifest(studio_dir: Path = DEFAULT_STUDIO_DIR) -> dict[str, Any]:

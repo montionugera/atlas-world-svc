@@ -309,7 +309,7 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
     def _assert_only_geo(self, mutations: dict[str, Callable[[dict], None]], rule: str) -> None:
         with self._mutated_files(mutations) as studio_dir:
             errors = validate_studio_directory(studio_dir)
-        geo = [e for e in errors if "GEO-0" in e]
+        geo = [e for e in errors if "GEO-" in e]
         self.assertTrue(geo, f"Expected {rule} error, got: {errors}")
         self.assertTrue(all(f"{rule} violation" in e for e in geo), f"Expected only {rule}: {geo}")
 
@@ -378,6 +378,36 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             d["geography"]["weather"][0]["feel"] = "White frost coats the stones."
 
         self._assert_only_geo({self.D01.format("district-kilnfire-terraces"): frosty}, "GEO-08")
+
+    # ---- F-235 GEO-09 / GEO-10 -------------------------------------------------
+
+    def test_geo09_rejects_unlisted_cross_district_portal(self) -> None:
+        self._assert_only_geo({self.C01: lambda d: d["legacy_portals"].pop(0)}, "GEO-09")
+
+    def test_geo09_rejects_legacy_portal_that_no_longer_exists(self) -> None:
+        def stale(d: dict) -> None:
+            d["legacy_portals"].append(
+                {"from_node_id": "town-kilnwatch-bastion", "to_node_id": "town-lantern-hollow",
+                 "district_pair": ["district-kilnfire-terraces", "district-teacup-meadows"],
+                 "ruling": "remove", "reason": "fixture"}
+            )
+
+        self._assert_only_geo({self.C01: stale}, "GEO-09")
+
+    def test_geo10_rejects_link_without_priority(self) -> None:
+        self._assert_only_geo({self.C01: self._links(lambda ls: ls[0].pop("priority"))}, "GEO-10")
+
+    def test_geo10_rejects_district_without_main_band(self) -> None:
+        self._assert_only_geo(
+            {self.D01.format("district-ash-bellows-trench"): lambda d: d["geography"]["encounter_bands"].pop("main")},
+            "GEO-10",
+        )
+
+    def test_geo10_rejects_home_district_without_starter_band(self) -> None:
+        def no_starter(d: dict) -> None:
+            d["geography"]["encounter_bands"]["starter"] = "safe"
+
+        self._assert_only_geo({self.D01.format("district-teacup-meadows"): no_starter}, "GEO-10")
 
     def test_build_runtime_manifest_excludes_mystery_and_includes_fog_of_lore(self) -> None:
         manifest = build_runtime_manifest(DEFAULT_STUDIO_DIR)
