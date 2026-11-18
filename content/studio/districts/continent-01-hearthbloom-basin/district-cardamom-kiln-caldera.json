@@ -26,6 +26,38 @@
     "visual_silhouette": "Dome-shaped cardamom drying kilns and terraced porcelain glaze-basins rising beyond the eastern rim of Ginger-Steam Terraces.",
     "unanswered_question": "Which Primordial Kiln-Artisan carved the central spice-glaze crucible of Cardamom-Kiln Caldera?"
   },
+  "geography": {
+    "terrain_group": "Old Wilds",
+    "map_position": {
+      "x": 30,
+      "y": 18
+    },
+    "elevation_band": 3,
+    "biome": "A cool, wet caldera on the north rim, with warm mineral springs inside tiered drying kilns and green-grey rock above.",
+    "climate": {
+      "temperature": "cool",
+      "moisture": "wet"
+    },
+    "weather": [
+      {
+        "name": "Caldera cloud",
+        "when": "dusk",
+        "feel": "Cloud fills the bowl from the springs and sits level with the rim."
+      },
+      {
+        "name": "Evening spring mist",
+        "when": "evening",
+        "feel": "Amber-lit mist hangs on the glaze basins and carries a cardamom smell."
+      }
+    ],
+    "water": "Warm mineral springs fill the central glaze basins and spill south over the rim, feeding the brook near Cinnamon-Bellows Bluff.",
+    "far_landmark": "Dome-shaped drying kilns glowing amber on the caldera rim, seen north from Cinnamon-Bellows Bluff.",
+    "discovery_hooks": [
+      "A cracked drying dome with a ring of spent cardamom pods inside.",
+      "A rope-and-plank shortcut over a spillway that saves several minutes on the Star-Anise Trail."
+    ],
+    "status": "proposed"
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

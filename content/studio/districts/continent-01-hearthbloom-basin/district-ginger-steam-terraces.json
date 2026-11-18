@@ -114,6 +114,38 @@
     "visual_silhouette": "Stepped golden-ochre travertine pools and glazed ceramic steam-chimneys rising toward Cardamom-Cloud Overlook.",
     "unanswered_question": "Which ancient Kiln-Master sealed the master pressure-valve beneath Cardamom-Cloud Overlook?"
   },
+  "geography": {
+    "terrain_group": "Old Wilds",
+    "map_position": {
+      "x": 30,
+      "y": 62
+    },
+    "elevation_band": 2,
+    "biome": "Stepped golden-ochre travertine pools with wild ginger and glazed steam-chimneys, mild and wet on a west-facing slope.",
+    "climate": {
+      "temperature": "mild",
+      "moisture": "wet"
+    },
+    "weather": [
+      {
+        "name": "Steam banks",
+        "when": "dawn",
+        "feel": "Low clouds of vent steam sit on the lower terraces and drift upward as the air warms."
+      },
+      {
+        "name": "Warm mineral rain",
+        "when": "after rain",
+        "feel": "Rain picks up ochre minerals and leaves orange rings on the stone."
+      }
+    ],
+    "water": "Hot mineral springs fill the travertine pools and overflow downhill from pool to pool; the run-off leaves south-east down the Travertine Run Steps to the Glaze-River Delta.",
+    "far_landmark": "Pale steam columns above the western tree line, with paper lanterns drifting over them, seen west from Teacup Meadows.",
+    "discovery_hooks": [
+      "A travertine pool far from any path that is exactly bath temperature.",
+      "A glazed chimney that whistles only when the wind comes from the north."
+    ],
+    "status": "proposed"
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

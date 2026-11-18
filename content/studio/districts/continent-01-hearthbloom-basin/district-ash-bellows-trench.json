@@ -120,6 +120,38 @@
     "visual_silhouette": "Glazed terracotta intake arches disappearing into a warm, glowing trench along the southeastern shield rim.",
     "unanswered_question": "What ancient kiln-blueprint lies sealed inside Sola's primary draft chamber at the bottom of Ash-Bellows Trench?"
   },
+  "geography": {
+    "terrain_group": "Stone Highlands",
+    "map_position": {
+      "x": 75,
+      "y": 65
+    },
+    "elevation_band": 2,
+    "biome": "A warm, dry firebrick trench on the southeast rim, with glazed intake arches and ash-grey slopes.",
+    "climate": {
+      "temperature": "warm",
+      "moisture": "dry"
+    },
+    "weather": [
+      {
+        "name": "Trench heat",
+        "when": "midday",
+        "feel": "Hot still air collects at the bottom and makes the intake arches shimmer."
+      },
+      {
+        "name": "Bellows draft",
+        "when": "night, when the bellows draw",
+        "feel": "A steady cool breath flows into the intake tunnels, loud enough to hum."
+      }
+    ],
+    "water": "No surface water: the only damp is condensation on the firebrick intake ducts, which stay cool inside even when the trench is hot.",
+    "far_landmark": "Three plumes of warm exhaust rising from the trench vents, seen north-east from Saffron Kiln Orchards.",
+    "discovery_hooks": [
+      "A duct opening that blows a cool breeze all day, popular with travellers resting at noon.",
+      "A signal bell on the pass road, rung by hand to tell Daro Post a convoy is coming."
+    ],
+    "status": "proposed"
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

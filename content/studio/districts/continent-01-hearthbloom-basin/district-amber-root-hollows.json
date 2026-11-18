@@ -114,6 +114,38 @@
     "visual_silhouette": "Cathedral-like arches of glowing amber tree-roots framing the eastern brick viaduct piers.",
     "unanswered_question": "What ancient sky-trellis lies beyond the Banyan Canopy Spur above Amber-Root Hollows?"
   },
+  "geography": {
+    "terrain_group": "Stone Highlands",
+    "map_position": {
+      "x": 78,
+      "y": 40
+    },
+    "elevation_band": 2,
+    "biome": "Dense banyan roots over damp stone with amber sap pillars, mild and wet in the root shade on the eastern rim.",
+    "climate": {
+      "temperature": "mild",
+      "moisture": "wet"
+    },
+    "weather": [
+      {
+        "name": "Canopy drizzle",
+        "when": "after rain",
+        "feel": "Water keeps dripping from the roots for an hour after the sky has cleared."
+      },
+      {
+        "name": "Tunnel breath",
+        "when": "midday",
+        "feel": "Warm damp air pushes out of the tunnel mouths and fogs lantern glass."
+      }
+    ],
+    "water": "Seep streams run out of the root mass and drip into amber-coloured pools, then drain west along the trail toward the Teacup Meadows creeks.",
+    "far_landmark": "Arches of amber root-glow where the viaduct piers meet the sky, seen east from Teacup Meadows.",
+    "discovery_hooks": [
+      "A resin pillar with a hand-sized hollow where travellers leave coins.",
+      "A root bridge over a seep stream, shorter than the road but with no handrail."
+    ],
+    "status": "proposed"
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

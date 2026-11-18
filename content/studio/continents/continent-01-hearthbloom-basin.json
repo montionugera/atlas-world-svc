@@ -86,5 +86,228 @@
     "visual_silhouette": "Dome-shaped cardamom drying kilns and terraced porcelain glaze-basins rising beyond the eastern rim of Ginger-Steam Terraces.",
     "unanswered_question": "Which Primordial Kiln-Artisan carved the central spice-glaze crucible of Cardamom-Kiln Caldera?",
     "discovery_trigger_hint": "Ten Districts on Continent 01 are Canon while Cardamom-Kiln Caldera awaits exploration along the eastern geothermal rim."
-  }
+  },
+  "district_links": [
+    {
+      "id": "link-teacup-meadows--porcelain-cradle",
+      "a": "district-teacup-meadows",
+      "b": "district-porcelain-cradle",
+      "gateway": {
+        "type": "road",
+        "name": "Celadon Causeway Road"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 10,
+      "transition": "The clover gives way to pale clay and the creek warms slightly; the road climbs a little as white domes appear above the rim.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-teacup-meadows--kilnfire-terraces",
+      "a": "district-teacup-meadows",
+      "b": "district-kilnfire-terraces",
+      "gateway": {
+        "type": "stairs",
+        "name": "Cinder Apron Steps"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 15,
+      "transition": "Brick steps climb from warm clover into cooler, drier air, and the creek sounds drop away behind you as kiln updrafts begin.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-teacup-meadows--saffron-kiln-orchards",
+      "a": "district-teacup-meadows",
+      "b": "district-saffron-kiln-orchards",
+      "gateway": {
+        "type": "road",
+        "name": "Apricot Aqueduct Road"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 18,
+      "transition": "The road runs south beside the sluice channels, and the air gets drier and warmer as clover turns into saffron rows.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-teacup-meadows--ginger-steam-terraces",
+      "a": "district-teacup-meadows",
+      "b": "district-ginger-steam-terraces",
+      "gateway": {
+        "type": "bridge",
+        "name": "Ginger Aqueduct Bridge"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 13,
+      "transition": "A bridge crosses the warm creek, and the road climbs west into steam from the mineral pools.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-teacup-meadows--amber-root-hollows",
+      "a": "district-teacup-meadows",
+      "b": "district-amber-root-hollows",
+      "gateway": {
+        "type": "road",
+        "name": "Kiln East Orchard Trail"
+      },
+      "route_type": "wilderness_trail",
+      "walk_minutes": 22,
+      "transition": "The trail leaves the orchard east of Lantern Hollow and enters damp shade as the first banyan roots cross the path.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-saffron-kiln-orchards--glaze-river-delta",
+      "a": "district-saffron-kiln-orchards",
+      "b": "district-glaze-river-delta",
+      "gateway": {
+        "type": "ford",
+        "name": "Cobalt Sandbar Ford"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 12,
+      "transition": "The terraces end at the aqueduct spill, and the ford leads down into wet warm channels and fog.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-saffron-kiln-orchards--ash-bellows-trench",
+      "a": "district-saffron-kiln-orchards",
+      "b": "district-ash-bellows-trench",
+      "gateway": {
+        "type": "pass",
+        "name": "Honeycomb Ridge Pass"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 14,
+      "transition": "A pass over the dry ridge, with the orchards behind you and the trench ahead showing grey ash slopes.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-ash-bellows-trench--amber-root-hollows",
+      "a": "district-ash-bellows-trench",
+      "b": "district-amber-root-hollows",
+      "gateway": {
+        "type": "tunnel",
+        "name": "Resin-Arch Tunnel"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 15,
+      "transition": "A firebrick tunnel leads from the dry trench into a wetter place where the walls turn from ash to resin and roots.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-amber-root-hollows--kilnfire-terraces",
+      "a": "district-amber-root-hollows",
+      "b": "district-kilnfire-terraces",
+      "gateway": {
+        "type": "road",
+        "name": "Slag Chasm Road"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 16,
+      "transition": "The road climbs from damp root shade into dry stone, and the air becomes cooler and windier.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-porcelain-cradle--kilnfire-terraces",
+      "a": "district-porcelain-cradle",
+      "b": "district-kilnfire-terraces",
+      "gateway": {
+        "type": "stairs",
+        "name": "Lotus Rim Stairs"
+      },
+      "route_type": "ancient_route",
+      "walk_minutes": 14,
+      "transition": "An old stair climbs from the lake rim to the kiln terraces, and the white clay turns to dry stone as the air cools.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-porcelain-cradle--ginger-steam-terraces",
+      "a": "district-porcelain-cradle",
+      "b": "district-ginger-steam-terraces",
+      "gateway": {
+        "type": "bridge",
+        "name": "Steam-Creek Footbridge"
+      },
+      "route_type": "wilderness_trail",
+      "walk_minutes": 12,
+      "transition": "A footbridge crosses a warm creek on a rough path, and steam from the Ginger terraces appears in the trees to the south-west.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-ginger-steam-terraces--cinnamon-bellows-bluff",
+      "a": "district-ginger-steam-terraces",
+      "b": "district-cinnamon-bellows-bluff",
+      "gateway": {
+        "type": "road",
+        "name": "Cinnamon-Bark Road"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 12,
+      "transition": "The road leaves the steam and climbs to a cooler bluff, where cinnamon bark windbreaks replace the ginger fields.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-ginger-steam-terraces--glaze-river-delta",
+      "a": "district-ginger-steam-terraces",
+      "b": "district-glaze-river-delta",
+      "gateway": {
+        "type": "stairs",
+        "name": "Travertine Run Steps"
+      },
+      "route_type": "wilderness_trail",
+      "walk_minutes": 24,
+      "transition": "Steps follow the warm run-off from the travertine pools down to the delta, ending in fog and braided channels.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-cinnamon-bellows-bluff--terracotta-wind-chimes",
+      "a": "district-cinnamon-bellows-bluff",
+      "b": "district-terracotta-wind-chimes",
+      "gateway": {
+        "type": "pass",
+        "name": "Chime-Pipe Pass"
+      },
+      "route_type": "main_road",
+      "walk_minutes": 20,
+      "transition": "The pass climbs bare ground into cold, dry wind, and the first ceramic pipes can be heard well before the arches are seen.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-cinnamon-bellows-bluff--cardamom-kiln-caldera",
+      "a": "district-cinnamon-bellows-bluff",
+      "b": "district-cardamom-kiln-caldera",
+      "gateway": {
+        "type": "road",
+        "name": "Star-Anise Trail"
+      },
+      "route_type": "wilderness_trail",
+      "walk_minutes": 15,
+      "transition": "A trail climbs north from the cool bluff into wetter air, ending at the caldera rim with warm mist below.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-cardamom-kiln-caldera--terracotta-wind-chimes",
+      "a": "district-cardamom-kiln-caldera",
+      "b": "district-terracotta-wind-chimes",
+      "gateway": {
+        "type": "tunnel",
+        "name": "Resonator Tunnel"
+      },
+      "route_type": "ancient_route",
+      "walk_minutes": 18,
+      "transition": "An old tunnel runs from the wet caldera under the ridge, and you leave the mist for bare, cold, dry wind at the far end.",
+      "status": "proposed"
+    },
+    {
+      "id": "link-cardamom-kiln-caldera--kilnfire-terraces",
+      "a": "district-cardamom-kiln-caldera",
+      "b": "district-kilnfire-terraces",
+      "gateway": {
+        "type": "bridge",
+        "name": "Cardamom Rim Bridge"
+      },
+      "route_type": "ancient_route",
+      "walk_minutes": 20,
+      "transition": "An old bridge crosses a gap between the caldera and the kiln terraces; the mist stays behind you and the stone gets drier.",
+      "status": "proposed"
+    }
+  ]
 }

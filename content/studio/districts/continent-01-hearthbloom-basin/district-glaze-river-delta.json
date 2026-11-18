@@ -117,6 +117,38 @@
     "visual_silhouette": "Braided warm-water channels winding between shimmering cobalt-glazed sandbars and giant terracotta waterwheels.",
     "unanswered_question": "What ancient kiln-barge lighthouse anchors the outer mouth of Kiln-Lighthouse Spit?"
   },
+  "geography": {
+    "terrain_group": "Green Lowlands",
+    "map_position": {
+      "x": 45,
+      "y": 85
+    },
+    "elevation_band": 0,
+    "biome": "Flat braided channels and cobalt-and-gold sandbars at the lowest point of the basin, warm and wet all year.",
+    "climate": {
+      "temperature": "warm",
+      "moisture": "wet"
+    },
+    "weather": [
+      {
+        "name": "Delta fog",
+        "when": "dawn",
+        "feel": "Warm fog sits on the channels and hides the sandbars until mid-morning."
+      },
+      {
+        "name": "Warm squall",
+        "when": "late afternoon",
+        "feel": "A short wet gust crosses the channels and rattles the waterwheels, then clears."
+      }
+    ],
+    "water": "The lowest water on the continent: the Saffron aqueduct runoff and the Ginger-Steam run-off spread into braided warm channels that reach open water at Kiln-Lighthouse Spit.",
+    "far_landmark": "A cobalt-blue light on Kiln-Lighthouse Spit, visible from the Saffron Kiln Orchards terraces on clear nights.",
+    "discovery_hooks": [
+      "A sunken potter-barge stuck on a sandbar with its kiln still holding heat.",
+      "A footpath of flat cobalt tiles that only shows at low water between two channels."
+    ],
+    "status": "proposed"
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

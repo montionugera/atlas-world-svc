@@ -142,6 +142,38 @@
       "lock_reason": "The western teapot-sluice bridge is shrouded in silver steam-fog; Lantern-Keepers forbid crossing until the Great Kiln is relit."
     }
   ],
+  "geography": {
+    "terrain_group": "Green Lowlands",
+    "map_position": {
+      "x": 50,
+      "y": 50
+    },
+    "elevation_band": 1,
+    "biome": "Short clover pasture in a sheltered bowl, cut by warm creeks and brick sluices, with the Lantern Hollow roofs in the middle.",
+    "climate": {
+      "temperature": "mild",
+      "moisture": "moderate"
+    },
+    "weather": [
+      {
+        "name": "Ember-pollen drift",
+        "when": "afternoon, on a light breeze",
+        "feel": "Orange flecks float over the clover and settle on bakery roofs, warm but harmless."
+      },
+      {
+        "name": "Warm clover rain",
+        "when": "after midday clouds build",
+        "feel": "Short soft showers that steam off the sluice bricks and stop within minutes."
+      }
+    ],
+    "water": "Warm thermal creeks run through brick sluices into the bakeries, then leave south in channels toward the Saffron Kiln Orchards aqueducts.",
+    "far_landmark": "A thin column of bakery smoke above Lantern Hollow, visible from the lower roads of every neighbouring district.",
+    "discovery_hooks": [
+      "A leaning waterwheel on the east creek that still turns with no mill attached.",
+      "A row of teacups half-buried in the clover on the road to Porcelain Cradle, each one holding a different pebble."
+    ],
+    "status": "proposed"
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

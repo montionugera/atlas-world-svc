@@ -89,6 +89,44 @@
       "lock_reason": "Superheated porcelain glaze-steam billows from the northern Slag Chasm; the Guild of Potters has sealed the bridge until the Great Damper is cooled."
     }
   ],
+  "geography": {
+    "terrain_group": "Stone Highlands",
+    "map_position": {
+      "x": 55,
+      "y": 28
+    },
+    "elevation_band": 3,
+    "biome": "Dry stone terraces on the upper shield rim, with giant kilns venting warm updrafts into cool air.",
+    "climate": {
+      "temperature": "cool",
+      "moisture": "dry"
+    },
+    "weather": [
+      {
+        "name": "Updraft gusts",
+        "when": "windy days",
+        "feel": "Warm air blasts up from the kiln vents while the air between them stays cool."
+      },
+      {
+        "name": "Cinder fall",
+        "when": "dusk, when the kilns are fired",
+        "feel": "Grey flecks drift down onto the steps like slow snow."
+      },
+      {
+        "name": "Thin morning chill",
+        "when": "dawn",
+        "feel": "Clear, cold, dry air with the rim stone too cold to sit on."
+      }
+    ],
+    "water": "No streams: rain is caught in cistern basins cut into the terrace stairs and the overflow runs down the Cinder Apron Steps toward Teacup Meadows.",
+    "far_landmark": "A stepped line of kiln vents with an orange glow above it, the highest lit rim north of Teacup Meadows.",
+    "discovery_hooks": [
+      "A cistern cut so deep that its bottom step is still warm.",
+      "A bench on the north terrace facing the caldera bridge, worn smooth by watchers.",
+      "A cracked kiln door left open, with fresh glaze samples still lined up inside."
+    ],
+    "status": "proposed"
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
