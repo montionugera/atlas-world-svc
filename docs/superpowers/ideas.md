@@ -39,3 +39,6 @@ F-174 backlog (2026-11-06): NotifyHit only fires for hits the local player deals
 - F-230 re-review (MEDIUM): M5 View 5 sightline sits at exactly 40% (limit `<= 0.4`) because the arch target box (y 46-82) reaches into solid masonry above the arch crown; shrink the box top to about y 62 (`MaroBellVerify.cs` ~1594). LOW: mesh walk ignores MultiMeshInstance3D/CSG occluders (~1617-1630).
 - F-233 follow-up: quality_checklist "evidence" lines in continent-01 districts carry stale compass/neighbour claims (e.g. saffron "connects west to Carillon Hearth Belfry"); regenerate or drop them.
 - F-235 follow-up (review MEDIUM/LOW): GEO-09 accepts a one-way portal for a bidirectional route; transport_links ends/mode are not validated; non-home starter band values are free text; the continent-02 gate portal is "disabled" only in prose.
+- F-236 follow-up: build `hunting-area-lotus-kiln-rim` as the Porcelain Cradle <-> Kilnwatch route ("Lotus Rim Stairs", link still P0).
+- F-236 follow-up: re-author the old mainline chain in `world_history_and_concept.json` (GOV-01/GOV-09) so the `remove`-ruled legacy portals can actually be deleted.
+- F-236 follow-up: `level_band_label` reads "Levels 1 to 20" on districts whose `level_range` is [1,15]; generate it or drop it.
