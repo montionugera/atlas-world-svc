@@ -93,7 +93,7 @@ a `district_links` entry with `priority: "built"` must have at least one open no
 two districts. (Today `built` is only a label; this makes R1 checkable and stops a link being marked built with no way through.)
 The test must fail when one of the new portals is removed from a fixture.
 
-## Acceptance
+## Acceptance criteria
 
 1. From `town-lantern-hollow` there is an open-portal path to `town-porcelain-loom-sanctuary` and to
    `town-kilnwatch-bastion`, and from `town-porcelain-loom-sanctuary` to `town-kilnwatch-bastion`, using only nodes in
