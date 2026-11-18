@@ -553,6 +553,7 @@ pipeline_char_section() {
 }
 
 map_builder_tests() { ( cd "$REPO_ROOT" && node --test --test-concurrency="$ATLAS_MAX_WORKERS" atelier/map-builder/tests/*.test.mjs ) }
+env_cam_parity_tests() { ( cd "$REPO_ROOT" && node --test scripts/tests/env-cam-parity.test.mjs ) }
 
 # F-156: atlas explorer probes (scripts/probes/). atlas_ux_probe.py is pure Python (no server, no browser);
 # atlas_zoom_drift_check.mjs and atlas_phone_touch_audit.mjs drive headless Chrome against a throwaway
@@ -682,6 +683,7 @@ GROUP_node=(
   "system deps: binary check (scripts/system-deps.json)|system_deps_check"
   "art-forge: node --test suite|art_forge_tests"
   "map-builder: node --test suite|map_builder_tests"
+  "env camera parity (F-232)|env_cam_parity_tests"
   "combat-lab: model gates|combat_lab"
   "content: spine gates (--only=spine)|content_spine"
   "world digest (G-WORLD-DIGEST)|world_digest"
@@ -707,6 +709,7 @@ SERIAL_PLAN=(
   "art-forge: node --test suite|art_forge_tests"
   "atlas-world-panels: node --test suite|storybook_tests"
   "map-builder: node --test suite|map_builder_tests"
+  "env camera parity (F-232)|env_cam_parity_tests"
   "atlas web: node --test suite|atlas_web_tests"
   "atlas explorer: UX + touch probes (F-156)|explorer_probes"
   "combat-lab: model gates|combat_lab"

@@ -77,6 +77,11 @@ if [ -n "$DIRECT_MJS" ]; then
   run_step "node --test (touched test files)" node --test $DIRECT_MJS
 fi
 
+# 4b. Environment camera parity gate (<50ms) whenever world verify/pregate C# changes
+if grep -qE '^game-client/src/World/.*\.cs$' <<<"$CHANGED" && [ -f "$REPO_ROOT/scripts/tests/env-cam-parity.test.mjs" ]; then
+  run_step "env camera parity gate (F-232)" node --test "$REPO_ROOT/scripts/tests/env-cam-parity.test.mjs"
+fi
+
 # 5. Content spine / digest quick check (~1s)
 if grep -qE '^content/' <<<"$CHANGED"; then
   run_step "content: spine & world digest" bash -c "node '$REPO_ROOT/scripts/check_content.mjs' --only=spine && node '$REPO_ROOT/scripts/check_world_digest.mjs' --check"
