@@ -539,7 +539,8 @@
           "age": 60,
           "want": "keep every family lantern burning",
           "secret": "one old lantern carries an unexplained, very fine repair",
-          "voice": "A lantern doesn't need to shine forever. Just long enough to help someone home."
+          "voice": "A lantern doesn't need to shine forever. Just long enough to help someone home.",
+          "status": "canon"
         },
         {
           "name": "Pip",
@@ -558,7 +559,8 @@
           "age": 46,
           "want": "keep the bell schedule exact",
           "secret": "has heard the bell ring before anyone touched it",
-          "voice": "A bell cannot ring thirteen times in twelve hours. Check again."
+          "voice": "A bell cannot ring thirteen times in twelve hours. Check again.",
+          "status": "canon"
         },
         {
           "name": "Amber",
@@ -567,7 +569,8 @@
           "age": 34,
           "want": "save Daymarks to expand her shop",
           "secret": "oil vanishes from sealed jars",
-          "voice": "Good oil, fair price. No refunds for ghosts!"
+          "voice": "Good oil, fair price. No refunds for ghosts!",
+          "status": "canon"
         },
         {
           "name": "Reed",
@@ -576,7 +579,8 @@
           "age": 38,
           "want": "keep the valley road safe",
           "secret": "has logged travellers arriving before they departed",
-          "voice": "Road's open. Mind the loose stones."
+          "voice": "Road's open. Mind the loose stones.",
+          "status": "canon"
         },
         {
           "name": "Tovin",
@@ -585,7 +589,8 @@
           "age": 65,
           "want": "preserve the town's oldest records",
           "secret": "knows one lantern's repair predates its recorded owner",
-          "voice": "Old things remember more than we do."
+          "voice": "Old things remember more than we do.",
+          "status": "canon"
         }
       ],
       "ondo_kiln": [
