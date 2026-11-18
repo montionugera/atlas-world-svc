@@ -270,11 +270,13 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 ].__setitem__(
                     "East", None
                 ),
+                # F-236: Kilnwatch now also reaches the orchard through Celadon; cut every door into the orchard.
                 "nodes/continent-01-hearthbloom-basin/district-teacup-meadows/hunting-area-kiln-east-orchard.json": lambda d: d[
                     "portals"
-                ].__setitem__(
-                    "West", None
-                ),
+                ].update({"West": None, "East": None}),
+                "nodes/continent-01-hearthbloom-basin/district-kilnfire-terraces/town-kilnwatch-bastion.json": lambda d: d[
+                    "portals"
+                ].__setitem__("West", None),
             }
         ) as studio_dir:
             errors = validate_studio_directory(studio_dir)

@@ -16,8 +16,8 @@
   ],
   "floor_index": 0,
   "level_range": [
-    11,
-    14
+    1,
+    5
   ],
   "terrain_tile": {
     "preview_thumbnail": "/thumbs/buildings/tower_round_roof_a.webp",

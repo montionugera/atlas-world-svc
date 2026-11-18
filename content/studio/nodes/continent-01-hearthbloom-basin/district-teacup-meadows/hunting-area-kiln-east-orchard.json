@@ -15,7 +15,7 @@
     1
   ],
   "level_range": [
-    6,
+    10,
     15
   ],
   "terrain_tile": {
@@ -77,7 +77,38 @@
       "monster_name": "Cracked Teapot-Walker",
       "spawn_count": 8,
       "respawn_seconds": 10.0,
-      "level": 9,
+      "level": 10,
+      "element": "Earth",
+      "size": "Medium",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-porcelain-shard",
+          "item_name": "Porcelain Spout Shard",
+          "drop_chance_percent": 50.0
+        },
+        {
+          "item_id": "item-chamomile-leaf",
+          "item_name": "Steeped Chamomile Leaf",
+          "drop_chance_percent": 22.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-teapot-walker",
+        "card_name": "Cracked Teapot-Walker Card",
+        "drop_chance_percent": 0.02,
+        "equipment_slot": "Armor",
+        "modifier_summary": "Vitality +2, Health Recovery +10%"
+      }
+    },
+    {
+      "spawn_id": "spawn-orchard-teapot-walker-b",
+      "monster_id": "mob-teapot-walker",
+      "monster_name": "Cracked Teapot-Walker",
+      "spawn_count": 8,
+      "respawn_seconds": 10.0,
+      "level": 13,
       "element": "Earth",
       "size": "Medium",
       "race": "Formless",

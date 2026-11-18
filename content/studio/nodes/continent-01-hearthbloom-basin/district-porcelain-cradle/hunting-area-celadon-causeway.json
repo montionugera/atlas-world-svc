@@ -16,8 +16,8 @@
   ],
   "floor_index": 0,
   "level_range": [
-    10,
-    12
+    1,
+    10
   ],
   "terrain_tile": {
     "preview_thumbnail": "/thumbs/nature/rock_tall_a.webp",
@@ -31,7 +31,24 @@
   },
   "portals": {
     "North": null,
-    "South": null,
+    "South": {
+      "portal_id": "portal-celadon-causeway-south-lantern",
+      "direction": "South",
+      "target_node_id": "town-lantern-hollow",
+      "target_map_id": "lantern-hollow",
+      "target_direction": "North",
+      "gate_state": "open",
+      "trigger_box_meters": {
+        "x": 200.0,
+        "y": 384.0,
+        "width": 2.4,
+        "height": 1.2
+      },
+      "arrival_point_meters": {
+        "x": 200.0,
+        "y": 380.0
+      }
+    },
     "East": {
       "portal_id": "portal-celadon-causeway-east-sanctuary",
       "direction": "East",
@@ -79,7 +96,7 @@
       "monster_name": "Celadon Ripple-Sprite",
       "spawn_count": 12,
       "respawn_seconds": 20,
-      "level": 10,
+      "level": 2,
       "element": "Water",
       "size": "Small",
       "race": "Formless",
@@ -105,7 +122,33 @@
       "monster_name": "Porcelain Chime-Doll",
       "spawn_count": 10,
       "respawn_seconds": 25,
-      "level": 12,
+      "level": 5,
+      "element": "Earth",
+      "size": "Small",
+      "race": "Formless",
+      "family": "construct",
+      "item_drops": [
+        {
+          "item_id": "item-resonant-porcelain-petal",
+          "item_name": "Resonant Porcelain-Petal",
+          "drop_chance_percent": 42.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-porcelain-chime-doll",
+        "card_name": "Porcelain Chime-Doll Card",
+        "drop_chance_percent": 0.05,
+        "equipment_slot": "Accessory",
+        "modifier_summary": "Adds +5 Magic Defense and 3% cast-time reduction."
+      }
+    },
+    {
+      "spawn_id": "spawn-celadon-causeway-chime-b",
+      "monster_id": "monster-porcelain-chime-doll",
+      "monster_name": "Porcelain Chime-Doll",
+      "spawn_count": 10,
+      "respawn_seconds": 25,
+      "level": 8,
       "element": "Earth",
       "size": "Small",
       "race": "Formless",

@@ -62,7 +62,7 @@
         1
       ],
       "level_range": [
-        6,
+        10,
         15
       ],
       "is_starter_town": false
@@ -78,8 +78,8 @@
       ],
       "floor_index": -1,
       "level_range": [
-        10,
-        18
+        13,
+        15
       ],
       "is_starter_town": false
     },
@@ -189,7 +189,7 @@
       ],
       "identity": "Maro prologue, Ch 0 core",
       "chapter": "0",
-      "status": "proposed",
+      "status": "applied",
       "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
     }
   },

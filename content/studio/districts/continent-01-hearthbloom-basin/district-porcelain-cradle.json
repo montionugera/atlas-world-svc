@@ -8,7 +8,7 @@
   "local_conflict": "Luminous glaze-sprites and ancient kiln-wardens guard the inner sanctuary where Hearth-Sparks first condense.",
   "level_band_label": "Levels 1 to 20",
   "level_range": [
-    10,
+    1,
     15
   ],
   "ecological_monster_families": [
@@ -31,8 +31,8 @@
       ],
       "floor_index": 0,
       "level_range": [
-        10,
-        12
+        1,
+        10
       ],
       "is_starter_town": false
     },
@@ -47,8 +47,8 @@
       ],
       "floor_index": 0,
       "level_range": [
-        11,
-        14
+        1,
+        5
       ],
       "is_starter_town": false
     },
@@ -156,7 +156,7 @@
       ],
       "identity": "Linde prologue, gentle Ch 0 farming",
       "chapter": "0",
-      "status": "proposed",
+      "status": "applied",
       "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
     }
   },
