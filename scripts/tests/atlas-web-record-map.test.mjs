@@ -84,6 +84,10 @@ test("danger edges carry a text mark and the legend explains it; continent edges
     edges: [{ a: "a", b: "b", state: "closed", danger: false, label: "P1" }],
   });
   assert.ok(cont.includes(">P1</text>") && cont.includes("record-map--plane"));
+  // F-238: routes are built or planned, doors are open or closed
+  assert.ok(cont.includes("Route built, walkable now") && cont.includes("Route planned, not built yet") && cont.includes("P0 build first"));
+  assert.ok(!/>(Open|Closed)</.test(cont));
+  assert.ok(danger.includes("Door open") && danger.includes("Door closed") && !danger.includes("Route built"));
 });
 
 test("the record page draws the map when the payload has one", () => {
