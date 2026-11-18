@@ -98,6 +98,61 @@ Architect: Yara, the Architect (The First Kiln).
 | Reed | รีด | Gatekeeper | 38 | keep the valley road safe | has logged travellers arriving before they departed | Road's open. Mind the loose stones. |
 | Tovin | โทวิน | Shrine and kiln-record keeper | 65 | preserve the town's oldest records | knows one lantern's repair predates its recorded owner | Old things remember more than we do. |
 
+## Towns
+
+| Town | Race | Tagline | Role | Terrain | Status |
+|---|---|---|---|---|---|
+| Maro Bell | maro | City of lantern light and the sound of bells | Valley and lantern community; reason for other races to visit: trade, festivals, rest between journeys | Green Lowlands | proposed |
+| Ondo Kiln | ondo | Town of craftspeople and kilns | Community of craftspeople and construction; others come to learn crafts and trade resources | Stone Highlands | proposed |
+| Linde Glaze | linde | Town of flower gardens and farewells | Community of arts and preservation; others come for crafts and cultural exchange | Green Lowlands | proposed |
+| Daro Post | daro | Fortress town of watchers | Community of checkpoints and escort; others come for transport routes and traveller services | Stone Highlands | proposed |
+| Tava Fair | tava | Town of festivals and laughter | Forest-and-festival-market community; others come for produce exchange and traditions | Old Wilds | proposed |
+| Silme Echo | silme | Town of knowledge and echoes | Community of knowledge and history; others come for study, discovery and research | Old Wilds | proposed |
+| Kilnwatch Bastion |  |  | Shared hub where all six races meet, convergence at Lv 10; trading hub and guild services; NOT necessarily capital; should sit near an important route junction such as the plain/highland boundary, not the continent centre; world is polycentric (several economically significant towns); Ch VII location (Counterfeit Hour in or under the Bastion). |  | proposed |
+
+## Other town casts (proposed)
+
+| Town | Name | Role | Age | Want | Secret |
+|---|---|---|---|---|---|
+| Ondo Kiln | Torren | Heart (blacksmith) |  | Finish a gift (music box in the memorable quest) for his daughter | Never finishes it because he keeps taking others' work; completed parts revert to their earlier state |
+| Ondo Kiln | Mika | Spark (apprentice) + traveller | 23 | Invent tools |  |
+| Ondo Kiln | Hald | Scar (quality inspector) |  |  | Has kept an unfinished hammer of someone important for decades |
+| Linde Glaze | Elin | Heart (flower-shop owner) + traveller | 27 | Help others understand change, love and farewell |  |
+| Linde Glaze | Fenn | Spark (apprentice gardener) |  |  |  |
+| Linde Glaze | Sera | Scar (greenhouse keeper) |  |  | Tied to unchecked growth that Ch IV exposes |
+| Daro Post | Garran | Heart (watch captain) + traveller | 42 | Protect | Remembers the failed watch night differently from Vessa |
+| Daro Post | Rook | Spark (rookie guard) |  | Prove himself |  |
+| Daro Post | Vessa | Scar (watch-log keeper) |  |  | Found one night's log has more hours than it should; her memory of that night differs from Garran's |
+| Tava Fair | Nelli | Heart (sweets-shop owner) |  |  | Starts forgetting her own important days |
+| Tava Fair | Kiko | Spark (street performer) + traveller | 21 | Make people laugh / mini-games | Hides difficult feelings behind humour |
+| Tava Fair | Lasse | Scar (memory-keeper, festival recorder) |  |  | Finds drawings of people in her notebook that she does not recognise |
+| Silme Echo | Oren | Heart (librarian) |  |  |  |
+| Silme Echo | Isil | Spark (trainee explorer) + traveller | 20 | Write a compendium of wonders; uncover the world's history | Strange echo in the library speaking of events that have not happened |
+| Silme Echo | Sarn | Scar (archive keeper) |  |  | Knows some records contradict the taught history; Ch V changes the meaning of her records and of certain birth years |
+
+## World rules
+
+- **world_structure** (chosen): Hybrid World: shared persistent world, open regions, shared hubs, travel network, instanced dungeons/boss encounters; not everything instanced; regions can be managed/loaded separately.
+- **settlement_model** (chosen): Three community tiers: Ancestral Homelands (six), Mixed Settlements (trade towns at crossroads, rivers, ports), Shared Regional Hub (Kilnwatch Bastion).
+- **centres** (proposed): Polycentric world: Kilnwatch Bastion is the adventurers' centre but does not monopolise economy or governance; routes form a network, not all via Kilnwatch.
+- **landmass** (chosen): One main continent with three terrain groups, no hard borders, with transition zones (foothill forest, plain beside cliffs, rivers from mountains to plain). Green Lowlands (Maro Bell, Linde Glaze), Stone Highlands (Ondo Kiln, Daro Post), Old Wilds (Tava Fair, Silme Echo). Six towns must NOT be laid in a ring around Kilnwatch.
+- **world_scale** (chosen): Balanced World / Balanced Exploration: distances give a sense of adventure with villages and points of interest between towns; fast travel unlocked by progress; no kilometre figures until tested on a playable map. Design targets (first walk, no fast travel): town to nearby monster area 2-4 min; to key exploration point 4-8; to field boss 5-10; to neighbouring town 8-15; across several regions 15-30 min; Region 1-4 km2.
+- **travel_tiers** (chosen): Three travel layers: local (walking/mount), regional (main roads, mountain passes, transport), convenience (fast travel to discovered points/hubs, with limits). No fast travel to everywhere at game start. Regional shortcuts unlock via exploration/progress.
+- **route_types** (proposed): Three route personalities: Main Roads (safe, settlements, convoys), Wilderness Trails (shortcuts via forest/foothills, monsters/resources), Ancient Routes (old roads and ruins, secrets). Example: Maro Bell -> Ondo Kiln either main road via a trading community or shorter foothill trail.
+- **streaming** (chosen): Hybrid Seamless Regions: continuous travel inside large regions, transition points between some regions, dungeons as instances; region gateways are natural features (long bridge, pass, tunnel); map structure World > Region > Zone > Point of Interest; Playable / Reserved / Future area states.
+- **great_kiln_effect** (proposed): Great Kilns shape terrain: some valleys have time anomalies; old ruins near trade routes; some areas change with chapter events; some old routes abandoned due to Kiln effects; special areas scattered, not every region magical; revealed gradually.
+- **homeland_vs_chapter** (proposed): A race's homeland is not always the area of the chapter tied to that race (Linde, Daro, Silme homelands need geography of their own; do not force homelands into Nara Reach/Vinya Hollow/Silme Deep).
+- **production_order** (chosen): Initial production: Prologue + Ch 0-II: six homelands at starter scale, Kilnwatch Bastion, main adventure areas of Maro Valley, Ondo Heights, Tava Grove; Ch III-VIII open new regions and expand old ones. Reserved areas protect routes needed later.
+- **chapter_region_order** (chosen): World map order of chapters/regions: Ch 0 Maro Valley > I Ondo Heights (Luma's Still Kiln) > II Tava Grove (Rena's Remembrance Kiln) > III Nara Reach (Nara's Ember Kiln) > IV Vinya Hollow (Vinya's Green Kiln) > V Silme Deep (Olo's Glass Kiln) > VI Tira Ridge (Tira's Sentinel Kiln) > VII Kilnwatch Bastion > VIII The First Kiln. Story order need not equal geographic order; do not lay chapters in a line on the map.
+- **boss_placement** (proposed): Chapter boss site types: Bellkeeper bell/lantern site; Brass Castellan old fort/industrial structure; Jubilant Collector anomalous festival area; Tithe Warden debt/collection place; Unwilting nature outside its cycle; Unborn Witness ancient ruin/memory vault; Sworn Sentinel pass or oath site; Counterfeit Hour inside or beneath the Bastion; First Regulator inner First Kiln. Field/Dungeon/World boss each placed by site logic, not one per zone.
+- **weather_season** (proposed): Only hints: Ch VIII visible wound - districts experience different seasons simultaneously and roads lead to places that no longer exist; Ch I - streets freeze for minutes; no stated climate, weather or season cycle for any town.
+- **volunteers_road** (chosen): Volunteers' Road: route of the first volunteers through the chapter regions; each region has a bell, marker or memorial (not identical in every region). Examples: Maro Valley bell that rings too early; Ondo Heights hammer missing its brass fitting; Vinya Hollow empty stone seat with yearly flowers.
+- **spatial_gap_ids** (proposed): Region-count ambiguity: canon card lists nine geographic entries including Kilnwatch Bastion and The First Kiln, mixing geographic regions, kiln regions and hub locations; distinguish them in the DB.
+- **mixed_settlement_example** (proposed): Example journey: Ondo Kiln (smith sells gear) -> mixed settlement on the road (Tava merchants, Silme explorers, mixed-level adventurers) -> Kilnwatch Bastion (trade, news, events). Not a mandatory quest route.
+- **mixed_race_towns** (proposed): Race home towns are not the only place each race lives: towns hold a majority local race plus craftspeople, traders and travellers from other races; no fixed ratios (Ancestral Homelands / Mixed Settlements / Shared Regional Hub model).
+- **race_not_destiny** (proposed): Player race does not decide destiny or profession: race gives a cultural starting perspective and a suggested hook only; players may pick a different motive; Ondo/Silme players are not forced into smithing/runes.
+- **cross_town_ties** (proposed): Proposed cross-town relationships: Bram-Torren old friends; Pip-Isil pen-pals; Elin-Nelli exchange flowers/sweets yearly; Garran-Vessa shared a watch night with mismatched memories; Sarn-Lasse both keep records and find contradictions.
+
 ## Scar renames
 
 | Town | Role | Retired | New name | Thai | Root |
