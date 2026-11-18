@@ -42,3 +42,4 @@ F-174 backlog (2026-11-06): NotifyHit only fires for hits the local player deals
 - F-236 follow-up: build `hunting-area-lotus-kiln-rim` as the Porcelain Cradle <-> Kilnwatch route ("Lotus Rim Stairs", link still P0).
 - F-236 follow-up: re-author the old mainline chain in `world_history_and_concept.json` (GOV-01/GOV-09) so the `remove`-ruled legacy portals can actually be deleted.
 - F-236 follow-up: `level_band_label` reads "Levels 1 to 20" on districts whose `level_range` is [1,15]; generate it or drop it.
+- F-236 follow-up (do first): Linde Lv 1-10 start has two open legacy portals into Lv 14+ maps (celadon-causeway West, loom-sanctuary East); close or convert them with the mainline-chain rework.

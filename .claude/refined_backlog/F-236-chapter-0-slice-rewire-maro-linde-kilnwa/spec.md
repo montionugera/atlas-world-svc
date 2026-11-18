@@ -141,3 +141,14 @@ Shipped in this feature: R1a, R3, R4, R5. Two items were stopped during the buil
   `content/studio/world_history_and_concept.json` (ogre_orc `farming_area_id`, four spokes,
   `ordered_mainline_node_chain`) runs over that edge and GOV-01 / GOV-09 in `scripts/studio_world_governance.py` fail
   without it. Removing it means re-authoring that chain, which is its own feature. The two `legacy_portals` entries stay. Acceptance 2 is not met.
+
+### Known side effects found in review (not fixed here)
+
+- **Level cliffs next to the new Linde start.** With R2 deferred, `hunting-area-celadon-causeway` (now Lv 1-10) still
+  has an open West portal to `town-draft-kiln-post` (Lv 14-17), and `town-porcelain-loom-sanctuary` (now Lv 1-5) still
+  has an open East portal to `hunting-area-resin-arch-tunnel` (Lv 14-16). A Lv 2 player can walk one map into Lv 14+
+  content. Both are legacy portals already ruled `remove` / `becomes_transport`; they go away with the mainline-chain rework.
+- `level_band_label` is "Levels 1 to 20" on all three districts. It was already different from `level_range` before
+  this feature and nothing reads it, so it was left alone (filed in `docs/superpowers/ideas.md`).
+- The GEO-11 tests mutate the older Kilnwatch pair, not the new Lantern Hollow pair; the reviewer proved by mutation that the rule also catches the new pair.
+- The two `built` links still carry `status: "proposed"`.
