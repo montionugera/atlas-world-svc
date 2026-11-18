@@ -3028,8 +3028,9 @@
     "title": "World structure merge v1: owner decisions, encounter bands, town roles and a portal-vs-route gate (new geography as the core axis)",
     "from_idea": "I-320",
     "created_at": "2026-11-18T13:32:26.799584+00:00",
-    "claimed_by": null,
-    "status": "open",
-    "release_version": null
+    "claimed_by": "claude-a6c35399",
+    "status": "claimed",
+    "release_version": null,
+    "claimed_at": "2026-11-18T13:32:40.313002+00:00"
   }
 ]
