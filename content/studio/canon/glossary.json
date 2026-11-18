@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "source": "docs/superpowers/decisions/2026-11-07-own-vocabulary-glossary.md",
   "premise": {
     "canon": "The gods tried to save tomorrow. The Architect stole it.",
@@ -39,7 +39,25 @@
       "old_name": "Human / Demi-Human",
       "home_town": "Maro Bell",
       "root": "Q már, home",
-      "theme": "The Short Candle: begin what you cannot finish"
+      "theme": "The Short Candle: begin what you cannot finish",
+      "hook": {
+        "motive": "protect",
+        "problem": "Family lantern is fading; protect the person who keeps it lit.",
+        "resolve_chapters": [
+          "0",
+          "VII"
+        ],
+        "keepsake": "old lantern wick",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+      },
+      "prologue": {
+        "time_wound": "a lantern burns through its oil in seconds",
+        "small_job": "deliver lanterns to elderly neighbours (alt: carry lanterns to a merchant's stall, 10-minute opener)",
+        "invitation": "If you want to know why our lanterns keep failing, follow the road to Kilnwatch Bastion - someone there may have an answer.",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:631-634 (Story Structure v1 section 3); write-atlas-storyline.txt:1719 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      }
     },
     {
       "id": "ondo",
@@ -47,7 +65,24 @@
       "old_name": "Dwarf (Tontatta)",
       "home_town": "Ondo Kiln",
       "root": "Q ondo, stone",
-      "theme": "The Things We Leave: make what is loved after you are gone"
+      "theme": "The Things We Leave: make what is loved after you are gone",
+      "hook": {
+        "motive": "debt",
+        "problem": "A craftsperson who helped raise you died before you could repay what you owed.",
+        "resolve_chapters": [
+          "I"
+        ],
+        "keepsake": "brass tool fitting",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+      },
+      "prologue": {
+        "time_wound": "an unfinished tool repeatedly returns to an earlier state",
+        "small_job": "deliver completed tools",
+        "invitation": "You've got steady hands; the Kilnwatch Wardens always have broken things that need fixing, and they'll pay for honest work.",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:635-638 (Story Structure v1 section 3); write-atlas-storyline.txt:1722 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      }
     },
     {
       "id": "linde",
@@ -55,7 +90,24 @@
       "old_name": "Lunar (elf-like)",
       "home_town": "Linde Glaze",
       "root": "Q lindë, song",
-      "theme": "The Endless Farewell: choose to love what you will outlive"
+      "theme": "The Endless Farewell: choose to love what you will outlive",
+      "hook": {
+        "motive": "find",
+        "problem": "Someone you loved departed long ago; search for the last place they were seen.",
+        "resolve_chapters": [
+          "IV"
+        ],
+        "keepsake": "pressed flower",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+      },
+      "prologue": {
+        "time_wound": "a farewell repeats each evening",
+        "small_job": "carry a message between families",
+        "invitation": "Some journeys begin when we're ready to leave; if yours leads beyond our gardens, Kilnwatch Bastion is a good place to start.",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:639-642 (Story Structure v1 section 3); write-atlas-storyline.txt:1724 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      }
     },
     {
       "id": "daro",
@@ -63,7 +115,24 @@
       "old_name": "Ogre / Orc",
       "home_town": "Daro Post",
       "root": "S daro, halt",
-      "theme": "The Unbroken Watch: when does loyalty become a prison?"
+      "theme": "The Unbroken Watch: when does loyalty become a prison?",
+      "hook": {
+        "motive": "revenge / justice",
+        "problem": "Home abandoned during a failed watch; want justice for the people who suffered.",
+        "resolve_chapters": [
+          "III"
+        ],
+        "keepsake": "watch insignia",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+      },
+      "prologue": {
+        "time_wound": "a guard's watch refuses to end",
+        "small_job": "bring supplies to an exhausted patrol",
+        "invitation": "You held your ground when it mattered; if you want to help protect more people, ask for the Wardens at Kilnwatch Bastion.",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:643-646 (Story Structure v1 section 3); write-atlas-storyline.txt:1727 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      }
     },
     {
       "id": "tava",
@@ -71,7 +140,24 @@
       "old_name": "Furral (Mink)",
       "home_town": "Tava Fair",
       "root": "Q tavar, wood / forest (unchecked)",
-      "theme": "The Passing Spark: imperfect remembrance beats silence"
+      "theme": "The Passing Spark: imperfect remembrance beats silence",
+      "hook": {
+        "motive": "remember",
+        "problem": "Closest friend forgot a joyful day you shared; preserve its memory.",
+        "resolve_chapters": [
+          "II"
+        ],
+        "keepsake": "festival ribbon",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+      },
+      "prologue": {
+        "time_wound": "a joyful performance disappears from everyone's memory",
+        "small_job": "help prepare a festival stall",
+        "invitation": "You've survived our festival chaos! Go see Kilnwatch Bastion - there's work, new friends, and probably someone who needs cheering up.",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:647-650 (Story Structure v1 section 3); write-atlas-storyline.txt:1730 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      }
     },
     {
       "id": "silme",
@@ -79,7 +165,24 @@
       "old_name": "Dark-Lunar",
       "home_town": "Silme Echo",
       "root": "Q silmë, starlight (fallback Hise Seers, Q hísë, mist)",
-      "theme": "The Burden of Knowing: truth does not always bring peace"
+      "theme": "The Burden of Knowing: truth does not always bring peace",
+      "hook": {
+        "motive": "truth",
+        "problem": "Inherited a sealed record; want to know why family feared opening it.",
+        "resolve_chapters": [
+          "V"
+        ],
+        "keepsake": "glass record shard",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:250-262 (Part B3 table) and write-atlas-storyline.txt:660-695 (Story Structure v1 section 4)"
+      },
+      "prologue": {
+        "time_wound": "an old warning repeats before its cause can be understood",
+        "small_job": "deliver a sealed record",
+        "invitation": "The records here cannot explain what happened; perhaps the archives at Kilnwatch Bastion contain the missing pieces.",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:651-654 (Story Structure v1 section 3); write-atlas-storyline.txt:1733 (rewrite with no Cala Knight training; owner delegated, ChatGPT wrote, Claudia did not object)"
+      }
     }
   ],
   "gods": [
@@ -154,39 +257,61 @@
   "regions": [
     {
       "name": "Maro Valley",
-      "status": "canon"
+      "status": "canon",
+      "kind": "chapter_region",
+      "chapter": "0",
+      "terrain_group": "Green Lowlands"
     },
     {
       "name": "Ondo Heights",
-      "status": "canon"
+      "status": "canon",
+      "kind": "chapter_region",
+      "chapter": "I",
+      "terrain_group": "Stone Highlands"
     },
     {
       "name": "Tava Grove",
-      "status": "canon"
+      "status": "canon",
+      "kind": "chapter_region",
+      "chapter": "II",
+      "terrain_group": "Old Wilds"
     },
     {
       "name": "Silme Deep",
-      "status": "canon"
+      "status": "canon",
+      "kind": "chapter_region",
+      "chapter": "V",
+      "terrain_group": "Old Wilds"
     },
     {
       "name": "The First Kiln",
-      "status": "canon"
+      "status": "canon",
+      "kind": "kiln_site",
+      "chapter": "VIII"
     },
     {
       "name": "Kilnwatch Bastion",
-      "status": "canon"
+      "status": "canon",
+      "kind": "hub",
+      "chapter": "VII"
     },
     {
       "name": "Nara Reach",
-      "status": "proposed"
+      "status": "proposed",
+      "kind": "chapter_region",
+      "chapter": "III"
     },
     {
       "name": "Vinya Hollow",
-      "status": "proposed"
+      "status": "proposed",
+      "kind": "chapter_region",
+      "chapter": "IV"
     },
     {
       "name": "Tira Ridge",
-      "status": "proposed"
+      "status": "proposed",
+      "kind": "chapter_region",
+      "chapter": "VI"
     }
   ],
   "economy": [
@@ -407,6 +532,198 @@
           "secret": "knows one lantern's repair predates its recorded owner",
           "voice": "Old things remember more than we do."
         }
+      ],
+      "ondo_kiln": [
+        {
+          "name": "Torren",
+          "role": "Heart (blacksmith)",
+          "age": null,
+          "gender": null,
+          "personality": "Quiet, highly skilled senior smith",
+          "want": "Finish a gift (music box in the memorable quest) for his daughter",
+          "secret": "Never finishes it because he keeps taking others' work; completed parts revert to their earlier state",
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1142-1143,1148-1149"
+        },
+        {
+          "name": "Mika",
+          "role": "Spark (apprentice) + traveller",
+          "age": 23,
+          "gender": "F",
+          "personality": "Confident, inventive, slightly chaotic; machines work but for the wrong purpose",
+          "want": "Invent tools",
+          "secret": null,
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1144-1145,1291-1293"
+        },
+        {
+          "name": "Hald",
+          "role": "Scar (quality inspector)",
+          "age": null,
+          "gender": "M",
+          "personality": "Strict; refuses imperfect work",
+          "want": null,
+          "secret": "Has kept an unfinished hammer of someone important for decades",
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1146-1147"
+        }
+      ],
+      "linde_glaze": [
+        {
+          "name": "Elin",
+          "role": "Heart (flower-shop owner) + traveller",
+          "age": 27,
+          "gender": "F",
+          "personality": "Kind, remembers every customer's favourite flowers, arranges bouquets for meetings and farewells; gentle, thoughtful, emotionally mature",
+          "want": "Help others understand change, love and farewell",
+          "secret": null,
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1155-1156,1294-1296"
+        },
+        {
+          "name": "Fenn",
+          "role": "Spark (apprentice gardener)",
+          "age": null,
+          "gender": "M",
+          "personality": "Cheerful; his plants grow misshapen; names the trees and talks to them",
+          "want": null,
+          "secret": null,
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1157-1158"
+        },
+        {
+          "name": "Sera",
+          "role": "Scar (greenhouse keeper)",
+          "age": null,
+          "gender": "F",
+          "personality": "Calm; refuses to let anyone cut flowers in the greenhouse even when some grow to damage their surroundings",
+          "want": null,
+          "secret": "Tied to unchecked growth that Ch IV exposes",
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1159-1160"
+        }
+      ],
+      "daro_post": [
+        {
+          "name": "Garran",
+          "role": "Heart (watch captain) + traveller",
+          "age": 42,
+          "gender": "M",
+          "personality": "Ex-soldier, stern face, cooks for his troops, looks after the town like family; experienced, protective, dependable; mentor who gradually questions the Cala Knights' decisions",
+          "want": "Protect",
+          "secret": "Remembers the failed watch night differently from Vessa",
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1168-1169,1297-1299"
+        },
+        {
+          "name": "Rook",
+          "role": "Spark (rookie guard)",
+          "age": null,
+          "gender": "M",
+          "personality": "Timid but boastful; brags he never sleeps on shift though he often does",
+          "want": "Prove himself",
+          "secret": null,
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1170-1171"
+        },
+        {
+          "name": "Vessa",
+          "role": "Scar (watch-log keeper)",
+          "age": null,
+          "gender": "F",
+          "personality": "Records every event precisely",
+          "want": null,
+          "secret": "Found one night's log has more hours than it should; her memory of that night differs from Garran's",
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1172-1175"
+        }
+      ],
+      "tava_fair": [
+        {
+          "name": "Nelli",
+          "role": "Heart (sweets-shop owner)",
+          "age": null,
+          "gender": "F",
+          "personality": "Cheerful; hands out sweets to children each festival; remembers everyone's important days",
+          "want": null,
+          "secret": "Starts forgetting her own important days",
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1181-1182"
+        },
+        {
+          "name": "Kiko",
+          "role": "Spark (street performer) + traveller",
+          "age": 21,
+          "gender": "M",
+          "personality": "Mischievous, funny, outgoing; changes costume daily; hides difficult feelings behind humour",
+          "want": "Make people laugh / mini-games",
+          "secret": "Hides difficult feelings behind humour",
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1183-1184,1300-1302"
+        },
+        {
+          "name": "Lasse",
+          "role": "Scar (memory-keeper, festival recorder)",
+          "age": null,
+          "gender": "F",
+          "personality": "Records every festival in a notebook",
+          "want": null,
+          "secret": "Finds drawings of people in her notebook that she does not recognise",
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1185-1186,1976-1978,1993-1998",
+          "thai": "ลัสเซ"
+        }
+      ],
+      "silme_echo": [
+        {
+          "name": "Oren",
+          "role": "Heart (librarian)",
+          "age": null,
+          "gender": "M",
+          "personality": "Elderly, tells stories to children, believes knowledge should give hope not fear",
+          "want": null,
+          "secret": null,
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1194-1195"
+        },
+        {
+          "name": "Isil",
+          "role": "Spark (trainee explorer) + traveller",
+          "age": 20,
+          "gender": "F",
+          "personality": "Curious, optimistic, sometimes impulsive; asks everything; dreams of writing a book of the world's wonders; pen-pal of Pip",
+          "want": "Write a compendium of wonders; uncover the world's history",
+          "secret": "Strange echo in the library speaking of events that have not happened",
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1196-1197,1303-1305,1437-1439"
+        },
+        {
+          "name": "Sarn",
+          "role": "Scar (archive keeper)",
+          "age": null,
+          "gender": "F",
+          "personality": "Silent, serious; keeps restricted records",
+          "want": null,
+          "secret": "Knows some records contradict the taught history; Ch V changes the meaning of her records and of certain birth years",
+          "voice": null,
+          "status": "proposed",
+          "source": "write-atlas-storyline.txt:1198-1201,1976-1998",
+          "thai": "ซาร์น"
+        }
       ]
     },
     "scar_renames": [
@@ -612,5 +929,245 @@
     "owner_lock": "2026-11-07",
     "player_facing": "the most recent person to hold the title, a woman. No ordinal is ever stated; how many Cala Knights there were is unknown. Her name, race, era and the thing she left unfinished are revealed only through traces (Ch 0-VIII). Expansion I retraces her story.",
     "writers_bible": "Personality like Himmel (Frieren): kind, cheerful, charmingly vain, chooses people over glory, remembered through small kindnesses. Strength like Serie: the strongest being of her age, far beyond any living warrior, which is why her leaving work unfinished is the central mystery. Benchmark only; borrow no names, lines or designs."
+  },
+  "towns": [
+    {
+      "id": "maro_bell",
+      "name": "Maro Bell",
+      "race": "maro",
+      "tagline": "City of lantern light and the sound of bells",
+      "tagline_thai": "เมืองแห่งแสงโคมและเสียงระฆัง",
+      "role": "Valley and lantern community; reason for other races to visit: trade, festivals, rest between journeys",
+      "economy": "Lantern Craft specialisation; basic shops and basic crafting; festival and community-event town (e.g. lantern festival; Bell Reckoning event pulls high-level players back); example guild 'Morning Lantern' picks it as home",
+      "look": "Warm lantern and bell valley; starting village of lantern makers and memorial bells with crooked porcelain rooftops and lantern workshops; warm introductory region with a hidden temporal wound.",
+      "landmark": "Hero landmark: The Great Bell between two towering cliffs among hundreds of brass lanterns; giant porcelain ribs protrude from valley walls; winding lantern-lit road. Composition foreground lanterns > village road > Great Bell > porcelain mega-forms (Tiny Human, Massive World).",
+      "terrain_group": "Green Lowlands",
+      "studio_node_id": "town-lantern-hollow",
+      "status": "proposed",
+      "source": "write-atlas-storyline.txt:1124; game-roadmap-ideation.txt:955-960,1091,1121; write-atlas-storyline.txt:1834-1836; game-roadmap-ideation.txt:4826-4828; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+    },
+    {
+      "id": "ondo_kiln",
+      "name": "Ondo Kiln",
+      "race": "ondo",
+      "tagline": "Town of craftspeople and kilns",
+      "tagline_thai": "เมืองช่างฝีมือและเตาหลอม",
+      "role": "Community of craftspeople and construction; others come to learn crafts and trade resources",
+      "economy": "Master Smithing specialisation; basic repair and general equipment crafting; an Ondo Kiln smith is the example for a custom-sword build chain Kilnwatch -> Ondo Kiln -> Silme Echo",
+      "look": "Mountain town built around ancestral furnaces beneath immense brass clocks; Ch I region Ondo Heights: cliffside fortresses, immense brass clocks, porcelain retaining walls, furnace lanterns; Luma's Still Kiln.",
+      "terrain_group": "Stone Highlands",
+      "studio_node_id": "town-root-train-roundhouse",
+      "status": "proposed",
+      "source": "write-atlas-storyline.txt:1138; game-roadmap-ideation.txt:763,957-960,1096; game-roadmap-ideation.txt:4829-4831; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+    },
+    {
+      "id": "linde_glaze",
+      "name": "Linde Glaze",
+      "race": "linde",
+      "tagline": "Town of flower gardens and farewells",
+      "tagline_thai": "เมืองแห่งสวนดอกไม้และการอำลา",
+      "role": "Community of arts and preservation; others come for crafts and cultural exchange",
+      "economy": "Glaze and Accessory Craft; basic crafting",
+      "look": "Porcelain artisans weaving constellations into glaze; settlement where star-patterned porcelain is woven and fired; flower gardens, greenhouse, farewell bouquets; Ch IV region Vinya Hollow has an empty stone seat where flowers are left every year.",
+      "terrain_group": "Green Lowlands",
+      "studio_node_id": "town-porcelain-loom-sanctuary",
+      "status": "proposed",
+      "source": "write-atlas-storyline.txt:1151; game-roadmap-ideation.txt:1101,957-960 and write-atlas-storyline.txt:313-318,1151-1163; game-roadmap-ideation.txt:4832-4834; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+    },
+    {
+      "id": "daro_post",
+      "name": "Daro Post",
+      "race": "daro",
+      "tagline": "Fortress town of watchers",
+      "tagline_thai": "เมืองป้อมปราการและผู้เฝ้ายาม",
+      "role": "Community of checkpoints and escort; others come for transport routes and traveller services",
+      "economy": "Defensive Equipment; weapon and armour repair",
+      "look": "Fortress settlement maintaining an ancient vigil; watch-town where a bell is rung each evening for a forgotten reason; night-shift records and a watch tower.",
+      "terrain_group": "Stone Highlands",
+      "studio_node_id": "town-draft-kiln-post",
+      "status": "proposed",
+      "source": "write-atlas-storyline.txt:1164; game-roadmap-ideation.txt:1106,957-960 and write-atlas-storyline.txt:1164-1176; game-roadmap-ideation.txt:4835-4837; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+    },
+    {
+      "id": "tava_fair",
+      "name": "Tava Fair",
+      "race": "tava",
+      "tagline": "Town of festivals and laughter",
+      "tagline_thai": "เมืองแห่งเทศกาลและเสียงหัวเราะ",
+      "role": "Forest-and-festival-market community; others come for produce exchange and traditions",
+      "economy": "Special Materials and Artisan Market; general trade and crafting; festival market; example guild chooses it for forest and festivals",
+      "look": "Festival town of painted pottery and terrible traditional cakes; stalls, street performances, memory books of festivals; Ch II region Tava Grove with Rena's Remembrance Kiln.",
+      "terrain_group": "Old Wilds",
+      "studio_node_id": "town-cinnamon-mill-haven",
+      "status": "proposed",
+      "source": "write-atlas-storyline.txt:1177; game-roadmap-ideation.txt:1111,957-960,773 and write-atlas-storyline.txt:1177-1189; game-roadmap-ideation.txt:4838-4840; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+    },
+    {
+      "id": "silme_echo",
+      "name": "Silme Echo",
+      "race": "silme",
+      "tagline": "Town of knowledge and echoes",
+      "tagline_thai": "เมืองแห่งความรู้และเสียงสะท้อน",
+      "role": "Community of knowledge and history; others come for study, discovery and research",
+      "economy": "Advanced Rune Research; basic runes",
+      "look": "Underground settlement where seal-listeners hear memories; subterranean town around resonant porcelain chambers; library and restricted archives; humming heard through porcelain walls.",
+      "terrain_group": "Old Wilds",
+      "studio_node_id": "town-carillon-hearth-belfry",
+      "status": "proposed",
+      "source": "write-atlas-storyline.txt:1190; game-roadmap-ideation.txt:1116,957-960 and write-atlas-storyline.txt:1190-1201; game-roadmap-ideation.txt:4841-4843; game-roadmap-ideation.txt:4342-4380 and write-atlas-storyline.txt:1124-1200; game-roadmap-ideation.txt:5914-5960,4902-4915"
+    },
+    {
+      "id": "kilnwatch_bastion",
+      "name": "Kilnwatch Bastion",
+      "role": "Shared hub where all six races meet, convergence at Lv 10; trading hub and guild services; NOT necessarily capital; should sit near an important route junction such as the plain/highland boundary, not the continent centre; world is polycentric (several economically significant towns); Ch VII location (Counterfeit Hour in or under the Bastion).",
+      "economy": "Trading Hub, Guild Services, full general services.",
+      "studio_node_id": "town-kilnwatch-bastion",
+      "status": "proposed",
+      "source": "game-roadmap-ideation.txt:4808-4830,4881,5954-5956,5990-5994 and write-atlas-storyline.txt:531-545; game-roadmap-ideation.txt:4342-4360"
+    }
+  ],
+  "world_model": {
+    "rules": [
+      {
+        "id": "world_structure",
+        "topic": "world_structure",
+        "text": "Hybrid World: shared persistent world, open regions, shared hubs, travel network, instanced dungeons/boss encounters; not everything instanced; regions can be managed/loaded separately.",
+        "status": "chosen",
+        "source": "game-roadmap-ideation.txt:4193-4210"
+      },
+      {
+        "id": "settlement_model",
+        "topic": "settlement_model",
+        "text": "Three community tiers: Ancestral Homelands (six), Mixed Settlements (trade towns at crossroads, rivers, ports), Shared Regional Hub (Kilnwatch Bastion).",
+        "status": "chosen",
+        "source": "game-roadmap-ideation.txt:4803-4812"
+      },
+      {
+        "id": "centres",
+        "topic": "centres",
+        "text": "Polycentric world: Kilnwatch Bastion is the adventurers' centre but does not monopolise economy or governance; routes form a network, not all via Kilnwatch.",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:4879-4895,4916-4922"
+      },
+      {
+        "id": "landmass",
+        "topic": "landmass",
+        "text": "One main continent with three terrain groups, no hard borders, with transition zones (foothill forest, plain beside cliffs, rivers from mountains to plain). Green Lowlands (Maro Bell, Linde Glaze), Stone Highlands (Ondo Kiln, Daro Post), Old Wilds (Tava Fair, Silme Echo). Six towns must NOT be laid in a ring around Kilnwatch.",
+        "status": "chosen",
+        "source": "game-roadmap-ideation.txt:5914-5960,4902-4915"
+      },
+      {
+        "id": "world_scale",
+        "topic": "world_scale",
+        "text": "Balanced World / Balanced Exploration: distances give a sense of adventure with villages and points of interest between towns; fast travel unlocked by progress; no kilometre figures until tested on a playable map. Design targets (first walk, no fast travel): town to nearby monster area 2-4 min; to key exploration point 4-8; to field boss 5-10; to neighbouring town 8-15; across several regions 15-30 min; Region 1-4 km2.",
+        "status": "chosen",
+        "source": "game-roadmap-ideation.txt:4958-4960,5000-5010,6058-6112"
+      },
+      {
+        "id": "travel_tiers",
+        "topic": "travel_tiers",
+        "text": "Three travel layers: local (walking/mount), regional (main roads, mountain passes, transport), convenience (fast travel to discovered points/hubs, with limits). No fast travel to everywhere at game start. Regional shortcuts unlock via exploration/progress.",
+        "status": "chosen",
+        "source": "game-roadmap-ideation.txt:4228-4245,5033-5037"
+      },
+      {
+        "id": "route_types",
+        "topic": "route_types",
+        "text": "Three route personalities: Main Roads (safe, settlements, convoys), Wilderness Trails (shortcuts via forest/foothills, monsters/resources), Ancient Routes (old roads and ruins, secrets). Example: Maro Bell -> Ondo Kiln either main road via a trading community or shorter foothill trail.",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:4923-4932,5961-5972"
+      },
+      {
+        "id": "streaming",
+        "topic": "streaming",
+        "text": "Hybrid Seamless Regions: continuous travel inside large regions, transition points between some regions, dungeons as instances; region gateways are natural features (long bridge, pass, tunnel); map structure World > Region > Zone > Point of Interest; Playable / Reserved / Future area states.",
+        "status": "chosen",
+        "source": "game-roadmap-ideation.txt:5051-5060,5731-5770,6012-6040"
+      },
+      {
+        "id": "great_kiln_effect",
+        "topic": "great_kiln_effect",
+        "text": "Great Kilns shape terrain: some valleys have time anomalies; old ruins near trade routes; some areas change with chapter events; some old routes abandoned due to Kiln effects; special areas scattered, not every region magical; revealed gradually.",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:4855-4866"
+      },
+      {
+        "id": "homeland_vs_chapter",
+        "topic": "homeland_vs_chapter",
+        "text": "A race's homeland is not always the area of the chapter tied to that race (Linde, Daro, Silme homelands need geography of their own; do not force homelands into Nara Reach/Vinya Hollow/Silme Deep).",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:5008-5012"
+      },
+      {
+        "id": "production_order",
+        "topic": "production_order",
+        "text": "Initial production: Prologue + Ch 0-II: six homelands at starter scale, Kilnwatch Bastion, main adventure areas of Maro Valley, Ondo Heights, Tava Grove; Ch III-VIII open new regions and expand old ones. Reserved areas protect routes needed later.",
+        "status": "chosen",
+        "source": "game-roadmap-ideation.txt:5026-5030,6025-6038 and write-atlas-storyline.txt:1543-1552"
+      },
+      {
+        "id": "chapter_region_order",
+        "topic": "chapter_region_order",
+        "text": "World map order of chapters/regions: Ch 0 Maro Valley > I Ondo Heights (Luma's Still Kiln) > II Tava Grove (Rena's Remembrance Kiln) > III Nara Reach (Nara's Ember Kiln) > IV Vinya Hollow (Vinya's Green Kiln) > V Silme Deep (Olo's Glass Kiln) > VI Tira Ridge (Tira's Sentinel Kiln) > VII Kilnwatch Bastion > VIII The First Kiln. Story order need not equal geographic order; do not lay chapters in a line on the map.",
+        "status": "chosen",
+        "source": "write-atlas-storyline.txt:25-45,game-roadmap-ideation.txt:3956,3980-4044"
+      },
+      {
+        "id": "boss_placement",
+        "topic": "boss_placement",
+        "text": "Chapter boss site types: Bellkeeper bell/lantern site; Brass Castellan old fort/industrial structure; Jubilant Collector anomalous festival area; Tithe Warden debt/collection place; Unwilting nature outside its cycle; Unborn Witness ancient ruin/memory vault; Sworn Sentinel pass or oath site; Counterfeit Hour inside or beneath the Bastion; First Regulator inner First Kiln. Field/Dungeon/World boss each placed by site logic, not one per zone.",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:5976-5996"
+      },
+      {
+        "id": "weather_season",
+        "topic": "weather_season",
+        "text": "Only hints: Ch VIII visible wound - districts experience different seasons simultaneously and roads lead to places that no longer exist; Ch I - streets freeze for minutes; no stated climate, weather or season cycle for any town.",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:793-798,763-767"
+      },
+      {
+        "id": "volunteers_road",
+        "topic": "volunteers_road",
+        "text": "Volunteers' Road: route of the first volunteers through the chapter regions; each region has a bell, marker or memorial (not identical in every region). Examples: Maro Valley bell that rings too early; Ondo Heights hammer missing its brass fitting; Vinya Hollow empty stone seat with yearly flowers.",
+        "status": "chosen",
+        "source": "write-atlas-storyline.txt:298-320 and write-atlas-storyline.txt:1543-1552"
+      },
+      {
+        "id": "spatial_gap_ids",
+        "topic": "spatial_gap_ids",
+        "text": "Region-count ambiguity: canon card lists nine geographic entries including Kilnwatch Bastion and The First Kiln, mixing geographic regions, kiln regions and hub locations; distinguish them in the DB.",
+        "status": "proposed",
+        "source": "story-decision-gap-check.txt:158-162"
+      },
+      {
+        "id": "mixed_settlement_example",
+        "topic": "mixed_settlement_example",
+        "text": "Example journey: Ondo Kiln (smith sells gear) -> mixed settlement on the road (Tava merchants, Silme explorers, mixed-level adventurers) -> Kilnwatch Bastion (trade, news, events). Not a mandatory quest route.",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:4846-4860"
+      },
+      {
+        "id": "mixed_race_towns",
+        "topic": "mixed_race_towns",
+        "text": "Race home towns are not the only place each race lives: towns hold a majority local race plus craftspeople, traders and travellers from other races; no fixed ratios (Ancestral Homelands / Mixed Settlements / Shared Regional Hub model).",
+        "status": "proposed",
+        "source": "game-roadmap-ideation.txt:4808-4850"
+      },
+      {
+        "id": "race_not_destiny",
+        "topic": "race_not_destiny",
+        "text": "Player race does not decide destiny or profession: race gives a cultural starting perspective and a suggested hook only; players may pick a different motive; Ondo/Silme players are not forced into smithing/runes.",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:244-248, game-roadmap-ideation.txt:4371-4376"
+      },
+      {
+        "id": "cross_town_ties",
+        "topic": "cross_town_ties",
+        "status": "proposed",
+        "source": "write-atlas-storyline.txt:1203-1214 (names Lumi/Mira/Thessa as written then; apply renames)",
+        "text": "Proposed cross-town relationships: Bram-Torren old friends; Pip-Isil pen-pals; Elin-Nelli exchange flowers/sweets yearly; Garran-Vessa shared a watch night with mismatched memories; Sarn-Lasse both keep records and find contradictions."
+      }
+    ]
   }
 }
