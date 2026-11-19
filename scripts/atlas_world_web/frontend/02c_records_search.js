@@ -246,6 +246,42 @@ function renderGameplay(g) {
   return `<section class="record-gameplay"><h2>Gameplay (${escapeHtml(g.status || 'proposed')})</h2><dl>${rows.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl></section>`;
 }
 
+function renderFeatureProvenance(f) {
+  const rows = [
+    ["Status", f.status + (f.inActiveRelease ? " (active release)" : "")],
+    ["Release", f.releaseVersion || "—"],
+    ["From idea", f.fromIdea || "—"],
+    ["Claimed by", f.claimedBy || "—"],
+    ["Shipped at", f.shippedAt || "—"],
+    ["Shipped SHA", f.shippedSha || "—"],
+    ["Promoted at", f.promotedAt || "—"],
+  ].filter(([, v]) => v && v !== "—");
+  return `<section class="record-gameplay" id="featureProvenance"><h2>Feature Provenance</h2><dl>${rows.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(String(v))}</dd>`).join('')}</dl></section>`;
+}
+
+function renderAssetProvenance(a) {
+  const keys = (a.manifestEntries || []).map(e => `${e.manifest}:${e.key}`).join(", ") || "none";
+  const budgetStr = a.budget
+    ? [
+        a.budget.maxTriangles != null ? `maxTris ${a.budget.maxTriangles}` : "",
+        a.budget.maxTextureSize != null ? `maxTex ${a.budget.maxTextureSize}px` : "",
+        a.budget.maxBytes != null ? `maxBytes ${Math.round(a.budget.maxBytes / 1024)} KB (${a.bytesOk === false ? "OVER" : "OK"})` : "",
+      ].filter(Boolean).join(" · ")
+    : "no kind budget";
+  const rows = [
+    ["Path", a.path],
+    ["Res path", a.resPath],
+    ["Size", `${Math.max(1, Math.round((a.bytes || 0) / 1024))} KB (${a.bytes || 0} bytes)`],
+    ["Provenance", a.provenanceStatus],
+    ["Kind / Tier", [a.kind || "—", a.tier || "—"].join(" · ")],
+    ["Source / License", [a.source || "—", a.license || "—"].join(" · ")],
+    ["Manifest keys", keys],
+    ["Budget", budgetStr],
+    ["Godot .import", a.hasImport ? "present" : "missing"],
+  ];
+  return `<section class="record-gameplay" id="assetProvenance"><h2>3D Asset Provenance</h2><dl>${rows.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(String(v))}</dd>`).join('')}</dl></section>`;
+}
+
 async function renderRecordPage(main) {
   const key = CURRENT_RECORD;
   if (main.dataset.record === key) return;   // typing in the box re-renders; do not refetch the same page
@@ -278,6 +314,8 @@ async function renderRecordPage(main) {
       ${r.summary ? `<p class="record-page__summary">${escapeHtml(r.summary)}</p>` : ''}
       ${body.map ? renderRecordMap(body.map) : ''}
       ${body.gameplay ? renderGameplay(body.gameplay) : ''}
+      ${body.feature ? renderFeatureProvenance(body.feature) : ''}
+      ${body.assetProvenance ? renderAssetProvenance(body.assetProvenance) : ''}
       <p class="record-page__tags">${body.tags.map(t => `<span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(t)}</span>`).join(' ')}</p>
       ${r.viewUrl ? `<p><a id="recordOpenLink" class="joy-button joy-button--outline joy-button--sm" href="${escapeHtml(r.viewUrl)}">Open in ${escapeHtml(recordEntryLabel(r.viewUrl))}</a></p>` : ''}
       ${groups || '<p class="record-page__empty">Nothing is linked to this yet</p>'}

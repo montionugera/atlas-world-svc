@@ -11,7 +11,7 @@ import json
 import sqlite3
 from urllib.parse import parse_qs, urlsplit
 
-from . import map_builder_proxy, records, review_queue, runtime, static_mounts
+from . import map_builder_proxy, records, review_queue, runtime, static_mounts, work_and_assets
 
 MAX_BODY_BYTES = 2 * 1024 * 1024
 
@@ -159,6 +159,43 @@ def _record_counts(handler, path: str, *, head: bool = False) -> None:
     _send_json(handler, {"ok": True, "counts": counts}, head=head)
 
 
+def _parse_limit(qs: dict) -> int | None:
+    raw = qs.get("limit")
+    if raw is None or raw == "":
+        return None
+    try:
+        n = int(raw)
+        return n if n > 0 else None
+    except ValueError:
+        return None
+
+
+def _work_index(handler, path: str, *, head: bool = False) -> None:
+    qs = _query(handler)
+    data = work_and_assets.query_work_index(
+        status=qs.get("status", ""),
+        release_version=qs.get("release", ""),
+        q=qs.get("q", ""),
+        limit=_parse_limit(qs),
+    )
+    _send_json(handler, {"ok": True, **data}, head=head)
+
+
+def _asset_provenance(handler, path: str, *, head: bool = False) -> None:
+    qs = _query(handler)
+    data = work_and_assets.query_asset_provenance(
+        category=qs.get("category", ""),
+        status=qs.get("status", ""),
+        kind=qs.get("kind", ""),
+        source=qs.get("source", ""),
+        tier=qs.get("tier", ""),
+        q=qs.get("q", ""),
+        over_budget=qs.get("over_budget") == "1",
+        limit=_parse_limit(qs),
+    )
+    _send_json(handler, {"ok": True, **data}, head=head)
+
+
 # (exact path | prefix ending in "/") -> handler. Checked in order.
 ROUTES = {
     "GET": [
@@ -167,6 +204,8 @@ ROUTES = {
         ("/api/search", _search),
         ("/api/record", _record),
         ("/api/record-counts", _record_counts),
+        ("/api/work-index", _work_index),
+        ("/api/assets/provenance", _asset_provenance),
         ("/api/map-builder/", _map_builder("GET")),
         ("/api/map-builder-files/", _map_builder("GET")),
     ],

@@ -103,6 +103,18 @@ def record(kind: str, id_: str) -> dict | None:
         inverse = conn.execute(
             "SELECT l.relation, r.kind, r.id, r.title FROM links l JOIN records r ON r.kind = l.from_kind AND r.id = l.from_id "
             "WHERE l.to_kind = ? AND l.to_id = ? ORDER BY r.title", (kind, id_)).fetchall()
+        feature_row = None
+        asset_row = None
+        if kind == "feature":
+            try:
+                feature_row = conn.execute("SELECT raw_json FROM backlog_features WHERE id = ?", (id_,)).fetchone()
+            except sqlite3.Error:
+                feature_row = None
+        elif kind == "asset_3d":
+            try:
+                asset_row = conn.execute("SELECT raw_json FROM asset_3d_provenance WHERE id = ?", (id_,)).fetchone()
+            except sqlite3.Error:
+                asset_row = None
     groups: dict[str, list[dict]] = {}
     seen: set[tuple] = set()
     for label, k, i, title in forward + [(INVERSE.get(rel), k, i, t) for rel, k, i, t in inverse]:
@@ -115,6 +127,10 @@ def record(kind: str, id_: str) -> dict | None:
         "tags": tags,
         "relations": [{"label": name, "items": groups[name]} for name in LABEL_ORDER if name in groups],
     }
+    if feature_row and feature_row[0]:
+        out["feature"] = json.loads(feature_row[0])
+    if asset_row and asset_row[0]:
+        out["assetProvenance"] = json.loads(asset_row[0])
     m = build_map(kind, id_)
     if m:
         out["map"] = m
