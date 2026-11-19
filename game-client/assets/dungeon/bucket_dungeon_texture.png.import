@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/bucket_dungeon_texture.png-89ebc74889556d6cba
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

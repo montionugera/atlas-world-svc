@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/rock_4_h_color1_forest_texture.png-97e9fd9e5c
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

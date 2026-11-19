@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/bottle_b_green_dungeon_texture.png-198d8352f4
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

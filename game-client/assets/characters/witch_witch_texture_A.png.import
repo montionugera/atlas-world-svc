@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/witch_witch_texture_A.png-e36a85b58220c0a6b11
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

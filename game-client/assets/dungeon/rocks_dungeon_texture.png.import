@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/rocks_dungeon_texture.png-bb0b4a7be3c098b6394
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

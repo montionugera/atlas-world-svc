@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/bow_Diffuse_palette_2.jpg-3bedd8bc1d2ff11993e
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

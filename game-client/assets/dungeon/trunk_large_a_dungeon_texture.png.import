@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/trunk_large_a_dungeon_texture.png-c919c4a5ac3
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
