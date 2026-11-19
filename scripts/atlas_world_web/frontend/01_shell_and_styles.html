@@ -403,6 +403,13 @@
     .record-map .rm-node:focus-visible rect { stroke: var(--joy-border-focus); }
     .record-map .rm-name { fill: var(--joy-text-primary); font-size: 14px; font-weight: 650; }
     .record-map .rm-sub { fill: var(--joy-text-secondary); font-size: 13px; }
+    .record-map__legend .rm-legend-note { flex-basis: 100%; }
+    .record-gameplay { margin-bottom: 14px; }
+    .record-gameplay h2 { margin: 20px 0 8px; }
+    .record-gameplay dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; }
+    .record-gameplay dt { font-weight: 650; color: var(--joy-text-secondary); }
+    .record-gameplay dd { margin: 0; }
+    @media (max-width: 600px) { .record-gameplay dl { grid-template-columns: 1fr; gap: 0; } .record-gameplay dd { margin-bottom: 10px; } }
     .record-map__hint { display: none; margin: 8px 0 0; font-size: var(--joy-font-size-sm); color: var(--joy-text-secondary); }
     @media (max-width: 900px) { .record-map__hint { display: block; } }
     .record-map__legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 0; padding: 0; font-size: var(--joy-font-size-sm); color: var(--joy-text-secondary); }

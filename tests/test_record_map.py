@@ -89,6 +89,14 @@ class DistrictMapTests(unittest.TestCase):
         nodes = [node("t", "town", portals={"East": portal("a"), "West": portal("b")}), node("a"), node("b"), node("x")]
         self.assertEqual(self.run_map(nodes), self.run_map(list(reversed(nodes))))
 
+    def test_dungeon_carries_its_proposed_role_and_others_do_not(self):
+        d = node("dg", "dungeon", level=(14, 15))
+        d["gameplay_role"] = {"verdict": "story_dungeon", "chapter": "ch2", "proposed_level_band": [28, 32], "status": "proposed"}
+        m = by_id(self.run_map([node("t", "town", portals={"Dungeon": portal("dg")}), d]))
+        self.assertEqual(m["dg"]["role"], {"verdict": "story_dungeon", "chapter": "ch2", "band": [28, 32]})
+        self.assertEqual(m["dg"]["level"], [14, 15])  # the current band is untouched
+        self.assertNotIn("role", m["t"])
+
 
 class ContinentMapTests(unittest.TestCase):
     def test_positions_links_and_missing_data(self):
@@ -100,6 +108,9 @@ class ContinentMapTests(unittest.TestCase):
         self.assertEqual([(n["x"], n["y"], n["kind"]) for n in m["nodes"]], [(10, 20, "district"), (50, 60, "district")])
         self.assertEqual(m["nodes"][0]["label"], "A · Town A")
         self.assertEqual([(e["label"], e["state"]) for e in m["edges"]], [("built", "open"), ("P1", "closed")])
+        self.assertEqual([n["hub"] for n in m["nodes"]], [None, None])
+        districts[1]["geography"]["gameplay"] = {"party_hub_role": "find_party"}
+        self.assertEqual(continent_map(districts, links, {})["nodes"][1]["hub"], "find_party")
         self.assertIsNone(continent_map([{"id": "a", "name": "A", "geography": {}}], [], {}))
 
 

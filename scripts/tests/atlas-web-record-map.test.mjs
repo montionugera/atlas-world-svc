@@ -26,7 +26,7 @@ const ctx = vm.createContext({
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;"),
 });
-vm.runInContext(`${recordsJs}\nthis.renderRecordMap = renderRecordMap;`, ctx);
+vm.runInContext(`${recordsJs}\nthis.renderRecordMap = renderRecordMap; this.renderGameplay = renderGameplay;`, ctx);
 
 const node = (id, x, y, over = {}) => ({
   id,
@@ -143,4 +143,30 @@ test("API: district and continent records carry a map from the studio files", as
   assert.equal(c.nodes.length, 11);
   assert.equal(c.edges.length, 18);
   assert.equal((await get("town", "nope")).map, undefined);
+});
+
+test("F-239: a dungeon box shows its verdict and now -> proposed band; a continent district shows its party hub role", () => {
+  const dungeon = ctx.renderRecordMap({
+    nodes: [
+      node("t", 0, 0),
+      node("d", 1, 1, { kind: "dungeon", level: [14, 15], role: { verdict: "story_dungeon", chapter: "ch2", band: [28, 32] } }),
+      node("o", 2, 1, { kind: "dungeon", level: [12, 15], role: { verdict: "optional_instance", chapter: null, band: [12, 15] } }),
+    ],
+    edges: [],
+  });
+  assert.ok(dungeon.includes("Story dungeon") && dungeon.includes("Ch 2") && dungeon.includes("Lv 14-15 \u2192"));
+  assert.ok(dungeon.includes("28-32 proposed"));
+  assert.ok(dungeon.includes("Optional") && dungeon.includes("Open activity: repeatable"), "legend explains the verdicts");
+  assert.ok(!dungeon.includes("12-15 proposed"), "an unchanged band is not called proposed");
+  const cont = ctx.renderRecordMap({
+    nodes: [node("a", 10, 10, { kind: "district", hub: "find_party" }), node("b", 50, 60, { kind: "district", hub: null })],
+    edges: [],
+  });
+  assert.ok(cont.includes("Find a party"));
+});
+
+test("F-239: the gameplay block escapes its text and names the four lines", () => {
+  const html = ctx.renderGameplay({ new_player: "<b>x</b>", veteran_return: "v", party_content: "p", cross_race_reason: "c", status: "proposed" });
+  assert.ok(!html.includes("<b>x"));
+  for (const k of ["New players", "Veterans return for", "Party content", "Why races meet here", "Gameplay (proposed)"]) assert.ok(html.includes(k), k);
 });

@@ -74,7 +74,11 @@ def district_map(nodes: dict, all_nodes: dict, district_names: dict) -> dict | N
             kind = "outside"
         else:
             kind = "unbuilt" if n.get("status") == "mystery" else KIND.get(n.get("node_type"), "hunting")
-        out_nodes.append({"id": i, "label": label, "kind": kind, "level": _level(n), "x": x, "y": y, "record": f"node:{i}"})
+        out_node = {"id": i, "label": label, "kind": kind, "level": _level(n), "x": x, "y": y, "record": f"node:{i}"}
+        role = n.get("gameplay_role")  # F-239: proposed step 4 data, drawn as the sub-label
+        if role and not outside:
+            out_node["role"] = {"verdict": role.get("verdict"), "chapter": role.get("chapter"), "band": role.get("proposed_level_band")}
+        out_nodes.append(out_node)
     out_edges = []
     for e in sorted(edges.values(), key=lambda e: (e["a"], e["b"])):
         a, b = all_nodes[e["a"]], all_nodes[e["b"]]
@@ -93,7 +97,8 @@ def continent_map(districts: list, links: list, town_names: dict) -> dict | None
             continue
         town = town_names.get(d["id"])
         nodes.append({"id": d["id"], "label": f"{d['name']} · {town}" if town else d["name"], "kind": "district",
-                      "level": _level(d), "x": p["x"], "y": p["y"], "record": f"district:{d['id']}"})
+                      "level": _level(d), "x": p["x"], "y": p["y"], "record": f"district:{d['id']}",
+                      "hub": ((d["geography"].get("gameplay") or {}).get("party_hub_role"))})
     if not nodes:
         return None
     have = {n["id"] for n in nodes}

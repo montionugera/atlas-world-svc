@@ -112,6 +112,21 @@ const RM_KIND_LABEL = {
   outside: "Outside",
   district: "District",
 };
+// F-239: what a district map box says under its name. A dungeon shows its proposed verdict and level band.
+const RM_VERDICT = { story_dungeon: "Story dungeon", optional_instance: "Optional instance", open_activity: "Open activity" };
+const RM_HUB = { find_party: "Find a party", learn_party: "Learn party play", crossroads: "Crossroads", coordinated_combat: "Coordinated combat" };
+function rmSubs(n, plane) {
+  const range = n.level ? `Lv ${n.level[0]}-${n.level[1]}` : "";
+  if (plane) return [RM_HUB[n.hub], range].filter(Boolean);
+  if (n.kind === "unbuilt") return [RM_KIND_LABEL.unbuilt];
+  const role = n.kind === "dungeon" && n.role && RM_VERDICT[n.role.verdict];
+  if (!role) return [RM_KIND_LABEL[n.kind] || n.kind, range].filter(Boolean);
+  const ch = /^ch(\d)$/.test(n.role.chapter || "") ? [`Ch ${n.role.chapter.slice(2)}`] : [];
+  const b = n.role.band;
+  const same = !b || !n.level || (b[0] === n.level[0] && b[1] === n.level[1]);
+  const lv = same ? [range] : rmWrap(`${range} \u2192 ${b[0]}-${b[1]} proposed`, 14, 2);
+  return [...(n.role.verdict === "story_dungeon" ? [role] : rmWrap(role, 14, 2)), ...ch, ...lv].filter(Boolean);
+}
 function rmWrap(text, max, lines) {
   const out = [];
   let cur = "";
@@ -132,15 +147,17 @@ function rmWrap(text, max, lines) {
 function renderRecordMap(map) {
   const E = (v) => escapeHtml(v).replace(/"/g, "&quot;"); // escapeHtml leaves quotes, and some values land in attributes
   const plane = map.nodes.every((n) => n.kind === "district"); // continent: 0-100 coordinates; district: grid cells
-  const BW = plane ? 176 : 92, // district: narrow boxes so the whole 4-column map fits a phone at ~0.8 scale
-    BH = plane ? 76 : 92,
+  const names = map.nodes.map((n) => rmWrap(plane ? n.label.split(" \u00b7 ")[0] : n.label, plane ? 20 : 10, plane ? 2 : 3)); // continent: full "new · old" name stays in the tooltip
+  const subsAll = map.nodes.map((n) => rmSubs(n, plane));
+  const BW = plane ? 176 : 100, // district: narrow boxes so the whole 4-column map fits a phone
+    BH = plane ? 76 : Math.max(92, 38 + 15 * (Math.max(...names.map((l) => l.length)) - 1) + 15 * Math.max(...subsAll.map((l) => l.length))), // grows when a dungeon has a long verdict + band
     PAD = 24;
   const xs = map.nodes.map((n) => n.x),
     ys = map.nodes.map((n) => n.y);
   const minX = Math.min(...xs),
     minY = Math.min(...ys);
   const ux = plane ? (860 - BW) / Math.max(1, Math.max(...xs) - minX) : 104;
-  const uy = plane ? 12 : 118;
+  const uy = plane ? 12 : BH + 26;
   const W = Math.ceil((Math.max(...xs) - minX) * ux + BW + PAD * 2),
     H = Math.ceil((Math.max(...ys) - minY) * uy + BH + PAD * 2);
   const at = Object.fromEntries(
@@ -183,14 +200,11 @@ function renderRecordMap(map) {
     })
     .join("");
   const boxes = map.nodes
-    .map((n) => {
+    .map((n, ni) => {
       const x = at[n.id].cx - BW / 2,
         y = at[n.id].cy - BH / 2;
-      const range = n.level ? `Lv ${n.level[0]}-${n.level[1]}` : "";
-      const kindLabel = RM_KIND_LABEL[n.kind] || n.kind;
-      // continent: level range only; district: kind and range on two short lines (the box is narrow)
-      const subs = n.kind === "unbuilt" ? [kindLabel] : plane ? [range] : [kindLabel, range];
-      const lines = rmWrap(plane ? n.label.split(" \u00b7 ")[0] : n.label, plane ? 20 : 10, plane ? 2 : 3) // continent: full "new · old" name stays in the tooltip
+      const subs = subsAll[ni];
+      const lines = names[ni]
         .map(
           (t, i) =>
             `<tspan x="${x + BW / 2}" dy="${i ? 15 : 0}">${E(t)}</tspan>`,
@@ -216,11 +230,20 @@ function renderRecordMap(map) {
       .join("") +
     // continent edges are routes between districts, district edges are doors
     `<li><span class="rm-line"></span>${plane ? "Route built, walkable now" : "Door open"}</li><li><span class="rm-line rm-line--closed"></span>${plane ? "Route planned, not built yet" : "Door closed"}</li>` +
+    (!plane && map.nodes.some((n) => n.role)
+      ? "<li class=\"rm-legend-note\"><span>Story dungeon: a chapter climax. Optional instance: side group content. Open activity: repeatable, no instance. Level reads now \u2192 proposed.</span></li>"
+      : "") +
     (plane ? "<li>P0 build first · P1 next · P2 later</li>" : "") +
     (map.edges.some((e) => e.danger)
       ? '<li><span class="rm-line rm-line--danger"></span><b>!</b> Open door to a much higher level</li>'
       : "");
   return `<figure class="record-map${plane ? " record-map--plane" : ""}" aria-label="Map"><div class="record-map__scroll"><svg viewBox="0 0 ${W} ${H}" style="${plane ? `min-width:${W}px` : `max-width:${Math.round(W * 1.3)}px;margin:0 auto`}" role="group" aria-label="Map of ${E(map.nodes.length)} places">${edges}${boxes}${dangerMarks}</svg></div>${plane ? '<p class="record-map__hint">Swipe sideways to see the whole map</p>' : ""}<ul class="record-map__legend">${legend}</ul></figure>`;
+}
+
+// F-239: the district's step 4 roles in plain words. Proposed data, so the heading says so.
+function renderGameplay(g) {
+  const rows = [["New players", g.new_player], ["Veterans return for", g.veteran_return], ["Party content", g.party_content], ["Why races meet here", g.cross_race_reason]];
+  return `<section class="record-gameplay"><h2>Gameplay (${escapeHtml(g.status || 'proposed')})</h2><dl>${rows.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl></section>`;
 }
 
 async function renderRecordPage(main) {
@@ -254,6 +277,7 @@ async function renderRecordPage(main) {
       <h1>${escapeHtml(r.title)}</h1>
       ${r.summary ? `<p class="record-page__summary">${escapeHtml(r.summary)}</p>` : ''}
       ${body.map ? renderRecordMap(body.map) : ''}
+      ${body.gameplay ? renderGameplay(body.gameplay) : ''}
       <p class="record-page__tags">${body.tags.map(t => `<span class="joy-badge joy-badge--neutral joy-badge--sm">${escapeHtml(t)}</span>`).join(' ')}</p>
       ${r.viewUrl ? `<p><a id="recordOpenLink" class="joy-button joy-button--outline joy-button--sm" href="${escapeHtml(r.viewUrl)}">Open in ${escapeHtml(recordEntryLabel(r.viewUrl))}</a></p>` : ''}
       ${groups || '<p class="record-page__empty">Nothing is linked to this yet</p>'}

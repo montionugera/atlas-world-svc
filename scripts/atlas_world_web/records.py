@@ -118,4 +118,8 @@ def record(kind: str, id_: str) -> dict | None:
     m = build_map(kind, id_)
     if m:
         out["map"] = m
+    if kind == "district":
+        d = next((x for x in _load_all(_studio_dir() / "districts") if x.get("id") == id_), None)
+        if d and (d.get("geography") or {}).get("gameplay"):
+            out["gameplay"] = d["geography"]["gameplay"]
     return out
