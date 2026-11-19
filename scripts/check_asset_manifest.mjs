@@ -9,7 +9,7 @@
 // on what a render-type requires), and the files on disk.
 //
 // Inputs (defaults resolve relative to the repo root):
-//   - colyseus-server/generated/asset-keys.json  { version, keys: [{ id, kind }] }
+//   - content/generated/asset-keys.json          { version, keys: [{ id, kind }] }
 //   - game-client/assets/render-spec.json        { version, renderers, kindDefaultRender, extRender, codegenReservedNamespaces }
 //   - game-client/assets/manifest.json           codegen-keyed,  driftGated:true
 //   - game-client/assets/audio-manifest.json     curated,        driftGated:false

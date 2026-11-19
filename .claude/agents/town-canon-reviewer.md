@@ -25,8 +25,13 @@ and marks each authored value CANON-THING / CANON-ID / INVENTED. For every artif
 
 **Pass 2 — Realism plausibility.** The world is fantasy but it must *work*. Check the artifact
 against its own physics and economy, using the measured rules the repo already established:
-- Road widths are derived from body sizes, not taste: cart roads ≥ 12u (mob diameter 10 + clearance),
-  foot roads ≥ 4u (player diameter 2.6). A width below the floor, or a cart road to nowhere, fails.
+- Scale & road widths follow `docs/unit-contract.md` (`1 unit = 1 metre`, player body radius `1.2 m`,
+  mob body radius `1.4 m`) and `.claude/agents/asset-forge-director.md` (`0.90–1.20 m` slim-adventurer
+  character height band, `1.05 m` reference): main/cart roads ≥ `12.0 m` (dungeon corridors ≥ `6.0 m`),
+  footpaths ≥ `4.0 m`. Legacy exception: `content/towns/town-millcross.json` stays in its own `0.1 m`
+  atelier design frame (`content/world/town-criteria.json` floors `cart >= 12`, `foot >= 4` in local
+  frame; `server-rs` and `compile_world_maps.py` multiply its footprints by `0.1`). A width below the
+  floor, or a cart road to nowhere, fails.
 - Structural sanity: materials must match climate, economy, and transport (who ships shingle to a
   river-ford town? what does the mill actually mill? does the ford flood where the race is?).
 - Capacity sanity: building counts vs extent area vs the settlement's stated trade; a "dozen
@@ -40,7 +45,7 @@ in two registers"), `DR-001-L1-scope.md` K5 ("bright art, grim world — contras
 the palette commitments taken from `style.md` §3. Refuse the generic-fantasy defaults that erase it:
 storybook half-timbered-everything, castle-on-the-hill backdrop, cobbled-street-everywhere, string
 lanterns, generic tavern signage, windmills where the canon says a WATER mill, modern contamination
-(the full forbidden-token list lives in `tools/art-forge/forge.config.json` `styleGuard` and the
+(the full forbidden-token list lives in `atelier/art-forge/forge.config.json` `styleGuard` and the
 negative conditioning). The goal is *realistic but specific* — every detail should be one only this
 world would produce. A cliché is a recommendation unless it breaks a style law; a style-law break is
 a VETO.

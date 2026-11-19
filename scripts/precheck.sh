@@ -490,7 +490,7 @@ art_forge_tests() {
 # count. Gitignored generated inputs (e.g. the asset thumbs) are invisible to
 # git diff, so a change only to those skips here; CI still covers it.
 # ATLAS_FORCE_STORYBOOK_SMOKE=1 always runs it.
-STORYBOOK_SMOKE_PATHS='^(atelier/atlas-world-panels/|atelier/art-forge/|atelier/mapforge/|atelier/map-builder/|content/|game-client/assets/|colyseus-server/generated/|scripts/lib/|scripts/catalog_explorer_web\.py$|scripts/atlas_world_web/|tools/mac-observatory/vendor/|scripts/precheck\.sh$)'
+STORYBOOK_SMOKE_PATHS='^(atelier/atlas-world-panels/|atelier/art-forge/|atelier/mapforge/|atelier/map-builder/|content/|game-client/assets/|scripts/lib/|scripts/catalog_explorer_web\.py$|scripts/atlas_world_web/|tools/mac-observatory/vendor/|scripts/precheck\.sh$)'
 storybook_smoke_skip_reason() {
   [ "${ATLAS_FORCE_STORYBOOK_SMOKE:-0}" = "1" ] && return 1
   local changed

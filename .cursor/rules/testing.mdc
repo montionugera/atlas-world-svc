@@ -1,30 +1,37 @@
-# Testing — Colyseus server
+# Testing — Atlas World Service
 
-## Layout
-- **Unit tests**: `colyseus-server/src/tests/*.test.ts`
-- **Naming**: `*.test.ts` (Jest)
-- **Runner**: Jest (configured in colyseus-server)
+## Suites & Commands
 
-## Commands
 ```bash
-cd colyseus-server
-npm test                    # all tests
-npm test -- --runInBand     # single-thread (avoid flakiness)
-npm test -- src/tests/ai-mob-decision.test.ts   # one file
+# Fast mid-iteration check (<15s)
+./scripts/fastcheck.sh
+
+# Full Gate 1 pre-ship suite
+./scripts/precheck.sh --no-install
+
+# Rust game server (server-rs/)
+cd server-rs && cargo test
+
+# Shared TypeScript contracts (contracts/)
+cd contracts && pnpm test
+
+# Script & content gates (Node 24 — pass explicit glob)
+node scripts/check_content.mjs
+node --test scripts/tests/*.test.mjs
+
+# Atelier tool suites
+node --test atelier/art-forge/tests/*.test.mjs
+node --test atelier/mapforge/tests/*.test.mjs
+node --test atelier/atlas-world-panels/tests/*.test.mjs
+
+# React web client
+cd client/react-client && CI=true npx react-scripts test --watchAll=false
 ```
 
-## Setup
-- **Setup file**: `colyseus-server/src/tests/setup.ts` (mocks, globals)
-- **No live server** required for unit tests (mocks for GameState, physics, etc.)
-
 ## Conventions
-- Use `performance.now()` for gameplay timing in tests (align with 02-accuracy-correctness).
-- Mock EventBus / room when testing handlers.
-- One focused assertion per test where possible; group in `describe` by feature.
-
-## Integration
-- For full server tests: start server (`npm run dev` or `docker-compose up -d`) then run tests that connect to `ws://localhost:2567` if present.
-- Most tests in `src/tests/` are unit tests with no server required.
+- Inject simulated time (`SimClock` in `server-rs/src/core/clock.rs`) instead of sleeping in tests.
+- Cover boundary edge cases (zeroes, negative ratios, overflow, unit-contract metre boundaries).
+- Keep cargo light on laptops: Gate 1 caps workers via `ATLAS_MAX_WORKERS` (default `2`).
 
 ## Related
 - Accuracy/timing: `02-accuracy-correctness.mdc`
