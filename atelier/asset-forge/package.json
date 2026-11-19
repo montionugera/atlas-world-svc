@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "pretest": "node tests/make-fixtures.mjs",
-    "test": "node --test tests/**/*.test.mjs"
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@gltf-transform/core": "^4.1.0",
