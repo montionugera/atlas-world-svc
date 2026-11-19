@@ -3077,8 +3077,10 @@
     "from_idea": "I-324",
     "created_at": "2026-11-19T02:08:35.126207+00:00",
     "claimed_by": "claude-a6c35399",
-    "status": "claimed",
-    "release_version": null,
-    "claimed_at": "2026-11-19T02:08:45.527551+00:00"
+    "status": "shipped",
+    "release_version": "1.34",
+    "claimed_at": "2026-11-19T02:08:45.527551+00:00",
+    "shipped_at": "2026-11-19T02:17:12.196836+00:00",
+    "shipped_sha": "df66eacef18ecf945bee477cf4f4a0ce11ab3bf9"
   }
 ]
