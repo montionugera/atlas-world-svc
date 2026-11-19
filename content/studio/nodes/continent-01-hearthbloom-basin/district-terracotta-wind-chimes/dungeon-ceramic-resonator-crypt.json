@@ -147,5 +147,26 @@
       "verified": true,
       "evidence": "Drops the Porcelain Tuning Fork referenced in the Flute-Crest Promontory Fog of Lore lock_message."
     }
+  },
+  "gameplay_role": {
+    "verdict": "open_activity",
+    "chapter": null,
+    "proposed_level_band": [
+      19,
+      25
+    ],
+    "party_size": [
+      1,
+      4
+    ],
+    "session_minutes": [
+      10,
+      15
+    ],
+    "rewards": "Exploration title, lore collectibles",
+    "balance_reason": "Keeps Silme relevant without bringing its later chapter boss forward",
+    "boss_site_note": null,
+    "status": "proposed",
+    "source": "GPT balance verdict v2, 2026-11-19, delegated by owner"
   }
 }

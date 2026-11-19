@@ -163,6 +163,14 @@
       "chapter": "II",
       "status": "proposed",
       "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Tava Lv 1-10 prologue; gathering, forest exploration",
+      "veteran_return": "Rare herbs, memory-themed events, craft resources",
+      "party_content": "2-4: grove expeditions; 1-5: Chapter II story dungeon",
+      "cross_race_reason": "Market festivals and the Tava Grove story",
+      "party_hub_role": null,
+      "status": "proposed"
     }
   },
   "quality_checklist": {

@@ -151,5 +151,26 @@
       "verified": true,
       "evidence": "Drops Medallion Heart-Chime Shards referenced by the Lotus Kiln Rim fog_of_lore gate."
     }
+  },
+  "gameplay_role": {
+    "verdict": "optional_instance",
+    "chapter": null,
+    "proposed_level_band": [
+      12,
+      15
+    ],
+    "party_size": [
+      2,
+      4
+    ],
+    "session_minutes": [
+      12,
+      18
+    ],
+    "rewards": "Decoration, Spellglaze recipes",
+    "balance_reason": "Alternative to Maro farming; no superior equipment rewards",
+    "boss_site_note": null,
+    "status": "proposed",
+    "source": "GPT balance verdict v2, 2026-11-19, delegated by owner"
   }
 }

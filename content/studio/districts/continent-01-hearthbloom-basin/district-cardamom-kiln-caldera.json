@@ -72,6 +72,14 @@
       "chapter": "II",
       "status": "proposed",
       "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Distant mysterious destination; no beginner activity",
+      "veteran_return": "Exploration secrets, later expeditions",
+      "party_content": "Reserved: future elite expedition",
+      "cross_race_reason": "Shared high-risk exploration destination",
+      "party_hub_role": null,
+      "status": "proposed"
     }
   },
   "quality_checklist": {

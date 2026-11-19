@@ -191,6 +191,14 @@
       "chapter": "0",
       "status": "applied",
       "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Maro Lv 1-10 prologue; shared Chapter 0 at Lv 10-15",
+      "veteran_return": "Bell Reckoning, community events, beginner crafting",
+      "party_content": "2-4: lantern disturbances; 1-4: Chapter 0 story dungeon",
+      "cross_race_reason": "First shared chapter; the accessible gathering point",
+      "party_hub_role": "learn_party",
+      "status": "proposed"
     }
   },
   "quality_checklist": {

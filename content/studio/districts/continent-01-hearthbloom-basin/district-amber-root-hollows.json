@@ -158,6 +158,14 @@
       "chapter": "I",
       "status": "proposed",
       "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Ondo Lv 1-10 prologue; forging and mining",
+      "veteran_return": "Equipment crafting, specialist repairs, rare ore",
+      "party_content": "2-4: mine expeditions; 1-5: Chapter I story dungeon",
+      "cross_race_reason": "Weapon upgrades and the Chapter I story",
+      "party_hub_role": "coordinated_combat",
+      "status": "proposed"
     }
   },
   "quality_checklist": {
