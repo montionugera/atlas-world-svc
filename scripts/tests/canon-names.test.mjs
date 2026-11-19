@@ -72,3 +72,10 @@ test("glossary F-180: Maro Bell cast, renames, wardens", () => {
   assert.ok(card.includes("The Great Bell"));
   assert.ok(card.includes("Oil Leech"));
 });
+
+test("F-231: canon card lists towns and every town cast", () => {
+  const card = renderCanonCard(G);
+  for (const t of G.towns) assert.ok(card.includes(t.name), t.name);
+  for (const n of Object.values(G.npcs.town).flat()) assert.ok(card.includes(n.name), n.name);
+  assert.equal(readFileSync(join(ROOT, "content/studio/canon/canon-card.md"), "utf8"), card);
+});

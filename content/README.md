@@ -40,7 +40,7 @@ Authoring a sheet in detail:
 
 2. **Fill frontmatter** (YAML between `---` markers)
    - `id`: must match filename (without `.md`)
-   - `assetKey`: reference to `colyseus-server/generated/asset-keys.json`
+   - `assetKey`: reference to `content/generated/asset-keys.json`
    - `role`, `status`, `tier`: enums from schema
    - `stats`: design intent only (descriptive enums, not balance numbers)
    - `links.story`: array of story-node ids (e.g., `[faction-ashfang]`) — these
@@ -69,17 +69,15 @@ Authoring a sheet in detail:
 Every mob reference in authored content is a **hard gate FAIL** if it isn't a
 real server mob id (F-013): map `mobSpawnAreas[].mobType`, story
 `faction.mobFamily[]`, and quest `objectives[].targetId` of form `mob:*`.
-Valid ids live in the committed `colyseus-server/generated/mob-types.json`,
-emitted from the live server `MOB_TYPES` config.
+Valid ids live in the committed `content/generated/mob-types.json`,
+synced with the authoritative Rust server definitions in `server-rs/src/content/bestiary.rs`.
 
 Adding or renaming a mob definition:
 
-1. Edit `colyseus-server/src/config/mobs/definitions/`
-2. `bash colyseus-server/scripts/codegen/gen-mob-types.sh` (and
-   `gen-asset-keys.sh` — the render keys change too)
-3. Commit the refreshed `generated/*.json` — local `check_content.mjs` runs
-   FAIL against a stale file. CI regenerates both before the gates as a
-   backstop.
+1. Edit `server-rs/src/content/bestiary.rs` (and any matching map/spawn configs)
+2. Update `content/generated/mob-types.json` and `content/generated/asset-keys.json`
+3. Commit the refreshed `content/generated/*.json` and verify with
+   `node scripts/check_content.mjs` (local runs FAIL against stale ids).
 
 ## Canon (and the superseded bible)
 

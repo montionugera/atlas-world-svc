@@ -725,6 +725,184 @@ def _validate_districts_and_nodes(
     return districts_by_id, nodes_by_id
 
 
+_TEMP_STEPS = {"cold": 0, "cool": 1, "mild": 2, "warm": 3}
+_BIG_CLIMB_GATEWAYS = {"pass", "tunnel", "stairs"}
+# GEO-08: a continent kept at perpetual spring (canon) has no frost, ice, rime, snow or cold.
+_SPRING_BANNED = re.compile(r"\b(frost\w*|ice|icy|icicles?|rime|snow\w*|freez\w*|frozen|sleet|cold)\b", re.IGNORECASE)
+
+
+def _validate_geography(
+    studio_dir: Path,
+    continents_by_id: dict[str, dict[str, Any]],
+    districts_by_id: dict[str, dict[str, Any]],
+    nodes_by_id: dict[str, dict[str, Any]],
+    errors: list[str],
+) -> None:
+    """GEO-01..GEO-08 (F-233), GEO-09/10 (F-235); active only for continents that declare district_links."""
+    glossary_path = studio_dir / "canon" / "glossary.json"
+    towns = []
+    if glossary_path.exists():
+        towns = json.loads(glossary_path.read_text(encoding="utf-8")).get("towns") or []
+
+    for cid, cont in continents_by_id.items():
+        links = cont.get("district_links")
+        if links is None:
+            continue
+        label = f"continent '{cid}'"
+        dids = list(cont.get("district_ids") or [])
+        geo = {did: (districts_by_id.get(did) or {}).get("geography") for did in dids}
+
+        for did, g in geo.items():  # GEO-01
+            if not g:
+                errors.append(f"{label}: GEO-01 violation: district '{did}' has no geography")
+
+        adj: dict[str, set[str]] = {did: set() for did in dids}
+        seen: set[frozenset] = set()
+        for link in links:
+            lid, a, b = link.get("id"), link.get("a"), link.get("b")
+            if a not in adj or b not in adj or a == b:  # GEO-02 ends exist
+                errors.append(f"{label}: GEO-02 violation: link '{lid}' ends {a!r}/{b!r} are not two districts of this continent")
+                continue
+            pair = frozenset((a, b))
+            if pair in seen:
+                errors.append(f"{label}: GEO-02 violation: duplicate link for pair {sorted(pair)}")
+            seen.add(pair)
+            adj[a].add(b)
+            adj[b].add(a)
+
+            minutes = link.get("walk_minutes")  # GEO-03
+            if not isinstance(minutes, (int, float)) or not 8 <= minutes <= 30:
+                errors.append(f"{label}: GEO-03 violation: link '{lid}' walk_minutes {minutes!r} outside 8-30")
+
+            ga, gb = geo.get(a), geo.get(b)
+            if not ga or not gb:
+                continue
+            climb = abs(ga.get("elevation_band", 0) - gb.get("elevation_band", 0))  # GEO-04
+            gw_type = (link.get("gateway") or {}).get("type")
+            if climb >= 2 and gw_type not in _BIG_CLIMB_GATEWAYS:
+                errors.append(f"{label}: GEO-04 violation: link '{lid}' climbs {climb} bands through a '{gw_type}' gateway (needs pass, tunnel or stairs)")
+            ta = _TEMP_STEPS.get(ga["climate"]["temperature"])  # GEO-05
+            tb = _TEMP_STEPS.get(gb["climate"]["temperature"])
+            if ta is None or tb is None or abs(ta - tb) > 1:
+                errors.append(f"{label}: GEO-05 violation: link '{lid}' joins temperatures {ga['climate']['temperature']!r} and {gb['climate']['temperature']!r} more than one step apart")
+            names_a = {w["name"] for w in ga.get("weather", [])}  # GEO-07
+            if names_a == {w["name"] for w in gb.get("weather", [])}:
+                errors.append(f"{label}: GEO-07 violation: link '{lid}' joins districts with the same weather names {sorted(names_a)}")
+
+        texts = [  # GEO-08 free text: geography prose (not enum values) and link transitions
+            (did, str(v)) for did, g in geo.items() for k, val in (g or {}).items()
+            if k in ("biome", "water", "far_landmark", "weather", "discovery_hooks")
+            for v in (val if isinstance(val, list) else [val])
+        ] + [(l.get("id"), str(l.get("transition", ""))) for l in links]
+        for owner, text in texts:
+            hit = _SPRING_BANNED.search(text)
+            if hit:
+                errors.append(f"{label}: GEO-08 violation: '{owner}' text mentions {hit.group(0)!r} but the continent is at perpetual spring")
+
+        if adj:  # GEO-02 connectivity
+            start = next(iter(adj))
+            reach, queue = {start}, deque([start])
+            while queue:
+                for nxt in adj[queue.popleft()] - reach:
+                    reach.add(nxt)
+                    queue.append(nxt)
+            if reach != set(adj):
+                errors.append(f"{label}: GEO-02 violation: link graph is not connected, unreachable: {sorted(set(adj) - reach)}")
+
+        for town in towns:  # GEO-06
+            want = town.get("terrain_group")
+            node = nodes_by_id.get(town.get("studio_node_id"))
+            did = (node or {}).get("parent_district_id")
+            if not want or did not in geo or not geo[did]:
+                continue
+            if geo[did].get("terrain_group") != want:
+                errors.append(f"{label}: GEO-06 violation: district '{did}' terrain_group {geo[did].get('terrain_group')!r} differs from town '{town.get('name')}' ({want!r})")
+
+        # GEO-09: a node portal that leaves its district is a district link or a listed legacy portal.
+        # A transport link is a scheduled service, not a map edge, so it covers no portal.
+        covered = {frozenset((l.get("a"), l.get("b"))) for l in links}
+        legacy = {(e.get("from_node_id"), e.get("to_node_id")) for e in cont.get("legacy_portals") or []}
+        cross: set[tuple[str, str]] = set()
+        for nid, node in nodes_by_id.items():
+            src = node.get("parent_district_id")
+            if src not in geo:
+                continue
+            for portal in (node.get("portals") or {}).values():
+                tid = (portal or {}).get("target_node_id")
+                dst = (nodes_by_id.get(tid) or {}).get("parent_district_id")
+                if tid and dst != src:
+                    cross.add((nid, tid))
+                    if frozenset((src, dst)) not in covered and (nid, tid) not in legacy:
+                        errors.append(f"{label}: GEO-09 violation: portal {nid} -> {tid} leaves its district and is in no district_links or legacy_portals")
+        for pair in sorted(legacy - cross):
+            errors.append(f"{label}: GEO-09 violation: legacy_portals entry {pair[0]} -> {pair[1]} has no matching node portal; remove it")
+
+        for l in links:  # GEO-10
+            if l.get("priority") not in ("P0", "P1", "P2", "built"):
+                errors.append(f"{label}: GEO-10 violation: link '{l.get('id')}' priority {l.get('priority')!r} is not P0, P1, P2 or built")
+        open_dirs = {  # GEO-11: (src district, dst district) pairs that have an open node portal
+            (src, dst)
+            for n in nodes_by_id.values()
+            for p in (n.get("portals") or {}).values()
+            if p and p.get("gate_state") == "open"
+            for src, dst in [(n.get("parent_district_id"), (nodes_by_id.get(p.get("target_node_id")) or {}).get("parent_district_id"))]
+        }
+        for l in links:
+            if l.get("priority") == "built" and l.get("a") and l.get("b"):
+                for pair in ((l["a"], l["b"]), (l["b"], l["a"])):
+                    if pair not in open_dirs:
+                        errors.append(f"{label}: GEO-11 violation: link '{l.get('id')}' is built but has no open node portal from {pair[0]} to {pair[1]}")
+        # GEO-12: step 4 gameplay roles (proposed data), recorded on dungeons and districts
+        for nid, node in sorted(nodes_by_id.items()):
+            if not nid.startswith("dungeon-") or node.get("parent_continent_id") != cid:
+                continue
+            r = node.get("gameplay_role") or {}
+            band = r.get("proposed_level_band")
+            why = []
+            if r.get("verdict") not in GAMEPLAY_VERDICTS:
+                why.append(f"verdict {r.get('verdict')!r} is not one of {GAMEPLAY_VERDICTS}")
+            if not (isinstance(band, list) and len(band) == 2 and band[0] <= band[1]):
+                why.append(f"proposed_level_band {band!r} is not [min, max]")
+            if r.get("status") not in GAMEPLAY_STATUS:
+                why.append(f"status {r.get('status')!r} is not one of {GAMEPLAY_STATUS}")
+            if r.get("verdict") == "story_dungeon":
+                if not r.get("chapter") or not r.get("boss_site_note"):
+                    why.append("a story_dungeon needs a chapter and a boss_site_note")
+            elif r.get("chapter") is not None:
+                why.append("only a story_dungeon has a chapter")
+            if not r:
+                why = ["has no gameplay_role"]
+            errors.extend(f"{label}: GEO-12 violation: node '{nid}' {w}" for w in why)
+        finds = 0
+        for did, g in geo.items():
+            if not g:
+                continue
+            gp = g.get("gameplay") or {}
+            miss = [k for k in ("new_player", "veteran_return", "party_content", "cross_race_reason") if not gp.get(k)]
+            if miss:
+                errors.append(f"{label}: GEO-12 violation: district '{did}' geography.gameplay lacks {miss}")
+            if gp.get("party_hub_role") not in PARTY_HUB_ROLES:
+                errors.append(f"{label}: GEO-12 violation: district '{did}' party_hub_role {gp.get('party_hub_role')!r} is not one of {PARTY_HUB_ROLES[:-1]} or null")
+            finds += gp.get("party_hub_role") == "find_party"
+        if finds != 1:
+            errors.append(f"{label}: GEO-12 violation: exactly one district must have party_hub_role 'find_party', found {finds}")
+        home = {(nodes_by_id.get(t.get("studio_node_id")) or {}).get("parent_district_id") for t in towns if t.get("race")}
+        for did, g in geo.items():
+            if not g:  # GEO-01 already reports it
+                continue
+            bands = g.get("encounter_bands") or {}
+            main = bands.get("main")
+            if not (isinstance(main, list) and len(main) == 2):
+                errors.append(f"{label}: GEO-10 violation: district '{did}' has no encounter_bands.main [min, max]")
+            if did in home and bands.get("starter") != [1, 10]:
+                errors.append(f"{label}: GEO-10 violation: race home district '{did}' needs encounter_bands.starter [1, 10], got {bands.get('starter')!r}")
+
+
+GAMEPLAY_VERDICTS = ("story_dungeon", "optional_instance", "open_activity")
+GAMEPLAY_STATUS = ("proposed", "decided", "applied")
+PARTY_HUB_ROLES = ("find_party", "learn_party", "crossroads", "coordinated_combat", None)
+
+
 def build_runtime_manifest(studio_dir: Path = DEFAULT_STUDIO_DIR) -> dict[str, Any]:
     """Build content/maps/_manifest.runtime.json from validated studio hierarchy."""
     errors = validate_studio_directory(studio_dir)
@@ -1090,7 +1268,8 @@ def validate_studio_directory(studio_dir: Path) -> list[str]:
                     )
 
     # Validate Layer 3 Districts and Layer 4 Nodes (INV-01..INV-07)
-    _validate_districts_and_nodes(studio_dir, whc, continents_by_id, errors)
+    districts_by_id, nodes_by_id = _validate_districts_and_nodes(studio_dir, whc, continents_by_id, errors)
+    _validate_geography(studio_dir, continents_by_id, districts_by_id, nodes_by_id, errors)
 
     # Validate Long-Term Multi-Race, 4-Chapter History, Guild/Blacksmith & Boss Hierarchy Gates (GOV-01..GOV-06)
     try:

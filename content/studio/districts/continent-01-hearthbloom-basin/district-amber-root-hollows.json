@@ -114,6 +114,60 @@
     "visual_silhouette": "Cathedral-like arches of glowing amber tree-roots framing the eastern brick viaduct piers.",
     "unanswered_question": "What ancient sky-trellis lies beyond the Banyan Canopy Spur above Amber-Root Hollows?"
   },
+  "geography": {
+    "terrain_group": "Stone Highlands",
+    "map_position": {
+      "x": 78,
+      "y": 40
+    },
+    "elevation_band": 2,
+    "biome": "Dense banyan roots over damp stone with amber resin pillars, rust-and-green ore outcrops where roots split the rock, and open upland ground above the tunnels; mild and wet in the root shade.",
+    "climate": {
+      "temperature": "mild",
+      "moisture": "wet"
+    },
+    "weather": [
+      {
+        "name": "Canopy drizzle",
+        "when": "after rain",
+        "feel": "Water keeps dripping from the roots for an hour after the sky has cleared."
+      },
+      {
+        "name": "Tunnel breath",
+        "when": "midday",
+        "feel": "Damp air pushes out of the tunnel mouths and beads the lantern glass with water."
+      }
+    ],
+    "water": "Seep springs run out of the root mass into amber-coloured pools, then drain west along the trail toward the Teacup Meadows creeks.",
+    "far_landmark": "The Banyan Canopy Spur lifts a crest of golden banyan crowns above the eastern ridge, seen east-north-east from Teacup Meadows.",
+    "discovery_hooks": [
+      "A root arch where amber sap has set into a clear gold ring big enough to stand inside.",
+      "A seep pool so clear that its stones look like amber coins, with copper-green ore showing in the bank."
+    ],
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": [
+        1,
+        10
+      ],
+      "main": [
+        15,
+        25
+      ],
+      "identity": "Ondo prologue, Ch I core",
+      "chapter": "I",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Ondo Lv 1-10 prologue; forging and mining",
+      "veteran_return": "Equipment crafting, specialist repairs, rare ore",
+      "party_content": "2-4: mine expeditions; 1-5: Chapter I story dungeon",
+      "cross_race_reason": "Weapon upgrades and the Chapter I story",
+      "party_hub_role": "coordinated_combat",
+      "status": "proposed"
+    }
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

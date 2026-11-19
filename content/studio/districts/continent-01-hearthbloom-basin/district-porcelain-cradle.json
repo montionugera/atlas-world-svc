@@ -8,7 +8,7 @@
   "local_conflict": "Luminous glaze-sprites and ancient kiln-wardens guard the inner sanctuary where Hearth-Sparks first condense.",
   "level_band_label": "Levels 1 to 20",
   "level_range": [
-    10,
+    1,
     15
   ],
   "ecological_monster_families": [
@@ -31,8 +31,8 @@
       ],
       "floor_index": 0,
       "level_range": [
-        10,
-        12
+        1,
+        10
       ],
       "is_starter_town": false
     },
@@ -47,8 +47,8 @@
       ],
       "floor_index": 0,
       "level_range": [
-        11,
-        14
+        1,
+        5
       ],
       "is_starter_town": false
     },
@@ -113,6 +113,60 @@
     "in_world_rumor": "Lantern-Keepers say that when the central pond in Lantern Hollow is completely still, you can see the white-gold roofs of Porcelain Cradle reflected below.",
     "visual_silhouette": "A sunken amphitheater of translucent white porcelain domes glowing softly beneath shallow warm springs.",
     "unanswered_question": "What sleeps beyond the steaming Lotus Kiln Rim at the northern edge of Porcelain Cradle Sanctuary?"
+  },
+  "geography": {
+    "terrain_group": "Green Lowlands",
+    "map_position": {
+      "x": 42,
+      "y": 38
+    },
+    "elevation_band": 1,
+    "biome": "A sunken pearl-white amphitheater around a shallow warm lake, with lotus pads on the water and a pale porcelain rim that keeps the air still inside.",
+    "climate": {
+      "temperature": "mild",
+      "moisture": "moderate"
+    },
+    "weather": [
+      {
+        "name": "Pearl-light",
+        "when": "dawn",
+        "feel": "Low sun turns the white domes pink-grey before the rim lights up."
+      },
+      {
+        "name": "Dome glare",
+        "when": "midday",
+        "feel": "White porcelain throws hard light, so the far side of the lake looks blank."
+      }
+    ],
+    "water": "A shallow lake fed by springs under the white domes; its overflow leaves south-east as a creek that joins the Teacup Meadows creeks.",
+    "far_landmark": "Lotus Kiln Rim, a pale lip above the sunken amphitheater, with a thin thread of vapour rising behind it, seen north-north-west from Teacup Meadows.",
+    "discovery_hooks": [
+      "A cracked white causeway slab on the creek path that rings like a bell when stepped on.",
+      "Lotus pads at the lake edge with glazed white undersides that turn up one by one at dusk."
+    ],
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": [
+        1,
+        10
+      ],
+      "main": [
+        10,
+        15
+      ],
+      "identity": "Linde prologue, gentle Ch 0 farming",
+      "chapter": "0",
+      "status": "applied",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Linde Lv 1-10 prologue; basic crafting and exploration",
+      "veteran_return": "Spellglaze materials, artisan contracts",
+      "party_content": "2-4: optional instance and porcelain anomalies",
+      "cross_race_reason": "Maro-Linde exchange; cross-race gathering and crafting",
+      "party_hub_role": null,
+      "status": "proposed"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {

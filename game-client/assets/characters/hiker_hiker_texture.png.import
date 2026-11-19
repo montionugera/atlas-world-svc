@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/hiker_hiker_texture.png-bd147c967d8b796de6700
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

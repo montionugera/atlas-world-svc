@@ -651,3 +651,55 @@ test("existing character kind is unchanged: good.glb still passes", async () => 
   const r = await validateGlb(fx("good.glb"), { kind: "character" });
   assert.deepEqual(r.failures, []);
 });
+
+test("manifest mode: pull-only entry checks LICENSES.md by manifest key, not 64-hex sha256 basename", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "asset-forge-pull-lic-"));
+  const sha = "a".repeat(64);
+  const shaGlb = path.join(dir, `${sha}.glb`);
+  writeFileSync(shaGlb, readFileSync(fx("good.glb")));
+  const manifestPath = path.join(dir, "manifest.json");
+  try {
+    // 1. Key present in art-source/LICENSES.md -> passes license check despite 64-hex filename.
+    writeFileSync(
+      manifestPath,
+      JSON.stringify({
+        version: 2,
+        entries: {
+          "npc:lantern_hollow_watch_sergeant": {
+            scene: shaGlb,
+            source: "Asset Studio",
+            license: "studio-private",
+            tier: "bespoke",
+            kind: "character",
+            pull: { from: "asset-studio", assetStudioAsset: "0000", tag: "t", sha256: sha },
+          },
+        },
+      }),
+    );
+    const ok = await validateManifest(manifestPath);
+    assert.deepEqual(ok.failures, []);
+
+    // 2. Key absent from art-source/LICENSES.md -> still fails license check (never silently skipped).
+    writeFileSync(
+      manifestPath,
+      JSON.stringify({
+        version: 2,
+        entries: {
+          "npc:definitely_not_in_licenses_ledger": {
+            scene: shaGlb,
+            source: "Asset Studio",
+            license: "studio-private",
+            tier: "bespoke",
+            kind: "character",
+            pull: { from: "asset-studio", assetStudioAsset: "0000", tag: "t", sha256: sha },
+          },
+        },
+      }),
+    );
+    const bad = await validateManifest(manifestPath);
+    assert.equal(bad.failures.length, 1);
+    assert.match(bad.failures[0], /license: 'npc:definitely_not_in_licenses_ledger' not found/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

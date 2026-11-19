@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/grass_1_c_color1_forest_texture.png-6b0323ba0
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

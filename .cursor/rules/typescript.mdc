@@ -1,33 +1,19 @@
-# TypeScript — Colyseus server
+# TypeScript — `contracts/` & `client/react-client/`
 
-## Compilation (colyseus-server)
-- **Target**: ES2020
-- **Module**: CommonJS (`tsconfig.json`: `"module": "commonjs"`)
-- **Out**: `dist/` (from `src/`)
-- **Strict**: true; decorators enabled (Colyseus Schema)
+## Scope
+TypeScript lives in `contracts/` (shared types, schemas, and content contracts in the pnpm workspace) and `client/react-client/` (web client). The game server is Rust (`server-rs/`).
 
-## Colyseus Schema
-- Use `@type` decorators for synced state (MapSchema, etc.)
-- Server-only fields: no `@type`; not sent to clients
-- See `colyseus-server/src/schemas/` for Player, Mob, NPC, GameState
+## Standards
+- **Strict**: `strict: true`, no unjustified `any`, explicit public interfaces.
+- **Formatting & lint**: Prettier + ESLint clean on all touched files.
+- **Naming**: PascalCase for types/components, camelCase for functions/hooks, `UPPER_SNAKE_CASE` for constants.
+- **Patterns**: Single options object for constructors (see `01-apis-and-constructors.mdc`).
 
-## Naming
-- **Classes**: PascalCase
-- **Files**: kebab-case or PascalCase for components
-- **Constants**: UPPER_SNAKE_CASE in config
-
-## Patterns
-- Single options object for constructors (see 01-apis-and-constructors.mdc)
-- No `any` without justification; use explicit types
-- Prefer interfaces for public shapes
-
-## Build
+## Build & Test
 ```bash
-cd colyseus-server
-npm run build   # → dist/
-npm run dev     # watch + run
-```
+# Shared contracts (pnpm workspace)
+cd contracts && pnpm run build && pnpm test && npx tsc --noEmit
 
-## Related
-- Schemas: `colyseus-server/src/schemas/`
-- Config: `colyseus-server/tsconfig.json`
+# React web client (own package-lock.json)
+cd client/react-client && CI=true npx react-scripts test --watchAll=false
+```

@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/superhero_superhero_texture.png-09c1968ee8956
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

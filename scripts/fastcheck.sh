@@ -70,10 +70,16 @@ if grep -qE '^client/react-client/' <<<"$CHANGED"; then
 fi
 
 # 4. Direct test files touched under scripts/tests or atelier/*/tests
-DIRECT_MJS="$(grep -E '^(scripts/tests|atelier/[^/]+/tests)/.*\.test\.mjs$' <<<"$CHANGED" || true)"
+# a deleted file is still in $CHANGED: only run files that exist
+DIRECT_MJS="$(grep -E '^(scripts/tests|atelier/[^/]+/tests)/.*\.test\.mjs$' <<<"$CHANGED" | while IFS= read -r f; do [ -e "$f" ] && echo "$f"; done || true)"
 if [ -n "$DIRECT_MJS" ]; then
   # shellcheck disable=SC2086
   run_step "node --test (touched test files)" node --test $DIRECT_MJS
+fi
+
+# 4b. Environment camera parity gate (<50ms) whenever world verify/pregate C# changes
+if grep -qE '^game-client/src/World/.*\.cs$' <<<"$CHANGED" && [ -f "$REPO_ROOT/scripts/tests/env-cam-parity.test.mjs" ]; then
+  run_step "env camera parity gate (F-232)" node --test "$REPO_ROOT/scripts/tests/env-cam-parity.test.mjs"
 fi
 
 # 5. Content spine / digest quick check (~1s)
@@ -82,7 +88,7 @@ if grep -qE '^content/' <<<"$CHANGED"; then
 fi
 
 # 6. Python scripts syntax / quick check
-PY_TOUCHED="$(grep -E '^scripts/.*\.py$' <<<"$CHANGED" || true)"
+PY_TOUCHED="$(grep -E '^scripts/.*\.py$' <<<"$CHANGED" | while IFS= read -r f; do [ -e "$f" ] && echo "$f"; done || true)"
 if [ -n "$PY_TOUCHED" ]; then
   # shellcheck disable=SC2086
   run_step "python3 py_compile" python3 -m py_compile $PY_TOUCHED

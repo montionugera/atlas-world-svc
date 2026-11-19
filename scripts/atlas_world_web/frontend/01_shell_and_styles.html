@@ -141,19 +141,326 @@
       border: 1px solid var(--joy-border-default);
       border-radius: 4px;
     }
+    .topbar .sidebar-search {
+      padding: 0;
+      flex: 1 1 240px;
+      min-width: 228px;
+      max-width: 340px;
+      margin-left: auto;
+    }
+    /* 30px + the 1px border = 32px, the height of the buttons beside it: the bar keeps its height */
+    .topbar .sidebar-search__input {
+      height: 30px;
+      min-width: 0;
+    }
+    /* Below 1600px the top bar has no spare room: Back/Forward go icon-only (as on a phone)
+       and the shortcut hint goes, so the search input keeps a width you can type in. */
+    @media (max-width: 1599px) {
+      .topbar .sidebar-search__kbd,
+      .topbar__history-label {
+        display: none;
+      }
+    }
+    /* A title squeezed to one clipped letter is noise: drop it while its group is too narrow to hold it. */
+    @media (min-width: 768px) and (max-width: 1599px) {
+      .topbar__title {
+        display: none;
+      }
+    }
+    .search-popover__archive {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 12px;
+      font-size: var(--joy-font-size-sm);
+      color: var(--joy-text-secondary);
+      background: var(--joy-surface-card);
+      border-bottom: 1px solid var(--joy-border-default);
+      cursor: pointer;
+      user-select: none;
+    }
+    .search-popover {
+      position: fixed;
+      max-height: min(60vh, 480px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      background: var(--joy-surface-card);
+      border: 1px solid var(--joy-border-default);
+      border-radius: var(--joy-radius-card);
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--joy-text-primary) 18%, transparent);
+      z-index: 900;
+      transition: opacity 120ms ease;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .search-popover {
+        transition: none;
+      }
+    }
+    .search-popover__row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      column-gap: 10px;
+      row-gap: 2px;
+      padding: 8px 12px;
+      min-height: 44px;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--joy-border-subtle);
+      cursor: pointer;
+      align-items: center;
+      font-family: inherit;
+    }
+    .search-popover__row:last-child {
+      border-bottom: none;
+    }
+    .search-popover__row[aria-selected="true"],
+    .search-popover__row:hover {
+      background: var(--joy-accent-subtle);
+    }
+    .search-popover__row:focus-visible {
+      outline: 2px solid var(--joy-border-focus);
+      outline-offset: -2px;
+    }
+    .search-popover__row > .joy-badge:first-child {
+      grid-column: 1;
+      grid-row: 1;
+      align-self: center;
+    }
+    .search-popover__title {
+      grid-column: 2;
+      grid-row: 1;
+      font-size: var(--joy-font-size-sm);
+      font-weight: 600;
+      color: var(--joy-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .search-popover__row > .joy-badge:not(:first-child) {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+    }
+    .search-popover__summary {
+      grid-column: 2;
+      grid-row: 2;
+      font-size: var(--joy-font-size-xs, 12px);
+      color: var(--joy-text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .search-popover__message {
+      padding: 14px 12px;
+      font-size: var(--joy-font-size-sm);
+      color: var(--joy-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .record-page {
+      max-width: 72ch;
+      padding: 24px 20px;
+      margin: 0;
+      text-align: left;
+    }
+    .record-page h1,
+    .home-page h1 {
+      font-size: var(--joy-font-size-xl, 22px);
+      font-weight: 600;
+      color: var(--joy-text-primary);
+      text-wrap: balance;
+      margin: 8px 0 12px;
+    }
+    .home-page {
+      max-width: 640px;
+      padding: 24px;
+    }
+    .home-counts {
+      margin-top: 16px;
+      border-top: 1px solid var(--joy-border-default);
+    }
+    .home-count {
+      display: grid;
+      grid-template-columns: 6ch 1fr auto;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 44px;
+      padding: 0 8px;
+      border: 0;
+      border-bottom: 1px solid var(--joy-border-default);
+      background: none;
+      color: var(--joy-text-primary);
+      font: inherit;
+      text-align: left;
+    }
+    button.home-count { cursor: pointer; }
+    button.home-count:hover { background: var(--joy-surface-sunken); }
+    button.home-count:focus-visible { outline: 2px solid var(--joy-border-focus); outline-offset: -2px; }
+    .home-count__n {
+      font-family: var(--joy-font-family-mono);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      text-align: right;
+    }
+    .home-count__entry {
+      color: var(--joy-text-secondary);
+      font-size: var(--joy-font-size-sm);
+    }
+    .record-page__skeleton {
+      background: var(--joy-surface-sunken);
+      border-radius: var(--joy-radius-control);
+      width: 60%;
+      height: 28px;
+    }
+    .record-page__summary {
+      color: var(--joy-text-secondary);
+      font-size: var(--joy-font-size-md, 14px);
+      line-height: 1.5;
+      text-wrap: pretty;
+      margin: 0 0 16px;
+    }
+    .record-page__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0 0 20px;
+    }
+    .record-page section {
+      margin-top: 24px;
+    }
+    .record-page section h2 {
+      font-size: var(--joy-font-size-sm, 13px);
+      font-weight: 600;
+      color: var(--joy-text-secondary);
+      margin: 0 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .record-page section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .record-page section li {
+      border-bottom: 1px solid var(--joy-border-subtle);
+    }
+    .record-page section li:last-child {
+      border-bottom: none;
+    }
+    .record-page section button.rms-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 44px;
+      padding: 8px 12px;
+      background: transparent;
+      border: none;
+      color: var(--joy-text-primary);
+      font-family: inherit;
+      font-size: var(--joy-font-size-sm, 13px);
+      text-align: left;
+      cursor: pointer;
+      border-radius: var(--joy-radius-control);
+    }
+    .record-page section button.rms-link:hover,
+    .record-page section button.rms-link:focus-visible {
+      background: var(--joy-surface-sunken);
+      outline: 2px solid var(--joy-border-focus);
+      outline-offset: -2px;
+    }
+    /* F-237 record map */
+    .record-page:has(.record-map--plane) { max-width: none; }
+    .record-page { min-width: 0; box-sizing: border-box; }
+    .record-map { margin: 20px 0 8px; padding: 0; min-width: 0; max-width: 100%; }
+    .record-map__scroll { overflow-x: auto; background: var(--joy-surface-sunken); border: 1px solid var(--joy-border-subtle); border-radius: var(--joy-radius-card); }
+    .record-map svg { display: block; width: 100%; height: auto; font-family: var(--joy-font-family-sans, sans-serif); }
+    .record-map .rm-edge { stroke: var(--joy-text-secondary); stroke-width: 2.5; }
+    .record-map .rm-edge--closed { stroke: var(--joy-text-muted); stroke-dasharray: 7 6; }
+    .record-map .rm-edge--danger { stroke: var(--joy-status-danger-fg); stroke-width: 4; }
+    .record-map .rm-warn circle { fill: var(--joy-status-danger-fg); stroke: var(--joy-surface-sunken); stroke-width: 3; }
+    .record-map .rm-warn text { fill: var(--joy-surface-canvas); font-size: 16px; font-weight: 800; }
+    .record-map .rm-pill rect { fill: var(--joy-surface-card); stroke: var(--joy-border-strong); }
+    .record-map .rm-pill text { fill: var(--joy-text-primary); font-size: 12px; font-weight: 600; }
+    .record-map .rm-node { --k: var(--joy-accent-primary); cursor: pointer; outline: none; }
+    .record-map .rm-node--town { --k: #e3a948; } .record-map .rm-node--hunting { --k: #5fbf84; }
+    .record-map .rm-node--dungeon { --k: #b58aee; } .record-map .rm-node--district { --k: #6aa9e6; }
+    .record-map .rm-node--unbuilt { --k: #8a8f98; } .record-map .rm-node--outside { --k: #6aa9e6; }
+    .record-map .rm-node rect { fill: color-mix(in srgb, var(--k) 20%, var(--joy-surface-card)); stroke: var(--k); stroke-width: 2; }
+    .record-map .rm-node--town rect { stroke-width: 4; }
+    .record-map .rm-node--unbuilt rect, .record-map .rm-node--outside rect { stroke-dasharray: 5 4; fill: var(--joy-surface-card); }
+    .record-map .rm-node:hover rect, .record-map .rm-node:focus-visible rect { stroke-width: 4; fill: color-mix(in srgb, var(--k) 34%, var(--joy-surface-card)); }
+    .record-map .rm-node:focus-visible rect { stroke: var(--joy-border-focus); }
+    .record-map .rm-name { fill: var(--joy-text-primary); font-size: 14px; font-weight: 650; }
+    .record-map .rm-sub { fill: var(--joy-text-secondary); font-size: 13px; }
+    .record-map__legend .rm-legend-note { flex-basis: 100%; }
+    .record-gameplay { margin-bottom: 14px; }
+    .record-gameplay h2 { margin: 20px 0 8px; }
+    .record-gameplay dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; }
+    .record-gameplay dt { font-weight: 650; color: var(--joy-text-secondary); }
+    .record-gameplay dd { margin: 0; }
+    @media (max-width: 600px) { .record-gameplay dl { grid-template-columns: 1fr; gap: 0; } .record-gameplay dd { margin-bottom: 10px; } }
+    .record-map__hint { display: none; margin: 8px 0 0; font-size: var(--joy-font-size-sm); color: var(--joy-text-secondary); }
+    @media (max-width: 900px) { .record-map__hint { display: block; } }
+    .record-map__legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 0; padding: 0; font-size: var(--joy-font-size-sm); color: var(--joy-text-secondary); }
+    .record-map__legend li { display: flex; align-items: center; gap: 6px; margin: 0; padding: 0; border: 0; }
+    .rm-swatch { width: 16px; height: 12px; border-radius: 4px; border: 2px solid #8a8f98; background: color-mix(in srgb, #8a8f98 22%, var(--joy-surface-card)); }
+    .rm-swatch--town { border-color: #e3a948; background: color-mix(in srgb, #e3a948 25%, var(--joy-surface-card)); border-width: 3px; }
+    .rm-swatch--hunting { border-color: #5fbf84; background: color-mix(in srgb, #5fbf84 25%, var(--joy-surface-card)); }
+    .rm-swatch--dungeon { border-color: #b58aee; background: color-mix(in srgb, #b58aee 25%, var(--joy-surface-card)); }
+    .rm-swatch--district, .rm-swatch--outside { border-color: #6aa9e6; border-style: dashed; background: var(--joy-surface-card); }
+    .rm-swatch--district { border-style: solid; background: color-mix(in srgb, #6aa9e6 25%, var(--joy-surface-card)); }
+    .rm-swatch--unbuilt { border-style: dashed; background: var(--joy-surface-card); }
+    .rm-line { width: 24px; border-top: 3px solid var(--joy-text-secondary); }
+    .rm-line--closed { border-top: 3px dashed var(--joy-text-muted); }
+    .rm-line--danger { border-top: 4px solid var(--joy-status-danger-fg); }
+    .record-map__legend b { color: var(--joy-status-danger-fg); }
+    .record-page__empty {
+      color: var(--joy-text-secondary);
+      font-size: var(--joy-font-size-sm);
+      margin-top: 16px;
+    }
+    .record-page__source {
+      font-size: var(--joy-font-size-xs, 11px);
+      color: var(--joy-text-secondary);
+      margin-top: 32px;
+      padding-top: 12px;
+      border-top: 1px solid var(--joy-border-subtle);
+    }
+    .catalog-stale-banner {
+      background: var(--joy-status-danger-bg);
+      color: var(--joy-status-danger-fg);
+      border-bottom: 1px solid var(--joy-border-default);
+      padding: 8px 20px;
+      font-size: var(--joy-font-size-sm);
+      font-weight: 600;
+    }
+    .catalog-stale-banner code {
+      display: block;
+      font-weight: normal;
+      font-family: var(--joy-font-family-mono);
+      font-size: var(--joy-font-size-xs, 12px);
+      overflow-wrap: anywhere;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-top: 2px;
+    }
     .nav {
       flex: 1;
       overflow-y: auto;
       padding: 6px 10px 16px;
-    }
-    .nav-section {
-      font-size: 10.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--joy-text-muted);
-      padding: 12px 10px 5px;
-      margin-top: 2px;
     }
     .nav-item {
       display: flex;
@@ -176,6 +483,13 @@
       background: var(--joy-accent-subtle);
       color: var(--joy-accent-text);
       font-weight: 600;
+    }
+    .nav-item:focus-visible {
+      outline: 2px solid var(--joy-border-focus);
+      outline-offset: -2px;
+    }
+    @media (max-width: 767px) {
+      .nav-item { min-height: 44px; }
     }
     .nav-section-count {
       display: inline-flex;
@@ -284,7 +598,12 @@
     #panelHost { width: 100%; max-width: 100%; margin: 0 auto; padding: 8px 16px 64px; box-sizing: border-box; }
     #panelHost > [data-panel][hidden] { display: none !important; }
     .subview-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 16px 0; }
-    @media (max-width: 720px) { #panelHost { padding: 4px; } .subview-bar { padding: 4px; } }
+    .subview-bar__sep { flex: 0 0 auto; align-self: stretch; width: 1px; margin: 0 4px; background: var(--joy-border-default); }
+    @media (max-width: 720px) {
+      #panelHost { padding: 4px; }
+      .subview-bar { flex-wrap: nowrap; overflow-x: auto; padding: 4px; }
+      .subview-bar > .joy-button { flex: 0 0 auto; min-height: 44px; }
+    }
     .studio-split-layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 340px;
@@ -1973,7 +2292,7 @@
     @media (max-height: 480px) and (min-width: 768px) {
       .joy-spatial-shell:not([data-theater="true"]) .joy-spatial-shell__canvas {
         min-height: 0;
-        height: max(200px, calc(100dvh - 160px));
+        height: max(160px, calc(100dvh - 200px));
       }
       /* The top-left HUD (map style buttons) is taller than the short canvas leaves free; keep the engine
          toolbar above it so its buttons stay reachable. */
@@ -2102,7 +2421,17 @@
       }
       body .topbar__start {
         flex: 1 1 340px;
-        min-width: 260px;
+        min-width: min-content;
+      }
+    }
+    @media (min-width: 1180px) and (min-height: 481px) {
+      body .topbar {
+        flex-wrap: nowrap;
+      }
+      body .topbar .topbar__end {
+        flex-wrap: nowrap;
+        min-width: 0;
+        flex: 0 1 auto;
       }
     }
     /* F-157: the 1-5 hotkey hints on the lens tabs cost ~20px each; drop them where the bar is tight. */
@@ -2351,6 +2680,31 @@
         cursor: pointer;
         flex-shrink: 0;
       }
+      #mobileNavMenuBtn {
+        order: -2;
+      }
+      .topbar .sidebar-search {
+        order: -1;
+        flex: 1 0 190px;
+        max-width: none;
+        margin-left: 0;
+      }
+      .sidebar-search__kbd {
+        display: none;
+      }
+      .topbar .sidebar-search__input {
+        height: 26px;
+        min-width: 0;
+      }
+      .catalog-stale-banner {
+        padding: 8px 12px;
+      }
+      .record-page {
+        padding: 16px;
+      }
+      .home-page {
+        padding: 16px;
+      }
       .topbar__end {
         display: none !important;
       }
@@ -2501,22 +2855,6 @@
       </div>
     </div>
 
-    <div class="sidebar-search" role="search">
-      <div class="sidebar-search__inner">
-        <span class="sidebar-search__icon" aria-hidden="true">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </span>
-        <input
-          type="search"
-          id="globalSearch"
-          class="sidebar-search__input"
-          placeholder="Search items, mobs, skills..."
-          autocomplete="off"
-        />
-        <kbd class="sidebar-search__kbd">⌘K</kbd>
-      </div>
-    </div>
-
     <nav class="nav" id="sidebarNav"></nav>
 
     <div class="sidebar-footer">
@@ -2539,6 +2877,23 @@
         </div>
         <span class="topbar__title" id="topbarTitle">Interactive World Map &amp; Monster Atlas</span>
         <span class="joy-badge joy-badge--neutral joy-badge--sm" id="topbarStatus" role="status">Ready</span>
+        <div class="sidebar-search" role="search">
+          <div class="sidebar-search__inner">
+            <span class="sidebar-search__icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input
+              type="search"
+              id="globalSearch"
+              class="sidebar-search__input"
+              placeholder="Search every record..."
+              autocomplete="off"
+              aria-controls="searchPopover"
+              aria-label="Search every record"
+            />
+            <kbd class="sidebar-search__kbd">⌘K</kbd>
+          </div>
+        </div>
       </div>
       <div class="topbar__end">
         <select id="dropRateSelect" class="joy-select" aria-label="Item Drop Rate Multiplier" onchange="setDropRate(this.value)">
@@ -2562,6 +2917,10 @@
         </button>
       </div>
     </header>
+    <div id="searchPopover" class="search-popover" hidden>
+      <label class="search-popover__archive"><input type="checkbox" id="searchIncludeArchive" /> Include archive</label>
+      <div id="searchPopoverResults" role="listbox" aria-label="Search results"></div>
+    </div>
 
     <div class="scroll-stage" id="scrollStage">
       <div class="subview-bar" id="subViewBar" role="group" aria-label="View" hidden></div>

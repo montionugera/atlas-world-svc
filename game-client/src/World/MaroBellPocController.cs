@@ -26,6 +26,8 @@ namespace AtlasWorld.Client.World
         public static readonly Vector3 TovinWorldPos = new(4.5f, 0f, -50.0f);
         public static readonly Vector3 AmberWorldPos = new(1.0f, 0f, 28.0f);
         public static readonly Vector3 Lantern06WorldPos = new(-0.8f, 0f, 23.7f);
+        public const float WorkshopLanternLampY = 2.8f;
+        public const float WorkshopLanternLabelY = 3.4f;
         public static readonly Vector3 Lantern04WorldPos = new(-3.8f, 0f, 35.6f);
         public static readonly Vector3 SootMuncherWorldPos = new(12.0f, 0f, 6.0f);
         public static readonly Vector3 ParcelWorldPos = new(12.5f, 0f, 4.0f);
@@ -138,6 +140,7 @@ namespace AtlasWorld.Client.World
         private Label? _dialogueLabel;
 
         private double _footstepTimer = 0.0;
+        private UnifiedMapDocument? _mapDoc;
         private bool _reedBarkPlayed = false;
         private bool _tovinBarkPlayed = false;
         private bool _amberBarkPlayed = false;
@@ -167,11 +170,12 @@ namespace AtlasWorld.Client.World
                 hasFlankingPorcelainRibs);
         }
 
-        public void Initialize(UnifiedMapDocument doc)
+        public void Initialize(UnifiedMapDocument? doc)
         {
+            _mapDoc = doc;
             RecordBeatTimestamp("POC-00");
             SpawnNpcs();
-            SetupLanternNodes(doc);
+            if (doc != null) SetupLanternNodes(doc);
             SpawnSootMuncherEncounter();
             BuildUi();
             PlayEnvironmentalIntroAudio();
@@ -271,7 +275,7 @@ namespace AtlasWorld.Client.World
             };
             AddChild(WorkshopLanternNode);
 
-            AttachLanternLabel(WorkshopLanternNode, "[Unlit Lantern]\n[F] Light with Amber's Oil");
+            AttachLanternLabel(WorkshopLanternNode, "[Unlit Lantern]\n[F] Light with Amber's Oil", WorkshopLanternLabelY);
 
             OldLanternNode = new Node3D
             {
@@ -379,12 +383,13 @@ namespace AtlasWorld.Client.World
             }
         }
 
-        private static void AttachLanternLabel(Node3D root, string labelText)
+        private static void AttachLanternLabel(Node3D root, string labelText, float labelY = 2.65f)
         {
             var existing = root.GetNodeOrNull<Label3D>("OverheadNameplate");
             if (existing != null)
             {
                 existing.Text = labelText;
+                existing.Position = new Vector3(0f, labelY, 0f);
                 existing.Visible = true;
             }
             else
@@ -393,7 +398,7 @@ namespace AtlasWorld.Client.World
                 {
                     Name = "OverheadNameplate",
                     Text = labelText,
-                    Position = new Vector3(0f, 2.65f, 0f),
+                    Position = new Vector3(0f, labelY, 0f),
                     Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
                     FontSize = 13,
                     OutlineSize = 3,
@@ -524,7 +529,8 @@ namespace AtlasWorld.Client.World
                 {
                     if (animController.PollFootstepStrike(out bool isRightFoot, out bool isRunning))
                     {
-                        AudioRegistry.Instance?.PlayFootstep(playerPos, isRightFoot, isRunning);
+                        var surf = FootstepSurfaceResolver.Resolve(playerPos, _mapDoc);
+                        AudioRegistry.Instance?.PlayFootstep(playerPos, isRightFoot, isRunning, surf);
                         EnvironmentalAudioEventsPlayed++;
                     }
                 }
@@ -669,7 +675,7 @@ namespace AtlasWorld.Client.World
                         LightColor = new Color(1.0f, 0.78f, 0.45f), // Warm amber glow
                         LightEnergy = 2.2f,
                         OmniRange = 7.0f,
-                        Position = new Vector3(0f, 2.2f, 0f), // Head of lantern post
+                        Position = new Vector3(0f, WorkshopLanternLampY, 0f), // Head of lantern post
                         ShadowEnabled = false,
                     };
                     WorkshopLanternNode.AddChild(WorkshopLanternLight);
@@ -689,12 +695,12 @@ namespace AtlasWorld.Client.World
                         Name = "LanternGlowHead",
                         Mesh = new SphereMesh { Radius = 0.22f, Height = 0.38f },
                         MaterialOverride = glowMat,
-                        Position = new Vector3(0f, 2.2f, 0f),
+                        Position = new Vector3(0f, WorkshopLanternLampY, 0f),
                     };
                     WorkshopLanternNode.AddChild(WorkshopLanternGlowMesh);
                 }
 
-                AttachLanternLabel(WorkshopLanternNode, "[Lit Village Lantern]");
+                AttachLanternLabel(WorkshopLanternNode, "[Lit Village Lantern]", WorkshopLanternLabelY);
             }
 
             AudioRegistry.Instance?.Play("sfx:chime_bright", Lantern06WorldPos);

@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/werewolf_man_werewolf_A.png-1a78b2fe7cda1799b
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

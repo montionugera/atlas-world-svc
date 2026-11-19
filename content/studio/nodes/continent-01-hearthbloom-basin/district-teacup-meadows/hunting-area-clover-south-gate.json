@@ -115,6 +115,37 @@
         "equipment_slot": "Shield",
         "modifier_summary": "Physical Defense +3, Earth Resistance +5%"
       }
+    },
+    {
+      "spawn_id": "spawn-clover-dew-beetle-b",
+      "monster_id": "mob-clover-dew-beetle",
+      "monster_name": "Clover Dew-Beetle",
+      "spawn_count": 10,
+      "respawn_seconds": 8.0,
+      "level": 8,
+      "element": "Earth",
+      "size": "Small",
+      "race": "Insect",
+      "family": "insect",
+      "item_drops": [
+        {
+          "item_id": "item-glazed-shell",
+          "item_name": "Glazed Carapace Shell",
+          "drop_chance_percent": 55.0
+        },
+        {
+          "item_id": "item-clover-nectar",
+          "item_name": "Sweet Clover Nectar",
+          "drop_chance_percent": 14.0
+        }
+      ],
+      "monster_card_drop": {
+        "card_id": "card-clover-dew-beetle",
+        "card_name": "Clover Dew-Beetle Card",
+        "drop_chance_percent": 0.02,
+        "equipment_slot": "Shield",
+        "modifier_summary": "Physical Defense +3, Earth Resistance +5%"
+      }
     }
   ],
   "asset_kit_bindings": {

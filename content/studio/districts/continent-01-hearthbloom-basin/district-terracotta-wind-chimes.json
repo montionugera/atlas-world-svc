@@ -114,6 +114,65 @@
     "visual_silhouette": "Glazed terracotta arches along the western shield-rim hung with thousands of swaying ceramic bell-pipes.",
     "unanswered_question": "What wind-organ amphitheater crowns Flute-Crest Promontory?"
   },
+  "geography": {
+    "terrain_group": "Old Wilds",
+    "map_position": {
+      "x": 12,
+      "y": 25
+    },
+    "elevation_band": 4,
+    "biome": "A high bare ridge on the western rim, with rust-red ceramic pipes hung in bone-white glazed arches; below it a deep old-forest valley drops away to the east, and the Resonator Tunnel comes up from the caldera.",
+    "climate": {
+      "temperature": "cool",
+      "moisture": "dry"
+    },
+    "weather": [
+      {
+        "name": "Chime gale",
+        "when": "windy days",
+        "feel": "Strong gusts make all the pipes play at once, loud enough to drown out talking."
+      },
+      {
+        "name": "Midday thermals",
+        "when": "midday",
+        "feel": "Air rising off the lower slopes lifts through the pipes and sets them singing one after another up the ridge."
+      },
+      {
+        "name": "Clear night",
+        "when": "night",
+        "feel": "Thin clear air with the arches ringing faintly in no wind at all."
+      }
+    ],
+    "water": "Almost none on the ridge: a few stone troughs catch rain, and the nearest running stream is the Glaze River in the forest valley below, to the east.",
+    "far_landmark": "The glazed arches of Flute-Crest Promontory on the ridge skyline, with the sound of pipes carried down the slope before they come into view, seen north-north-west from Cinnamon-Bellows Bluff.",
+    "discovery_hooks": [
+      "A lone pipe taller than the rest that plays one note whatever the wind does.",
+      "A ring of pipes set in the forest floor below the ridge, each humming when the thermals rise."
+    ],
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": [
+        1,
+        10
+      ],
+      "main": [
+        25,
+        35
+      ],
+      "identity": "Silme prologue, later chapter side content",
+      "chapter": "later",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Silme Lv 1-10 prologue; observation and discoveries",
+      "veteran_return": "Lore, rare knowledge materials, hidden routes",
+      "party_content": "1-4: open ridge and crypt exploration",
+      "cross_race_reason": "Cartography, secrets and expedition preparation",
+      "party_hub_role": null,
+      "status": "proposed"
+    }
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

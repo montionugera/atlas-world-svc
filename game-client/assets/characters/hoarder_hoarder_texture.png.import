@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/hoarder_hoarder_texture.png-05c637d6f1897f891
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

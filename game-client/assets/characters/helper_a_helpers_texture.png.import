@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/helper_a_helpers_texture.png-41037d8af7210e32
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

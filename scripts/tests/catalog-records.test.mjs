@@ -1,0 +1,172 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { spawnSync, execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, writeFileSync, readdirSync, existsSync, cpSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const STUDIO = path.join(ROOT, 'content/studio');
+const tmp = mkdtempSync(path.join(os.tmpdir(), 'catalog-records-'));
+test.after(() => rmSync(tmp, { recursive: true, force: true }));
+
+const build = (name, env = {}) => {
+  const db = path.join(tmp, `${name}.sqlite`);
+  const r = spawnSync('python3', ['scripts/build_catalog_db.py'], {
+    cwd: ROOT, encoding: 'utf8', env: { ...process.env, ATLAS_CATALOG_DB: db, ...env },
+  });
+  return { db, status: r.status, stderr: r.stderr, stdout: r.stdout };
+};
+const sql = (db, q) => JSON.parse(execFileSync('python3', ['-I', '-c',
+  'import sqlite3,json,sys;print(json.dumps(sqlite3.connect(sys.argv[1]).execute(sys.argv[2]).fetchall()))', db, q]).toString());
+const one = (db, q) => sql(db, q)[0][0];
+const jsonFiles = (dir) => readdirSync(dir, { recursive: true }).filter((f) => String(f).endsWith('.json')).length;
+const sha = (f) => createHash('sha256').update(readFileSync(f)).digest('hex');
+const studioCopy = (name) => {
+  const dir = path.join(tmp, name);
+  cpSync(STUDIO, dir, { recursive: true, filter: (src) => !src.endsWith('.png') });
+  return dir;
+};
+
+const good = build('good');
+
+test('A3: one studio record per continent, district, node, playable map and plate', () => {
+  assert.equal(good.status, 0, good.stderr);
+  const manifest = JSON.parse(readFileSync(path.join(ROOT, 'content/maps/_manifest.runtime.json'), 'utf8'));
+  const want = {
+    continent: jsonFiles(path.join(STUDIO, 'continents')),
+    district: jsonFiles(path.join(STUDIO, 'districts')),
+    node: jsonFiles(path.join(STUDIO, 'nodes')),
+    studio_map: manifest.playableMaps.length,
+    map_plate: readdirSync(path.join(STUDIO, 'maps')).filter((f) => f.endsWith('.png')).length,
+  };
+  for (const [kind, n] of Object.entries(want)) {
+    assert.ok(n > 0, `${kind} source count is 0`);
+    assert.equal(one(good.db, `select count(*) from records where concept='studio' and kind='${kind}'`), n, kind);
+  }
+});
+
+test('runtime maps: one record per content/maps file, the manifest is not a map', () => {
+  const files = readdirSync(path.join(ROOT, 'content/maps')).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
+  assert.equal(one(good.db, "select count(*) from records where kind='map' and concept='studio'"), files.length);
+  assert.equal(one(good.db, "select count(*) from record_tags where kind='map' and tag='unbound-to-studio-world'"), files.length);
+  assert.equal(one(good.db, "select count(*) from maps where id like '\\_%' escape '\\'"), 0);
+});
+
+test('A4: hierarchy and map links, one per source field', () => {
+  const n = (rel, fk, tk) => one(good.db, `select count(*) from links where relation='${rel}' and from_kind='${fk}' and to_kind='${tk}'`);
+  assert.equal(n('Part of', 'district', 'continent'), jsonFiles(path.join(STUDIO, 'districts')));
+  assert.equal(n('Part of', 'node', 'district'), jsonFiles(path.join(STUDIO, 'nodes')));
+  assert.equal(n('Map', 'node', 'studio_map'), one(good.db, "select count(*) from records where kind='studio_map'"));
+  assert.ok(n('Connects to', 'node', 'node') > 0);
+  assert.equal(n('Drops', 'mob', 'item'), one(good.db, 'select count(*) from mob_drops'));
+  assert.match(good.stdout, /links: .*unresolved 0/);
+});
+
+test('A4 / R3f: a district with a bad parent fails the build and names the reference', () => {
+  const dir = studioCopy('bad-parent');
+  const f = path.join(dir, 'districts/continent-01-hearthbloom-basin/district-amber-root-hollows.json');
+  const d = JSON.parse(readFileSync(f, 'utf8'));
+  d.parent_continent_id = 'continent-nope';
+  writeFileSync(f, JSON.stringify(d));
+  const r = build('bad-parent-db', { ATLAS_STUDIO_DIR: dir });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /district:district-amber-root-hollows -> Part of -> continent-nope/);
+  assert.equal(existsSync(r.db), false, 'a failed build must not leave a DB');
+});
+
+test('R2f: an unparsable studio file fails the build and names the file', () => {
+  const dir = studioCopy('bad-json');
+  writeFileSync(path.join(dir, 'continents/continent-01-hearthbloom-basin.json'), '{ not json');
+  const r = build('bad-json-db', { ATLAS_STUDIO_DIR: dir });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /continent-01-hearthbloom-basin\.json/);
+});
+
+test('A5: hand tags are added; an unknown key fails the build and is named', () => {
+  const tags = path.join(tmp, 'tags.json');
+  writeFileSync(tags, JSON.stringify({ 'continent:continent-01-hearthbloom-basin': ['owner-favourite'] }));
+  const ok = build('tags-ok', { ATLAS_TAGS_FILE: tags });
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.equal(one(ok.db, "select count(*) from record_tags where tag='owner-favourite'"), 1);
+  writeFileSync(tags, JSON.stringify({ 'continent:nope': ['x'] }));
+  const bad = build('tags-bad', { ATLAS_TAGS_FILE: tags });
+  assert.notEqual(bad.status, 0);
+  assert.match(bad.stderr, /continent:nope/);
+});
+
+test('A2 (file half): a failed rebuild leaves the previous DB byte-identical and no temp file', () => {
+  const before = sha(good.db);
+  const r = build('good', { ATLAS_CATALOG_BUILD_FAIL: '1' });
+  assert.equal(r.status, 1);
+  assert.equal(sha(good.db), before);
+  assert.deepEqual(readdirSync(tmp).filter((f) => f.endsWith('.tmp')), []);
+});
+
+test('search index: every record is in records_fts, retired names are legacy', () => {
+  assert.equal(one(good.db, 'select count(*) from records_fts'), one(good.db, 'select count(*) from records'));
+  assert.equal(one(good.db, "select count(*) from records where kind='canon' and concept='legacy'"),
+    one(good.db, "select count(*) from canon_entries where kind='retired_name'"));
+  assert.ok(one(good.db, "select count(*) from records where concept='legacy' and kind='bestiary'") > 0);
+});
+
+test('old-concept concept art is a legacy record, the rest stays studio', () => {
+  const legacy = sql(good.db, "select id from records where kind='concept_art' and concept='legacy' order by id").map((r) => r[0]);
+  assert.deepEqual(legacy, [
+    'character-race-dwarf-kiln-artisan',
+    'character-race-dwarf-ondo-base-body-female',
+    'character-race-furral-galvanic-scout-sheet',
+    'character-race-furral-galvanic-scout-turnaround',
+  ]);
+  assert.equal(one(good.db, "select count(*) from records where kind='concept_art'"), one(good.db, 'select count(*) from concept_art'));
+});
+
+// F-231: canon towns, town casts and world rules are records; the glossary drives them.
+const glossary = () => JSON.parse(readFileSync(path.join(STUDIO, 'canon/glossary.json'), 'utf8'));
+const rels = (db, kind, id) => sql(db, `select relation, to_kind, to_id from links where from_kind='${kind}' and from_id='${id}'`);
+
+test('F-231: town, town-cast and world-rule records and their links', () => {
+  const g = glossary();
+  const casts = Object.values(g.npcs.town).flat().length;
+  assert.equal(one(good.db, "select count(*) from canon_entries where kind='town'"), g.towns.length);
+  assert.equal(one(good.db, "select count(*) from canon_entries where kind='world_rule'"), g.world_model.rules.length);
+  assert.ok(one(good.db, "select count(*) from canon_entries where kind='npc' and parent_id is not null") >= casts);
+  assert.equal(one(good.db, "select count(*) from records where kind='canon' and id='npc:Torren'"), 1);
+  assert.ok(rels(good.db, 'canon', 'npc:Torren').some((r) => r[0] === 'Lives in' && r[2] === 'town:ondo_kiln'));
+  assert.ok(rels(good.db, 'race', 'ondo').some((r) => r[0] === 'Home town' && r[2] === 'town:ondo_kiln'));
+  assert.deepEqual(rels(good.db, 'canon', 'town:ondo_kiln').filter((r) => r[0] === 'Studio node'), [['Studio node', 'node', 'town-root-train-roundhouse']]);
+  assert.equal(one(good.db, "select count(*) from links where relation='Lives in' and to_id='town:ondo_kiln'"), 3);
+});
+
+test('F-231: removing a town NPC from the glossary removes its record', () => {
+  const dir = studioCopy('no-torren');
+  const f = path.join(dir, 'canon/glossary.json');
+  const g = JSON.parse(readFileSync(f, 'utf8'));
+  g.npcs.town.ondo_kiln = g.npcs.town.ondo_kiln.filter((n) => n.name !== 'Torren');
+  writeFileSync(f, JSON.stringify(g));
+  const r = build('no-torren-db', { ATLAS_STUDIO_DIR: dir });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(one(r.db, "select count(*) from records where kind='canon' and id='npc:Torren'"), 0);
+  assert.equal(one(r.db, "select count(*) from links where relation='Lives in' and to_id='town:ondo_kiln'"), 2);
+});
+
+test('F-233: district routes become "Route to" links, with terrain and temperature tags and the biome in the summary', () => {
+  const links = JSON.parse(readFileSync(path.join(STUDIO, 'continents/continent-01-hearthbloom-basin.json'), 'utf8')).district_links;
+  assert.equal(one(good.db, "select count(*) from links where relation='Route to' and from_kind='district' and to_kind='district'"), links.length);
+  const tags = sql(good.db, "select tag from record_tags where kind='district' and id='district-teacup-meadows'").flat();
+  assert.ok(tags.includes('Green Lowlands') && tags.includes('mild'), `tags: ${tags}`);
+  assert.match(one(good.db, "select summary from records where kind='district' and id='district-teacup-meadows'"), /celadon-green clover pasture/);
+});
+
+test('F-235: transport links, encounter bands in the district summary and tag, route and legacy portal counts on the continent', () => {
+  const c = JSON.parse(readFileSync(path.join(STUDIO, 'continents/continent-01-hearthbloom-basin.json'), 'utf8'));
+  assert.equal(one(good.db, "select count(*) from links where relation='Transport to' and from_kind='district' and to_kind='district'"), c.transport_links.length);
+  assert.match(one(good.db, "select summary from records where kind='district' and id='district-terracotta-wind-chimes'"), /starter 1-10 · main 25-35/);
+  const tags = sql(good.db, "select tag from record_tags where kind='district' and id='district-terracotta-wind-chimes'").flat();
+  assert.ok(tags.includes('main-25-35'), `tags: ${tags}`);
+  const n = (k, v) => c[k].filter((x) => x[k === 'district_links' ? 'priority' : 'ruling'] === v).length;
+  assert.match(one(good.db, "select summary from records where kind='continent' and id='continent-01-hearthbloom-basin'"),
+    new RegExp(`P0 ${n('district_links', 'P0')}, P1 ${n('district_links', 'P1')}, P2 ${n('district_links', 'P2')}, built ${n('district_links', 'built')}.*remove ${n('legacy_portals', 'remove')}, becomes_transport ${n('legacy_portals', 'becomes_transport')}, keep ${n('legacy_portals', 'keep')}`));
+});

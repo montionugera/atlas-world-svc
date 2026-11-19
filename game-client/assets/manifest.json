@@ -265,7 +265,7 @@
       }
     },
     "npc:maro_folk_girl": {
-      "scene": "res://studio-cache/ea2829d7c7e95a31010276acea48363a6bb8c997a8bfc1f307f29db0e03b85f9.glb",
+      "scene": "res://studio-cache/44d527b739a0a3ebf81b9da31473092e7e67939227dc79d1776927c6703aaf2c.glb",
       "source": "Asset Studio library asset 01a1bc6e-5925-7f2d-a09d-10398f9abf67 (client atlas-world); bytes not in this repo",
       "license": "studio-private",
       "tier": "bespoke",
@@ -274,7 +274,7 @@
         "from": "asset-studio",
         "assetStudioAsset": "01a1bc6e-5925-7f2d-a09d-10398f9abf67",
         "tag": "reviewed:v1",
-        "sha256": "ea2829d7c7e95a31010276acea48363a6bb8c997a8bfc1f307f29db0e03b85f9"
+        "sha256": "44d527b739a0a3ebf81b9da31473092e7e67939227dc79d1776927c6703aaf2c"
       },
       "anims": {
         "idle": "idle",
@@ -289,6 +289,958 @@
         "combat_idle": "block_idle",
         "block": "block",
         "hit": "hit"
+      }
+    },
+    "env:maro-gate-tower": {
+      "scene": "res://studio-cache/a43acd87e79cf5bf86f2c6c1396c46b08b275051a687fda60f8e7e8de8ebb0e9.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dd07-f94b-7367-a1b6-08e61dcc2d71 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dd07-f94b-7367-a1b6-08e61dcc2d71",
+        "tag": "f218-env-pilot-1115",
+        "sha256": "a43acd87e79cf5bf86f2c6c1396c46b08b275051a687fda60f8e7e8de8ebb0e9"
+      }
+    },
+    "env:maro-lantern-post": {
+      "scene": "res://studio-cache/999cfa4fb48a8a84aec1525ffe6a45ad4251fd3b775f679e5428b21c31ae32e1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dd07-f9a8-7d6c-8754-89a2425976c7 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dd07-f9a8-7d6c-8754-89a2425976c7",
+        "tag": "f218-env-pilot-1115",
+        "sha256": "999cfa4fb48a8a84aec1525ffe6a45ad4251fd3b775f679e5428b21c31ae32e1"
+      }
+    },
+    "env:maro-barrel": {
+      "scene": "res://studio-cache/265ec3f7ec1df5b286411c93710e5dcf5ecbffdffa8a77f2c78323df01194323.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1dd07-f9cc-7b27-a7e3-7d2adb10d955 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dd07-f9cc-7b27-a7e3-7d2adb10d955",
+        "tag": "f218-env-pilot-1115",
+        "sha256": "265ec3f7ec1df5b286411c93710e5dcf5ecbffdffa8a77f2c78323df01194323"
+      }
+    },
+    "env:maro-oil-shop": {
+      "scene": "res://studio-cache/4addb3c4af1bc973736812852d7023388b02408ad6f0c662e4253394f165184c.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7b-daae-70ee-9d52-5ec3fdbe9b8d (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7b-daae-70ee-9d52-5ec3fdbe9b8d",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "4addb3c4af1bc973736812852d7023388b02408ad6f0c662e4253394f165184c"
+      }
+    },
+    "env:maro-porcelain-rib": {
+      "scene": "res://studio-cache/2ed247c1e374589d13cec73ef6e52f68d2649a877d08a875798b1baad90f6c6e.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b2d1-7813-a777-0e82ea8d99f4 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b2d1-7813-a777-0e82ea8d99f4",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "2ed247c1e374589d13cec73ef6e52f68d2649a877d08a875798b1baad90f6c6e"
+      }
+    },
+    "env:maro-wall-face-a": {
+      "scene": "res://studio-cache/df96826a65bd34066205af5b4dd312f401b861ee34024e888ddf87068ac43caf.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b305-7cfa-8d30-a690e99ac07a (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b305-7cfa-8d30-a690e99ac07a",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "df96826a65bd34066205af5b4dd312f401b861ee34024e888ddf87068ac43caf"
+      }
+    },
+    "env:maro-wall-face-b": {
+      "scene": "res://studio-cache/bf06ad6929c1a11f341c811afe66041007316b4a1417c5e6fcb9a481d68ac3fe.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b33e-7311-9cae-08e71c712ecc (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b33e-7311-9cae-08e71c712ecc",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "bf06ad6929c1a11f341c811afe66041007316b4a1417c5e6fcb9a481d68ac3fe"
+      }
+    },
+    "env:maro-wall-face-c": {
+      "scene": "res://studio-cache/109a50d455f2ceb93238bfd47a3d8c3d834d71aae4485017133819ca8b7fab96.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b376-7b26-9909-f19398fde36e (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b376-7b26-9909-f19398fde36e",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "109a50d455f2ceb93238bfd47a3d8c3d834d71aae4485017133819ca8b7fab96"
+      }
+    },
+    "env:maro-road-cobble": {
+      "scene": "res://studio-cache/add4a41729d615135b58bf2e29587d440f64b1d2ca8640a277d898872ef72d4e.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b3c9-7242-8df1-a02dbbecb31f (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b3c9-7242-8df1-a02dbbecb31f",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "add4a41729d615135b58bf2e29587d440f64b1d2ca8640a277d898872ef72d4e"
+      }
+    },
+    "env:maro-curb-straight": {
+      "scene": "res://studio-cache/9cf4577b221eb43f95af8d5604d265475675ca938655bd2eaee471afb3b577e0.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b440-7a52-bb74-174eb87463a6 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b440-7a52-bb74-174eb87463a6",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "9cf4577b221eb43f95af8d5604d265475675ca938655bd2eaee471afb3b577e0"
+      }
+    },
+    "env:maro-curb-corner": {
+      "scene": "res://studio-cache/b6b7a6f9f6977c5e1959385ad93a9984e42112836cfe4fe7c5fe142c3a3b1d0c.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b4a9-72b8-b005-c994e81a97a6 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b4a9-72b8-b005-c994e81a97a6",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "b6b7a6f9f6977c5e1959385ad93a9984e42112836cfe4fe7c5fe142c3a3b1d0c"
+      }
+    },
+    "env:maro-wall-straight": {
+      "scene": "res://studio-cache/3beb45a5d20879746baa3884999b73445cc4cd692317180d63f45a590090b4f7.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b501-73b4-8e6f-727e512f1455 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b501-73b4-8e6f-727e512f1455",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "3beb45a5d20879746baa3884999b73445cc4cd692317180d63f45a590090b4f7"
+      }
+    },
+    "env:maro-wall-end": {
+      "scene": "res://studio-cache/9b14a912ad89c1d64c82eba643973b02c41bf665bf72ce01a80272e1ccc5a615.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b558-76f1-ac0c-f051f7b8f4bf (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b558-76f1-ac0c-f051f7b8f4bf",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "9b14a912ad89c1d64c82eba643973b02c41bf665bf72ce01a80272e1ccc5a615"
+      }
+    },
+    "env:maro-wall-corner": {
+      "scene": "res://studio-cache/dc46a0be793f6a35222f5e0ce6fb1653182232ad70e25d117fb22f3e9f8a7d1f.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b5ac-7975-a372-2f164cb8238e (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b5ac-7975-a372-2f164cb8238e",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "dc46a0be793f6a35222f5e0ce6fb1653182232ad70e25d117fb22f3e9f8a7d1f"
+      }
+    },
+    "env:maro-fence-panel": {
+      "scene": "res://studio-cache/42cecfb2c105bf999792cf7620785d446c462fb90c83f648fe87248d3e579e0e.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b67a-75db-88f6-39d0b0d8cfde (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b67a-75db-88f6-39d0b0d8cfde",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "42cecfb2c105bf999792cf7620785d446c462fb90c83f648fe87248d3e579e0e"
+      }
+    },
+    "env:maro-fence-post": {
+      "scene": "res://studio-cache/3b05c67077b5ea0b4ab656ad1ff4771015e30ec5425f808367dea0243c731bc5.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b711-75fc-a24f-5a354b2c3435 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b711-75fc-a24f-5a354b2c3435",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "3b05c67077b5ea0b4ab656ad1ff4771015e30ec5425f808367dea0243c731bc5"
+      }
+    },
+    "env:maro-trim-sheet": {
+      "scene": "res://studio-cache/796e852cad15a0261821fdc2f2c9afb9953ec5752dddadc0916ab9a3007a7dfb.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b779-752d-aeee-6a2d4450f1d5 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b779-752d-aeee-6a2d4450f1d5",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "796e852cad15a0261821fdc2f2c9afb9953ec5752dddadc0916ab9a3007a7dfb"
+      }
+    },
+    "env:maro-apricot-tree-a": {
+      "scene": "res://studio-cache/c1c83b7169ca1bb8e728d71db708d3da09f739a761a31befc5f537715f922b94.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b7c7-7ac4-9190-f45f0bb2c49d (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b7c7-7ac4-9190-f45f0bb2c49d",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "c1c83b7169ca1bb8e728d71db708d3da09f739a761a31befc5f537715f922b94"
+      }
+    },
+    "env:maro-apricot-tree-b": {
+      "scene": "res://studio-cache/329661aa568ef49b1df1d1848017f8d611664096ebc6f8ab9027648285ec90c9.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b81a-729d-bcdd-a50a3483aa6c (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b81a-729d-bcdd-a50a3483aa6c",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "329661aa568ef49b1df1d1848017f8d611664096ebc6f8ab9027648285ec90c9"
+      }
+    },
+    "env:maro-broadleaf-tree-a": {
+      "scene": "res://studio-cache/d4e5294e18cce9272fff7e0e806b7bd85953e18dd8e99a44ea6492171c59b76f.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b85c-7dd7-ba7a-1a9ae004a0f8 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b85c-7dd7-ba7a-1a9ae004a0f8",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "d4e5294e18cce9272fff7e0e806b7bd85953e18dd8e99a44ea6492171c59b76f"
+      }
+    },
+    "env:maro-broadleaf-tree-b": {
+      "scene": "res://studio-cache/570736e67a6ae2ce8ac2e1e64ebcf1576b55e587858e2b6d8ecf6b0cf477d71e.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-b895-7336-bcdd-24248e77301b (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b895-7336-bcdd-24248e77301b",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "570736e67a6ae2ce8ac2e1e64ebcf1576b55e587858e2b6d8ecf6b0cf477d71e"
+      }
+    },
+    "env:maro-bush-a": {
+      "scene": "res://studio-cache/db59241197ce4c229acd8ecebc80bdc7ab72ec78e4616a4cb979334de6a3bd0d.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-b8ce-77ca-ac67-87d487e92fa1 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b8ce-77ca-ac67-87d487e92fa1",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "db59241197ce4c229acd8ecebc80bdc7ab72ec78e4616a4cb979334de6a3bd0d"
+      }
+    },
+    "env:maro-bush-b": {
+      "scene": "res://studio-cache/480d981d165b41a0d1490ee1506c7573cfdbf9cae1938fe245ab23135d862375.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-b904-7e13-ac64-c102029c7b6d (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b904-7e13-ac64-c102029c7b6d",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "480d981d165b41a0d1490ee1506c7573cfdbf9cae1938fe245ab23135d862375"
+      }
+    },
+    "env:maro-bush-c": {
+      "scene": "res://studio-cache/50c29b144f2ac3eb1227c48f535cb999a87f3b03595baad011062aa5845c6e56.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-b93c-7b15-95e7-161ab36167ab (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b93c-7b15-95e7-161ab36167ab",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "50c29b144f2ac3eb1227c48f535cb999a87f3b03595baad011062aa5845c6e56"
+      }
+    },
+    "env:maro-grass-clump-a": {
+      "scene": "res://studio-cache/6bc0ed0b61c6afe83291a9284b44b1a898c8963615c1b772ed5196a1b22c1cfc.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-b96e-72f6-9fbb-8d4f8038142d (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b96e-72f6-9fbb-8d4f8038142d",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "6bc0ed0b61c6afe83291a9284b44b1a898c8963615c1b772ed5196a1b22c1cfc"
+      }
+    },
+    "env:maro-grass-clump-b": {
+      "scene": "res://studio-cache/1a6fb24f0af180e0a2cf3571ac565315f7561c2750b3f97d4c2ae3b7aab5a032.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-b9a9-78f2-9cf9-a686e39f01a4 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b9a9-78f2-9cf9-a686e39f01a4",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "1a6fb24f0af180e0a2cf3571ac565315f7561c2750b3f97d4c2ae3b7aab5a032"
+      }
+    },
+    "env:maro-grass-clover-clump": {
+      "scene": "res://studio-cache/8e6b5fc73526c326d10fc92d9f50c834299a86b1f0431f4ebda38dac3f65cae7.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-b9e1-720b-96dd-5ec6c34ddc28 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-b9e1-720b-96dd-5ec6c34ddc28",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "8e6b5fc73526c326d10fc92d9f50c834299a86b1f0431f4ebda38dac3f65cae7"
+      }
+    },
+    "env:maro-grass-ember-daisy-clump": {
+      "scene": "res://studio-cache/972a6defa8740566b4032e5cc16a30fc6d4a0b1485fbb552d348e1c6de0ac277.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-ba1c-7458-a196-bdf3be001a6a (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-ba1c-7458-a196-bdf3be001a6a",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "972a6defa8740566b4032e5cc16a30fc6d4a0b1485fbb552d348e1c6de0ac277"
+      }
+    },
+    "env:maro-rock-small": {
+      "scene": "res://studio-cache/065289a64588af416fb438461afdffffd3b0840fdeef4a78a31ad3ea9b73b888.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-ba64-7e51-94a2-56f7cf294137 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-ba64-7e51-94a2-56f7cf294137",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "065289a64588af416fb438461afdffffd3b0840fdeef4a78a31ad3ea9b73b888"
+      }
+    },
+    "env:maro-rock-medium": {
+      "scene": "res://studio-cache/8520df639d47c160291b93a973b3890a53b4fb790c8cab455b5216aef6f64f41.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-baa2-7793-acbc-02b57dd48fda (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-baa2-7793-acbc-02b57dd48fda",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "8520df639d47c160291b93a973b3890a53b4fb790c8cab455b5216aef6f64f41"
+      }
+    },
+    "env:maro-rock-large": {
+      "scene": "res://studio-cache/03d3b8bb0b1db7c387b15f5fa4536566a2f066ec02b2fbb193405a329eda61b9.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-bae3-7dd0-9511-b08168024f8f (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-bae3-7dd0-9511-b08168024f8f",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "03d3b8bb0b1db7c387b15f5fa4536566a2f066ec02b2fbb193405a329eda61b9"
+      }
+    },
+    "env:maro-oil-jar": {
+      "scene": "res://studio-cache/2f11d964c8cdeffd781d85161cbbd7a6cf189d81f842a13176081d031e741c9f.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-bb1b-7179-aeeb-830b296b0e11 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-bb1b-7179-aeeb-830b296b0e11",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "2f11d964c8cdeffd781d85161cbbd7a6cf189d81f842a13176081d031e741c9f"
+      }
+    },
+    "env:maro-crate": {
+      "scene": "res://studio-cache/f01a18dd878b88ba9d77f38b6375d8a51dddd08e70169c9be13d1994bf66f3ed.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-bb56-738a-821c-5d885432dfe0 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-bb56-738a-821c-5d885432dfe0",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "f01a18dd878b88ba9d77f38b6375d8a51dddd08e70169c9be13d1994bf66f3ed"
+      }
+    },
+    "env:maro-sign-board": {
+      "scene": "res://studio-cache/8ab394d941ee6cb9651d25ca6508115983a9121d9feb35cd4b7e5867c9a0f812.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-bb8c-7128-8797-6376f9db3e69 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-bb8c-7128-8797-6376f9db3e69",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "8ab394d941ee6cb9651d25ca6508115983a9121d9feb35cd4b7e5867c9a0f812"
+      }
+    },
+    "env:maro-bench": {
+      "scene": "res://studio-cache/ab9240558284c163a5e3a4acc407b6d6652f2a47471504a01627b61d5fda3292.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-bbbc-7d3d-85d4-8c3582733449 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-bbbc-7d3d-85d4-8c3582733449",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "ab9240558284c163a5e3a4acc407b6d6652f2a47471504a01627b61d5fda3292"
+      }
+    },
+    "env:maro-flower-pot": {
+      "scene": "res://studio-cache/a93d0d794c25c9a26841dc4557a2fc490c2ab78a181e7f85c2003aeb7e5c1a92.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-bbf4-7455-bc1f-d9ff3a219141 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-bbf4-7455-bc1f-d9ff3a219141",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "a93d0d794c25c9a26841dc4557a2fc490c2ab78a181e7f85c2003aeb7e5c1a92"
+      }
+    },
+    "env:maro-shop-awning": {
+      "scene": "res://studio-cache/3939f7ad3892a0af6c8c07ab4d1be9785368e16210ddec3ef0fc5df1a04aeb14.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1de7c-bc29-7750-9ce5-9a767e419037 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-bc29-7750-9ce5-9a767e419037",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "3939f7ad3892a0af6c8c07ab4d1be9785368e16210ddec3ef0fc5df1a04aeb14"
+      }
+    },
+    "env:maro-ground-meadow": {
+      "scene": "res://studio-cache/83f34e286304854983c93598bf302c1b346193ba8537c99855da1c3eceb07971.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-bc83-7114-b803-bec84c752631 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-bc83-7114-b803-bec84c752631",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "83f34e286304854983c93598bf302c1b346193ba8537c99855da1c3eceb07971"
+      }
+    },
+    "env:maro-ground-dirt-edge": {
+      "scene": "res://studio-cache/fede250f903fa01e6c0af84fe2c42ee50f29b69d6c3c600be7ab4680ced5b1eb.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1de7c-bcc5-7371-8695-ce4ec34edcdb (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1de7c-bcc5-7371-8695-ce4ec34edcdb",
+        "tag": "f221-maro-env-e4-1115",
+        "sha256": "fede250f903fa01e6c0af84fe2c42ee50f29b69d6c3c600be7ab4680ced5b1eb"
+      }
+    },
+    "env:maro-bram-house": {
+      "scene": "res://studio-cache/1ae78676462fda046193564db98fedb00255fde49c58105f909b087b1fb07bdc.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1df2b-effd-7bab-90b9-7168a7276169 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1df2b-effd-7bab-90b9-7168a7276169",
+        "tag": "maro-north-e4-1115",
+        "sha256": "1ae78676462fda046193564db98fedb00255fde49c58105f909b087b1fb07bdc"
+      }
+    },
+    "env:maro-tovin-shrine": {
+      "scene": "res://studio-cache/668943f9cf30b6b1a2970fad9c91f51508b59d3ac9c4625f25b8323d8ffb1ec1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1df2b-f024-7a70-925a-46725343ea94 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1df2b-f024-7a70-925a-46725343ea94",
+        "tag": "maro-north-e4-1115",
+        "sha256": "668943f9cf30b6b1a2970fad9c91f51508b59d3ac9c4625f25b8323d8ffb1ec1"
+      }
+    },
+    "env:maro-old-lantern": {
+      "scene": "res://studio-cache/4ac2e71bce756ea256fd66acf2fb54e3cc2a4ea834353e621bb32476558be7ea.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1df2b-f043-732c-a684-ca9c85b7aa89 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1df2b-f043-732c-a684-ca9c85b7aa89",
+        "tag": "maro-north-e4-1115",
+        "sha256": "4ac2e71bce756ea256fd66acf2fb54e3cc2a4ea834353e621bb32476558be7ea"
+      }
+    },
+    "env:maro-great-bell": {
+      "scene": "res://studio-cache/6265eb36580c73d32a617054473c98f4170094217a06f1b456c9eded8d84a21c.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1df2b-f066-7089-b006-e2be0a0a0554 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1df2b-f066-7089-b006-e2be0a0a0554",
+        "tag": "maro-north-e4-1115",
+        "sha256": "6265eb36580c73d32a617054473c98f4170094217a06f1b456c9eded8d84a21c"
+      }
+    },
+    "env:maro-stone-arch-bridge": {
+      "scene": "res://studio-cache/788183cfc05ebbc72985bdc3e7dd4acf2ede86b701f212a40debf321d01fca07.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c4ed-7831-aaff-c41c9a1145a1 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c4ed-7831-aaff-c41c9a1145a1",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "788183cfc05ebbc72985bdc3e7dd4acf2ede86b701f212a40debf321d01fca07"
+      }
+    },
+    "env:maro-retaining-wall-arch": {
+      "scene": "res://studio-cache/3c2875eba369b9ea3541a143e32c637267e21acc34b92a067297e8f4eba7e8ac.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c5cf-7400-9933-4b974f734bdb (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c5cf-7400-9933-4b974f734bdb",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "3c2875eba369b9ea3541a143e32c637267e21acc34b92a067297e8f4eba7e8ac"
+      }
+    },
+    "env:maro-terrace-stairs": {
+      "scene": "res://studio-cache/65904a3c2f339c2278c5e1631d40f3653530f6fad49d4fdc79e296e05c3c1730.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c6bf-7dde-96db-364608008a42 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c6bf-7dde-96db-364608008a42",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "65904a3c2f339c2278c5e1631d40f3653530f6fad49d4fdc79e296e05c3c1730"
+      }
+    },
+    "env:maro-city-curtain-wall": {
+      "scene": "res://studio-cache/21e3a2f85e5b93f5f718eb0c1d86a27caac367e0b8c0e3a991e13ebfd14c379f.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c744-7156-94eb-3ad5c521dda1 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c744-7156-94eb-3ad5c521dda1",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "21e3a2f85e5b93f5f718eb0c1d86a27caac367e0b8c0e3a991e13ebfd14c379f"
+      }
+    },
+    "env:maro-city-bastion": {
+      "scene": "res://studio-cache/7e9386708d340d4943d0ee6efd05e11e2360e16bc9a236446f8498479d945d25.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c793-70ce-bbc8-5c1794b929e2 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c793-70ce-bbc8-5c1794b929e2",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "7e9386708d340d4943d0ee6efd05e11e2360e16bc9a236446f8498479d945d25"
+      }
+    },
+    "env:maro-aqueduct-arch": {
+      "scene": "res://studio-cache/fdf63167f38be5b43ab6dc1e13b9a9bad01c6d21750ada0f2e9bc3be9dd69ea4.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c7e0-7ec1-87e7-9bc6fe78063c (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c7e0-7ec1-87e7-9bc6fe78063c",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "fdf63167f38be5b43ab6dc1e13b9a9bad01c6d21750ada0f2e9bc3be9dd69ea4"
+      }
+    },
+    "env:maro-bell-sanctuary-arch": {
+      "scene": "res://studio-cache/8d4ea3745ce0c9f8d8a9ad9f37ad25651a5dbc72457dfaf92e3bfba8364881e7.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c830-7834-aa7b-1fbf1a9a5786 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c830-7834-aa7b-1fbf1a9a5786",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "8d4ea3745ce0c9f8d8a9ad9f37ad25651a5dbc72457dfaf92e3bfba8364881e7"
+      }
+    },
+    "env:maro-civic-guild-hall": {
+      "scene": "res://studio-cache/5390d505a532635fcf0f1d162a8e5c14242724deade5fbd2ebac216baf79c025.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c87a-74df-92af-366862e8d9c8 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c87a-74df-92af-366862e8d9c8",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "5390d505a532635fcf0f1d162a8e5c14242724deade5fbd2ebac216baf79c025"
+      }
+    },
+    "env:maro-inn-tavern": {
+      "scene": "res://studio-cache/2e6ea613b9f0cf29e9f3cd85d0c43a1e034c41405eafe7836b9ca0c5ddb48fcd.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c8c3-7fbc-8c46-200031b3541d (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c8c3-7fbc-8c46-200031b3541d",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "2e6ea613b9f0cf29e9f3cd85d0c43a1e034c41405eafe7836b9ca0c5ddb48fcd"
+      }
+    },
+    "env:maro-house-2story-a": {
+      "scene": "res://studio-cache/1d2976ede47165be9a8389e73818b8df055c67d332a98b5ea5f1335f11b2f84b.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c934-711c-889f-06b208de0527 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c934-711c-889f-06b208de0527",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "1d2976ede47165be9a8389e73818b8df055c67d332a98b5ea5f1335f11b2f84b"
+      }
+    },
+    "env:maro-house-2story-b": {
+      "scene": "res://studio-cache/da5d17c10cd04f5eb45e5ac522b1b50c51616117c9277ca557c5b8209624d0b7.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c99a-7fac-a1f9-8d0ef581310e (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c99a-7fac-a1f9-8d0ef581310e",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "da5d17c10cd04f5eb45e5ac522b1b50c51616117c9277ca557c5b8209624d0b7"
+      }
+    },
+    "env:maro-house-1story-b": {
+      "scene": "res://studio-cache/117f632f90c99863632a20f1890ad66fd3faf8d04f39d7ab38c35958c5c59c0c.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-c9e8-7799-a90c-afec25e25191 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-c9e8-7799-a90c-afec25e25191",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "117f632f90c99863632a20f1890ad66fd3faf8d04f39d7ab38c35958c5c59c0c"
+      }
+    },
+    "env:maro-windmill": {
+      "scene": "res://studio-cache/c2315171e8a76831c4a843c32b3def24e7ae82c89a6716e8accced6d2654cbc1.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa4-ca3b-7e47-b320-2b1619efa507 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-ca3b-7e47-b320-2b1619efa507",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "c2315171e8a76831c4a843c32b3def24e7ae82c89a6716e8accced6d2654cbc1"
+      }
+    },
+    "env:maro-plaza-fountain": {
+      "scene": "res://studio-cache/c424765926d152dbe3875e6f5d1c3ba2a994781a2cda78a8da2c28d5576ec7a0.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1dfa4-ca91-72b5-920b-0773c52d42ea (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-ca91-72b5-920b-0773c52d42ea",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "c424765926d152dbe3875e6f5d1c3ba2a994781a2cda78a8da2c28d5576ec7a0"
+      }
+    },
+    "env:maro-market-stall-a": {
+      "scene": "res://studio-cache/f25e8d9673a8f08263c134f0516a7617e5f86143b7964410539de487da26a02d.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1dfa4-cadb-7a45-b764-b6bdc8c1a1b5 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-cadb-7a45-b764-b6bdc8c1a1b5",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "f25e8d9673a8f08263c134f0516a7617e5f86143b7964410539de487da26a02d"
+      }
+    },
+    "env:maro-market-stall-b": {
+      "scene": "res://studio-cache/98bb81f1010d6ee4543209a2bd707016c261db05248afcef21612df05e927c05.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1dfa4-cb27-7368-a739-637fb56525c1 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-cb27-7368-a739-637fb56525c1",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "98bb81f1010d6ee4543209a2bd707016c261db05248afcef21612df05e927c05"
+      }
+    },
+    "env:maro-bell-banner-pole": {
+      "scene": "res://studio-cache/15d2dde71cd7e325aa154d200586e5d8f2968fedf2d4722f13db668fc5932be7.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1dfa4-cb81-747d-a04a-ce01a83107e8 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa4-cb81-747d-a04a-ce01a83107e8",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "15d2dde71cd7e325aa154d200586e5d8f2968fedf2d4722f13db668fc5932be7"
+      }
+    },
+    "env:maro-ground-plaza-flagstone": {
+      "scene": "res://studio-cache/26aec2de37b94dc5615293c052b134a3c9f5938d0abdd475d7d70b156c40a12e.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa5-1ff8-77f0-8a80-571e3ad46c85 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa5-1ff8-77f0-8a80-571e3ad46c85",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "26aec2de37b94dc5615293c052b134a3c9f5938d0abdd475d7d70b156c40a12e"
+      }
+    },
+    "env:maro-ground-terrace-tile": {
+      "scene": "res://studio-cache/a0ab4a2c2929b585ea976c9cd3f03a18e254987251e7058ddd27326eda3ae36d.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa5-2045-7bd1-bf8d-3bd149078fae (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa5-2045-7bd1-bf8d-3bd149078fae",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "a0ab4a2c2929b585ea976c9cd3f03a18e254987251e7058ddd27326eda3ae36d"
+      }
+    },
+    "env:maro-blossom-tree-pink": {
+      "scene": "res://studio-cache/e61a401f04c5769f4ad44d2ee21ab11754afbbfcdc12abccc80fe6088bed82ff.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa5-2084-7e11-8988-738a7b322de3 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa5-2084-7e11-8988-738a7b322de3",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "e61a401f04c5769f4ad44d2ee21ab11754afbbfcdc12abccc80fe6088bed82ff"
+      }
+    },
+    "env:maro-cypress-pine-a": {
+      "scene": "res://studio-cache/299a535acc0911edfb8a75af545e6db42690b932adf04647405c07a87c5f7dfe.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa5-20b4-7ba7-be11-cdf2cf788c7e (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa5-20b4-7ba7-be11-cdf2cf788c7e",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "299a535acc0911edfb8a75af545e6db42690b932adf04647405c07a87c5f7dfe"
+      }
+    },
+    "env:maro-cypress-pine-b": {
+      "scene": "res://studio-cache/96c6d496c820a3d02db8d0089f80657abb8dd92eb03aecd0f2c6284cde7786f7.glb",
+      "render": "model3d",
+      "kind": "environment",
+      "source": "Asset Studio library asset 01a1dfa5-20ea-7129-98a9-4fe2d0b8501a (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa5-20ea-7129-98a9-4fe2d0b8501a",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "96c6d496c820a3d02db8d0089f80657abb8dd92eb03aecd0f2c6284cde7786f7"
+      }
+    },
+    "env:maro-flower-bush-lavender": {
+      "scene": "res://studio-cache/32a7fd9cdf227cb0cdfde7c32ccf816b5f7cdeae2c5a9b2ecce9359bab5b775c.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1dfa5-2113-75c3-a226-ac2360d0b545 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa5-2113-75c3-a226-ac2360d0b545",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "32a7fd9cdf227cb0cdfde7c32ccf816b5f7cdeae2c5a9b2ecce9359bab5b775c"
+      }
+    },
+    "env:maro-planter-box-flowers": {
+      "scene": "res://studio-cache/c67561dc17d0e46ec7cb3c7559f88ea25900ebda0a2e11a0bf1ded178ddd463e.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1dfa5-213f-7b78-a2bf-b8c6dfa627a9 (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa5-213f-7b78-a2bf-b8c6dfa627a9",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "c67561dc17d0e46ec7cb3c7559f88ea25900ebda0a2e11a0bf1ded178ddd463e"
+      }
+    },
+    "env:maro-ivy-wall-vine": {
+      "scene": "res://studio-cache/aabb385c123e86931cc88d8b19af5d615c85e155c382d7a99089d3d1cef2bf00.glb",
+      "render": "model3d",
+      "kind": "prop",
+      "source": "Asset Studio library asset 01a1dfa5-2163-7870-8b3f-2deebe8c524a (client atlas-world); bytes not in this repo",
+      "license": "studio-private",
+      "tier": "bespoke",
+      "pull": {
+        "from": "asset-studio",
+        "assetStudioAsset": "01a1dfa5-2163-7870-8b3f-2deebe8c524a",
+        "tag": "maro-concept-overhaul-1115",
+        "sha256": "aabb385c123e86931cc88d8b19af5d615c85e155c382d7a99089d3d1cef2bf00"
       }
     }
   }

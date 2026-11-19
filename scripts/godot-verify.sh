@@ -10,7 +10,9 @@ env_name="${1:?usage: godot-verify.sh <ENV_NAME> <PASS_REGEX>}"
 pass_re="${2:?usage: godot-verify.sh <ENV_NAME> <PASS_REGEX>}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT="${ATLAS_GODOT_PROJECT:-$REPO_ROOT/game-client}"
-GODOT="${ATLAS_GODOT_MONO:-$HOME/Applications/godot-mono-4.7.2/Godot_mono.app/Contents/MacOS/Godot}"
+DEFAULT_GODOT="$HOME/Applications/godot-mono-4.7.2/Godot_mono.app/Contents/MacOS/Godot"
+[ -x "/Users/pasitnusso/.local/bin/godot-bg" ] && DEFAULT_GODOT="/Users/pasitnusso/.local/bin/godot-bg"
+GODOT="${ATLAS_GODOT_MONO:-$DEFAULT_GODOT}"
 SECS="${ATLAS_GODOT_TIMEOUT:-180}"
 IMPORT_SECS="${ATLAS_GODOT_IMPORT_TIMEOUT:-900}"
 BUILD_SECS="${ATLAS_DOTNET_BUILD_TIMEOUT:-600}"
@@ -74,6 +76,20 @@ for ogg in "$PROJECT"/assets/audio/*.ogg; do
     fi
   fi
 done
+# Check procedural environment / asset .glb files under assets/ for missing or stale imports / .scn files
+if [ "$needs_import" = 0 ] && [ -d "$PROJECT/assets" ]; then
+  while IFS= read -r -d '' g; do
+    if [ ! -e "$g.import" ]; then
+      needs_import=1
+      break
+    fi
+    scn=$(grep -m1 '^path="res://\.godot/imported/' "$g.import" 2>/dev/null | cut -d'"' -f2 | sed 's|^res://||')
+    if [ -z "$scn" ] || [ ! -e "$PROJECT/$scn" ] || [ "$g" -nt "$PROJECT/$scn" ]; then
+      needs_import=1
+      break
+    fi
+  done < <(find "$PROJECT/assets" -name '*.glb' -print0 2>/dev/null)
+fi
 if [ "$needs_import" = 1 ]; then
   echo "▶ godot --import (fresh worktree or new pull)"
   attempt=1

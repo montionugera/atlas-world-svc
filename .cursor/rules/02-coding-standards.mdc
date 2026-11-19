@@ -1,10 +1,13 @@
 ## 💻 Coding Standards
 
-### TypeScript Configuration
+### TypeScript Configuration (`contracts/`, `client/react-client/`)
 - **Target**: ES2020
-- **Module**: CommonJS (Colyseus server)
 - **Strict**: All strict checks enabled
 - **No implicit**: any, returns, this
+
+### Rust Configuration (`server-rs/`)
+- **Formatting & lint**: `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings`
+- **Determinism**: Gate simulation on `SimClock` (`server-rs/src/core/clock.rs`), never wall-clock time
 
 ### Naming Conventions
 - **Classes**: PascalCase (MatchHandler, PhysicsWorld)

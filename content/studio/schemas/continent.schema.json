@@ -191,6 +191,163 @@
         "type": "string",
         "pattern": "^district-[a-z0-9-]+$"
       }
+    },
+    "district_links": {
+      "type": "array",
+      "description": "F-233 optional district-to-district routes; enables GEO-01..07 for this continent.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "a",
+          "b",
+          "gateway",
+          "route_type",
+          "walk_minutes",
+          "transition",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "a": {
+            "type": "string"
+          },
+          "b": {
+            "type": "string"
+          },
+          "gateway": {
+            "type": "object",
+            "required": [
+              "type",
+              "name"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "road",
+                  "bridge",
+                  "pass",
+                  "tunnel",
+                  "ford",
+                  "stairs"
+                ]
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "route_type": {
+            "enum": [
+              "main_road",
+              "wilderness_trail",
+              "ancient_route"
+            ]
+          },
+          "walk_minutes": {
+            "type": "number",
+            "minimum": 8,
+            "maximum": 30
+          },
+          "transition": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "priority": {
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "built"
+            ],
+            "description": "F-235 build priority; built = a node portal already exists."
+          }
+        },
+        "description": "F-235: priority is required by GEO-10 (kept optional here so older continents stay valid)."
+      }
+    },
+    "transport_links": {
+      "type": "array",
+      "description": "F-235 declared non-adjacent transport between districts.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "a",
+          "b",
+          "mode",
+          "note",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "a": {
+            "type": "string"
+          },
+          "b": {
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "caravan",
+              "boat",
+              "duct_route"
+            ]
+          },
+          "note": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "legacy_portals": {
+      "type": "array",
+      "description": "F-235 existing cross-district node portals not covered by a link, each with a ruling. GEO-09 fails when an entry no longer matches a portal.",
+      "items": {
+        "type": "object",
+        "required": [
+          "from_node_id",
+          "to_node_id",
+          "district_pair",
+          "ruling",
+          "reason"
+        ],
+        "properties": {
+          "from_node_id": {
+            "type": "string"
+          },
+          "to_node_id": {
+            "type": "string"
+          },
+          "district_pair": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "ruling": {
+            "enum": [
+              "remove",
+              "becomes_transport",
+              "keep"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "if": {

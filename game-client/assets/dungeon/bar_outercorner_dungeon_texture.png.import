@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/bar_outercorner_dungeon_texture.png-31c656b20
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -189,6 +189,132 @@
       "status": "decided",
       "applied_in": null,
       "owner_answer": "single first, several later"
+    },
+    {
+      "id": "gpt-open-01-does-the-player-s-first-trip",
+      "text": "Does the player's first trip Maro Bell -> Kilnwatch Bastion cross a defined number of zones or distance? Transcript states it is undefined.",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (game-roadmap-ideation.txt:4249)",
+      "date": "2026-11-18",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "gpt-open-02-where-exactly-are-linde-glaze",
+      "text": "Where exactly are Linde Glaze, Daro Post and Silme Echo (homeland geography undefined; position of Linde explicitly not set)?",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (game-roadmap-ideation.txt:4982,4998-5012)",
+      "date": "2026-11-18",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "gpt-open-03-is-silme-deep-fully-underground",
+      "text": "Is Silme Deep fully underground? Where do rivers flow, where are mountain passes, which towns produce food and which import resources, and do the Great Kilns reshape terrain? (ChatGPT listed these as needed answers; no owner answer.)",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (game-roadmap-ideation.txt:4192-4203,4855-4870)",
+      "date": "2026-11-18",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "gpt-open-04-launch-scope-must-all-six",
+      "text": "Launch scope: must all six race prologues ship together with Ch 0-II, or does Maro Bell go first? ChatGPT asked for explicit owner confirmation.",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (story-decision-gap-check.txt:165-168)",
+      "date": "2026-11-18",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "gpt-open-05-approve-the-heart-spark-scar-casts-of",
+      "text": "Approve the Heart/Spark/Scar casts of the five towns other than Maro Bell (names Torren, Hald, Fenn, Sera, Rook, Vessa, Nelli, Oren etc. remain proposals) and the five missing race prologues.",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (story-decision-gap-check.txt:141,write-atlas-storyline.txt:1486)",
+      "date": "2026-11-18",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "gpt-open-06-which-race-hooks-are-fixed",
+      "text": "Which race hooks are fixed vs player-selectable? ChatGPT said players should be able to choose a different motive; not answered.",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (write-atlas-storyline.txt:244-248)",
+      "date": "2026-11-18",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "gpt-open-07-map-scope-for-six-starter-town",
+      "text": "Map scope for six starter-town layouts, Kilnwatch Bastion and Ch 0-II zone maps: approve?",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (story-decision-gap-check.txt:143-145)",
+      "date": "2026-11-18",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "gpt-open-08-world-size-centres-chatgpt-asked-one",
+      "text": "World size/centres: ChatGPT asked 'one civilisation centre or several equal cities'; owner replied only 'Okei' after the Polycentric leaning, no explicit decision.",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (game-roadmap-ideation.txt:4879-4887)",
+      "date": "2026-11-18",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "gpt-open-09-level-pacing-vs-shared-towns",
+      "text": "Level pacing vs shared towns: how do high-level players return to low-level towns without breaking pacing (Living World layers 1-3)? Left as design principle, no owner decision on mechanics.",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (game-roadmap-ideation.txt:4050-4113,4238-4262)",
+      "date": "2026-11-18",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "gpt-open-10-distinguish-regions-from-kiln-regions",
+      "text": "Distinguish 'regions' from 'kiln regions' and hub locations in the Game DB (canon card shows nine entries).",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (story-decision-gap-check.txt:158-162)",
+      "date": "2026-11-18",
+      "status": "applied",
+      "applied_in": "content/studio/canon/glossary.json",
+      "owner_answer": null
+    },
+    {
+      "id": "gpt-open-11-mixed-race-ratios-per-town-chatgpt",
+      "text": "Mixed-race ratios per town: ChatGPT proposed no fixed ratios; no owner answer.",
+      "source_chat": "ChatGPT project chats 2026-11-07..09 (game-roadmap-ideation.txt:4846-4852)",
+      "date": "2026-11-18",
+      "status": "proposed",
+      "applied_in": null,
+      "owner_answer": null
+    },
+    {
+      "id": "kilnwatch-first-trip-caravan",
+      "text": "After each race prologue (Lv 10) the first trip to Kilnwatch is a one-way guided caravan; walking stays possible.",
+      "source_chat": "Owner answer to the agent, 2026-11-18 (F-235 world structure merge)",
+      "date": "2026-11-18",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "One-way guided caravan after each prologue; walking stays possible"
+    },
+    {
+      "id": "danger-fixed-monster-levels",
+      "text": "Monster levels are fixed and the danger is real; no world-wide level scaling.",
+      "source_chat": "Owner answer to the agent, 2026-11-18 (F-235 world structure merge)",
+      "date": "2026-11-18",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "Fixed levels and real danger"
+    },
+    {
+      "id": "first-content-target-lv1-15",
+      "text": "First content target is Lv 1-15, chapter 0 (Maro Bell + Kilnwatch), then expand.",
+      "source_chat": "Owner answer to the agent, 2026-11-18 (F-235 world structure merge)",
+      "date": "2026-11-18",
+      "status": "decided",
+      "applied_in": null,
+      "owner_answer": "Lv 1-15, Ch 0 (Maro Bell + Kilnwatch) first, then expand"
     }
   ]
 }

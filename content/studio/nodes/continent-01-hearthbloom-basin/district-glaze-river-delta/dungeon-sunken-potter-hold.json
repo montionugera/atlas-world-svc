@@ -148,5 +148,26 @@
       "verified": true,
       "evidence": "Houses the Porcelain Rudder Pin lore hook required to unlock the northern Kiln-Lighthouse Spit."
     }
+  },
+  "gameplay_role": {
+    "verdict": "open_activity",
+    "chapter": null,
+    "proposed_level_band": [
+      19,
+      23
+    ],
+    "party_size": [
+      1,
+      4
+    ],
+    "session_minutes": [
+      10,
+      15
+    ],
+    "rewards": "Trade materials, collection rewards",
+    "balance_reason": "Supports the river economy without instance fragmentation",
+    "boss_site_note": null,
+    "status": "proposed",
+    "source": "GPT balance verdict v2, 2026-11-19, delegated by owner"
   }
 }

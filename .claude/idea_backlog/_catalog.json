@@ -1852,5 +1852,173 @@
     "title": "Concept art: female Ondo base-body sheet (underwear turnaround) into the Game DB",
     "created_at": "2026-11-13T08:49:54.730616+00:00",
     "promoted_to": "F-213"
+  },
+  {
+    "id": "I-297",
+    "title": "Remove Colyseus/Nakama leftovers and dead root files",
+    "created_at": "2026-11-14T16:40:52.615020+00:00",
+    "promoted_to": "F-214"
+  },
+  {
+    "id": "I-298",
+    "title": "Remove unreferenced scripts and the first-generation Python atlas chain",
+    "created_at": "2026-11-14T16:40:53.131879+00:00",
+    "promoted_to": "F-215"
+  },
+  {
+    "id": "I-299",
+    "title": "Game DB from the studio world: slim catalog, one search, record links",
+    "created_at": "2026-11-14T16:40:53.541551+00:00",
+    "promoted_to": "F-216"
+  },
+  {
+    "id": "I-300",
+    "title": "Flaky Gate 1: atlas-web-read-only test loses its port under the parallel gate (freePort closes before spawn)",
+    "created_at": "2026-11-14T16:50:59.592526+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-301",
+    "title": "Second-pass Colyseus/Nakama mentions: .dockerignore:14, k8s config name, README npm run lines, .cursor rules",
+    "created_at": "2026-11-14T16:51:00.002937+00:00",
+    "promoted_to": null
+  },
+  {
+    "id": "I-302",
+    "title": "Remove stray root files and deploy_ios.py, keep the ten root plans in the archive",
+    "created_at": "2026-11-14T18:06:32.818236+00:00",
+    "promoted_to": "F-217"
+  },
+  {
+    "id": "I-303",
+    "title": "Maro Bell arrival: environment pilot pieces in game and grey box re-blocked for the 1.30 m player",
+    "created_at": "2026-11-14T18:25:14.874520+00:00",
+    "promoted_to": "F-218"
+  },
+  {
+    "id": "I-304",
+    "title": "Short menu: sidebar from 31 tabs to 11 entries with sub-view pills (game DB slice S2)",
+    "created_at": "2026-11-14T20:24:51.196895+00:00",
+    "promoted_to": "F-219"
+  },
+  {
+    "id": "I-305",
+    "title": "Concept art: Ondo Forge boy and girl race turnarounds into the Game DB, old adult dwarf sheets marked old concept",
+    "created_at": "2026-11-15T08:49:51.262942+00:00",
+    "promoted_to": "F-220"
+  },
+  {
+    "id": "I-306",
+    "title": "Maro Bell arrival E4: full slice scene hookup, Asset Studio private pull entries, and live camera perf",
+    "created_at": "2026-11-15T09:10:42.006225+00:00",
+    "promoted_to": "F-221"
+  },
+  {
+    "id": "I-307",
+    "title": "Material-aware footstep SFX by ground surface (stone, dirt, water, glass)",
+    "created_at": "2026-11-15T09:23:38.205170+00:00",
+    "promoted_to": "F-223"
+  },
+  {
+    "id": "I-308",
+    "title": "Maro Bell north E4: Bram lantern house, Tovin shrine, Old Lantern, Great Bell, and northern zone scene hookup (z = 20..-70)",
+    "created_at": "2026-11-15T12:30:02.539978+00:00",
+    "promoted_to": "F-222"
+  },
+  {
+    "id": "I-309",
+    "title": "Maro Bell concept-faithful town overhaul: clean outlines, 3-tier terraces, river, bridges, walls, modular buildings, foliage, and 9-zone layout",
+    "created_at": "2026-11-15T14:19:56.833614+00:00",
+    "promoted_to": "F-224"
+  },
+  {
+    "id": "I-310",
+    "title": "Maro Bell M1: circular 9-zone 3-tier hillside, recessed river channel, and outer valley master plan",
+    "created_at": "2026-11-16T07:24:51.599575+00:00",
+    "promoted_to": "F-225"
+  },
+  {
+    "id": "I-311",
+    "title": "Maro Bell M2 continuous spline roads curbs stairs welded junctions and navigation",
+    "created_at": "2026-11-16T08:27:54.158788+00:00",
+    "promoted_to": "F-226"
+  },
+  {
+    "id": "I-312",
+    "title": "Maro Bell M3 continuous spline retaining walls bastions three-arch bridge and canal edge",
+    "created_at": "2026-11-16T11:47:45.283602+00:00",
+    "promoted_to": "F-227"
+  },
+  {
+    "id": "I-313",
+    "title": "Maro Bell M4 stylized river fountain waterfall system and M3 P1 masonry silhouette refinement",
+    "created_at": "2026-11-16T14:58:25.995736+00:00",
+    "promoted_to": "F-228"
+  },
+  {
+    "id": "I-314",
+    "title": "Env pre-render sightline clutter strip-delta and glb import gate",
+    "created_at": "2026-11-16T16:41:25.472852+00:00",
+    "promoted_to": "F-229"
+  },
+  {
+    "id": "I-315",
+    "title": "Maro Bell M5: Romanesque Curved Great Bell Sanctuary, Golden Astrolabe Fountain, and Grand Staircase Landmarks",
+    "created_at": "2026-11-16T17:32:56.117860+00:00",
+    "promoted_to": "F-230"
+  },
+  {
+    "id": "I-316",
+    "title": "Game DB concept sync: GPT race and town discussions into canon records (log in repo, 6 races, 6 home towns, 18 town NPCs)",
+    "created_at": "2026-11-18T00:22:39.235046+00:00",
+    "promoted_to": "F-231"
+  },
+  {
+    "id": "I-317",
+    "title": "Env camera parity gate for milestone renders and sightline checks",
+    "created_at": "2026-11-18T00:33:17.403888+00:00",
+    "promoted_to": "F-232"
+  },
+  {
+    "id": "I-318",
+    "title": "World geography fill, starter continent: district routes, terrain groups, climate and weather so the land reads as continuous",
+    "created_at": "2026-11-18T00:35:14.528897+00:00",
+    "promoted_to": "F-233"
+  },
+  {
+    "id": "I-319",
+    "title": "Maro Bell M6: hero house and shared modular facade kit",
+    "created_at": "2026-11-18T06:49:46.309388+00:00",
+    "promoted_to": "F-234"
+  },
+  {
+    "id": "I-320",
+    "title": "World structure merge v1: owner decisions, encounter bands, town roles and a portal-vs-route gate (new geography as the core axis)",
+    "created_at": "2026-11-18T13:31:57.250571+00:00",
+    "promoted_to": "F-235"
+  },
+  {
+    "id": "I-321",
+    "title": "Chapter 0 slice: rewire Maro-Linde-Kilnwatch portals and retune levels for Lv 1-15",
+    "created_at": "2026-11-18T13:49:38.286088+00:00",
+    "promoted_to": "F-236"
+  },
+  {
+    "id": "I-322",
+    "title": "Record map component: district and continent pages draw their map from studio data",
+    "created_at": "2026-11-18T16:37:55.653235+00:00",
+    "promoted_to": "F-237"
+  },
+  {
+    "id": "I-323",
+    "title": "Record map legend: say built and planned on the continent map, explain P0 P1 P2",
+    "created_at": "2026-11-18T18:07:07.337648+00:00",
+    "promoted_to": "F-238"
+  },
+  {
+    "id": "I-324",
+    "title": "Step 4 gameplay roles: record district roles and dungeon verdicts as proposed, show them on the record map",
+    "created_at": "2026-11-19T02:07:41.765023+00:00",
+    "promoted_to": "F-239"
   }
 ]

@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/banner_triple_white_dungeon_texture.png-8bf1e
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

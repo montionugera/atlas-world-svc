@@ -36,6 +36,10 @@
   - **Interactive 3D SubViewport (Left 45%):** Live 3D character preview mounted on a pedestal with camera and omni lighting. Supports 360° touch drag rotation.
   - **Tabbed Equipment Grid (Right 55%):** Category tabs (`Weapons`, `Armor`, `Hair`, `Sets`) with rarity color borders (Epic purple, Rare blue), level requirements, stat diffs (`+140 M.ATK`, `+65 P.ATK`), **[Try On]** tween preview, and **[Equip]** real-time avatar mutation.
   - **Input Isolation:** Disables background joystick and hero movement while typing in chat or inspecting gear in modals.
+- **Material-Aware Footstep SFX by Ground Surface (Feature F-223):**
+  - **Hybrid Ground Surface Resolver (`FootstepSurfaceResolver`):** Samples player world coordinates across 5 surfaces (`Stone`, `Dirt`, `Grass`, `Water`, `Glass`) with deterministic precedence (scene/pad overrides > structure volumes > road splines > ground zones > base ground palette).
+  - **Single-Strike ElevenLabs v3 Sound Banks:** 8 distinct single-transient strike samples per surface (40 `.ogg` variants total, ~0.16–0.32s transient window, normalized to `-28.6 dBFS` mean volume) with organic triangular pitch/volume articulation and left/right footstrike variation in `AudioRegistry.PlayFootstep`.
+  - **Playtest Sandbox Surface Pads:** 4 labeled test pads (`Stone`, `Dirt`, `Water`, `Glass`) and surrounding meadow grass in `PlaytestSandbox.tscn` allowing immediate ear-checks and automated headless verification via `PlaytestSandboxVerify.cs`.
 
 ### Native Rust Meta & Persistence Engine (`server-rs/src/meta/` — Feature F-091)
 - **Zero-Overhead Single-Binary Meta Engine:** Built directly into `server-rs` to replace the Go/Goja Nakama + CockroachDB stack while preserving 100% `/v2/*` HTTP wire compatibility (`POST /v2/account/authenticate/device`, `GET /v2/account`, `POST /v2/storage`, `GET|POST /v2/rpc/{id}`).
@@ -185,7 +189,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Docker & Docker Compose
+- Docker
 - Node.js 18+
 - Rust 1.98+ & Cargo (`~/.cargo/bin`)
 - .NET 8 SDK & Xcode 16+ (for Godot C# iOS Client)
@@ -222,7 +226,7 @@ xcrun devicectl device install app --device <DEVICE_UUID> <PATH_TO_APP>/AtlasWor
 xcrun devicectl device process launch --device <DEVICE_UUID> com.atlasworld.client
 ```
 
-**Pull-only assets (F-174).** This repo is public, so owner-generated glbs (the Tripo + Mixamo characters) are never committed. A manifest entry with a `pull` block records only the Asset Studio asset id, tag and sha256. Fetch the bytes with:
+**Pull-only assets (F-174, F-218, F-221, F-222, F-224).** This repo is public, so owner-generated glbs (the Tripo + Mixamo characters and Maro Bell environment assets) are never committed. A manifest entry with a `pull` block records only the Asset Studio asset id, tag and sha256. F-218 adds the 3 Maro Bell environment pilot props (`env:maro-gate-tower`, `env:maro-lantern-post`, `env:maro-barrel`), F-221 adds 36 E4 Maro Bell arrival environment assets (ground/road textures, cliff walls, porcelain ribs, curbs, low stone walls, fences, Amber's oil shop, apricot/broadleaf trees, bushes, MultiMesh grass clumps, rocks, and street props), F-222 adds the 4 northern Maro Bell landmark structures (`env:maro-bram-house`, `env:maro-tovin-shrine`, `env:maro-old-lantern`, `env:maro-great-bell`), and F-224 adds 25 concept-faithful 9-zone urban architecture, fortification, bridge, plaza fountain, market stall, multi-species foliage, and terrace surface assets (`68` `env:maro-*` entries and `70` pull-only entries total) the same way. Fetch the bytes with:
 
 ```bash
 node scripts/studio-pull.mjs        # [--manifest <path>] [--cache-dir <dir>]
@@ -231,6 +235,8 @@ node scripts/studio-pull.mjs        # [--manifest <path>] [--cache-dir <dir>]
 - Cache: `game-client/studio-cache/<sha256>.glb` (gitignored, a local `export_presets.cfg` (gitignored, holds a team id) must list it in `exclude_filter`, and with no such file no export is possible; override with `ATLAS_STUDIO_CACHE_DIR`). A cache file is trusted only after it re-hashes to the recorded sha256.
 - Exit codes: `0` every entry cached or pulled; `1` sha mismatch, bad record or `studio auth failed`; `2` Asset Studio unreachable or no token. Local Gate 1 never skips on exit 2; only CI sets `ATLAS_SKIP_STUDIO=1`.
 - Token: `STUDIO_TOKEN`, else a dev token minted from the local orbstack cluster (`kubectl`, needs Asset Studio running). Never printed.
+
+**Map blocks with `assetPath` (F-218, F-221, F-222, F-224).** A `structureVolumes` block in `content/maps/*.json` can set `assetPath` to a manifest key (e.g. `env:maro-gate-tower`) or a `res://` scene path; `MapChunkStreamer` instantiates it as `Glb_<id>` instead of the `Block_<id>` `BoxMesh` fallback (falling back to `BoxMesh` if the scene cannot resolve). In `content/maps/maro-bell.json`, 27 structure blocks bind `assetPath` across the southern arrival and northern terrace slices (`z = 76..-70`), paired with 545 non-blocking `props` entries (`blocksMovement: false`) across all 9 urban zones and 28 MultiMesh grass batches (92 GPU instances).
 
 **Interactive Playtest Sandbox Client (F-188).** Launch the clean 1440×900 desktop Playtest Sandbox (`res://scenes/PlaytestSandbox.tscn`) sharing the real `AtlasWorld.Client.World` engine (`AnimationController`, `CharacterCustomization`, `WeaponSocket`, `MapChunkStreamer`, `TerrainElevation`) without legacy mobile HUD overlays:
 
@@ -291,6 +297,19 @@ The atlas web surface is powered by a single web program (`scripts/catalog_explo
    - Top bar `#topbarStatus` and footer `#sidebarVersion` display `Editable · <host>` (e.g. `Editable · atlas-edit.joymify.local.com` or `Editable · localhost:8788`).
    - **502 Bad Gateway:** If `http://atlas-edit.joymify.local.com/` returns `502 Bad Gateway`, it simply means the local host process is not running on port 8788.
 
+#### Game DB Search, Record Links, and 11-Entry Sidebar
+- **11-Entry Sidebar & Sub-View Pills:** The left navigation menu has 11 plain entries (`Home`, `World`, `Monsters`, `Items and cards`, `Jobs and skills`, `Quests and dungeons`, `Lore and canon`, `Art`, `Assets and audio`, `Tools`, `Archive (old concept)`). Individual views under multi-view entries appear as sub-view pills in `#subViewBar`, and every legacy `?tab=<old id>` link continues to resolve to its entry and pill (`?tab=sim`, `?tab=overview`, and unknown tab ids land on `Home`).
+- **Home Index Page (`?tab=home`):** Shows record counts per record kind from `GET /api/record-counts`, clicking any kind opens its corresponding entry and tab.
+- **Top-Bar Search & Hotkey:** Global search box lives in the top bar (`Cmd/Ctrl+K` or `/` focuses and selects). Searches across all game records, continents, districts, towns, maps, mobs, items, and quests.
+- **Record Links:** Deep links via `/?r=<kind>:<id>` (e.g. `/?r=continent:continent-01-hearthbloom-basin`) open dedicated record pages with grouped relational links ("Part of", "Contains", "Spawns", etc.) and an "Open in <entry>" navigation button.
+- **HTTP Endpoints:**
+  - `GET /api/record-counts`: Returns ordered record counts per kind (`{ counts: [{ kind, n, viewUrl }] }`).
+  - `GET /api/search?q=<query>&include_archive=<0|1>`: Ranks records with FTS5 search (exact title prefix matches first, BM25 scored).
+  - `GET /api/record?kind=<kind>&id=<id>`: Returns record details, hand tags, and forward/reverse relations.
+- **Automatic DB Rebuilds:** The derived game catalog DB (`build/catalog.db`) automatically rebuilds at edit-host startup when `scripts/build_catalog_db.py`, `content/`, or `contracts/content/` is newer than the DB file. A failed rebuild keeps the existing DB and displays a `.catalog-stale-banner` alert.
+- **Environment Variables:** `ATLAS_CATALOG_DB` configures the SQLite DB location; test-only overrides include `ATLAS_STUDIO_DIR`, `ATLAS_TAGS_FILE`, and `ATLAS_CATALOG_BUILD_FAIL`.
+- **Hand Tags:** Tag overrides live in `content/tags.json` formatted as `{"<kind>:<id>": ["tag1", "tag2"]}`.
+
 #### Active Write Routes & Content Editing
 - **Active Edit Host Endpoints:**
   - `/api/map-builder/*`: Proxy to local Map Builder service (`atelier/map-builder/server.mjs` on port 6016) with its own undo system.
@@ -323,8 +342,6 @@ The atlas web surface is powered by a single web program (`scripts/catalog_explo
 | `game-client/src/UI/Widgets/` | Ragnarok-style UI components: `PlayerFrame`, `TopBar`, `ChatBox`, `WardrobeModal`, `MobileControlsOverlay`. |
 | `server-rs/` | Authoritative Rust ECS simulation engine + Native Rust Meta & Persistence Engine (`server-rs/src/meta/`). |
 | `client/react-client/` | Web-based client implementation for quick prototyping. |
-| `monitoring/` | Prometheus & Grafana configuration stacks. |
-| `docker-compose.yml` | Complete local orchestration setup. |
 
 ---
 
@@ -397,7 +414,7 @@ The real-time game state replication protocol uses schema-compiled Google FlatBu
 
 ## 🧭 Atlas World & Map Studio — Unified Spatial Engine (`:8788/?tab=studio`)
 
-**Upright monsters (F-167):** dungeon spawn rows can carry `body_plan: upright_monster` and `body_kin`, a shape tag rather than a race. Choices live in `content/studio/mob_body_plan_picks.json`, and `python3 scripts/mob_body_plan_pass.py` applies them (`--check` validates without writing). Gate `G-MOB-SHAPE` (`scripts/tests/mob-shape-gate.test.mjs`) holds the share per tier and blocks filler boss names. The spawn matrix has an "Upright monster" toggle, stored in the URL as `shape=upright`.
+**Upright monsters (F-167):** dungeon spawn rows can carry `body_plan: upright_monster` and `body_kin`, a shape tag rather than a race. Choices live in `content/studio/mob_body_plan_picks.json` and are already applied to the atlas. Gate `G-MOB-SHAPE` (`scripts/tests/mob-shape-gate.test.mjs`) holds the share per tier and blocks filler boss names. The spawn matrix has an "Upright monster" toggle, stored in the URL as `shape=upright`.
 
 Launch the Catalog & Spatial Studio Web Observatory:
 ```bash

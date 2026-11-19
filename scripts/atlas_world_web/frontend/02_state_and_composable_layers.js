@@ -119,8 +119,6 @@ let MAXION_PINNED_MOB_ID = 'poring';
 let MAXION_SELECTED_TILE_ID = 'freja-south-gate';
 let MAXION_SELECTED_MOB_ID = 'hunter_fly';
 let MAP_DIR_FILTER = 'all';
-let SIM_OUTPUT = 'Click "Run Balance Sim" in the top bar (or below) to execute cargo run --bin balance_sim against the live Rust authoritative combat engine.';
-let SIM_RUNNING = false;
 // Panel params (SSOT merge): URL-borne state for mounted panels and the story/review sub-views.
 // Absent in the URL = cleared here, matching the other params (Back/forward never keeps stale state).
 const ATLAS_PARAM_KEYS = ['kind', 'key', 'mode', 'group', 'view', 'verdict', 'zone', 'chapter', 'ref', 'category', 'id', 'search'];
@@ -132,85 +130,65 @@ const ATLAS_SUBVIEWS = {
   review: { dflt: 'proposals', views: [['proposals', 'Proposals'], ['verdicts', 'Asset verdicts']] }
 };
 
+// One sidebar entry per group; its items are that entry's sub-view pills. Tab ids are the old
+// ones, so every old ?tab=<id> link still opens the same content (F-219).
 const NAV_GROUPS = [
-  {
-    section: 'Systematic Top-Down World Studio',
-    items: [
-      { id: 'studio', label: '🌌 Top-Down World Studio (4 Perspectives)', countKey: d => {
-        const sp = (d && d.studioPerspectives) || {};
-        const dists = (sp.districts || []).length;
-        const canonMaps = (sp.nodes || []).filter(n => n.status === 'canon').length;
-        return dists + 'D · ' + canonMaps + ' Maps';
-      } },
-    ]
-  },
-  {
-    section: 'World Bible',
-    items: [
-      { id: 'lore', label: '📜 Lore and History', panel: true, countKey: () => atlasPanelCount('lore') },
-      { id: 'concept-arts', label: '🎨 Game Concept Arts', panel: true, countKey: () => atlasPanelCount('concept-arts') },
-    ]
-  },
-  {
-    section: 'World Map & Atlas (Maxion / Lineage)',
-    items: [
-      { id: 'world', label: '🧭 Interactive World Map', countKey: () => getAllWorldTiles().length + ' Tiles' },
-      { id: 'maps',  label: '🗺️ Connected Map Directory', countKey: () => getAllWorldTiles().length + ' Maps' },
-      { id: 'map-sheets',  label: '📐 Map Sheets (mapforge)', panel: true, countKey: () => atlasPanelCount('map-sheets') },
-      { id: 'map-builder', label: '🧱 Map Builder (draft · publish)', panel: true, countKey: () => atlasPanelCount('map-builder') },
-      { id: 'mobs',  label: '👾 Monster Detail (mob_db)', countKey: () => getAllMonsters().length + ' Mobs' },
-      { id: 'bestiary', label: '🐉 World Bestiary (116 Fauna)', countKey: d => (d.bestiary || []).length },
-    ]
-  },
-  {
-    section: 'MMORPG Databases (RMS)',
-    items: [
-      { id: 'gear',     label: '⚔️ Item & Card DB (item_db)', countKey: d => d.items.length + d.cards.length },
-      { id: 'jobs',     label: '🛡️ Job & Skill DB (skill_db)', countKey: d => d.jobs.length + d.skills.length },
-      { id: 'races',    label: '🧬 6 Canonical Races & Towns', countKey: d => (d.races || []).length },
-      { id: 'dungeons', label: '🏰 60-Dungeon Spires (dungeon_db)', countKey: d => (d.dungeons || []).length },
-      { id: 'enchant',  label: '✨ High-Stakes +20 Forge', countKey: () => 20 },
-      { id: 'quests',   label: '📜 Quest Database (quest_db)', countKey: d => d.quests.length },
-      { id: 'story',    label: '📖 Story & Undertow Reader', countKey: d => ((d.worldSpine || {}).storyNodes || []).length },
-      { id: 'overview', label: '📊 Database Hub & Matrix', countKey: () => 9 },
-    ]
-  },
-  {
-    section: 'Asset Library',
-    items: [
-      { id: 'assets',   label: '🧊 Asset Classes & 3D Viewer', panel: true, countKey: () => atlasPanelCount('assets') },
-      { id: 'audio',    label: '🔊 SFX & Music Soundboard', panel: true, countKey: () => atlasPanelCount('audio') },
-      { id: 'art',      label: '🎨 Concept Art', panel: true, countKey: () => atlasPanelCount('art') },
-      { id: 'coverage', label: '🧩 Asset Key Coverage', panel: true, countKey: () => atlasPanelCount('coverage') },
-    ]
-  },
-  {
-    section: 'AI Asset & Map Studio',
-    items: [
-      { id: 'review',  label: '✨ Review Gate Inbox (Step 3)', countKey: d => ((d.reviewQueue && d.reviewQueue.proposals) || []).length },
-      { id: 'forge',   label: '🔥 Art Forge Runs & Briefs', panel: true, countKey: () => atlasPanelCount('forge') },
-      { id: 'brushes', label: '🌿 Biome Brush & Tag Pools',    countKey: d => Object.keys(d.groundPalettes || {}).length },
-    ]
-  },
-  {
-    section: 'Tools & Calculators',
-    items: [
-      { id: 'elements', label: '🔥 Property & Size Chart', countKey: d => (d.elements.elements || []).length },
-      { id: 'siege',    label: '🏰 WoE Castle Calculator', countKey: d => d.castles.length },
-      { id: 'sql',      label: '🗄️ SQLite Query Studio', countKey: () => 'SQL' },
-      { id: 'combat-lab', label: '🧮 Combat Model Lab (design)', panel: true, countKey: () => atlasPanelCount('combat-lab') },
-      { id: 'sim',      label: '⚙️ Rust Balance Simulator', countKey: () => 'RS' },
-      { id: 'docs',     label: '📖 Architecture Specs', countKey: d => d.docs.length },
-    ]
-  }
+  { section: 'Home', items: [
+      { id: 'home', label: 'Home' },
+  ] },
+  { section: 'World', items: [
+      { id: 'studio', label: 'World studio' },
+      { id: 'world', label: 'World map' },
+      { id: 'maps', label: 'Map directory' },
+      { id: 'map-sheets', label: 'Map sheets', panel: true },
+  ] },
+  { section: 'Monsters', items: [
+      { id: 'mobs', label: 'Monsters' },
+      { id: 'bestiary', label: 'Bestiary' },
+  ] },
+  { section: 'Items and cards', items: [
+      { id: 'gear', label: 'Items and cards' },
+  ] },
+  { section: 'Jobs and skills', items: [
+      { id: 'jobs', label: 'Jobs and skills' },
+  ] },
+  { section: 'Quests and dungeons', items: [
+      { id: 'quests', label: 'Quests' },
+      { id: 'dungeons', label: 'Dungeons' },
+  ] },
+  { section: 'Lore and canon', items: [
+      { id: 'lore', label: 'Lore', panel: true },
+      { id: 'races', label: 'Races' },
+  ] },
+  { section: 'Art', items: [
+      { id: 'concept-arts', label: 'Concept art', panel: true },
+      { id: 'art', label: 'Art library', panel: true },
+  ] },
+  { section: 'Assets and audio', items: [
+      { id: 'assets', label: 'Assets', panel: true },
+      { id: 'audio', label: 'Audio', panel: true },
+      { id: 'coverage', label: 'Coverage', panel: true },
+  ] },
+  { section: 'Tools', items: [
+      { id: 'sql', label: 'SQL' },
+      { id: 'combat-lab', label: 'Combat lab', panel: true },
+      { id: 'docs', label: 'Docs' },
+      { id: 'elements', label: 'Elements' },
+      { id: 'siege', label: 'Siege' },
+      { id: 'enchant', label: 'Enchant' },
+      { id: 'brushes', label: 'Brushes' },
+      { id: 'map-builder', label: 'Map builder', panel: true },
+      { id: 'forge', label: 'Art forge', panel: true },
+      { id: 'review', label: 'Review inbox' },
+  ] },
+  { section: 'Archive (old concept)', items: [
+      { id: 'story', label: 'Story' },
+  ] },
 ];
 
-// Mounted storybook panels (atelier/atlas-world-panels/js/panels/registry.mjs) report their own
-// counts once mounted; until then the sidebar shows an ellipsis.
-function atlasPanelCount(id) {
-  const c = window.ATLAS_PANELS && window.ATLAS_PANELS.count ? window.ATLAS_PANELS.count(id) : null;
-  return c === null || c === undefined ? '…' : c;
-}
+function navGroupOf(tab) { return NAV_GROUPS.find(g => g.items.some(it => it.id === tab)); }
+// Removed tab ids (sim, overview) and unknown ones land on Home.
+function normalizeTab(tab) { return navGroupOf(tab) ? tab : 'home'; }
 
 // Which tab+params the panel host owns. registry.mjs is the authority once loaded; this mirror
 // (checked against the registry by tests) only covers the moment before the module has run.
@@ -223,8 +201,9 @@ function atlasPanelGuess(tab, params) {
 // Panels adjust their own URL params (selected asset, mode, ...) without a re-render.
 function atlasSetParams(patch, opts) {
   let tabChanged = false;
-  if (patch && patch.tab && patch.tab !== CURRENT_TAB) {
-    CURRENT_TAB = String(patch.tab);
+  const nextTab = patch && patch.tab ? normalizeTab(String(patch.tab)) : '';
+  if (nextTab && nextTab !== CURRENT_TAB) {
+    CURRENT_TAB = nextTab;
     ATLAS_PARAMS = {};
     tabChanged = true;
   }
@@ -261,13 +240,18 @@ if (typeof window !== 'undefined') {
 function renderSubViewBar() {
   const bar = document.getElementById('subViewBar');
   if (!bar) return;
+  const group = navGroupOf(CURRENT_TAB);
+  const tabs = group && group.items.length > 1 ? group.items : [];
   const cfg = ATLAS_SUBVIEWS[CURRENT_TAB];
-  if (!cfg) { bar.hidden = true; bar.innerHTML = ''; return; }
-  const cur = ATLAS_PARAMS.view || cfg.dflt;
+  if (!tabs.length && !cfg) { bar.hidden = true; bar.innerHTML = ''; return; }
+  const cur = cfg ? (ATLAS_PARAMS.view || cfg.dflt) : '';
+  const pill = (attr, on, click, label) =>
+    `<button type="button" class="joy-button joy-button--sm ${on ? 'joy-button--solid' : 'joy-button--outline'}" ${attr} aria-pressed="${on}" onclick="${click}">${label}</button>`;
   bar.hidden = false;
-  bar.innerHTML = cfg.views.map(([id, label]) =>
-    `<button type="button" class="joy-button joy-button--sm ${id === cur ? 'joy-button--solid' : 'joy-button--outline'}" data-subview="${id}" aria-pressed="${id === cur}" onclick="setSubView('${id}')">${label}</button>`
-  ).join('');
+  bar.innerHTML =
+    tabs.map(it => pill(`data-tab-pill="${it.id}"`, it.id === CURRENT_TAB, `switchTab('${it.id}')`, it.label)).join('') +
+    (tabs.length && cfg ? '<span class="subview-bar__sep" aria-hidden="true"></span>' : '') +
+    (cfg ? cfg.views.map(([id, label]) => pill(`data-subview="${id}"`, id === cur, `setSubView('${id}')`, label)).join('') : '');
 }
 
 function setSubView(view) {
@@ -359,6 +343,7 @@ function syncUrlState() {
   hashParams.forEach((v, k) => params.set(k, v));
   const t = params.get('tab');
   const q = params.get('q');
+  CURRENT_RECORD = params.get('r') || '';
   const focus = params.get('focus');
   const mob = params.get('mob');
   const tile = params.get('tile');
@@ -392,12 +377,9 @@ function syncUrlState() {
     STUDIO_SELECTED_MONSTER_ID = studioMonster;
     STUDIO_PINNED_MONSTER_ID = studioMonster;
   }
-  if (t) CURRENT_TAB = t;
-  if (q !== null) {
-    SEARCH_QUERY = q;
-    const inp = document.getElementById('globalSearch');
-    if (inp) inp.value = q;
-  }
+  if (t) CURRENT_TAB = normalizeTab(t);
+  else if (!perspective && !CURRENT_RECORD) CURRENT_TAB = 'studio';
+  SEARCH_QUERY = q || ''; const inp = document.getElementById('globalSearch'); if (inp) inp.value = SEARCH_QUERY;
   if (mob) {
     MAXION_SELECTED_MOB_ID = mob;
     MAXION_PINNED_MOB_ID = mob;
@@ -520,6 +502,7 @@ function writeUrlState(pushHistory = true) {
   const params = new URLSearchParams();
   params.set('tab', CURRENT_TAB);
   if (SEARCH_QUERY) params.set('q', SEARCH_QUERY);
+  if (CURRENT_RECORD) params.set('r', CURRENT_RECORD);
   if (HIGHLIGHT_ENTITY_ID) params.set('focus', HIGHLIGHT_ENTITY_ID);
   if (CURRENT_TAB === 'mobs' && MAXION_SELECTED_MOB_ID) params.set('mob', MAXION_SELECTED_MOB_ID);
   if (CURRENT_TAB === 'world' && MAXION_PINNED_MOB_ID) params.set('mob', MAXION_PINNED_MOB_ID);
@@ -615,6 +598,7 @@ function formatDropPct(chanceBps) {
 }
 
 function jumpToEntity(tab, entityId) {
+  CURRENT_RECORD = '';
   if (tab !== CURRENT_TAB) ATLAS_PARAMS = {};
   CURRENT_TAB = tab;
   SEARCH_QUERY = '';
@@ -671,11 +655,10 @@ async function init() {
   if (sel) sel.value = savedPal;
 
   syncUrlState();
-  window.addEventListener('hashchange', () => { syncUrlState(); renderSidebar(); render(); });
-  window.addEventListener('popstate', () => { window.LAST_WORLD_TILE_ID = ''; syncUrlState(); renderSidebar(); render(); });
+  window.addEventListener('hashchange', () => { closeSearchPopover(); syncUrlState(); renderSidebar(); render(); });
+  window.addEventListener('popstate', () => { closeSearchPopover(); window.LAST_WORLD_TILE_ID = ''; syncUrlState(); renderSidebar(); render(); });
   // registry.mjs is a deferred module: it may finish before or after the bundle fetch below.
   window.addEventListener('atlas-panels-ready', () => { if (DATA) { renderSidebar(); if (window.ATLAS_PANELS?.has(CURRENT_TAB)) render(); } });
-  window.addEventListener('atlas-panels-updated', () => { if (DATA) renderSidebar(); });
   await loadRuntime();
   let res;
   try {
@@ -695,9 +678,10 @@ async function init() {
   searchInput.addEventListener('input', e => {
     SEARCH_QUERY = e.target.value.trim().toLowerCase();
     HIGHLIGHT_ENTITY_ID = '';
-    writeUrlState();
+    writeUrlState(false);
     render();
   });
+  initRecordSearch();
 
   window.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -708,6 +692,7 @@ async function init() {
       e.preventDefault();
       searchInput.focus();
     } else if (e.key === 'Escape') {
+      closeSearchPopover();
       if (MOBILE_NAV_OPEN) toggleMobileNavDrawer(false);
       closeInspector();
     }
@@ -727,8 +712,10 @@ function toggleMobileNavDrawer(forceState) {
 }
 
 function switchTab(id) {
-  if (id !== CURRENT_TAB) ATLAS_PARAMS = {};
-  CURRENT_TAB = id;
+  closeSearchPopover();
+  CURRENT_RECORD = '';
+  if (normalizeTab(id) !== CURRENT_TAB) ATLAS_PARAMS = {};
+  CURRENT_TAB = normalizeTab(id);
   HIGHLIGHT_ENTITY_ID = '';
   toggleMobileNavDrawer(false);
   writeUrlState();
@@ -740,16 +727,11 @@ function switchTab(id) {
 
 function renderSidebar() {
   if (!DATA) return;
-  const nav = document.getElementById('sidebarNav');
-  nav.innerHTML = NAV_GROUPS.map(group => `
-    <div class="nav-section">${group.section}</div>
-    ${group.items.map(it => `
-      <div class="nav-item ${it.id === CURRENT_TAB ? 'active' : ''}" onclick="switchTab('${it.id}')">
-        <span>${it.label}</span>
-        <span class="nav-section-count">${it.countKey(DATA)}</span>
-      </div>
-    `).join('')}
-  `).join('');
+  const cur = navGroupOf(CURRENT_TAB);
+  document.getElementById('sidebarNav').innerHTML = NAV_GROUPS.map(g => {
+    const first = g.items[0].id;
+    return `<div class="nav-item ${g === cur ? 'active' : ''}" role="button" tabindex="0" data-entry="${first}" ${g === cur ? 'aria-current="page"' : ''} onclick="switchTab('${first}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();switchTab('${first}')}"><span>${g.section}</span></div>`;
+  }).join('');
 }
 
 function matchesSearch(obj) {
@@ -794,6 +776,17 @@ function closeInspector() {
 function render() {
   if (!DATA) return;
   const main = document.getElementById('mainContent');
+  if (CURRENT_RECORD) {
+    const bar = document.getElementById('subViewBar');
+    if (bar) bar.hidden = true;
+    if (window.ATLAS_PANELS) window.ATLAS_PANELS.hideAll();   // same leave-the-panel steps as panelDispatch() (:279-288)
+    const host = document.getElementById('panelHost');
+    if (host) host.hidden = true;
+    main.hidden = false;
+    renderRecordPage(main);
+    return;
+  }
+  delete main.dataset.record;
   const titleMap = {
     studio:   'Systematic Top-Down World and Map Studio (World History and Concept ➔ Continent ➔ District ➔ Town or Hunting Area)',
     world:    'World & Continent Atlas (400×400 km · 13 Continents · Towns, Zones & Dungeons)',
@@ -801,7 +794,7 @@ function render() {
     bestiary: 'World Bestiary, Regional Ecology & 3D/2D Visual Briefs (116 Creatures)',
     review:   'Step 3 Review Gate Inbox — 1-Map Pilot (prontera_south_field)',
     brushes:  'Biome Brush & Smart Tag-Pool Studio (ground_id)',
-    overview: 'RateMyServer Hub & Cross-Repo Telemetry',
+    home:     'Atlas World DB',
     gear:     'Item & Card Database (item_db)',
     mobs:     'Monster Database & Spawn Drops (mob_db)',
     jobs:     'Skill & Class Branch Database (skill_db_class)',
@@ -810,7 +803,6 @@ function render() {
     siege:    'War of Emperium (GvG Castle Siege) Calculator',
     maps:     'Map Database & Area Monster Spawns (map_db / areainfo)',
     sql:      'Live Read-Only SQLite Query Studio',
-    sim:      'Authoritative Rust Balance Simulator (balance_sim)',
     docs:     'RO Writings — Architecture Specs & Lore Canon',
     lore:          'Lore and History — the Cradle of Sealed Gods',
     'concept-arts': 'Game Concept Arts — the world, zone by zone',
@@ -842,7 +834,7 @@ function render() {
   else if (CURRENT_TAB === 'bestiary') main.innerHTML = renderBestiary();
   else if (CURRENT_TAB === 'review') main.innerHTML = renderReviewInbox();
   else if (CURRENT_TAB === 'brushes') main.innerHTML = renderBiomeBrushes();
-  else if (CURRENT_TAB === 'overview') main.innerHTML = renderOverview();
+  else if (CURRENT_TAB === 'home') main.innerHTML = renderHome();
   else if (CURRENT_TAB === 'jobs') main.innerHTML = renderJobs();
   else if (CURRENT_TAB === 'mobs') main.innerHTML = renderMobs();
   else if (CURRENT_TAB === 'elements') { main.innerHTML = renderElements(); updateElemCalc(); }
@@ -854,7 +846,6 @@ function render() {
   else if (CURRENT_TAB === 'siege') { main.innerHTML = renderSiege(); updateSiegeCalc(); }
   else if (CURRENT_TAB === 'maps') main.innerHTML = renderMapDirectory();
   else if (CURRENT_TAB === 'sql') { main.innerHTML = renderSqlStudio(); executeSql(); }
-  else if (CURRENT_TAB === 'sim') main.innerHTML = renderSim();
   else if (CURRENT_TAB === 'docs') main.innerHTML = renderDocs();
 }
 

@@ -6,6 +6,7 @@ import {
   CATEGORY_LABELS,
   SCHEMA_CATEGORIES,
   buildConceptArtDeepLink,
+  currentConceptArts,
   extractHeroKeyArt,
   filterConceptArts,
   groupConceptArtsByCategory,
@@ -547,7 +548,7 @@ register("concept-arts", {
     try {
       await loadStudioNodes();
       const doc = await fetchJson(CONCEPT_INDEX_URL, "concept-arts-index");
-      allItems = doc && Array.isArray(doc.items) ? doc.items : [];
+      allItems = currentConceptArts(doc && doc.items);
       totalCount = allItems.length;
 
       // Apply initial params

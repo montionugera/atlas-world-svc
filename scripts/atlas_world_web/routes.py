@@ -8,9 +8,10 @@ this module never has to import `catalog_explorer_web`.
 from __future__ import annotations
 
 import json
-from urllib.parse import urlsplit
+import sqlite3
+from urllib.parse import parse_qs, urlsplit
 
-from . import map_builder_proxy, review_queue, runtime, static_mounts
+from . import map_builder_proxy, records, review_queue, runtime, static_mounts, work_and_assets
 
 MAX_BODY_BYTES = 2 * 1024 * 1024
 
@@ -121,11 +122,90 @@ def _map_builder(method: str):
     return run
 
 
+def _query(handler) -> dict:
+    return {k: v[0] for k, v in parse_qs(urlsplit(handler.path).query).items()}
+
+
+def _search(handler, path: str, *, head: bool = False) -> None:
+    qs = _query(handler)
+    try:
+        results = records.search(qs.get("q", ""), qs.get("include_archive") == "1")
+    except sqlite3.Error as exc:  # an old DB without the index: say so instead of a 500 page
+        _send_json(handler, {"ok": False, "error": f"Search is unavailable: {exc}"}, 503, head=head)
+        return
+    _send_json(handler, {"ok": True, "results": results}, head=head)
+
+
+def _record(handler, path: str, *, head: bool = False) -> None:
+    qs = _query(handler)
+    kind, id_ = qs.get("kind", ""), qs.get("id", "")
+    try:
+        found = records.record(kind, id_)
+    except sqlite3.Error as exc:
+        _send_json(handler, {"ok": False, "error": f"Search is unavailable: {exc}"}, 503, head=head)
+        return
+    if found is None:
+        _send_json(handler, {"ok": False, "error": f"No such record: {kind}:{id_}"}, 404, head=head)
+        return
+    _send_json(handler, {"ok": True, **found}, head=head)
+
+
+def _record_counts(handler, path: str, *, head: bool = False) -> None:
+    try:
+        counts = records.counts()
+    except sqlite3.Error as exc:
+        _send_json(handler, {"ok": False, "error": f"Search is unavailable: {exc}"}, 503, head=head)
+        return
+    _send_json(handler, {"ok": True, "counts": counts}, head=head)
+
+
+def _parse_limit(qs: dict) -> int | None:
+    raw = qs.get("limit")
+    if raw is None or raw == "":
+        return None
+    try:
+        n = int(raw)
+        return n if n > 0 else None
+    except ValueError:
+        return None
+
+
+def _work_index(handler, path: str, *, head: bool = False) -> None:
+    qs = _query(handler)
+    data = work_and_assets.query_work_index(
+        status=qs.get("status", ""),
+        release_version=qs.get("release", ""),
+        q=qs.get("q", ""),
+        limit=_parse_limit(qs),
+    )
+    _send_json(handler, {"ok": True, **data}, head=head)
+
+
+def _asset_provenance(handler, path: str, *, head: bool = False) -> None:
+    qs = _query(handler)
+    data = work_and_assets.query_asset_provenance(
+        category=qs.get("category", ""),
+        status=qs.get("status", ""),
+        kind=qs.get("kind", ""),
+        source=qs.get("source", ""),
+        tier=qs.get("tier", ""),
+        q=qs.get("q", ""),
+        over_budget=qs.get("over_budget") == "1",
+        limit=_parse_limit(qs),
+    )
+    _send_json(handler, {"ok": True, **data}, head=head)
+
+
 # (exact path | prefix ending in "/") -> handler. Checked in order.
 ROUTES = {
     "GET": [
         ("/healthz", _healthz),
         ("/api/runtime", _runtime),
+        ("/api/search", _search),
+        ("/api/record", _record),
+        ("/api/record-counts", _record_counts),
+        ("/api/work-index", _work_index),
+        ("/api/assets/provenance", _asset_provenance),
         ("/api/map-builder/", _map_builder("GET")),
         ("/api/map-builder-files/", _map_builder("GET")),
     ],

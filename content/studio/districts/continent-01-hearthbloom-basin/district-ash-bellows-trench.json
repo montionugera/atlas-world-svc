@@ -4,7 +4,7 @@
   "name": "Ash-Bellows Trench",
   "parent_continent_id": "continent-01-hearthbloom-basin",
   "status": "canon",
-  "core_rationale": "Southeastern sub-kiln firebrick trench of Continent 01 where Sola's deepest ceramic air-ducts draw cool valley air beneath Kilnfire Terraces.",
+  "core_rationale": "Southeastern sub-kiln firebrick trench of Continent 01 where Sola's deepest ceramic air-ducts draw cool valley air ducted under the basin to the great bellows beneath Kilnfire Terraces.",
   "local_conflict": "Dormant glaze-golems and ember-salamanders stir inside the firebrick intake tunnels beneath the shield rim.",
   "level_band_label": "Levels 1 to 20",
   "level_range": [
@@ -119,6 +119,60 @@
     "in_world_rumor": "Kiln-masons say the southeastern air-ducts hum a three-note chord whenever the great bellows under Kilnwatch Bastion draw breath.",
     "visual_silhouette": "Glazed terracotta intake arches disappearing into a warm, glowing trench along the southeastern shield rim.",
     "unanswered_question": "What ancient kiln-blueprint lies sealed inside Sola's primary draft chamber at the bottom of Ash-Bellows Trench?"
+  },
+  "geography": {
+    "terrain_group": "Stone Highlands",
+    "map_position": {
+      "x": 75,
+      "y": 65
+    },
+    "elevation_band": 2,
+    "biome": "A warm, dry firebrick trench on the south-east rim, with glazed intake arches, ash-grey slopes and slate-blue cliffs along the pass road.",
+    "climate": {
+      "temperature": "warm",
+      "moisture": "dry"
+    },
+    "weather": [
+      {
+        "name": "Trench heat",
+        "when": "midday",
+        "feel": "Hot still air collects at the bottom and makes the intake arches shimmer."
+      },
+      {
+        "name": "Bellows draft",
+        "when": "night, when the bellows draw",
+        "feel": "A steady cool breath flows into the intake tunnels, loud enough to hum."
+      }
+    ],
+    "water": "No surface water: the only damp is condensation on the firebrick intake ducts, which stay cool inside even when the trench is hot.",
+    "far_landmark": "Three grey plumes rising from Glaze Flue Vent on the trench rim, seen north-east from Saffron Kiln Orchards.",
+    "discovery_hooks": [
+      "A duct mouth that blows a steady cool breath, so strong that loose ash hangs level in the air in front of it.",
+      "A glazed bell hung on the pass road where the draft hums, which rings a three-note chord on its own at night."
+    ],
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": [
+        1,
+        10
+      ],
+      "main": [
+        15,
+        25
+      ],
+      "identity": "Daro prologue, Ch I combat",
+      "chapter": "I",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Daro Lv 1-10 prologue; guard training, safe patrols",
+      "veteran_return": "Bounties, combat materials, defensive crafting",
+      "party_content": "2-5: optional instance, trench defence or elite patrol",
+      "cross_race_reason": "Party staging for highland challenges",
+      "party_hub_role": "coordinated_combat",
+      "status": "proposed"
+    }
   },
   "quality_checklist": {
     "causal_continuity": {

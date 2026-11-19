@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/clown_clown_texture.png-d64e15bceb8887dbc3b90
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -72,7 +72,7 @@ jobs:
         env:
           ATLAS_SKIP_STUDIO: "1"
         run: |
-          echo "::warning title=F-174 pull-only checks skipped::ATLAS_SKIP_STUDIO=1 in CI: pull-only entries (the sergeant) are NOT verified here; local Gate 1 verifies them against Asset Studio."
+          echo "::warning title=F-174 pull-only checks skipped::ATLAS_SKIP_STUDIO=1 in CI: pull-only studio-cache entries are NOT verified here; local Gate 1 verifies them against Asset Studio."
           node scripts/check_asset_manifest.mjs
 
       # Content gate (F-005): character sheets must validate against schema
@@ -295,11 +295,15 @@ jobs:
         # created a new runs/<brief>.json would slip past it.
         run: test -z "$(git status --porcelain -- atelier/art-forge/runs)"
 
-      # Asset forge (F-003): structural + game-rule validation for every
-      # manifest entry whose glb exists on disk. Bespoke-tier failures are
+      # Asset forge (F-003): unit tests + structural & game-rule validation for
+      # every manifest entry whose glb exists on disk. Bespoke-tier failures are
       # hard failures; seed-tier issues are warnings only (known scale bug,
-      # tracked as an F-002 follow-up) so this stays green today.
-      - name: Asset forge — validate manifest glbs
+      # tracked as an F-002 follow-up). Pull-only studio-cache glbs are absent
+      # in CI and validated locally by scripts/precheck.sh (pipeline_char_section).
+      - name: Asset forge — tests and manifest glb validation
+        env:
+          ATLAS_SKIP_STUDIO: "1"
         run: |
           npm ci --prefix atelier/asset-forge
+          npm test --prefix atelier/asset-forge
           node atelier/asset-forge/validate.mjs --manifest game-client/assets/manifest.json

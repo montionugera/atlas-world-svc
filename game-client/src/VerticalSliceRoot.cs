@@ -226,6 +226,17 @@ namespace AtlasWorld.Client
                 return;
             }
 
+            // Env-gated F-229 probe (ATLAS_VERIFY_ENV_PREGATE=1).
+            if (OS.GetEnvironment("ATLAS_VERIFY_ENV_PREGATE") == "1")
+            {
+                SetProcess(false);
+                SetPhysicsProcess(false);
+                SetProcessInput(false);
+                SetProcessUnhandledInput(false);
+                AddChild(new EnvRenderPreGateVerify { Name = "EnvRenderPreGateVerify" });
+                return;
+            }
+
             if (!string.IsNullOrEmpty(OS.GetEnvironment("ATLAS_RENDER_PIPELINE_STRIP")))
             {
                 SetProcess(false);
@@ -990,8 +1001,8 @@ namespace AtlasWorld.Client
             if (envProps == null)
                 return;
 
-            // Upgrade existing static scene props to warm anime toon shading
-            EntityView.ApplyAnimeToonShading(envProps, EntityKind.Npc);
+            // Upgrade existing static scene props to warm painterly shading without black outline NextPass
+            EntityView.ApplyAnimeToonShading(envProps, EntityKind.Npc, includeOutline: false);
             _cameraOccluder.RegisterEnvironmentHierarchy(envProps);
 
             _meadowRingRoot = new Node3D { Name = "MeadowRing" };
@@ -2106,7 +2117,8 @@ namespace AtlasWorld.Client
                 {
                     if (isMoving && _playerAnimController.PollFootstepStrike(out bool rightFoot, out bool running))
                     {
-                        Audio.AudioRegistry.Instance?.PlayFootstep(PlayerAvatar.Position, rightFoot, running);
+                        var surf = World.FootstepSurfaceResolver.Resolve(PlayerAvatar.Position, _mapDoc);
+                        Audio.AudioRegistry.Instance?.PlayFootstep(PlayerAvatar.Position, rightFoot, running, surf);
                     }
                     else if (!isMoving)
                     {

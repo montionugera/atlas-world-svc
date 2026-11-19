@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using AtlasWorld.Client.Content;
 
 namespace AtlasWorld.Client.World
 {
@@ -375,7 +376,8 @@ namespace AtlasWorld.Client.World
             {
                 foreach (var prop in propsInChunk)
                 {
-                    float groundY = TerrainElevation.SampleBaseTerrainHeight(prop.X, prop.Z, _doc);
+                    float baseY = TerrainElevation.SampleBaseTerrainHeight(prop.X, prop.Z, _doc);
+                    float groundY = Mathf.Abs(prop.Y) > 0.001f ? prop.Y : baseY;
                     prop.Y = Mathf.Round(groundY * 100f) / 100f;
 
                     if (IsGpuInstancedClutterAsset(prop))
@@ -435,7 +437,7 @@ namespace AtlasWorld.Client.World
 
                 var mmi = new MultiMeshInstance3D
                 {
-                    Name = $"GPUInstanced_{System.IO.Path.GetFileNameWithoutExtension(assetPath)}_{transforms.Count}",
+                    Name = $"GPUInstanced_{System.IO.Path.GetFileNameWithoutExtension(assetPath).Replace(':', '_')}_{transforms.Count}",
                     Multimesh = multiMesh,
                     CastShadow = GeometryInstance3D.ShadowCastingSetting.Off
                 };
@@ -634,7 +636,7 @@ namespace AtlasWorld.Client.World
                 };
                 upperCanopy.AddChild(bannerLabel);
 
-                EntityView.ApplyAnimeToonShading(root, EntityKind.Npc);
+                EntityView.ApplyAnimeToonShading(root, EntityKind.Npc, includeOutline: false);
 
                 // Register the upper 2F canopy + pillar shafts for automatic 1st-floor interior & LOS cutaway
                 // (never fade the stairs or the 2F deck when the player stands on top of the 2F deck!)
@@ -805,7 +807,7 @@ namespace AtlasWorld.Client.World
                 };
                 roofCanopy.AddChild(caveLabel);
 
-                EntityView.ApplyAnimeToonShading(root, EntityKind.Npc);
+                EntityView.ApplyAnimeToonShading(root, EntityKind.Npc, includeOutline: false);
 
                 _occluder?.RegisterRoofOrCeilingCanopy(
                     roofCanopy,
@@ -814,17 +816,52 @@ namespace AtlasWorld.Client.World
             }
         }
 
-        /// <summary>F-183 grey-box block: one BoxMesh (no art) plus an optional billboard name label above it.</summary>
-        private static void SpawnGreyBlock(UnifiedMapStructureVolume s, Node3D root)
+        private PackedScene? ResolveAssetScene(string assetPath)
+        {
+            if (string.IsNullOrEmpty(assetPath))
+                return null;
+            if (_sceneCache.TryGetValue(assetPath, out PackedScene? cached))
+                return cached;
+
+            PackedScene? scene = null;
+            if (assetPath.StartsWith("res://", StringComparison.Ordinal))
+                scene = ResourceLoader.Exists(assetPath) ? GD.Load<PackedScene>(assetPath) : null;
+            else if (AssetRegistry.Instance is { } reg)
+            {
+                PackedScene s = reg.Resolve(assetPath, out ResolveTier tier);
+                scene = tier == ResolveTier.Capsule ? null : s; // a miss must keep the grey box, never a capsule
+            }
+
+            _sceneCache[assetPath] = scene;
+            return scene;
+        }
+
+        /// <summary>F-183 grey-box block: resolved GLB or one BoxMesh fallback plus an optional billboard name label above it.</summary>
+        private void SpawnGreyBlock(UnifiedMapStructureVolume s, Node3D root)
         {
             float top = s.Hover + s.Size.Y;
-            root.AddChild(new MeshInstance3D
+            bool isDressedScene = _doc.Props != null && _doc.Props.Count > 0;
+            Node3D? glb = ResolveAssetScene(s.AssetPath ?? "")?.Instantiate() as Node3D;
+            if (glb != null)
             {
-                Name = $"Block_{s.Id}",
-                Mesh = new BoxMesh { Size = new Vector3(s.Size.X, s.Size.Y, s.Size.Z) },
-                Position = new Vector3(0f, s.Hover + s.Size.Y / 2f, 0f),
-                MaterialOverride = s.Solid ? SolidGreyBlockMaterial : WalkthroughGreyBlockMaterial,
-            });
+                glb.Name = $"Glb_{s.Id}";
+                glb.Position = new Vector3(0f, s.Hover, 0f);
+                glb.Rotation = new Vector3(0f, s.RotY, 0f);
+                EntityView.ApplyAnimeToonShading(glb, EntityKind.Npc, includeOutline: false);
+                root.AddChild(glb);
+                _occluder?.RegisterPropRoot(glb, Mathf.Max(s.Size.X, s.Size.Z) / 2f, 1f); // without this the 7.1 m tower blocks the camera with no fade
+            }
+            else
+            {
+                root.AddChild(new MeshInstance3D
+                {
+                    Name = $"Block_{s.Id}",
+                    Mesh = new BoxMesh { Size = new Vector3(s.Size.X, s.Size.Y, s.Size.Z) },
+                    Position = new Vector3(0f, s.Hover + s.Size.Y / 2f, 0f),
+                    MaterialOverride = s.Solid ? SolidGreyBlockMaterial : WalkthroughGreyBlockMaterial,
+                    Visible = !isDressedScene,
+                });
+            }
             if (!string.IsNullOrEmpty(s.Label))
             {
                 root.AddChild(new Label3D
@@ -839,6 +876,7 @@ namespace AtlasWorld.Client.World
                     VisibilityRangeEnd = 42.0f,
                     VisibilityRangeEndMargin = 6.0f,
                     VisibilityRangeFadeMode = GeometryInstance3D.VisibilityRangeFadeModeEnum.Self,
+                    Visible = !isDressedScene,
                 });
             }
         }
@@ -1021,21 +1059,17 @@ namespace AtlasWorld.Client.World
             return h;
         }
 
-        private Mesh? ResolvePrototypeMesh(string assetPath)
+        public Mesh? ResolvePrototypeMesh(string assetPath)
         {
             if (_meshPrototypeCache.TryGetValue(assetPath, out Mesh? cached))
                 return cached;
 
-            if (!_sceneCache.TryGetValue(assetPath, out PackedScene? scene))
-            {
-                scene = ResourceLoader.Exists(assetPath) ? GD.Load<PackedScene>(assetPath) : null;
-                _sceneCache[assetPath] = scene;
-            }
+            PackedScene? scene = ResolveAssetScene(assetPath);
 
             Mesh? extracted = null;
             if (scene?.Instantiate() is Node3D tempRoot)
             {
-                EntityView.ApplyAnimeToonShading(tempRoot, EntityKind.Npc);
+                EntityView.ApplyAnimeToonShading(tempRoot, EntityKind.Npc, includeOutline: false);
                 MeshInstance3D? firstMeshInst = FindFirstMeshInstance(tempRoot);
                 if (firstMeshInst?.Mesh != null)
                 {
@@ -1087,13 +1121,7 @@ namespace AtlasWorld.Client.World
 
         private bool SpawnSinglePropIntoChunk(UnifiedMapProp prop, Node3D chunkNode, float groundY)
         {
-            if (!_sceneCache.TryGetValue(prop.AssetPath, out PackedScene? scene))
-            {
-                scene = ResourceLoader.Exists(prop.AssetPath)
-                    ? GD.Load<PackedScene>(prop.AssetPath)
-                    : null;
-                _sceneCache[prop.AssetPath] = scene;
-            }
+            PackedScene? scene = ResolveAssetScene(prop.AssetPath);
 
             if (scene?.Instantiate() is Node3D instance)
             {
@@ -1101,7 +1129,7 @@ namespace AtlasWorld.Client.World
                 instance.Position = new Vector3(prop.X, groundY, prop.Z);
                 instance.Rotation = new Vector3(0f, prop.RotY, 0f);
                 instance.Scale = Vector3.One * prop.Scale;
-                EntityView.ApplyAnimeToonShading(instance, EntityKind.Npc);
+                EntityView.ApplyAnimeToonShading(instance, EntityKind.Npc, includeOutline: false);
                 chunkNode.AddChild(instance);
 
                 _occluder?.RegisterPropRoot(instance, prop.ColliderHalfExtent, prop.Scale);

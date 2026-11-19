@@ -17,9 +17,15 @@ Provides a single observable SQLite + JSONB-style catalog database for:
 """
 
 import json
+import os
 import sqlite3
 import sys
 from pathlib import Path
+
+try:
+    from scripts.atlas_world_web import catalog_index, runtime as web_runtime
+except ImportError:
+    from atlas_world_web import catalog_index, runtime as web_runtime  # type: ignore
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTENT_DIR = ROOT / "contracts" / "content"
@@ -29,20 +35,25 @@ SPINE_DIR = ROOT / "content" / "spine"
 STORY_DIR = ROOT / "content" / "story"
 ZONES_DIR = ROOT / "content" / "zones"
 DUNGEONS_DIR = ROOT / "content" / "dungeons"
-STUDIO_DIR = ROOT / "content" / "studio"
+STUDIO_DIR = Path(os.environ.get("ATLAS_STUDIO_DIR", str(ROOT / "content" / "studio")))   # test seam
 COMPILED_DUNGEONS_PATH = DUNGEONS_DIR / "_compiled_catalog.json"
 CANON_PATH = STUDIO_DIR / "canon" / "glossary.json"
 DECISIONS_PATH = STUDIO_DIR / "canon" / "decisions.json"
 CONCEPT_ART_PATH = ROOT / "content" / "concept-art" / "index.json"
 BESTIARY_PATH = ROOT / "content" / "bestiary" / "bestiary.json"
-BUILD_DIR = ROOT / "build"
-DB_PATH = BUILD_DIR / "catalog.sqlite"
-SUMMARY_PATH = BUILD_DIR / "catalog_summary.json"
+TAGS_PATH = Path(os.environ.get("ATLAS_TAGS_FILE", str(ROOT / "content" / "tags.json")))  # test seam
+DB_PATH = web_runtime.catalog_db_path()
+BUILD_DIR = DB_PATH.parent
+TMP_PATH = DB_PATH.with_name(f"{DB_PATH.name}.{os.getpid()}.tmp")  # per process: parallel rebuilds must not share it
+SUMMARY_PATH = DB_PATH.with_name(f"{DB_PATH.stem}_summary.json")   # default path gives build/catalog_summary.json
 
 
 def load_json(path: Path):
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError) as exc:
+        raise SystemExit(f"[catalog_db] cannot parse {path}: {exc}") from None
 
 
 def canon_rows(g):
@@ -64,8 +75,22 @@ def canon_rows(g):
         add("title", x["name"], x["name"], None, None, x)
     for k, v in g.get("landmarks", {}).items():
         add("landmark", k, v["name"], None, None, v)
-    for x in g.get("npcs", {}).get("travellers", []):
-        add("npc", x["name"], x["name"], x.get("home_town"), None, x)
+    for x in g.get("towns", []):
+        add("town", x["id"], x["name"], None, x.get("status"), x)
+    town_name = {t["id"]: t["name"] for t in g.get("towns", [])}
+    travellers = {x["name"]: x for x in g.get("npcs", {}).get("travellers", [])}
+    cast_names = set()
+    for tid, cast in g.get("npcs", {}).get("town", {}).items():
+        if tid not in town_name:
+            raise ValueError(f"glossary npcs.town.{tid}: no such town in glossary towns (its NPCs would lose their Lives-in link)")
+        for x in cast:   # a traveller who is also a cast member is one row: traveller facts + cast facts
+            cast_names.add(x["name"])
+            add("npc", x["name"], x["name"], town_name[tid], x.get("status"), {**travellers.get(x["name"], {}), **x, "town": tid})
+    for x in travellers.values():
+        if x["name"] not in cast_names:
+            add("npc", x["name"], x["name"], x.get("home_town"), None, x)
+    for x in g.get("world_model", {}).get("rules", []):
+        add("world_rule", x["id"], x["topic"], None, x.get("status"), x)
     if g.get("architect"):
         a = g["architect"]
         add("architect", a["name"], a["name"], None, None, a)
@@ -86,11 +111,7 @@ def concept_art_rows(idx):
     ]
 
 
-def main() -> int:
-    BUILD_DIR.mkdir(parents=True, exist_ok=True)
-    if DB_PATH.exists():
-        DB_PATH.unlink()
-
+def _build(db_path: Path) -> int:
     jobs = load_json(CONTENT_DIR / "jobs.json")
     skills = load_json(CONTENT_DIR / "skills.json")
     items = load_json(CONTENT_DIR / "items.json")
@@ -103,7 +124,7 @@ def main() -> int:
 
     maps = []
     if MAPS_DIR.exists():
-        for mp in sorted(MAPS_DIR.glob("*.json")):
+        for mp in sorted(MAPS_DIR.glob("[!_]*.json")):
             data = load_json(mp)
             wsb = data.get("worldSpineBinding") or {}
             concept = data.get("concept") or {}
@@ -467,7 +488,9 @@ def main() -> int:
                 }
             )
 
-    conn = sqlite3.connect(str(DB_PATH))
+    conn = sqlite3.connect(str(db_path))
+    if os.environ.get("ATLAS_CATALOG_BUILD_FAIL"):  # test seam for R1f / A2
+        raise SystemExit("[catalog_db] forced failure (ATLAS_CATALOG_BUILD_FAIL is set)")
     cur = conn.cursor()
 
     cur.executescript(
@@ -1267,6 +1290,9 @@ def main() -> int:
 
     conn.commit()
 
+    catalog_index.build_index(conn, ROOT, STUDIO_DIR, MAPS_DIR / "_manifest.runtime.json", TAGS_PATH)
+    conn.commit()
+
     asset_entries = [
         {"entryKey": r[0], "domain": r[1], "catalogId": r[2], "name": r[3]}
         for r in cur.execute("SELECT * FROM v_asset_studio_entries").fetchall()
@@ -1304,7 +1330,7 @@ def main() -> int:
     ]
 
     summary = {
-        "databasePath": str(DB_PATH.relative_to(ROOT)),
+        "databasePath": os.path.relpath(DB_PATH, ROOT),
         "counts": {
             "jobs": len(jobs),
             "skills": len(skills),
@@ -1359,13 +1385,26 @@ def main() -> int:
 
     conn.close()
     print(
-        f"[catalog_db] Built {DB_PATH.relative_to(ROOT)} and {SUMMARY_PATH.relative_to(ROOT)} "
+        f"[catalog_db] Built {os.path.relpath(DB_PATH, ROOT)} and {os.path.relpath(SUMMARY_PATH, ROOT)} "
         f"(continents={len(world_continents)}, places={len(world_places)}, zones={len(world_zones)}, "
         f"dungeons={len(world_dungeons)}, bestiary={len(world_bestiary)}, spine={len(spine_nodes)}, "
         f"story={len(story_nodes)}, jobs={len(jobs)}, skills={len(skills)}, items={len(items)}, "
         f"mobs={len(mobs)}, cards={len(cards)}, quests={len(quest_board)}, maps={len(maps)})"
     )
     return 0
+
+
+def main() -> int:
+    BUILD_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        rc = _build(TMP_PATH)
+        os.replace(TMP_PATH, DB_PATH)  # the old DB is replaced only by a finished build (R1a)
+        return rc
+    except catalog_index.CatalogIndexError as exc:
+        print(f"[catalog_db] {exc}", file=sys.stderr)
+        return 1
+    finally:
+        TMP_PATH.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

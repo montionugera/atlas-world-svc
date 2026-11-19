@@ -136,7 +136,8 @@ try {
     console.log(`  ${file}`);
   }
 
-  await page.locator(navSel, { hasText: 'Map Builder' }).click();
+  await page.locator(navSel, { hasText: 'Tools' }).click();
+  await page.locator('#subViewBar [data-tab-pill="map-builder"]').click();
   const excluded = page.locator('.empty-state', { hasText: 'Not in this release image.' });
   check('Map Builder shows the excluded message', await excluded.isVisible());
   check('Map Builder links to the edit site', (await excluded.locator('a').getAttribute('href')).includes('atlas-edit'));

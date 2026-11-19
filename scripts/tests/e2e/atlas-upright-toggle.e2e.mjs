@@ -138,10 +138,10 @@ try {
   check('clear: focus on toggle', (await focusedId(page)) === 'atlasShapeToggle');
 
   // tab away and return through history keeps the toggle on
-  await page.locator('.nav-item', { hasText: 'Lore and History' }).first().click();
+  await page.locator('.nav-item', { hasText: 'Lore and canon' }).first().click();
   await page.goBack();
   await page.goForward();
-  await page.locator('.nav-item', { hasText: 'Top-Down World Studio' }).first().click();
+  await page.locator('.nav-item', { hasText: 'World' }).first().click();
   await page.locator(TOGGLE).waitFor({ timeout: 15000 });
   check('history: toggle still on after leaving and returning', (await page.locator(TOGGLE).getAttribute('aria-pressed')) === 'true', page.url());
 

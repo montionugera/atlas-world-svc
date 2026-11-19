@@ -147,5 +147,26 @@
       "verified": true,
       "evidence": "Drops the Golden Comb Seal referenced in the Honeycomb-Kiln Ridge Fog of Lore lock_message."
     }
+  },
+  "gameplay_role": {
+    "verdict": "open_activity",
+    "chapter": null,
+    "proposed_level_band": [
+      20,
+      25
+    ],
+    "party_size": [
+      1,
+      3
+    ],
+    "session_minutes": [
+      8,
+      12
+    ],
+    "rewards": "Food and consumable recipes",
+    "balance_reason": "Farming alternative without duplicating dungeon progression",
+    "boss_site_note": null,
+    "status": "proposed",
+    "source": "GPT balance verdict v2, 2026-11-19, delegated by owner"
   }
 }

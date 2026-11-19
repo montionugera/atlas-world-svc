@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Godot;
+using AtlasWorld.Client.Audio;
 
 namespace AtlasWorld.Client.World
 {
@@ -24,6 +25,9 @@ namespace AtlasWorld.Client.World
         private const string Tag = "[PlaytestSandboxVerify]";
         private int _failures;
 
+        [System.Runtime.InteropServices.DllImport("libc")]
+        private static extern void _exit(int status);
+
         public override async void _Ready()
         {
             GD.Print($"{Tag} BEGIN");
@@ -37,6 +41,12 @@ namespace AtlasWorld.Client.World
             }
             bool pass = _failures == 0;
             GD.Print(pass ? $"{Tag} VERDICT PASS" : $"{Tag} VERDICT FAIL ({_failures} case(s))");
+            if (DisplayServer.GetName() == "headless" && !OperatingSystem.IsWindows())
+            {
+                Console.Out.Flush();
+                Console.Error.Flush();
+                _exit(pass ? 0 : 1);
+            }
             GetTree().Quit(pass ? 0 : 1);
         }
 
@@ -589,6 +599,27 @@ namespace AtlasWorld.Client.World
                     p1 != null && p2 != null && p1.Stream != null && p2.Stream != null &&
                     !Mathf.IsEqualApprox(p1.PitchScale, p2.PitchScale));
             }
+
+            Report("PlaytestSandbox spawns 5 walkable material test pads (Stone, Dirt, Grass, Water, Glass)",
+                sandbox.SurfacePads.Count == 5);
+
+            bool allPadsResolveAndPlay = sandbox.SurfacePads.Count == 5;
+            foreach (var pad in sandbox.SurfacePads)
+            {
+                Vector2 center = pad.WorldBounds.GetCenter();
+                Vector3 probePos = new(center.X, 0f, center.Y);
+                var resolved = sandbox.ResolveSurfaceAt(probePos);
+                var played = audioReg?.PlayFootstep(probePos, isRightFoot: false, isRunning: false, surface: resolved);
+                if (resolved != pad.Surface || played == null || played.Stream == null || !played.Playing)
+                    allPadsResolveAndPlay = false;
+            }
+            // Also verify open meadow grass resolution outside roads/pads (in-bounds on maro-bell width=80)
+            var grassProbe = new Vector3(12f, 0f, -15f);
+            var grassSurface = sandbox.ResolveSurfaceAt(grassProbe);
+            var grassPlayed = audioReg?.PlayFootstep(grassProbe, isRightFoot: true, isRunning: true, surface: grassSurface);
+            Report($"All 5 sandbox surface pads (Stone, Dirt, Grass, Water, Glass) + open terrain ({grassSurface}==Grass) resolve and play material footsteps",
+                allPadsResolveAndPlay && grassSurface == FootstepSurface.Grass &&
+                grassPlayed != null && grassPlayed.Stream != null && grassPlayed.Playing);
 
             // Optional windowed screenshot capture of the Playtest Sandbox UI
             string renderDir = OS.GetEnvironment("ATLAS_RENDER_PLAYTEST_SANDBOX");

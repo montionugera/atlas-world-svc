@@ -1,61 +1,59 @@
-## 📁 Project Structure Rules
+## Project Structure Rules
 
 ### Root Layout
 ```
 atlas-world-svc/
+├── .claude/
+│   ├── agents/           # Domain reviewer & studio role agents
+│   ├── idea_backlog/     # Captured ideas (ps-release-workflow)
+│   └── refined_backlog/  # Refined feature specs & plans
 ├── .cursor/
-│   ├── plans/           # Implementation plans
-│   └── rules/           # Development rules
-├── docs/                # Project docs (flow specs, api, networking)
-├── colyseus-server/
+│   └── rules/            # Development rules
+├── docs/                 # Specs (unit-contract.md, asset-delivery-spec.md, *.spec.md, superpowers/)
+├── server-rs/
 │   ├── src/
-│   │   ├── index.ts     # Server entry point
-│   │   ├── rooms/       # Game room handlers
-│   │   ├── schemas/     # Colyseus schemas
-│   │   ├── ai/          # AI module, behaviors, strategies
-│   │   ├── physics/     # Planck physics
-│   │   ├── time/        # SimClock (simulated time)
-│   │   └── tests/       # Jest unit/integration tests
-│   ├── generated/csharp/ # C# Unity client (generated)
-│   ├── package.json
-│   ├── tsconfig.json
+│   │   ├── main.rs       # Server entry point (ws://localhost:2567)
+│   │   ├── ai/           # Mob AI behaviors and strategies
+│   │   ├── combat/       # Melee, projectiles, parry, damage
+│   │   ├── content/      # Bestiary, maps, items, skills, world regions
+│   │   ├── core/         # SimClock (monotonic simulated time), speed scaling
+│   │   ├── fleet/        # Agones fleet lifecycle
+│   │   ├── meta/         # Meta persistence and RPCs
+│   │   ├── net/          # WebSocket gateway and session handling
+│   │   ├── physics/      # rapier2d physics
+│   │   └── systems/      # ECS simulation systems (bevy_ecs)
+│   ├── tests/            # Rust integration tests
+│   ├── Cargo.toml
 │   └── Dockerfile
+├── game-client/          # Godot 4.7 C# NativeAOT client
+│   ├── src/              # C# client gameplay, world, rendering, networking
+│   └── assets/           # Baked res:// assets and manifests
+├── contracts/            # Shared TypeScript contracts & schemas
 ├── client/
-│   └── react-client/    # React WebSocket client
-├── docker-compose.yml
+│   └── react-client/     # React web client
+├── content/              # Story, maps, characters, studio JSON, generated/*.json
+├── atelier/              # Art/asset/map build pipelines and review panels
+├── scripts/              # Verification gates, content checks, observatory tools
 └── README.md
 ```
 
-### Colyseus Server Organization
-- **rooms/**: GameRoom, handlers, GameSimulationSystem
-- **schemas/**: Colyseus state schemas (Player, Mob, NPC, GameState)
-- **ai/**: AIModule, behaviors, AIWorldInterface
-- **physics/**: PlanckPhysicsManager
-- **time/**: SimClock — monotonic simulated time, advanced once per tick
-- **src/tests/**: Jest tests (*.test.ts)
-- **generated/csharp/**: C# Unity client library (generated)
+### Rust Server (`server-rs/`) Organization
+- **core/**: `SimClock` (monotonic simulated time), `speed.rs` (`docs/unit-contract.md` metre scaling)
+- **ecs/** & **systems/**: `bevy_ecs` world state and deterministic tick systems
+- **physics/**: `rapier2d` collision and spatial queries
+- **combat/** & **ai/**: authoritative damage, projectiles, parry, mob steering/targeting
+- **meta/** & **fleet/**: native meta persistence/RPCs and Agones lifecycle (replacing retired Nakama/Colyseus)
+- **tests/**: Rust integration tests (`cargo test`)
 
-### React Client Organization
-- **components/**: React UI components
-- **hooks/**: Custom React hooks (useColyseusClient)
-- **types/**: Client-side TypeScript types
-- **utils/**: Helper functions and utilities
+### Godot Client (`game-client/`) Organization
+- **src/**: C# scripts (`VerticalSliceRoot.cs`, `World/`, `Net/`, `UI/`)
+- **assets/**: `manifest.json`, `catalog-manifest.json`, `audio-manifest.json`, `music-manifest.json`, `render-spec.json`
 
-### File Naming
-- **Handlers**: `{feature}Handler.ts`
-- **Managers**: `{feature}Manager.ts`
-- **Systems**: `{feature}System.ts`
-- **Utils**: `{feature}Utils.ts`
-- **Types**: `{feature}Types.ts`
-
-### Import Structure
-- **Relative imports** within modules
-- **Absolute imports** from index files
-- **Barrel exports** for clean APIs
-- **No circular dependencies**
+### Shared Contracts & Web Client
+- **contracts/**: pnpm workspace package (`@atlas/contracts`) with Jest tests
+- **client/react-client/**: React TypeScript client (own `package-lock.json`)
 
 ### Configuration Management
-- **Environment variables** for secrets
-- **Static config** files for game constants
-- **Runtime config** validation
-- **Hot reload** support for development
+- **Environment variables** for secrets and runtime ports (`PORT=2567`)
+- **Pinned versions** in `.release.json` (`nodeMajor` for map/byte determinism)
+- **Unit contract**: `1 game unit = 1 metre` everywhere (`docs/unit-contract.md`)

@@ -89,6 +89,63 @@
       "lock_reason": "Superheated porcelain glaze-steam billows from the northern Slag Chasm; the Guild of Potters has sealed the bridge until the Great Damper is cooled."
     }
   ],
+  "geography": {
+    "terrain_group": "Stone Highlands",
+    "map_position": {
+      "x": 55,
+      "y": 28
+    },
+    "elevation_band": 3,
+    "biome": "Dry stone terraces on the upper rim, with soot-black steps, brick-red kilns and iron-streaked cliff above, venting hot updrafts into cooler air.",
+    "climate": {
+      "temperature": "cool",
+      "moisture": "dry"
+    },
+    "weather": [
+      {
+        "name": "Updraft gusts",
+        "when": "windy days",
+        "feel": "Hot air blasts up from the kiln vents while the air between them stays cool."
+      },
+      {
+        "name": "Cinder fall",
+        "when": "dusk, when the kilns are fired",
+        "feel": "Grey flecks drift down onto the steps like slow ash."
+      },
+      {
+        "name": "Thin morning air",
+        "when": "dawn",
+        "feel": "Clear, dry air with a hard breeze across the open terraces and a sharp view of the far rim."
+      }
+    ],
+    "water": "No streams: rain is caught in cistern basins cut into the terrace stairs and the overflow runs down the Cinder Apron Steps toward Teacup Meadows.",
+    "far_landmark": "A stepped line of kiln vents with an orange glow above it, the highest lit rim, seen north-north-east from Teacup Meadows.",
+    "discovery_hooks": [
+      "A cistern cut so deep that its bottom step is still hot to the touch.",
+      "A cracked kiln door left open, with fresh glaze samples still lined up inside.",
+      "A terrace wall on the west side inlaid with hundreds of tiny glazed tiles, no two the same colour, facing the caldera bridge."
+    ],
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": "safe",
+      "main": [
+        10,
+        20
+      ],
+      "identity": "Convergence, party recruitment, Ch 0 staging",
+      "chapter": "0",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Arrive by guided caravan at Lv 10; party recruitment, chapter dispatch",
+      "veteran_return": "Guilds, storage, trading, social activity",
+      "party_content": "2-5: groups assemble here, then travel elsewhere",
+      "cross_race_reason": "The six-race convergence hub",
+      "party_hub_role": "find_party",
+      "status": "proposed"
+    }
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,

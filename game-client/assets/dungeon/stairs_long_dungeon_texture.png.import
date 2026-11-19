@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/stairs_long_dungeon_texture.png-c456c106c9ce6
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

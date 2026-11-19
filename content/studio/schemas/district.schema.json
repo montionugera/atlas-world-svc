@@ -230,6 +230,196 @@
           }
         }
       }
+    },
+    "geography": {
+      "type": "object",
+      "description": "F-233 optional geography: position, elevation, climate, weather and discovery hooks.",
+      "required": [
+        "terrain_group",
+        "map_position",
+        "elevation_band",
+        "biome",
+        "climate",
+        "weather",
+        "water",
+        "far_landmark",
+        "discovery_hooks",
+        "status"
+      ],
+      "properties": {
+        "terrain_group": {
+          "enum": [
+            "Green Lowlands",
+            "Stone Highlands",
+            "Old Wilds"
+          ]
+        },
+        "map_position": {
+          "type": "object",
+          "required": [
+            "x",
+            "y"
+          ],
+          "properties": {
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "elevation_band": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "biome": {
+          "type": "string"
+        },
+        "climate": {
+          "type": "object",
+          "required": [
+            "temperature",
+            "moisture"
+          ],
+          "properties": {
+            "temperature": {
+              "enum": [
+                "cold",
+                "cool",
+                "mild",
+                "warm"
+              ]
+            },
+            "moisture": {
+              "enum": [
+                "dry",
+                "moderate",
+                "wet"
+              ]
+            }
+          }
+        },
+        "weather": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "when",
+              "feel"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "when": {
+                "type": "string"
+              },
+              "feel": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "water": {
+          "type": "string"
+        },
+        "far_landmark": {
+          "type": "string"
+        },
+        "discovery_hooks": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string"
+        },
+        "encounter_bands": {
+          "type": "object",
+          "description": "F-235 proposed encounter bands; level_range is unchanged.",
+          "required": [
+            "main",
+            "identity",
+            "status"
+          ],
+          "properties": {
+            "starter": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "const": "safe"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              ]
+            },
+            "main": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "identity": {
+              "type": "string"
+            },
+            "chapter": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            }
+          }
+        },
+        "town_role": {
+          "type": "object",
+          "description": "F-235 role of a mixed-settlement town that is not a canon town.",
+          "required": [
+            "primary",
+            "purpose",
+            "status"
+          ],
+          "properties": {
+            "primary": {
+              "type": "string"
+            },
+            "purpose": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            }
+          }
+        }
+      }
     }
   }
 }

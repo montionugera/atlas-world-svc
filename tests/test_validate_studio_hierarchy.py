@@ -270,11 +270,13 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 ].__setitem__(
                     "East", None
                 ),
+                # F-236: Kilnwatch now also reaches the orchard through Celadon; cut every door into the orchard.
                 "nodes/continent-01-hearthbloom-basin/district-teacup-meadows/hunting-area-kiln-east-orchard.json": lambda d: d[
                     "portals"
-                ].__setitem__(
-                    "West", None
-                ),
+                ].update({"West": None, "East": None}),
+                "nodes/continent-01-hearthbloom-basin/district-kilnfire-terraces/town-kilnwatch-bastion.json": lambda d: d[
+                    "portals"
+                ].__setitem__("West", None),
             }
         ) as studio_dir:
             errors = validate_studio_directory(studio_dir)
@@ -300,6 +302,189 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
                 any("INV-06 violation" in err for err in errors),
                 f"Expected INV-06 violation, got: {errors}",
             )
+
+    # ---- F-233 GEO-01..GEO-07 -------------------------------------------------
+
+    C01 = "continents/continent-01-hearthbloom-basin.json"
+    D01 = "districts/continent-01-hearthbloom-basin/{}.json"
+
+    def _assert_only_geo(self, mutations: dict[str, Callable[[dict], None]], rule: str) -> None:
+        with self._mutated_files(mutations) as studio_dir:
+            errors = validate_studio_directory(studio_dir)
+        geo = [e for e in errors if "GEO-" in e]
+        self.assertTrue(geo, f"Expected {rule} error, got: {errors}")
+        self.assertTrue(all(f"{rule} violation" in e for e in geo), f"Expected only {rule}: {geo}")
+
+    def _links(self, fn: Callable[[list], None]) -> Callable[[dict], None]:
+        return lambda d: fn(d["district_links"])
+
+    def _link(self, links: list, lid: str) -> dict:
+        return next(link for link in links if link["id"] == lid)
+
+    def test_geo01_rejects_district_without_geography(self) -> None:
+        self._assert_only_geo(
+            {self.D01.format("district-saffron-kiln-orchards"): lambda d: d.pop("geography")}, "GEO-01"
+        )
+
+    def test_geo02_rejects_duplicate_pair(self) -> None:
+        def dup(links: list) -> None:
+            twin = copy.deepcopy(links[0])
+            twin["id"] = "link-twin"
+            twin["a"], twin["b"] = twin["b"], twin["a"]
+            links.append(twin)
+
+        self._assert_only_geo({self.C01: self._links(dup)}, "GEO-02")
+
+    def test_geo02_rejects_disconnected_graph(self) -> None:
+        def cut(links: list) -> None:
+            links[:] = [l for l in links if "district-glaze-river-delta" not in (l["a"], l["b"])]
+
+        self._assert_only_geo({self.C01: self._links(cut)}, "GEO-02")
+
+    def test_geo03_rejects_walk_minutes_out_of_range(self) -> None:
+        def slow(links: list) -> None:
+            links[0]["walk_minutes"] = 40
+
+        self._assert_only_geo({self.C01: self._links(slow)}, "GEO-03")
+
+    def test_geo04_rejects_big_climb_on_plain_road(self) -> None:
+        def flat(links: list) -> None:
+            self._link(links, "link-teacup-meadows--kilnfire-terraces")["gateway"]["type"] = "road"
+
+        self._assert_only_geo({self.C01: self._links(flat)}, "GEO-04")
+
+    def test_geo05_rejects_two_step_temperature_jump(self) -> None:
+        def hot(d: dict) -> None:
+            d["geography"]["climate"]["temperature"] = "warm"
+
+        self._assert_only_geo({self.D01.format("district-kilnfire-terraces"): hot}, "GEO-05")
+
+    def test_geo06_rejects_wrong_terrain_group_for_home_town(self) -> None:
+        def wrong(d: dict) -> None:
+            d["geography"]["terrain_group"] = "Old Wilds"
+
+        self._assert_only_geo({self.D01.format("district-teacup-meadows"): wrong}, "GEO-06")
+
+    def test_geo07_rejects_linked_districts_with_same_weather_names(self) -> None:
+        def same(d: dict) -> None:
+            d["geography"]["weather"] = [
+                {"name": "Ember-pollen drift", "when": "afternoon", "feel": "x"},
+                {"name": "Clover rain", "when": "after rain", "feel": "y"},
+                {"name": "Cinnamon morning", "when": "dawn", "feel": "z"},
+            ]
+
+        self._assert_only_geo({self.D01.format("district-ginger-steam-terraces"): same}, "GEO-07")
+
+    def test_geo08_rejects_frost_words_on_a_perpetual_spring_continent(self) -> None:
+        def frosty(d: dict) -> None:
+            d["geography"]["weather"][0]["feel"] = "White frost coats the stones."
+
+        self._assert_only_geo({self.D01.format("district-kilnfire-terraces"): frosty}, "GEO-08")
+
+    # ---- F-235 GEO-09 / GEO-10 -------------------------------------------------
+
+    def test_geo09_rejects_unlisted_cross_district_portal(self) -> None:
+        self._assert_only_geo({self.C01: lambda d: d["legacy_portals"].pop(0)}, "GEO-09")
+
+    def test_geo09_rejects_legacy_portal_that_no_longer_exists(self) -> None:
+        def stale(d: dict) -> None:
+            d["legacy_portals"].append(
+                {"from_node_id": "town-kilnwatch-bastion", "to_node_id": "town-lantern-hollow",
+                 "district_pair": ["district-kilnfire-terraces", "district-teacup-meadows"],
+                 "ruling": "remove", "reason": "fixture"}
+            )
+
+        self._assert_only_geo({self.C01: stale}, "GEO-09")
+
+    def test_geo09_transport_link_does_not_whitelist_a_map_edge_portal(self) -> None:
+        def unlist(d: dict) -> None:
+            d["legacy_portals"] = [e for e in d["legacy_portals"] if e["ruling"] != "becomes_transport"]
+            assert d["transport_links"]  # the pairs stay declared as transport
+
+        self._assert_only_geo({self.C01: unlist}, "GEO-09")
+
+    def test_geo10_rejects_link_without_priority(self) -> None:
+        self._assert_only_geo({self.C01: self._links(lambda ls: ls[0].pop("priority"))}, "GEO-10")
+
+    def test_geo10_rejects_district_without_main_band(self) -> None:
+        self._assert_only_geo(
+            {self.D01.format("district-ash-bellows-trench"): lambda d: d["geography"]["encounter_bands"].pop("main")},
+            "GEO-10",
+        )
+
+    def test_geo10_rejects_home_district_without_starter_band(self) -> None:
+        def no_starter(d: dict) -> None:
+            d["geography"]["encounter_bands"]["starter"] = "safe"
+
+        self._assert_only_geo({self.D01.format("district-teacup-meadows"): no_starter}, "GEO-10")
+
+    # ---- F-236 GEO-11 ----------------------------------------------------------
+
+    N01 = "nodes/continent-01-hearthbloom-basin/{}.json"
+
+    def test_geo11_rejects_built_link_missing_a_portal_direction(self) -> None:
+        # link-teacup-meadows--kilnfire-terraces is "built"; drop the Kilnwatch -> orchard half.
+        def drop_west(d: dict) -> None:
+            d["portals"]["West"] = None
+
+        self._assert_only_geo(
+            {self.N01.format("district-kilnfire-terraces/town-kilnwatch-bastion"): drop_west}, "GEO-11"
+        )
+
+    def test_geo11_rejects_built_link_with_gated_portal(self) -> None:
+        def gate(d: dict) -> None:
+            d["portals"]["West"]["gate_state"] = "fog_of_lore"
+
+        self._assert_only_geo(
+            {self.N01.format("district-kilnfire-terraces/town-kilnwatch-bastion"): gate}, "GEO-11"
+        )
+
+    # ---- F-239 GEO-12 ----------------------------------------------------------
+
+    def _role(self, fn: Callable[[dict], None], node: str = "district-teacup-meadows/dungeon-kiln-cellar"):
+        return {self.N01.format(node): lambda d: fn(d["gameplay_role"])}
+
+    def _gp(self, fn: Callable[[dict], None], district: str = "district-teacup-meadows"):
+        return {self.D01.format(district): lambda d: fn(d["geography"]["gameplay"])}
+
+    def test_geo12_rejects_dungeon_without_gameplay_role(self) -> None:
+        self._assert_only_geo(
+            {self.N01.format("district-teacup-meadows/dungeon-kiln-cellar"): lambda d: d.pop("gameplay_role")}, "GEO-12"
+        )
+
+    def test_geo12_rejects_unknown_verdict(self) -> None:
+        self._assert_only_geo(self._role(lambda r: r.update(verdict="raid")), "GEO-12")
+
+    def test_geo12_rejects_bad_level_band(self) -> None:
+        self._assert_only_geo(self._role(lambda r: r.update(proposed_level_band=[15, 13])), "GEO-12")
+        self._assert_only_geo(self._role(lambda r: r.update(proposed_level_band=[13])), "GEO-12")
+
+    def test_geo12_rejects_unknown_status(self) -> None:
+        self._assert_only_geo(self._role(lambda r: r.update(status="maybe")), "GEO-12")
+
+    def test_geo12_story_dungeon_needs_chapter_and_boss_note(self) -> None:
+        self._assert_only_geo(self._role(lambda r: r.update(chapter=None)), "GEO-12")
+        self._assert_only_geo(self._role(lambda r: r.update(boss_site_note="")), "GEO-12")
+
+    def test_geo12_other_verdicts_need_null_chapter(self) -> None:
+        self._assert_only_geo(
+            self._role(lambda r: r.update(chapter="ch1"), "district-porcelain-cradle/dungeon-medallion-heart-vault"), "GEO-12"
+        )
+
+    def test_geo12_rejects_district_without_gameplay(self) -> None:
+        self._assert_only_geo(
+            {self.D01.format("district-teacup-meadows"): lambda d: d["geography"].pop("gameplay")}, "GEO-12"
+        )
+
+    def test_geo12_rejects_empty_gameplay_text(self) -> None:
+        self._assert_only_geo(self._gp(lambda g: g.update(new_player="")), "GEO-12")
+
+    def test_geo12_rejects_bad_party_hub_role(self) -> None:
+        self._assert_only_geo(self._gp(lambda g: g.update(party_hub_role="lobby")), "GEO-12")
+
+    def test_geo12_requires_exactly_one_find_party(self) -> None:
+        self._assert_only_geo(self._gp(lambda g: g.update(party_hub_role="find_party")), "GEO-12")
+        self._assert_only_geo(self._gp(lambda g: g.update(party_hub_role=None), "district-kilnfire-terraces"), "GEO-12")
 
     def test_build_runtime_manifest_excludes_mystery_and_includes_fog_of_lore(self) -> None:
         manifest = build_runtime_manifest(DEFAULT_STUDIO_DIR)

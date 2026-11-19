@@ -165,6 +165,11 @@ namespace AtlasWorld.Client.World
         private MeshInstance3D? _targetRing;
         private float _pulseTime = 0f;
 
+        private readonly List<SurfacePadOverride> _surfacePads = new();
+        private Node3D? _surfacePadsRoot;
+        private FootstepSurface? _lastSteppedSurface;
+        private float _timeSinceLastFootstep = 1.0f;
+
         // UI references
         private Label? _telemetryLabel;
         private Label? _actionBannerLabel;
@@ -184,6 +189,8 @@ namespace AtlasWorld.Client.World
         private Button? _netButton;
 
         // Public accessors for PlaytestSandboxVerify & external inspection
+        public IReadOnlyList<SurfacePadOverride> SurfacePads => _surfacePads;
+        public FootstepSurface ResolveSurfaceAt(Vector3 worldPos) => FootstepSurfaceResolver.Resolve(worldPos, _mapDoc, _surfacePads);
         public string ActiveMapId => _mapDoc?.MapId ?? "";
         public UnifiedMapDocument? MapDocument => _mapDoc;
         public string ActiveAvatarKey => _availableAvatarKeys.Count > 0 ? _availableAvatarKeys[_avatarIndex] : "";
@@ -326,6 +333,7 @@ namespace AtlasWorld.Client.World
             _dayNightCycle.Initialize(this, _mapDoc);
 
             SpawnTargetDummies();
+            SpawnSurfaceTestPads();
 
             Vector3 focus = _avatarContainer?.Position ?? new Vector3(0f, 0f, -15.5f);
             _chunkStreamer.UpdateStreaming(focus, forceReload: true);
@@ -463,6 +471,73 @@ namespace AtlasWorld.Client.World
 
             _selectedDummyIndex = 0;
             UpdateTargetRing();
+        }
+
+        private void SpawnSurfaceTestPads()
+        {
+            _surfacePads.Clear();
+            if (_surfacePadsRoot != null && GodotObject.IsInstanceValid(_surfacePadsRoot))
+            {
+                _surfacePadsRoot.GetParent()?.RemoveChild(_surfacePadsRoot);
+                _surfacePadsRoot.QueueFree();
+            }
+
+            _surfacePadsRoot = new Node3D { Name = "SurfaceTestPads" };
+            AddChild(_surfacePadsRoot);
+
+            float z = (_mapDoc.MapId == "maro-bell") ? -8.5f : 2.5f;
+            (string id, string label, float x, FootstepSurface surf, Color col)[] padDefs =
+            {
+                ("pad_stone", "STONE PAD", -12.0f, FootstepSurface.Stone, new Color(0.50f, 0.50f, 0.56f)),
+                ("pad_dirt", "DIRT PAD", -6.0f, FootstepSurface.Dirt, new Color(0.56f, 0.38f, 0.22f)),
+                ("pad_grass", "GRASS PAD", 0.0f, FootstepSurface.Grass, new Color(0.24f, 0.68f, 0.28f)),
+                ("pad_water", "WATER PAD", 6.0f, FootstepSurface.Water, new Color(0.16f, 0.54f, 0.86f, 0.85f)),
+                ("pad_glass", "GLASS PAD", 12.0f, FootstepSurface.Glass, new Color(0.78f, 0.94f, 1.00f, 0.72f)),
+            };
+
+            const float padWidth = 5.6f;
+            const float padDepth = 9.0f;
+            const float halfW = padWidth * 0.5f;
+            const float halfD = padDepth * 0.5f;
+
+            foreach (var def in padDefs)
+            {
+                Rect2 bounds = new(def.x - halfW, z - halfD, padWidth, padDepth);
+                _surfacePads.Add(new SurfacePadOverride(def.id, def.label, bounds, def.surf));
+
+                float y = TerrainElevation.SampleHeight(def.x, z, _mapDoc, 0f);
+                var meshInst = new MeshInstance3D
+                {
+                    Name = $"Mesh_{def.id}",
+                    Mesh = new BoxMesh { Size = new Vector3(padWidth, 0.05f, padDepth) },
+                    Position = new Vector3(def.x, y + 0.025f, z)
+                };
+                var mat = new StandardMaterial3D
+                {
+                    AlbedoColor = def.col,
+                    Roughness = def.surf == FootstepSurface.Glass || def.surf == FootstepSurface.Water ? 0.08f : 0.85f,
+                    Metallic = def.surf == FootstepSurface.Glass ? 0.35f : 0.0f,
+                    Transparency = (def.surf == FootstepSurface.Glass || def.surf == FootstepSurface.Water)
+                        ? BaseMaterial3D.TransparencyEnum.Alpha
+                        : BaseMaterial3D.TransparencyEnum.Disabled
+                };
+                meshInst.MaterialOverride = mat;
+                _surfacePadsRoot.AddChild(meshInst);
+
+                var label = new Label3D
+                {
+                    Name = $"Label_{def.id}",
+                    Text = def.label,
+                    Position = new Vector3(def.x, y + 0.55f, z),
+                    Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+                    FontSize = 32,
+                    PixelSize = 0.0055f,
+                    Modulate = Colors.White,
+                    OutlineSize = 6,
+                    OutlineModulate = Colors.Black
+                };
+                _surfacePadsRoot.AddChild(label);
+            }
         }
 
         public void SpawnOrReplaceAvatar(string avatarKey)
@@ -1338,6 +1413,8 @@ namespace AtlasWorld.Client.World
             UpdateEyeExpressions(dt);
 
             Vector3 playerPos = _avatarContainer?.Position ?? Vector3.Zero;
+            _timeSinceLastFootstep += dt;
+            FootstepSurface currentSurf = ResolveSurfaceAt(playerPos);
             if (_maroPoc != null)
             {
                 _maroPoc?.StepPlayer(playerPos, isMoving, dt, _animController);
@@ -1346,7 +1423,16 @@ namespace AtlasWorld.Client.World
             {
                 if (isMoving && _animController.PollFootstepStrike(out bool rightFoot, out bool running))
                 {
-                    Audio.AudioRegistry.Instance?.PlayFootstep(playerPos, rightFoot, running);
+                    _lastSteppedSurface = currentSurf;
+                    _timeSinceLastFootstep = 0f;
+                    Audio.AudioRegistry.Instance?.PlayFootstep(playerPos, rightFoot, running, currentSurf);
+                }
+                else if (isMoving && _lastSteppedSurface != currentSurf && _timeSinceLastFootstep >= 0.14f)
+                {
+                    _lastSteppedSurface = currentSurf;
+                    _timeSinceLastFootstep = 0f;
+                    Audio.AudioRegistry.Instance?.PlayFootstep(playerPos, isRightFoot: false, isRunning: _runGaitEnabled || shiftHeld, currentSurf);
+                    RefreshUiLabels($"Surface: {currentSurf} — playing sfx:footstep_{FootstepSurfaceMapper.ToEventToken(currentSurf)}_1..8");
                 }
                 else if (!isMoving)
                 {
@@ -1735,12 +1821,13 @@ namespace AtlasWorld.Client.World
                 : "off";
             float footMm = LastFootMinDeltaMeters * 1000f;
             string groundStatus = footMm >= -25.0f ? "GROUNDED" : "SINKING";
+            FootstepSurface activeSurf = ResolveSurfaceAt(pos);
 
             _telemetryLabel.Text =
                 $"Map: {ActiveMapId}  |  Pos: ({pos.X:F1}, {pos.Y:F2}, {pos.Z:F1}) m  |  Speed: {_currentSpeedMetersPerSec:F2} m/s  |  Zoom: {_cameraDistance:F2} m\n" +
                 $"Rig: {ActiveAvatarKey}  |  Stance: {stanceLabel}  |  Hair: {ActiveHairPresetName}  |  Eyes: {ActiveEyeExpressionLabel}\n" +
                 $"Locomotion: {baseState} ({baseClip})  |  Upper-Body Attack: {upperLayer}\n" +
-                $"Foot Grounding: {footMm:+0.0;-0.0;0.0} mm vs rest ankle ({groundStatus})";
+                $"Foot Grounding: {footMm:+0.0;-0.0;0.0} mm vs rest ankle ({groundStatus})  |  Surface: {activeSurf}";
         }
 
         private static string ShortKey(string key)

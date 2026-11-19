@@ -1,7 +1,7 @@
 # Atelier — asset & story build workspace
 
 Everything that builds, reviews, or visualizes non-runtime art/content lives here:
-the build tools, their docs, and their review surfaces. Game server (`colyseus-server/`) and
+the build tools, their docs, and their review surfaces. Game server (`server-rs/`) and
 clients (`game-client/`, `client/`) are NOT in this folder and do not depend on it at runtime.
 
 Start with this file. Do not scan the folders unless a task points there — every tool keeps
@@ -14,7 +14,6 @@ a deeper README covering internals.
 | `art-forge/` | AI concept-art generation for environments/towns (brief → block-in → render → artifact gate → provenance ledger) | `node --test art-forge/tests/*.test.mjs` (233) |
 | `mapforge/` | Deterministic world-map sheet generator (SVG/PNG atlas + continent sheets from `content/world/`) | `node --test mapforge/tests/*.test.mjs` (786) |
 | `asset-forge/` | Blender kitbash → validated character `.glb` pipeline (AUTHOR → BAKE → VALIDATE → INTAKE) | `npm ci --prefix asset-forge && node asset-forge/validate.mjs --manifest game-client/assets/manifest.json` |
-| `asset-2d-forge/` | 2D asset intake/validation | `node --test asset-2d-forge/tests/*.test.mjs` |
 | `atlas-world-panels/` | The panel modules + registries behind the **atlas-world** review surface (`scripts/catalog_explorer_web.py` mounts them; `index.html` is only a redirect stub) — every artifact must be observable there (owner rule). Panels read their registries (`env-index.json`, `maps-index.json`, `world-index.json`) | `node --test atlas-world-panels/tests/*.test.mjs` |
 | `story-explorer/` | Read-only narrative-graph viewer for `content/story/*.json` | `node --test story-explorer/tests/*.test.mjs` |
 | `combat-lab/` | Interactive combat-balance viewer (I-028 model) | `node combat-lab/verify.mjs` |

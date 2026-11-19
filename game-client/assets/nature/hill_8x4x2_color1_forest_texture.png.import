@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/hill_8x4x2_color1_forest_texture.png-9afd73b7
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

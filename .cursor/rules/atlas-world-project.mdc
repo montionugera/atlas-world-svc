@@ -1,296 +1,74 @@
 # Atlas World Project Rules
 
-## 🎮 Project Overview
-Real-time multiplayer game using Colyseus WebSocket server with React client.
+## Project Overview
+Real-time multiplayer action-RPG powered by an authoritative Rust game server (`server-rs/`), a Godot 4.7 C# NativeAOT client (`game-client/`), shared TypeScript contracts (`contracts/`), a React web client (`client/react-client/`), and content/asset build tooling (`content/`, `atelier/`, `scripts/`).
 
-## 📁 Project Structure
+The legacy `colyseus-server/` and `nakama/` runtimes are retired — simulation, meta persistence (`server-rs/src/meta/`), and Agones fleet lifecycle (`server-rs/src/fleet/`) all live in `server-rs/`.
+
+## Project Structure
 ```
 atlas-world-svc/
-├── colyseus-server/          # Game server (Node.js + TypeScript)
+├── server-rs/                # Authoritative game server (Rust, bevy_ecs + rapier2d)
 │   ├── src/
-│   │   ├── config/          # Server configuration constants
-│   │   ├── schemas/         # Game state schemas (Player, Mob, GameState)
-│   │   ├── rooms/           # Game room logic
-│   │   └── index.ts         # Server entry point
-│   └── generated/csharp/    # Auto-generated C# client
-├── client/
-│   ├── react-client/        # React frontend
-│   │   ├── src/
-│   │   │   ├── components/  # React components
-│   │   │   ├── hooks/       # Custom React hooks
-│   │   │   ├── renderers/   # Canvas rendering modules
-│   │   │   ├── utils/       # Utility functions
-│   │   │   ├── config/      # Client configuration
-│   │   │   └── types/     # TypeScript types
-│   │   └── dist/            # Built client
-└── docker-compose.yml       # Development setup
+│   │   ├── ai/               # Mob AI behaviors and decision systems
+│   │   ├── combat/           # Melee, projectiles, parry, damage resolution
+│   │   ├── content/          # Bestiary, maps, items, skills, world regions
+│   │   ├── core/             # SimClock, speed scaling, shared primitives
+│   │   ├── fleet/            # Agones fleet lifecycle
+│   │   ├── meta/             # Meta persistence and RPCs
+│   │   ├── net/              # WebSocket gateway (ws://localhost:2567)
+│   │   ├── physics/          # rapier2d physics integration
+│   │   └── main.rs           # Server entry point
+│   └── tests/                # Rust integration tests
+├── game-client/              # Godot 4.7 C# NativeAOT 3D client
+│   ├── src/                  # C# gameplay, world, camera, entity views
+│   └── assets/               # Baked res:// assets and manifests
+├── contracts/                # Shared TypeScript types and content contracts
+├── client/react-client/      # React web client (debug/web view)
+├── content/                  # Authoritative world, story, map, character, studio data
+├── atelier/                  # Asset/story/map build tools and review panels
+├── scripts/                  # Gate scripts (fastcheck.sh, precheck.sh, check_content.mjs)
+└── docs/                     # Authoritative specs (unit-contract.md, *.spec.md)
 ```
 
-## 🏗️ Architecture Principles
+## Architecture Principles
 
-### Server-Side (Game Logic)
-- **All game logic runs on server** - physics, movement, collisions
-- **Client is view-only** - displays server state, sends input
-- **No client-side calculations** - positions, velocities, game rules
-- **Server authoritative** - single source of truth for game state
+### Server-Side (`server-rs/`)
+- **Server-authoritative, always** — physics (`rapier2d`), movement, combat, HP, and meta state run on `server-rs/`.
+- **Simulated time as input** — gate per-tick work on `SimClock` (`server-rs/src/core/clock.rs`), never `Instant::now()`.
+- **Unit contract (`docs/unit-contract.md`)** — `1 game unit = 1 metre`, `coord_scale = 1.0`. Never mask a scale bug by changing `coord_scale` alone.
 
-### Client-Side (Display Layer)
-- **Reactive rendering** - updates when server sends new state
-- **Input handling** - keyboard/mouse events sent to server
-- **Canvas rendering** - draws game objects at server positions
-- **No game logic** - pure display layer
+### Client-Side (`game-client/` & `client/react-client/`)
+- **Input intents only** — clients send movement vectors and discrete actions, never authoritative positions or damage.
+- **Godot 4.7 C# (`game-client/`)** — primary 3D runtime; forward axis `-Z`, up `+Y`, `1 unit = 1 metre`, slim-adventurer character band `0.90–1.20 m` (`1.05 m` reference).
+- **Web client (`client/react-client/`)** — lightweight browser client consuming `@atlas/contracts`.
 
-## 🎯 Code Organization
+## Development & Verification Commands
 
-### Server Configuration
-```typescript
-// colyseus-server/src/config/gameConfig.ts
-export const GAME_CONFIG = {
-  serverFPS: 20,
-  tickRate: 50, // ms per tick
-  worldWidth: 100,
-  worldHeight: 100,
-  mobCount: 5,
-  mobSpeedRange: 2, // pixels per second
-  mobSpawnMargin: 10,
-} as const;
-```
-
-### Client Configuration
-```typescript
-// client/react-client/src/config/gameConfig.ts
-export const CANVAS_CONFIG = {
-  width: 800,
-  height: 600,
-  backgroundColor: '#1a1a1a',
-  borderColor: '#00ff00',
-  borderWidth: 3,
-} as const;
-```
-
-## 🔧 Development Rules
-
-### File Organization
-- **Keep files small** - max 100 lines per file
-- **Single responsibility** - one purpose per file
-- **Split large components** - extract into focused modules
-- **Use constants** - no magic numbers, centralized config
-
-### Naming Conventions
-- **Components**: PascalCase (`GameRenderer.tsx`)
-- **Hooks**: camelCase with `use` prefix (`useColyseusClient.ts`)
-- **Utils**: camelCase (`drawingUtils.ts`)
-- **Config**: UPPER_SNAKE_CASE (`GAME_CONFIG`)
-
-### Import Organization
-```typescript
-// 1. React imports
-import React, { useEffect, useRef } from 'react';
-
-// 2. Third-party imports
-import { Client, Room } from 'colyseus.js';
-
-// 3. Local imports (relative paths)
-import { GameState } from '../types/game';
-import { CANVAS_CONFIG } from '../config/gameConfig';
-```
-
-## 🎮 Game Mechanics
-
-### Velocity Units
-- **Server**: pixels per tick (20 FPS = 50ms per tick)
-- **Client**: pixels per second (multiply by 20 for display)
-- **Rendering**: scaled for visibility (velocityVectorScale: 5)
-
-### State Synchronization
-- **Server updates**: 20 FPS (50ms intervals)
-- **Client rendering**: 60+ FPS (requestAnimationFrame)
-- **Network**: WebSocket real-time updates
-- **State**: Colyseus Schema for efficient serialization
-
-## 🚀 Development Workflow
-
-### Server Development
 ```bash
-cd colyseus-server
-npm run build    # Compile TypeScript
-npm start        # Run server
-npm run dev      # Development mode
+# Mid-iteration fast check (<15s)
+./scripts/fastcheck.sh
+
+# Full Gate 1 pre-ship check
+./scripts/precheck.sh --no-install
+
+# Rust server
+cd server-rs && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test
+
+# Contracts (pnpm workspace at repo root)
+cd contracts && pnpm run build && pnpm test && npx tsc --noEmit
+
+# Web client
+cd client/react-client && CI=true npx react-scripts test --watchAll=false
+
+# Content & script gates
+node scripts/check_content.mjs
+node --test scripts/tests/*.test.mjs
 ```
 
-### Client Development
-```bash
-cd client/react-client
-npm start        # Development server
-npm run build    # Production build
-```
-
-### Testing
-- **Server**: Jest tests for game logic
-- **Client**: React Testing Library for components
-- **Integration**: Manual testing with multiple clients
-
-## 📝 Commit Guidelines
-
-### Commit Message Format
-```
-type: short description
-
-- Keep under 50 characters
-- Use imperative mood
-- No newlines or special characters
-```
-
-### Types
-- `feat:` - New features
-- `fix:` - Bug fixes
-- `refactor:` - Code restructuring
-- `docs:` - Documentation updates
-- `style:` - Code formatting
-- `test:` - Test additions
-
-### Examples
-```
-feat: add player movement controls
-fix: resolve mob collision detection
-refactor: split GameRenderer into smaller modules
-docs: update API documentation
-```
-
-## 🔄 Branching Strategy
-
-### Trunk-Based Development
-- **Main branch**: Always production-ready
-- **Feature branches**: Short-lived, focused changes
-- **No direct commits** to main (except hotfixes)
-
-### Branch Naming
-- `feature/player-movement`
-- `fix/collision-detection`
-- `refactor/renderer-split`
-- `docs/api-updates`
-
-### Merge Strategy
-- **Always squash and merge** to main
-- **Clean linear history**
-- **One commit per feature**
-
-## 🎯 Performance Targets
-
-### Server Performance
-- **Tick Rate**: 20 FPS (50ms)
-- **Memory**: Efficient Schema serialization
-- **Network**: WebSocket optimization
-- **Clients**: Support 20+ concurrent players
-
-### Client Performance
-- **Rendering**: 60+ FPS smooth animation
-- **Network**: Real-time state synchronization
-- **Memory**: Efficient React rendering
-- **Responsiveness**: <16ms input lag
-
-## 🛠️ Tools & Dependencies
-
-### Server Stack
-- **Node.js** + **TypeScript**
-- **Colyseus** - WebSocket game server
-- **Express** - HTTP server
-- **Jest** - Testing framework
-
-### Client Stack
-- **React** + **TypeScript**
-- **Canvas API** - 2D rendering
-- **Colyseus.js** - WebSocket client
-- **React Testing Library** - Component testing
-
-## 🎨 Rendering Architecture
-
-### Component Hierarchy
-```
-ColyseusGameCanvas
-├── GameControls (buttons)
-├── GameHUD (status overlay)
-├── GameRenderer (canvas rendering)
-└── GameInstructions (help text)
-```
-
-### Renderer Modules
-- `mapRenderer.ts` - Map boundaries
-- `mobRenderer.ts` - Mob entities + velocity vectors
-- `playerRenderer.ts` - Player entities + names
-- `hudRenderer.ts` - Statistics display
-
-### Drawing Utilities
-- `drawingUtils.ts` - Reusable canvas functions
-- `calculateScale()` - World-to-canvas scaling
-- `drawCircle()`, `drawLine()`, `drawText()` - Primitive shapes
-
-## 🔧 Configuration Management
-
-### Server Constants
-- **Game logic** - tick rates, world size, entity counts
-- **Physics** - collision detection, movement speeds
-- **Networking** - room limits, message handling
-
-### Client Constants
-- **Rendering** - canvas size, colors, fonts
-- **UI** - button styles, layout spacing
-- **Performance** - animation settings, update rates
-
-## 📊 Monitoring & Debugging
-
-### Server Metrics
-- **Tick Rate**: 20 FPS consistency
-- **Memory Usage**: Schema serialization efficiency
-- **Network**: WebSocket connection health
-- **Game State**: Player/mob counts, room activity
-
-### Client Metrics
-- **FPS**: Rendering performance
-- **Update Rate**: Server synchronization frequency
-- **Network**: Connection status, latency
-- **Rendering**: Canvas performance, memory usage
-
-## 🚨 Common Issues
-
-### Server Issues
-- **Tick rate drops** - Check CPU usage, optimize game logic
-- **Memory leaks** - Schema cleanup, room disposal
-- **Network lag** - WebSocket optimization, state compression
-
-### Client Issues
-- **Rendering lag** - Canvas optimization, React re-renders
-- **Sync issues** - State update handling, network reliability
-- **Input lag** - Event handling, server communication
-
-## 🎯 Best Practices
-
-### Code Quality
-- **TypeScript strict mode** - Catch errors early
-- **ESLint + Prettier** - Consistent code style
-- **Small functions** - Single responsibility principle
-- **Clear naming** - Self-documenting code
-
-### Performance
-- **Server optimization** - Efficient game loops, minimal allocations
-- **Client optimization** - Canvas rendering, React performance
-- **Network optimization** - State compression, delta updates
-
-### Maintainability
-- **Modular design** - Small, focused files
-- **Clear separation** - Server logic vs client display
-- **Documentation** - Code comments, README updates
-- **Testing** - Unit tests for critical logic
-
-## 🔄 Deployment
-
-### Development
-- **Local development** - npm scripts for server/client
-- **Hot reloading** - React dev server, TypeScript compilation
-- **Debugging** - Browser dev tools, server logs
-
-### Production
-- **Build process** - TypeScript compilation, React build
-- **Docker** - Containerized deployment
-- **Environment** - Configuration management
-- **Monitoring** - Performance metrics, error tracking
+## Code Quality & Conventions
+- **Modularity** — keep modules focused and single-responsibility; avoid monolithic dumps (`scripts/lint_file_size.py` enforces ceilings on Python observatory tooling).
+- **Rust** — `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` must pass cleanly.
+- **TypeScript** — strict mode, no unjustified `any`, Prettier + ESLint clean.
+- **C# (`game-client/`)** — verify with `./scripts/godot-verify.sh` and headless `/Users/pasitnusso/.local/bin/godot-bg`.
+- **Branching & Commits** — trunk-based (`feature/`, `fix/`, `docs/`), squash-merge only, conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`). Release work routes through `ps-release-workflow` (`.release.json`).

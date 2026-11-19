@@ -114,10 +114,67 @@
     "visual_silhouette": "Stepped golden-ochre travertine pools and glazed ceramic steam-chimneys rising toward Cardamom-Cloud Overlook.",
     "unanswered_question": "Which ancient Kiln-Master sealed the master pressure-valve beneath Cardamom-Cloud Overlook?"
   },
+  "geography": {
+    "terrain_group": "Old Wilds",
+    "map_position": {
+      "x": 30,
+      "y": 62
+    },
+    "elevation_band": 2,
+    "biome": "Stepped ochre travertine pools with wild ginger and glazed steam-chimneys on a slope that faces east toward Teacup Meadows; old forest closes in behind the upper terraces and between the pools.",
+    "climate": {
+      "temperature": "mild",
+      "moisture": "wet"
+    },
+    "weather": [
+      {
+        "name": "Steam banks",
+        "when": "dawn",
+        "feel": "Low clouds of vent steam sit on the lower terraces and drift upward as the sun climbs."
+      },
+      {
+        "name": "Ochre rain",
+        "when": "after rain",
+        "feel": "Rain picks up ochre minerals and leaves orange rings on the stone."
+      }
+    ],
+    "water": "Hot mineral springs fill the travertine pools and overflow from pool to pool into the Glaze River, which drops past the terraces in cascades and runs on south-east to skirt Teacup Meadows before the delta.",
+    "far_landmark": "The ridge of Cardamom-Cloud Overlook above pale steam columns, with paper lanterns drifting up past it, seen west-south-west from Teacup Meadows.",
+    "discovery_hooks": [
+      "A travertine pool far from any path that is exactly bath temperature.",
+      "A glazed chimney that whistles one note, only on the rare days the wind turns to the north."
+    ],
+    "status": "proposed",
+    "encounter_bands": {
+      "starter": "safe",
+      "main": [
+        12,
+        20
+      ],
+      "identity": "Recovery, solo farming, travel junction",
+      "chapter": null,
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "town_role": {
+      "primary": "Recovery / rest town",
+      "purpose": "Bind services, travel supplies, small-party staging, social amenities",
+      "status": "proposed",
+      "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 5"
+    },
+    "gameplay": {
+      "new_player": "Recovery stop, hot-spring exploration, easy shared hunting",
+      "veteran_return": "Bathhouse services, herbs, event gathering",
+      "party_content": "1-3: open steam-cavern activity; 2-4: steam-creature hunts",
+      "cross_race_reason": "Neutral crossroads between Maro, Linde and Tava",
+      "party_hub_role": "crossroads",
+      "status": "proposed"
+    }
+  },
   "quality_checklist": {
     "causal_continuity": {
       "verified": true,
-      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the eastern geothermal rim of Continent 01 and connects west to Cinnamon-Mill Haven."
+      "evidence": "Directly inherits god-sola-hearth-weaver and scar-kiln-basin along the western geothermal rim of Continent 01 and connects west to Cinnamon-Mill Haven."
     },
     "fantasy_and_wonder": {
       "verified": true,

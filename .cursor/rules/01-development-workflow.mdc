@@ -1,81 +1,39 @@
-## 🚀 Development Workflow Rules
+## Development Workflow Rules
 
 ### Branch Strategy
 - **main**: Production-ready, always deployable
-- **feature/**: New features, fixes, docs
-- **hotfix/**: Urgent production fixes
+- **release/\<v\>**: Active release branch managed by `ps-release-workflow` (`.release.json`)
+- **feat/**, **fix/**, **docs/**, **hotfix/**: Short-lived focused branches
 
 ### Commit Policy
-- Keep messages short, no newlines or special chars
+- Keep subjects short, no newlines or special chars
 - Example: `feat: add player movement prediction`
-- Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`
+- Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`
+- Always create new commits (never amend published/shared history)
 
 ### PR Requirements
-- **Required**: Pass all CI checks
-- **Required**: At least one review approval
-- **Required**: Squash merge only
-- **Required**: Clean, linear history
+- **Required**: Pass Gate 1 (`./scripts/precheck.sh`) and CI checks
+- **Required**: Squash merge only for clean linear history
 
 ### Code Quality
-- TypeScript strict mode enabled
-- No any types without justification
-- Comprehensive error handling
-- Unit tests for critical paths
+- **Rust (`server-rs/`)**: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`
+- **TypeScript (`contracts/`, `client/react-client/`)**: strict mode, no unjustified `any`, Prettier + ESLint clean
+- **Godot C# (`game-client/`)**: `./scripts/godot-verify.sh` and headless `/Users/pasitnusso/.local/bin/godot-bg`
+- **Content & scripts**: `node scripts/check_content.mjs`, `node --test scripts/tests/*.test.mjs`
 
 ### Performance Standards
 - Tick time: ≤7ms p50, ≤20ms p95
 - Physics step: ≤5ms p50
-- Memory: No leaks, efficient pooling
-- Network: <800B snapshots, 20-40KB/s per client
+- Deterministic simulation driven by `SimClock` (`server-rs/src/core/clock.rs`), not wall-clock time
 
 ### Testing Requirements
-- Unit tests for all systems
-- Integration tests for networking
-- Load tests with bot harness
-- Chaos testing (latency/loss injection)
+- Fast mid-iteration loop: `./scripts/fastcheck.sh`
+- Full pre-ship verification: `./scripts/precheck.sh --no-install`
+- Unit and integration tests across `server-rs/tests/`, `contracts/`, `scripts/tests/`, and `atelier/*/tests/`
 
-### Documentation
-- Update plans in `.cursor/plans/` for changes
-- Document breaking changes
-- Keep flow docs and key specs current (e.g. docs/event-flow.spec.md, docs/game-server.spec.md, docs/companion.spec.md)
-
-### Plan Management
-
-#### Updating Plans
-- **Regular Reviews**: Conduct periodic reviews of all active plans to ensure they are up-to-date and reflect current project requirements
-- **Status Indicators**: Use clear status markers:
-  - ✅ Done - Task/phase completed
-  - 🚧 In Progress - Currently being worked on
-  - ⏳ Pending - Not yet started
-- **Update Requirements**: When working on features, update related plans:
-  - Mark completed tasks with `[x]`
-  - Update status indicators
-  - Add implementation notes if needed
-  - Document any deviations from plan
-
-#### Completion Criteria
-A plan is considered "finished" when:
-1. All checkboxes are checked `[x]`
-2. Contains completion markers ("✅ COMPLETED", "ACHIEVED", "Ready for Production")
-3. Code validation confirms features are implemented (check for related code files)
-4. Manual review confirms no remaining work
-
-#### Plan Cleanup Process
-1. **Run Validation**: Use `.cursor/scripts/validate-plans.js` to identify finished plans
-2. **Manual Review**: Review flagged plans to verify completion
-3. **Code Verification**: Check if plan features are actually implemented in codebase
-4. **Delete Finished Plans**: Remove confirmed finished plans (no archiving needed)
-5. **Update Rules**: Update workflow rules if patterns change
-
-#### Plan Lifecycle
-- **Active**: Plan is being worked on or contains pending tasks
-- **Review**: Plan appears finished but needs verification
-- **Finished**: All criteria met, ready for deletion
-- **Deleted**: Removed after confirmation
-
-#### Best Practices
-- Keep plans focused and specific
-- Update plans as work progresses
-- Delete finished plans promptly to reduce clutter
-- Use consistent status indicators across all plans
-- Link plans to related code/features when possible
+### Documentation & Plan Management
+- Specs and design docs live in `docs/superpowers/specs/` and `.claude/refined_backlog/<F-NNN>/spec.md`
+- Implementation plans live in `docs/superpowers/plans/` and `.claude/refined_backlog/<F-NNN>/plan.md`
+- Backlog items route through `.claude/idea_backlog/` and `.claude/refined_backlog/` (`ps-release-workflow`)
+- Keep authoritative specs current (`docs/README.md`, `docs/unit-contract.md`, `docs/asset-delivery-spec.md`, `docs/event-flow.spec.md`, `docs/game-server.spec.md`)
+- Document breaking changes and update tests alongside behavior changes

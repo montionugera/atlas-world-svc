@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { currentConceptArts } from "../js/concept-arts-model.mjs";
 
 import {
   NAME_MAP,
@@ -294,7 +295,8 @@ test("Human/Dwarf race cards show only their race portrait and gods pull no cont
     worldHistory,
     atlas,
     continents,
-    conceptArtIndex,
+    // The Lore panel drops old-concept art before it builds the model (lore.mjs mount).
+    conceptArtIndex: { ...conceptArtIndex, items: currentConceptArts(conceptArtIndex.items) },
   });
 
   // F-187: continent landscape art was removed from the real index.
@@ -322,8 +324,8 @@ test("Human/Dwarf race cards show only their race portrait and gods pull no cont
   const dwarfArts = model.races[1].arts.map((a) => a.id);
   assert.deepEqual(
     dwarfArts,
-    ["character-race-dwarf-kiln-artisan", "character-race-dwarf-ondo-base-body-female"],
-    "Dwarf race card must only show Dwarf race art (race sheet, F-213 base-body sheet) and not Human town building town-lantern-hollow-hearth-forge",
+    ["character-race-dwarf-ondo-boy-turnaround", "character-race-dwarf-ondo-girl-turnaround"],
+    "Dwarf race card must only show current Dwarf race art (F-220 boy and girl turnarounds; the adult sheets are old concept) and not Human town building town-lantern-hollow-hearth-forge",
   );
 });
 
