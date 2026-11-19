@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/bed_a_stacked_dungeon_texture.png-0d43f49c3eb
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/necromancer_skeleton_texture_A.png-5a58cce9c9
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

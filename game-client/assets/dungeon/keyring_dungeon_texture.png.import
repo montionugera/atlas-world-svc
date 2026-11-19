@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/keyring_dungeon_texture.png-e09dff9ea2f321a56
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

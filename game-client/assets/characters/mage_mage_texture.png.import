@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/mage_mage_texture.png-ea4113ea17621fddbf73c3a
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

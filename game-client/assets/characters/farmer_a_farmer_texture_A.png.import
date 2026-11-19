@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/farmer_a_farmer_texture_A.png-b19e41be82ef57e
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/table_small_dungeon_texture.png-4357902a53ac0
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

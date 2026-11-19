@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/cleric_cleric_texture.png-c2ae2f0f95b424b9f0d
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

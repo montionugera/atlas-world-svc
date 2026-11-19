@@ -18,7 +18,7 @@ dest_files=["res://.godot/imported/kk_bow_b_weapons_bits_texture.png-eef3dbc892d
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
