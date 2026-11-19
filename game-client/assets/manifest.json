@@ -265,7 +265,7 @@
       }
     },
     "npc:maro_folk_girl": {
-      "scene": "res://studio-cache/ea2829d7c7e95a31010276acea48363a6bb8c997a8bfc1f307f29db0e03b85f9.glb",
+      "scene": "res://studio-cache/44d527b739a0a3ebf81b9da31473092e7e67939227dc79d1776927c6703aaf2c.glb",
       "source": "Asset Studio library asset 01a1bc6e-5925-7f2d-a09d-10398f9abf67 (client atlas-world); bytes not in this repo",
       "license": "studio-private",
       "tier": "bespoke",
@@ -274,7 +274,7 @@
         "from": "asset-studio",
         "assetStudioAsset": "01a1bc6e-5925-7f2d-a09d-10398f9abf67",
         "tag": "reviewed:v1",
-        "sha256": "ea2829d7c7e95a31010276acea48363a6bb8c997a8bfc1f307f29db0e03b85f9"
+        "sha256": "44d527b739a0a3ebf81b9da31473092e7e67939227dc79d1776927c6703aaf2c"
       },
       "anims": {
         "idle": "idle",

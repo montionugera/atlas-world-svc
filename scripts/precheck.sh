@@ -546,6 +546,7 @@ pipeline_char_section() {
       scripts/tests/precheck-pipeline-char.test.mjs scripts/tests/studio-pull.test.mjs scripts/tests/pull-entry.test.mjs \
       scripts/tests/bake-thumbnails-pull.test.mjs scripts/tests/maro-bell.test.mjs ) || return 1
   ( cd "$REPO_ROOT/atelier/asset-forge" && { [ -d node_modules ] || npm ci --no-audit --no-fund; } && npm test ) || return 1
+  node "$REPO_ROOT/atelier/asset-forge/validate.mjs" --manifest "$REPO_ROOT/game-client/assets/manifest.json" || return 1
   "$REPO_ROOT/scripts/godot-verify.sh" ATLAS_VERIFY_ANIM '^\[AnimationVerify\] RESULT: PASS' || return 1
   "$REPO_ROOT/scripts/godot-verify.sh" ATLAS_VERIFY_MARO_BELL '^\[MaroBellVerify\] VERDICT PASS$' || return 1
   "$REPO_ROOT/scripts/godot-verify.sh" ATLAS_VERIFY_PIPELINE_CHAR '^\[PipelineCharVerify\] VERDICT PASS$' || return 1
