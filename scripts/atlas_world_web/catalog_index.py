@@ -8,6 +8,8 @@ import os
 import sqlite3
 from pathlib import Path
 
+from . import work_and_assets
+
 
 class CatalogIndexError(Exception):
     """A studio file, a reference or a hand tag is wrong. The message is what the owner reads."""
@@ -25,6 +27,17 @@ CREATE TABLE links (
   PRIMARY KEY (from_kind, from_id, relation, to_kind, to_id));
 CREATE INDEX links_to ON links (to_kind, to_id);
 CREATE TABLE record_tags (kind TEXT NOT NULL, id TEXT NOT NULL, tag TEXT NOT NULL, PRIMARY KEY (kind, id, tag));
+CREATE TABLE backlog_features (
+  id TEXT PRIMARY KEY, title TEXT NOT NULL, from_idea TEXT, status TEXT NOT NULL,
+  release_version TEXT, in_active_release INTEGER NOT NULL DEFAULT 0, claimed_by TEXT,
+  created_at TEXT, claimed_at TEXT, shipped_at TEXT, promoted_at TEXT, shipped_sha TEXT,
+  raw_json TEXT NOT NULL);
+CREATE TABLE asset_3d_provenance (
+  id TEXT PRIMARY KEY, label TEXT NOT NULL, path TEXT NOT NULL, res_path TEXT NOT NULL,
+  asset_url TEXT NOT NULL, category TEXT NOT NULL, bytes INTEGER NOT NULL,
+  provenance_status TEXT NOT NULL, kind TEXT, source TEXT, license TEXT, tier TEXT,
+  has_import INTEGER NOT NULL DEFAULT 0, bytes_ok INTEGER,
+  manifest_entries_json TEXT NOT NULL, budget_json TEXT, raw_json TEXT NOT NULL);
 CREATE VIRTUAL TABLE records_fts USING fts5(kind UNINDEXED, id UNINDEXED, concept UNINDEXED, title, summary, tags);
 """
 
@@ -148,6 +161,67 @@ def build_index(conn: sqlite3.Connection, root: Path, studio_dir: Path, manifest
         refs.append(("studio_map", m["mapId"], "Part of", "node", m["nodeId"]))
     for p in sorted((studio_dir / "maps").glob("*.png")):
         recs.append(("map_plate", p.stem, p.stem.replace("_", " "), "Map plate image", "studio", rel(p), f"/studio-maps/{p.name}"))
+
+    # Backlog F-* features & active release discoverability
+    features = work_and_assets.load_backlog_features(root)
+    feature_rows = []
+    for f in features:
+        parts = [
+            f["status"],
+            f"release {f['releaseVersion']}" if f.get("releaseVersion") else "",
+            f"idea {f['fromIdea']}" if f.get("fromIdea") else "",
+            f"claimed by {f['claimedBy']}" if f.get("claimedBy") and f["status"] == "claimed" else "",
+        ]
+        summary = " · ".join(p for p in parts if p)
+        recs.append(("feature", f["id"], f"{f['id']} — {f['title']}", summary, "studio",
+                     ".claude/refined_backlog/_catalog.json", f"/?tab=docs&focus={f['id']}"))
+        tag("feature", f["id"], f["status"],
+            f"release-{f['releaseVersion']}" if f.get("releaseVersion") else "",
+            f.get("fromIdea"), "active-release" if f.get("inActiveRelease") else "")
+        feature_rows.append((
+            f["id"], f["title"], f.get("fromIdea"), f["status"], f.get("releaseVersion"),
+            1 if f.get("inActiveRelease") else 0, f.get("claimedBy"), f.get("createdAt"),
+            f.get("claimedAt"), f.get("shippedAt"), f.get("promotedAt"), f.get("shippedSha"),
+            json.dumps(f),
+        ))
+    if feature_rows:
+        conn.executemany(
+            "INSERT INTO backlog_features VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            feature_rows,
+        )
+
+    # 3D .glb asset provenance (on-disk files mapped to manifests + forge budgets)
+    glb_assets, _missing_ext, _budgets = work_and_assets.load_glb_provenance(root)
+    glb_rows = []
+    for a in glb_assets:
+        kb = max(1, round(a["bytes"] / 1024))
+        parts = [
+            a["category"],
+            a["provenanceStatus"].replace("_", " "),
+            "/".join(x for x in (a.get("source"), a.get("tier")) if x),
+            a.get("kind") or "",
+            f"{kb} KB",
+        ]
+        summary = " · ".join(p for p in parts if p)
+        recs.append(("asset_3d", a["id"], a["label"], summary, "studio", a["path"], f"/?tab=assets&focus={a['id']}"))
+        tag("asset_3d", a["id"], a["category"], a["provenanceStatus"], a.get("kind"),
+            a.get("source"), a.get("tier"), a.get("license"),
+            "has-import" if a["hasImport"] else "missing-import",
+            "over-byte-budget" if a["bytesOk"] is False else "")
+        glb_rows.append((
+            a["id"], a["label"], a["path"], a["resPath"], a["assetUrl"], a["category"],
+            a["bytes"], a["provenanceStatus"], a.get("kind"), a.get("source"),
+            a.get("license"), a.get("tier"), 1 if a["hasImport"] else 0,
+            None if a["bytesOk"] is None else (1 if a["bytesOk"] else 0),
+            json.dumps(a["manifestEntries"]),
+            json.dumps(a["budget"]) if a.get("budget") is not None else None,
+            json.dumps(a),
+        ))
+    if glb_rows:
+        conn.executemany(
+            "INSERT INTO asset_3d_provenance VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            glb_rows,
+        )
 
     for kind, concept, select, url in TABLE_KINDS:
         for id_, title, summary in conn.execute(select):

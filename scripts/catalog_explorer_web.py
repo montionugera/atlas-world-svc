@@ -412,12 +412,21 @@ def load_theme_css() -> bytes:
 
 
 CATALOG_BUILD_ERROR = ""  # last line of a failed startup rebuild; shown on "/" (R1f)
-_FRESHNESS_FILES = (BUILD_SCRIPT, ROOT / "scripts" / "atlas_world_web" / "catalog_index.py")
+_FRESHNESS_FILES = (
+    BUILD_SCRIPT,
+    ROOT / "scripts" / "atlas_world_web" / "catalog_index.py",
+    ROOT / "scripts" / "atlas_world_web" / "work_and_assets.py",
+    ROOT / ".release.json",
+    ROOT / ".claude" / "refined_backlog" / "_catalog.json",
+    ROOT / "game-client" / "assets" / "manifest.json",
+    ROOT / "game-client" / "assets" / "catalog-manifest.json",
+    ROOT / "atelier" / "asset-forge" / "forge.config.json",
+)
 _FRESHNESS_DIRS = (ROOT / "content", ROOT / "contracts" / "content")
 
 
 def _inputs_newer_than(db_mtime: float) -> bool:
-    if any(f.stat().st_mtime > db_mtime for f in _FRESHNESS_FILES):
+    if any(f.exists() and f.stat().st_mtime > db_mtime for f in _FRESHNESS_FILES):
         return True
     for root in _FRESHNESS_DIRS:
         for dirpath, _dirs, names in os.walk(root):
