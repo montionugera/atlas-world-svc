@@ -7,21 +7,17 @@ Objective
 - Prevent regressions via clear timing semantics, rendering scale usage, and centralized battle logic.
 
 Scope
-- Applies to server (`colyseus-server/`) and client (`client/react-client/`).
-- Covers timing, rendering scale, API shape, eventing, and tests.
+- Applies to server (`server-rs/`) and clients (`game-client/`, `client/react-client/`).
+- Covers timing, unit/rendering scale (`docs/unit-contract.md`: `1 unit = 1 metre`), API shape, eventing, and tests.
 
 Hard Rules
 1) Timing Source Consistency
    - Server simulation takes time as an INPUT: gate per-tick work on simulated
-     time from the room's `SimClock` (`src/time/SimClock.ts`), not on a global
-     clock. `performance.now()` is real-time too, so it loses determinism exactly
-     as `Date.now()` does — swapping one for the other fixes nothing. See F-028.
-   - Migration in progress (I-074): subsystems not yet converted still read
-     `Date.now()`/`performance.now()`. Until a subsystem converts, keep it
-     internally consistent — never cross-subtract two clocks.
-   - Use `performance.now()` for gameplay timing/cooldowns on the client, and on
-     the server only outside the simulation loop.
-   - Cooldowns and comparisons MUST use the same source end-to-end.
+     time from `SimClock` (`server-rs/src/core/clock.rs`), not on a global
+     wall clock (`Instant::now()` / `Date.now()` / `performance.now()`). See F-028.
+   - Use `performance.now()` (or Godot frame delta) for client-side UI/visual timing only,
+     never for authoritative simulation ticks.
+   - Cooldowns and comparisons MUST use the same clock source end-to-end.
 
 2) Rendering Scale Correctness
    - World → canvas conversion MUST multiply by `scale` for positions and sizes.
@@ -49,9 +45,9 @@ Hard Rules
    - Hand off to `BattleManager` to enqueue/process; do not apply damage directly in emitters.
 
 7) Physics/Rendering Coupling
-   - Physics lives in world units; rendering converts using `scale`.
-   - Do not apply pixel units to physics; keep concerns separate.
-   - When `Projectile.stick()` zeroes schema velocity, sync the Planck body in the same collision path (`syncEntityToBody`) so the body does not keep sliding until the next tick.
+   - Physics (`rapier2d` in `server-rs/`) lives in canonical metres (`docs/unit-contract.md`, `coord_scale = 1.0`); 2D web rendering converts using `scale`.
+   - Do not apply pixel units to physics; keep simulation and presentation concerns separate.
+   - When a projectile stops/sticks on collision, zero its `rapier2d` body velocity in the same collision path so the body does not slide until the next tick.
 
 8) Visual Indicators
    - Any visual indicator derived from world units (e.g., cones, slashes) must be scaled.

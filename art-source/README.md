@@ -9,9 +9,8 @@ only *baked* `res://` assets under `game-client/assets/`.
 ## Layout
 ```
 art-source/
+  bespoke/     # commissioned / custom-forged character, prop, and environment sources
   seed/        # CC0 seed originals (Quaternius, Kenney) — Stage 0.5
-  characters/  # commissioned/AI character sources
-  props/  vfx/  audio/
   LICENSES.md  # provenance + license ledger (REQUIRED for every asset)
 ```
 

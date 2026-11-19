@@ -7,8 +7,9 @@ Deliver assets to this spec so they drop into the game with no rework. Questions
 - Also include the editable source (`.blend`) in a separate `source/` folder.
 
 ## Transform
-- **Scale: 1 unit = 1 metre.** A standing humanoid ≈ 1.8u tall. Apply/freeze all transforms before export.
-- **Forward axis: −Z** (Godot convention). **Up: +Y.**
+- **Scale: 1 unit = 1 metre** (see [unit-contract.md](./unit-contract.md)). Apply/freeze all transforms before export.
+- **Character height band:** standard slim-adventurer characters follow the `0.90–1.20 m` scale law (`1.05 m` reference; see `.claude/agents/asset-forge-director.md` and `content/studio/world_history_and_concept.json`). Boss tiers (`RAID_BOSS` / `MVP_GOD_SUBORDINATE` / `GOD_SEALED`) scale to `>= 7.35 m`. Realistic-proportion humanoids (`~1.8 m`) apply only when explicitly briefed.
+- **Forward axis: −Z** (Godot 4.7 convention). **Up: +Y.**
 - **Pivot/origin:** characters at the **feet** (on the ground plane, centered X/Z); props at the **center**.
 
 ## Geometry / materials

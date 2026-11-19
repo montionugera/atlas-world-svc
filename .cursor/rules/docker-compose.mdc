@@ -1,28 +1,19 @@
-# Docker Compose — Colyseus server
+# Container & Local Cluster — `server-rs`
 
 ## Service
-- **atlas-colyseus-server**: Colyseus game server (port 2567)
-- **Build**: `./colyseus-server` (Dockerfile in colyseus-server)
-- **Network**: `atlas-network` (bridge)
+- **Game server**: `server-rs/` (Rust authoritative simulation + WebSocket gateway + meta/fleet)
+- **Container build**: `server-rs/Dockerfile`
+- **Local cluster manifests**: `k8s/local/`
 
-## Ports
-- **2567**: Colyseus WebSocket + HTTP
+## Ports & Endpoints
+- **`ws://localhost:2567`**: `server-rs` WebSocket gateway (`PORT` env, default `2567`)
+- **`http://localhost:8788`**: local observatory edit host (`python3 scripts/catalog_explorer_web.py --port 8788`)
+- **`http://localhost:3001`**: React web client (`client/react-client/`)
 
-## Commands
-- **Start**: `docker-compose up -d`
-- **Stop**: `docker-compose down`
-- **Logs**: `docker-compose logs atlas-colyseus-server`
-- **Restart**: `docker-compose restart atlas-colyseus-server`
-- **Status**: `docker-compose ps`
-
-## Environment
-- `NODE_ENV=production`
-- `PORT=2567`
-
-## Development
-- Prefer local run: `cd colyseus-server && npm run dev` (no Docker) for faster iteration.
-- Use Docker for production-like runs or CI.
+## Local Development
+- Prefer running `server-rs` natively (`cd server-rs && cargo run`) for fast iteration.
+- Use `server-rs/Dockerfile` and `k8s/local/` manifests for containerized / local cluster runs (the legacy `colyseus-server/` Docker Compose setup is retired).
 
 ## Related
-- Server entry: `colyseus-server/src/index.ts`
-- Docs: `docs/README.md`, `docs/game-server.spec.md`
+- Server entry: `server-rs/src/main.rs`
+- Docs: `docs/README.md`, `docs/game-server.spec.md`, `docs/networking.spec.md`

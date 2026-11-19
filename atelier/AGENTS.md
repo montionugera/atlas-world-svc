@@ -1,7 +1,7 @@
 # Atelier — asset & story build workspace
 
 Everything that builds, reviews, or visualizes non-runtime art/content lives here:
-the build tools, their docs, and their review surfaces. Game server (`colyseus-server/`) and
+the build tools, their docs, and their review surfaces. Game server (`server-rs/`) and
 clients (`game-client/`, `client/`) are NOT in this folder and do not depend on it at runtime.
 
 Start with this file. Do not scan the folders unless a task points there — every tool keeps
