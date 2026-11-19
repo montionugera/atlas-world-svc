@@ -367,7 +367,7 @@ export function textureBudgetStatus(doc, budgetPx) {
  * Validates a single baked .glb against Khronos structural rules and
  * atlas-forge's game rules for `kind`.
  * @param {string} glbPath
- * @param {{kind: string, tier?: "bespoke"|"seed", anims?: object|null, configDir?: string, licenseLedger?: string}} opts
+ * @param {{kind: string, tier?: "bespoke"|"seed", anims?: object|null, configDir?: string, licenseLedger?: string, licenseKey?: string}} opts
  * @returns {Promise<{failures: string[], warnings: string[]}>}
  */
 export async function validateGlb(glbPath, opts = {}) {
@@ -377,6 +377,7 @@ export async function validateGlb(glbPath, opts = {}) {
     anims = null,
     configDir,
     licenseLedger,
+    licenseKey,
   } = opts;
   const config = loadConfig(configDir);
   const kindConfig = Object.hasOwn(config.kinds, kind)
@@ -586,8 +587,10 @@ export async function validateGlb(glbPath, opts = {}) {
   }
 
   // 9. License ledger -- only enforced here when a ledger path is given.
+  // Pull-only entries live at studio-cache/<sha256>.glb, so callers may pass
+  // licenseKey (e.g. the manifest key) rather than matching the 64-hex hash.
   if (licenseLedger) {
-    const assetKey = basename.replace(/\.glb$/i, "");
+    const assetKey = licenseKey ?? basename.replace(/\.glb$/i, "");
     if (!licenseLedgerHasEntry(licenseLedger, assetKey)) {
       report("license", `'${assetKey}' not found in ${licenseLedger}`);
     }
@@ -648,6 +651,7 @@ export async function validateManifest(manifestPath, opts = {}) {
       anims: entry.anims ?? null,
       configDir: config.configDir,
       licenseLedger,
+      licenseKey: entry.pull ? key : undefined,
     });
     for (const failure of result.failures) failures.push(`${key}: ${failure}`);
     for (const warning of result.warnings) warnings.push(`${key}: ${warning}`);
