@@ -44,3 +44,4 @@ F-174 backlog (2026-11-06): NotifyHit only fires for hits the local player deals
 - F-236 follow-up: `level_band_label` reads "Levels 1 to 20" on districts whose `level_range` is [1,15]; generate it or drop it.
 - F-236 follow-up (do first): Linde Lv 1-10 start has two open legacy portals into Lv 14+ maps (celadon-causeway West, loom-sanctuary East); close or convert them with the mainline-chain rework.
 - F-237 follow-up: record map polish from review: assert attribute-quote escaping in atlas-web-record-map.test.mjs; wrap/truncate long no-space labels; route edges around boxes (lines and danger mark can hide behind a box); draw portals of nodes unreached from the town; phone shrink-to-fit instead of scroll box.
+- F-239 follow-up: GEO-12 hardening (non-numeric band raises TypeError; chapter value not checked against ch0|ch1|ch2; rule applies to any continent with district_links); record-map sub-labels are ~10px on a phone.

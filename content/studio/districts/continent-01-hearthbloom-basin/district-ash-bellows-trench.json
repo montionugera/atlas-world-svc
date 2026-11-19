@@ -164,6 +164,14 @@
       "chapter": "I",
       "status": "proposed",
       "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Daro Lv 1-10 prologue; guard training, safe patrols",
+      "veteran_return": "Bounties, combat materials, defensive crafting",
+      "party_content": "2-5: optional instance, trench defence or elite patrol",
+      "cross_race_reason": "Party staging for highland challenges",
+      "party_hub_role": "coordinated_combat",
+      "status": "proposed"
     }
   },
   "quality_checklist": {

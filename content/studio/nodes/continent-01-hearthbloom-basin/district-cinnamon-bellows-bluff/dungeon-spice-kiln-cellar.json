@@ -147,5 +147,26 @@
       "verified": true,
       "evidence": "Drops the Star-Pod Lantern referenced in the Star-Anise Promontory Fog of Lore lock_message."
     }
+  },
+  "gameplay_role": {
+    "verdict": "story_dungeon",
+    "chapter": "ch2",
+    "proposed_level_band": [
+      28,
+      32
+    ],
+    "party_size": [
+      1,
+      5
+    ],
+    "session_minutes": [
+      20,
+      30
+    ],
+    "rewards": "Memory-themed title, festival cosmetic",
+    "balance_reason": "Chapter II cannot climax at beginner levels",
+    "boss_site_note": "Investigation or entry. The Jubilant Collector climax belongs at a remembrance-festival / Remembrance Kiln site.",
+    "status": "proposed",
+    "source": "GPT balance verdict v2, 2026-11-19, delegated by owner"
   }
 }

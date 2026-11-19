@@ -155,5 +155,26 @@
       "verified": true,
       "evidence": "Drops the Bellows Counterweight Key required to unseal the northern Glaze Flue Vent mystery gate."
     }
+  },
+  "gameplay_role": {
+    "verdict": "optional_instance",
+    "chapter": null,
+    "proposed_level_band": [
+      16,
+      20
+    ],
+    "party_size": [
+      2,
+      5
+    ],
+    "session_minutes": [
+      15,
+      22
+    ],
+    "rewards": "Defensive crafting recipes, cosmetic",
+    "balance_reason": "Mid-band cooperative combat without competing with the Chapter I boss",
+    "boss_site_note": null,
+    "status": "proposed",
+    "source": "GPT balance verdict v2, 2026-11-19, delegated by owner"
   }
 }

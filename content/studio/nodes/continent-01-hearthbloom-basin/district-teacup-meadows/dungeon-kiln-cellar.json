@@ -143,5 +143,26 @@
       "verified": true,
       "evidence": "Complete playable subterranean dungeon with verified exit portal and zero placeholder boilerplate."
     }
+  },
+  "gameplay_role": {
+    "verdict": "story_dungeon",
+    "chapter": "ch0",
+    "proposed_level_band": [
+      13,
+      15
+    ],
+    "party_size": [
+      1,
+      4
+    ],
+    "session_minutes": [
+      15,
+      20
+    ],
+    "rewards": "Title, lantern cosmetic, recipes",
+    "balance_reason": "First shared dungeon; teaches cooperation without compulsory grouping",
+    "boss_site_note": "Approach / investigation area. The Bellkeeper climax belongs at the Great Bell, not in the cellar.",
+    "status": "proposed",
+    "source": "GPT balance verdict v2, 2026-11-19, delegated by owner"
   }
 }

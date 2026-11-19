@@ -136,6 +136,14 @@
       "chapter": "0",
       "status": "proposed",
       "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Arrive by guided caravan at Lv 10; party recruitment, chapter dispatch",
+      "veteran_return": "Guilds, storage, trading, social activity",
+      "party_content": "2-5: groups assemble here, then travel elsewhere",
+      "cross_race_reason": "The six-race convergence hub",
+      "party_hub_role": "find_party",
+      "status": "proposed"
     }
   },
   "quality_checklist": {

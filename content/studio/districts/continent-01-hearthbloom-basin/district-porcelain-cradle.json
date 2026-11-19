@@ -158,6 +158,14 @@
       "chapter": "0",
       "status": "applied",
       "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Linde Lv 1-10 prologue; basic crafting and exploration",
+      "veteran_return": "Spellglaze materials, artisan contracts",
+      "party_content": "2-4: optional instance and porcelain anomalies",
+      "cross_race_reason": "Maro-Linde exchange; cross-race gathering and crafting",
+      "party_hub_role": null,
+      "status": "proposed"
     }
   },
   "quality_checklist": {

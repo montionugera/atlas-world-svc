@@ -439,6 +439,53 @@ class ValidateStudioHierarchyTests(unittest.TestCase):
             {self.N01.format("district-kilnfire-terraces/town-kilnwatch-bastion"): gate}, "GEO-11"
         )
 
+    # ---- F-239 GEO-12 ----------------------------------------------------------
+
+    def _role(self, fn: Callable[[dict], None], node: str = "district-teacup-meadows/dungeon-kiln-cellar"):
+        return {self.N01.format(node): lambda d: fn(d["gameplay_role"])}
+
+    def _gp(self, fn: Callable[[dict], None], district: str = "district-teacup-meadows"):
+        return {self.D01.format(district): lambda d: fn(d["geography"]["gameplay"])}
+
+    def test_geo12_rejects_dungeon_without_gameplay_role(self) -> None:
+        self._assert_only_geo(
+            {self.N01.format("district-teacup-meadows/dungeon-kiln-cellar"): lambda d: d.pop("gameplay_role")}, "GEO-12"
+        )
+
+    def test_geo12_rejects_unknown_verdict(self) -> None:
+        self._assert_only_geo(self._role(lambda r: r.update(verdict="raid")), "GEO-12")
+
+    def test_geo12_rejects_bad_level_band(self) -> None:
+        self._assert_only_geo(self._role(lambda r: r.update(proposed_level_band=[15, 13])), "GEO-12")
+        self._assert_only_geo(self._role(lambda r: r.update(proposed_level_band=[13])), "GEO-12")
+
+    def test_geo12_rejects_unknown_status(self) -> None:
+        self._assert_only_geo(self._role(lambda r: r.update(status="maybe")), "GEO-12")
+
+    def test_geo12_story_dungeon_needs_chapter_and_boss_note(self) -> None:
+        self._assert_only_geo(self._role(lambda r: r.update(chapter=None)), "GEO-12")
+        self._assert_only_geo(self._role(lambda r: r.update(boss_site_note="")), "GEO-12")
+
+    def test_geo12_other_verdicts_need_null_chapter(self) -> None:
+        self._assert_only_geo(
+            self._role(lambda r: r.update(chapter="ch1"), "district-porcelain-cradle/dungeon-medallion-heart-vault"), "GEO-12"
+        )
+
+    def test_geo12_rejects_district_without_gameplay(self) -> None:
+        self._assert_only_geo(
+            {self.D01.format("district-teacup-meadows"): lambda d: d["geography"].pop("gameplay")}, "GEO-12"
+        )
+
+    def test_geo12_rejects_empty_gameplay_text(self) -> None:
+        self._assert_only_geo(self._gp(lambda g: g.update(new_player="")), "GEO-12")
+
+    def test_geo12_rejects_bad_party_hub_role(self) -> None:
+        self._assert_only_geo(self._gp(lambda g: g.update(party_hub_role="lobby")), "GEO-12")
+
+    def test_geo12_requires_exactly_one_find_party(self) -> None:
+        self._assert_only_geo(self._gp(lambda g: g.update(party_hub_role="find_party")), "GEO-12")
+        self._assert_only_geo(self._gp(lambda g: g.update(party_hub_role=None), "district-kilnfire-terraces"), "GEO-12")
+
     def test_build_runtime_manifest_excludes_mystery_and_includes_fog_of_lore(self) -> None:
         manifest = build_runtime_manifest(DEFAULT_STUDIO_DIR)
         self.assertEqual(manifest["defaultStarterMapId"], "lantern-hollow")

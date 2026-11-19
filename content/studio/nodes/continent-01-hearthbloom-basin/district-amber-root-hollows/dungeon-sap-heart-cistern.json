@@ -151,5 +151,26 @@
       "verified": true,
       "evidence": "Drops Cistern Sap-Valve Key Shards referenced by the Banyan Canopy Spur fog_of_lore gate."
     }
+  },
+  "gameplay_role": {
+    "verdict": "story_dungeon",
+    "chapter": "ch1",
+    "proposed_level_band": [
+      20,
+      25
+    ],
+    "party_size": [
+      1,
+      5
+    ],
+    "session_minutes": [
+      20,
+      30
+    ],
+    "rewards": "Crafting recipes, story title",
+    "balance_reason": "Appropriate Chapter I climax",
+    "boss_site_note": "Access route or preliminary encounter. The Brass Castellan arena belongs at the Still Kiln.",
+    "status": "proposed",
+    "source": "GPT balance verdict v2, 2026-11-19, delegated by owner"
   }
 }

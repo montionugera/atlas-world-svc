@@ -163,6 +163,14 @@
       "chapter": "later",
       "status": "proposed",
       "source": "ChatGPT 'World Structure Merge Proposal v1', 2026-11-18, section 3.2"
+    },
+    "gameplay": {
+      "new_player": "Silme Lv 1-10 prologue; observation and discoveries",
+      "veteran_return": "Lore, rare knowledge materials, hidden routes",
+      "party_content": "1-4: open ridge and crypt exploration",
+      "cross_race_reason": "Cartography, secrets and expedition preparation",
+      "party_hub_role": null,
+      "status": "proposed"
     }
   },
   "quality_checklist": {

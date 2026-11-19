@@ -852,6 +852,40 @@ def _validate_geography(
                 for pair in ((l["a"], l["b"]), (l["b"], l["a"])):
                     if pair not in open_dirs:
                         errors.append(f"{label}: GEO-11 violation: link '{l.get('id')}' is built but has no open node portal from {pair[0]} to {pair[1]}")
+        # GEO-12: step 4 gameplay roles (proposed data), recorded on dungeons and districts
+        for nid, node in sorted(nodes_by_id.items()):
+            if not nid.startswith("dungeon-") or node.get("parent_continent_id") != cid:
+                continue
+            r = node.get("gameplay_role") or {}
+            band = r.get("proposed_level_band")
+            why = []
+            if r.get("verdict") not in GAMEPLAY_VERDICTS:
+                why.append(f"verdict {r.get('verdict')!r} is not one of {GAMEPLAY_VERDICTS}")
+            if not (isinstance(band, list) and len(band) == 2 and band[0] <= band[1]):
+                why.append(f"proposed_level_band {band!r} is not [min, max]")
+            if r.get("status") not in GAMEPLAY_STATUS:
+                why.append(f"status {r.get('status')!r} is not one of {GAMEPLAY_STATUS}")
+            if r.get("verdict") == "story_dungeon":
+                if not r.get("chapter") or not r.get("boss_site_note"):
+                    why.append("a story_dungeon needs a chapter and a boss_site_note")
+            elif r.get("chapter") is not None:
+                why.append("only a story_dungeon has a chapter")
+            if not r:
+                why = ["has no gameplay_role"]
+            errors.extend(f"{label}: GEO-12 violation: node '{nid}' {w}" for w in why)
+        finds = 0
+        for did, g in geo.items():
+            if not g:
+                continue
+            gp = g.get("gameplay") or {}
+            miss = [k for k in ("new_player", "veteran_return", "party_content", "cross_race_reason") if not gp.get(k)]
+            if miss:
+                errors.append(f"{label}: GEO-12 violation: district '{did}' geography.gameplay lacks {miss}")
+            if gp.get("party_hub_role") not in PARTY_HUB_ROLES:
+                errors.append(f"{label}: GEO-12 violation: district '{did}' party_hub_role {gp.get('party_hub_role')!r} is not one of {PARTY_HUB_ROLES[:-1]} or null")
+            finds += gp.get("party_hub_role") == "find_party"
+        if finds != 1:
+            errors.append(f"{label}: GEO-12 violation: exactly one district must have party_hub_role 'find_party', found {finds}")
         home = {(nodes_by_id.get(t.get("studio_node_id")) or {}).get("parent_district_id") for t in towns if t.get("race")}
         for did, g in geo.items():
             if not g:  # GEO-01 already reports it
@@ -862,6 +896,11 @@ def _validate_geography(
                 errors.append(f"{label}: GEO-10 violation: district '{did}' has no encounter_bands.main [min, max]")
             if did in home and bands.get("starter") != [1, 10]:
                 errors.append(f"{label}: GEO-10 violation: race home district '{did}' needs encounter_bands.starter [1, 10], got {bands.get('starter')!r}")
+
+
+GAMEPLAY_VERDICTS = ("story_dungeon", "optional_instance", "open_activity")
+GAMEPLAY_STATUS = ("proposed", "decided", "applied")
+PARTY_HUB_ROLES = ("find_party", "learn_party", "crossroads", "coordinated_combat", None)
 
 
 def build_runtime_manifest(studio_dir: Path = DEFAULT_STUDIO_DIR) -> dict[str, Any]:
